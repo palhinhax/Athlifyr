@@ -3,16 +3,18 @@ import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
 import { SportType } from "@prisma/client";
-import { sportTypeLabels } from "@/lib/event-utils";
+import { sportTypeLabels, getUserCountry } from "@/lib/event-utils";
+import { headers } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
-async function getUpcomingEvents() {
+async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
     where: {
       startDate: {
         gte: new Date(),
       },
+      country: country,
     },
     include: {
       variants: true,
@@ -25,7 +27,13 @@ async function getUpcomingEvents() {
 }
 
 export default async function Home() {
-  const upcomingEvents = await getUpcomingEvents();
+  // Get user's country from headers
+  const headersList = await headers();
+  const userCountry = getUserCountry(
+    new Request("http://localhost", { headers: headersList })
+  );
+
+  const upcomingEvents = await getUpcomingEvents(userCountry);
 
   const sportTypes = [
     SportType.RUNNING,
@@ -52,7 +60,7 @@ export default async function Home() {
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
           Find races, competitions and challenges near you.
           <br />
-          Discover the best sports events in Portugal.
+          Discover the best sports events in {userCountry}.
         </p>
       </section>
 
@@ -72,7 +80,9 @@ export default async function Home() {
       {/* Upcoming Events */}
       <section className="container mx-auto px-4 py-12">
         <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">Upcoming Events in Portugal</h2>
+          <h2 className="text-3xl font-bold">
+            Upcoming Events in {userCountry}
+          </h2>
           <Link href="/events">
             <Button variant="ghost">Ver Todos →</Button>
           </Link>

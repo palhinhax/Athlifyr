@@ -10,6 +10,7 @@ import { EventComments } from "@/components/event-comments";
 import { EventRegistration } from "@/components/event-registration";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
+import { ShareButton } from "@/components/share-button";
 
 export const dynamic = "force-dynamic";
 
@@ -116,14 +117,18 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Back button */}
-      <div className="container mx-auto px-4 py-4">
+      {/* Back button and Share */}
+      <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/events">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar aos eventos
           </Button>
         </Link>
+        <ShareButton
+          title={event.title}
+          description={`${event.title} - ${formatDate(event.startDate)} em ${event.city}`}
+        />
       </div>
 
       {/* Event Header */}

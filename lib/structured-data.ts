@@ -19,11 +19,14 @@ export function generateSportsEventSchema(event: EventWithVariants) {
   const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
 
   // Build offers array from variants
+  // Currency defaults to EUR for Portugal-based events
+  const currency = event.country === "Portugal" ? "EUR" : "EUR"; // TODO: Add currency field to Event model
+
   const offers = event.variants.map((variant) => ({
     "@type": "Offer",
     name: variant.name,
     price: variant.price?.toString() || "0",
-    priceCurrency: "EUR",
+    priceCurrency: currency,
     availability: "https://schema.org/InStock",
     url: eventUrl,
   }));

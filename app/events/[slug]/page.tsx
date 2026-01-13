@@ -89,12 +89,18 @@ export async function generateMetadata({
 
   // Create rich description with event details (max 160 chars for SEO)
   const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
-  const maxDescLength = 160 - suffix.length - 4; // 4 for "... "
-  const truncatedDesc =
-    event.description.length > maxDescLength
-      ? event.description.slice(0, maxDescLength).trim() + "..."
-      : event.description;
-  const metaDescription = truncatedDesc + suffix;
+  const maxDescLength = 160 - suffix.length - 4; // 4 for "... " ellipsis
+
+  let metaDescription: string;
+  if (event.description.length + suffix.length <= 160) {
+    // Description is short enough to fit with suffix
+    metaDescription = event.description + suffix;
+  } else {
+    // Need to truncate description
+    const truncatedDesc =
+      event.description.slice(0, maxDescLength).trim() + "...";
+    metaDescription = truncatedDesc + suffix;
+  }
 
   // Keywords based on event type and location
   const keywords = [

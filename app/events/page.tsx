@@ -3,8 +3,7 @@ import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
 import { SportType, Prisma } from "@prisma/client";
 import { sportTypeLabels } from "@/lib/event-utils";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { SportFilter } from "@/components/sport-filter";
 
 export const metadata = {
   title: "Todos os Eventos - Athlifyr",
@@ -92,21 +91,9 @@ export default async function EventsPage({ searchParams }: PageProps) {
 
       <section className="container mx-auto px-4 py-8">
         {/* Filters */}
-        <div className="mb-8">
-          <h2 className="mb-3 text-sm font-medium">Filtrar por modalidade:</h2>
-          <div className="flex flex-wrap gap-2">
-            {sportTypes.map((sport) => (
-              <Link key={sport.value} href={`/events?sport=${sport.value}`}>
-                <Button
-                  variant={sportFilter === sport.value ? "default" : "outline"}
-                  size="sm"
-                >
-                  {sport.label}
-                </Button>
-              </Link>
-            ))}
-          </div>
-        </div>
+        <Suspense fallback={null}>
+          <SportFilter sportTypes={sportTypes} currentFilter={sportFilter} />
+        </Suspense>
 
         {/* Events List */}
         <Suspense

@@ -11,6 +11,8 @@ import { EventRegistration } from "@/components/event-registration";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
 import { ShareButton } from "@/components/share-button";
+import { EventAdminActions } from "@/components/event-admin-actions";
+import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -110,6 +112,8 @@ export async function generateMetadata({
 
 export default async function EventPage({ params }: PageProps) {
   const event = await getEvent(params.slug);
+  const session = await auth();
+  const isAdmin = session?.user?.role === "ADMIN";
 
   if (!event) {
     notFound();
@@ -117,7 +121,7 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
-      {/* Back button and Share */}
+      {/* Back button, Admin Actions, and Share */}
       <div className="container mx-auto flex items-center justify-between px-4 py-4">
         <Link href="/events">
           <Button variant="ghost" size="sm">
@@ -125,10 +129,33 @@ export default async function EventPage({ params }: PageProps) {
             Voltar aos eventos
           </Button>
         </Link>
-        <ShareButton
-          title={event.title}
-          description={`${event.title} - ${formatDate(event.startDate)} em ${event.city}`}
-        />
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <EventAdminActions
+              event={{
+                id: event.id,
+                title: event.title,
+                description: event.description,
+                sportType: event.sportType,
+                startDate: event.startDate,
+                endDate: event.endDate,
+                city: event.city,
+                country: event.country,
+                imageUrl: event.imageUrl,
+                externalUrl: event.externalUrl,
+                variants: event.variants.map((v) => ({
+                  id: v.id,
+                  name: v.name,
+                  distanceKm: v.distanceKm,
+                })),
+              }}
+            />
+          )}
+          <ShareButton
+            title={event.title}
+            description={`${event.title} - ${formatDate(event.startDate)} em ${event.city}`}
+          />
+        </div>
       </div>
 
       {/* Event Header */}

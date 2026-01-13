@@ -6,8 +6,18 @@ interface GoogleAnalyticsProps {
   gaId: string;
 }
 
+// Validate Google Analytics Measurement ID format
+function isValidGAId(gaId: string): boolean {
+  return /^G-[A-Z0-9]{10}$/.test(gaId);
+}
+
 export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
-  if (!gaId) {
+  if (!gaId || !isValidGAId(gaId)) {
+    if (gaId && !isValidGAId(gaId)) {
+      console.warn(
+        `Invalid Google Analytics Measurement ID: ${gaId}. Expected format: G-XXXXXXXXXX`
+      );
+    }
     return null;
   }
 

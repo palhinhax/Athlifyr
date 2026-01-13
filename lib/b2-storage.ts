@@ -83,13 +83,7 @@ export async function uploadToB2({
     const bucketName = process.env.B2_BUCKET_NAME;
     const bucketUrl = process.env.NEXT_PUBLIC_B2_BUCKET_URL;
 
-    // ALWAYS use the correct URL format - never fallback to bucket ID
-    const finalBucketUrl =
-      bucketUrl && bucketUrl.includes("f003")
-        ? bucketUrl
-        : "https://f003.backblazeb2.com";
-
-    const fileUrl = `${finalBucketUrl}/file/${bucketName}/${fullFileName}`;
+    const fileUrl = `${bucketUrl}/file/${bucketName}/${fullFileName}`;
 
     return {
       fileId: uploadResponse.data.fileId,

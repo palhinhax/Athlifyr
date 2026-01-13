@@ -33,6 +33,12 @@ interface PendingRequest {
   createdAt: string;
 }
 
+interface SentRequest {
+  id: string;
+  receiver: User;
+  createdAt: string;
+}
+
 interface Friend extends User {
   friendshipId: string;
   since: string;
@@ -46,6 +52,7 @@ export function FriendsSection() {
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
+  const [sentRequests, setSentRequests] = useState<SentRequest[]>([]);
   const [searchResults, setSearchResults] = useState<User[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -75,12 +82,25 @@ export function FriendsSection() {
     }
   }, []);
 
+  const fetchSentRequests = useCallback(async () => {
+    try {
+      const res = await fetch("/api/friends?type=sent");
+      if (res.ok) {
+        const data = await res.json();
+        setSentRequests(data);
+      }
+    } catch (error) {
+      console.error("Error fetching sent requests:", error);
+    }
+  }, []);
+
   useEffect(() => {
     if (session?.user) {
       fetchFriends();
       fetchPendingRequests();
+      fetchSentRequests();
     }
-  }, [session, fetchFriends, fetchPendingRequests]);
+  }, [session, fetchFriends, fetchPendingRequests, fetchSentRequests]);
 
   useEffect(() => {
     const searchUsers = async () => {
@@ -193,6 +213,37 @@ export function FriendsSection() {
     }
   };
 
+  const cancelSentRequest = async (friendshipId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/friends/${friendshipId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Pedido cancelado",
+          description: "O pedido de amizade foi cancelado.",
+        });
+        fetchSentRequests();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível cancelar o pedido.",
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Algo correu mal. Tenta novamente.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const removeFriend = async (friendshipId: string) => {
     setIsLoading(true);
     try {
@@ -261,9 +312,9 @@ export function FriendsSection() {
         >
           <Clock className="h-4 w-4" />
           Pendentes
-          {pendingRequests.length > 0 && (
+          {(pendingRequests.length > 0 || sentRequests.length > 0) && (
             <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
-              {pendingRequests.length}
+              {pendingRequests.length + sentRequests.length}
             </span>
           )}
         </button>
@@ -342,66 +393,130 @@ export function FriendsSection() {
 
       {/* Pending Requests */}
       {activeTab === "pending" && (
-        <div>
-          {pendingRequests.length === 0 ? (
-            <Card className="p-8 text-center">
-              <Clock className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-lg font-semibold">
-                Sem pedidos pendentes
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                Não tens pedidos de amizade pendentes.
-              </p>
-            </Card>
-          ) : (
-            <div className="space-y-3">
-              {pendingRequests.map((request) => (
-                <Card key={request.id} className="flex items-center gap-4 p-4">
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                    {request.sender.image ? (
-                      <Image
-                        src={request.sender.image}
-                        alt={request.sender.name || "User"}
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
-                        {request.sender.name?.[0]?.toUpperCase() || "U"}
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium">{request.sender.name}</p>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {request.sender.email}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => respondToRequest(request.id, "accept")}
-                      disabled={isLoading}
-                      className="gap-1"
-                    >
-                      <Check className="h-4 w-4" />
-                      Aceitar
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => respondToRequest(request.id, "reject")}
-                      disabled={isLoading}
-                      className="gap-1"
-                    >
-                      <X className="h-4 w-4" />
-                      Rejeitar
-                    </Button>
-                  </div>
-                </Card>
-              ))}
-            </div>
-          )}
+        <div className="space-y-6">
+          {/* Received Requests */}
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+              Pedidos Recebidos ({pendingRequests.length})
+            </h3>
+            {pendingRequests.length === 0 ? (
+              <Card className="p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Não tens pedidos de amizade recebidos.
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {pendingRequests.map((request) => (
+                  <Card
+                    key={request.id}
+                    className="flex items-center gap-4 p-4"
+                  >
+                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                      {request.sender.image ? (
+                        <Image
+                          src={request.sender.image}
+                          alt={request.sender.name || "User"}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
+                          {request.sender.name?.[0]?.toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{request.sender.name}</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {request.sender.email}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => respondToRequest(request.id, "accept")}
+                        disabled={isLoading}
+                        className="gap-1"
+                      >
+                        <Check className="h-4 w-4" />
+                        Aceitar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => respondToRequest(request.id, "reject")}
+                        disabled={isLoading}
+                        className="gap-1"
+                      >
+                        <X className="h-4 w-4" />
+                        Rejeitar
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Sent Requests */}
+          <div>
+            <h3 className="mb-3 text-sm font-medium text-muted-foreground">
+              Pedidos Enviados ({sentRequests.length})
+            </h3>
+            {sentRequests.length === 0 ? (
+              <Card className="p-6 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Não tens pedidos de amizade enviados.
+                </p>
+              </Card>
+            ) : (
+              <div className="space-y-3">
+                {sentRequests.map((request) => (
+                  <Card
+                    key={request.id}
+                    className="flex items-center gap-4 p-4"
+                  >
+                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                      {request.receiver.image ? (
+                        <Image
+                          src={request.receiver.image}
+                          alt={request.receiver.name || "User"}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-lg font-bold text-muted-foreground">
+                          {request.receiver.name?.[0]?.toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-medium">{request.receiver.name}</p>
+                      <p className="truncate text-sm text-muted-foreground">
+                        {request.receiver.email}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />A aguardar resposta
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => cancelSentRequest(request.id)}
+                        disabled={isLoading}
+                        className="text-muted-foreground hover:text-destructive"
+                      >
+                        <X className="h-4 w-4" />
+                        Cancelar
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

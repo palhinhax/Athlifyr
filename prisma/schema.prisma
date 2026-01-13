@@ -125,7 +125,7 @@ model EventVariant {
   eventId         String
   event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name            String
-  distance        String?
+  distanceKm      Int?
   price           Float?
   maxParticipants Int?
   description     String?

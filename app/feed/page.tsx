@@ -128,7 +128,7 @@ export default async function FeedPage() {
       variant: {
         select: {
           name: true,
-          distance: true,
+          distanceKm: true,
         },
       },
     },
@@ -306,8 +306,8 @@ export default async function FeedPage() {
                               <span className="flex items-center gap-1">
                                 <Trophy className="h-3 w-3" />
                                 {activity.data.variant.name}
-                                {activity.data.variant.distance &&
-                                  ` - ${activity.data.variant.distance}`}
+                                {activity.data.variant.distanceKm &&
+                                  ` - ${activity.data.variant.distanceKm} km`}
                               </span>
                             )}
                             {"startDate" in activity.data.event && (

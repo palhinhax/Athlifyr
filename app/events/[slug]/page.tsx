@@ -165,9 +165,9 @@ export default async function EventPage({ params }: PageProps) {
                     className="rounded-lg border-2 border-primary/20 bg-card p-5 transition-all hover:border-primary hover:shadow-lg"
                   >
                     <h3 className="mb-2 text-xl font-bold">{variant.name}</h3>
-                    {variant.distance && (
+                    {variant.distanceKm && (
                       <p className="mb-3 text-2xl font-bold text-primary">
-                        {variant.distance}
+                        {variant.distanceKm} km
                       </p>
                     )}
                     {variant.description && (
@@ -250,7 +250,7 @@ export default async function EventPage({ params }: PageProps) {
               variants={event.variants.map((v) => ({
                 id: v.id,
                 name: v.name,
-                distance: v.distance,
+                distanceKm: v.distanceKm,
               }))}
             />
           </div>

@@ -21,12 +21,9 @@ async function main() {
         startDate: new Date("2026-01-15"),
         endDate: new Date("2026-01-18"),
         city: "Seia",
-        imageUrl:
-          "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-
         isFeatured: true,
       },
-      variants: [{ name: "Ultra", distance: "303 km" }],
+      variants: [{ name: "Ultra", distanceKm: 303 }],
     },
     {
       event: {
@@ -36,15 +33,12 @@ async function main() {
         sportType: SportType.TRAIL,
         startDate: new Date("2026-01-16"),
         city: "Póvoa de Varzim",
-        imageUrl:
-          "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-
         isFeatured: false,
       },
       variants: [
-        { name: "Trail Longo", distance: "25 km" },
-        { name: "Trail Curto", distance: "16 km" },
-        { name: "Caminhada", distance: "8 km" },
+        { name: "Trail Longo", distanceKm: 25 },
+        { name: "Trail Curto", distanceKm: 16 },
+        { name: "Caminhada", distanceKm: 8 },
       ],
     },
     {
@@ -56,15 +50,12 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-01-17"),
         city: "Funchal",
-        imageUrl:
-          "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distance: "42 km" },
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Mini Maratona", distance: "5 km" },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Mini Maratona", distanceKm: 5 },
       ],
     },
     {
@@ -77,43 +68,19 @@ async function main() {
         startDate: new Date("2026-01-30"),
         endDate: new Date("2026-01-31"),
         city: "Sobral de Monte Agraço",
-        imageUrl:
-          "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 100", distance: "100 km" },
-        { name: "Trail 50", distance: "50 km" },
-        { name: "Trail 30", distance: "30 km" },
-        { name: "Trail 20", distance: "20 km" },
-        { name: "Trail 10", distance: "10 km" },
-        { name: "Kids", distance: "2 km" },
+        { name: "Ultra 100", distanceKm: 100 },
+        { name: "Trail 50", distanceKm: 50 },
+        { name: "Trail 30", distanceKm: 30 },
+        { name: "Trail 20", distanceKm: 20 },
+        { name: "Trail 10", distanceKm: 10 },
+        { name: "Kids", distanceKm: 2 },
       ],
     },
 
     // Fevereiro 2026
-    {
-      event: {
-        title: "Meia Maratona de Cascais",
-        slug: "meia-maratona-cascais-2026",
-        description:
-          "Meia Maratona de Cascais. Percurso junto ao mar na bela vila de Cascais.",
-        sportType: SportType.RUNNING,
-        startDate: new Date("2026-01-31"),
-        endDate: new Date("2026-02-01"),
-        city: "Cascais",
-        imageUrl:
-          "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800",
-
-        isFeatured: true,
-      },
-      variants: [
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Corrida 10K", distance: "10 km" },
-        { name: "Corrida 5K", distance: "5 km" },
-      ],
-    },
     {
       event: {
         title: "Zebra Ultra Trail",
@@ -122,16 +89,13 @@ async function main() {
         sportType: SportType.TRAIL,
         startDate: new Date("2026-02-15"),
         city: "Cantanhede",
-        imageUrl:
-          "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra", distance: "45 km" },
-        { name: "Trail", distance: "25 km" },
-        { name: "Trail Curto", distance: "15 km" },
-        { name: "Caminhada", distance: "10 km" },
+        { name: "Ultra", distanceKm: 45 },
+        { name: "Trail", distanceKm: 25 },
+        { name: "Trail Curto", distanceKm: 15 },
+        { name: "Caminhada", distanceKm: 10 },
       ],
     },
     {
@@ -144,15 +108,12 @@ async function main() {
         startDate: new Date("2026-02-20"),
         endDate: new Date("2026-02-22"),
         city: "Foz Côa",
-        imageUrl:
-          "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra", distance: "46 km" },
-        { name: "Trail", distance: "31 km" },
-        { name: "Trail Curto", distance: "17 km" },
+        { name: "Ultra", distanceKm: 46 },
+        { name: "Trail", distanceKm: 31 },
+        { name: "Trail Curto", distanceKm: 17 },
       ],
     },
 
@@ -166,14 +127,11 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-03-08"),
         city: "Lisboa",
-        imageUrl:
-          "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Corrida 10K", distance: "10 km" },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Corrida 10K", distanceKm: 10 },
       ],
     },
     {
@@ -185,16 +143,13 @@ async function main() {
         startDate: new Date("2026-03-07"),
         endDate: new Date("2026-03-08"),
         city: "Lousã",
-        imageUrl:
-          "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Trail Longo", distance: "32 km" },
-        { name: "Trail Médio", distance: "20 km" },
-        { name: "Trail Curto", distance: "13 km" },
-        { name: "Estafeta", distance: "32 km + 20 km" },
+        { name: "Trail Longo", distanceKm: 32 },
+        { name: "Trail Médio", distanceKm: 20 },
+        { name: "Trail Curto", distanceKm: 13 },
+        { name: "Estafeta", distanceKm: 52 },
       ],
     },
 
@@ -208,16 +163,13 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-04-12"),
         city: "Lisboa",
-        imageUrl:
-          "https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distance: "42 km" },
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Corrida 12K", distance: "12 km" },
-        { name: "Caminhada", distance: "8 km" },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Corrida 12K", distanceKm: 12 },
+        { name: "Caminhada", distanceKm: 8 },
       ],
     },
     {
@@ -230,16 +182,13 @@ async function main() {
         startDate: new Date("2026-04-25"),
         endDate: new Date("2026-04-26"),
         city: "Porto Moniz",
-        imageUrl:
-          "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "MIUT 115", distance: "115 km" },
-        { name: "MIUT 85", distance: "85 km" },
-        { name: "MIUT 42", distance: "42 km" },
-        { name: "MIUT 16", distance: "16 km" },
+        { name: "MIUT 115", distanceKm: 115 },
+        { name: "MIUT 85", distanceKm: 85 },
+        { name: "MIUT 42", distanceKm: 42 },
+        { name: "MIUT 16", distanceKm: 16 },
       ],
     },
     {
@@ -251,17 +200,14 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-04-26"),
         city: "Aveiro",
-        imageUrl:
-          "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distance: "42.195 km" },
-        { name: "Meia Maratona", distance: "21.0975 km" },
-        { name: "Corrida 10K", distance: "10 km" },
-        { name: "Corrida 5K", distance: "5 km" },
-        { name: "Caminhada", distance: "5 km" },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Corrida 10K", distanceKm: 10 },
+        { name: "Corrida 5K", distanceKm: 5 },
+        { name: "Caminhada", distanceKm: 5 },
       ],
     },
 
@@ -275,18 +221,15 @@ async function main() {
         startDate: new Date("2026-05-08"),
         endDate: new Date("2026-05-10"),
         city: "Manteigas",
-        imageUrl:
-          "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 105", distance: "105 km" },
-        { name: "Ultra 71", distance: "71 km (3 etapas)" },
-        { name: "Trail 50", distance: "50 km" },
-        { name: "Trail 33", distance: "33 km" },
-        { name: "Trail 15", distance: "15 km" },
-        { name: "Trail 6", distance: "6 km" },
+        { name: "Ultra 105", distanceKm: 105 },
+        { name: "Ultra 71", distanceKm: 71 },
+        { name: "Trail 50", distanceKm: 50 },
+        { name: "Trail 33", distanceKm: 33 },
+        { name: "Trail 15", distanceKm: 15 },
+        { name: "Trail 6", distanceKm: 6 },
       ],
     },
     {
@@ -298,17 +241,14 @@ async function main() {
         sportType: SportType.TRAIL,
         startDate: new Date("2026-05-23"),
         city: "São Miguel",
-        imageUrl:
-          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra", distance: "40 km" },
-        { name: "Trail", distance: "20 km" },
-        { name: "Trail Curto", distance: "10 km" },
-        { name: "Caminhada", distance: "10 km" },
-        { name: "Kids", distance: "2 km" },
+        { name: "Ultra", distanceKm: 40 },
+        { name: "Trail", distanceKm: 20 },
+        { name: "Trail Curto", distanceKm: 10 },
+        { name: "Caminhada", distanceKm: 10 },
+        { name: "Kids", distanceKm: 2 },
       ],
     },
 
@@ -323,16 +263,13 @@ async function main() {
         startDate: new Date("2026-06-27"),
         endDate: new Date("2026-06-28"),
         city: "Arouca",
-        imageUrl:
-          "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 100", distance: "100 km" },
-        { name: "Trail 65", distance: "65 km" },
-        { name: "Trail 29", distance: "29 km" },
-        { name: "Trail 15", distance: "15 km" },
+        { name: "Ultra 100", distanceKm: 100 },
+        { name: "Trail 65", distanceKm: 65 },
+        { name: "Trail 29", distanceKm: 29 },
+        { name: "Trail 15", distanceKm: 15 },
       ],
     },
     {
@@ -344,14 +281,11 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-09-13"),
         city: "Porto",
-        imageUrl:
-          "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Corrida 6K", distance: "6 km" },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Corrida 6K", distanceKm: 6 },
       ],
     },
 
@@ -365,14 +299,11 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-10-10"),
         city: "Lisboa",
-        imageUrl:
-          "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distance: "42 km" },
-        { name: "Meia Maratona", distance: "21 km" },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Meia Maratona", distanceKm: 21 },
       ],
     },
     {
@@ -384,17 +315,14 @@ async function main() {
         startDate: new Date("2026-10-09"),
         endDate: new Date("2026-10-10"),
         city: "Régua",
-        imageUrl:
-          "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 100", distance: "100 km" },
-        { name: "Trail 50", distance: "50 km" },
-        { name: "Trail 25", distance: "25 km" },
-        { name: "Trail 15", distance: "15 km" },
-        { name: "Caminhada", distance: "8 km" },
+        { name: "Ultra 100", distanceKm: 100 },
+        { name: "Trail 50", distanceKm: 50 },
+        { name: "Trail 25", distanceKm: 25 },
+        { name: "Trail 15", distanceKm: 15 },
+        { name: "Caminhada", distanceKm: 8 },
       ],
     },
 
@@ -408,14 +336,11 @@ async function main() {
         sportType: SportType.RUNNING,
         startDate: new Date("2026-11-08"),
         city: "Porto",
-        imageUrl:
-          "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distance: "42 km" },
-        { name: "Corrida 10K", distance: "10 km" },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Corrida 10K", distanceKm: 10 },
       ],
     },
     {
@@ -428,16 +353,13 @@ async function main() {
         startDate: new Date("2026-11-27"),
         endDate: new Date("2026-11-29"),
         city: "Gerês",
-        imageUrl:
-          "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 90", distance: "90 km" },
-        { name: "Maratona", distance: "42 km" },
-        { name: "Meia Maratona", distance: "21 km" },
-        { name: "Trail", distance: "13 km" },
+        { name: "Ultra 90", distanceKm: 90 },
+        { name: "Maratona", distanceKm: 42 },
+        { name: "Meia Maratona", distanceKm: 21 },
+        { name: "Trail", distanceKm: 13 },
       ],
     },
     {
@@ -450,22 +372,19 @@ async function main() {
         startDate: new Date("2026-11-06"),
         endDate: new Date("2026-11-07"),
         city: "Sintra",
-        imageUrl:
-          "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-
         isFeatured: true,
       },
       variants: [
-        { name: "Ultra 100", distance: "100 km" },
-        { name: "Trail 50", distance: "50 km" },
-        { name: "Trail 30", distance: "30 km" },
-        { name: "Trail 20", distance: "20 km" },
-        { name: "Trail 12", distance: "12 km" },
-        { name: "Caminhada", distance: "12 km" },
+        { name: "Ultra 100", distanceKm: 100 },
+        { name: "Trail 50", distanceKm: 50 },
+        { name: "Trail 30", distanceKm: 30 },
+        { name: "Trail 20", distanceKm: 20 },
+        { name: "Trail 12", distanceKm: 12 },
+        { name: "Caminhada", distanceKm: 12 },
       ],
     },
 
-    // HYROX Events
+    // HYROX Events (sem distância, apenas descrição)
     {
       event: {
         title: "HYROX Lisboa",
@@ -475,9 +394,6 @@ async function main() {
         sportType: SportType.HYROX,
         startDate: new Date("2026-03-28"),
         city: "Lisboa",
-        imageUrl:
-          "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
-
         isFeatured: true,
       },
       variants: [
@@ -496,9 +412,6 @@ async function main() {
         sportType: SportType.HYROX,
         startDate: new Date("2026-10-10"),
         city: "Porto",
-        imageUrl:
-          "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
-
         isFeatured: false,
       },
       variants: [

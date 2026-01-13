@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/use-toast";
 interface EventVariant {
   id: string;
   name: string;
-  distance?: string | null;
+  distanceKm?: number | null;
 }
 
 interface Participation {
@@ -19,7 +19,7 @@ interface Participation {
   variant?: {
     id: string;
     name: string;
-    distance?: string | null;
+    distanceKm?: number | null;
   } | null;
 }
 
@@ -216,7 +216,7 @@ export function EventRegistration({
                 {variants.map((variant) => (
                   <option key={variant.id} value={variant.id}>
                     {variant.name}
-                    {variant.distance && ` - ${variant.distance}`}
+                    {variant.distanceKm && ` - ${variant.distanceKm} km`}
                   </option>
                 ))}
               </select>
@@ -233,8 +233,8 @@ export function EventRegistration({
               {userParticipation.variant && (
                 <p className="text-muted-foreground">
                   Variante: {userParticipation.variant.name}
-                  {userParticipation.variant.distance &&
-                    ` - ${userParticipation.variant.distance}`}
+                  {userParticipation.variant.distanceKm &&
+                    ` - ${userParticipation.variant.distanceKm} km`}
                 </p>
               )}
             </div>

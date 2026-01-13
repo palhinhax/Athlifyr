@@ -192,9 +192,11 @@ export function EventRegistration({
       </div>
 
       {!session?.user ? (
-        <div className="text-center text-sm text-muted-foreground">
-          <p className="mb-3">Faz login para marcar que vais participar</p>
-          <Button asChild>
+        <div className="text-center">
+          <p className="mb-3 text-sm text-muted-foreground">
+            Faz login para marcar que vais participar
+          </p>
+          <Button asChild size="sm">
             <a href="/auth/signin">Fazer Login</a>
           </Button>
         </div>
@@ -247,6 +249,7 @@ export function EventRegistration({
                 onClick={handleRegister}
                 disabled={isLoading}
                 className="flex-1"
+                size="sm"
               >
                 <Check className="mr-2 h-4 w-4" />
                 Marcar como Vou
@@ -257,6 +260,7 @@ export function EventRegistration({
                 disabled={isLoading}
                 variant="outline"
                 className="flex-1"
+                size="sm"
               >
                 <X className="mr-2 h-4 w-4" />
                 Cancelar Participação

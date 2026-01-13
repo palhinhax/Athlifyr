@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export const metadata = {
-  title: "Todos os Eventos - FitLane",
+  title: "Todos os Eventos - Athlifyr",
   description:
     "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
 };

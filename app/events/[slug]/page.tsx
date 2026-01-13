@@ -21,17 +21,19 @@ async function getEvent(slug: string) {
   });
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
   const event = await getEvent(params.slug);
 
   if (!event) {
     return {
-      title: "Evento não encontrado - FitLane",
+      title: "Evento não encontrado - Athlifyr",
     };
   }
 
   return {
-    title: `${event.title} - FitLane`,
+    title: `${event.title} - Athlifyr`,
     description: event.description,
     openGraph: {
       title: event.title,
@@ -72,10 +74,10 @@ export default async function EventPage({ params }: PageProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="container mx-auto">
-            <div className="inline-block bg-primary text-primary-foreground px-4 py-2 rounded-full text-sm font-medium mb-4">
+            <div className="mb-4 inline-block rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
               {sportTypeLabels[event.sportType]}
             </div>
-            <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
               {event.title}
             </h1>
           </div>
@@ -86,9 +88,9 @@ export default async function EventPage({ params }: PageProps) {
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl">
           {/* Meta Info */}
-          <div className="grid md:grid-cols-2 gap-6 mb-8 p-6 bg-muted/50 rounded-lg">
+          <div className="mb-8 grid gap-6 rounded-lg bg-muted/50 p-6 md:grid-cols-2">
             <div className="flex items-start gap-3">
-              <Calendar className="h-5 w-5 mt-1 text-primary" />
+              <Calendar className="mt-1 h-5 w-5 text-primary" />
               <div>
                 <div className="font-medium">Data</div>
                 <div className="text-muted-foreground">
@@ -98,7 +100,7 @@ export default async function EventPage({ params }: PageProps) {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <MapPin className="h-5 w-5 mt-1 text-primary" />
+              <MapPin className="mt-1 h-5 w-5 text-primary" />
               <div>
                 <div className="font-medium">Localização</div>
                 <div className="text-muted-foreground">
@@ -109,18 +111,19 @@ export default async function EventPage({ params }: PageProps) {
           </div>
 
           {/* Description */}
-          <div className="prose prose-lg max-w-none mb-8">
-            <h2 className="text-2xl font-bold mb-4">Sobre o Evento</h2>
-            <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
+          <div className="prose prose-lg mb-8 max-w-none">
+            <h2 className="mb-4 text-2xl font-bold">Sobre o Evento</h2>
+            <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
               {event.description}
             </p>
           </div>
 
           {/* CTA */}
           <div className="border-t pt-8">
-            <h3 className="text-xl font-bold mb-4">Pronto para participar?</h3>
-            <p className="text-muted-foreground mb-6">
-              Para mais informações e inscrições, visite o website oficial do evento.
+            <h3 className="mb-4 text-xl font-bold">Pronto para participar?</h3>
+            <p className="mb-6 text-muted-foreground">
+              Para mais informações e inscrições, visite o website oficial do
+              evento.
             </p>
             <a
               href={event.externalUrl}

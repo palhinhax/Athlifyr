@@ -1,4 +1,4 @@
-# FitLane MVP - Deployment Guide
+# Athlifyr MVP - Deployment Guide
 
 ## Quick Start
 
@@ -21,7 +21,7 @@
    Create a `.env` file:
 
    ```env
-   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/fitlane"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/athlifyr"
    ```
 
 3. **Run database migrations**
@@ -54,7 +54,7 @@ Ensure your code is pushed to a GitHub repository.
 
 1. Go to [vercel.com](https://vercel.com)
 2. Click "New Project"
-3. Import your FitLane repository
+3. Import your Athlifyr repository
 
 ### Step 3: Configure Database
 

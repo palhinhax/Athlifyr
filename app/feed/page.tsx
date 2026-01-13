@@ -10,6 +10,17 @@ import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Feed de Atividades",
+  description:
+    "Veja as últimas atualizações dos teus eventos. Acompanha posts, fotos e resultados da comunidade desportiva.",
+  robots: {
+    index: false, // Feed is user-specific, no need to index
+    follow: true,
+  },
+};
 
 export const dynamic = "force-dynamic";
 

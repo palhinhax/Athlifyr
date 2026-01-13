@@ -22,6 +22,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "meiamaratonadecascais.pt",
       },
+      {
+        protocol: "https",
+        hostname: "europemarathon.eu",
+      },
     ],
   },
   env: {

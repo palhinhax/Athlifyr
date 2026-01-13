@@ -7,11 +7,64 @@ import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
 import { PublicProfileHeader } from "@/components/public-profile-header";
 import { PublicPhotoGallery } from "@/components/public-photo-gallery";
+import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: PageProps): Promise<Metadata> {
+  const { id } = await params;
+
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      name: true,
+      image: true,
+    },
+  });
+
+  if (!user) {
+    return {
+      title: "Utilizador não encontrado",
+      robots: {
+        index: false,
+        follow: false,
+      },
+    };
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const userName = user.name || "Atleta";
+  const userImage = user.image || `${baseUrl}/logo.png`;
+
+  return {
+    title: `${userName} - Perfil`,
+    description: `Perfil de ${userName} na Athlifyr. Veja os eventos em que ${userName} está inscrito e a sua atividade na comunidade.`,
+    openGraph: {
+      title: `${userName} - Athlifyr`,
+      description: `Perfil de ${userName} na Athlifyr`,
+      url: `${baseUrl}/user/${id}`,
+      siteName: "Athlifyr",
+      images: [
+        {
+          url: userImage,
+          width: 400,
+          height: 400,
+          alt: userName,
+        },
+      ],
+      type: "profile",
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
+  };
 }
 
 export default async function UserProfilePage({ params }: PageProps) {

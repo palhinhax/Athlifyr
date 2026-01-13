@@ -7,9 +7,36 @@ import { SportFilter } from "@/components/sport-filter";
 import { auth } from "@/lib/auth";
 
 export const metadata = {
-  title: "Todos os Eventos - Athlifyr",
+  title: "Todos os Eventos Desportivos",
   description:
-    "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
+    "Explore todos os eventos desportivos em Portugal. Encontre corridas, trails, HYROX, CrossFit, OCR, BTT, ciclismo, surf, triatlo e natação perto de si. Descubra competições e desafios para todos os níveis.",
+  keywords:
+    "eventos desportivos, corridas Portugal, trail running, HYROX, CrossFit, OCR, BTT, ciclismo, surf, triatlo, competições",
+  openGraph: {
+    title: "Todos os Eventos Desportivos - Athlifyr",
+    description:
+      "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
+    url: "https://athlifyr.com/events",
+    siteName: "Athlifyr",
+    type: "website",
+    images: [
+      {
+        url: "https://athlifyr.com/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Athlifyr - All Sports Events",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Todos os Eventos Desportivos - Athlifyr",
+    description:
+      "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
+  },
+  alternates: {
+    canonical: "https://athlifyr.com/events",
+  },
 };
 
 export const dynamic = "force-dynamic";

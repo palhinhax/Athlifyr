@@ -13,6 +13,11 @@ import { ShareButton } from "@/components/share-button";
 import { EventAdminActions } from "@/components/event-admin-actions";
 import { FriendsGoing } from "@/components/friends-going";
 import { auth } from "@/lib/auth";
+import {
+  generateSportsEventSchema,
+  generateBreadcrumbSchema,
+} from "@/lib/structured-data";
+import { StructuredData } from "@/components/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -74,17 +79,49 @@ export async function generateMetadata({
   if (!event) {
     return {
       title: "Evento não encontrado - Athlifyr",
+      description: "O evento que procura não foi encontrado.",
     };
   }
 
-  const eventUrl = `https://athlifyr.com/events/${event.slug}`;
-  const eventImage = event.imageUrl || "https://athlifyr.com/logo.png";
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const eventUrl = `${baseUrl}/events/${event.slug}`;
+  const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
+
+  // Create rich description with event details (max 160 chars for SEO)
+  const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
+  const maxDescLength = 160 - suffix.length - 4; // 4 for "... " ellipsis
+
+  let metaDescription: string;
+  if (event.description.length + suffix.length <= 160) {
+    // Description is short enough to fit with suffix
+    metaDescription = event.description + suffix;
+  } else {
+    // Need to truncate description
+    const truncatedDesc =
+      event.description.slice(0, maxDescLength).trim() + "...";
+    metaDescription = truncatedDesc + suffix;
+  }
+
+  // Keywords based on event type and location
+  const keywords = [
+    event.title,
+    sportTypeLabels[event.sportType],
+    event.city,
+    event.country,
+    "eventos desportivos",
+    "competição",
+    formatDate(event.startDate),
+  ];
 
   return {
-    title: `${event.title} - Athlifyr`,
-    description: event.description,
+    title: `${event.title} - ${sportTypeLabels[event.sportType]} | Athlifyr`,
+    description: metaDescription,
+    keywords: keywords.join(", "),
+    alternates: {
+      canonical: eventUrl,
+    },
     openGraph: {
-      title: event.title,
+      title: `${event.title} - ${sportTypeLabels[event.sportType]}`,
       description: event.description,
       url: eventUrl,
       siteName: "Athlifyr",
@@ -93,17 +130,31 @@ export async function generateMetadata({
           url: eventImage,
           width: 1200,
           height: 630,
-          alt: event.title,
+          alt: `${event.title} - ${sportTypeLabels[event.sportType]}`,
         },
       ],
       locale: "pt_PT",
       type: "article",
+      publishedTime: event.createdAt.toISOString(),
+      modifiedTime: event.updatedAt.toISOString(),
     },
     twitter: {
       card: "summary_large_image",
-      title: event.title,
+      title: `${event.title} - ${sportTypeLabels[event.sportType]}`,
       description: event.description,
       images: [eventImage],
+      creator: "@athlifyr",
+    },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-video-preview": -1,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+      },
     },
   };
 }
@@ -116,6 +167,14 @@ export default async function EventPage({ params }: PageProps) {
   if (!event) {
     notFound();
   }
+
+  // Generate structured data schemas
+  const sportsEventSchema = generateSportsEventSchema(event);
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: "Home", url: "/" },
+    { name: "Eventos", url: "/events" },
+    { name: event.title, url: `/events/${event.slug}` },
+  ]);
 
   // Get friends going to this event
   let friendsGoing: {
@@ -177,6 +236,10 @@ export default async function EventPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
+      {/* Structured Data for SEO */}
+      <StructuredData data={sportsEventSchema} />
+      <StructuredData data={breadcrumbSchema} />
+
       {/* Back button, Admin Actions, and Share */}
       <div className="container mx-auto px-4 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">

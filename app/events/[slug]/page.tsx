@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
 import { EventComments } from "@/components/event-comments";
+import { EventRegistration } from "@/components/event-registration";
 
 export const dynamic = "force-dynamic";
 
@@ -219,6 +220,18 @@ export default async function EventPage({ params }: PageProps) {
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </a>
+          </div>
+
+          {/* Event Registration */}
+          <div className="mt-12">
+            <EventRegistration
+              eventId={event.id}
+              variants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+                distance: v.distance,
+              }))}
+            />
           </div>
 
           {/* Comments Section */}

@@ -6,6 +6,7 @@ import { Calendar, MapPin, ExternalLink, ArrowLeft, Route } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
+import { EventComments } from "@/components/event-comments";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,48 @@ async function getEvent(slug: string) {
     where: { slug },
     include: {
       variants: true,
+      comments: {
+        where: {
+          parentId: null,
+        },
+        include: {
+          user: {
+            select: {
+              name: true,
+              image: true,
+            },
+          },
+          replies: {
+            include: {
+              user: {
+                select: {
+                  name: true,
+                  image: true,
+                },
+              },
+              replies: {
+                include: {
+                  user: {
+                    select: {
+                      name: true,
+                      image: true,
+                    },
+                  },
+                },
+                orderBy: {
+                  createdAt: "asc",
+                },
+              },
+            },
+            orderBy: {
+              createdAt: "asc",
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      },
     },
   });
 }
@@ -176,6 +219,32 @@ export default async function EventPage({ params }: PageProps) {
                 <ExternalLink className="h-4 w-4" />
               </Button>
             </a>
+          </div>
+
+          {/* Comments Section */}
+          <div className="mt-12 border-t pt-12">
+            <EventComments
+              eventId={event.id}
+              initialComments={event.comments.map((comment) => ({
+                id: comment.id,
+                content: comment.content,
+                createdAt: comment.createdAt.toISOString(),
+                user: comment.user,
+                replies: comment.replies.map((reply) => ({
+                  id: reply.id,
+                  content: reply.content,
+                  createdAt: reply.createdAt.toISOString(),
+                  user: reply.user,
+                  replies: reply.replies.map((nestedReply) => ({
+                    id: nestedReply.id,
+                    content: nestedReply.content,
+                    createdAt: nestedReply.createdAt.toISOString(),
+                    user: nestedReply.user,
+                    replies: [],
+                  })),
+                })),
+              }))}
+            />
           </div>
         </div>
       </div>

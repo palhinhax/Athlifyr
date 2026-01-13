@@ -1,27 +1,34 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Calendar, MapPin, Trophy, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
-import { FriendsSection } from "@/components/friends-section";
-import { ProfileHeaderClient } from "@/components/profile-header-client";
-import { PhotoGallery } from "@/components/photo-gallery";
+import { PublicProfileHeader } from "@/components/public-profile-header";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
-  const session = await auth();
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
+export default async function UserProfilePage({ params }: PageProps) {
+  const session = await auth();
+  const { id } = await params;
+
+  // If viewing own profile, redirect to /profile
+  if (session?.user?.id === id) {
+    redirect("/profile");
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: session.user.id },
+    where: { id },
     include: {
       participations: {
+        where: {
+          status: "going",
+        },
         include: {
           event: {
             select: {
@@ -71,24 +78,52 @@ export default async function ProfilePage() {
   });
 
   if (!user) {
-    redirect("/auth/signin");
+    notFound();
   }
 
   const upcomingEvents = user.participations.filter(
-    (p) => p.event.startDate > new Date() && p.status === "going"
+    (p) => p.event.startDate > new Date()
   );
   const pastEvents = user.participations.filter(
-    (p) => p.event.startDate <= new Date() && p.status === "going"
+    (p) => p.event.startDate <= new Date()
   );
   const friendsCount =
     user.sentFriendships.length + user.receivedFriendships.length;
 
+  // Check friendship status
+  let friendshipStatus: string | null = null;
+  let friendshipId: string | undefined = undefined;
+
+  if (session?.user?.id) {
+    const friendship = await prisma.friendship.findFirst({
+      where: {
+        OR: [
+          { senderId: session.user.id, receiverId: id },
+          { senderId: id, receiverId: session.user.id },
+        ],
+      },
+    });
+
+    if (friendship) {
+      if (friendship.status === "ACCEPTED") {
+        friendshipStatus = "friends";
+      } else if (friendship.status === "PENDING") {
+        friendshipStatus =
+          friendship.senderId === session.user.id
+            ? "request_sent"
+            : "request_received";
+      }
+      friendshipId = friendship.id;
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-6xl">
-        {/* Profile Header */}
-        <ProfileHeaderClient
+        {/* Public Profile Header */}
+        <PublicProfileHeader
           user={{
+            id: user.id,
             name: user.name,
             email: user.email,
             image: user.image,
@@ -118,6 +153,9 @@ export default async function ProfilePage() {
                 }
               : null,
           }))}
+          friendshipStatus={friendshipStatus}
+          friendshipId={friendshipId}
+          isLoggedIn={!!session?.user}
         />
 
         {/* Upcoming Events */}
@@ -204,24 +242,13 @@ export default async function ProfilePage() {
           <Card className="p-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="mb-2 text-xl font-semibold">
-              Ainda não estás registado em nenhum evento
+              Ainda não está registado em nenhum evento
             </h3>
-            <p className="mb-6 text-muted-foreground">
-              Explora os eventos disponíveis e marca que vais participar!
+            <p className="text-muted-foreground">
+              Este utilizador ainda não participa em nenhum evento.
             </p>
-            <Link href="/events">
-              <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                Explorar Eventos
-              </button>
-            </Link>
           </Card>
         )}
-
-        {/* Photo Gallery */}
-        <PhotoGallery />
-
-        {/* Friends Section */}
-        <FriendsSection />
       </div>
     </div>
   );

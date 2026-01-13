@@ -20,14 +20,15 @@ interface EventParticipation {
     id: string;
     title: string;
     slug: string;
-    startDate: Date;
+    startDate: Date | string;
     city: string;
+    country: string;
     sportType: string;
   };
   variant?: {
     name: string;
     distanceKm: number | null;
-    startDate?: Date | null;
+    startDate?: Date | string | null;
     startTime?: string | null;
   } | null;
 }

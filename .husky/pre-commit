@@ -19,7 +19,7 @@ fi
 
 # 2. Type checking
 echo "\n${YELLOW}🔎 Type checking...${NC}"
-pnpm typecheck
+npm run typecheck
 if [ $? -ne 0 ]; then
   echo "${RED}❌ Type check failed. Fix TypeScript errors and try again.${NC}"
   exit 1
@@ -28,12 +28,12 @@ fi
 # 3. Validar schema Prisma se foi modificado
 if git diff --cached --name-only | grep -q "prisma/schema.prisma"; then
   echo "\n${YELLOW}🗄️  Validating Prisma schema...${NC}"
-  pnpm prisma validate
+  npx prisma validate
   if [ $? -ne 0 ]; then
     echo "${RED}❌ Prisma schema validation failed.${NC}"
     exit 1
   fi
-  echo "${GREEN}⚠️  Prisma schema changed. Don't forget to run 'pnpm prisma db push'${NC}"
+  echo "${GREEN}⚠️  Prisma schema changed. Don't forget to run 'npm run db:push'${NC}"
 fi
 
 # 4. Verificar se há secrets expostos (opcional - comentado por padrão)

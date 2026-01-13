@@ -45,6 +45,30 @@ export const metadata: Metadata = {
     ],
   },
   manifest: "/site.webmanifest",
+  openGraph: {
+    title: "Athlifyr - All Sports Events. One Place.",
+    description:
+      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
+    url: "https://athlifyr.com",
+    siteName: "Athlifyr",
+    images: [
+      {
+        url: "/logo.png",
+        width: 1200,
+        height: 630,
+        alt: "Athlifyr - All Sports Events. One Place.",
+      },
+    ],
+    locale: "pt_PT",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Athlifyr - All Sports Events. One Place.",
+    description:
+      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
+    images: ["/logo.png"],
+  },
 };
 
 export default function RootLayout({

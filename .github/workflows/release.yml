@@ -1,18 +1,26 @@
-name: CI
+name: Release
 
 on:
   push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
 
 jobs:
-  ci:
+  release:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -54,3 +62,8 @@ jobs:
           B2_ENDPOINT: s3.test.backblazeb2.com
           B2_REGION: test-region
         run: pnpm build
+
+      - name: Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: pnpm semantic-release

@@ -42,6 +42,7 @@ model User {
   participations Participation[]
   comments       Comment[]
   posts          Post[]
+  postLikes      PostLike[]
   results        Result[]
   photos         ProfilePhoto[]
   // Friendships where user sent the request
@@ -194,19 +195,33 @@ model Comment {
 }
 
 model Post {
-  id        String   @id @default(cuid())
+  id        String     @id @default(cuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   eventId   String?
-  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  content   String   @db.Text
+  event     Event?     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content   String     @db.Text
   imageUrl  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  likes     PostLike[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
   @@index([userId])
   @@index([eventId])
   @@index([createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
 }
 
 model ProfilePhoto {

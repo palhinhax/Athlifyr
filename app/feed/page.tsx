@@ -50,6 +50,7 @@ export default async function FeedPage() {
     include: {
       user: {
         select: {
+          id: true,
           name: true,
           image: true,
         },
@@ -58,6 +59,19 @@ export default async function FeedPage() {
         select: {
           title: true,
           slug: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+        },
+      },
+      likes: {
+        where: {
+          userId: session.user.id,
+        },
+        select: {
+          id: true,
         },
       },
     },
@@ -193,13 +207,23 @@ export default async function FeedPage() {
           ) : (
             activities.map((activity, index) => {
               if (activity.type === "post" && "content" in activity.data) {
+                const postData = activity.data as (typeof recentPosts)[0];
                 return (
                   <PostCard
                     key={`post-${index}`}
                     post={{
-                      ...activity.data,
+                      id: postData.id,
+                      content: postData.content,
+                      imageUrl: postData.imageUrl,
                       createdAt: activity.date,
+                      userId: postData.userId,
+                      user: postData.user,
+                      event: postData.event,
+                      likesCount: postData._count.likes,
+                      isLikedByUser: postData.likes.length > 0,
                     }}
+                    currentUserId={session.user.id}
+                    isAdmin={session.user.role === "ADMIN"}
                   />
                 );
               }
@@ -268,7 +292,7 @@ export default async function FeedPage() {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex gap-4">
+                    <div className="flex gap-3 sm:gap-4">
                       <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
                         {activity.data.user.image ? (
                           <Image
@@ -283,8 +307,8 @@ export default async function FeedPage() {
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <div className="mb-1 flex items-center gap-2">
+                      <div className="min-w-0 flex-1">
+                        <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
                           <span className="font-semibold">
                             {activity.data.user.name}
                           </span>
@@ -301,21 +325,24 @@ export default async function FeedPage() {
                           )}
                         </div>
                         {"variant" in activity.data && (
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
                             {activity.data.variant && (
                               <span className="flex items-center gap-1">
-                                <Trophy className="h-3 w-3" />
-                                {activity.data.variant.name}
-                                {activity.data.variant.distanceKm &&
-                                  ` - ${activity.data.variant.distanceKm} km`}
+                                <Trophy className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">
+                                  {activity.data.variant.name}
+                                  {activity.data.variant.distanceKm &&
+                                    ` - ${activity.data.variant.distanceKm} km`}
+                                </span>
                               </span>
                             )}
-                            {"startDate" in activity.data.event && (
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                {formatDate(activity.data.event.startDate)}
-                              </span>
-                            )}
+                            {"startDate" in activity.data.event &&
+                              activity.data.event.startDate && (
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3 flex-shrink-0" />
+                                  {formatDate(activity.data.event.startDate)}
+                                </span>
+                              )}
                           </div>
                         )}
                         <div className="mt-1 text-xs text-muted-foreground">

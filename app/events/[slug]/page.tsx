@@ -21,7 +21,7 @@ interface PageProps {
   };
 }
 
-async function getEvent(slug: string) {
+async function getEvent(slug: string, userId?: string) {
   return await prisma.event.findUnique({
     where: { slug },
     include: {
@@ -39,6 +39,21 @@ async function getEvent(slug: string) {
               image: true,
             },
           },
+          _count: {
+            select: {
+              likes: true,
+            },
+          },
+          likes: userId
+            ? {
+                where: {
+                  userId,
+                },
+                select: {
+                  id: true,
+                },
+              }
+            : false,
         },
         orderBy: {
           createdAt: "desc",
@@ -92,8 +107,8 @@ export async function generateMetadata({
 }
 
 export default async function EventPage({ params }: PageProps) {
-  const event = await getEvent(params.slug);
   const session = await auth();
+  const event = await getEvent(params.slug, session?.user?.id);
   const isAdmin = session?.user?.role === "ADMIN";
 
   if (!event) {
@@ -272,13 +287,22 @@ export default async function EventPage({ params }: PageProps) {
                   <PostCard
                     key={post.id}
                     post={{
-                      ...post,
+                      id: post.id,
+                      content: post.content,
+                      imageUrl: post.imageUrl,
+                      userId: post.userId,
                       createdAt: post.createdAt.toISOString(),
+                      user: post.user,
                       event: {
                         title: event.title,
                         slug: event.slug,
                       },
+                      likesCount: post._count.likes,
+                      isLikedByUser:
+                        Array.isArray(post.likes) && post.likes.length > 0,
                     }}
+                    currentUserId={session?.user?.id}
+                    isAdmin={isAdmin}
                   />
                 ))
               )}

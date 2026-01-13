@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
 import { PublicProfileHeader } from "@/components/public-profile-header";
+import { PublicPhotoGallery } from "@/components/public-photo-gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -134,25 +135,6 @@ export default async function UserProfilePage({ params }: PageProps) {
             friendsCount,
             commentsCount: user.comments.length,
           }}
-          participations={user.participations.map((p) => ({
-            id: p.id,
-            status: p.status,
-            event: {
-              id: p.event.id,
-              title: p.event.title,
-              slug: p.event.slug,
-              startDate: p.event.startDate,
-              city: p.event.city,
-              country: p.event.country,
-              sportType: p.event.sportType,
-            },
-            variant: p.variant
-              ? {
-                  name: p.variant.name,
-                  distanceKm: p.variant.distanceKm,
-                }
-              : null,
-          }))}
           friendshipStatus={friendshipStatus}
           friendshipId={friendshipId}
           isLoggedIn={!!session?.user}
@@ -236,6 +218,9 @@ export default async function UserProfilePage({ params }: PageProps) {
             </div>
           </div>
         )}
+
+        {/* Photo Gallery */}
+        <PublicPhotoGallery userId={id} />
 
         {/* Empty State for Events */}
         {upcomingEvents.length === 0 && pastEvents.length === 0 && (

@@ -1,30 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { EventCalendar } from "@/components/event-calendar";
 import { Button } from "@/components/ui/button";
 import { UserPlus, Check, Clock, UserMinus, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
-
-interface EventParticipation {
-  id: string;
-  status: string;
-  event: {
-    id: string;
-    title: string;
-    slug: string;
-    startDate: Date | string;
-    city: string;
-    country: string;
-    sportType: string;
-  };
-  variant?: {
-    name: string;
-    distanceKm: number | null;
-  } | null;
-}
 
 interface PublicProfileHeaderProps {
   user: {
@@ -39,7 +20,6 @@ interface PublicProfileHeaderProps {
     friendsCount: number;
     commentsCount: number;
   };
-  participations: EventParticipation[];
   friendshipStatus: string | null;
   friendshipId: string | undefined;
   isLoggedIn: boolean;
@@ -48,7 +28,6 @@ interface PublicProfileHeaderProps {
 export function PublicProfileHeader({
   user,
   stats,
-  participations,
   friendshipStatus: initialFriendshipStatus,
   friendshipId: initialFriendshipId,
   isLoggedIn,
@@ -210,7 +189,6 @@ export function PublicProfileHeader({
             <p className="text-muted-foreground">{user.email}</p>
           </div>
           <div className="flex items-center gap-2">
-            <EventCalendar participations={participations} />
             {isLoggedIn && (
               <>
                 {friendshipStatus === "friends" ? (

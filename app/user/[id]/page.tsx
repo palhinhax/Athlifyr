@@ -143,6 +143,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               slug: p.event.slug,
               startDate: p.event.startDate,
               city: p.event.city,
+              country: p.event.country,
               sportType: p.event.sportType,
             },
             variant: p.variant

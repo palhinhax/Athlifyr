@@ -22,6 +22,7 @@ interface EventParticipation {
     slug: string;
     startDate: Date | string;
     city: string;
+    country: string;
     sportType: string;
   };
   variant?: {

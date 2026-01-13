@@ -162,7 +162,7 @@ export function ProfileImageUpload({
   const displayImage = previewUrl || imageUrl;
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center">
       {/* Profile Image */}
       <div className="relative h-32 w-32 overflow-hidden rounded-full bg-muted">
         {displayImage ? (

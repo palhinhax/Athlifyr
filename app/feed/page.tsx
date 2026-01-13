@@ -33,7 +33,7 @@ export default async function FeedPage() {
 
   const eventIds = userParticipations.map((p) => p.eventId);
 
-  // Get all recent posts (general feed + user's events)
+  // Get all recent posts (general feed + user's events + own posts)
   const recentPosts = await prisma.post.findMany({
     where: {
       OR: [
@@ -44,6 +44,9 @@ export default async function FeedPage() {
           eventId: {
             in: eventIds.length > 0 ? eventIds : undefined,
           },
+        },
+        {
+          userId: session.user.id, // User's own posts always visible
         },
       ],
     },

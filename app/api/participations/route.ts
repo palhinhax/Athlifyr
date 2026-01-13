@@ -71,6 +71,34 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Create auto-post when user registers as "going" for the first time
+    if (validatedData.status === "going") {
+      // Check if there's already an auto-post for this event from this user
+      const existingAutoPost = await prisma.post.findFirst({
+        where: {
+          userId: session.user.id,
+          eventId: validatedData.eventId,
+          isAutoPost: true,
+        },
+      });
+
+      if (!existingAutoPost) {
+        const variantName = participation.variant?.name;
+        const content = variantName
+          ? `Vou participar em ${event.title} - ${variantName}! 🏃‍♂️`
+          : `Vou participar em ${event.title}! 🏃‍♂️`;
+
+        await prisma.post.create({
+          data: {
+            userId: session.user.id,
+            eventId: validatedData.eventId,
+            content,
+            isAutoPost: true,
+          },
+        });
+      }
+    }
+
     return NextResponse.json(participation, { status: 200 });
   } catch (error) {
     if (error instanceof z.ZodError) {

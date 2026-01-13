@@ -67,6 +67,7 @@ export default async function FeedPage() {
       _count: {
         select: {
           likes: true,
+          comments: true,
         },
       },
       likes: {
@@ -224,6 +225,7 @@ export default async function FeedPage() {
                       event: postData.event,
                       likesCount: postData._count.likes,
                       isLikedByUser: postData.likes.length > 0,
+                      commentsCount: postData._count.comments,
                     }}
                     currentUserId={session.user.id}
                     isAdmin={session.user.role === "ADMIN"}

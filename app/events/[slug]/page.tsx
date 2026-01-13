@@ -43,6 +43,7 @@ async function getEvent(slug: string, userId?: string) {
           _count: {
             select: {
               likes: true,
+              comments: true,
             },
           },
           likes: userId
@@ -367,6 +368,7 @@ export default async function EventPage({ params }: PageProps) {
                       likesCount: post._count.likes,
                       isLikedByUser:
                         Array.isArray(post.likes) && post.likes.length > 0,
+                      commentsCount: post._count.comments,
                     }}
                     currentUserId={session?.user?.id}
                     isAdmin={isAdmin}

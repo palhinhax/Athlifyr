@@ -6,9 +6,16 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { pt } from "date-fns/locale";
-import { Heart, Trash2, MoreHorizontal } from "lucide-react";
+import {
+  Heart,
+  Trash2,
+  MoreHorizontal,
+  MessageCircle,
+  Send,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,6 +30,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+
+interface Comment {
+  id: string;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
 
 interface PostCardProps {
   post: {
@@ -41,6 +59,7 @@ interface PostCardProps {
     } | null;
     likesCount: number;
     isLikedByUser: boolean;
+    commentsCount?: number;
   };
   currentUserId?: string;
   isAdmin?: boolean;
@@ -53,6 +72,12 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
   const [isLiking, setIsLiking] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentsCount, setCommentsCount] = useState(post.commentsCount || 0);
+  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [newComment, setNewComment] = useState("");
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   const createdAt =
     typeof post.createdAt === "string"
@@ -107,6 +132,73 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
       console.error("Error deleting post:", error);
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const loadComments = async () => {
+    if (isLoadingComments) return;
+
+    setIsLoadingComments(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`);
+      if (response.ok) {
+        const data = await response.json();
+        setComments(data.comments);
+        setCommentsCount(data.comments.length);
+      }
+    } catch (error) {
+      console.error("Error loading comments:", error);
+    } finally {
+      setIsLoadingComments(false);
+    }
+  };
+
+  const handleToggleComments = () => {
+    if (!showComments && comments.length === 0) {
+      loadComments();
+    }
+    setShowComments(!showComments);
+  };
+
+  const handleSubmitComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!currentUserId || !newComment.trim() || isSubmittingComment) return;
+
+    setIsSubmittingComment(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: newComment.trim() }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setComments((prev) => [...prev, data.comment]);
+        setCommentsCount((prev) => prev + 1);
+        setNewComment("");
+      }
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId }),
+      });
+
+      if (response.ok) {
+        setComments((prev) => prev.filter((c) => c.id !== commentId));
+        setCommentsCount((prev) => prev - 1);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -205,7 +297,97 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
             <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
             <span>{likesCount}</span>
           </button>
+          <button
+            onClick={handleToggleComments}
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
+          >
+            <MessageCircle className="h-5 w-5" />
+            <span>{commentsCount}</span>
+          </button>
         </div>
+
+        {/* Comments Section */}
+        {showComments && (
+          <div className="border-t px-4 py-3">
+            {/* Comment Input */}
+            {currentUserId && (
+              <form onSubmit={handleSubmitComment} className="mb-3 flex gap-2">
+                <Input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Escreve um comentário..."
+                  className="flex-1"
+                  disabled={isSubmittingComment}
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  disabled={!newComment.trim() || isSubmittingComment}
+                >
+                  <Send className="h-4 w-4" />
+                </Button>
+              </form>
+            )}
+
+            {/* Comments List */}
+            {isLoadingComments ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                A carregar comentários...
+              </div>
+            ) : comments.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">
+                Ainda não há comentários. Sê o primeiro a comentar!
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {comments.map((comment) => (
+                  <div key={comment.id} className="flex gap-2">
+                    <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                      {comment.user.image ? (
+                        <Image
+                          src={comment.user.image}
+                          alt={comment.user.name || "User"}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
+                          {comment.user.name?.[0]?.toUpperCase() || "U"}
+                        </div>
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="rounded-lg bg-muted px-3 py-2">
+                        <p className="text-sm font-semibold">
+                          {comment.user.name}
+                        </p>
+                        <p className="whitespace-pre-wrap text-sm">
+                          {comment.content}
+                        </p>
+                      </div>
+                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>
+                          {formatDistanceToNow(new Date(comment.createdAt), {
+                            addSuffix: true,
+                            locale: pt,
+                          })}
+                        </span>
+                        {(currentUserId === comment.user.id || isAdmin) && (
+                          <button
+                            onClick={() => handleDeleteComment(comment.id)}
+                            className="text-destructive hover:underline"
+                          >
+                            Apagar
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </Card>
 
       {/* Delete Confirmation Dialog */}

@@ -290,21 +290,23 @@ export function FriendsSection() {
       </h2>
 
       {/* Tabs */}
-      <div className="mb-6 flex gap-2 border-b">
+      <div className="mb-6 flex gap-1 overflow-x-auto border-b sm:gap-2">
         <button
           onClick={() => setActiveTab("friends")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
             activeTab === "friends"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground hover:text-foreground"
           }`}
         >
           <Users className="h-4 w-4" />
-          Meus Amigos ({friends.length})
+          <span className="hidden sm:inline">Meus Amigos</span>
+          <span className="sm:hidden">Amigos</span>
+          <span className="text-xs">({friends.length})</span>
         </button>
         <button
           onClick={() => setActiveTab("pending")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
             activeTab === "pending"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground hover:text-foreground"
@@ -320,7 +322,7 @@ export function FriendsSection() {
         </button>
         <button
           onClick={() => setActiveTab("search")}
-          className={`flex items-center gap-2 px-4 py-2 text-sm font-medium transition-colors ${
+          className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
             activeTab === "search"
               ? "border-b-2 border-primary text-primary"
               : "text-muted-foreground hover:text-foreground"

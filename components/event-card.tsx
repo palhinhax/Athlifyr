@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, MapPin, Route } from "lucide-react";
+import { Calendar, MapPin, Route, CheckCircle } from "lucide-react";
 import { formatDateShort, sportTypeLabels } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
 
@@ -9,12 +9,17 @@ interface EventCardProps {
   event: Event & {
     variants?: EventVariant[];
   };
+  isParticipating?: boolean;
 }
 
-export function EventCard({ event }: EventCardProps) {
+export function EventCard({ event, isParticipating = false }: EventCardProps) {
   return (
     <Link href={`/events/${event.slug}`} className="block">
-      <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+      <Card
+        className={`overflow-hidden transition-shadow hover:shadow-lg ${
+          isParticipating ? "ring-2 ring-green-500" : ""
+        }`}
+      >
         <div className="relative h-48 w-full">
           <Image
             src={event.imageUrl || "/placeholder-event.jpg"}
@@ -25,6 +30,12 @@ export function EventCard({ event }: EventCardProps) {
           <div className="absolute right-2 top-2 rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
             {sportTypeLabels[event.sportType]}
           </div>
+          {isParticipating && (
+            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-sm font-medium text-white">
+              <CheckCircle className="h-4 w-4" />
+              Vou
+            </div>
+          )}
         </div>
         <CardContent className="p-4">
           <h3 className="mb-2 line-clamp-2 text-lg font-bold">{event.title}</h3>

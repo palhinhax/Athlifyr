@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { SportType, Prisma } from "@prisma/client";
 import { sportTypeLabels } from "@/lib/event-utils";
 import { SportFilter } from "@/components/sport-filter";
+import { auth } from "@/lib/auth";
 
 export const metadata = {
   title: "Todos os Eventos - Athlifyr",
@@ -39,8 +40,24 @@ async function getEvents(sportType?: string) {
   });
 }
 
+async function getUserParticipatingEventIds(
+  userId: string
+): Promise<Set<string>> {
+  const participations = await prisma.participation.findMany({
+    where: { userId },
+    select: { eventId: true },
+  });
+  return new Set(participations.map((p) => p.eventId));
+}
+
 async function EventsList({ sportType }: { sportType?: string }) {
+  const session = await auth();
   const events = await getEvents(sportType);
+
+  // Get user's participating events if logged in
+  const participatingEventIds = session?.user?.id
+    ? await getUserParticipatingEventIds(session.user.id)
+    : new Set<string>();
 
   if (events.length === 0) {
     return (
@@ -54,7 +71,11 @@ async function EventsList({ sportType }: { sportType?: string }) {
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
       {events.map((event) => (
-        <EventCard key={event.id} event={event} />
+        <EventCard
+          key={event.id}
+          event={event}
+          isParticipating={participatingEventIds.has(event.id)}
+        />
       ))}
     </div>
   );

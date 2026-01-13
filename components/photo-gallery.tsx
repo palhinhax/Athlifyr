@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { pt } from "date-fns/locale";
@@ -39,6 +40,13 @@ export function PhotoGallery() {
   const [isUploading, setIsUploading] = useState(false);
   const [selectedPhoto, setSelectedPhoto] = useState<Photo | null>(null);
   const [selectedIndex, setSelectedIndex] = useState<number>(0);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+
+  // Upload modal state
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingPreview, setPendingPreview] = useState<string | null>(null);
+  const [caption, setCaption] = useState("");
 
   const fetchPhotos = useCallback(async () => {
     try {
@@ -82,11 +90,35 @@ export function PhotoGallery() {
       return;
     }
 
+    // Show upload modal with preview
+    setPendingFile(file);
+    setPendingPreview(URL.createObjectURL(file));
+    setCaption("");
+    setShowUploadModal(true);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const cancelUpload = () => {
+    if (pendingPreview) {
+      URL.revokeObjectURL(pendingPreview);
+    }
+    setPendingFile(null);
+    setPendingPreview(null);
+    setCaption("");
+    setShowUploadModal(false);
+  };
+
+  const confirmUpload = async () => {
+    if (!pendingFile) return;
+
     setIsUploading(true);
     try {
       // Upload to B2
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", pendingFile);
       formData.append("folder", "profiles");
 
       const uploadRes = await fetch("/api/upload", {
@@ -100,11 +132,14 @@ export function PhotoGallery() {
 
       const uploadData = await uploadRes.json();
 
-      // Create photo record
+      // Create photo record with caption
       const photoRes = await fetch("/api/photos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ imageUrl: uploadData.file.url }),
+        body: JSON.stringify({
+          imageUrl: uploadData.file.url,
+          caption: caption.trim() || null,
+        }),
       });
 
       if (!photoRes.ok) {
@@ -118,6 +153,15 @@ export function PhotoGallery() {
         title: "Foto publicada!",
         description: "A tua foto foi adicionada à galeria.",
       });
+
+      // Clean up
+      if (pendingPreview) {
+        URL.revokeObjectURL(pendingPreview);
+      }
+      setPendingFile(null);
+      setPendingPreview(null);
+      setCaption("");
+      setShowUploadModal(false);
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast({
@@ -127,9 +171,6 @@ export function PhotoGallery() {
       });
     } finally {
       setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
 
@@ -166,6 +207,7 @@ export function PhotoGallery() {
 
   const closeLightbox = () => {
     setSelectedPhoto(null);
+    setShowConfirmDelete(false);
   };
 
   const goToPrevious = useCallback(() => {
@@ -275,73 +317,80 @@ export function PhotoGallery() {
       {/* Lightbox */}
       {selectedPhoto && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
+          className="fixed inset-0 z-50 flex flex-col bg-black"
           onClick={closeLightbox}
         >
-          {/* Close button */}
-          <button
-            onClick={closeLightbox}
-            className="absolute right-4 top-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
-          >
-            <X className="h-6 w-6" />
-          </button>
-
-          {/* Delete button */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              handleDeletePhoto(selectedPhoto.id);
-            }}
-            className="absolute right-4 top-16 z-10 rounded-full bg-destructive/80 p-2 text-white transition-colors hover:bg-destructive"
-          >
-            <Trash2 className="h-5 w-5" />
-          </button>
-
-          {/* Previous button */}
-          {selectedIndex > 0 && (
+          {/* Top bar - only close button */}
+          <div className="safe-area-inset-top flex items-center justify-between px-4 py-3">
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToPrevious();
-              }}
-              className="absolute left-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+              onClick={closeLightbox}
+              className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
-              <ChevronLeft className="h-8 w-8" />
+              <X className="h-5 w-5" />
+              <span className="text-sm font-medium">Fechar</span>
             </button>
-          )}
 
-          {/* Next button */}
-          {selectedIndex < photos.length - 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToNext();
-              }}
-              className="absolute right-4 z-10 rounded-full bg-black/50 p-2 text-white transition-colors hover:bg-black/70"
+            <div className="rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-sm">
+              {selectedIndex + 1} / {photos.length}
+            </div>
+
+            {/* Empty div for spacing */}
+            <div className="w-[100px]" />
+          </div>
+
+          {/* Main content area */}
+          <div className="relative flex flex-1 items-center justify-center px-4">
+            {/* Previous button */}
+            {selectedIndex > 0 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToPrevious();
+                }}
+                className="absolute left-2 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:left-4"
+              >
+                <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
+              </button>
+            )}
+
+            {/* Next button */}
+            {selectedIndex < photos.length - 1 && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  goToNext();
+                }}
+                className="absolute right-2 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:right-4"
+              >
+                <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />
+              </button>
+            )}
+
+            {/* Image */}
+            <div
+              className="relative flex max-h-[calc(100vh-220px)] w-full items-center justify-center"
+              onClick={(e) => e.stopPropagation()}
             >
-              <ChevronRight className="h-8 w-8" />
-            </button>
-          )}
+              <Image
+                src={selectedPhoto.imageUrl}
+                alt={selectedPhoto.caption || "Foto"}
+                width={1200}
+                height={800}
+                className="max-h-[calc(100vh-220px)] w-auto rounded-lg object-contain"
+              />
+            </div>
+          </div>
 
-          {/* Image */}
-          <div
-            className="relative max-h-[85vh] max-w-[90vw]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <Image
-              src={selectedPhoto.imageUrl}
-              alt={selectedPhoto.caption || "Foto"}
-              width={1200}
-              height={800}
-              className="max-h-[85vh] w-auto rounded-lg object-contain"
-            />
-
-            {/* Caption and info */}
-            <div className="absolute bottom-0 left-0 right-0 rounded-b-lg bg-gradient-to-t from-black/80 to-transparent p-4 pt-12">
+          {/* Bottom info and delete button */}
+          <div className="safe-area-inset-bottom px-4 py-4">
+            {/* Caption and date */}
+            <div className="mx-auto mb-4 max-w-lg rounded-2xl bg-white/10 p-4 backdrop-blur-sm">
               {selectedPhoto.caption && (
-                <p className="mb-2 text-white">{selectedPhoto.caption}</p>
+                <p className="mb-2 text-center text-white">
+                  {selectedPhoto.caption}
+                </p>
               )}
-              <p className="text-sm text-white/70">
+              <p className="text-center text-sm text-white/70">
                 {formatDistanceToNow(new Date(selectedPhoto.createdAt), {
                   addSuffix: true,
                   locale: pt,
@@ -349,9 +398,105 @@ export function PhotoGallery() {
               </p>
             </div>
 
-            {/* Counter */}
-            <div className="absolute left-4 top-4 rounded-full bg-black/50 px-3 py-1 text-sm text-white">
-              {selectedIndex + 1} / {photos.length}
+            {/* Delete button - at the bottom, separate from close */}
+            {!showConfirmDelete ? (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowConfirmDelete(true);
+                }}
+                className="mx-auto flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white/70 backdrop-blur-sm transition-colors hover:bg-white/20 hover:text-white"
+              >
+                <Trash2 className="h-4 w-4" />
+                <span className="text-sm">Apagar foto</span>
+              </button>
+            ) : (
+              <div
+                className="mx-auto flex items-center gap-3"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  onClick={() => setShowConfirmDelete(false)}
+                  className="rounded-full bg-white/10 px-4 py-2 text-sm text-white backdrop-blur-sm transition-colors hover:bg-white/20"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={() => {
+                    handleDeletePhoto(selectedPhoto.id);
+                    setShowConfirmDelete(false);
+                  }}
+                  className="flex items-center gap-2 rounded-full bg-destructive px-4 py-2 text-sm text-white transition-colors hover:bg-destructive/90"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Confirmar
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Upload Modal */}
+      {showUploadModal && pendingPreview && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
+          onClick={cancelUpload}
+        >
+          <div
+            className="w-full max-w-lg rounded-2xl bg-card p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="mb-4 text-xl font-semibold">Publicar Foto</h3>
+
+            {/* Preview */}
+            <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-lg bg-muted">
+              <Image
+                src={pendingPreview}
+                alt="Preview"
+                fill
+                className="object-contain"
+              />
+            </div>
+
+            {/* Caption input */}
+            <div className="mb-4">
+              <label className="mb-2 block text-sm font-medium">
+                Descrição (opcional)
+              </label>
+              <Input
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                placeholder="Adiciona uma descrição à tua foto..."
+                maxLength={200}
+              />
+              <p className="mt-1 text-right text-xs text-muted-foreground">
+                {caption.length}/200
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                onClick={cancelUpload}
+                disabled={isUploading}
+                className="flex-1"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={confirmUpload}
+                disabled={isUploading}
+                className="flex-1 gap-2"
+              >
+                {isUploading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ImagePlus className="h-4 w-4" />
+                )}
+                Publicar
+              </Button>
             </div>
           </div>
         </div>

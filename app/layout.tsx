@@ -57,10 +57,22 @@ export default function RootLayout({
               </Link>
               <nav className="flex items-center gap-6">
                 <Link
+                  href="/profile"
+                  className="text-sm font-medium hover:underline"
+                >
+                  Perfil
+                </Link>
+                <Link
                   href="/events"
                   className="text-sm font-medium hover:underline"
                 >
                   Eventos
+                </Link>
+                <Link
+                  href="/feed"
+                  className="text-sm font-medium hover:underline"
+                >
+                  Feed
                 </Link>
                 <UserNav />
               </nav>

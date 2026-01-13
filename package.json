@@ -17,7 +17,8 @@
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:studio": "prisma studio",
-    "prepare": "husky"
+    "prepare": "husky",
+    "semantic-release": "semantic-release"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [
@@ -54,6 +55,9 @@
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.2",
+    "@semantic-release/release-notes-generator": "^14.1.0",
     "@swc/jest": "^0.2.39",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.0",
@@ -74,6 +78,7 @@
     "postcss": "^8",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2",
+    "semantic-release": "^25.0.2",
     "tailwindcss": "^3.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5"

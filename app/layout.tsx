@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/session-provider";
 import { UserNav } from "@/components/user-nav";
 import { NavLinks } from "@/components/nav-links";
+import { MobileNav } from "@/components/mobile-nav";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -91,10 +92,14 @@ export default function RootLayout({
               >
                 Athlifyr
               </Link>
-              <nav className="flex items-center gap-6">
+              {/* Desktop Navigation */}
+              <nav className="hidden items-center gap-6 md:flex">
                 <NavLinks />
                 <UserNav />
               </nav>
+
+              {/* Mobile Navigation */}
+              <MobileNav />
             </div>
           </header>
           <main>{children}</main>

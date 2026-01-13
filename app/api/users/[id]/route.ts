@@ -144,41 +144,6 @@ export async function GET(
             }
           : null,
       })),
-      upcomingEvents: upcomingEvents.map((p) => ({
-        id: p.id,
-        event: {
-          id: p.event.id,
-          title: p.event.title,
-          slug: p.event.slug,
-          startDate: p.event.startDate,
-          city: p.event.city,
-          country: p.event.country,
-          sportType: p.event.sportType,
-        },
-        variant: p.variant
-          ? {
-              name: p.variant.name,
-              distanceKm: p.variant.distanceKm,
-            }
-          : null,
-      })),
-      pastEvents: pastEvents.slice(0, 6).map((p) => ({
-        id: p.id,
-        event: {
-          id: p.event.id,
-          title: p.event.title,
-          slug: p.event.slug,
-          startDate: p.event.startDate,
-          city: p.event.city,
-          sportType: p.event.sportType,
-        },
-        variant: p.variant
-          ? {
-              name: p.variant.name,
-              distanceKm: p.variant.distanceKm,
-            }
-          : null,
-      })),
       friendshipStatus,
       friendshipId,
       isOwnProfile: session?.user?.id === id,

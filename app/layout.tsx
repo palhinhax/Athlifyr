@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { Providers } from "@/components/providers";
-import { Toaster } from "@/components/ui/toaster";
+import Link from "next/link";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -16,8 +15,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "Next.js SaaS Template",
-  description: "A production-grade SaaS template with Next.js 14, Prisma, and Auth.js",
+  title: "FitLane - All Sports Events. One Place.",
+  description: "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal. Find races, competitions and challenges near you.",
+  keywords: ["sports events", "running", "trail", "HYROX", "CrossFit", "OCR", "BTT", "cycling", "surf", "triathlon", "Portugal"],
 };
 
 export default function RootLayout({
@@ -26,14 +26,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="pt" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Providers>
-          {children}
-          <Toaster />
-        </Providers>
+        <header className="border-b sticky top-0 bg-background z-50">
+          <div className="container mx-auto flex h-16 items-center justify-between px-4">
+            <Link href="/" className="font-bold text-2xl hover:opacity-80 transition-opacity">
+              FitLane
+            </Link>
+            <nav className="flex items-center gap-6">
+              <Link href="/events" className="text-sm font-medium hover:underline">
+                Eventos
+              </Link>
+            </nav>
+          </div>
+        </header>
+        <main>{children}</main>
+        <footer className="border-t py-8 mt-16">
+          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+            <p>FitLane - All sports events. One place.</p>
+            <p className="mt-2">© 2026 FitLane. Todos os direitos reservados.</p>
+          </div>
+        </footer>
       </body>
     </html>
   );

@@ -15,7 +15,7 @@ interface EventParticipation {
     id: string;
     title: string;
     slug: string;
-    startDate: Date;
+    startDate: Date | string;
     city: string;
     sportType: string;
   };

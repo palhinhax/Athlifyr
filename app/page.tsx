@@ -89,11 +89,17 @@ export default async function Home() {
         </div>
 
         {upcomingEvents.length === 0 ? (
-          <div className="py-12 text-center text-muted-foreground">
-            <p>Nenhum evento encontrado. Execute o seed da base de dados:</p>
-            <code className="mt-2 block rounded bg-muted px-4 py-2">
-              npm run db:seed
-            </code>
+          <div className="rounded-lg border bg-card p-12 text-center">
+            <h3 className="mb-2 text-xl font-semibold">
+              Sem eventos próximos em {userCountry}
+            </h3>
+            <p className="mb-6 text-muted-foreground">
+              Não encontrámos eventos futuros na tua região. Tenta explorar
+              outros países!
+            </p>
+            <Link href="/events">
+              <Button>Explorar Todos os Eventos</Button>
+            </Link>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

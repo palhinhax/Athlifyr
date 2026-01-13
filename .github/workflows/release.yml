@@ -51,6 +51,16 @@ jobs:
       - name: Build
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
+          AUTH_SECRET: test-secret-for-ci-build-only
+          GOOGLE_CLIENT_ID: test-google-client-id
+          GOOGLE_CLIENT_SECRET: test-google-client-secret
+          RESEND_API_KEY: re_test
+          EMAIL_FROM: test@test.com
+          B2_KEY_ID: test-b2-key-id
+          B2_APPLICATION_KEY: test-b2-app-key
+          B2_BUCKET_NAME: test-bucket
+          B2_ENDPOINT: s3.test.backblazeb2.com
+          B2_REGION: test-region
         run: pnpm build
 
       - name: Release

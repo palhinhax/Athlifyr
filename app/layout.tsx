@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import Link from "next/link";
+import { Toaster } from "@/components/ui/toaster";
+import { SessionProvider } from "@/components/session-provider";
+import { UserNav } from "@/components/user-nav";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -43,33 +46,37 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <header className="sticky top-0 z-50 border-b bg-background">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <Link
-              href="/"
-              className="text-2xl font-bold transition-opacity hover:opacity-80"
-            >
-              Athlifyr
-            </Link>
-            <nav className="flex items-center gap-6">
+        <SessionProvider>
+          <header className="sticky top-0 z-50 border-b bg-background">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
               <Link
-                href="/events"
-                className="text-sm font-medium hover:underline"
+                href="/"
+                className="text-2xl font-bold transition-opacity hover:opacity-80"
               >
-                Eventos
+                Athlifyr
               </Link>
-            </nav>
-          </div>
-        </header>
-        <main>{children}</main>
-        <footer className="mt-16 border-t py-8">
-          <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-            <p>Athlifyr - All sports events. One place.</p>
-            <p className="mt-2">
-              © 2026 Athlifyr. Todos os direitos reservados.
-            </p>
-          </div>
-        </footer>
+              <nav className="flex items-center gap-6">
+                <Link
+                  href="/events"
+                  className="text-sm font-medium hover:underline"
+                >
+                  Eventos
+                </Link>
+                <UserNav />
+              </nav>
+            </div>
+          </header>
+          <main>{children}</main>
+          <footer className="mt-16 border-t py-8">
+            <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
+              <p>Athlifyr - All sports events. One place.</p>
+              <p className="mt-2">
+                © 2026 Athlifyr. Todos os direitos reservados.
+              </p>
+            </div>
+          </footer>
+          <Toaster />
+        </SessionProvider>
       </body>
     </html>
   );

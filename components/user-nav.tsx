@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, Calendar, Shield } from "lucide-react";
+import { User, LogOut, Settings, Shield } from "lucide-react";
 
 export function UserNav() {
   const { data: session, status } = useSession();
@@ -59,15 +59,9 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile" className="cursor-pointer">
-            <User className="mr-2 h-4 w-4" />
-            Perfil
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/profile/events" className="cursor-pointer">
-            <Calendar className="mr-2 h-4 w-4" />
-            Os Meus Eventos
+          <Link href="/settings" className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            Definições da Conta
           </Link>
         </DropdownMenuItem>
         {session.user.role === "ADMIN" && (
@@ -75,7 +69,7 @@ export function UserNav() {
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
               <Link href="/admin/events" className="cursor-pointer">
-                <Settings className="mr-2 h-4 w-4" />
+                <Shield className="mr-2 h-4 w-4" />
                 Gerir Eventos
               </Link>
             </DropdownMenuItem>

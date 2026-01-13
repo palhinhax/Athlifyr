@@ -6,7 +6,6 @@ import { Calendar, MapPin, ExternalLink, ArrowLeft, Route } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
-import { EventComments } from "@/components/event-comments";
 import { EventRegistration } from "@/components/event-registration";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
@@ -26,7 +25,11 @@ async function getEvent(slug: string) {
   return await prisma.event.findUnique({
     where: { slug },
     include: {
-      variants: true,
+      variants: {
+        orderBy: {
+          startDate: "asc",
+        },
+      },
       posts: {
         include: {
           user: {
@@ -40,49 +43,7 @@ async function getEvent(slug: string) {
         orderBy: {
           createdAt: "desc",
         },
-        take: 10,
-      },
-      comments: {
-        where: {
-          parentId: null,
-        },
-        include: {
-          user: {
-            select: {
-              name: true,
-              image: true,
-            },
-          },
-          replies: {
-            include: {
-              user: {
-                select: {
-                  name: true,
-                  image: true,
-                },
-              },
-              replies: {
-                include: {
-                  user: {
-                    select: {
-                      name: true,
-                      image: true,
-                    },
-                  },
-                },
-                orderBy: {
-                  createdAt: "asc",
-                },
-              },
-            },
-            orderBy: {
-              createdAt: "asc",
-            },
-          },
-        },
-        orderBy: {
-          createdAt: "desc",
-        },
+        take: 20,
       },
     },
   });
@@ -297,51 +258,31 @@ export default async function EventPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Posts Section */}
+          {/* Community Section - Posts */}
           <div className="mt-12 border-t pt-12">
-            <h2 className="mb-6 text-2xl font-bold">Posts da Comunidade</h2>
+            <h2 className="mb-6 text-2xl font-bold">Comunidade</h2>
             <div className="space-y-4">
               <CreatePost eventId={event.id} />
-              {event.posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={{
-                    ...post,
-                    createdAt: post.createdAt.toISOString(),
-                    event: {
-                      title: event.title,
-                      slug: event.slug,
-                    },
-                  }}
-                />
-              ))}
+              {event.posts.length === 0 ? (
+                <p className="py-8 text-center text-muted-foreground">
+                  Ainda não há posts. Sê o primeiro a partilhar algo!
+                </p>
+              ) : (
+                event.posts.map((post) => (
+                  <PostCard
+                    key={post.id}
+                    post={{
+                      ...post,
+                      createdAt: post.createdAt.toISOString(),
+                      event: {
+                        title: event.title,
+                        slug: event.slug,
+                      },
+                    }}
+                  />
+                ))
+              )}
             </div>
-          </div>
-
-          {/* Comments Section */}
-          <div className="mt-12 border-t pt-12">
-            <EventComments
-              eventId={event.id}
-              initialComments={event.comments.map((comment) => ({
-                id: comment.id,
-                content: comment.content,
-                createdAt: comment.createdAt.toISOString(),
-                user: comment.user,
-                replies: comment.replies.map((reply) => ({
-                  id: reply.id,
-                  content: reply.content,
-                  createdAt: reply.createdAt.toISOString(),
-                  user: reply.user,
-                  replies: reply.replies.map((nestedReply) => ({
-                    id: nestedReply.id,
-                    content: nestedReply.content,
-                    createdAt: nestedReply.createdAt.toISOString(),
-                    user: nestedReply.user,
-                    replies: [],
-                  })),
-                })),
-              }))}
-            />
           </div>
         </div>
       </div>

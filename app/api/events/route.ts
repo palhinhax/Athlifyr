@@ -107,14 +107,25 @@ export async function POST(request: Request) {
         externalUrl: externalUrl || null,
         variants: {
           create:
-            variants?.map((v: { name: string; distanceKm: number | null }) => ({
-              name: v.name,
-              distanceKm: v.distanceKm,
-            })) || [],
+            variants?.map(
+              (v: {
+                name: string;
+                distanceKm: number | null;
+                startDate?: string;
+                startTime?: string;
+              }) => ({
+                name: v.name,
+                distanceKm: v.distanceKm,
+                startDate: v.startDate ? new Date(v.startDate) : null,
+                startTime: v.startTime || null,
+              })
+            ) || [],
         },
       },
       include: {
-        variants: true,
+        variants: {
+          orderBy: { startDate: "asc" },
+        },
       },
     });
 

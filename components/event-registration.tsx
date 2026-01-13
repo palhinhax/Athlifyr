@@ -10,6 +10,8 @@ interface EventVariant {
   id: string;
   name: string;
   distanceKm?: number | null;
+  startDate?: Date | string | null;
+  startTime?: string | null;
 }
 
 interface Participation {
@@ -20,6 +22,8 @@ interface Participation {
     id: string;
     name: string;
     distanceKm?: number | null;
+    startDate?: Date | string | null;
+    startTime?: string | null;
   } | null;
 }
 
@@ -215,12 +219,22 @@ export function EventRegistration({
                 disabled={isLoading}
               >
                 <option value="">Seleciona uma variante</option>
-                {variants.map((variant) => (
-                  <option key={variant.id} value={variant.id}>
-                    {variant.name}
-                    {variant.distanceKm && ` - ${variant.distanceKm} km`}
-                  </option>
-                ))}
+                {variants.map((variant) => {
+                  const variantDate = variant.startDate
+                    ? new Date(variant.startDate).toLocaleDateString("pt-PT", {
+                        day: "numeric",
+                        month: "short",
+                      })
+                    : null;
+                  return (
+                    <option key={variant.id} value={variant.id}>
+                      {variant.name}
+                      {variant.distanceKm && ` - ${variant.distanceKm}km`}
+                      {variantDate && ` (${variantDate})`}
+                      {variant.startTime && ` ${variant.startTime}`}
+                    </option>
+                  );
+                })}
               </select>
             </div>
           )}
@@ -236,7 +250,21 @@ export function EventRegistration({
                 <p className="text-muted-foreground">
                   Variante: {userParticipation.variant.name}
                   {userParticipation.variant.distanceKm &&
-                    ` - ${userParticipation.variant.distanceKm} km`}
+                    ` - ${userParticipation.variant.distanceKm}km`}
+                  {userParticipation.variant.startDate && (
+                    <span className="ml-1">
+                      (
+                      {new Date(
+                        userParticipation.variant.startDate
+                      ).toLocaleDateString("pt-PT", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                      {userParticipation.variant.startTime &&
+                        ` ${userParticipation.variant.startTime}`}
+                      )
+                    </span>
+                  )}
                 </p>
               )}
             </div>

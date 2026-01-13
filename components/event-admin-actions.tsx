@@ -24,6 +24,8 @@ interface EventVariant {
   id: string;
   name: string;
   distanceKm: number | null;
+  startDate: Date | null;
+  startTime: string | null;
 }
 
 interface EventAdminActionsProps {
@@ -64,11 +66,15 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   });
 
   const [variants, setVariants] = useState<
-    { name: string; distanceKm: string }[]
+    { name: string; distanceKm: string; startDate: string; startTime: string }[]
   >(
     event.variants.map((v) => ({
       name: v.name,
       distanceKm: v.distanceKm?.toString() || "",
+      startDate: v.startDate
+        ? new Date(v.startDate).toISOString().split("T")[0]
+        : "",
+      startTime: v.startTime || "",
     }))
   );
 
@@ -141,7 +147,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
 
   const handleVariantChange = (
     index: number,
-    field: "name" | "distanceKm",
+    field: "name" | "distanceKm" | "startDate" | "startTime",
     value: string
   ) => {
     setVariants((prev) =>
@@ -150,7 +156,10 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   };
 
   const addVariant = () => {
-    setVariants((prev) => [...prev, { name: "", distanceKm: "" }]);
+    setVariants((prev) => [
+      ...prev,
+      { name: "", distanceKm: "", startDate: "", startTime: "" },
+    ]);
   };
 
   const removeVariant = (index: number) => {
@@ -160,18 +169,23 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
+      const payload = {
+        ...formData,
+        variants: variants
+          .filter((v) => v.name.trim())
+          .map((v) => ({
+            name: v.name,
+            distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
+            startDate: v.startDate || null,
+            startTime: v.startTime || null,
+          })),
+      };
+      console.log("Updating event with payload:", payload);
+
       const response = await fetch(`/api/events/${event.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          variants: variants
-            .filter((v) => v.name.trim())
-            .map((v) => ({
-              name: v.name,
-              distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
-            })),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -407,34 +421,74 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                   Adicionar
                 </Button>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {variants.map((variant, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <Input
-                      placeholder="Nome"
-                      value={variant.name}
-                      onChange={(e) =>
-                        handleVariantChange(index, "name", e.target.value)
-                      }
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="km"
-                      value={variant.distanceKm}
-                      onChange={(e) =>
-                        handleVariantChange(index, "distanceKm", e.target.value)
-                      }
-                      className="w-20"
-                      type="number"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => removeVariant(index)}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
+                  <div key={index} className="rounded-lg border p-3">
+                    <div className="flex items-center gap-2">
+                      <Input
+                        placeholder="Nome (ex: 21km, Singles Pro)"
+                        value={variant.name}
+                        onChange={(e) =>
+                          handleVariantChange(index, "name", e.target.value)
+                        }
+                        className="flex-1"
+                      />
+                      <Input
+                        placeholder="km"
+                        value={variant.distanceKm}
+                        onChange={(e) =>
+                          handleVariantChange(
+                            index,
+                            "distanceKm",
+                            e.target.value
+                          )
+                        }
+                        className="w-20"
+                        type="number"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeVariant(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="mt-2 flex items-center gap-2">
+                      <div className="flex-1">
+                        <Label className="text-xs text-muted-foreground">
+                          Data (opcional)
+                        </Label>
+                        <Input
+                          type="date"
+                          value={variant.startDate}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "startDate",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </div>
+                      <div className="w-24">
+                        <Label className="text-xs text-muted-foreground">
+                          Hora (opcional)
+                        </Label>
+                        <Input
+                          type="time"
+                          value={variant.startTime}
+                          onChange={(e) =>
+                            handleVariantChange(
+                              index,
+                              "startTime",
+                              e.target.value
+                            )
+                          }
+                        />
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>

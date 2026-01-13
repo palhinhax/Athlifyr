@@ -106,8 +106,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }),
         ...(city && { city }),
         ...(country && { country }),
-        ...(imageUrl !== undefined && { imageUrl }),
-        ...(externalUrl !== undefined && { externalUrl }),
+        ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
+        ...(externalUrl !== undefined && { externalUrl: externalUrl || null }),
       },
       include: {
         variants: true,
@@ -125,11 +125,19 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       if (variants.length > 0) {
         await prisma.eventVariant.createMany({
           data: variants.map(
-            (v: { name: string; distanceKm?: number; price?: number }) => ({
+            (v: {
+              name: string;
+              distanceKm?: number;
+              price?: number;
+              startDate?: string;
+              startTime?: string;
+            }) => ({
               eventId: params.id,
               name: v.name,
               distanceKm: v.distanceKm || null,
               price: v.price || null,
+              startDate: v.startDate ? new Date(v.startDate) : null,
+              startTime: v.startTime || null,
             })
           ),
         });

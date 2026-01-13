@@ -1,12 +1,12 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import Image from "next/image";
 import { Calendar, MapPin, Trophy, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
 import { FriendsSection } from "@/components/friends-section";
+import { ProfileHeaderClient } from "@/components/profile-header-client";
 
 export const dynamic = "force-dynamic";
 
@@ -84,59 +84,19 @@ export default async function ProfilePage() {
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-6xl">
         {/* Profile Header */}
-        <div className="mb-12 flex flex-col items-center gap-6 md:flex-row md:items-start">
-          <div className="relative h-32 w-32 overflow-hidden rounded-full bg-muted">
-            {user.image ? (
-              <Image
-                src={user.image}
-                alt={user.name || "User"}
-                fill
-                className="object-cover"
-              />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-4xl font-bold text-muted-foreground">
-                {user.name?.[0]?.toUpperCase() || "U"}
-              </div>
-            )}
-          </div>
-
-          <div className="flex-1 text-center md:text-left">
-            <h1 className="mb-2 text-4xl font-bold">{user.name}</h1>
-            <p className="mb-4 text-muted-foreground">{user.email}</p>
-
-            {/* Stats */}
-            <div className="flex flex-wrap justify-center gap-6 md:justify-start">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {upcomingEvents.length}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Próximos Eventos
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {pastEvents.length}
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  Eventos Passados
-                </div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {friendsCount}
-                </div>
-                <div className="text-sm text-muted-foreground">Amigos</div>
-              </div>
-              <div className="text-center">
-                <div className="text-2xl font-bold text-primary">
-                  {user.comments.length}
-                </div>
-                <div className="text-sm text-muted-foreground">Comentários</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        <ProfileHeaderClient
+          user={{
+            name: user.name,
+            email: user.email,
+            image: user.image,
+          }}
+          stats={{
+            upcomingEvents: upcomingEvents.length,
+            pastEvents: pastEvents.length,
+            friendsCount,
+            commentsCount: user.comments.length,
+          }}
+        />
 
         {/* Upcoming Events */}
         {upcomingEvents.length > 0 && (

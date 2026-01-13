@@ -1,8 +1,8 @@
-# FitLane
+# Athlifyr
 
 **All sports events. One place.**
 
-FitLane is a public platform for discovering sports events across Portugal. Find races, competitions and challenges near you - from running and trail to HYROX, CrossFit, OCR, BTT, cycling, surf, and triathlon.
+Athlifyr is a public platform for discovering sports events across Portugal. Find races, competitions and challenges near you - from running and trail to HYROX, CrossFit, OCR, BTT, cycling, surf, and triathlon.
 
 ## 🚀 Tech Stack
 
@@ -46,8 +46,8 @@ FitLane is a public platform for discovering sports events across Portugal. Find
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/palhinhax/FitLane.git
-   cd FitLane
+   git clone https://github.com/palhinhax/Athlifyr.git
+   cd Athlifyr
    ```
 
 2. Install dependencies:
@@ -65,7 +65,7 @@ FitLane is a public platform for discovering sports events across Portugal. Find
    Update `.env` with your database URL:
 
    ```env
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/fitlane"
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/athlifyr"
    ```
 
 4. Run database migrations:

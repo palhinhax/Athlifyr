@@ -48,7 +48,9 @@ export function EventCard({ event }: EventCardProps) {
                     key={variant.id}
                     className="inline-flex items-center rounded bg-secondary px-2 py-0.5 text-xs font-medium text-secondary-foreground"
                   >
-                    {variant.distance || variant.name}
+                    {variant.distanceKm
+                      ? `${variant.distanceKm} km`
+                      : variant.name}
                   </span>
                 ))}
                 {event.variants.length > 3 && (

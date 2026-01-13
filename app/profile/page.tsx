@@ -37,7 +37,7 @@ export default async function ProfilePage() {
           variant: {
             select: {
               name: true,
-              distance: true,
+              distanceKm: true,
             },
           },
         },
@@ -130,8 +130,8 @@ export default async function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Trophy className="h-4 w-4" />
                           {participation.variant.name}
-                          {participation.variant.distance &&
-                            ` - ${participation.variant.distance}`}
+                          {participation.variant.distanceKm &&
+                            ` - ${participation.variant.distanceKm} km`}
                         </div>
                       )}
                     </div>

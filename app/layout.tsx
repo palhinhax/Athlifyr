@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { UserNav } from "@/components/user-nav";
 import { NavLinks } from "@/components/nav-links";
 import { MobileNav } from "@/components/mobile-nav";
+import { GoogleAnalytics } from "@/components/google-analytics";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -78,11 +79,14 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+
   return (
     <html lang="pt" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        {gaId && <GoogleAnalytics gaId={gaId} />}
         <SessionProvider>
           <header className="sticky top-0 z-50 border-b bg-background">
             <div className="container mx-auto flex h-16 items-center justify-between px-4">

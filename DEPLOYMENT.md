@@ -72,6 +72,7 @@ In Vercel project settings, add:
 ```
 DATABASE_URL=your_production_database_url
 NEXT_PUBLIC_BASE_URL=https://your-domain.vercel.app
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
 
 ### Step 5: Deploy
@@ -85,6 +86,43 @@ NEXT_PUBLIC_BASE_URL=https://your-domain.vercel.app
    ```
 
 Or use Vercel dashboard to run these commands.
+
+## Google Analytics Setup
+
+Google Analytics has been integrated into the application. To enable tracking:
+
+### Step 1: Create a Google Analytics 4 Property
+
+1. Go to [Google Analytics](https://analytics.google.com)
+2. Create a new property or use an existing one
+3. Set up a **Web** data stream for your domain
+4. Copy your **Measurement ID** (format: `G-XXXXXXXXXX`)
+
+### Step 2: Configure Environment Variable
+
+Add the Measurement ID to your environment:
+
+**Development (.env.local):**
+
+```env
+NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+**Production (Vercel):**
+
+1. Go to your project settings in Vercel
+2. Navigate to "Environment Variables"
+3. Add `NEXT_PUBLIC_GA_MEASUREMENT_ID` with your Measurement ID
+4. Redeploy your application
+
+### Step 3: Verify Tracking
+
+1. Deploy your application with the environment variable set
+2. Visit your site
+3. Open Google Analytics Real-time reports
+4. Verify that page views are being tracked
+
+**Note:** The Google Analytics script will only load when the `NEXT_PUBLIC_GA_MEASUREMENT_ID` environment variable is set. This allows you to disable tracking in development by omitting the variable.
 
 ## Database Management
 
@@ -173,7 +211,7 @@ prisma/
 
 1. **Add more events**: Edit `prisma/seed.ts` and run `npm run db:seed`
 2. **Customize branding**: Update colors in `tailwind.config.ts`
-3. **Add analytics**: Integrate Google Analytics or similar
+3. **Configure Google Analytics**: Set `NEXT_PUBLIC_GA_MEASUREMENT_ID` in your environment variables
 4. **Custom domain**: Configure in Vercel dashboard
 5. **Monitor**: Set up Vercel Analytics or other monitoring
 

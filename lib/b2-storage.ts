@@ -79,10 +79,12 @@ export async function uploadToB2({
     });
 
     // Construct public URL
+    // The friendly URL format is: https://f003.backblazeb2.com/file/{bucket-name}/{file-name}
+    // We need to use the download URL from authorization or set it via environment variable
+    const bucketName = process.env.B2_BUCKET_NAME;
     const bucketUrl =
-      process.env.NEXT_PUBLIC_B2_BUCKET_URL ||
-      `https://f${bucketId}.backblazeb2.com`;
-    const fileUrl = `${bucketUrl}/file/${process.env.B2_BUCKET_NAME}/${fullFileName}`;
+      process.env.NEXT_PUBLIC_B2_BUCKET_URL || "https://f003.backblazeb2.com";
+    const fileUrl = `${bucketUrl}/file/${bucketName}/${fullFileName}`;
 
     return {
       fileId: uploadResponse.data.fileId,

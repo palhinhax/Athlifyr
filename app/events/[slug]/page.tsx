@@ -87,8 +87,14 @@ export async function generateMetadata({
   const eventUrl = `${baseUrl}/events/${event.slug}`;
   const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
 
-  // Create rich description with event details
-  const metaDescription = `${event.description.slice(0, 155)}... | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
+  // Create rich description with event details (max 160 chars for SEO)
+  const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
+  const maxDescLength = 160 - suffix.length - 4; // 4 for "... "
+  const truncatedDesc =
+    event.description.length > maxDescLength
+      ? event.description.slice(0, maxDescLength).trim() + "..."
+      : event.description;
+  const metaDescription = truncatedDesc + suffix;
 
   // Keywords based on event type and location
   const keywords = [

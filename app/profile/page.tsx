@@ -6,6 +6,7 @@ import { Calendar, MapPin, Trophy, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
+import { FriendsSection } from "@/components/friends-section";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,14 @@ export default async function ProfilePage() {
           id: true,
         },
       },
+      sentFriendships: {
+        where: { status: "ACCEPTED" },
+        select: { id: true },
+      },
+      receivedFriendships: {
+        where: { status: "ACCEPTED" },
+        select: { id: true },
+      },
     },
   });
 
@@ -68,6 +77,8 @@ export default async function ProfilePage() {
   const pastEvents = user.participations.filter(
     (p) => p.event.startDate <= new Date() && p.status === "going"
   );
+  const friendsCount =
+    user.sentFriendships.length + user.receivedFriendships.length;
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -110,6 +121,12 @@ export default async function ProfilePage() {
                 <div className="text-sm text-muted-foreground">
                   Eventos Passados
                 </div>
+              </div>
+              <div className="text-center">
+                <div className="text-2xl font-bold text-primary">
+                  {friendsCount}
+                </div>
+                <div className="text-sm text-muted-foreground">Amigos</div>
               </div>
               <div className="text-center">
                 <div className="text-2xl font-bold text-primary">
@@ -200,7 +217,7 @@ export default async function ProfilePage() {
           </div>
         )}
 
-        {/* Empty State */}
+        {/* Empty State for Events */}
         {upcomingEvents.length === 0 && pastEvents.length === 0 && (
           <Card className="p-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
@@ -217,6 +234,9 @@ export default async function ProfilePage() {
             </Link>
           </Card>
         )}
+
+        {/* Friends Section */}
+        <FriendsSection />
       </div>
     </div>
   );

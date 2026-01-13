@@ -8,6 +8,8 @@ import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
 import { EventComments } from "@/components/event-comments";
 import { EventRegistration } from "@/components/event-registration";
+import { CreatePost } from "@/components/create-post";
+import { PostCard } from "@/components/post-card";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +24,21 @@ async function getEvent(slug: string) {
     where: { slug },
     include: {
       variants: true,
+      posts: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+        take: 10,
+      },
       comments: {
         where: {
           parentId: null,
@@ -232,6 +249,27 @@ export default async function EventPage({ params }: PageProps) {
                 distance: v.distance,
               }))}
             />
+          </div>
+
+          {/* Posts Section */}
+          <div className="mt-12 border-t pt-12">
+            <h2 className="mb-6 text-2xl font-bold">Posts da Comunidade</h2>
+            <div className="space-y-4">
+              <CreatePost eventId={event.id} />
+              {event.posts.map((post) => (
+                <PostCard
+                  key={post.id}
+                  post={{
+                    ...post,
+                    createdAt: post.createdAt.toISOString(),
+                    event: {
+                      title: event.title,
+                      slug: event.slug,
+                    },
+                  }}
+                />
+              ))}
+            </div>
           </div>
 
           {/* Comments Section */}

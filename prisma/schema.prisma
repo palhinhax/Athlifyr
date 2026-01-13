@@ -41,6 +41,7 @@ model User {
   sessions       Session[]
   participations Participation[]
   comments       Comment[]
+  posts          Post[]
   results        Result[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
@@ -102,6 +103,7 @@ model Event {
   variants    EventVariant[]
   participations Participation[]
   comments    Comment[]
+  posts       Post[]
   results     Result[]
   createdAt   DateTime       @default(now())
   updatedAt   DateTime       @updatedAt
@@ -182,3 +184,18 @@ model Comment {
   @@index([parentId])
 }
 
+model Post {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId   String?
+  event     Event?   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  imageUrl  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([createdAt])
+}

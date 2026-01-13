@@ -109,6 +109,7 @@ Visit [http://localhost:3000](http://localhost:3000) to see the app.
 - ✅ **Event Details**: Individual event pages with full information
 - ✅ **SEO Optimized**: Clean URLs, metadata, sitemap, and robots.txt
 - ✅ **Sport Types**: Running, Trail, HYROX, CrossFit, OCR, BTT, Cycling, Surf, Triathlon, Swimming
+- ✅ **Google Analytics**: Integrated tracking for page views and user behavior
 
 ### Out of Scope (Future)
 

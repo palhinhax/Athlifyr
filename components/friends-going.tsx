@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import {
   Tooltip,
   TooltipContent,
@@ -32,9 +33,10 @@ export function FriendsGoing({ friends, totalCount }: FriendsGoingProps) {
           <div className="flex items-center gap-2 rounded-full bg-green-500/10 px-3 py-1.5 transition-colors hover:bg-green-500/20">
             <div className="flex -space-x-2">
               {displayedFriends.map((friend) => (
-                <div
+                <Link
                   key={friend.id}
-                  className="relative h-6 w-6 overflow-hidden rounded-full border-2 border-background bg-muted"
+                  href={`/user/${friend.id}`}
+                  className="relative h-6 w-6 overflow-hidden rounded-full border-2 border-background bg-muted transition-opacity hover:opacity-80"
                 >
                   {friend.image ? (
                     <Image
@@ -48,7 +50,7 @@ export function FriendsGoing({ friends, totalCount }: FriendsGoingProps) {
                       {friend.name?.[0]?.toUpperCase() || "?"}
                     </div>
                   )}
-                </div>
+                </Link>
               ))}
               {remainingCount > 0 && (
                 <div className="relative flex h-6 w-6 items-center justify-center rounded-full border-2 border-background bg-muted text-[10px] font-medium">
@@ -64,9 +66,13 @@ export function FriendsGoing({ friends, totalCount }: FriendsGoingProps) {
         <TooltipContent side="bottom" className="max-w-[200px]">
           <div className="space-y-1">
             {friends.map((friend) => (
-              <p key={friend.id} className="text-sm">
+              <Link
+                key={friend.id}
+                href={`/user/${friend.id}`}
+                className="block text-sm transition-colors hover:text-primary"
+              >
                 {friend.name}
-              </p>
+              </Link>
             ))}
             {remainingCount > 0 && (
               <p className="text-xs text-muted-foreground">

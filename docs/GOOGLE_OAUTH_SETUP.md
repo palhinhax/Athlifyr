@@ -78,17 +78,28 @@ https://seudominio.com
 
 #### Authorized redirect URIs
 
-Para desenvolvimento:
+**IMPORTANTE**: Deves adicionar TODOS os URIs onde a aplicação vai correr.
+
+Para desenvolvimento local:
 
 ```
 http://localhost:3000/api/auth/callback/google
 ```
 
-Para produção:
+Para produção (Vercel):
 
 ```
 https://seudominio.com/api/auth/callback/google
+https://seudominio.vercel.app/api/auth/callback/google
 ```
+
+**Nota**: Se estiveres a usar Vercel, adiciona também o preview deployment:
+
+```
+https://*.vercel.app/api/auth/callback/google
+```
+
+⚠️ **Atenção**: O Google não aceita wildcards no domínio principal, tens que adicionar cada URL específica.
 
 5. Clica em **"Create"**
 

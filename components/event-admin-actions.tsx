@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus, X } from "lucide-react";
+import { Pencil, Trash2, Plus, X, ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType } from "@prisma/client";
 import { sportTypeLabels } from "@/lib/event-utils";
@@ -43,9 +44,11 @@ interface EventAdminActionsProps {
 
 export function EventAdminActions({ event }: EventAdminActionsProps) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -76,6 +79,64 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+      toast({
+        variant: "destructive",
+        title: "Ficheiro inválido",
+        description: "Por favor seleciona uma imagem.",
+      });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        variant: "destructive",
+        title: "Ficheiro muito grande",
+        description: "A imagem deve ter no máximo 5MB.",
+      });
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("folder", "events");
+
+      const uploadRes = await fetch("/api/upload", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      if (!uploadRes.ok) {
+        throw new Error("Failed to upload image");
+      }
+
+      const uploadData = await uploadRes.json();
+      setFormData((prev) => ({ ...prev, imageUrl: uploadData.file.url }));
+
+      toast({
+        title: "Imagem carregada",
+        description: "A imagem foi carregada com sucesso.",
+      });
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível carregar a imagem.",
+      });
+    } finally {
+      setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
   };
 
   const handleVariantChange = (
@@ -165,13 +226,13 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   };
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm">
-            <Pencil className="mr-2 h-4 w-4" />
-            Editar
+          <Button variant="outline" size="sm" className="gap-1 px-2 sm:px-3">
+            <Pencil className="h-4 w-4" />
+            <span className="hidden sm:inline">Editar</span>
           </Button>
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
@@ -265,7 +326,53 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="imageUrl">URL da Imagem</Label>
+              <Label>Imagem do Evento</Label>
+              {formData.imageUrl && (
+                <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                  <Image
+                    src={formData.imageUrl}
+                    alt="Preview"
+                    fill
+                    className="object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, imageUrl: "" }))
+                    }
+                    className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-white hover:bg-destructive/90"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+              )}
+              <div className="flex gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isUploading}
+                  className="flex-1"
+                >
+                  {isUploading ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="mr-2 h-4 w-4" />
+                  )}
+                  {formData.imageUrl ? "Alterar imagem" : "Carregar imagem"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Ou insere um URL diretamente:
+              </p>
               <Input
                 id="imageUrl"
                 name="imageUrl"
@@ -351,9 +458,13 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       {/* Delete Dialog */}
       <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <DialogTrigger asChild>
-          <Button variant="destructive" size="sm">
-            <Trash2 className="mr-2 h-4 w-4" />
-            Eliminar
+          <Button
+            variant="destructive"
+            size="sm"
+            className="gap-1 px-2 sm:px-3"
+          >
+            <Trash2 className="h-4 w-4" />
+            <span className="hidden sm:inline">Eliminar</span>
           </Button>
         </DialogTrigger>
         <DialogContent>

@@ -142,39 +142,42 @@ export default async function EventPage({ params }: PageProps) {
   return (
     <div className="min-h-screen">
       {/* Back button, Admin Actions, and Share */}
-      <div className="container mx-auto flex items-center justify-between px-4 py-4">
-        <Link href="/events">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Voltar aos eventos
-          </Button>
-        </Link>
-        <div className="flex items-center gap-2">
-          {isAdmin && (
-            <EventAdminActions
-              event={{
-                id: event.id,
-                title: event.title,
-                description: event.description,
-                sportType: event.sportType,
-                startDate: event.startDate,
-                endDate: event.endDate,
-                city: event.city,
-                country: event.country,
-                imageUrl: event.imageUrl,
-                externalUrl: event.externalUrl,
-                variants: event.variants.map((v) => ({
-                  id: v.id,
-                  name: v.name,
-                  distanceKm: v.distanceKm,
-                })),
-              }}
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Link href="/events">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Voltar aos eventos</span>
+              <span className="sm:hidden">Voltar</span>
+            </Button>
+          </Link>
+          <div className="flex flex-wrap items-center gap-2">
+            {isAdmin && (
+              <EventAdminActions
+                event={{
+                  id: event.id,
+                  title: event.title,
+                  description: event.description,
+                  sportType: event.sportType,
+                  startDate: event.startDate,
+                  endDate: event.endDate,
+                  city: event.city,
+                  country: event.country,
+                  imageUrl: event.imageUrl,
+                  externalUrl: event.externalUrl,
+                  variants: event.variants.map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    distanceKm: v.distanceKm,
+                  })),
+                }}
+              />
+            )}
+            <ShareButton
+              title={event.title}
+              description={`${event.title} - ${formatDate(event.startDate)} em ${event.city}`}
             />
-          )}
-          <ShareButton
-            title={event.title}
-            description={`${event.title} - ${formatDate(event.startDate)} em ${event.city}`}
-          />
+          </div>
         </div>
       </div>
 

@@ -1,42 +1,36 @@
-# Next.js SaaS Template
+# FitLane
 
-A production-grade, full-stack SaaS template built with modern technologies.
+**All sports events. One place.**
+
+FitLane is a public platform for discovering sports events across Portugal. Find races, competitions and challenges near you - from running and trail to HYROX, CrossFit, OCR, BTT, cycling, surf, and triathlon.
 
 ## 🚀 Tech Stack
 
 - **Framework:** Next.js 14 (App Router) with TypeScript
 - **Database:** PostgreSQL with Prisma ORM
-- **Authentication:** Auth.js (NextAuth) with Credentials Provider
-- **State Management:** TanStack React Query
 - **UI Components:** shadcn/ui + Tailwind CSS
-- **Form Handling:** React Hook Form + Zod
-- **Testing:** Jest + React Testing Library + MSW
-- **Code Quality:** ESLint + Prettier + Husky
+- **Authentication:** None (Public MVP)
 
 ## 📁 Project Structure
 
 ```
-├── app/                    # Next.js App Router
-│   ├── api/               # API Routes
-│   │   ├── auth/         # Auth endpoints
-│   │   └── posts/        # Posts CRUD API
-│   ├── auth/             # Auth pages (login, register)
-│   └── dashboard/        # Protected dashboard
-├── components/            # UI Components
-│   └── ui/               # shadcn/ui components
-├── features/             # Feature modules
-│   └── posts/            # Posts feature
-│       ├── api/          # API client functions
-│       ├── components/   # Feature components
-│       ├── hooks/        # React Query hooks
-│       └── schemas/      # Zod schemas
-├── lib/                  # Utilities
-│   ├── api/              # API client layer
-│   └── auth/             # Auth.js configuration
-├── prisma/               # Database schema & migrations
-└── tests/                # Test files
-    ├── mocks/            # MSW handlers
-    └── unit/             # Unit tests
+├── app/
+│   ├── events/              # Event listing and detail pages
+│   │   ├── page.tsx         # Events listing with filters
+│   │   └── [slug]/          # Individual event page
+│   ├── layout.tsx           # Root layout
+│   ├── page.tsx             # Home page
+│   ├── sitemap.ts           # SEO sitemap
+│   └── robots.ts            # Robots.txt
+├── components/
+│   ├── event-card.tsx       # Event card component
+│   └── ui/                  # shadcn/ui components
+├── lib/
+│   ├── event-utils.ts       # Event utilities and formatters
+│   └── prisma.ts            # Prisma client
+└── prisma/
+    ├── schema.prisma        # Database schema
+    └── seed.ts              # Database seed data
 ```
 
 ## 🏁 Getting Started
@@ -44,212 +38,137 @@ A production-grade, full-stack SaaS template built with modern technologies.
 ### Prerequisites
 
 - Node.js 18+
-- pnpm
+- npm or pnpm
 - PostgreSQL database
 
 ### Installation
 
 1. Clone the repository:
+
    ```bash
-   git clone https://github.com/your-username/next-prisma-saas-template.git
-   cd next-prisma-saas-template
+   git clone https://github.com/palhinhax/FitLane.git
+   cd FitLane
    ```
 
 2. Install dependencies:
+
    ```bash
-   pnpm install
+   npm install
    ```
 
 3. Set up environment variables:
+
    ```bash
    cp .env.example .env
    ```
-   
-   Update `.env` with your database URL and auth secret:
+
+   Update `.env` with your database URL:
+
    ```env
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/saas_template"
-   AUTH_SECRET="your-secret-key-here"
+   DATABASE_URL="postgresql://postgres:password@localhost:5432/fitlane"
    ```
 
 4. Run database migrations:
+
    ```bash
-   pnpm db:migrate
+   npm run db:migrate
    ```
 
-5. (Optional) Seed the database:
+5. Seed the database with Portuguese events:
+
    ```bash
-   pnpm db:seed
+   npm run db:seed
    ```
 
 6. Start the development server:
    ```bash
-   pnpm dev
+   npm run dev
    ```
 
 Visit [http://localhost:3000](http://localhost:3000) to see the app.
 
 ## 📜 Available Scripts
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start development server |
-| `pnpm build` | Build for production |
-| `pnpm start` | Start production server |
-| `pnpm lint` | Run ESLint |
-| `pnpm test` | Run tests |
-| `pnpm test:watch` | Run tests in watch mode |
-| `pnpm test:coverage` | Run tests with coverage |
-| `pnpm format` | Format code with Prettier |
-| `pnpm typecheck` | Run TypeScript type checking |
-| `pnpm db:migrate` | Run database migrations |
-| `pnpm db:seed` | Seed the database |
-| `pnpm db:studio` | Open Prisma Studio |
+| Command              | Description                  |
+| -------------------- | ---------------------------- |
+| `npm run dev`        | Start development server     |
+| `npm run build`      | Build for production         |
+| `npm run start`      | Start production server      |
+| `npm run lint`       | Run ESLint                   |
+| `npm run typecheck`  | Run TypeScript type checking |
+| `npm run db:migrate` | Run database migrations      |
+| `npm run db:seed`    | Seed the database            |
+| `npm run db:studio`  | Open Prisma Studio           |
 
-## 🔐 Authentication
+## 🏃 Features
 
-The template uses Auth.js with a Credentials provider for email/password authentication.
+### MVP Scope
 
-### Demo Credentials
+- ✅ **Home Page**: Hero, quick filters, upcoming events
+- ✅ **Events Listing**: Filterable list of all events
+- ✅ **Event Details**: Individual event pages with full information
+- ✅ **SEO Optimized**: Clean URLs, metadata, sitemap, and robots.txt
+- ✅ **Sport Types**: Running, Trail, HYROX, CrossFit, OCR, BTT, Cycling, Surf, Triathlon, Swimming
 
-After seeding the database:
-- Email: `demo@example.com`
-- Password: `password123`
+### Out of Scope (Future)
 
-### Protected Routes
+- ❌ User authentication
+- ❌ User comments
+- ❌ Event submissions by users
+- ❌ Payment processing
+- ❌ Internal event registration
+- ❌ Admin dashboard
 
-Routes under `/dashboard` are protected and require authentication. The middleware automatically redirects unauthenticated users to the login page.
+## 📦 Database Schema
 
-## 📝 API Endpoints
+### Event Model
 
-### Posts API
-
-| Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
-| GET | `/api/posts` | List all posts | No |
-| GET | `/api/posts/:id` | Get a single post | No |
-| POST | `/api/posts` | Create a post | Yes |
-| PATCH | `/api/posts/:id` | Update a post | Yes (owner only) |
-| DELETE | `/api/posts/:id` | Delete a post | Yes (owner only) |
-
-### Example Usage
-
-```typescript
-// Using React Query hooks
-import { usePosts, useCreatePost } from "@/features/posts";
-
-function PostsList() {
-  const { data: posts, isLoading } = usePosts();
-  const createPost = useCreatePost();
-
-  const handleCreate = async () => {
-    await createPost.mutateAsync({
-      title: "New Post",
-      content: "Post content here",
-    });
-  };
-
-  // ...
-}
-```
-
-## 🧪 Testing
-
-The template includes Jest, React Testing Library, and MSW for testing.
-
-### Running Tests
-
-```bash
-# Run all tests
-pnpm test
-
-# Run in watch mode
-pnpm test:watch
-
-# Run with coverage
-pnpm test:coverage
-```
-
-### Test Structure
-
-- `tests/unit/` - Unit tests for components and hooks
-- `tests/mocks/` - MSW handlers for API mocking
-
-## 🎨 UI Components
-
-The template includes these shadcn/ui components:
-
-- **Button** - Various button styles and sizes
-- **Input** - Text input with validation support
-- **Card** - Content container with header/footer
-- **Dialog** - Modal dialogs
-- **Label** - Form labels
-- **Spinner** - Loading indicator
-- **Toast** - Toast notifications
-
-### Using Components
-
-```tsx
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-
-function Example() {
-  return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My Card</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Button>Click me</Button>
-      </CardContent>
-    </Card>
-  );
-}
-```
-
-## 🔄 Form Validation
-
-Forms use React Hook Form with Zod for end-to-end validation:
-
-```typescript
-import { postSchema, type PostFormData } from "@/features/posts/schemas";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-
-const form = useForm<PostFormData>({
-  resolver: zodResolver(postSchema),
-});
-```
-
-## 🌙 Dark Mode
-
-The template supports dark mode out of the box. Add the `dark` class to the `<html>` element to enable it.
-
-## 📦 Database Models
-
-### User
 ```prisma
-model User {
-  id           String   @id @default(cuid())
-  name         String?
-  email        String   @unique
-  passwordHash String
-  createdAt    DateTime @default(now())
-  posts        Post[]
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  slug        String    @unique
+  description String
+  sportType   SportType
+  startDate   DateTime
+  endDate     DateTime?
+  city        String
+  country     String
+  imageUrl    String?
+  externalUrl String
+  isFeatured  Boolean
+  createdAt   DateTime
+  updatedAt   DateTime
+}
+
+enum SportType {
+  RUNNING
+  TRAIL
+  HYROX
+  CROSSFIT
+  OCR
+  BTT
+  CYCLING
+  SURF
+  TRIATHLON
+  SWIMMING
+  OTHER
 }
 ```
 
-### Post
-```prisma
-model Post {
-  id        String   @id @default(cuid())
-  title     String
-  content   String
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id])
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-```
+## 🌍 Events Included
+
+The seed data includes 40+ real and semi-fictional Portuguese sports events:
+
+- **Running**: Maratona de Lisboa, Meia Maratona de Lisboa, Maratona do Porto
+- **Trail**: Ultra Trail Serra da Estrela, Trail do Mondego, Madeira Island Ultra Trail
+- **HYROX**: HYROX Lisboa, HYROX Porto
+- **CrossFit**: CrossFit Portuguese Championship, Battle of Boxes
+- **OCR**: Spartan Race Lisboa, OCR Chaves Championship, Tough Mudder
+- **BTT**: BTT Monsanto Challenge, Sintra MTB Race, Algarve Bike Challenge
+- **Cycling**: Volta ao Algarve, Volta a Portugal, Granfondo Lisboa
+- **Surf**: MEO Rip Curl Pro Portugal, Nazaré Tow Surfing Challenge
+- **Triathlon**: Ironman Portugal, Triatlo de Lisboa, Challenge Lisboa
 
 ## 🚀 Deployment
 
@@ -257,10 +176,12 @@ model Post {
 
 1. Push your code to GitHub
 2. Import the project in Vercel
-3. Set environment variables:
+3. Set environment variable:
    - `DATABASE_URL`
-   - `AUTH_SECRET`
-4. Deploy!
+4. Run database migrations in the Vercel dashboard
+5. Deploy!
+
+The app is Vercel-ready and optimized for production deployment.
 
 ## 📄 License
 
@@ -268,4 +189,4 @@ MIT License - see [LICENSE](LICENSE) for details.
 
 ---
 
-Built with ❤️ using Next.js, Prisma, and shadcn/ui
+Built with ❤️ for the Portuguese sports community

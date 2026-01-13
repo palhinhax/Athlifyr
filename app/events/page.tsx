@@ -1,14 +1,15 @@
 import { Suspense } from "react";
 import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
-import { SportType } from "@prisma/client";
+import { SportType, Prisma } from "@prisma/client";
 import { sportTypeLabels } from "@/lib/event-utils";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
 export const metadata = {
   title: "Todos os Eventos - FitLane",
-  description: "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
+  description:
+    "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
 };
 
 export const dynamic = "force-dynamic";
@@ -18,14 +19,14 @@ interface PageProps {
 }
 
 async function getEvents(sportType?: string) {
-  const where: any = {
+  const where: Prisma.EventWhereInput = {
     startDate: {
       gte: new Date(),
     },
   };
 
-  if (sportType && sportType !== "ALL") {
-    where.sportType = sportType;
+  if (sportType && sportType !== "ALL" && sportType in SportType) {
+    where.sportType = sportType as SportType;
   }
 
   return await prisma.event.findMany({
@@ -41,7 +42,7 @@ async function EventsList({ sportType }: { sportType?: string }) {
 
   if (events.length === 0) {
     return (
-      <div className="text-center py-12 text-muted-foreground">
+      <div className="py-12 text-center text-muted-foreground">
         <p className="text-lg">Nenhum evento encontrado.</p>
         <p className="mt-2">Tente ajustar os filtros ou volte mais tarde.</p>
       </div>
@@ -79,7 +80,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
     <div className="min-h-screen">
       <section className="bg-muted/50 py-12">
         <div className="container mx-auto px-4">
-          <h1 className="text-4xl font-bold mb-2">Todos os Eventos</h1>
+          <h1 className="mb-2 text-4xl font-bold">Todos os Eventos</h1>
           <p className="text-muted-foreground">
             Descubra os melhores eventos desportivos em Portugal
           </p>
@@ -89,7 +90,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
       <section className="container mx-auto px-4 py-8">
         {/* Filters */}
         <div className="mb-8">
-          <h2 className="text-sm font-medium mb-3">Filtrar por modalidade:</h2>
+          <h2 className="mb-3 text-sm font-medium">Filtrar por modalidade:</h2>
           <div className="flex flex-wrap gap-2">
             {sportTypes.map((sport) => (
               <Link key={sport.value} href={`/events?sport=${sport.value}`}>
@@ -107,12 +108,14 @@ export default async function EventsPage({ searchParams }: PageProps) {
         {/* Events List */}
         <Suspense
           fallback={
-            <div className="text-center py-12">
+            <div className="py-12 text-center">
               <p className="text-muted-foreground">A carregar eventos...</p>
             </div>
           }
         >
-          <EventsList sportType={sportFilter === "ALL" ? undefined : sportFilter} />
+          <EventsList
+            sportType={sportFilter === "ALL" ? undefined : sportFilter}
+          />
         </Suspense>
       </section>
     </div>

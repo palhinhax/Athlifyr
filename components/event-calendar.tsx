@@ -27,6 +27,8 @@ interface EventParticipation {
   variant?: {
     name: string;
     distanceKm: number | null;
+    startDate?: Date | null;
+    startTime?: string | null;
   } | null;
 }
 
@@ -64,9 +66,11 @@ export function EventCalendar({ participations }: EventCalendarProps) {
   const daysInMonth = lastDayOfMonth.getDate();
   const startingDay = firstDayOfMonth.getDay();
 
-  // Get events for current month
+  // Get events for current month - use variant date if available, otherwise event date
   const eventsInMonth = participations.filter((p) => {
-    const eventDate = new Date(p.event.startDate);
+    const eventDate = p.variant?.startDate
+      ? new Date(p.variant.startDate)
+      : new Date(p.event.startDate);
     return (
       eventDate.getMonth() === currentMonth &&
       eventDate.getFullYear() === currentYear &&
@@ -77,7 +81,10 @@ export function EventCalendar({ participations }: EventCalendarProps) {
   // Create a map of dates to events
   const eventsByDate = new Map<number, EventParticipation[]>();
   eventsInMonth.forEach((p) => {
-    const day = new Date(p.event.startDate).getDate();
+    const eventDate = p.variant?.startDate
+      ? new Date(p.variant.startDate)
+      : new Date(p.event.startDate);
+    const day = eventDate.getDate();
     if (!eventsByDate.has(day)) {
       eventsByDate.set(day, []);
     }
@@ -222,13 +229,19 @@ export function EventCalendar({ participations }: EventCalendarProps) {
               Eventos em {MONTHS[currentMonth]}:
             </h4>
             {eventsInMonth
-              .sort(
-                (a, b) =>
-                  new Date(a.event.startDate).getTime() -
-                  new Date(b.event.startDate).getTime()
-              )
+              .sort((a, b) => {
+                const dateA = a.variant?.startDate
+                  ? new Date(a.variant.startDate)
+                  : new Date(a.event.startDate);
+                const dateB = b.variant?.startDate
+                  ? new Date(b.variant.startDate)
+                  : new Date(b.event.startDate);
+                return dateA.getTime() - dateB.getTime();
+              })
               .map((p) => {
-                const eventDate = new Date(p.event.startDate);
+                const eventDate = p.variant?.startDate
+                  ? new Date(p.variant.startDate)
+                  : new Date(p.event.startDate);
                 const isPastEvent = eventDate < today;
                 return (
                   <Link
@@ -246,9 +259,17 @@ export function EventCalendar({ participations }: EventCalendarProps) {
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium">
                             {p.event.title}
+                            {p.variant && (
+                              <span className="font-normal text-muted-foreground">
+                                {" "}
+                                • {p.variant.name}
+                              </span>
+                            )}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            {eventDate.getDate()} {MONTHS[eventDate.getMonth()]}{" "}
+                            {eventDate.getDate()} {MONTHS[eventDate.getMonth()]}
+                            {p.variant?.startTime &&
+                              ` às ${p.variant.startTime}`}{" "}
                             • {p.event.city}
                           </p>
                         </div>

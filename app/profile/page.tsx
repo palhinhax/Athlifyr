@@ -38,6 +38,8 @@ export default async function ProfilePage() {
             select: {
               name: true,
               distanceKm: true,
+              startDate: true,
+              startTime: true,
             },
           },
         },

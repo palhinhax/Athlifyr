@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Calendar, MapPin, ExternalLink, ArrowLeft } from "lucide-react";
+import { Calendar, MapPin, ExternalLink, ArrowLeft, Route } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
@@ -18,6 +18,9 @@ interface PageProps {
 async function getEvent(slug: string) {
   return await prisma.event.findUnique({
     where: { slug },
+    include: {
+      variants: true,
+    },
   });
 }
 
@@ -109,6 +112,43 @@ export default async function EventPage({ params }: PageProps) {
               </div>
             </div>
           </div>
+
+          {/* Variants/Distances */}
+          {event.variants && event.variants.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <Route className="h-6 w-6 text-primary" />
+                Distâncias e Variantes
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {event.variants.map((variant) => (
+                  <div
+                    key={variant.id}
+                    className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
+                  >
+                    <h3 className="mb-1 text-lg font-semibold">
+                      {variant.name}
+                    </h3>
+                    {variant.distance && (
+                      <p className="font-medium text-primary">
+                        {variant.distance}
+                      </p>
+                    )}
+                    {variant.description && (
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {variant.description}
+                      </p>
+                    )}
+                    {variant.price && (
+                      <p className="mt-2 text-sm font-medium">
+                        €{variant.price.toFixed(2)}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Description */}
           <div className="prose prose-lg mb-8 max-w-none">

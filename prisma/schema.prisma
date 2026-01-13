@@ -25,23 +25,39 @@ enum SportType {
 }
 
 model Event {
-  id          String    @id @default(cuid())
+  id          String         @id @default(cuid())
   title       String
-  slug        String    @unique
-  description String    @db.Text
+  slug        String         @unique
+  description String         @db.Text
   sportType   SportType
   startDate   DateTime
   endDate     DateTime?
   city        String
-  country     String    @default("Portugal")
+  country     String         @default("Portugal")
   imageUrl    String?
   externalUrl String
-  isFeatured  Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  isFeatured  Boolean        @default(false)
+  variants    EventVariant[]
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
 
   @@index([sportType])
   @@index([startDate])
   @@index([city])
   @@index([isFeatured])
+}
+
+model EventVariant {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String
+  distance    String?
+  price       Float?
+  maxParticipants Int?
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([eventId])
 }

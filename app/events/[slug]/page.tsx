@@ -220,24 +220,28 @@ export default async function EventPage({ params }: PageProps) {
           </div>
 
           {/* CTA */}
-          <div className="border-t pt-8">
-            <h3 className="mb-4 text-xl font-bold">Pronto para participar?</h3>
-            <p className="mb-6 text-muted-foreground">
-              Para mais informações e inscrições, visite o website oficial do
-              evento.
-            </p>
-            <a
-              href={event.externalUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block"
-            >
-              <Button size="lg" className="gap-2">
-                Ir para Website Oficial
-                <ExternalLink className="h-4 w-4" />
-              </Button>
-            </a>
-          </div>
+          {event.externalUrl && (
+            <div className="border-t pt-8">
+              <h3 className="mb-4 text-xl font-bold">
+                Pronto para participar?
+              </h3>
+              <p className="mb-6 text-muted-foreground">
+                Para mais informações e inscrições, visite o website oficial do
+                evento.
+              </p>
+              <a
+                href={event.externalUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-block"
+              >
+                <Button size="lg" className="gap-2">
+                  Ir para Website Oficial
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
+            </div>
+          )}
 
           {/* Event Registration */}
           <div className="mt-12">

@@ -31,7 +31,7 @@ async function main() {
         country: "Switzerland",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/st-gallen",
+
         isFeatured: true,
       },
       variants: [
@@ -52,7 +52,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/manchester",
+
         isFeatured: true,
       },
       variants: [
@@ -74,7 +74,7 @@ async function main() {
         country: "Netherlands",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/amsterdam",
+
         isFeatured: true,
       },
       variants: [
@@ -95,7 +95,7 @@ async function main() {
         country: "Netherlands",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/youngstars-amsterdam",
+
         isFeatured: false,
       },
       variants: [
@@ -116,7 +116,7 @@ async function main() {
         country: "New Zealand",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/auckland",
+
         isFeatured: true,
       },
       variants: [
@@ -137,7 +137,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/phoenix",
+
         isFeatured: true,
       },
       variants: [
@@ -158,7 +158,7 @@ async function main() {
         country: "Japan",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/osaka",
+
         isFeatured: false,
       },
       variants: [
@@ -178,7 +178,7 @@ async function main() {
         country: "Italy",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/turin",
+
         isFeatured: false,
       },
       variants: [
@@ -201,7 +201,7 @@ async function main() {
         country: "Austria",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/vienna",
+
         isFeatured: true,
       },
       variants: [
@@ -222,7 +222,7 @@ async function main() {
         country: "Mexico",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/guadalajara",
+
         isFeatured: false,
       },
       variants: [
@@ -243,7 +243,7 @@ async function main() {
         country: "Spain",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/bilbao",
+
         isFeatured: false,
       },
       variants: [
@@ -264,7 +264,7 @@ async function main() {
         country: "France",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/nice",
+
         isFeatured: true,
       },
       variants: [
@@ -285,7 +285,7 @@ async function main() {
         country: "Turkey",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/istanbul",
+
         isFeatured: false,
       },
       variants: [
@@ -306,7 +306,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/las-vegas",
+
         isFeatured: true,
       },
       variants: [
@@ -328,7 +328,7 @@ async function main() {
         country: "Poland",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/katowice",
+
         isFeatured: false,
       },
       variants: [
@@ -348,7 +348,7 @@ async function main() {
         country: "Taiwan",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/taipei",
+
         isFeatured: false,
       },
       variants: [
@@ -368,7 +368,7 @@ async function main() {
         country: "Brazil",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/fortaleza",
+
         isFeatured: false,
       },
       variants: [
@@ -391,7 +391,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/americas-championships",
+
         isFeatured: true,
       },
       variants: [
@@ -411,7 +411,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/glasgow",
+
         isFeatured: true,
       },
       variants: [
@@ -432,7 +432,7 @@ async function main() {
         country: "Denmark",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/copenhagen",
+
         isFeatured: true,
       },
       variants: [
@@ -453,7 +453,7 @@ async function main() {
         country: "Mexico",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/cancun",
+
         isFeatured: false,
       },
       variants: [
@@ -474,7 +474,7 @@ async function main() {
         country: "France",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/toulouse",
+
         isFeatured: false,
       },
       variants: [
@@ -495,7 +495,7 @@ async function main() {
         country: "Thailand",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/bangkok",
+
         isFeatured: false,
       },
       variants: [
@@ -516,7 +516,7 @@ async function main() {
         country: "China",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/beijing",
+
         isFeatured: false,
       },
       variants: [
@@ -537,7 +537,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/emea-championships",
+
         isFeatured: true,
       },
       variants: [
@@ -558,7 +558,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/london",
+
         isFeatured: true,
       },
       variants: [
@@ -579,7 +579,7 @@ async function main() {
         country: "Belgium",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/mechelen",
+
         isFeatured: false,
       },
       variants: [
@@ -599,7 +599,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/houston",
+
         isFeatured: true,
       },
       variants: [
@@ -620,7 +620,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/youngstars-london",
+
         isFeatured: false,
       },
       variants: [
@@ -643,7 +643,7 @@ async function main() {
         country: "Singapore",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/singapore",
+
         isFeatured: true,
       },
       variants: [
@@ -664,7 +664,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/miami",
+
         isFeatured: true,
       },
       variants: [
@@ -685,7 +685,7 @@ async function main() {
         country: "Italy",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/bologna",
+
         isFeatured: false,
       },
       variants: [
@@ -706,7 +706,7 @@ async function main() {
         country: "Australia",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/brisbane",
+
         isFeatured: true,
       },
       variants: [
@@ -727,7 +727,7 @@ async function main() {
         country: "India",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/bengaluru",
+
         isFeatured: false,
       },
       variants: [
@@ -748,7 +748,7 @@ async function main() {
         country: "Australia",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/apac-championships",
+
         isFeatured: true,
       },
       variants: [
@@ -769,7 +769,7 @@ async function main() {
         country: "Netherlands",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/rotterdam",
+
         isFeatured: true,
       },
       variants: [
@@ -790,7 +790,7 @@ async function main() {
         country: "Poland",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/warsaw",
+
         isFeatured: true,
       },
       variants: [
@@ -812,7 +812,7 @@ async function main() {
         country: "Germany",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/cologne",
+
         isFeatured: true,
       },
       variants: [
@@ -833,7 +833,7 @@ async function main() {
         country: "Spain",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/malaga",
+
         isFeatured: false,
       },
       variants: [
@@ -854,7 +854,7 @@ async function main() {
         country: "Mexico",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/monterrey",
+
         isFeatured: false,
       },
       variants: [
@@ -875,7 +875,7 @@ async function main() {
         country: "France",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/paris",
+
         isFeatured: true,
       },
       variants: [
@@ -897,7 +897,7 @@ async function main() {
         country: "Brazil",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/sao-paulo",
+
         isFeatured: false,
       },
       variants: [
@@ -917,7 +917,7 @@ async function main() {
         country: "United Kingdom",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/cardiff",
+
         isFeatured: false,
       },
       variants: [
@@ -940,7 +940,7 @@ async function main() {
         country: "Portugal",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/lisboa",
+
         isFeatured: true,
       },
       variants: [
@@ -961,7 +961,7 @@ async function main() {
         country: "Hong Kong",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/hong-kong",
+
         isFeatured: true,
       },
       variants: [
@@ -982,7 +982,7 @@ async function main() {
         country: "Finland",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/helsinki",
+
         isFeatured: false,
       },
       variants: [
@@ -1003,7 +1003,7 @@ async function main() {
         country: "Spain",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/barcelona",
+
         isFeatured: true,
       },
       variants: [
@@ -1025,7 +1025,7 @@ async function main() {
         country: "Netherlands",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/heerenveen",
+
         isFeatured: false,
       },
       variants: [
@@ -1046,7 +1046,7 @@ async function main() {
         country: "South Korea",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/incheon",
+
         isFeatured: false,
       },
       variants: [
@@ -1067,7 +1067,7 @@ async function main() {
         country: "Canada",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/ottawa",
+
         isFeatured: false,
       },
       variants: [
@@ -1088,7 +1088,7 @@ async function main() {
         country: "France",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/lyon",
+
         isFeatured: false,
       },
       variants: [
@@ -1108,7 +1108,7 @@ async function main() {
         country: "Italy",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/rimini",
+
         isFeatured: false,
       },
       variants: [
@@ -1128,7 +1128,7 @@ async function main() {
         country: "Latvia",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/riga",
+
         isFeatured: false,
       },
       variants: [
@@ -1151,7 +1151,7 @@ async function main() {
         country: "Sweden",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/world-championships",
+
         isFeatured: true,
       },
       variants: [
@@ -1179,7 +1179,7 @@ async function main() {
         country: "United States",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/new-york",
+
         isFeatured: true,
       },
       variants: [
@@ -1198,7 +1198,7 @@ async function main() {
         country: "Mexico",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/puebla",
+
         isFeatured: false,
       },
       variants: [
@@ -1218,7 +1218,7 @@ async function main() {
         country: "Germany",
         imageUrl:
           "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=800",
-        externalUrl: "https://hyrox.com/races/berlin",
+
         isFeatured: true,
       },
       variants: [

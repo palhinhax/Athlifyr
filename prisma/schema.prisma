@@ -98,7 +98,7 @@ model Event {
   city        String
   country     String         @default("Portugal")
   imageUrl    String?
-  externalUrl String
+  externalUrl String?
   isFeatured  Boolean        @default(false)
   variants    EventVariant[]
   participations Participation[]

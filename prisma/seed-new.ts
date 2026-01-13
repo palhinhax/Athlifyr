@@ -23,7 +23,7 @@ async function main() {
         city: "Seia",
         imageUrl:
           "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [{ name: "Ultra", distance: "303 km" }],
@@ -38,7 +38,7 @@ async function main() {
         city: "Póvoa de Varzim",
         imageUrl:
           "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: false,
       },
       variants: [
@@ -58,7 +58,7 @@ async function main() {
         city: "Funchal",
         imageUrl:
           "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -79,7 +79,7 @@ async function main() {
         city: "Sobral de Monte Agraço",
         imageUrl:
           "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -105,7 +105,7 @@ async function main() {
         city: "Cascais",
         imageUrl:
           "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -124,7 +124,7 @@ async function main() {
         city: "Cantanhede",
         imageUrl:
           "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -146,7 +146,7 @@ async function main() {
         city: "Foz Côa",
         imageUrl:
           "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -168,7 +168,7 @@ async function main() {
         city: "Lisboa",
         imageUrl:
           "https://images.unsplash.com/photo-1513593771513-7b58b6c4af38?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -187,7 +187,7 @@ async function main() {
         city: "Lousã",
         imageUrl:
           "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -210,7 +210,7 @@ async function main() {
         city: "Lisboa",
         imageUrl:
           "https://images.unsplash.com/photo-1489516408517-0c0a15662682?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -232,7 +232,7 @@ async function main() {
         city: "Porto Moniz",
         imageUrl:
           "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -253,7 +253,7 @@ async function main() {
         city: "Aveiro",
         imageUrl:
           "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -277,7 +277,7 @@ async function main() {
         city: "Manteigas",
         imageUrl:
           "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -300,7 +300,7 @@ async function main() {
         city: "São Miguel",
         imageUrl:
           "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -325,7 +325,7 @@ async function main() {
         city: "Arouca",
         imageUrl:
           "https://images.unsplash.com/photo-1551632811-561732d1e306?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -346,7 +346,7 @@ async function main() {
         city: "Porto",
         imageUrl:
           "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -367,7 +367,7 @@ async function main() {
         city: "Lisboa",
         imageUrl:
           "https://images.unsplash.com/photo-1452626038306-9aae5e071dd3?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -386,7 +386,7 @@ async function main() {
         city: "Régua",
         imageUrl:
           "https://images.unsplash.com/photo-1472230578509-980a8e6f8f06?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -410,7 +410,7 @@ async function main() {
         city: "Porto",
         imageUrl:
           "https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -430,7 +430,7 @@ async function main() {
         city: "Gerês",
         imageUrl:
           "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -452,7 +452,7 @@ async function main() {
         city: "Sintra",
         imageUrl:
           "https://images.unsplash.com/photo-1473496169904-658ba7c44d8a?w=800",
-        externalUrl: "https://correrporprazer.com",
+
         isFeatured: true,
       },
       variants: [
@@ -477,7 +477,7 @@ async function main() {
         city: "Lisboa",
         imageUrl:
           "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=800",
-        externalUrl: "https://hyrox.com/lisboa",
+
         isFeatured: true,
       },
       variants: [
@@ -498,7 +498,7 @@ async function main() {
         city: "Porto",
         imageUrl:
           "https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=800",
-        externalUrl: "https://hyrox.com/porto",
+
         isFeatured: false,
       },
       variants: [

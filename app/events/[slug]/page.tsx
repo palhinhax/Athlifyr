@@ -11,6 +11,7 @@ import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
 import { ShareButton } from "@/components/share-button";
 import { EventAdminActions } from "@/components/event-admin-actions";
+import { FriendsGoing } from "@/components/friends-going";
 import { auth } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
@@ -113,6 +114,64 @@ export default async function EventPage({ params }: PageProps) {
 
   if (!event) {
     notFound();
+  }
+
+  // Get friends going to this event
+  let friendsGoing: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  }[] = [];
+  let friendsGoingCount = 0;
+
+  if (session?.user?.id) {
+    // Get user's accepted friendships
+    const friendships = await prisma.friendship.findMany({
+      where: {
+        OR: [
+          { senderId: session.user.id, status: "ACCEPTED" },
+          { receiverId: session.user.id, status: "ACCEPTED" },
+        ],
+      },
+      select: {
+        senderId: true,
+        receiverId: true,
+      },
+    });
+
+    const friendIds = friendships.map((f) =>
+      f.senderId === session.user.id ? f.receiverId : f.senderId
+    );
+
+    if (friendIds.length > 0) {
+      // Get friends participating in this event
+      const participations = await prisma.participation.findMany({
+        where: {
+          eventId: event.id,
+          userId: { in: friendIds },
+          status: "going",
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
+          },
+        },
+        take: 10,
+      });
+
+      friendsGoing = participations.map((p) => p.user);
+      friendsGoingCount = await prisma.participation.count({
+        where: {
+          eventId: event.id,
+          userId: { in: friendIds },
+          status: "going",
+        },
+      });
+    }
   }
 
   return (
@@ -221,12 +280,20 @@ export default async function EventPage({ params }: PageProps) {
             <div className="flex items-start gap-3">
               <MapPin className="mt-1 h-5 w-5 text-primary" />
               <div>
-                <div className="font-medium">Localização</div>
+                <div className="font-medium">Local</div>
                 <div className="text-muted-foreground">
                   {event.city}, {event.country}
                 </div>
               </div>
             </div>
+            {friendsGoingCount > 0 && (
+              <div className="md:col-span-2">
+                <FriendsGoing
+                  friends={friendsGoing}
+                  totalCount={friendsGoingCount}
+                />
+              </div>
+            )}
           </div>
 
           {/* Description */}

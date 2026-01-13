@@ -97,6 +97,24 @@ export default async function ProfilePage() {
             friendsCount,
             commentsCount: user.comments.length,
           }}
+          participations={user.participations.map((p) => ({
+            id: p.id,
+            status: p.status,
+            event: {
+              id: p.event.id,
+              title: p.event.title,
+              slug: p.event.slug,
+              startDate: p.event.startDate,
+              city: p.event.city,
+              sportType: p.event.sportType,
+            },
+            variant: p.variant
+              ? {
+                  name: p.variant.name,
+                  distanceKm: p.variant.distanceKm,
+                }
+              : null,
+          }))}
         />
 
         {/* Upcoming Events */}

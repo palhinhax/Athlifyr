@@ -133,6 +133,43 @@ export default async function EventPage({ params }: PageProps) {
       {/* Event Details */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl">
+          {/* Distances/Variants - Highlight at top */}
+          {event.variants && event.variants.length > 0 && (
+            <div className="mb-8">
+              <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
+                <Route className="h-6 w-6 text-primary" />
+                Distâncias Disponíveis
+              </h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {event.variants.map((variant) => (
+                  <div
+                    key={variant.id}
+                    className="rounded-lg border-2 border-primary/20 bg-card p-5 transition-all hover:border-primary hover:shadow-lg"
+                  >
+                    <h3 className="mb-2 text-xl font-bold">{variant.name}</h3>
+                    {variant.distance && (
+                      <p className="mb-3 text-2xl font-bold text-primary">
+                        {variant.distance}
+                      </p>
+                    )}
+                    {variant.description && (
+                      <p className="mb-3 text-sm text-muted-foreground">
+                        {variant.description}
+                      </p>
+                    )}
+                    {variant.price && (
+                      <div className="mt-3 border-t pt-3">
+                        <p className="text-lg font-semibold">
+                          €{variant.price.toFixed(2)}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {/* Meta Info */}
           <div className="mb-8 grid gap-6 rounded-lg bg-muted/50 p-6 md:grid-cols-2">
             <div className="flex items-start gap-3">
@@ -155,43 +192,6 @@ export default async function EventPage({ params }: PageProps) {
               </div>
             </div>
           </div>
-
-          {/* Variants/Distances */}
-          {event.variants && event.variants.length > 0 && (
-            <div className="mb-8">
-              <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
-                <Route className="h-6 w-6 text-primary" />
-                Distâncias e Variantes
-              </h2>
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {event.variants.map((variant) => (
-                  <div
-                    key={variant.id}
-                    className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent/50"
-                  >
-                    <h3 className="mb-1 text-lg font-semibold">
-                      {variant.name}
-                    </h3>
-                    {variant.distance && (
-                      <p className="font-medium text-primary">
-                        {variant.distance}
-                      </p>
-                    )}
-                    {variant.description && (
-                      <p className="mt-1 text-sm text-muted-foreground">
-                        {variant.description}
-                      </p>
-                    )}
-                    {variant.price && (
-                      <p className="mt-2 text-sm font-medium">
-                        €{variant.price.toFixed(2)}
-                      </p>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Description */}
           <div className="prose prose-lg mb-8 max-w-none">

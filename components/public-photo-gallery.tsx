@@ -117,6 +117,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
           <button
             key={photo.id}
             onClick={() => openLightbox(photo, index)}
+            aria-label={photo.caption || `Foto ${index + 1}`}
             className="group relative aspect-square overflow-hidden rounded-md bg-muted"
           >
             <Image
@@ -135,11 +136,15 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
         <div
           className="fixed inset-0 z-50 flex flex-col bg-black"
           onClick={closeLightbox}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Galeria de fotos"
         >
           {/* Top bar - only close button */}
           <div className="safe-area-inset-top flex items-center justify-between px-4 py-3">
             <button
               onClick={closeLightbox}
+              aria-label="Fechar galeria"
               className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-white backdrop-blur-sm transition-colors hover:bg-white/20"
             >
               <X className="h-5 w-5" />
@@ -163,6 +168,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
                   e.stopPropagation();
                   goToPrevious();
                 }}
+                aria-label="Foto anterior"
                 className="absolute left-2 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:left-4"
               >
                 <ChevronLeft className="h-6 w-6 sm:h-8 sm:w-8" />
@@ -176,6 +182,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
                   e.stopPropagation();
                   goToNext();
                 }}
+                aria-label="Próxima foto"
                 className="absolute right-2 z-10 rounded-full bg-white/10 p-3 text-white backdrop-blur-sm transition-colors hover:bg-white/20 sm:right-4"
               >
                 <ChevronRight className="h-6 w-6 sm:h-8 sm:w-8" />

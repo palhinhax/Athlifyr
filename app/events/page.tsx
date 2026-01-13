@@ -31,6 +31,9 @@ async function getEvents(sportType?: string) {
 
   return await prisma.event.findMany({
     where,
+    include: {
+      variants: true,
+    },
     orderBy: {
       startDate: "asc",
     },

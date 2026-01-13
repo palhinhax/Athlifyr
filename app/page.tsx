@@ -14,6 +14,9 @@ async function getUpcomingEvents() {
         gte: new Date(),
       },
     },
+    include: {
+      variants: true,
+    },
     orderBy: {
       startDate: "asc",
     },
@@ -40,13 +43,13 @@ export default async function Home() {
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="container mx-auto px-4 py-16 md:py-24 text-center">
-        <h1 className="text-4xl md:text-6xl font-bold tracking-tight">
+      <section className="container mx-auto px-4 py-16 text-center md:py-24">
+        <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
           All sports events.
           <br />
           <span className="text-primary">One place.</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg md:text-xl text-muted-foreground">
+        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
           Find races, competitions and challenges near you.
           <br />
           Discover the best sports events in Portugal.
@@ -55,12 +58,9 @@ export default async function Home() {
 
       {/* Quick Filters */}
       <section className="container mx-auto px-4 pb-12">
-        <div className="flex flex-wrap gap-2 justify-center">
+        <div className="flex flex-wrap justify-center gap-2">
           {sportTypes.map((sportType) => (
-            <Link
-              key={sportType}
-              href={`/events?sport=${sportType}`}
-            >
+            <Link key={sportType} href={`/events?sport=${sportType}`}>
               <Button variant="outline" size="sm">
                 {sportTypeLabels[sportType]}
               </Button>
@@ -71,17 +71,19 @@ export default async function Home() {
 
       {/* Upcoming Events */}
       <section className="container mx-auto px-4 py-12">
-        <div className="flex justify-between items-center mb-8">
+        <div className="mb-8 flex items-center justify-between">
           <h2 className="text-3xl font-bold">Upcoming Events in Portugal</h2>
           <Link href="/events">
             <Button variant="ghost">Ver Todos →</Button>
           </Link>
         </div>
-        
+
         {upcomingEvents.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">
+          <div className="py-12 text-center text-muted-foreground">
             <p>Nenhum evento encontrado. Execute o seed da base de dados:</p>
-            <code className="block mt-2 bg-muted px-4 py-2 rounded">npm run db:seed</code>
+            <code className="mt-2 block rounded bg-muted px-4 py-2">
+              npm run db:seed
+            </code>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -93,20 +95,20 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="bg-muted/50 py-16 mt-12">
+      <section className="mt-12 bg-muted/50 py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold mb-4">Ready to find your next challenge?</h2>
-          <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Browse all available events and find the perfect race or competition for you.
+          <h2 className="mb-4 text-3xl font-bold">
+            Ready to find your next challenge?
+          </h2>
+          <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
+            Browse all available events and find the perfect race or competition
+            for you.
           </p>
           <Link href="/events">
-            <Button size="lg">
-              Explore All Events
-            </Button>
+            <Button size="lg">Explore All Events</Button>
           </Link>
         </div>
       </section>
     </div>
   );
 }
-

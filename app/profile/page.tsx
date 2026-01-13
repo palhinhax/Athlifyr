@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/event-utils";
 import Link from "next/link";
 import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";
+import { PhotoGallery } from "@/components/photo-gallery";
 
 export const dynamic = "force-dynamic";
 
@@ -194,6 +195,9 @@ export default async function ProfilePage() {
             </Link>
           </Card>
         )}
+
+        {/* Photo Gallery */}
+        <PhotoGallery />
 
         {/* Friends Section */}
         <FriendsSection />

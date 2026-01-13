@@ -43,6 +43,7 @@ model User {
   comments       Comment[]
   posts          Post[]
   results        Result[]
+  photos         ProfilePhoto[]
   // Friendships where user sent the request
   sentFriendships     Friendship[] @relation("FriendshipSender")
   // Friendships where user received the request
@@ -202,6 +203,19 @@ model Post {
 
   @@index([userId])
   @@index([eventId])
+  @@index([createdAt])
+}
+
+model ProfilePhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  imageUrl  String
+  caption   String?  @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
   @@index([createdAt])
 }
 

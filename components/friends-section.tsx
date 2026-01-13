@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   Search,
   UserPlus,
@@ -357,7 +358,10 @@ export function FriendsSection() {
                   key={friend.friendshipId}
                   className="flex items-center gap-3 p-4"
                 >
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                  <Link
+                    href={`/user/${friend.id}`}
+                    className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted transition-opacity hover:opacity-80"
+                  >
                     {friend.image ? (
                       <Image
                         src={friend.image}
@@ -370,9 +374,14 @@ export function FriendsSection() {
                         {friend.name?.[0]?.toUpperCase() || "U"}
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate font-medium">{friend.name}</p>
+                    <Link
+                      href={`/user/${friend.id}`}
+                      className="block truncate font-medium transition-colors hover:text-primary"
+                    >
+                      {friend.name}
+                    </Link>
                     <p className="truncate text-xs text-muted-foreground">
                       {friend.email}
                     </p>
@@ -414,7 +423,10 @@ export function FriendsSection() {
                     key={request.id}
                     className="flex items-center gap-4 p-4"
                   >
-                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                    <Link
+                      href={`/user/${request.sender.id}`}
+                      className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted transition-opacity hover:opacity-80"
+                    >
                       {request.sender.image ? (
                         <Image
                           src={request.sender.image}
@@ -427,9 +439,14 @@ export function FriendsSection() {
                           {request.sender.name?.[0]?.toUpperCase() || "U"}
                         </div>
                       )}
-                    </div>
+                    </Link>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{request.sender.name}</p>
+                      <Link
+                        href={`/user/${request.sender.id}`}
+                        className="block font-medium transition-colors hover:text-primary"
+                      >
+                        {request.sender.name}
+                      </Link>
                       <p className="truncate text-sm text-muted-foreground">
                         {request.sender.email}
                       </p>
@@ -479,7 +496,10 @@ export function FriendsSection() {
                     key={request.id}
                     className="flex items-center gap-4 p-4"
                   >
-                    <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                    <Link
+                      href={`/user/${request.receiver.id}`}
+                      className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted transition-opacity hover:opacity-80"
+                    >
                       {request.receiver.image ? (
                         <Image
                           src={request.receiver.image}
@@ -492,9 +512,14 @@ export function FriendsSection() {
                           {request.receiver.name?.[0]?.toUpperCase() || "U"}
                         </div>
                       )}
-                    </div>
+                    </Link>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{request.receiver.name}</p>
+                      <Link
+                        href={`/user/${request.receiver.id}`}
+                        className="block font-medium transition-colors hover:text-primary"
+                      >
+                        {request.receiver.name}
+                      </Link>
                       <p className="truncate text-sm text-muted-foreground">
                         {request.receiver.email}
                       </p>
@@ -563,7 +588,10 @@ export function FriendsSection() {
             <div className="space-y-3">
               {searchResults.map((user) => (
                 <Card key={user.id} className="flex items-center gap-4 p-4">
-                  <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                  <Link
+                    href={`/user/${user.id}`}
+                    className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted transition-opacity hover:opacity-80"
+                  >
                     {user.image ? (
                       <Image
                         src={user.image}
@@ -576,9 +604,14 @@ export function FriendsSection() {
                         {user.name?.[0]?.toUpperCase() || "U"}
                       </div>
                     )}
-                  </div>
+                  </Link>
                   <div className="min-w-0 flex-1">
-                    <p className="font-medium">{user.name}</p>
+                    <Link
+                      href={`/user/${user.id}`}
+                      className="block font-medium transition-colors hover:text-primary"
+                    >
+                      {user.name}
+                    </Link>
                     <p className="truncate text-sm text-muted-foreground">
                       {user.email}
                     </p>

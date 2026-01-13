@@ -156,38 +156,23 @@ export default async function EventPage({ params }: PageProps) {
       {/* Event Details */}
       <div className="container mx-auto px-4 py-12">
         <div className="max-w-4xl">
-          {/* Distances/Variants - Highlight at top */}
+          {/* Distances/Variants - Compact tags */}
           {event.variants && event.variants.length > 0 && (
             <div className="mb-8">
-              <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold">
-                <Route className="h-6 w-6 text-primary" />
-                Distâncias Disponíveis
-              </h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <Route className="h-5 w-5 text-primary" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  Distâncias:
+                </span>
                 {event.variants.map((variant) => (
-                  <div
+                  <span
                     key={variant.id}
-                    className="rounded-lg border-2 border-primary/20 bg-card p-5 transition-all hover:border-primary hover:shadow-lg"
+                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
                   >
-                    <h3 className="mb-2 text-xl font-bold">{variant.name}</h3>
-                    {variant.distanceKm && (
-                      <p className="mb-3 text-2xl font-bold text-primary">
-                        {variant.distanceKm} km
-                      </p>
-                    )}
-                    {variant.description && (
-                      <p className="mb-3 text-sm text-muted-foreground">
-                        {variant.description}
-                      </p>
-                    )}
-                    {variant.price && (
-                      <div className="mt-3 border-t pt-3">
-                        <p className="text-lg font-semibold">
-                          €{variant.price.toFixed(2)}
-                        </p>
-                      </div>
-                    )}
-                  </div>
+                    {variant.distanceKm
+                      ? `${variant.distanceKm} km`
+                      : variant.name}
+                  </span>
                 ))}
               </div>
             </div>

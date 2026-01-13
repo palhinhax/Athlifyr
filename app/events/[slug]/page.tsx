@@ -99,13 +99,33 @@ export async function generateMetadata({
     };
   }
 
+  const eventUrl = `https://athlifyr.com/events/${event.slug}`;
+  const eventImage = event.imageUrl || "https://athlifyr.com/logo.png";
+
   return {
     title: `${event.title} - Athlifyr`,
     description: event.description,
     openGraph: {
       title: event.title,
       description: event.description,
-      images: event.imageUrl ? [event.imageUrl] : [],
+      url: eventUrl,
+      siteName: "Athlifyr",
+      images: [
+        {
+          url: eventImage,
+          width: 1200,
+          height: 630,
+          alt: event.title,
+        },
+      ],
+      locale: "pt_PT",
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: event.title,
+      description: event.description,
+      images: [eventImage],
     },
   };
 }

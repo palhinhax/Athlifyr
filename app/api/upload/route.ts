@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     }
 
     // Validate folder
-    const allowedFolders = ["profiles", "posts", "events"];
+    const allowedFolders = ["profiles", "posts", "events", "instagram"];
     if (!allowedFolders.includes(folder)) {
       return NextResponse.json({ error: "Invalid folder" }, { status: 400 });
     }
@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       file: buffer,
       fileName: file.name,
       contentType: file.type,
-      folder: folder as "profiles" | "posts" | "events",
+      folder: folder as "profiles" | "posts" | "events" | "instagram",
     });
 
     return NextResponse.json({

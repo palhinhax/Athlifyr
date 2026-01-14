@@ -73,16 +73,32 @@ export function validateFieldLength(
   return { valid: true };
 }
 
+// Font scaling thresholds and scale factors
+const FONT_SCALE_THRESHOLDS = {
+  SHORT: 0.7, // 0-70% of max length
+  MEDIUM: 0.85, // 70-85% of max length
+  LONG: 1.0, // 85-100% of max length
+} as const;
+
+const FONT_SCALE_FACTORS = {
+  SHORT: 1.0,
+  MEDIUM: 0.9,
+  LONG: 0.8,
+  VERY_LONG: 0.7, // >100% of max length (minimum)
+} as const;
+
 /**
  * Auto-scale font size based on text length
- * Returns a scale factor (0.6 - 1.0)
+ * Returns a scale factor (0.7 - 1.0)
  */
 export function getAutoFontScale(
   textLength: number,
   maxLength: number
 ): number {
-  if (textLength <= maxLength * 0.7) return 1.0;
-  if (textLength <= maxLength * 0.85) return 0.9;
-  if (textLength <= maxLength) return 0.8;
-  return 0.7; // Minimum scale
+  const ratio = textLength / maxLength;
+
+  if (ratio <= FONT_SCALE_THRESHOLDS.SHORT) return FONT_SCALE_FACTORS.SHORT;
+  if (ratio <= FONT_SCALE_THRESHOLDS.MEDIUM) return FONT_SCALE_FACTORS.MEDIUM;
+  if (ratio <= FONT_SCALE_THRESHOLDS.LONG) return FONT_SCALE_FACTORS.LONG;
+  return FONT_SCALE_FACTORS.VERY_LONG; // Minimum scale
 }

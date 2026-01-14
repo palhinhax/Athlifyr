@@ -5,6 +5,9 @@ import {
   type InstagramFormat,
 } from "@/types/instagram";
 
+// Brand logo path
+const BRAND_LOGO_PATH = "/logo.png";
+
 interface BrandFrameProps {
   children: React.ReactNode;
   format: InstagramFormat;
@@ -62,7 +65,7 @@ export function BrandFrame({
       >
         <div className="relative h-full w-full">
           <Image
-            src="/logo.png"
+            src={BRAND_LOGO_PATH}
             alt="Athlifyr"
             fill
             className="object-contain"

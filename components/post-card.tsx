@@ -12,6 +12,7 @@ import {
   MoreHorizontal,
   MessageCircle,
   Send,
+  ImageOff,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,6 +79,7 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
   const [isLoadingComments, setIsLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   const createdAt =
     typeof post.createdAt === "string"
@@ -273,13 +275,25 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
         {/* Image */}
         {post.imageUrl && (
           <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
-            <Image
-              src={post.imageUrl}
-              alt="Post image"
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+            {!imageError ? (
+              <Image
+                src={post.imageUrl}
+                alt="Post image"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                onError={() => {
+                  console.error("Failed to load image:", post.imageUrl);
+                  setImageError(true);
+                }}
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+                <ImageOff className="h-12 w-12" />
+                <p className="text-sm">Imagem não disponível</p>
+              </div>
+            )}
           </div>
         )}
 

@@ -372,3 +372,15 @@ model Contact {
   @@index([createdAt])
   @@index([email])
 }
+
+model MapFilterPreset {
+  id        String   @id @default(cuid())
+  userId    String?  @unique
+  deviceId  String?  @unique
+  filters   Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([deviceId])
+}

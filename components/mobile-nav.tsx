@@ -92,14 +92,24 @@ export function MobileNav() {
                     Definições da Conta
                   </Link>
                   {session.user.role === "ADMIN" && (
-                    <Link
-                      href="/admin/events"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                    >
-                      <Shield className="h-4 w-4" />
-                      Gerir Eventos
-                    </Link>
+                    <>
+                      <Link
+                        href="/admin/events"
+                        onClick={closeMenu}
+                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                      >
+                        <Shield className="h-4 w-4" />
+                        Gerir Eventos
+                      </Link>
+                      <Link
+                        href="/admin/instagram"
+                        onClick={closeMenu}
+                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                      >
+                        <Shield className="h-4 w-4" />
+                        Instagram Generator
+                      </Link>
+                    </>
                   )}
                   <button
                     onClick={() => {

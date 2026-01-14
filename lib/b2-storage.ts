@@ -29,7 +29,7 @@ export interface UploadOptions {
   file: Buffer;
   fileName: string;
   contentType: string;
-  folder?: "profiles" | "posts" | "events";
+  folder?: "profiles" | "posts" | "events" | "instagram";
 }
 
 export interface UploadResult {

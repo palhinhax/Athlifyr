@@ -23,7 +23,7 @@ export async function exportToImage({
   await document.fonts.ready;
 
   // Wait a bit for images to fully render
-  await new Promise((resolve) => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 500));
 
   try {
     let dataUrl: string;
@@ -32,6 +32,13 @@ export async function exportToImage({
       quality,
       pixelRatio: 2, // High quality export
       cacheBust: true,
+      skipAutoScale: true,
+      skipFonts: false,
+      includeQueryParams: true,
+      filter: (_node: HTMLElement) => {
+        // Include all nodes
+        return true;
+      },
       style: {
         // Ensure element is properly sized
         transform: "scale(1)",

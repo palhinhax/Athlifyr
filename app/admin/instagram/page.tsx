@@ -101,6 +101,7 @@ export default function InstagramGeneratorPage() {
       title: string;
       slug: string;
       startDate: string;
+      endDate: string | null;
       location: string;
       sport: { name: string };
       variants: Array<{ name: string }>;
@@ -168,12 +169,44 @@ export default function InstagramGeneratorPage() {
   }, [eventSearchQuery]);
 
   const handleSelectEvent = (event: (typeof eventSearchResults)[0]) => {
-    // Format date
-    const date = new Date(event.startDate);
-    const monthYear = date.toLocaleDateString("pt-PT", {
-      month: "short",
-      year: "numeric",
-    });
+    // Format date - show day and month, or date range if endDate exists
+    const startDate = new Date(event.startDate);
+    let formattedDate: string;
+
+    if (event.endDate) {
+      const endDate = new Date(event.endDate);
+      const isSameMonth =
+        startDate.getMonth() === endDate.getMonth() &&
+        startDate.getFullYear() === endDate.getFullYear();
+
+      if (isSameMonth) {
+        // Same month: "15-18 jan 2026"
+        const startDay = startDate.getDate();
+        const endDay = endDate.getDate();
+        const month = startDate.toLocaleDateString("pt-PT", { month: "short" });
+        const year = startDate.getFullYear();
+        formattedDate = `${startDay}-${endDay} ${month} ${year}`;
+      } else {
+        // Different months: "15 jan - 18 fev 2026"
+        const startFormatted = startDate.toLocaleDateString("pt-PT", {
+          day: "numeric",
+          month: "short",
+        });
+        const endFormatted = endDate.toLocaleDateString("pt-PT", {
+          day: "numeric",
+          month: "short",
+        });
+        const year = endDate.getFullYear();
+        formattedDate = `${startFormatted} - ${endFormatted} ${year}`;
+      }
+    } else {
+      // Single date: "15 jan 2026"
+      formattedDate = startDate.toLocaleDateString("pt-PT", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      });
+    }
 
     // Set template to T1 (Event Hero)
     setTemplateKey("T1");
@@ -193,7 +226,7 @@ export default function InstagramGeneratorPage() {
     }
 
     // Meta line: date and location
-    setT1MetaLine(`${monthYear} • ${event.location}`);
+    setT1MetaLine(`${formattedDate} • ${event.location}`);
 
     // CTA
     setT1Cta("Descobre na Athlifyr");
@@ -691,7 +724,11 @@ export default function InstagramGeneratorPage() {
                       onChange={(e) => setT1Subtitle(e.target.value)}
                       maxLength={40}
                       placeholder="Singles • Doubles"
+                      autoComplete="off"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t1Subtitle.length}/40
+                    </p>
                   </div>
                   <div>
                     <Label>Date/Location</Label>
@@ -700,7 +737,11 @@ export default function InstagramGeneratorPage() {
                       onChange={(e) => setT1MetaLine(e.target.value)}
                       maxLength={30}
                       placeholder="Mar 2026 • Lisboa"
+                      autoComplete="off"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t1MetaLine.length}/30
+                    </p>
                   </div>
                   <div>
                     <Label>CTA</Label>
@@ -709,7 +750,11 @@ export default function InstagramGeneratorPage() {
                       onChange={(e) => setT1Cta(e.target.value)}
                       maxLength={30}
                       placeholder="Descobre na Athlifyr"
+                      autoComplete="off"
                     />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t1Cta.length}/30
+                    </p>
                   </div>
                 </div>
               )}

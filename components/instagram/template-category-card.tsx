@@ -31,9 +31,12 @@ export function TemplateCategoryCard({
     if (background.type === "photo" && background.value) {
       return (
         <>
-          <div
-            className="absolute inset-0 z-0 bg-cover bg-center"
-            style={{ backgroundImage: `url(${background.value})` }}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={background.value}
+            alt=""
+            className="absolute inset-0 z-0 h-full w-full object-cover"
+            crossOrigin="anonymous"
           />
           <div
             className="absolute inset-0 z-0 bg-black"

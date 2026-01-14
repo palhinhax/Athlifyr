@@ -30,6 +30,7 @@ export async function GET(request: NextRequest) {
         description: true,
         sportTypes: true,
         startDate: true,
+        endDate: true,
         city: true,
         country: true,
         imageUrl: true,

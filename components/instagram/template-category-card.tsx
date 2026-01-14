@@ -32,11 +32,11 @@ export function TemplateCategoryCard({
       return (
         <>
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 z-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${background.value})` }}
           />
           <div
-            className="absolute inset-0 bg-black"
+            className="absolute inset-0 z-0 bg-black"
             style={{ opacity: (background.overlayIntensity || 50) / 100 }}
           />
         </>
@@ -45,61 +45,58 @@ export function TemplateCategoryCard({
     if (background.type === "gradient") {
       return (
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 z-0"
           style={{ background: background.value }}
         />
       );
     }
     return (
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         style={{ backgroundColor: background.value }}
       />
     );
   };
 
   return (
-    <div className="relative">
+    <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
       {renderBackground()}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center text-white">
+        {/* Category Title */}
+        <h1
+          className="mb-12 font-bold uppercase leading-none tracking-wider"
+          style={{
+            fontSize: `${160 * titleScale}px`,
+            textShadow: "0 4px 20px rgba(0,0,0,0.5)",
+          }}
+        >
+          {categoryTitle}
+        </h1>
 
-      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
-        <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
-          {/* Category Title */}
-          <h1
-            className="mb-12 font-bold uppercase leading-none tracking-wider"
-            style={{
-              fontSize: `${160 * titleScale}px`,
-              textShadow: "0 4px 20px rgba(0,0,0,0.5)",
-            }}
-          >
-            {categoryTitle}
-          </h1>
-
-          {/* Chips/Keywords */}
-          <div className="mb-12 flex flex-wrap items-center justify-center gap-6">
-            {chips.slice(0, 3).map((chip, index) => (
-              <div
-                key={index}
-                className="rounded-full border-2 border-white/30 bg-white/10 px-12 py-4 font-medium backdrop-blur-sm"
-                style={{ fontSize: "40px" }}
-              >
-                {chip}
-              </div>
-            ))}
-          </div>
-
-          {/* Tagline */}
-          <p
-            className="max-w-4xl font-normal tracking-wide"
-            style={{
-              fontSize: "52px",
-              opacity: 0.9,
-            }}
-          >
-            {tagline}
-          </p>
+        {/* Chips/Keywords */}
+        <div className="mb-12 flex flex-wrap items-center justify-center gap-6">
+          {chips.slice(0, 3).map((chip, index) => (
+            <div
+              key={index}
+              className="rounded-full border-2 border-white/30 bg-white/10 px-12 py-4 font-medium backdrop-blur-sm"
+              style={{ fontSize: "40px" }}
+            >
+              {chip}
+            </div>
+          ))}
         </div>
-      </BrandFrame>
-    </div>
+
+        {/* Tagline */}
+        <p
+          className="max-w-4xl font-normal tracking-wide"
+          style={{
+            fontSize: "52px",
+            opacity: 0.9,
+          }}
+        >
+          {tagline}
+        </p>
+      </div>
+    </BrandFrame>
   );
 }

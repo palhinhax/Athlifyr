@@ -64,6 +64,8 @@ For the bucket to work correctly with public image URLs:
 2. Under "Bucket Info" > "Files in Bucket are:", select **Public**
 3. Save changes
 
+⚠️ **IMPORTANT**: If the bucket is set to **Private**, images will not be accessible via direct URLs and will appear broken or disappear after upload. Make sure the bucket is set to **Public**.
+
 ### 5. Configure CORS (Required for Image Export)
 
 **IMPORTANT**: You need to configure CORS to allow images to be loaded from the browser for export functionality.
@@ -197,6 +199,33 @@ Example: `posts/1673456789000_my_photo.jpg`
 
 ## Troubleshooting
 
+### Images disappear after upload / Images not displaying in posts
+
+**Symptom**: You upload an image successfully, but it doesn't show up in the post or shows a broken image icon.
+
+**Common Causes**:
+
+1. **Bucket is set to Private instead of Public**
+   - Solution: Go to bucket settings and change "Files in Bucket are:" to **Public**
+   - This is the most common cause of images disappearing
+
+2. **Incorrect CORS configuration**
+   - Solution: Follow step 5 to configure CORS rules properly
+   - Make sure your domain is in `allowedOrigins`
+
+3. **Wrong bucket URL in environment variables**
+   - Solution: Verify `NEXT_PUBLIC_B2_BUCKET_URL` matches your bucket's URL
+   - Format should be: `https://f003.backblazeb2.com` (or your custom domain)
+
+4. **File permissions**
+   - Solution: Ensure application key has both Read and Write permissions
+
+**Quick Check**:
+
+- Open browser console (F12) and check for CORS or 403 errors when loading images
+- Try accessing the image URL directly in a new browser tab
+- If you get "Access Denied" or 403, your bucket is likely private
+
 ### Images not loading / CORS errors
 
 **Error**: `Access to image at '...' has been blocked by CORS policy`
@@ -221,9 +250,10 @@ You should see `Access-Control-Allow-Origin: http://localhost:3000` in the respo
 
 ### Images not loading (general)
 
-1. Verify bucket is set to **Public**
+1. Verify bucket is set to **Public** (this is critical!)
 2. Check `NEXT_PUBLIC_B2_BUCKET_URL` is correct
-3. Test image URL directly in browser
+3. Test image URL directly in browser - if you get 403/Access Denied, bucket is private
+4. Check Next.js image domains are configured in `next.config.mjs`
 
 ### Upload fails
 

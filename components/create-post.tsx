@@ -77,12 +77,19 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
       });
 
       if (!response.ok) {
-        throw new Error("Failed to upload image");
+        const error = await response.json();
+        throw new Error(error.error || "Failed to upload image");
       }
 
       const data = await response.json();
-      setImageUrl(data.url);
-      return data.url;
+      const uploadedUrl = data.file?.url || data.url;
+
+      if (!uploadedUrl) {
+        throw new Error("Upload response missing URL");
+      }
+
+      setImageUrl(uploadedUrl);
+      return uploadedUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
@@ -114,8 +121,23 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
       // Upload image first if exists
       let finalImageUrl = imageUrl;
       if (imageFile && !imageUrl) {
+        console.log("Uploading image file:", imageFile.name);
         finalImageUrl = (await handleUploadImage()) || "";
+        console.log("Image upload result:", finalImageUrl || "FAILED");
+
+        // If image upload failed, don't proceed
+        if (!finalImageUrl && imageFile) {
+          toast({
+            title: "Erro ao enviar imagem",
+            description: "Não foi possível enviar a imagem. Tenta novamente.",
+            variant: "destructive",
+          });
+          setIsSubmitting(false);
+          return;
+        }
       }
+
+      console.log("Creating post with imageUrl:", finalImageUrl || "none");
 
       const response = await fetch("/api/posts", {
         method: "POST",

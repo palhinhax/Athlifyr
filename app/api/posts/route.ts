@@ -22,6 +22,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = createPostSchema.parse(body);
 
+    // Log for debugging image URL issues
+    if (validatedData.imageUrl) {
+      console.log("Creating post with image URL:", validatedData.imageUrl);
+    }
+
     // If eventId provided, check if event exists
     if (validatedData.eventId) {
       const event = await prisma.event.findUnique({
@@ -37,7 +42,7 @@ export async function POST(request: NextRequest) {
       data: {
         userId: session.user.id,
         content: validatedData.content,
-        imageUrl: validatedData.imageUrl,
+        imageUrl: validatedData.imageUrl || null,
         eventId: validatedData.eventId,
       },
       include: {

@@ -12,6 +12,7 @@ interface BrandFrameProps {
   children: React.ReactNode;
   format: InstagramFormat;
   showGuides?: boolean;
+  showLogo?: boolean;
   className?: string;
 }
 
@@ -25,6 +26,7 @@ export function BrandFrame({
   children,
   format,
   showGuides = false,
+  showLogo = true,
   className = "",
 }: BrandFrameProps) {
   const size = INSTAGRAM_SIZES[format];
@@ -54,25 +56,27 @@ export function BrandFrame({
       </div>
 
       {/* Logo - bottom right corner inside safe area */}
-      <div
-        className="absolute z-20"
-        style={{
-          right: `${safeArea.right}px`,
-          bottom: `${safeArea.bottom - 20}px`,
-          width: "120px",
-          height: "40px",
-        }}
-      >
-        <div className="relative h-full w-full">
-          <Image
-            src={BRAND_LOGO_PATH}
-            alt="Athlifyr"
-            fill
-            className="object-contain"
-            style={{ filter: "brightness(0) invert(1)" }}
-          />
+      {showLogo && (
+        <div
+          className="absolute z-20"
+          style={{
+            right: `${safeArea.right}px`,
+            bottom: `${safeArea.bottom - 20}px`,
+            width: "120px",
+            height: "40px",
+          }}
+        >
+          <div className="relative h-full w-full">
+            <Image
+              src={BRAND_LOGO_PATH}
+              alt="Athlifyr"
+              fill
+              className="object-contain"
+              style={{ filter: "brightness(0) invert(1)" }}
+            />
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Safe area guides overlay (only shown in preview, not exported) */}
       {showGuides && (

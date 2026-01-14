@@ -9,6 +9,7 @@ interface TemplateMinimalQuoteProps {
   payload: MinimalQuotePayload;
   format: InstagramFormat;
   showGuides?: boolean;
+  showLogo?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export function TemplateMinimalQuote({
   payload,
   format,
   showGuides = false,
+  showLogo = true,
 }: TemplateMinimalQuoteProps) {
   const { quote, footer, background } = payload;
 
@@ -60,7 +62,7 @@ export function TemplateMinimalQuote({
     <div className="relative">
       {renderBackground()}
 
-      <BrandFrame format={format} showGuides={showGuides}>
+      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
         <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
           {/* Opening Quote Mark */}
           <div

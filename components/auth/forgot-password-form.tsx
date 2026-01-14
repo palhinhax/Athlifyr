@@ -102,10 +102,12 @@ export function ForgotPasswordForm() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="teu@email.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
               disabled={isLoading}
             />

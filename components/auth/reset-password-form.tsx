@@ -134,10 +134,12 @@ export function ResetPasswordForm() {
             <div className="relative">
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 required
                 disabled={isLoading}
                 minLength={6}
@@ -164,10 +166,12 @@ export function ResetPasswordForm() {
             <div className="relative">
               <Input
                 id="confirmPassword"
+                name="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
                 placeholder="Repete a password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
+                autoComplete="new-password"
                 required
                 disabled={isLoading}
                 minLength={6}

@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, KeyRound } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 
 // Password strength calculator
 const calculatePasswordStrength = (password: string): number => {
@@ -27,33 +27,6 @@ const calculatePasswordStrength = (password: string): number => {
   if (/\d/.test(password)) strength += 15;
   if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
   return Math.min(strength, 100);
-};
-
-// Generate secure password
-const generateSecurePassword = (): string => {
-  const lowercase = "abcdefghijklmnopqrstuvwxyz";
-  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  const numbers = "0123456789";
-  const symbols = "!@#$%^&*-_=+";
-  const all = lowercase + uppercase + numbers + symbols;
-
-  let password = "";
-  // Ensure at least one of each type
-  password += lowercase[Math.floor(Math.random() * lowercase.length)];
-  password += uppercase[Math.floor(Math.random() * uppercase.length)];
-  password += numbers[Math.floor(Math.random() * numbers.length)];
-  password += symbols[Math.floor(Math.random() * symbols.length)];
-
-  // Fill the rest (total 16 characters)
-  for (let i = 4; i < 16; i++) {
-    password += all[Math.floor(Math.random() * all.length)];
-  }
-
-  // Shuffle the password
-  return password
-    .split("")
-    .sort(() => Math.random() - 0.5)
-    .join("");
 };
 
 export function SignUpForm() {
@@ -77,16 +50,6 @@ export function SignUpForm() {
     if (passwordStrength < 40) return "Fraca";
     if (passwordStrength < 70) return "Média";
     return "Forte";
-  };
-
-  const handleGeneratePassword = () => {
-    const newPassword = generateSecurePassword();
-    setPassword(newPassword);
-    setShowPassword(true);
-    toast({
-      title: "Password gerada!",
-      description: "Uma password segura foi gerada. Guarda-a num local seguro.",
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -190,10 +153,12 @@ export function SignUpForm() {
             <Label htmlFor="name">Nome</Label>
             <Input
               id="name"
+              name="name"
               type="text"
               placeholder="O teu nome"
               value={name}
               onChange={(e) => setName(e.target.value)}
+              autoComplete="name"
               required
               disabled={isLoading}
             />
@@ -202,36 +167,27 @@ export function SignUpForm() {
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
+              name="email"
               type="email"
               placeholder="o-teu-email@exemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
               required
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleGeneratePassword}
-                disabled={isLoading}
-                className="h-auto p-0 text-xs text-primary hover:underline"
-              >
-                <KeyRound className="mr-1 h-3 w-3" />
-                Gerar password
-              </Button>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <div className="relative">
               <Input
                 id="password"
+                name="password"
                 type={showPassword ? "text" : "password"}
                 placeholder="••••••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                autoComplete="new-password"
                 required
                 minLength={6}
                 disabled={isLoading}

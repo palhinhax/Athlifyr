@@ -84,6 +84,7 @@ export function BrandFrame({
               src={BRAND_LOGO_PATH}
               alt="Athlifyr"
               fill
+              sizes="80px"
               className="object-contain"
               style={{
                 filter:

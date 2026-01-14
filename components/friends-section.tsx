@@ -367,6 +367,7 @@ export function FriendsSection() {
                         src={friend.image}
                         alt={friend.name || "User"}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     ) : (
@@ -432,6 +433,7 @@ export function FriendsSection() {
                           src={request.sender.image}
                           alt={request.sender.name || "User"}
                           fill
+                          sizes="48px"
                           className="object-cover"
                         />
                       ) : (
@@ -505,6 +507,7 @@ export function FriendsSection() {
                           src={request.receiver.image}
                           alt={request.receiver.name || "User"}
                           fill
+                          sizes="48px"
                           className="object-cover"
                         />
                       ) : (
@@ -597,6 +600,7 @@ export function FriendsSection() {
                         src={user.image}
                         alt={user.name || "User"}
                         fill
+                        sizes="48px"
                         className="object-cover"
                       />
                     ) : (

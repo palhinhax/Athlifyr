@@ -196,6 +196,7 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
                 src={session.user.image}
                 alt={session.user.name || "User"}
                 fill
+                sizes="40px"
                 className="object-cover"
               />
             ) : (
@@ -225,6 +226,7 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
                 src={imagePreview}
                 alt="Preview"
                 fill
+                sizes="(max-width: 768px) 100vw, 50vw"
                 className="object-contain"
               />
             </div>

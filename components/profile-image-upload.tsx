@@ -170,6 +170,7 @@ export function ProfileImageUpload({
             src={displayImage}
             alt={userName || "User"}
             fill
+            sizes="128px"
             className="object-cover"
           />
         ) : (

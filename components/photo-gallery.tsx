@@ -306,6 +306,7 @@ export function PhotoGallery() {
                 src={photo.imageUrl}
                 alt={photo.caption || "Foto"}
                 fill
+                sizes="(max-width: 640px) 33vw, (max-width: 1024px) 25vw, 20vw"
                 className="object-cover transition-transform group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/20" />
@@ -455,6 +456,7 @@ export function PhotoGallery() {
                 src={pendingPreview}
                 alt="Preview"
                 fill
+                sizes="(max-width: 768px) 100vw, 512px"
                 className="object-contain"
               />
             </div>

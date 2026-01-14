@@ -22,16 +22,11 @@ export function UserNav() {
 
   if (!session) {
     return (
-      <div className="flex items-center gap-2">
-        <Link href="/auth/signin">
-          <Button variant="ghost" size="sm">
-            Entrar
-          </Button>
-        </Link>
-        <Link href="/auth/signup">
-          <Button size="sm">Criar Conta</Button>
-        </Link>
-      </div>
+      <Link href="/auth/signin">
+        <Button variant="ghost" size="sm">
+          Entrar
+        </Button>
+      </Link>
     );
   }
 

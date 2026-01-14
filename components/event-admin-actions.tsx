@@ -355,6 +355,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                     src={formData.imageUrl}
                     alt="Preview"
                     fill
+                    sizes="(max-width: 768px) 100vw, 600px"
                     className="object-cover"
                   />
                   <button

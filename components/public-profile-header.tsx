@@ -173,6 +173,7 @@ export function PublicProfileHeader({
             src={user.image}
             alt={user.name || "User"}
             fill
+            sizes="128px"
             className="object-cover"
           />
         ) : (

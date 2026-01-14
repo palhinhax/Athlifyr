@@ -19,9 +19,11 @@ export function NavLinks() {
       <Link href="/map" className="text-sm font-medium hover:underline">
         Mapa
       </Link>
-      <Link href="/feed" className="text-sm font-medium hover:underline">
-        Feed
-      </Link>
+      {session && (
+        <Link href="/feed" className="text-sm font-medium hover:underline">
+          Feed
+        </Link>
+      )}
       <Link href="/contact" className="text-sm font-medium hover:underline">
         Contacto
       </Link>

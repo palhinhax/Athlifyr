@@ -43,6 +43,7 @@ export function FriendsGoing({ friends, totalCount }: FriendsGoingProps) {
                       src={friend.image}
                       alt={friend.name || "Amigo"}
                       fill
+                      sizes="24px"
                       className="object-cover"
                     />
                   ) : (

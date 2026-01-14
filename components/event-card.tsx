@@ -25,6 +25,7 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
             src={event.imageUrl || "/placeholder-event.jpg"}
             alt={event.title}
             fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             className="object-cover"
           />
           <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">

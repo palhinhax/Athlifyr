@@ -249,6 +249,7 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
                 src={post.user.image}
                 alt={post.user.name || "User"}
                 fill
+                sizes="40px"
                 className="object-cover"
               />
             ) : (
@@ -432,6 +433,7 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
                           src={comment.user.image}
                           alt={comment.user.name || "User"}
                           fill
+                          sizes="32px"
                           className="object-cover"
                         />
                       ) : (

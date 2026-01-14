@@ -66,13 +66,15 @@ export function MobileNav() {
               >
                 Mapa
               </Link>
-              <Link
-                href="/feed"
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-              >
-                Feed
-              </Link>
+              {session && (
+                <Link
+                  href="/feed"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                >
+                  Feed
+                </Link>
+              )}
               <Link
                 href="/contact"
                 onClick={closeMenu}
@@ -145,14 +147,11 @@ export function MobileNav() {
                   </button>
                 </>
               ) : (
-                <div className="flex flex-col gap-2 px-3">
+                <div className="px-3">
                   <Link href="/auth/signin" onClick={closeMenu}>
                     <Button variant="outline" className="w-full">
                       Entrar
                     </Button>
-                  </Link>
-                  <Link href="/auth/signup" onClick={closeMenu}>
-                    <Button className="w-full">Criar Conta</Button>
                   </Link>
                 </div>
               )}

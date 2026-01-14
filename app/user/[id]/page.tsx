@@ -92,7 +92,7 @@ export default async function UserProfilePage({ params }: PageProps) {
               startDate: true,
               city: true,
               country: true,
-              sportType: true,
+              sportTypes: true,
             },
           },
           variant: {

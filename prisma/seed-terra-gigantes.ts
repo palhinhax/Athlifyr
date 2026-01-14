@@ -101,7 +101,7 @@ Co-organização Horizontes Turismo Desportivo e Viagens e Associação Interior
       startDate: new Date("2026-01-15T11:00:00Z"),
       endDate: new Date("2026-01-18T13:00:00Z"),
       registrationDeadline: new Date("2025-12-31T23:59:59Z"),
-      sportType: SportType.TRAIL,
+      sportTypes: [SportType.TRAIL],
       city: "Seia",
       country: "Portugal",
       imageUrl: "/events/terra-de-gigantes-2026.jpg",

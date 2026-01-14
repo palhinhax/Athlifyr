@@ -19,7 +19,7 @@ import {
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
 import { EventPricingPhases } from "@/components/event-pricing-phases";
-import { EventVariantTechnicalData } from "@/components/event-variant-technical-data";
+import { CollapsibleDescription } from "@/components/collapsible-description";
 
 export const dynamic = "force-dynamic";
 
@@ -119,7 +119,7 @@ export async function generateMetadata({
   // Keywords based on event type and location
   const keywords = [
     event.title,
-    sportTypeLabels[event.sportType],
+    ...event.sportTypes.map((st) => sportTypeLabels[st]),
     event.city,
     event.country,
     "eventos desportivos",
@@ -128,14 +128,14 @@ export async function generateMetadata({
   ];
 
   return {
-    title: `${event.title} - ${sportTypeLabels[event.sportType]} | Athlifyr`,
+    title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]} | Athlifyr`,
     description: metaDescription,
     keywords: keywords.join(", "),
     alternates: {
       canonical: eventUrl,
     },
     openGraph: {
-      title: `${event.title} - ${sportTypeLabels[event.sportType]}`,
+      title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]}`,
       description: event.description,
       url: eventUrl,
       siteName: "Athlifyr",
@@ -144,7 +144,7 @@ export async function generateMetadata({
           url: eventImage,
           width: 1200,
           height: 630,
-          alt: `${event.title} - ${sportTypeLabels[event.sportType]}`,
+          alt: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]}`,
         },
       ],
       locale: "pt_PT",
@@ -154,7 +154,7 @@ export async function generateMetadata({
     },
     twitter: {
       card: "summary_large_image",
-      title: `${event.title} - ${sportTypeLabels[event.sportType]}`,
+      title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]}`,
       description: event.description,
       images: [eventImage],
       creator: "@athlifyr",
@@ -271,7 +271,7 @@ export default async function EventPage({ params }: PageProps) {
                   id: event.id,
                   title: event.title,
                   description: event.description,
-                  sportType: event.sportType,
+                  sportTypes: event.sportTypes,
                   startDate: event.startDate,
                   endDate: event.endDate,
                   city: event.city,
@@ -308,8 +308,15 @@ export default async function EventPage({ params }: PageProps) {
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-0 left-0 right-0 p-8">
           <div className="container mx-auto">
-            <div className="mb-4 inline-block rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-              {sportTypeLabels[event.sportType]}
+            <div className="mb-4 flex flex-wrap gap-2">
+              {event.sportTypes.map((sportType) => (
+                <div
+                  key={sportType}
+                  className="inline-block rounded-full bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+                >
+                  {sportTypeLabels[sportType]}
+                </div>
+              ))}
             </div>
             <h1 className="mb-4 text-4xl font-bold text-white md:text-5xl">
               {event.title}
@@ -329,16 +336,34 @@ export default async function EventPage({ params }: PageProps) {
                 <span className="text-sm font-medium text-muted-foreground">
                   Distâncias:
                 </span>
-                {event.variants.map((variant) => (
-                  <span
-                    key={variant.id}
-                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
-                  >
-                    {variant.distanceKm
-                      ? `${variant.distanceKm} km`
-                      : variant.name}
-                  </span>
-                ))}
+                {(() => {
+                  // Get unique distances
+                  const distances = event.variants
+                    .map((v) => v.distanceKm)
+                    .filter((d): d is number => d !== null);
+                  const uniqueDistances = Array.from(new Set(distances)).sort(
+                    (a, b) => a - b
+                  );
+
+                  // If all variants have the same distance, show it once
+                  if (uniqueDistances.length === 1) {
+                    return (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                        {uniqueDistances[0]} km
+                      </span>
+                    );
+                  }
+
+                  // If multiple distances, show each unique one
+                  return uniqueDistances.map((distance) => (
+                    <span
+                      key={distance}
+                      className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
+                    >
+                      {distance} km
+                    </span>
+                  ));
+                })()}
               </div>
             </div>
           )}
@@ -377,9 +402,7 @@ export default async function EventPage({ params }: PageProps) {
           {/* Description */}
           <div className="prose prose-lg mb-8 max-w-none">
             <h2 className="mb-4 text-2xl font-bold">Sobre o Evento</h2>
-            <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-              {event.description}
-            </p>
+            <CollapsibleDescription description={event.description} />
           </div>
 
           {/* Event Pricing Phases (nível do evento) */}
@@ -391,55 +414,111 @@ export default async function EventPage({ params }: PageProps) {
 
           {/* Variants with details */}
           {event.variants && event.variants.length > 0 && (
-            <div className="mb-8 space-y-8">
-              <h2 className="text-2xl font-bold">Variantes / Distâncias</h2>
-              {event.variants.map((variant) => (
-                <div
-                  key={variant.id}
-                  className="space-y-4 rounded-lg border p-6"
-                >
-                  <h3 className="text-xl font-semibold">{variant.name}</h3>
-                  {variant.description && (
-                    <p className="text-muted-foreground">
-                      {variant.description}
-                    </p>
-                  )}
-
-                  {/* Technical Data */}
-                  <EventVariantTechnicalData
-                    distanceKm={variant.distanceKm}
-                    elevationGainM={variant.elevationGainM}
-                    elevationLossM={variant.elevationLossM}
-                    cutoffTimeHours={variant.cutoffTimeHours}
-                    itraPoints={variant.itraPoints}
-                    atrpGrade={variant.atrpGrade}
-                    mountainLevel={variant.mountainLevel}
-                  />
-
-                  {/* Variant-specific pricing */}
-                  {variant.pricingPhases &&
-                    variant.pricingPhases.length > 0 && (
-                      <EventPricingPhases
-                        phases={variant.pricingPhases}
-                        variantName={variant.name}
-                      />
+            <div className="mb-8">
+              <h2 className="mb-4 text-2xl font-bold">
+                Variantes / Distâncias
+              </h2>
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {event.variants.map((variant) => (
+                  <div
+                    key={variant.id}
+                    className="space-y-3 rounded-lg border p-4"
+                  >
+                    <h3 className="font-semibold">{variant.name}</h3>
+                    {variant.description && (
+                      <p className="text-sm text-muted-foreground">
+                        {variant.description}
+                      </p>
                     )}
 
-                  {/* Fixed price fallback */}
-                  {variant.price &&
-                    (!variant.pricingPhases ||
-                      variant.pricingPhases.length === 0) && (
-                      <div className="rounded-lg border bg-card p-4">
-                        <div className="flex items-center justify-between">
-                          <span className="font-medium">Preço</span>
-                          <span className="text-2xl font-bold">
-                            {variant.price.toFixed(2)}€
+                    {/* Technical Data - Compact */}
+                    <div className="space-y-2 text-sm">
+                      {variant.distanceKm && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Distância:
+                          </span>
+                          <span className="font-medium">
+                            {variant.distanceKm} km
                           </span>
                         </div>
-                      </div>
-                    )}
-                </div>
-              ))}
+                      )}
+                      {variant.elevationGainM && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">D+:</span>
+                          <span className="font-medium">
+                            {variant.elevationGainM} m
+                          </span>
+                        </div>
+                      )}
+                      {variant.elevationLossM && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">D-:</span>
+                          <span className="font-medium">
+                            {variant.elevationLossM} m
+                          </span>
+                        </div>
+                      )}
+                      {variant.cutoffTimeHours && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Tempo Limite:
+                          </span>
+                          <span className="font-medium">
+                            {variant.cutoffTimeHours}h
+                          </span>
+                        </div>
+                      )}
+                      {(variant.itraPoints ||
+                        variant.atrpGrade ||
+                        variant.mountainLevel) && (
+                        <div className="flex flex-wrap gap-2 pt-2">
+                          {variant.itraPoints && (
+                            <span className="rounded bg-purple-500/10 px-2 py-1 text-xs font-medium text-purple-700 dark:text-purple-400">
+                              ITRA {variant.itraPoints}
+                            </span>
+                          )}
+                          {variant.atrpGrade && (
+                            <span className="rounded bg-orange-500/10 px-2 py-1 text-xs font-medium text-orange-700 dark:text-orange-400">
+                              ATRP {variant.atrpGrade}/5
+                            </span>
+                          )}
+                          {variant.mountainLevel && (
+                            <span className="rounded bg-cyan-500/10 px-2 py-1 text-xs font-medium text-cyan-700 dark:text-cyan-400">
+                              ML {variant.mountainLevel}/3
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Variant-specific pricing */}
+                    {variant.pricingPhases &&
+                      variant.pricingPhases.length > 0 && (
+                        <div className="border-t pt-3">
+                          <EventPricingPhases
+                            phases={variant.pricingPhases}
+                            variantName={variant.name}
+                          />
+                        </div>
+                      )}
+
+                    {/* Fixed price fallback */}
+                    {variant.price &&
+                      (!variant.pricingPhases ||
+                        variant.pricingPhases.length === 0) && (
+                        <div className="border-t pt-3">
+                          <div className="flex items-center justify-between">
+                            <span className="text-sm font-medium">Preço</span>
+                            <span className="text-lg font-bold">
+                              {variant.price.toFixed(2)}€
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 

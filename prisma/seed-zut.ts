@@ -64,7 +64,7 @@ Direção de Prova:
       startDate: new Date("2026-02-15"),
       city: "Cordinhã, Cantanhede",
       country: "Portugal",
-      sportType: "TRAIL",
+      sportTypes: ["TRAIL"],
       externalUrl: "https://bttmanager.com/evento/zut-zebra-ultra-trail",
       imageUrl: null,
       variants: {

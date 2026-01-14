@@ -18,7 +18,6 @@ import {
 import { Pencil, Trash2, Plus, X, ImagePlus, Loader2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType } from "@prisma/client";
-import { sportTypeLabels } from "@/lib/event-utils";
 
 interface EventVariant {
   id: string;
@@ -33,7 +32,7 @@ interface EventAdminActionsProps {
     id: string;
     title: string;
     description: string;
-    sportType: SportType;
+    sportTypes: SportType[];
     startDate: Date;
     endDate: Date | null;
     city: string;
@@ -56,7 +55,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description,
-    sportType: event.sportType,
+    sportTypes: event.sportTypes,
     startDate: event.startDate.toISOString().split("T")[0],
     endDate: event.endDate?.toISOString().split("T")[0] || "",
     city: event.city,
@@ -278,7 +277,8 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               />
             </div>
 
-            <div className="grid gap-2">
+            {/* TODO: Update to multi-select for sportTypes array */}
+            {/* <div className="grid gap-2">
               <Label htmlFor="sportType">Modalidade</Label>
               <select
                 id="sportType"
@@ -293,7 +293,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                   </option>
                 ))}
               </select>
-            </div>
+            </div> */}
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">

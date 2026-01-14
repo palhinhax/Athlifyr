@@ -58,9 +58,7 @@ export function EventVariantTechnicalData({
             </div>
             <div>
               <div className="text-sm text-muted-foreground">D+</div>
-              <div className="text-lg font-semibold">
-                {elevationGainM.toLocaleString()} m
-              </div>
+              <div className="text-lg font-semibold">{elevationGainM} m</div>
             </div>
           </div>
         )}
@@ -72,9 +70,7 @@ export function EventVariantTechnicalData({
             </div>
             <div>
               <div className="text-sm text-muted-foreground">D-</div>
-              <div className="text-lg font-semibold">
-                {elevationLossM.toLocaleString()} m
-              </div>
+              <div className="text-lg font-semibold">{elevationLossM} m</div>
             </div>
           </div>
         )}

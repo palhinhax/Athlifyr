@@ -662,7 +662,7 @@ export default function InstagramGeneratorPage() {
 
           {/* Right Panel: Preview */}
           <div className="flex items-start justify-center">
-            <Card className="inline-block w-full p-4 sm:p-8">
+            <Card className="w-full p-4 sm:p-8 lg:inline-block lg:w-auto">
               <div className="mb-4 text-center">
                 <h2 className="text-lg font-semibold">Live Preview</h2>
                 <p className="text-sm text-muted-foreground">

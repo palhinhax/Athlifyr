@@ -100,8 +100,8 @@ export function TemplateEventHero({
         {/* CTA */}
         {cta && (
           <div
-            className="mt-8 rounded-full bg-white px-16 py-6 font-semibold text-black"
-            style={{ fontSize: "40px" }}
+            className="mt-6 rounded-full bg-white px-12 py-4 font-semibold text-black"
+            style={{ fontSize: "32px" }}
           >
             {cta}
           </div>

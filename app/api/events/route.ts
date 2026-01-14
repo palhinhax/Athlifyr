@@ -1,12 +1,25 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SportType } from "@prisma/client";
 
-// GET - List all events
-export async function GET() {
+// GET - List all events with optional search and limit
+export async function GET(request: NextRequest) {
   try {
+    const searchParams = request.nextUrl.searchParams;
+    const search = searchParams.get("search");
+    const limit = searchParams.get("limit");
+
     const events = await prisma.event.findMany({
+      where: search
+        ? {
+            OR: [
+              { title: { contains: search, mode: "insensitive" } },
+              { city: { contains: search, mode: "insensitive" } },
+              { country: { contains: search, mode: "insensitive" } },
+            ],
+          }
+        : undefined,
       orderBy: {
         startDate: "desc",
       },
@@ -20,11 +33,32 @@ export async function GET() {
         city: true,
         country: true,
         imageUrl: true,
+        variants: {
+          select: {
+            name: true,
+          },
+          orderBy: {
+            startDate: "asc",
+          },
+          take: 3,
+        },
       },
+      take: limit ? parseInt(limit) : undefined,
     });
 
-    return NextResponse.json(events);
-  } catch {
+    // Format location and sport for each event
+    const formattedEvents = events.map((event) => ({
+      ...event,
+      location:
+        event.city + (event.country !== "Portugal" ? `, ${event.country}` : ""),
+      sport: {
+        name: event.sportTypes[0] || "RUNNING",
+      },
+    }));
+
+    return NextResponse.json({ events: formattedEvents });
+  } catch (error) {
+    console.error("Error fetching events:", error);
     return NextResponse.json(
       { error: "Failed to fetch events" },
       { status: 500 }

@@ -93,6 +93,22 @@ export default function InstagramGeneratorPage() {
   // Draft management
   const [isSavingDraft, setIsSavingDraft] = useState(false);
 
+  // Event search and selection
+  const [eventSearchQuery, setEventSearchQuery] = useState("");
+  const [eventSearchResults, setEventSearchResults] = useState<
+    Array<{
+      id: string;
+      title: string;
+      slug: string;
+      startDate: string;
+      location: string;
+      sport: { name: string };
+      variants: Array<{ name: string }>;
+    }>
+  >([]);
+  const [isSearchingEvents, setIsSearchingEvents] = useState(false);
+  const [showEventSearch, setShowEventSearch] = useState(false);
+
   // Check if user is admin
   useEffect(() => {
     if (status === "loading") return;
@@ -122,6 +138,76 @@ export default function InstagramGeneratorPage() {
     window.addEventListener("resize", calculateScale);
     return () => window.removeEventListener("resize", calculateScale);
   }, [format]);
+
+  // Search events with debounce
+  useEffect(() => {
+    if (!eventSearchQuery.trim()) {
+      setEventSearchResults([]);
+      return;
+    }
+
+    const searchEvents = async () => {
+      setIsSearchingEvents(true);
+      try {
+        const res = await fetch(
+          `/api/events?search=${encodeURIComponent(eventSearchQuery)}&limit=5`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setEventSearchResults(data.events || []);
+        }
+      } catch (error) {
+        console.error("Error searching events:", error);
+      } finally {
+        setIsSearchingEvents(false);
+      }
+    };
+
+    const timeoutId = setTimeout(searchEvents, 300);
+    return () => clearTimeout(timeoutId);
+  }, [eventSearchQuery]);
+
+  const handleSelectEvent = (event: (typeof eventSearchResults)[0]) => {
+    // Format date
+    const date = new Date(event.startDate);
+    const monthYear = date.toLocaleDateString("pt-PT", {
+      month: "short",
+      year: "numeric",
+    });
+
+    // Set template to T1 (Event Hero)
+    setTemplateKey("T1");
+
+    // Fill in the fields
+    setT1Title(event.title.toUpperCase());
+
+    // Subtitle: variants or sport
+    if (event.variants && event.variants.length > 0) {
+      const variantNames = event.variants
+        .slice(0, 2)
+        .map((v) => v.name)
+        .join(" • ");
+      setT1Subtitle(variantNames);
+    } else {
+      setT1Subtitle(event.sport.name);
+    }
+
+    // Meta line: date and location
+    setT1MetaLine(`${monthYear} • ${event.location}`);
+
+    // CTA
+    setT1Cta("Descobre na Athlifyr");
+
+    // Close search and show success
+    setShowEventSearch(false);
+    setEventSearchQuery("");
+    setEventSearchResults([]);
+
+    toast({
+      title: "Evento selecionado",
+      description: `Template preenchido com dados de "${event.title}"`,
+    });
+  };
 
   const getBackground = (): Background => {
     if (backgroundType === "photo") {
@@ -307,7 +393,7 @@ export default function InstagramGeneratorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30 pb-8">
+    <div className="min-h-screen overflow-x-hidden bg-muted/30 pb-8">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
@@ -318,6 +404,72 @@ export default function InstagramGeneratorPage() {
             Create branded Instagram content with Athlifyr templates
           </p>
         </div>
+
+        {/* Event Search Section */}
+        <Card className="mb-4 p-4 sm:mb-6 sm:p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold">Quick Start from Event</h2>
+              <p className="text-sm text-muted-foreground">
+                Search and select an event to auto-fill template
+              </p>
+            </div>
+            <Button
+              variant={showEventSearch ? "secondary" : "default"}
+              onClick={() => setShowEventSearch(!showEventSearch)}
+              size="sm"
+            >
+              {showEventSearch ? "Hide" : "Search Event"}
+            </Button>
+          </div>
+
+          {showEventSearch && (
+            <div className="mt-4 space-y-3">
+              <div className="relative">
+                <Input
+                  placeholder="Search events by name..."
+                  value={eventSearchQuery}
+                  onChange={(e) => setEventSearchQuery(e.target.value)}
+                  className="pr-10"
+                />
+                {isSearchingEvents && (
+                  <Loader2 className="absolute right-3 top-3 h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+
+              {eventSearchResults.length > 0 && (
+                <div className="space-y-2">
+                  {eventSearchResults.map((event) => (
+                    <button
+                      key={event.id}
+                      onClick={() => handleSelectEvent(event)}
+                      className="w-full rounded-lg border bg-card p-3 text-left transition-colors hover:bg-accent"
+                    >
+                      <div className="font-medium">{event.title}</div>
+                      <div className="mt-1 text-sm text-muted-foreground">
+                        {event.sport.name} •{" "}
+                        {new Date(event.startDate).toLocaleDateString("pt-PT", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}{" "}
+                        • {event.location}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {eventSearchQuery &&
+                !isSearchingEvents &&
+                eventSearchResults.length === 0 && (
+                  <div className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">
+                    No events found. Try a different search term.
+                  </div>
+                )}
+            </div>
+          )}
+        </Card>
 
         <div className="grid gap-4 lg:grid-cols-[400px,1fr] lg:gap-6">
           {/* Left Panel: Controls */}
@@ -693,8 +845,8 @@ export default function InstagramGeneratorPage() {
           </div>
 
           {/* Right Panel: Preview */}
-          <div className="flex items-start justify-center">
-            <Card className="w-full p-4 sm:p-8 lg:inline-block lg:w-auto">
+          <div className="flex items-start justify-center overflow-hidden">
+            <Card className="w-full overflow-hidden p-4 sm:p-8 lg:inline-block lg:w-auto">
               <div className="mb-4 text-center">
                 <h2 className="text-lg font-semibold">Live Preview</h2>
                 <p className="text-sm text-muted-foreground">
@@ -704,7 +856,7 @@ export default function InstagramGeneratorPage() {
                 </p>
               </div>
               <div
-                className="flex justify-center overflow-auto"
+                className="flex justify-center overflow-hidden"
                 style={{ maxHeight: "80vh" }}
               >
                 {/* Scaling wrapper - dimensions match canvas size for proper transform calculation */}
@@ -714,7 +866,7 @@ export default function InstagramGeneratorPage() {
                     width: `${INSTAGRAM_SIZES[format].width}px`,
                     height: `${INSTAGRAM_SIZES[format].height}px`,
                     transform: `scale(${previewScale})`,
-                    transformOrigin: "top center",
+                    transformOrigin: "center top",
                   }}
                 >
                   <CanvasPreview

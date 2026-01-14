@@ -5,8 +5,8 @@ import {
   type InstagramFormat,
 } from "@/types/instagram";
 
-// Brand logo path
-const BRAND_LOGO_PATH = "/logo.png";
+// Brand logo path - using high-res version for Instagram export
+const BRAND_LOGO_PATH = "/logo.svg";
 
 interface BrandFrameProps {
   children: React.ReactNode;
@@ -60,18 +60,30 @@ export function BrandFrame({
         <div
           className="absolute z-20"
           style={{
-            right: `${safeArea.right}px`,
-            bottom: `${safeArea.bottom - 20}px`,
-            width: "120px",
-            height: "40px",
+            right: `${safeArea.right + 20}px`,
+            bottom: `${safeArea.bottom + 20}px`,
+            width: "126px",
+            height: "126px",
           }}
         >
+          <div
+            className="absolute inset-0"
+            style={{
+              backgroundColor: "#FE8818",
+              borderRadius: "25px",
+              margin: "4px",
+            }}
+          />
           <div className="relative h-full w-full">
             <Image
               src={BRAND_LOGO_PATH}
               alt="Athlifyr"
               fill
               className="object-contain"
+              style={{
+                filter:
+                  "drop-shadow(0 2px 8px rgba(0,0,0,0.3)) contrast(1.1) saturate(1.1)",
+              }}
             />
           </div>
         </div>

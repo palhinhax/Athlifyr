@@ -80,9 +80,6 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
               </div>
             )}
           </div>
-          <p className="mt-3 line-clamp-2 text-sm text-muted-foreground">
-            {event.description}
-          </p>
         </CardContent>
       </Card>
     </Link>

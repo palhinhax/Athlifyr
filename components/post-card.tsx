@@ -334,7 +334,7 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
               <div className="py-4 text-center text-sm text-muted-foreground">
                 A carregar comentários...
               </div>
-            ) : comments.length === 0 ? (
+            ) : !comments || comments.length === 0 ? (
               <div className="py-4 text-center text-sm text-muted-foreground">
                 Ainda não há comentários. Sê o primeiro a comentar!
               </div>

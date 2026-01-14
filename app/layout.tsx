@@ -8,11 +8,13 @@ import { UserNav } from "@/components/user-nav";
 import { NavLinks } from "@/components/nav-links";
 import { MobileNav } from "@/components/mobile-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
   generateWebSiteSchema,
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
+import packageJson from "@/package.json";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -133,7 +135,7 @@ export default function RootLayout({
         <StructuredData data={websiteSchema} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         {gaId && <GoogleAnalytics gaId={gaId} />}
         <SessionProvider>
@@ -155,13 +157,27 @@ export default function RootLayout({
               <MobileNav />
             </div>
           </header>
-          <main>{children}</main>
-          <footer className="mt-16 border-t py-8">
-            <div className="container mx-auto px-4 text-center text-sm text-muted-foreground">
-              <p>Athlifyr - All sports events. One place.</p>
-              <p className="mt-2">
-                © 2026 Athlifyr. Todos os direitos reservados.
-              </p>
+          <main className="flex-1">{children}</main>
+          <footer className="border-t py-6">
+            <div className="container mx-auto px-4">
+              <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
+                <p className="text-center md:text-left">
+                  Athlifyr - All sports events. One place.
+                </p>
+                <a
+                  href="https://www.instagram.com/athlifyr/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                  aria-label="Segue-nos no Instagram"
+                >
+                  <Instagram className="h-4 w-4" />
+                  <span>@athlifyr</span>
+                </a>
+                <p className="text-center text-xs md:text-right">
+                  © 2026 Athlifyr • v{packageJson.version}
+                </p>
+              </div>
             </div>
           </footer>
           <Toaster />

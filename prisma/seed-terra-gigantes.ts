@@ -22,82 +22,142 @@ async function main() {
     data: {
       title: "Terra de Gigantes 2026",
       slug: "terra-de-gigantes-2026",
-      description: `## O Desafio de Gigantes
+      description: `# Terra de Gigantes 2026 - Ultra Trail 304km
 
-O desafio de atravessar Portugal de este a oeste, do ponto mais alto à praia das maiores ondas do mundo. Da Serra da Estrela às isoladas e bonitas Aldeias do Xisto na Lousã, pelos caminhos de fé de Fátima até às magnificas e gigantescas ondas da Nazaré.
+**Da Torre à Nazaré - Um desafio para Gigantes**
 
-**303,8 km | 11.222m D+ | 12.105m D- | 74h limite**
+## 🎯 O Desafio
 
-## Sobre o Evento
+O desafio de atravessar Portugal de este a oeste, do ponto mais alto à praia das maiores ondas do mundo é, necessariamente, para gigantes. Mas é mais. Um pouco mais que esforço e glória. É coragem, gestão e muita evasão ao longo dos caminhos que os levam desde a Serra da Estrela às isoladas e bonitas Aldeias do Xisto na Lousã. São caminhos de fé, lá pelos lados do Santuário de Fátima que vos levarão até às magnificas e gigantescas ondas da Nazaré.
 
-Terra de Gigantes é mais do que uma corrida. É um desafio épico que atravessa Portugal de leste a oeste, começando no ponto mais alto de Portugal - a Torre da Serra da Estrela - e terminando na praia das maiores ondas do mundo - Nazaré.
+📅 **15 a 18 de janeiro de 2026**  
+⏰ **Partida:** 11h00 da Torre da Serra da Estrela
 
-### O Percurso
+## 📊 Dados Técnicos
 
-303,8 km de pura aventura através de:
-- **Serra da Estrela** - Início no ponto mais alto de Portugal
-- **Aldeias do Xisto** - Percursos isolados e bonitos na Lousã
-- **Aldeias Históricas** - Património português
-- **Serra do Açor** - Paisagens naturais deslumbrantes
-- **Caminhos de Fé** - Passagem pelo Santuário de Fátima
-- **Nazaré** - Meta nas ondas gigantes
+- **Distância:** 303,8 km
+- **Desnível Positivo (D+):** 11.222 m
+- **Desnível Negativo (D-):** 12.105 m
+- **Tempo Máximo:** 74 horas
+- **Mountain Level:** 3
+- **Pontos ITRA:** 6
+- **Grau ATRP:** 5
 
-### Condições
+## 🏔️ O Percurso
 
-Estamos no primeiro mês de inverno, época de temperaturas muito baixas e chuva. Iniciar no ponto mais alto de Portugal significa poder começar o desafio com temperaturas negativas e, possivelmente, neve.
+Atravessa paisagens naturais extraordinárias:
 
-### TOR Experience
+- 🏔️ **Serra da Estrela** - Início no ponto mais alto de Portugal
+- 🏘️ **Aldeias do Xisto** - Isoladas e bonitas na Lousã
+- 🏛️ **Aldeias Históricas** - Património e cultura
+- ⛰️ **Serra do Açor** - Natureza selvagem
+- ⛪ **Caminhos de Fé** - Rumo ao Santuário de Fátima
+- 🌊 **Nazaré** - Magnificas e gigantescas ondas
 
-Os primeiros 10 participantes da classificação geral receberão entradas diretas para participação no Tor des Géants.
+## ❄️ Condições Climatéricas
 
-### Dados Técnicos
-- **Distância**: 303,8 km
-- **Desnível Positivo**: 11.222m
-- **Desnível Negativo**: 12.105m
-- **Tempo Máximo**: 74 horas
-- **ITRA Points**: 6
-- **Mountain Level**: 3
-- **ATRP Grau**: 5
+**Inverno rigoroso no primeiro mês do ano:**
 
-### Material Obrigatório
-- GPS e formas de alimentação do equipamento
-- Documento de identificação
+- Temperaturas muito baixas (possível **início com temperaturas negativas**)
+- **Possibilidade de neve** na Torre (1.993m altitude)
+- Chuva prevista
+- Condições extremas que exigem preparação máxima
+
+⚠️ **Respeitar a "Mãe Natureza"** - ela será inclemente com todos aqueles que duvidarem do seu poder.
+
+## 🎁 TOR Experience
+
+**Aos primeiros 10 participantes da classificação geral** serão atribuídas **entradas diretas para participação no Tor des Géants**.
+
+## 📋 Material Obrigatório
+
+✅ **Verificação obrigatória** (pode ocorrer a qualquer momento)
+
+- GPS com autonomia e capacidade de gravar mínimo 10.000 pontos
+- Formas de alimentação do GPS (baterias extras)
+- Documento de identificação (cópia aceite)
 - Saco cama de emergência
-- Manta térmica
+- 1 manta térmica
 - Apito
 - Luzes frontal e traseira
-- Telemóvel com números de emergência
+- Telemóvel operacional (adicionar números de segurança da Organização)
 
-### Material Altamente Recomendado
-- Casaco e calças impermeáveis de qualidade superior
-- Roupa térmica (Polartec)
+**Penalização:** 4 horas de penalidade por ausência de material obrigatório  
+**Recusa de verificação:** Desclassificação imediata
+
+## 🎒 Material Altamente Recomendado
+
+- Casaco e calças **impermeáveis** e **corta-vento** de qualidade superior
+- Roupa térmica (materiais como Polartec)
 - Mochila impermeável
 - Bolsa impermeável para equipamentos eletrónicos
 - Muda de roupa
 - Protetor solar
 
-### Inscrição Inclui
-- Brinde oficial do evento
-- Dorsal e chip de cronometragem
-- Drop bags para todas as bases
-- Assistência e suprimentos em todas as bases de apoio
-- Serviço médico ao longo da prova
-- Transfer de Seia à Torre (partida)
-- Prémio de finisher
-- Festa de consagração
-- Seguro de acidentes pessoal e RC
-- Duches e massagens na meta
-- Solo duro em pavilhão
+⚠️ **A primeira e grande proteção são os isolamentos térmicos.**
 
-### Organização
-Co-organização Horizontes Turismo Desportivo e Viagens e Associação Interior Convida.
+## 🏕️ Bases de Apoio e Descanso
 
-**Contacto**: info@horizontes.pt | +351 274 673 139
+**Passagem obrigatória** em todas as bases de apoio
 
-### Condições de Cancelamento
-- Até 30 de junho/2025: 60% de reembolso
-- Até 30 de novembro/2025: 30% de reembolso
-- A partir de 1 de dezembro: Sem reembolso`,
+**Serviços:**
+- Abastecimentos de líquidos e sólidos
+- Descanso prolongado
+- Balneários com água quente/fria (em algumas bases)
+- Acesso aos drop bags
+- Controlo eletrónico de passagem
+- Massagens (na meta)
+
+**Assistência:** Máximo 2 assistentes por atleta
+
+## ⏱️ Tempo Limite
+
+- **Tempo máximo:** 74 horas
+- **Barreiras horárias** em cada base (detalhes no Guia do Participante)
+- **Ultrapassar barreira = Desclassificação**
+
+## 🏆 Classificações e Prémios
+
+**Não há prémios em dinheiro**
+
+✅ Prémio de "finisher" para todos  
+✅ Troféus para os **3 primeiros** (M/F)  
+✅ Rankings: Geral, Duplas, Quadras
+
+**Vencedores solo = Vencedores absolutos da Terra de Gigantes**
+
+## 🎒 Inscrição Inclui
+
+✅ Brinde oficial do evento  
+✅ Dorsal com chip  
+✅ Drop bags para todas as bases  
+✅ Abastecimentos líquidos e sólidos  
+✅ Assistência médica e socorro  
+✅ Transfer Seia → Torre  
+✅ Prémio de finisher  
+✅ Festa de consagração  
+✅ Seguro de acidentes e RC  
+✅ Massagens, duches e solo duro
+
+## 📞 Contactos
+
+**Organização:**  
+Horizontes Turismo Desportivo e Viagens  
+Associação Interior Convida
+
+📧 info@horizontes.pt  
+📞 +351 274 673 139
+
+**Inscrições:**  
+https://stopandgo.net/events/terra-de-gigantes-2026
+
+## 💰 Condições de Cancelamento
+
+- Até 30/06/2025: **60% reembolso**
+- Até 30/11/2025: **30% reembolso**
+- A partir 01/12/2025: **Sem reembolso**
+
+⚠️ **Não há transferência para edição seguinte**`,
       startDate: new Date("2026-01-15T11:00:00Z"),
       endDate: new Date("2026-01-18T13:00:00Z"),
       registrationDeadline: new Date("2025-12-31T23:59:59Z"),

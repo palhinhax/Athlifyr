@@ -219,18 +219,19 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
 
         {/* Image Preview */}
         {imagePreview && (
-          <div className="relative mb-3 overflow-hidden rounded-lg">
-            <Image
-              src={imagePreview}
-              alt="Preview"
-              width={500}
-              height={300}
-              className="h-auto w-full object-cover"
-            />
+          <div className="relative mb-3 overflow-hidden rounded-lg bg-gradient-to-br from-muted/50 to-muted">
+            <div className="relative aspect-square w-full">
+              <Image
+                src={imagePreview}
+                alt="Preview"
+                fill
+                className="object-contain"
+              />
+            </div>
             <button
               type="button"
               onClick={handleRemoveImage}
-              className="absolute right-2 top-2 rounded-full bg-black/50 p-1.5 text-white transition-colors hover:bg-black/70"
+              className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-black/90"
               disabled={isSubmitting || isUploading}
             >
               <X className="h-4 w-4" />

@@ -13,6 +13,9 @@ import {
   MessageCircle,
   Send,
   ImageOff,
+  Pencil,
+  Save,
+  X as XIcon,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +83,9 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(post.content);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   const createdAt =
     typeof post.createdAt === "string"
@@ -204,6 +210,34 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
     }
   };
 
+  const handleUpdatePost = async () => {
+    if (!editContent.trim() || isUpdating) return;
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/posts/${post.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content: editContent.trim() }),
+      });
+
+      if (response.ok) {
+        post.content = editContent.trim();
+        setIsEditing(false);
+        router.refresh();
+      }
+    } catch (error) {
+      console.error("Error updating post:", error);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditContent(post.content);
+    setIsEditing(false);
+  };
+
   return (
     <>
       <Card className="overflow-hidden">
@@ -253,6 +287,12 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
+                {currentUserId === post.userId && (
+                  <DropdownMenuItem onClick={() => setIsEditing(true)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Editar publicação
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem
                   onClick={() => setShowDeleteDialog(true)}
                   className="text-destructive focus:text-destructive"
@@ -267,20 +307,50 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
 
         {/* Content */}
         <div className="px-4 pb-3">
-          <p className="whitespace-pre-wrap text-sm leading-relaxed">
-            {post.content}
-          </p>
+          {isEditing ? (
+            <div className="space-y-2">
+              <textarea
+                value={editContent}
+                onChange={(e) => setEditContent(e.target.value)}
+                className="min-h-[80px] w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                disabled={isUpdating}
+              />
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={handleUpdatePost}
+                  disabled={isUpdating || !editContent.trim()}
+                >
+                  <Save className="mr-2 h-4 w-4" />
+                  Guardar
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={handleCancelEdit}
+                  disabled={isUpdating}
+                >
+                  <XIcon className="mr-2 h-4 w-4" />
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed">
+              {post.content}
+            </p>
+          )}
         </div>
 
         {/* Image */}
         {post.imageUrl && (
-          <div className="relative aspect-[16/10] w-full overflow-hidden bg-muted">
+          <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
             {!imageError ? (
               <Image
                 src={post.imageUrl}
                 alt="Post image"
                 fill
-                className="object-cover"
+                className="object-contain"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 onError={() => {
                   console.error("Failed to load image:", post.imageUrl);

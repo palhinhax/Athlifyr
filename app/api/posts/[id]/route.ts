@@ -1,6 +1,87 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { z } from "zod";
+
+// Schema for updating a post
+const updatePostSchema = z.object({
+  content: z.string().min(1, "Content is required").max(5000),
+});
+
+// PATCH a post (only author)
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const postId = params.id;
+
+    // Get the post
+    const post = await prisma.post.findUnique({
+      where: { id: postId },
+      select: { userId: true },
+    });
+
+    if (!post) {
+      return NextResponse.json({ error: "Post not found" }, { status: 404 });
+    }
+
+    // Check if user is author
+    if (post.userId !== session.user.id) {
+      return NextResponse.json(
+        { error: "Not authorized to edit this post" },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const validatedData = updatePostSchema.parse(body);
+
+    // Update the post
+    const updatedPost = await prisma.post.update({
+      where: { id: postId },
+      data: {
+        content: validatedData.content,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+        event: {
+          select: {
+            title: true,
+            slug: true,
+          },
+        },
+      },
+    });
+
+    return NextResponse.json(updatedPost);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        { error: "Invalid request data", details: error.issues },
+        { status: 400 }
+      );
+    }
+
+    console.error("Error updating post:", error);
+    return NextResponse.json(
+      { error: "Failed to update post" },
+      { status: 500 }
+    );
+  }
+}
 
 // Delete a post (only author or admin)
 export async function DELETE(

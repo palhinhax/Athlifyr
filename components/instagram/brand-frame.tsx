@@ -72,7 +72,6 @@ export function BrandFrame({
               alt="Athlifyr"
               fill
               className="object-contain"
-              style={{ filter: "brightness(0) invert(1)" }}
             />
           </div>
         </div>

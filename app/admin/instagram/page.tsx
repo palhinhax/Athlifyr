@@ -39,6 +39,8 @@ export default function InstagramGeneratorPage() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [previewScale, setPreviewScale] = useState(0.3);
+
   // Template and format state
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
   const [format, setFormat] = useState<InstagramFormat>("SQUARE");
@@ -90,6 +92,26 @@ export default function InstagramGeneratorPage() {
       router.push("/");
     }
   }, [session, status, router]);
+
+  // Calculate responsive preview scale
+  useEffect(() => {
+    const calculateScale = () => {
+      const size = INSTAGRAM_SIZES[format];
+      const containerWidth =
+        window.innerWidth < 1024 ? window.innerWidth - 60 : 800;
+      const containerHeight = window.innerHeight * 0.7;
+
+      const scaleByWidth = containerWidth / size.width;
+      const scaleByHeight = containerHeight / size.height;
+
+      const scale = Math.min(scaleByWidth, scaleByHeight, 0.4);
+      setPreviewScale(scale);
+    };
+
+    calculateScale();
+    window.addEventListener("resize", calculateScale);
+    return () => window.removeEventListener("resize", calculateScale);
+  }, [format]);
 
   const getBackground = (): Background => {
     if (backgroundType === "photo") {
@@ -678,7 +700,9 @@ export default function InstagramGeneratorPage() {
                 <div
                   className="origin-top"
                   style={{
-                    transform: "scale(0.25)",
+                    width: `${INSTAGRAM_SIZES[format].width}px`,
+                    height: `${INSTAGRAM_SIZES[format].height}px`,
+                    transform: `scale(${previewScale})`,
                     transformOrigin: "top center",
                   }}
                 >

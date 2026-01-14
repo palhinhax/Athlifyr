@@ -27,6 +27,7 @@ import {
   type CategoryCardPayload,
   type WeeklyPicksPayload,
   type MinimalQuotePayload,
+  type MonthlyEventsPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -89,6 +90,14 @@ export default function InstagramGeneratorPage() {
     "O único treino mau é aquele que não fizeste"
   );
   const [t4Footer, setT4Footer] = useState("Athlifyr");
+
+  // T5: Monthly Events
+  const [t5Month, setT5Month] = useState("2026-01"); // YYYY-MM format
+  const [t5SportType, setT5SportType] = useState("TRAIL");
+  const [t5Events, setT5Events] = useState<
+    Array<{ title: string; date: string; location: string }>
+  >([]);
+  const [isLoadingMonthlyEvents, setIsLoadingMonthlyEvents] = useState(false);
 
   // Draft management
   const [isSavingDraft, setIsSavingDraft] = useState(false);
@@ -167,6 +176,41 @@ export default function InstagramGeneratorPage() {
     const timeoutId = setTimeout(searchEvents, 300);
     return () => clearTimeout(timeoutId);
   }, [eventSearchQuery]);
+
+  // Load monthly events for T5
+  useEffect(() => {
+    if (templateKey !== "T5") return;
+
+    const loadMonthlyEvents = async () => {
+      setIsLoadingMonthlyEvents(true);
+      try {
+        const res = await fetch(
+          `/api/events/monthly?month=${t5Month}&sportType=${t5SportType}`
+        );
+        if (res.ok) {
+          const data = await res.json();
+          setT5Events(data.events || []);
+        } else {
+          toast({
+            variant: "destructive",
+            title: "Erro ao carregar eventos",
+            description: "Não foi possível carregar os eventos do mês.",
+          });
+        }
+      } catch (error) {
+        console.error("Error loading monthly events:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar eventos",
+          description: "Ocorreu um erro ao carregar os eventos.",
+        });
+      } finally {
+        setIsLoadingMonthlyEvents(false);
+      }
+    };
+
+    loadMonthlyEvents();
+  }, [templateKey, t5Month, t5SportType]);
 
   const handleSelectEvent = (event: (typeof eventSearchResults)[0]) => {
     // Format date - show day and month, or date range if endDate exists
@@ -301,9 +345,23 @@ export default function InstagramGeneratorPage() {
           background,
         } as MinimalQuotePayload;
 
+      case "T5":
+        return {
+          month: new Date(t5Month + "-01")
+            .toLocaleDateString("pt-PT", {
+              month: "long",
+              year: "numeric",
+            })
+            .toUpperCase(),
+          sportType: t5SportType,
+          events: t5Events,
+          footer: "athlifyr.com",
+          background,
+        } as MonthlyEventsPayload;
+
       default:
         throw new Error(
-          `Unknown template: ${templateKey}. Expected T1, T2, T3, or T4.`
+          `Unknown template: ${templateKey}. Expected T1, T2, T3, T4, or T5.`
         );
     }
   };
@@ -535,6 +593,7 @@ export default function InstagramGeneratorPage() {
                     <SelectItem value="T2">T2: Category Card</SelectItem>
                     <SelectItem value="T3">T3: Weekly Picks</SelectItem>
                     <SelectItem value="T4">T4: Minimal Quote</SelectItem>
+                    <SelectItem value="T5">T5: Monthly Events</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -861,6 +920,78 @@ export default function InstagramGeneratorPage() {
                       maxLength={20}
                       placeholder="Athlifyr"
                     />
+                  </div>
+                </div>
+              )}
+
+              {/* T5: Monthly Events */}
+              {templateKey === "T5" && (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Mês *</Label>
+                    <Input
+                      type="month"
+                      value={t5Month}
+                      onChange={(e) => setT5Month(e.target.value)}
+                      placeholder="2026-01"
+                    />
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Seleciona o mês para listar eventos
+                    </p>
+                  </div>
+                  <div>
+                    <Label>Tipo de Desporto *</Label>
+                    <Select
+                      value={t5SportType}
+                      onValueChange={(v) => setT5SportType(v)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="TRAIL">🏔️ Trail</SelectItem>
+                        <SelectItem value="RUNNING">🏃 Corrida</SelectItem>
+                        <SelectItem value="BTT">🚵 BTT</SelectItem>
+                        <SelectItem value="HYROX">💪 HYROX</SelectItem>
+                        <SelectItem value="TRIATHLON">🏊 Triatlo</SelectItem>
+                        <SelectItem value="CYCLING">🚴 Ciclismo</SelectItem>
+                        <SelectItem value="OCR">🧗 OCR</SelectItem>
+                        <SelectItem value="CROSSFIT">🏋️ CrossFit</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="rounded-md border border-input bg-muted/50 p-4">
+                    {isLoadingMonthlyEvents ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span className="ml-2 text-sm">
+                          A carregar eventos...
+                        </span>
+                      </div>
+                    ) : t5Events.length > 0 ? (
+                      <div>
+                        <p className="mb-2 text-sm font-semibold">
+                          {t5Events.length} eventos encontrados:
+                        </p>
+                        <ul className="space-y-1 text-xs">
+                          {t5Events.slice(0, 8).map((event, idx) => (
+                            <li key={idx} className="text-muted-foreground">
+                              {event.date} - {event.title} ({event.location})
+                            </li>
+                          ))}
+                          {t5Events.length > 8 && (
+                            <li className="italic text-muted-foreground">
+                              + {t5Events.length - 8} mais...
+                            </li>
+                          )}
+                        </ul>
+                      </div>
+                    ) : (
+                      <p className="text-center text-sm text-muted-foreground">
+                        Nenhum evento encontrado para este mês e tipo de
+                        desporto.
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

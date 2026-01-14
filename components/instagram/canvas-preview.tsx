@@ -8,6 +8,7 @@ import { TemplateEventHero } from "./template-event-hero";
 import { TemplateCategoryCard } from "./template-category-card";
 import { TemplateWeeklyPicks } from "./template-weekly-picks";
 import { TemplateMinimalQuote } from "./template-minimal-quote";
+import { TemplateMonthlyEvents } from "./template-monthly-events";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -72,10 +73,23 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T5":
+          return (
+            <TemplateMonthlyEvents
+              payload={
+                payload as Parameters<
+                  typeof TemplateMonthlyEvents
+                >[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1, T2, T3, or T4.
+              Unknown template: {templateKey}. Expected T1, T2, T3, T4, or T5.
             </div>
           );
       }

@@ -1,4 +1,4 @@
-export type TemplateKey = "T1" | "T2" | "T3" | "T4";
+export type TemplateKey = "T1" | "T2" | "T3" | "T4" | "T5";
 
 export type InstagramFormat = "SQUARE" | "PORTRAIT" | "STORY";
 
@@ -54,11 +54,25 @@ export interface MinimalQuotePayload {
   background: Background;
 }
 
+// Template T5: Monthly Events
+export interface MonthlyEventsPayload {
+  month: string; // e.g., "JANEIRO 2026"
+  sportType: string; // e.g., "TRAIL", "RUNNING", "BTT"
+  events: Array<{
+    title: string;
+    date: string; // e.g., "15 jan"
+    location: string;
+  }>;
+  footer: string; // default: "athlifyr.com"
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
   | WeeklyPicksPayload
-  | MinimalQuotePayload;
+  | MinimalQuotePayload
+  | MonthlyEventsPayload;
 
 export interface InstagramDraft {
   id: string;

@@ -16,14 +16,78 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
+import { Eye, EyeOff, KeyRound } from "lucide-react";
+
+// Password strength calculator
+const calculatePasswordStrength = (password: string): number => {
+  let strength = 0;
+  if (password.length >= 8) strength += 25;
+  if (password.length >= 12) strength += 25;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength += 20;
+  if (/\d/.test(password)) strength += 15;
+  if (/[^a-zA-Z0-9]/.test(password)) strength += 15;
+  return Math.min(strength, 100);
+};
+
+// Generate secure password
+const generateSecurePassword = (): string => {
+  const lowercase = "abcdefghijklmnopqrstuvwxyz";
+  const uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  const numbers = "0123456789";
+  const symbols = "!@#$%^&*-_=+";
+  const all = lowercase + uppercase + numbers + symbols;
+
+  let password = "";
+  // Ensure at least one of each type
+  password += lowercase[Math.floor(Math.random() * lowercase.length)];
+  password += uppercase[Math.floor(Math.random() * uppercase.length)];
+  password += numbers[Math.floor(Math.random() * numbers.length)];
+  password += symbols[Math.floor(Math.random() * symbols.length)];
+
+  // Fill the rest (total 16 characters)
+  for (let i = 4; i < 16; i++) {
+    password += all[Math.floor(Math.random() * all.length)];
+  }
+
+  // Shuffle the password
+  return password
+    .split("")
+    .sort(() => Math.random() - 0.5)
+    .join("");
+};
 
 export function SignUpForm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  const passwordStrength = calculatePasswordStrength(password);
+
+  const getStrengthColor = () => {
+    if (passwordStrength < 40) return "bg-red-500";
+    if (passwordStrength < 70) return "bg-orange-500";
+    return "bg-green-500";
+  };
+
+  const getStrengthText = () => {
+    if (passwordStrength < 40) return "Fraca";
+    if (passwordStrength < 70) return "Média";
+    return "Forte";
+  };
+
+  const handleGeneratePassword = () => {
+    const newPassword = generateSecurePassword();
+    setPassword(newPassword);
+    setShowPassword(true);
+    toast({
+      title: "Password gerada!",
+      description: "Uma password segura foi gerada. Guarda-a num local seguro.",
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -147,20 +211,69 @@ export function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
-            <Input
-              id="password"
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              minLength={6}
-              disabled={isLoading}
-            />
-            <p className="text-xs text-muted-foreground">
-              Mínimo de 6 caracteres
-            </p>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleGeneratePassword}
+                disabled={isLoading}
+                className="h-auto p-0 text-xs text-primary hover:underline"
+              >
+                <KeyRound className="mr-1 h-3 w-3" />
+                Gerar password
+              </Button>
+            </div>
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                minLength={6}
+                disabled={isLoading}
+                className="pr-10"
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPassword(!showPassword)}
+                disabled={isLoading}
+                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+              >
+                {showPassword ? (
+                  <EyeOff className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <Eye className="h-4 w-4 text-muted-foreground" />
+                )}
+              </Button>
+            </div>
+
+            {/* Password strength indicator */}
+            {password && (
+              <div className="space-y-2">
+                <div className="flex items-center gap-2">
+                  <div className="h-2 flex-1 rounded-full bg-muted">
+                    <div
+                      className={`h-full rounded-full transition-all ${getStrengthColor()}`}
+                      style={{ width: `${passwordStrength}%` }}
+                    />
+                  </div>
+                  <span className="text-xs font-medium">
+                    {getStrengthText()}
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {passwordStrength < 70
+                    ? "Dica: Usa letras maiúsculas, minúsculas, números e símbolos"
+                    : "Password forte! ✓"}
+                </p>
+              </div>
+            )}
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "A criar conta..." : "Criar Conta"}

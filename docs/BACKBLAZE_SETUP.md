@@ -64,7 +64,62 @@ For the bucket to work correctly with public image URLs:
 2. Under "Bucket Info" > "Files in Bucket are:", select **Public**
 3. Save changes
 
-### 5. Optional: Custom Domain
+### 5. Configure CORS (Required for Image Export)
+
+**IMPORTANT**: You need to configure CORS to allow images to be loaded from the browser for export functionality.
+
+#### Option A: Using Backblaze Web Interface
+
+1. Go to your bucket settings
+2. Find "Bucket CORS Rules" section
+3. Click "Add CORS Rule" or "Update CORS Rules"
+4. Add the following rule:
+
+```json
+[
+  {
+    "corsRuleName": "allowAll",
+    "allowedOrigins": [
+      "http://localhost:3000",
+      "https://athlifyr.com",
+      "https://www.athlifyr.com"
+    ],
+    "allowedOperations": ["b2_download_file_by_name", "b2_download_file_by_id"],
+    "allowedHeaders": ["*"],
+    "exposeHeaders": [],
+    "maxAgeSeconds": 3600
+  }
+]
+```
+
+#### Option B: Using B2 CLI
+
+```bash
+# Install B2 CLI
+pip install b2
+
+# Authorize
+b2 authorize-account <applicationKeyId> <applicationKey>
+
+# Update CORS rules
+b2 update-bucket --cors-rules '[
+  {
+    "corsRuleName": "allowAll",
+    "allowedOrigins": ["http://localhost:3000", "https://athlifyr.com"],
+    "allowedOperations": ["b2_download_file_by_name", "b2_download_file_by_id"],
+    "allowedHeaders": ["*"],
+    "maxAgeSeconds": 3600
+  }
+]' <bucketName> allPublic
+```
+
+**Note**: Update `allowedOrigins` to include:
+
+- Your local development URL (e.g., `http://localhost:3000`)
+- Your production domain (e.g., `https://athlifyr.com`)
+- Any other domains where your app will be hosted
+
+### 6. Optional: Custom Domain
 
 If you want to use a custom domain (e.g., `cdn.athlifyr.com`):
 
@@ -142,11 +197,33 @@ Example: `posts/1673456789000_my_photo.jpg`
 
 ## Troubleshooting
 
-### Images not loading
+### Images not loading / CORS errors
+
+**Error**: `Access to image at '...' has been blocked by CORS policy`
+
+**Solution**:
+
+1. Verify CORS rules are configured on your B2 bucket (see step 5 above)
+2. Make sure your current domain is in the `allowedOrigins` list
+3. Check browser console for the exact origin being blocked
+4. For localhost, use `http://localhost:3000` (not `http://127.0.0.1:3000`)
+5. Clear browser cache and restart the dev server after CORS changes
+
+To verify CORS is working:
+
+```bash
+curl -H "Origin: http://localhost:3000" \
+     -H "Access-Control-Request-Method: GET" \
+     -I https://f003.backblazeb2.com/file/athlifyr/test.jpg
+```
+
+You should see `Access-Control-Allow-Origin: http://localhost:3000` in the response headers.
+
+### Images not loading (general)
 
 1. Verify bucket is set to **Public**
 2. Check `NEXT_PUBLIC_B2_BUCKET_URL` is correct
-3. Ensure CORS is not blocking requests
+3. Test image URL directly in browser
 
 ### Upload fails
 

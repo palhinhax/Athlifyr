@@ -14,6 +14,7 @@ interface BrandFrameProps {
   showGuides?: boolean;
   showLogo?: boolean;
   className?: string;
+  background?: React.ReactNode;
 }
 
 /**
@@ -28,6 +29,7 @@ export function BrandFrame({
   showGuides = false,
   showLogo = true,
   className = "",
+  background,
 }: BrandFrameProps) {
   const size = INSTAGRAM_SIZES[format];
   const safeArea = SAFE_AREAS[format];
@@ -45,6 +47,9 @@ export function BrandFrame({
         transformOrigin: "top left",
       }}
     >
+      {/* Background layer - covers entire frame */}
+      {background}
+
       {/* Content with safe margins */}
       <div
         className="absolute inset-0 flex flex-col"

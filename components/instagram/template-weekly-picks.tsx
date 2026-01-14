@@ -59,8 +59,12 @@ export function TemplateWeeklyPicks({
   };
 
   return (
-    <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
-      {renderBackground()}
+    <BrandFrame
+      format={format}
+      showGuides={showGuides}
+      showLogo={showLogo}
+      background={renderBackground()}
+    >
       <div className="relative z-10 flex flex-1 flex-col justify-between text-white">
         {/* Header */}
         <div className="text-center">

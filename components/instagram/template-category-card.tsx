@@ -62,8 +62,12 @@ export function TemplateCategoryCard({
   };
 
   return (
-    <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
-      {renderBackground()}
+    <BrandFrame
+      format={format}
+      showGuides={showGuides}
+      showLogo={showLogo}
+      background={renderBackground()}
+    >
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center text-white">
         {/* Category Title */}
         <h1
@@ -78,7 +82,7 @@ export function TemplateCategoryCard({
 
         {/* Chips/Keywords */}
         <div className="mb-12 flex flex-wrap items-center justify-center gap-6">
-          {chips.slice(0, 3).map((chip, index) => (
+          {chips.slice(0, 4).map((chip, index) => (
             <div
               key={index}
               className="rounded-full border-2 border-white/30 bg-white/10 px-12 py-4 font-medium backdrop-blur-sm"

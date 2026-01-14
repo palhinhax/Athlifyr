@@ -359,6 +359,13 @@ export default function InstagramGeneratorPage() {
   const handleExport = async (exportFormat: "png" | "jpeg") => {
     if (!canvasRef.current) return;
 
+    // Save current guide state and temporarily disable
+    const previousGuidesState = showGuides;
+    setShowGuides(false);
+
+    // Wait for React to re-render without guides
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     try {
       const size = INSTAGRAM_SIZES[format];
       const filename = `athlifyr-${templateKey.toLowerCase()}-${size.ratio.replace(":", "x")}`;
@@ -380,6 +387,9 @@ export default function InstagramGeneratorPage() {
         description:
           error instanceof Error ? error.message : "Failed to export image.",
       });
+    } finally {
+      // Restore previous guides state
+      setShowGuides(previousGuidesState);
     }
   };
 
@@ -775,11 +785,11 @@ export default function InstagramGeneratorPage() {
                     </p>
                   </div>
                   <div>
-                    <Label>Keywords (comma separated, 2-3 items) *</Label>
+                    <Label>Keywords (comma separated, 2-4 items) *</Label>
                     <Input
                       value={t2Chips}
                       onChange={(e) => setT2Chips(e.target.value)}
-                      placeholder="20K, 50K, Ultra"
+                      placeholder="20K, 50K, Ultra, XL"
                     />
                   </div>
                   <div>

@@ -66,6 +66,13 @@ export function MobileNav() {
               >
                 Feed
               </Link>
+              <Link
+                href="/contact"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+              >
+                Contacto
+              </Link>
 
               <div className="my-2 border-t" />
 
@@ -108,6 +115,14 @@ export function MobileNav() {
                       >
                         <Shield className="h-4 w-4" />
                         Instagram Generator
+                      </Link>
+                      <Link
+                        href="/admin/contacts"
+                        onClick={closeMenu}
+                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                      >
+                        <Shield className="h-4 w-4" />
+                        Contactos Admin
                       </Link>
                     </>
                   )}

@@ -60,8 +60,12 @@ export function TemplateEventHero({
   };
 
   return (
-    <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
-      {renderBackground()}
+    <BrandFrame
+      format={format}
+      showGuides={showGuides}
+      showLogo={showLogo}
+      background={renderBackground()}
+    >
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center text-white">
         {/* Main Title */}
         <h1

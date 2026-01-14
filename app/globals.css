@@ -82,3 +82,70 @@
     padding-bottom: env(safe-area-inset-bottom, 0px);
   }
 }
+
+/* Markdown prose styling for event descriptions */
+@layer components {
+  .prose {
+    @apply text-foreground;
+  }
+
+  .prose strong {
+    @apply font-bold text-foreground;
+  }
+
+  .prose p {
+    @apply my-4 leading-7;
+  }
+
+  .prose ul,
+  .prose ol {
+    @apply my-4 ml-6;
+  }
+
+  .prose ul {
+    @apply list-disc;
+  }
+
+  .prose ol {
+    @apply list-decimal;
+  }
+
+  .prose li {
+    @apply my-2;
+  }
+
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4 {
+    @apply font-bold text-foreground;
+  }
+
+  .prose h1 {
+    @apply mb-4 mt-6 text-3xl;
+  }
+
+  .prose h2 {
+    @apply mb-3 mt-5 text-2xl;
+  }
+
+  .prose h3 {
+    @apply mb-2 mt-4 text-xl;
+  }
+
+  .prose h4 {
+    @apply mb-2 mt-3 text-lg;
+  }
+
+  .prose a {
+    @apply text-primary underline-offset-4 hover:underline;
+  }
+
+  .prose code {
+    @apply rounded bg-muted px-1.5 py-0.5 font-mono text-sm;
+  }
+
+  .prose blockquote {
+    @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
+  }
+}

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface CollapsibleDescriptionProps {
   description: string;
@@ -21,9 +23,9 @@ export function CollapsibleDescription({
 
   if (!needsCollapsing) {
     return (
-      <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-        {description}
-      </p>
+      <div className="prose prose-slate dark:prose-invert max-w-none">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>{description}</ReactMarkdown>
+      </div>
     );
   }
 
@@ -37,9 +39,11 @@ export function CollapsibleDescription({
           maxHeight: isExpanded ? "none" : `${maxHeight}px`,
         }}
       >
-        <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">
-          {description}
-        </p>
+        <div className="prose prose-slate dark:prose-invert max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {description}
+          </ReactMarkdown>
+        </div>
         {!isExpanded && (
           <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-background to-transparent" />
         )}

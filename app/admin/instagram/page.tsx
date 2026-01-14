@@ -33,6 +33,13 @@ import {
   INSTAGRAM_SIZES,
 } from "@/types/instagram";
 
+// Preview scaling constants
+const PREVIEW_MAX_SCALE = 0.4; // Maximum scale for preview
+const PREVIEW_MOBILE_BREAKPOINT = 1024; // Breakpoint for mobile layout (px)
+const PREVIEW_MOBILE_PADDING = 60; // Padding on mobile (px)
+const PREVIEW_DESKTOP_CONTAINER_WIDTH = 800; // Container width on desktop (px)
+const PREVIEW_HEIGHT_RATIO = 0.7; // Preview height as ratio of viewport height
+
 export default function InstagramGeneratorPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -98,13 +105,15 @@ export default function InstagramGeneratorPage() {
     const calculateScale = () => {
       const size = INSTAGRAM_SIZES[format];
       const containerWidth =
-        window.innerWidth < 1024 ? window.innerWidth - 60 : 800;
-      const containerHeight = window.innerHeight * 0.7;
+        window.innerWidth < PREVIEW_MOBILE_BREAKPOINT
+          ? window.innerWidth - PREVIEW_MOBILE_PADDING
+          : PREVIEW_DESKTOP_CONTAINER_WIDTH;
+      const containerHeight = window.innerHeight * PREVIEW_HEIGHT_RATIO;
 
       const scaleByWidth = containerWidth / size.width;
       const scaleByHeight = containerHeight / size.height;
 
-      const scale = Math.min(scaleByWidth, scaleByHeight, 0.4);
+      const scale = Math.min(scaleByWidth, scaleByHeight, PREVIEW_MAX_SCALE);
       setPreviewScale(scale);
     };
 

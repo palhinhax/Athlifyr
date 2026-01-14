@@ -52,7 +52,7 @@ model User {
   // Friendships where user received the request
   receivedFriendships Friendship[] @relation("FriendshipReceiver")
   instagramDrafts     InstagramPostDraft[]
-  favoriteSports      SportType[]  @default([])
+  favoriteSports      SportType[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -111,13 +111,18 @@ model Event {
   imageUrl    String?
   externalUrl String?
   isFeatured  Boolean        @default(false)
-  variants    EventVariant[]
+  
+  // Registration
+  registrationDeadline DateTime?
+  
+  variants       EventVariant[]
+  pricingPhases  PricingPhase[]
   participations Participation[]
-  comments    Comment[]
-  posts       Post[]
-  results     Result[]
-  createdAt   DateTime       @default(now())
-  updatedAt   DateTime       @updatedAt
+  comments       Comment[]
+  posts          Post[]
+  results        Result[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([sportType])
   @@index([startDate])
@@ -131,17 +136,49 @@ model EventVariant {
   event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
   name            String
   distanceKm      Int?
-  price           Float?
+  price           Float?         // Preço fixo (se não tiver fases)
   maxParticipants Int?
   description     String?
   startDate       DateTime?      // Data específica desta variante (se diferente do evento)
   startTime       String?        // Hora de início (ex: "09:00")
-  participations  Participation[]
-  results         Result[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  
+  // Technical data (especially for trail/endurance events)
+  elevationGainM  Int?           // Desnível positivo em metros (D+)
+  elevationLossM  Int?           // Desnível negativo em metros (D-)
+  cutoffTimeHours Float?         // Tempo limite em horas
+  itraPoints      Int?           // Pontos ITRA
+  atrpGrade       Int?           // Grau ATRP (1-5)
+  mountainLevel   Int?           // Mountain Level (1-3)
+  
+  pricingPhases  PricingPhase[]
+  participations Participation[]
+  results        Result[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
 
   @@index([eventId])
+  @@index([startDate])
+}
+
+model PricingPhase {
+  id             String        @id @default(cuid())
+  eventId        String?       // Se for ao nível do evento (todas as variantes)
+  event          Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  variantId      String?       // Se for específico de uma variante
+  variant        EventVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  
+  name           String        // Ex: "1ª Fase", "Early Bird", "Fase Normal"
+  startDate      DateTime
+  endDate        DateTime
+  price          Float
+  discountPercent Int?         // Percentagem de desconto (opcional)
+  note           String?       // Nota adicional (ex: "Desconto de 10% sobre o valor de 600€")
+  
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([eventId])
+  @@index([variantId])
   @@index([startDate])
 }
 

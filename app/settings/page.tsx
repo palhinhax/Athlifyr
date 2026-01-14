@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { User, Mail, Shield } from "lucide-react";
+import { User, Mail, Shield, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { FavoriteSportsSelector } from "@/components/favorite-sports-selector";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function SettingsPage() {
       image: true,
       role: true,
       createdAt: true,
+      favoriteSports: true,
     },
   });
 
@@ -74,6 +76,15 @@ export default async function SettingsPage() {
                 })}
               </div>
             </div>
+          </Card>
+
+          {/* Favorite Sports */}
+          <Card className="p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold">
+              <Trophy className="h-6 w-6" />
+              Desportos Favoritos
+            </h2>
+            <FavoriteSportsSelector initialFavorites={user.favoriteSports} />
           </Card>
 
           {/* Privacy & Security */}

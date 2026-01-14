@@ -45,14 +45,19 @@ interface PageProps {
   searchParams: { [key: string]: string | string[] | undefined };
 }
 
-async function getEvents(sportType?: string) {
+async function getEvents(sportType?: string, userFavoriteSports?: SportType[]) {
   const where: Prisma.EventWhereInput = {
     startDate: {
       gte: new Date(),
     },
   };
 
-  if (sportType && sportType !== "ALL" && sportType in SportType) {
+  // If user has favorite sports and no specific filter is selected, filter by favorites
+  if (userFavoriteSports && userFavoriteSports.length > 0 && !sportType) {
+    where.sportType = {
+      in: userFavoriteSports,
+    };
+  } else if (sportType && sportType !== "ALL" && sportType in SportType) {
     where.sportType = sportType as SportType;
   }
 
@@ -79,7 +84,18 @@ async function getUserParticipatingEventIds(
 
 async function EventsList({ sportType }: { sportType?: string }) {
   const session = await auth();
-  const events = await getEvents(sportType);
+
+  // Get user's favorite sports if logged in
+  let userFavoriteSports: SportType[] | undefined;
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { favoriteSports: true },
+    });
+    userFavoriteSports = user?.favoriteSports || undefined;
+  }
+
+  const events = await getEvents(sportType, userFavoriteSports);
 
   // Get user's participating events if logged in
   const participatingEventIds = session?.user?.id
@@ -110,9 +126,20 @@ async function EventsList({ sportType }: { sportType?: string }) {
 
 export default async function EventsPage({ searchParams }: PageProps) {
   const sportFilter = (searchParams.sport as string) || "ALL";
+  const session = await auth();
 
-  const sportTypes = [
-    { value: "ALL", label: "Todos" },
+  // Get user's favorite sports if logged in
+  let userFavoriteSports: SportType[] | undefined;
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { favoriteSports: true },
+    });
+    userFavoriteSports = user?.favoriteSports || undefined;
+  }
+
+  // Build sport types for filter
+  const allSportTypes = [
     { value: SportType.RUNNING, label: sportTypeLabels[SportType.RUNNING] },
     { value: SportType.TRAIL, label: sportTypeLabels[SportType.TRAIL] },
     { value: SportType.HYROX, label: sportTypeLabels[SportType.HYROX] },
@@ -125,6 +152,16 @@ export default async function EventsPage({ searchParams }: PageProps) {
     { value: SportType.SWIMMING, label: sportTypeLabels[SportType.SWIMMING] },
     { value: SportType.OTHER, label: sportTypeLabels[SportType.OTHER] },
   ];
+
+  // Filter sport types based on user's favorites
+  const availableSportTypes =
+    userFavoriteSports && userFavoriteSports.length > 0
+      ? allSportTypes.filter((sport) =>
+          userFavoriteSports.includes(sport.value as SportType)
+        )
+      : allSportTypes;
+
+  const sportTypes = [{ value: "ALL", label: "Todos" }, ...availableSportTypes];
 
   return (
     <div className="min-h-screen">

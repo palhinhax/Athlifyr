@@ -18,6 +18,8 @@ import {
   generateBreadcrumbSchema,
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
+import { EventPricingPhases } from "@/components/event-pricing-phases";
+import { EventVariantTechnicalData } from "@/components/event-variant-technical-data";
 
 export const dynamic = "force-dynamic";
 
@@ -32,6 +34,18 @@ async function getEvent(slug: string, userId?: string) {
     where: { slug },
     include: {
       variants: {
+        include: {
+          pricingPhases: {
+            orderBy: {
+              startDate: "asc",
+            },
+          },
+        },
+        orderBy: {
+          startDate: "asc",
+        },
+      },
+      pricingPhases: {
         orderBy: {
           startDate: "asc",
         },
@@ -367,6 +381,67 @@ export default async function EventPage({ params }: PageProps) {
               {event.description}
             </p>
           </div>
+
+          {/* Event Pricing Phases (nível do evento) */}
+          {event.pricingPhases && event.pricingPhases.length > 0 && (
+            <div className="mb-8">
+              <EventPricingPhases phases={event.pricingPhases} />
+            </div>
+          )}
+
+          {/* Variants with details */}
+          {event.variants && event.variants.length > 0 && (
+            <div className="mb-8 space-y-8">
+              <h2 className="text-2xl font-bold">Variantes / Distâncias</h2>
+              {event.variants.map((variant) => (
+                <div
+                  key={variant.id}
+                  className="space-y-4 rounded-lg border p-6"
+                >
+                  <h3 className="text-xl font-semibold">{variant.name}</h3>
+                  {variant.description && (
+                    <p className="text-muted-foreground">
+                      {variant.description}
+                    </p>
+                  )}
+
+                  {/* Technical Data */}
+                  <EventVariantTechnicalData
+                    distanceKm={variant.distanceKm}
+                    elevationGainM={variant.elevationGainM}
+                    elevationLossM={variant.elevationLossM}
+                    cutoffTimeHours={variant.cutoffTimeHours}
+                    itraPoints={variant.itraPoints}
+                    atrpGrade={variant.atrpGrade}
+                    mountainLevel={variant.mountainLevel}
+                  />
+
+                  {/* Variant-specific pricing */}
+                  {variant.pricingPhases &&
+                    variant.pricingPhases.length > 0 && (
+                      <EventPricingPhases
+                        phases={variant.pricingPhases}
+                        variantName={variant.name}
+                      />
+                    )}
+
+                  {/* Fixed price fallback */}
+                  {variant.price &&
+                    (!variant.pricingPhases ||
+                      variant.pricingPhases.length === 0) && (
+                      <div className="rounded-lg border bg-card p-4">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">Preço</span>
+                          <span className="text-2xl font-bold">
+                            {variant.price.toFixed(2)}€
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* CTA */}
           {event.externalUrl && (

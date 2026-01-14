@@ -8,6 +8,7 @@ interface TemplateWeeklyPicksProps {
   payload: WeeklyPicksPayload;
   format: InstagramFormat;
   showGuides?: boolean;
+  showLogo?: boolean;
 }
 
 /**
@@ -18,6 +19,7 @@ export function TemplateWeeklyPicks({
   payload,
   format,
   showGuides = false,
+  showLogo = true,
 }: TemplateWeeklyPicksProps) {
   const { header, items, footer, background } = payload;
 
@@ -57,7 +59,7 @@ export function TemplateWeeklyPicks({
     <div className="relative">
       {renderBackground()}
 
-      <BrandFrame format={format} showGuides={showGuides}>
+      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
         <div className="flex flex-1 flex-col justify-between text-white">
           {/* Header */}
           <div className="text-center">

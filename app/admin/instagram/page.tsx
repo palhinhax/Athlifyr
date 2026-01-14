@@ -43,6 +43,7 @@ export default function InstagramGeneratorPage() {
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
   const [format, setFormat] = useState<InstagramFormat>("SQUARE");
   const [showGuides, setShowGuides] = useState(true);
+  const [showLogo, setShowLogo] = useState(true);
 
   // Background state
   const [backgroundType, setBackgroundType] = useState<
@@ -274,20 +275,22 @@ export default function InstagramGeneratorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-muted/30">
+    <div className="min-h-screen bg-muted/30 pb-8">
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Instagram Post Generator</h1>
-          <p className="text-muted-foreground">
+        <div className="mb-6 sm:mb-8">
+          <h1 className="text-2xl font-bold sm:text-3xl">
+            Instagram Post Generator
+          </h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
             Create branded Instagram content with Athlifyr templates
           </p>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-[400px,1fr]">
+        <div className="grid gap-4 lg:grid-cols-[400px,1fr] lg:gap-6">
           {/* Left Panel: Controls */}
-          <div className="space-y-6">
-            <Card className="p-6">
+          <div className="space-y-4 lg:space-y-6">
+            <Card className="p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Template & Format</h2>
 
               {/* Template Selector */}
@@ -349,10 +352,27 @@ export default function InstagramGeneratorPage() {
                   {showGuides ? "Hide" : "Show"}
                 </Button>
               </div>
+
+              {/* Show Logo Toggle */}
+              <div className="flex items-center justify-between">
+                <Label>Show Logo</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowLogo(!showLogo)}
+                >
+                  {showLogo ? (
+                    <Eye className="mr-2 h-4 w-4" />
+                  ) : (
+                    <EyeOff className="mr-2 h-4 w-4" />
+                  )}
+                  {showLogo ? "Hide" : "Show"}
+                </Button>
+              </div>
             </Card>
 
             {/* Background Card */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Background</h2>
 
               {/* Background Type */}
@@ -462,7 +482,7 @@ export default function InstagramGeneratorPage() {
             </Card>
 
             {/* Template Fields Card */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Content</h2>
 
               {/* T1: Event Hero */}
@@ -608,7 +628,7 @@ export default function InstagramGeneratorPage() {
             </Card>
 
             {/* Actions Card */}
-            <Card className="p-6">
+            <Card className="p-4 sm:p-6">
               <h2 className="mb-4 text-lg font-semibold">Export</h2>
               <div className="space-y-2">
                 <Button onClick={() => handleExport("png")} className="w-full">
@@ -642,7 +662,7 @@ export default function InstagramGeneratorPage() {
 
           {/* Right Panel: Preview */}
           <div className="flex items-start justify-center">
-            <Card className="inline-block p-8">
+            <Card className="inline-block w-full p-4 sm:p-8">
               <div className="mb-4 text-center">
                 <h2 className="text-lg font-semibold">Live Preview</h2>
                 <p className="text-sm text-muted-foreground">
@@ -651,10 +671,14 @@ export default function InstagramGeneratorPage() {
                   {INSTAGRAM_SIZES[format].ratio})
                 </p>
               </div>
-              <div className="overflow-auto" style={{ maxHeight: "80vh" }}>
+              <div
+                className="flex justify-center overflow-auto"
+                style={{ maxHeight: "80vh" }}
+              >
                 <div
+                  className="origin-top"
                   style={{
-                    transform: "scale(0.4)",
+                    transform: "scale(0.25)",
                     transformOrigin: "top center",
                   }}
                 >
@@ -664,6 +688,7 @@ export default function InstagramGeneratorPage() {
                     format={format}
                     payload={getPayload()}
                     showGuides={showGuides}
+                    showLogo={showLogo}
                   />
                 </div>
               </div>

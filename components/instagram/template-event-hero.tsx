@@ -6,6 +6,7 @@ interface TemplateEventHeroProps {
   payload: EventHeroPayload;
   format: InstagramFormat;
   showGuides?: boolean;
+  showLogo?: boolean;
 }
 
 /**
@@ -16,6 +17,7 @@ export function TemplateEventHero({
   payload,
   format,
   showGuides = false,
+  showLogo = true,
 }: TemplateEventHeroProps) {
   const { title, subtitle, metaLine, cta, background } = payload;
 
@@ -58,7 +60,7 @@ export function TemplateEventHero({
     <div className="relative">
       {renderBackground()}
 
-      <BrandFrame format={format} showGuides={showGuides}>
+      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
         <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
           {/* Main Title */}
           <h1

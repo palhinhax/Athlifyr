@@ -14,6 +14,7 @@ interface CanvasPreviewProps {
   format: InstagramFormat;
   payload: TemplatePayload;
   showGuides?: boolean;
+  showLogo?: boolean;
 }
 
 /**
@@ -21,7 +22,10 @@ interface CanvasPreviewProps {
  * This component is used for both preview and export
  */
 export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
-  ({ templateKey, format, payload, showGuides = false }, ref) => {
+  (
+    { templateKey, format, payload, showGuides = false, showLogo = true },
+    ref
+  ) => {
     const renderTemplate = () => {
       switch (templateKey) {
         case "T1":
@@ -32,6 +36,7 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               }
               format={format}
               showGuides={showGuides}
+              showLogo={showLogo}
             />
           );
         case "T2":
@@ -42,6 +47,7 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               }
               format={format}
               showGuides={showGuides}
+              showLogo={showLogo}
             />
           );
         case "T3":
@@ -52,6 +58,7 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               }
               format={format}
               showGuides={showGuides}
+              showLogo={showLogo}
             />
           );
         case "T4":
@@ -62,6 +69,7 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               }
               format={format}
               showGuides={showGuides}
+              showLogo={showLogo}
             />
           );
         default:

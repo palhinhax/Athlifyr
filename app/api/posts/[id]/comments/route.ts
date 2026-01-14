@@ -26,7 +26,7 @@ export async function GET(
       },
     });
 
-    return NextResponse.json(comments);
+    return NextResponse.json({ comments });
   } catch (error) {
     console.error("Error fetching comments:", error);
     return NextResponse.json(
@@ -84,7 +84,7 @@ export async function POST(
       },
     });
 
-    return NextResponse.json(comment, { status: 201 });
+    return NextResponse.json({ comment }, { status: 201 });
   } catch (error) {
     console.error("Error creating comment:", error);
     return NextResponse.json(
@@ -94,7 +94,7 @@ export async function POST(
   }
 }
 
-// DELETE /api/posts/[id]/comments?commentId=xxx - Delete a comment
+// DELETE /api/posts/[id]/comments - Delete a comment
 export async function DELETE(
   request: NextRequest,
   { params: _params }: { params: { id: string } }
@@ -106,8 +106,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { searchParams } = new URL(request.url);
-    const commentId = searchParams.get("commentId");
+    const { commentId } = await request.json();
 
     if (!commentId) {
       return NextResponse.json(

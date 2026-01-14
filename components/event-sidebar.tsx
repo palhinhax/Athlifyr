@@ -1,0 +1,99 @@
+import Image from "next/image";
+import { Calendar, MapPin, ExternalLink } from "lucide-react";
+import { formatDate } from "@/lib/event-utils";
+
+interface EventSidebarProps {
+  event: {
+    title: string;
+    imageUrl: string | null;
+    startDate: Date;
+    city: string;
+    country: string;
+    latitude: number | null;
+    longitude: number | null;
+    googleMapsUrl: string | null;
+  };
+}
+
+export function EventSidebar({ event }: EventSidebarProps) {
+  return (
+    <aside className="hidden lg:block">
+      <div className="sticky top-4 space-y-6">
+        {/* Event Image Card */}
+        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+          <div className="relative aspect-[4/3] w-full overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10">
+            <Image
+              src={event.imageUrl || "/placeholder-event.jpg"}
+              alt={event.title}
+              fill
+              className="object-cover object-center"
+              sizes="400px"
+            />
+          </div>
+          <div className="p-4">
+            <h3 className="mb-2 font-semibold">{event.title}</h3>
+            <div className="space-y-1 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span>{formatDate(event.startDate)}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4" />
+                <span>
+                  {event.city}, {event.country}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Google Maps Card */}
+        {event.latitude && event.longitude && (
+          <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+            <div className="p-4">
+              <h3 className="mb-3 flex items-center gap-2 font-semibold">
+                <MapPin className="h-5 w-5 text-primary" />
+                Localização
+              </h3>
+            </div>
+            <div className="relative aspect-[4/3] w-full">
+              <iframe
+                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${event.latitude},${event.longitude}&zoom=14`}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0"
+              />
+            </div>
+            <div className="p-4">
+              {event.googleMapsUrl ? (
+                <a
+                  href={event.googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Abrir no Google Maps
+                </a>
+              ) : (
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${event.latitude},${event.longitude}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Abrir no Google Maps
+                </a>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}

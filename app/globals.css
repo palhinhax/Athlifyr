@@ -149,3 +149,24 @@
     @apply border-l-4 border-primary pl-4 italic text-muted-foreground;
   }
 }
+
+/* Leaflet map styling */
+.leaflet-container {
+  @apply rounded-lg;
+}
+
+.leaflet-popup-content-wrapper {
+  @apply rounded-lg border bg-background text-foreground shadow-lg;
+}
+
+.leaflet-popup-tip {
+  @apply bg-background;
+}
+
+.leaflet-popup-close-button {
+  @apply text-foreground hover:text-primary;
+}
+
+.leaflet-control-attribution {
+  @apply bg-background/80 text-xs text-muted-foreground backdrop-blur;
+}

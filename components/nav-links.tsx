@@ -16,6 +16,9 @@ export function NavLinks() {
       <Link href="/events" className="text-sm font-medium hover:underline">
         Eventos
       </Link>
+      <Link href="/map" className="text-sm font-medium hover:underline">
+        Mapa
+      </Link>
       <Link href="/feed" className="text-sm font-medium hover:underline">
         Feed
       </Link>

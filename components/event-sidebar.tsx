@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Calendar, MapPin, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
+import { EventLocationMap } from "./event-location-map";
 
 interface EventSidebarProps {
   event: {
@@ -47,7 +48,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
           </div>
         </div>
 
-        {/* Google Maps Card */}
+        {/* Location Map Card */}
         {event.latitude && event.longitude && (
           <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
             <div className="p-4">
@@ -57,15 +58,10 @@ export function EventSidebar({ event }: EventSidebarProps) {
               </h3>
             </div>
             <div className="relative aspect-[4/3] w-full">
-              <iframe
-                src={`https://www.google.com/maps/embed/v1/place?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&q=${event.latitude},${event.longitude}&zoom=14`}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-                className="absolute inset-0"
+              <EventLocationMap
+                latitude={event.latitude}
+                longitude={event.longitude}
+                title={event.title}
               />
             </div>
             <div className="p-4">

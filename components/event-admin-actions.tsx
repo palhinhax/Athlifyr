@@ -37,6 +37,9 @@ interface EventAdminActionsProps {
     endDate: Date | null;
     city: string;
     country: string;
+    latitude: number | null;
+    longitude: number | null;
+    googleMapsUrl: string | null;
     imageUrl: string | null;
     externalUrl: string | null;
     variants: EventVariant[];
@@ -60,6 +63,9 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     endDate: event.endDate?.toISOString().split("T")[0] || "",
     city: event.city,
     country: event.country,
+    latitude: event.latitude?.toString() || "",
+    longitude: event.longitude?.toString() || "",
+    googleMapsUrl: event.googleMapsUrl || "",
     imageUrl: event.imageUrl || "",
     externalUrl: event.externalUrl || "",
   });
@@ -170,6 +176,8 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     try {
       const payload = {
         ...formData,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
         variants: variants
           .filter((v) => v.name.trim())
           .map((v) => ({
@@ -405,6 +413,53 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                 onChange={handleInputChange}
                 placeholder="https://..."
               />
+            </div>
+
+            {/* Location Coordinates */}
+            <div className="grid gap-4 rounded-lg border p-4">
+              <h4 className="font-medium">Localização no Mapa</h4>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="latitude">Latitude</Label>
+                  <Input
+                    id="latitude"
+                    name="latitude"
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={handleInputChange}
+                    placeholder="Ex: 41.5518"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="longitude">Longitude</Label>
+                  <Input
+                    id="longitude"
+                    name="longitude"
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={handleInputChange}
+                    placeholder="Ex: -8.4229"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="googleMapsUrl">
+                  URL do Google Maps (opcional)
+                </Label>
+                <Input
+                  id="googleMapsUrl"
+                  name="googleMapsUrl"
+                  value={formData.googleMapsUrl}
+                  onChange={handleInputChange}
+                  placeholder="https://maps.google.com/..."
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Dica: Pesquisa o local no Google Maps, clica com o botão direito
+                e copia as coordenadas.
+              </p>
             </div>
 
             {/* Variants */}

@@ -21,6 +21,7 @@ import { EventMetaInfo } from "@/components/event-meta-info";
 import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
+import { EventLocationMobile } from "@/components/event-location-mobile";
 
 export const dynamic = "force-dynamic";
 
@@ -277,6 +278,9 @@ export default async function EventPage({ params }: PageProps) {
                   endDate: event.endDate,
                   city: event.city,
                   country: event.country,
+                  latitude: event.latitude,
+                  longitude: event.longitude,
+                  googleMapsUrl: event.googleMapsUrl,
                   imageUrl: event.imageUrl,
                   externalUrl: event.externalUrl,
                   variants: event.variants.map((v) => ({
@@ -321,6 +325,18 @@ export default async function EventPage({ params }: PageProps) {
               friendsGoing={friendsGoing}
               friendsGoingCount={friendsGoingCount}
             />
+
+            {/* Location Map - Mobile Only */}
+            {event.latitude && event.longitude && (
+              <EventLocationMobile
+                latitude={event.latitude}
+                longitude={event.longitude}
+                title={event.title}
+                city={event.city}
+                country={event.country}
+                googleMapsUrl={event.googleMapsUrl}
+              />
+            )}
 
             {/* Description */}
             <div className="prose prose-lg mb-8 max-w-none">

@@ -284,6 +284,9 @@ Este regulamento pode estar sujeito a alterações tardias. Quaisquer omissões 
 
 ⚠️ **A inscrição implica total aceitação do regulamento da prova.**`,
       externalUrl: "https://www.madeiramarathon.com",
+      latitude: 32.6447,
+      longitude: -16.9078,
+      googleMapsUrl: "https://maps.app.goo.gl/YxQzJKzK5m1vHJvM7",
       variants: {
         create: [
           // Marathon 42km

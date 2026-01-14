@@ -112,6 +112,11 @@ model Event {
   externalUrl String?
   isFeatured  Boolean        @default(false)
   
+  // Geolocation
+  latitude     Float?
+  longitude    Float?
+  googleMapsUrl String?
+  
   // Registration
   registrationDeadline DateTime?
   

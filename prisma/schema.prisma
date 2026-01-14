@@ -47,10 +47,12 @@ model User {
   results        Result[]
   photos         ProfilePhoto[]
   // Friendships where user sent the request
+  // Friendships where user sent the request
   sentFriendships     Friendship[] @relation("FriendshipSender")
   // Friendships where user received the request
   receivedFriendships Friendship[] @relation("FriendshipReceiver")
   instagramDrafts     InstagramPostDraft[]
+  favoriteSports      SportType[]  @default([])
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 

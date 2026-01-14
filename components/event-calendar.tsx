@@ -69,9 +69,11 @@ export function EventCalendar({ participations }: EventCalendarProps) {
 
   // Get events for current month - use variant date if available, otherwise event date
   const eventsInMonth = participations.filter((p) => {
-    const eventDate = p.variant?.startDate
-      ? new Date(p.variant.startDate)
-      : new Date(p.event.startDate);
+    // Use variant date if variant exists and has a valid startDate
+    const eventDate =
+      p.variant?.startDate && p.variant.startDate !== null
+        ? new Date(p.variant.startDate)
+        : new Date(p.event.startDate);
     return (
       eventDate.getMonth() === currentMonth &&
       eventDate.getFullYear() === currentYear &&
@@ -82,9 +84,11 @@ export function EventCalendar({ participations }: EventCalendarProps) {
   // Create a map of dates to events
   const eventsByDate = new Map<number, EventParticipation[]>();
   eventsInMonth.forEach((p) => {
-    const eventDate = p.variant?.startDate
-      ? new Date(p.variant.startDate)
-      : new Date(p.event.startDate);
+    // Use variant date if variant exists and has a valid startDate
+    const eventDate =
+      p.variant?.startDate && p.variant.startDate !== null
+        ? new Date(p.variant.startDate)
+        : new Date(p.event.startDate);
     const day = eventDate.getDate();
     if (!eventsByDate.has(day)) {
       eventsByDate.set(day, []);
@@ -231,18 +235,21 @@ export function EventCalendar({ participations }: EventCalendarProps) {
             </h4>
             {eventsInMonth
               .sort((a, b) => {
-                const dateA = a.variant?.startDate
-                  ? new Date(a.variant.startDate)
-                  : new Date(a.event.startDate);
-                const dateB = b.variant?.startDate
-                  ? new Date(b.variant.startDate)
-                  : new Date(b.event.startDate);
+                const dateA =
+                  a.variant?.startDate && a.variant.startDate !== null
+                    ? new Date(a.variant.startDate)
+                    : new Date(a.event.startDate);
+                const dateB =
+                  b.variant?.startDate && b.variant.startDate !== null
+                    ? new Date(b.variant.startDate)
+                    : new Date(b.event.startDate);
                 return dateA.getTime() - dateB.getTime();
               })
               .map((p) => {
-                const eventDate = p.variant?.startDate
-                  ? new Date(p.variant.startDate)
-                  : new Date(p.event.startDate);
+                const eventDate =
+                  p.variant?.startDate && p.variant.startDate !== null
+                    ? new Date(p.variant.startDate)
+                    : new Date(p.event.startDate);
                 const isPastEvent = eventDate < today;
                 return (
                   <Link

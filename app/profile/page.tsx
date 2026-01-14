@@ -115,6 +115,8 @@ export default async function ProfilePage() {
               ? {
                   name: p.variant.name,
                   distanceKm: p.variant.distanceKm,
+                  startDate: p.variant.startDate,
+                  startTime: p.variant.startTime,
                 }
               : null,
           }))}
@@ -153,6 +155,16 @@ export default async function ProfilePage() {
                           {participation.variant.name}
                           {participation.variant.distanceKm &&
                             ` - ${participation.variant.distanceKm} km`}
+                          {participation.variant.startDate &&
+                            participation.variant.startDate !==
+                              participation.event.startDate && (
+                              <span className="ml-1 text-xs">
+                                ({formatDate(participation.variant.startDate)}
+                                {participation.variant.startTime &&
+                                  ` às ${participation.variant.startTime}`}
+                                )
+                              </span>
+                            )}
                         </div>
                       )}
                     </div>
@@ -189,6 +201,18 @@ export default async function ProfilePage() {
                         <div className="flex items-center gap-2">
                           <Trophy className="h-4 w-4" />
                           {participation.variant.name}
+                          {participation.variant.distanceKm &&
+                            ` - ${participation.variant.distanceKm} km`}
+                          {participation.variant.startDate &&
+                            participation.variant.startDate !==
+                              participation.event.startDate && (
+                              <span className="ml-1 text-xs">
+                                ({formatDate(participation.variant.startDate)}
+                                {participation.variant.startTime &&
+                                  ` às ${participation.variant.startTime}`}
+                                )
+                              </span>
+                            )}
                         </div>
                       )}
                     </div>

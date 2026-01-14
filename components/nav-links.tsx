@@ -19,6 +19,14 @@ export function NavLinks() {
       <Link href="/feed" className="text-sm font-medium hover:underline">
         Feed
       </Link>
+      {session?.user?.role === "ADMIN" && (
+        <Link
+          href="/admin/instagram"
+          className="text-sm font-medium hover:underline"
+        >
+          Instagram
+        </Link>
+      )}
     </>
   );
 }

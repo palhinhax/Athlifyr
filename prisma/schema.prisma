@@ -50,6 +50,7 @@ model User {
   sentFriendships     Friendship[] @relation("FriendshipSender")
   // Friendships where user received the request
   receivedFriendships Friendship[] @relation("FriendshipReceiver")
+  instagramDrafts     InstagramPostDraft[]
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -275,4 +276,24 @@ model Friendship {
   @@index([senderId])
   @@index([receiverId])
   @@index([status])
+}
+
+enum InstagramFormat {
+  SQUARE   // 1:1 (1080x1080)
+  PORTRAIT // 4:5 (1080x1350)
+  STORY    // 9:16 (1080x1920)
+}
+
+model InstagramPostDraft {
+  id            String          @id @default(cuid())
+  userId        String
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateKey   String          // T1, T2, T3, T4
+  format        InstagramFormat @default(SQUARE)
+  payload       Json            // All template fields, colors, overlay, backgroundUrl
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
+  @@index([createdAt])
 }

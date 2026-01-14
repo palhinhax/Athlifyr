@@ -32,11 +32,11 @@ export function TemplateMinimalQuote({
       return (
         <>
           <div
-            className="absolute inset-0 bg-cover bg-center"
+            className="absolute inset-0 z-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${background.value})` }}
           />
           <div
-            className="absolute inset-0 bg-black"
+            className="absolute inset-0 z-0 bg-black"
             style={{ opacity: (background.overlayIntensity || 60) / 100 }}
           />
         </>
@@ -45,67 +45,64 @@ export function TemplateMinimalQuote({
     if (background.type === "gradient") {
       return (
         <div
-          className="absolute inset-0"
+          className="absolute inset-0 z-0"
           style={{ background: background.value }}
         />
       );
     }
     return (
       <div
-        className="absolute inset-0"
+        className="absolute inset-0 z-0"
         style={{ backgroundColor: background.value }}
       />
     );
   };
 
   return (
-    <div className="relative">
+    <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
       {renderBackground()}
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center text-white">
+        {/* Opening Quote Mark */}
+        <div
+          className="mb-8 font-serif opacity-30"
+          style={{ fontSize: "180px", lineHeight: "0.8" }}
+        >
+          &ldquo;
+        </div>
 
-      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
-        <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
-          {/* Opening Quote Mark */}
-          <div
-            className="mb-8 font-serif opacity-30"
-            style={{ fontSize: "180px", lineHeight: "0.8" }}
-          >
-            &ldquo;
-          </div>
+        {/* Quote Text */}
+        <p
+          className="max-w-5xl font-normal leading-relaxed tracking-wide"
+          style={{
+            fontSize: `${64 * quoteScale}px`,
+            textShadow: "0 2px 10px rgba(0,0,0,0.3)",
+          }}
+        >
+          {quote}
+        </p>
 
-          {/* Quote Text */}
+        {/* Closing Quote Mark */}
+        <div
+          className="mt-8 font-serif opacity-30"
+          style={{ fontSize: "180px", lineHeight: "0.8" }}
+        >
+          &rdquo;
+        </div>
+
+        {/* Footer */}
+        <div className="mt-16">
+          <div className="mx-auto mb-6 h-1 w-32 bg-white/40" />
           <p
-            className="max-w-5xl font-normal leading-relaxed tracking-wide"
+            className="font-semibold uppercase tracking-widest"
             style={{
-              fontSize: `${64 * quoteScale}px`,
-              textShadow: "0 2px 10px rgba(0,0,0,0.3)",
+              fontSize: "40px",
+              opacity: 0.8,
             }}
           >
-            {quote}
+            {footer}
           </p>
-
-          {/* Closing Quote Mark */}
-          <div
-            className="mt-8 font-serif opacity-30"
-            style={{ fontSize: "180px", lineHeight: "0.8" }}
-          >
-            &rdquo;
-          </div>
-
-          {/* Footer */}
-          <div className="mt-16">
-            <div className="mx-auto mb-6 h-1 w-32 bg-white/40" />
-            <p
-              className="font-semibold uppercase tracking-widest"
-              style={{
-                fontSize: "40px",
-                opacity: 0.8,
-              }}
-            >
-              {footer}
-            </p>
-          </div>
         </div>
-      </BrandFrame>
-    </div>
+      </div>
+    </BrandFrame>
   );
 }

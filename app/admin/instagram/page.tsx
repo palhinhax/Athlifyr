@@ -33,11 +33,21 @@ import {
   INSTAGRAM_SIZES,
 } from "@/types/instagram";
 
+// Preview scaling constants
+const PREVIEW_MAX_SCALE = 0.4; // Maximum scale for preview
+const PREVIEW_MOBILE_BREAKPOINT = 1024; // Breakpoint for mobile layout (px)
+const PREVIEW_MOBILE_PADDING = 60; // Padding on mobile (px)
+const PREVIEW_DESKTOP_CONTAINER_WIDTH = 800; // Container width on desktop (px)
+const PREVIEW_HEIGHT_RATIO = 0.7; // Preview height as ratio of viewport height
+const PREVIEW_DEFAULT_SCALE = 0.3; // Default scale before calculation
+
 export default function InstagramGeneratorPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [previewScale, setPreviewScale] = useState(PREVIEW_DEFAULT_SCALE);
 
   // Template and format state
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
@@ -90,6 +100,28 @@ export default function InstagramGeneratorPage() {
       router.push("/");
     }
   }, [session, status, router]);
+
+  // Calculate responsive preview scale
+  useEffect(() => {
+    const calculateScale = () => {
+      const size = INSTAGRAM_SIZES[format];
+      const containerWidth =
+        window.innerWidth < PREVIEW_MOBILE_BREAKPOINT
+          ? window.innerWidth - PREVIEW_MOBILE_PADDING
+          : PREVIEW_DESKTOP_CONTAINER_WIDTH;
+      const containerHeight = window.innerHeight * PREVIEW_HEIGHT_RATIO;
+
+      const scaleByWidth = containerWidth / size.width;
+      const scaleByHeight = containerHeight / size.height;
+
+      const scale = Math.min(scaleByWidth, scaleByHeight, PREVIEW_MAX_SCALE);
+      setPreviewScale(scale);
+    };
+
+    calculateScale();
+    window.addEventListener("resize", calculateScale);
+    return () => window.removeEventListener("resize", calculateScale);
+  }, [format]);
 
   const getBackground = (): Background => {
     if (backgroundType === "photo") {
@@ -675,10 +707,13 @@ export default function InstagramGeneratorPage() {
                 className="flex justify-center overflow-auto"
                 style={{ maxHeight: "80vh" }}
               >
+                {/* Scaling wrapper - dimensions match canvas size for proper transform calculation */}
                 <div
                   className="origin-top"
                   style={{
-                    transform: "scale(0.25)",
+                    width: `${INSTAGRAM_SIZES[format].width}px`,
+                    height: `${INSTAGRAM_SIZES[format].height}px`,
+                    transform: `scale(${previewScale})`,
                     transformOrigin: "top center",
                   }}
                 >

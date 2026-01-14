@@ -150,7 +150,9 @@ export default function InstagramGeneratorPage() {
         } as MinimalQuotePayload;
 
       default:
-        throw new Error("Unknown template");
+        throw new Error(
+          `Unknown template: ${templateKey}. Expected T1, T2, T3, or T4.`
+        );
     }
   };
 

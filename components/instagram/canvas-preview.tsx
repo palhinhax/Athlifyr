@@ -65,7 +65,11 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
             />
           );
         default:
-          return <div>Unknown template</div>;
+          return (
+            <div className="p-8 text-center text-red-500">
+              Unknown template: {templateKey}. Expected T1, T2, T3, or T4.
+            </div>
+          );
       }
     };
 

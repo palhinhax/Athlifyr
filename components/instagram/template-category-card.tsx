@@ -9,6 +9,7 @@ interface TemplateCategoryCardProps {
   payload: CategoryCardPayload;
   format: InstagramFormat;
   showGuides?: boolean;
+  showLogo?: boolean;
 }
 
 /**
@@ -19,6 +20,7 @@ export function TemplateCategoryCard({
   payload,
   format,
   showGuides = false,
+  showLogo = true,
 }: TemplateCategoryCardProps) {
   const { categoryTitle, chips, tagline, background } = payload;
 
@@ -60,7 +62,7 @@ export function TemplateCategoryCard({
     <div className="relative">
       {renderBackground()}
 
-      <BrandFrame format={format} showGuides={showGuides}>
+      <BrandFrame format={format} showGuides={showGuides} showLogo={showLogo}>
         <div className="flex flex-1 flex-col items-center justify-center text-center text-white">
           {/* Category Title */}
           <h1

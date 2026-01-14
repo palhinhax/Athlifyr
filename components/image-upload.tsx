@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
@@ -21,17 +22,23 @@ export function ImageUpload({
   folder = "posts",
   onUploadComplete,
   currentImageUrl,
-  maxSizeMB = 5,
+  maxSizeMB,
   acceptedFormats = ["image/jpeg", "image/png", "image/webp", "image/gif"],
   buttonText = "Upload Image",
   className = "",
 }: ImageUploadProps) {
   const { toast } = useToast();
+  const { data: session } = useSession();
   const [isUploading, setIsUploading] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     currentImageUrl || null
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Determine max file size based on user role
+  // Admins can upload up to 20MB, regular users up to 5MB
+  const effectiveMaxSizeMB =
+    maxSizeMB ?? (session?.user?.role === "ADMIN" ? 20 : 5);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -48,11 +55,11 @@ export function ImageUpload({
     }
 
     // Validate file size
-    const maxBytes = maxSizeMB * 1024 * 1024;
+    const maxBytes = effectiveMaxSizeMB * 1024 * 1024;
     if (file.size > maxBytes) {
       toast({
         title: "File too large",
-        description: `File size must be less than ${maxSizeMB}MB`,
+        description: `File size must be less than ${effectiveMaxSizeMB}MB`,
         variant: "destructive",
       });
       return;
@@ -204,7 +211,9 @@ export function ImageUpload({
 
       {/* Info */}
       <p className="text-xs text-muted-foreground">
-        Max file size: {maxSizeMB}MB. Supported formats:{" "}
+        Max file size: {effectiveMaxSizeMB}MB
+        {session?.user?.role === "ADMIN" && " (Admin limit)"}. Supported
+        formats:{" "}
         {acceptedFormats.map((f) => f.split("/")[1].toUpperCase()).join(", ")}
       </p>
     </div>

@@ -39,6 +39,7 @@ const PREVIEW_MOBILE_BREAKPOINT = 1024; // Breakpoint for mobile layout (px)
 const PREVIEW_MOBILE_PADDING = 60; // Padding on mobile (px)
 const PREVIEW_DESKTOP_CONTAINER_WIDTH = 800; // Container width on desktop (px)
 const PREVIEW_HEIGHT_RATIO = 0.7; // Preview height as ratio of viewport height
+const PREVIEW_DEFAULT_SCALE = 0.3; // Default scale before calculation
 
 export default function InstagramGeneratorPage() {
   const { data: session, status } = useSession();
@@ -46,7 +47,7 @@ export default function InstagramGeneratorPage() {
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [previewScale, setPreviewScale] = useState(0.3);
+  const [previewScale, setPreviewScale] = useState(PREVIEW_DEFAULT_SCALE);
 
   // Template and format state
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
@@ -706,6 +707,7 @@ export default function InstagramGeneratorPage() {
                 className="flex justify-center overflow-auto"
                 style={{ maxHeight: "80vh" }}
               >
+                {/* Scaling wrapper - dimensions match canvas size for proper transform calculation */}
                 <div
                   className="origin-top"
                   style={{

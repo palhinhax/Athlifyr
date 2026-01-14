@@ -27,8 +27,15 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
             fill
             className="object-cover"
           />
-          <div className="absolute right-2 top-2 rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground">
-            {sportTypeLabels[event.sportType]}
+          <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
+            {event.sportTypes.map((sportType) => (
+              <div
+                key={sportType}
+                className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
+              >
+                {sportTypeLabels[sportType]}
+              </div>
+            ))}
           </div>
           {isParticipating && (
             <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-sm font-medium text-white">

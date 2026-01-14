@@ -17,7 +17,7 @@ async function main() {
         slug: "terra-de-gigantes-2026",
         description:
           "Trail running na Serra da Estrela. Um desafio extremo nas montanhas mais altas de Portugal.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-01-15"),
         endDate: new Date("2026-01-18"),
         city: "Seia",
@@ -30,7 +30,7 @@ async function main() {
         title: "Trail Póvoa de Varzim",
         slug: "trail-povoa-de-varzim-2026",
         description: "Trail running na Póvoa de Varzim.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-01-16"),
         city: "Póvoa de Varzim",
         isFeatured: false,
@@ -47,7 +47,7 @@ async function main() {
         slug: "maratona-do-funchal-2026",
         description:
           "Maratona na belíssima cidade do Funchal, Madeira, com vistas espetaculares sobre o oceano.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-01-17"),
         city: "Funchal",
         isFeatured: true,
@@ -64,7 +64,7 @@ async function main() {
         slug: "linhas-de-torres-100-2026",
         description:
           "Ultra trail em Sobral de Monte Agraço. Provas a solo ou em estafetas.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-01-30"),
         endDate: new Date("2026-01-31"),
         city: "Sobral de Monte Agraço",
@@ -86,7 +86,7 @@ async function main() {
         title: "Zebra Ultra Trail",
         slug: "zebra-ultra-trail-2026",
         description: "Ultra trail em Cantanhede.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-02-15"),
         city: "Cantanhede",
         isFeatured: true,
@@ -104,7 +104,7 @@ async function main() {
         slug: "foz-coa-douro-ultra-trail-2026",
         description:
           "Ultra trail em Foz Côa com 3 etapas em 3 dias. Paisagens do Douro.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-02-20"),
         endDate: new Date("2026-02-22"),
         city: "Foz Côa",
@@ -124,7 +124,7 @@ async function main() {
         slug: "meia-maratona-lisboa-ponte-25-abril-2026",
         description:
           "Uma das meias maratonas mais rápidas da Europa. Percurso passa pela icónica Ponte 25 de Abril.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-03-08"),
         city: "Lisboa",
         isFeatured: true,
@@ -139,7 +139,7 @@ async function main() {
         title: "Louzantrail",
         slug: "louzantrail-2026",
         description: "Trail na Lousã.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-03-07"),
         endDate: new Date("2026-03-08"),
         city: "Lousã",
@@ -160,7 +160,7 @@ async function main() {
         slug: "lisbon-eco-marathon-2026",
         description:
           "Maratona ecológica em Monsanto, Lisboa. No pulmão verde da capital.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-04-12"),
         city: "Lisboa",
         isFeatured: true,
@@ -178,7 +178,7 @@ async function main() {
         slug: "madeira-island-ultra-trail-2026",
         description:
           "Ultra trail pela ilha da Madeira com vistas deslumbrantes.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-04-25"),
         endDate: new Date("2026-04-26"),
         city: "Porto Moniz",
@@ -197,7 +197,7 @@ async function main() {
         slug: "maratona-da-europa-2026",
         description:
           "Maratona em Aveiro. Uma das provas mais importantes do país.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-04-26"),
         city: "Aveiro",
         isFeatured: true,
@@ -217,7 +217,7 @@ async function main() {
         title: "Estrela Grande Trail",
         slug: "estrela-grande-trail-2026",
         description: "Trail na Serra da Estrela.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-05-08"),
         endDate: new Date("2026-05-10"),
         city: "Manteigas",
@@ -238,7 +238,7 @@ async function main() {
         slug: "7-cidades-ultimate-trail-2026",
         description:
           "Trail em São Miguel, Açores. Paisagens vulcânicas únicas.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-05-23"),
         city: "São Miguel",
         isFeatured: true,
@@ -259,7 +259,7 @@ async function main() {
         slug: "ultra-trail-serra-da-freita-2026",
         description:
           "Trail em Arouca. Paisagens espetaculares da Serra da Freita.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-06-27"),
         endDate: new Date("2026-06-28"),
         city: "Arouca",
@@ -278,7 +278,7 @@ async function main() {
         slug: "meia-maratona-do-porto-2026",
         description:
           "Meia Maratona na Invicta. Percurso pelas ruas históricas do Porto.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-09-13"),
         city: "Porto",
         isFeatured: true,
@@ -296,7 +296,7 @@ async function main() {
         slug: "maratona-de-lisboa-2026",
         description:
           "A Maratona de Lisboa é uma das provas mais emblemáticas de Portugal.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-10-10"),
         city: "Lisboa",
         isFeatured: true,
@@ -311,7 +311,7 @@ async function main() {
         title: "Douro Ultra Trail",
         slug: "douro-ultra-trail-2026",
         description: "Ultra trail na Régua. Percurso pelo Vale do Douro.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-10-09"),
         endDate: new Date("2026-10-10"),
         city: "Régua",
@@ -333,7 +333,7 @@ async function main() {
         slug: "maratona-do-porto-2026",
         description:
           "Percorra as ruas históricas do Porto. Uma das maratonas mais importantes de Portugal.",
-        sportType: SportType.RUNNING,
+        sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-11-08"),
         city: "Porto",
         isFeatured: true,
@@ -349,7 +349,7 @@ async function main() {
         slug: "geres-extreme-marathon-2026",
         description:
           "Maratona extrema no Gerês. No Parque Nacional da Peneda-Gerês.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-11-27"),
         endDate: new Date("2026-11-29"),
         city: "Gerês",
@@ -368,7 +368,7 @@ async function main() {
         slug: "trail-demonios-do-lizandro-2026",
         description:
           "Trail em Sintra. Um dos trails mais desafiantes de Portugal.",
-        sportType: SportType.TRAIL,
+        sportTypes: [SportType.TRAIL],
         startDate: new Date("2026-11-06"),
         endDate: new Date("2026-11-07"),
         city: "Sintra",
@@ -391,7 +391,7 @@ async function main() {
         slug: "hyrox-lisboa-2026",
         description:
           "A competição de fitness mais desafiante do mundo chega a Lisboa. HYROX combina corrida com exercícios funcionais.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-28"),
         city: "Lisboa",
         isFeatured: true,
@@ -409,7 +409,7 @@ async function main() {
         slug: "hyrox-porto-2026",
         description:
           "HYROX chega ao Porto para desafiar os atletas mais completos.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-10-10"),
         city: "Porto",
         isFeatured: false,
@@ -444,15 +444,21 @@ async function main() {
   console.log(`🎯 Total variants: ${totalVariants}`);
   console.log(
     "🏃 Running:",
-    eventsData.filter((e) => e.event.sportType === SportType.RUNNING).length
+    eventsData.filter((e) =>
+      e.event.sportTypes.some((st) => st === SportType.RUNNING)
+    ).length
   );
   console.log(
     "⛰️  Trail:",
-    eventsData.filter((e) => e.event.sportType === SportType.TRAIL).length
+    eventsData.filter((e) =>
+      e.event.sportTypes.some((st) => st === SportType.TRAIL)
+    ).length
   );
   console.log(
     "💪 HYROX:",
-    eventsData.filter((e) => e.event.sportType === SportType.HYROX).length
+    eventsData.filter((e) =>
+      e.event.sportTypes.some((st) => st === SportType.HYROX)
+    ).length
   );
 }
 

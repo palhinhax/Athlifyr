@@ -44,7 +44,7 @@ As provas decorrem maioritariamente num percurso único que atravessa paisagens 
 • 934 568 787
 
 ⏰ Limite de tempo K100: 24 horas`,
-      sportType: SportType.TRAIL,
+      sportTypes: [SportType.TRAIL],
       startDate: new Date("2026-01-30T22:00:00"),
       endDate: new Date("2026-01-31T23:59:00"),
       city: "Torres Vedras",

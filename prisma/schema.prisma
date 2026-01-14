@@ -103,7 +103,7 @@ model Event {
   title       String
   slug        String         @unique
   description String         @db.Text
-  sportType   SportType
+  sportTypes  SportType[]
   startDate   DateTime
   endDate     DateTime?
   city        String
@@ -124,7 +124,7 @@ model Event {
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 
-  @@index([sportType])
+  @@index([sportTypes])
   @@index([startDate])
   @@index([city])
   @@index([isFeatured])

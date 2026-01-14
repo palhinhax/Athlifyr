@@ -57,7 +57,7 @@ export function generateSportsEventSchema(event: EventWithVariants) {
       url: baseUrl,
     },
     ...(offers.length > 0 && { offers }),
-    sport: event.sportType,
+    sport: event.sportTypes.join(", "),
   };
 }
 

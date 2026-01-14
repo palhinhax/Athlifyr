@@ -54,11 +54,13 @@ async function getEvents(sportType?: string, userFavoriteSports?: SportType[]) {
 
   // If user has favorite sports and no specific filter is selected, filter by favorites
   if (userFavoriteSports && userFavoriteSports.length > 0 && !sportType) {
-    where.sportType = {
-      in: userFavoriteSports,
+    where.sportTypes = {
+      hasSome: userFavoriteSports,
     };
   } else if (sportType && sportType !== "ALL" && sportType in SportType) {
-    where.sportType = sportType as SportType;
+    where.sportTypes = {
+      has: sportType as SportType,
+    };
   }
 
   return await prisma.event.findMany({

@@ -7,14 +7,16 @@ async function main() {
 
   // Clear existing HYROX events
   const existingHyroxEvents = await prisma.event.findMany({
-    where: { sportType: SportType.HYROX },
+    where: { sportTypes: { has: SportType.HYROX } },
   });
 
   for (const event of existingHyroxEvents) {
     await prisma.eventVariant.deleteMany({ where: { eventId: event.id } });
   }
 
-  await prisma.event.deleteMany({ where: { sportType: SportType.HYROX } });
+  await prisma.event.deleteMany({
+    where: { sportTypes: { has: SportType.HYROX } },
+  });
 
   const hyroxEvents = [
     // Janeiro 2026
@@ -24,7 +26,7 @@ async function main() {
         slug: "hyrox-st-gallen-2026",
         description:
           "HYROX competition in St. Gallen, Switzerland. An intense fitness race combining running and functional workout stations.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-16"),
         endDate: new Date("2026-01-18"),
         city: "St. Gallen",
@@ -45,7 +47,7 @@ async function main() {
         slug: "hyrox-manchester-2026",
         description:
           "HYROX Manchester sponsored by Myprotein. Premier fitness racing event in the UK.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-21"),
         endDate: new Date("2026-01-25"),
         city: "Manchester",
@@ -67,7 +69,7 @@ async function main() {
         slug: "hyrox-amsterdam-2026",
         description:
           "HYROX Amsterdam - one of the most popular fitness racing events in Europe.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-21"),
         endDate: new Date("2026-01-25"),
         city: "Amsterdam",
@@ -88,7 +90,7 @@ async function main() {
         slug: "hyrox-youngstars-amsterdam-2026",
         description:
           "HYROX Youngstars Amsterdam - youth competition for aspiring athletes.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-24"),
         endDate: new Date("2026-01-25"),
         city: "Amsterdam",
@@ -109,7 +111,7 @@ async function main() {
         slug: "hyrox-auckland-2026",
         description:
           "BYD HYROX Auckland - bringing premier fitness racing to New Zealand.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-29"),
         endDate: new Date("2026-02-01"),
         city: "Auckland",
@@ -130,7 +132,7 @@ async function main() {
         slug: "hyrox-phoenix-2026",
         description:
           "CENTR HYROX Phoenix - premiere fitness racing event in Arizona.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-29"),
         endDate: new Date("2026-02-01"),
         city: "Phoenix",
@@ -151,7 +153,7 @@ async function main() {
         slug: "hyrox-osaka-2026",
         description:
           "AirAsia HYROX Osaka - bringing the fitness racing phenomenon to Japan.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-30"),
         endDate: new Date("2026-02-01"),
         city: "Osaka",
@@ -171,7 +173,7 @@ async function main() {
         title: "HYROX Turin",
         slug: "hyrox-turin-2026",
         description: "HYROX Turin - elite fitness racing in Northern Italy.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-01-30"),
         endDate: new Date("2026-02-01"),
         city: "Turin",
@@ -194,7 +196,7 @@ async function main() {
         slug: "hyrox-vienna-2026",
         description:
           "Creapure® HYROX Vienna - premier fitness racing in the heart of Austria.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-06"),
         endDate: new Date("2026-02-08"),
         city: "Vienna",
@@ -215,7 +217,7 @@ async function main() {
         slug: "hyrox-guadalajara-2026",
         description:
           "Smart Fit HYROX Guadalajara - bringing fitness racing to Mexico.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-07"),
         endDate: new Date("2026-02-08"),
         city: "Guadalajara",
@@ -236,7 +238,7 @@ async function main() {
         slug: "hyrox-bilbao-2026",
         description:
           "HYROX Bilbao - elite fitness racing in the Basque Country.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-07"),
         endDate: new Date("2026-02-08"),
         city: "Bilbao",
@@ -257,7 +259,7 @@ async function main() {
         slug: "hyrox-nice-2026",
         description:
           "HYROX Nice - fitness racing on the French Riviera with stunning Mediterranean views.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-12"),
         endDate: new Date("2026-02-15"),
         city: "Nice",
@@ -278,7 +280,7 @@ async function main() {
         slug: "hyrox-istanbul-2026",
         description:
           "HYROX Istanbul - where East meets West in elite fitness racing.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-13"),
         endDate: new Date("2026-02-14"),
         city: "Istanbul",
@@ -299,7 +301,7 @@ async function main() {
         slug: "hyrox-las-vegas-2026",
         description:
           "The Feed HYROX Las Vegas - experience fitness racing in the Entertainment Capital of the World.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-20"),
         endDate: new Date("2026-02-22"),
         city: "Las Vegas",
@@ -321,7 +323,7 @@ async function main() {
         slug: "hyrox-katowice-2026",
         description:
           "MARTES SPORT HYROX Katowice - premier fitness racing in Poland.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-21"),
         endDate: new Date("2026-02-22"),
         city: "Katowice",
@@ -341,7 +343,7 @@ async function main() {
         title: "HYROX Taipei",
         slug: "hyrox-taipei-2026",
         description: "HYROX Taipei - bringing elite fitness racing to Taiwan.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-28"),
         endDate: new Date("2026-03-01"),
         city: "Taipei",
@@ -361,7 +363,7 @@ async function main() {
         title: "HYROX Fortaleza",
         slug: "hyrox-fortaleza-2026",
         description: "HYROX Fortaleza - fitness racing on the Brazilian coast.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-02-28"),
         endDate: new Date("2026-02-28"),
         city: "Fortaleza",
@@ -384,7 +386,7 @@ async function main() {
         slug: "hyrox-americas-championships-washington-2026",
         description:
           "HYROX Americas Championships in Washington D.C. - the ultimate test for the best athletes in the Americas.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-07"),
         endDate: new Date("2026-03-08"),
         city: "Washington D.C.",
@@ -404,7 +406,7 @@ async function main() {
         title: "HYROX Glasgow",
         slug: "hyrox-glasgow-2026",
         description: "HYROX Glasgow - premier fitness racing in Scotland.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-11"),
         endDate: new Date("2026-03-15"),
         city: "Glasgow",
@@ -425,7 +427,7 @@ async function main() {
         slug: "hyrox-copenhagen-2026",
         description:
           "HYROX Copenhagen - Scandinavian fitness racing at its finest.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-13"),
         endDate: new Date("2026-03-15"),
         city: "Copenhagen",
@@ -446,7 +448,7 @@ async function main() {
         slug: "hyrox-cancun-2026",
         description:
           "Smart Fit HYROX Cancun - fitness racing in paradise on Mexico's Caribbean coast.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-14"),
         endDate: new Date("2026-03-15"),
         city: "Cancun",
@@ -467,7 +469,7 @@ async function main() {
         slug: "hyrox-toulouse-2026",
         description:
           "HYROX Toulouse - elite fitness racing in the heart of Southern France.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-19"),
         endDate: new Date("2026-03-22"),
         city: "Toulouse",
@@ -488,7 +490,7 @@ async function main() {
         slug: "hyrox-bangkok-2026",
         description:
           "HYROX Bangkok - bringing elite fitness racing to Southeast Asia.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-20"),
         endDate: new Date("2026-03-22"),
         city: "Bangkok",
@@ -509,7 +511,7 @@ async function main() {
         slug: "hyrox-beijing-2026",
         description:
           "HYROX Beijing - premier fitness racing in China's capital.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-21"),
         endDate: new Date("2026-03-22"),
         city: "Beijing",
@@ -530,7 +532,7 @@ async function main() {
         slug: "hyrox-emea-championships-london-2026",
         description:
           "HYROX EMEA Regional Championships in London - the ultimate test for Europe, Middle East, and Africa's best athletes.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-21"),
         endDate: new Date("2026-03-22"),
         city: "London",
@@ -551,7 +553,7 @@ async function main() {
         slug: "hyrox-london-2026",
         description:
           "HYROX London - one of the biggest fitness racing events in the world at the iconic venue.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-24"),
         endDate: new Date("2026-03-29"),
         city: "London",
@@ -572,7 +574,7 @@ async function main() {
         title: "HYROX Mechelen",
         slug: "hyrox-mechelen-2026",
         description: "HYROX Mechelen - elite fitness racing in Belgium.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-26"),
         endDate: new Date("2026-03-29"),
         city: "Mechelen",
@@ -592,7 +594,7 @@ async function main() {
         title: "Creapure® HYROX Houston",
         slug: "hyrox-houston-2026",
         description: "Creapure® HYROX Houston - Texas-sized fitness racing.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-27"),
         endDate: new Date("2026-03-29"),
         city: "Houston",
@@ -613,7 +615,7 @@ async function main() {
         slug: "hyrox-youngstars-london-2026",
         description:
           "HYROX Youngstars London - youth fitness racing championship.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-03-28"),
         endDate: new Date("2026-03-29"),
         city: "London",
@@ -636,7 +638,7 @@ async function main() {
         slug: "hyrox-singapore-2026",
         description:
           "AIA HYROX Singapore - premier fitness racing in Southeast Asia's hub.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-03"),
         endDate: new Date("2026-04-05"),
         city: "Singapore",
@@ -657,7 +659,7 @@ async function main() {
         slug: "hyrox-miami-beach-2026",
         description:
           "Legendz HYROX Miami Beach - fitness racing with sun, sand, and elite competition.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-03"),
         endDate: new Date("2026-04-05"),
         city: "Miami Beach",
@@ -678,7 +680,7 @@ async function main() {
         slug: "hyrox-bologna-2026",
         description:
           "HYROX Bologna - elite fitness racing in one of Italy's most historic cities.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-04"),
         endDate: new Date("2026-04-06"),
         city: "Bologna",
@@ -699,7 +701,7 @@ async function main() {
         slug: "hyrox-brisbane-2026",
         description:
           "BYD HYROX Brisbane - premier fitness racing in Queensland, Australia.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-09"),
         endDate: new Date("2026-04-12"),
         city: "Brisbane",
@@ -720,7 +722,7 @@ async function main() {
         slug: "hyrox-bengaluru-2026",
         description:
           "HYROX Bengaluru - bringing elite fitness racing to India's tech capital.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-11"),
         endDate: new Date("2026-04-12"),
         city: "Bengaluru",
@@ -741,7 +743,7 @@ async function main() {
         slug: "hyrox-apac-championships-brisbane-2026",
         description:
           "BYD HYROX APAC Championships in Brisbane - the ultimate test for Asia-Pacific's best athletes.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-11"),
         endDate: new Date("2026-04-12"),
         city: "Brisbane",
@@ -762,7 +764,7 @@ async function main() {
         slug: "hyrox-rotterdam-2026",
         description:
           "HYROX Rotterdam - elite fitness racing in the Netherlands' second-largest city.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-15"),
         endDate: new Date("2026-04-19"),
         city: "Rotterdam",
@@ -783,7 +785,7 @@ async function main() {
         slug: "hyrox-warsaw-2026",
         description:
           "HYROX Warsaw at PGE Narodowy - Poland's largest fitness racing event.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-16"),
         endDate: new Date("2026-04-19"),
         city: "Warsaw",
@@ -805,7 +807,7 @@ async function main() {
         slug: "hyrox-cologne-2026",
         description:
           "All Inclusive Fitness HYROX Cologne - elite fitness racing in Germany's cultural hub.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-16"),
         endDate: new Date("2026-04-19"),
         city: "Cologne",
@@ -826,7 +828,7 @@ async function main() {
         slug: "hyrox-malaga-2026",
         description:
           "HYROX Málaga - fitness racing on Spain's beautiful Costa del Sol.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-16"),
         endDate: new Date("2026-04-19"),
         city: "Málaga",
@@ -847,7 +849,7 @@ async function main() {
         slug: "hyrox-monterrey-2026",
         description:
           "Smart Fit HYROX Monterrey - elite fitness racing in Northern Mexico.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-18"),
         endDate: new Date("2026-04-19"),
         city: "Monterrey",
@@ -868,7 +870,7 @@ async function main() {
         slug: "hyrox-paris-2026",
         description:
           "MAYBELLINE HYROX Paris at the Grand Palais - iconic fitness racing in the heart of Paris.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-23"),
         endDate: new Date("2026-04-26"),
         city: "Paris",
@@ -890,7 +892,7 @@ async function main() {
         slug: "hyrox-sao-paulo-2026",
         description:
           "HYROX São Paulo - bringing elite fitness racing to Brazil's largest city.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-25"),
         endDate: new Date("2026-04-25"),
         city: "São Paulo",
@@ -910,7 +912,7 @@ async function main() {
         title: "HYROX Cardiff",
         slug: "hyrox-cardiff-2026",
         description: "HYROX Cardiff - elite fitness racing in Wales.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-04-29"),
         endDate: new Date("2026-05-04"),
         city: "Cardiff",
@@ -933,7 +935,7 @@ async function main() {
         slug: "hyrox-lisboa-2026",
         description:
           "HYROX Lisboa - premier fitness racing in Portugal's beautiful capital city.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-01"),
         endDate: new Date("2026-05-03"),
         city: "Lisboa",
@@ -954,7 +956,7 @@ async function main() {
         slug: "hyrox-hong-kong-2026",
         description:
           "Cigna Healthcare HYROX Hong Kong - elite fitness racing in Asia's world city.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-08"),
         endDate: new Date("2026-05-10"),
         city: "Hong Kong",
@@ -975,7 +977,7 @@ async function main() {
         slug: "hyrox-helsinki-2026",
         description:
           "HYROX Helsinki - bringing elite fitness racing to Finland's capital.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-09"),
         endDate: new Date("2026-05-10"),
         city: "Helsinki",
@@ -996,7 +998,7 @@ async function main() {
         slug: "hyrox-barcelona-2026",
         description:
           "HYROX Barcelona - one of Europe's most popular fitness racing events in Catalonia.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-14"),
         endDate: new Date("2026-05-17"),
         city: "Barcelona",
@@ -1018,7 +1020,7 @@ async function main() {
         slug: "hyrox-heerenveen-2026",
         description:
           "HYROX Heerenveen at Thialf - elite fitness racing in the Netherlands.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-14"),
         endDate: new Date("2026-05-17"),
         city: "Heerenveen",
@@ -1039,7 +1041,7 @@ async function main() {
         slug: "hyrox-incheon-2026",
         description:
           "AirAsia HYROX Incheon - premier fitness racing in South Korea.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-15"),
         endDate: new Date("2026-05-17"),
         city: "Incheon",
@@ -1060,7 +1062,7 @@ async function main() {
         slug: "hyrox-ottawa-2026",
         description:
           "GoodLife HYROX Ottawa - premier fitness racing in Canada's capital.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-16"),
         endDate: new Date("2026-05-17"),
         city: "Ottawa",
@@ -1081,7 +1083,7 @@ async function main() {
         slug: "hyrox-lyon-2026",
         description:
           "Creapure® HYROX Lyon - elite fitness racing in France's gastronomic capital.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-20"),
         endDate: new Date("2026-05-24"),
         city: "Lyon",
@@ -1101,7 +1103,7 @@ async function main() {
         title: "HYROX Rimini",
         slug: "hyrox-rimini-2026",
         description: "HYROX Rimini - fitness racing on Italy's Adriatic coast.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-29"),
         endDate: new Date("2026-05-31"),
         city: "Rimini",
@@ -1121,7 +1123,7 @@ async function main() {
         title: "HYROX RIGA",
         slug: "hyrox-riga-2026",
         description: "HYROX Riga - bringing elite fitness racing to Latvia.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-05-30"),
         endDate: new Date("2026-05-31"),
         city: "Riga",
@@ -1144,7 +1146,7 @@ async function main() {
         slug: "hyrox-world-championships-stockholm-2026",
         description:
           "PUMA HYROX World Championships Stockholm - the ultimate global showdown for the world's best fitness racers.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-06-18"),
         endDate: new Date("2026-06-21"),
         city: "Stockholm",
@@ -1173,7 +1175,7 @@ async function main() {
         slug: "hyrox-new-york-2026",
         description:
           "HYROX New York - elite fitness racing in the city that never sleeps.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-09-01"),
         city: "New York",
         country: "United States",
@@ -1192,7 +1194,7 @@ async function main() {
         title: "Smart Fit HYROX Puebla",
         slug: "hyrox-puebla-2026",
         description: "Smart Fit HYROX Puebla - fitness racing in Mexico.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-10-01"),
         city: "Puebla",
         country: "Mexico",
@@ -1212,7 +1214,7 @@ async function main() {
         slug: "hyrox-berlin-2026",
         description:
           "HYROX Berlin - one of the largest fitness racing events in Germany.",
-        sportType: SportType.HYROX,
+        sportTypes: [SportType.HYROX],
         startDate: new Date("2026-11-01"),
         city: "Berlin",
         country: "Germany",

@@ -31,7 +31,7 @@ export default async function ProfilePage() {
               startDate: true,
               city: true,
               country: true,
-              sportType: true,
+              sportTypes: true,
             },
           },
           variant: {
@@ -109,7 +109,7 @@ export default async function ProfilePage() {
               startDate: p.event.startDate,
               city: p.event.city,
               country: p.event.country,
-              sportType: p.event.sportType,
+              sportTypes: p.event.sportTypes,
             },
             variant: p.variant
               ? {

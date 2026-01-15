@@ -6,7 +6,7 @@ on:
       seed_file:
         description: "Seed file to run (relative to prisma/seeds)"
         required: true
-        default: "example-event.ts" # Update this with your seed filename
+        default: "trail-santa-iria-2026.ts" # Trail Santa Iria 2026 seed
 
 concurrency:
   group: manual-seed-shared-db

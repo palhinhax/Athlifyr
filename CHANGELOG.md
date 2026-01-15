@@ -1,3 +1,9 @@
+# [6.8.0](https://github.com/palhinhax/Athlifyr/compare/v6.7.0...v6.8.0) (2026-01-15)
+
+### Features
+
+- **ui:** reposition map button next to filters on events page ([6a4a0dc](https://github.com/palhinhax/Athlifyr/commit/6a4a0dc64f15f29857291a7f63b6b138fe69dfed))
+
 # [6.7.0](https://github.com/palhinhax/Athlifyr/compare/v6.6.0...v6.7.0) (2026-01-15)
 
 ### Features

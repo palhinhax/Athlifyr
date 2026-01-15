@@ -5,39 +5,21 @@ import { SportType, Prisma } from "@prisma/client";
 import { sportTypeLabels } from "@/lib/event-utils";
 import { SportFilter } from "@/components/sport-filter";
 import { auth } from "@/lib/auth";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Todos os Eventos Desportivos",
-  description:
-    "Explore todos os eventos desportivos em Portugal. Encontre corridas, trails, HYROX, CrossFit, OCR, BTT, ciclismo, surf, triatlo e natação perto de si. Descubra competições e desafios para todos os níveis.",
-  keywords:
-    "eventos desportivos, corridas Portugal, trail running, HYROX, CrossFit, OCR, BTT, ciclismo, surf, triatlo, competições",
-  openGraph: {
-    title: "Todos os Eventos Desportivos - Athlifyr",
-    description:
-      "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
-    url: "https://athlifyr.com/events",
-    siteName: "Athlifyr",
-    type: "website",
-    images: [
-      {
-        url: "https://athlifyr.com/logo.png",
-        width: 1200,
-        height: 630,
-        alt: "Athlifyr - All Sports Events",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Todos os Eventos Desportivos - Athlifyr",
-    description:
-      "Explore todos os eventos desportivos em Portugal. Encontre corridas, competições e desafios perto de si.",
-  },
-  alternates: {
-    canonical: "https://athlifyr.com/events",
-  },
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const { locale } = await Promise.resolve(params);
+  const t = await getTranslations({ locale, namespace: "events" });
+
+  return {
+    title: t("metaTitle"),
+    description: t("metaDescription"),
+  };
+}
 
 export const dynamic = "force-dynamic";
 
@@ -91,6 +73,7 @@ async function EventsList({
   sportType?: string;
   locale: string;
 }) {
+  const t = await getTranslations({ locale, namespace: "events" });
   const session = await auth();
 
   // Get user's favorite sports if logged in
@@ -113,8 +96,8 @@ async function EventsList({
   if (events.length === 0) {
     return (
       <div className="py-12 text-center text-muted-foreground">
-        <p className="text-lg">Nenhum evento encontrado.</p>
-        <p className="mt-2">Tente ajustar os filtros ou volte mais tarde.</p>
+        <p className="text-lg">{t("noEvents")}</p>
+        <p className="mt-2">{t("noEventsDescription")}</p>
       </div>
     );
   }
@@ -138,6 +121,9 @@ export default async function EventsPage({
   params,
 }: PageProps & { params: { locale: string } }) {
   const { locale } = await Promise.resolve(params);
+  const t = await getTranslations({ locale, namespace: "events" });
+  const tNav = await getTranslations({ locale, namespace: "nav" });
+  const tCommon = await getTranslations({ locale, namespace: "common" });
   const sportFilter = (searchParams.sport as string) || "ALL";
   const session = await auth();
 
@@ -174,16 +160,17 @@ export default async function EventsPage({
         )
       : allSportTypes;
 
-  const sportTypes = [{ value: "ALL", label: "Todos" }, ...availableSportTypes];
+  const sportTypes = [
+    { value: "ALL", label: tNav("all") },
+    ...availableSportTypes,
+  ];
 
   return (
     <div className="min-h-screen">
       <section className="bg-muted/50 py-12">
         <div className="container mx-auto px-4">
-          <h1 className="mb-2 text-4xl font-bold">Todos os Eventos</h1>
-          <p className="text-muted-foreground">
-            Descubra os melhores eventos desportivos em Portugal
-          </p>
+          <h1 className="mb-2 text-4xl font-bold">{t("title")}</h1>
+          <p className="text-muted-foreground">{t("description")}</p>
         </div>
       </section>
 
@@ -197,7 +184,7 @@ export default async function EventsPage({
         <Suspense
           fallback={
             <div className="py-12 text-center">
-              <p className="text-muted-foreground">A carregar eventos...</p>
+              <p className="text-muted-foreground">{tCommon("loading")}</p>
             </div>
           }
         >

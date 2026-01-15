@@ -66,7 +66,24 @@ Seeds MUST be idempotent (safe to run multiple times):
 
 4. **For variants and pricing phases**: Create them with stable identifiers, then upsert translations
 
-**CRITICAL**: After creating the seed file, you MUST update the GitHub Actions workflow at `.github/workflows/manual-seed.yml` to reference the new seed file. The workflow allows manual execution of individual seed files.
+**CRITICAL**: After creating the seed file at `/prisma/seeds/<event-slug>.ts`, you MUST inform the user to update the default value in the GitHub Actions workflow file `.github/workflows/manual-seed.yml`. 
+
+The workflow should be updated so that:
+- The `seed_file` input has a `default` value pointing to the newly created file: `<event-slug>.ts`
+- This allows humans to simply click "Run workflow" without manually typing the filename
+- The workflow file uses `workflow_dispatch` with manual input, but setting a default makes it convenient
+
+**Example of what to tell the user:**
+"The seed file has been created at `/prisma/seeds/<event-slug>.ts`. To make it easy to run, update `.github/workflows/manual-seed.yml` and add a default value to the `seed_file` input:
+
+```yaml
+seed_file:
+  description: "Seed file to run (relative to prisma/seeds)"
+  required: true
+  default: "<event-slug>.ts"
+```
+
+After this update, anyone can go to Actions → Manual Prisma Seed → Run workflow and simply click 'Run workflow' to execute this seed."
 
 ### 5. Required Data Structure
 
@@ -458,10 +475,17 @@ When a user provides event information, you should:
    - Proper error handling with disconnect
 
 4. **Update the GitHub Actions workflow** (MANDATORY):
-   - After creating the seed file, document that the user should use the manual seed workflow
-   - The workflow is located at `.github/workflows/manual-seed.yml`
-   - It allows running individual seed files via GitHub Actions UI
-   - Provide clear instructions: "To run this seed, go to Actions → Manual Prisma Seed → Run workflow → Enter: `<event-slug>.ts`"
+   - After creating the seed file, the user must update `.github/workflows/manual-seed.yml`
+   - Add a `default` value to the `seed_file` input pointing to the newly created file
+   - This allows running the workflow with a single click, without manually typing the filename
+   - Example workflow update:
+     ```yaml
+     seed_file:
+       description: "Seed file to run (relative to prisma/seeds)"
+       required: true
+       default: "<event-slug>.ts"  # Add this line with the new seed filename
+     ```
+   - Instruct the user: "Update the workflow default value so you can run this seed with one click from Actions → Manual Prisma Seed → Run workflow"
 
 5. **Quality checks:**
    - ✅ All 6 languages present (pt, en, es, fr, de, it)
@@ -520,7 +544,7 @@ When a user provides event information, you should:
 - ❌ NEVER use hardcoded IDs
 - ❌ NEVER delete existing data (use upsert instead)
 - ❌ NEVER use the `/prisma/` root directory (use `/prisma/seeds/`)
-- ❌ NEVER forget to document the manual seed workflow usage
+- ❌ NEVER forget to instruct users to update the workflow default value
 - ❌ NEVER use invalid SportType values
 - ✅ ALWAYS use upsert for idempotency
 - ✅ ALWAYS use European Portuguese for Portuguese translations
@@ -549,12 +573,18 @@ pnpm tsx prisma/seeds/<event-slug>.ts
 ```
 
 **Option 2: GitHub Actions workflow (recommended for production)**
+
+First, update the workflow to set the default seed file:
+1. Edit `.github/workflows/manual-seed.yml`
+2. Update the `default` value in the `seed_file` input to `<event-slug>.ts`
+
+Then run the workflow:
 1. Go to the repository on GitHub
 2. Navigate to Actions → "Manual Prisma Seed (Shared DB)"
 3. Click "Run workflow"
-4. Enter the seed file name: `<event-slug>.ts`
+4. The seed filename will be pre-filled (you can change it if needed)
 5. Click "Run workflow" to execute
 
-This ensures the seed runs against the shared production database safely.
+This ensures the seed runs against the shared production database safely, and with a pre-filled default, it's just one click to run the most recent seed.
 
 Your goal is to generate production-ready seed files that can be directly executed to populate the database with complete, multilingual event data in an idempotent manner.

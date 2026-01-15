@@ -34,11 +34,17 @@ pnpm tsx prisma/seeds/<event-slug>.ts
 ```
 
 ### Production (GitHub Actions)
-1. Go to GitHub → Actions
-2. Select "Manual Prisma Seed (Shared DB)"
-3. Click "Run workflow"
-4. Enter filename: `<event-slug>.ts`
-5. Run
+1. Update `.github/workflows/manual-seed.yml` with the seed filename as default:
+   ```yaml
+   seed_file:
+     description: "Seed file to run (relative to prisma/seeds)"
+     required: true
+     default: "<event-slug>.ts"  # Your seed filename here
+   ```
+2. Go to GitHub → Actions
+3. Select "Manual Prisma Seed (Shared DB)"
+4. Click "Run workflow" (filename is pre-filled)
+5. Click "Run workflow" again to execute
 
 ## Creating New Seeds
 

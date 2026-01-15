@@ -1,3 +1,9 @@
+# [6.2.0](https://github.com/palhinhax/Athlifyr/compare/v6.1.0...v6.2.0) (2026-01-15)
+
+### Features
+
+- **events:** detect country from device timezone instead of locale ([733e5d4](https://github.com/palhinhax/Athlifyr/commit/733e5d46f104d9193ab69f82802b6d9648abe024))
+
 # [6.1.0](https://github.com/palhinhax/Athlifyr/compare/v6.0.1...v6.1.0) (2026-01-15)
 
 ### Features

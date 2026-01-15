@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com"
   ),
   title: {
-    default: "Athlifyr - All Sports Events. One Place.",
+    default: "Athlifyr - ONE PLACE. ALL sports.",
     template: "%s | Athlifyr",
   },
   description:
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "Athlifyr - All Sports Events. One Place.",
+    title: "Athlifyr - ONE PLACE. ALL sports.",
     description:
       "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
     url: "https://athlifyr.com",
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Athlifyr - All Sports Events. One Place.",
+        alt: "Athlifyr - ONE PLACE. ALL sports.",
       },
     ],
     locale: "pt_PT",
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Athlifyr - All Sports Events. One Place.",
+    title: "Athlifyr - ONE PLACE. ALL sports.",
     description:
       "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
     images: ["/logo.png"],
@@ -179,7 +179,7 @@ export default async function RootLayout({
               <div className="container mx-auto px-4">
                 <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
                   <p className="text-center md:text-left">
-                    Athlifyr - All sports events. One place.
+                    Athlifyr - ONE PLACE. ALL sports.
                   </p>
                   <a
                     href="https://www.instagram.com/athlifyr/"

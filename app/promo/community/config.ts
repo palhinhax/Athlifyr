@@ -1,13 +1,12 @@
 /**
- * Promo Page Configuration
- * Nike-style video showcase with multiple backgrounds
+ * Community Promo Configuration
  */
 
-export const PROMO_CONFIG = {
+export const COMMUNITY_PROMO_CONFIG = {
   // Video sequence - plays in order
   videos: [
     {
-      src: "/promo/woman-running.mp4",
+      src: "/promo/group-running.mp4",
       duration: 3000, // ms
     },
     {
@@ -15,7 +14,7 @@ export const PROMO_CONFIG = {
       duration: 3000,
     },
     {
-      src: "/promo/group-running.mp4",
+      src: "/promo/woman-running.mp4",
       duration: 3000,
     },
     {

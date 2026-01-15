@@ -3,7 +3,7 @@ import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Athlifyr - Promo",
-  description: "All sports events. One place.",
+  description: "ONE PLACE. ALL sports.",
   robots: {
     index: false,
     follow: false,

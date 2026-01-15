@@ -1,3 +1,9 @@
+## [6.4.1](https://github.com/palhinhax/Athlifyr/compare/v6.4.0...v6.4.1) (2026-01-15)
+
+### Bug Fixes
+
+- **events:** handle participations API response structure correctly ([feac166](https://github.com/palhinhax/Athlifyr/commit/feac166ee448cce18bd3c60b58cac1dd0a667332))
+
 # [6.4.0](https://github.com/palhinhax/Athlifyr/compare/v6.3.3...v6.4.0) (2026-01-15)
 
 ### Features

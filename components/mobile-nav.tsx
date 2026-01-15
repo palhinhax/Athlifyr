@@ -1,14 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Menu, X, User, LogOut, Settings, Shield } from "lucide-react";
+import { getTranslations } from "@/lib/translations";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const [locale, setLocale] = useState("pt");
+
+  // Extract locale from pathname (first segment after /)
+  useEffect(() => {
+    const segments = pathname.split("/").filter(Boolean);
+    const pathLocale = segments[0];
+    // Check if first segment is a valid locale
+    if (["pt", "en", "es", "fr", "de", "it"].includes(pathLocale)) {
+      setLocale(pathLocale);
+    }
+  }, [pathname]);
+
+  const t = getTranslations(locale);
 
   const closeMenu = () => setIsOpen(false);
 
@@ -26,7 +42,7 @@ export function MobileNav() {
         variant="ghost"
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
-        aria-label={isOpen ? "Fechar menu" : "Abrir menu"}
+        aria-label={isOpen ? t("nav.closeMenu") : t("nav.openMenu")}
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
       </Button>
@@ -44,43 +60,43 @@ export function MobileNav() {
             <nav className="flex flex-col gap-2">
               {session && (
                 <Link
-                  href="/profile"
+                  href={`/${locale}/profile`}
                   onClick={closeMenu}
                   className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                 >
                   <User className="h-4 w-4" />
-                  Perfil
+                  {t("nav.profile")}
                 </Link>
               )}
               <Link
-                href="/events"
+                href={`/${locale}/events`}
                 onClick={closeMenu}
                 className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
               >
-                Eventos
+                {t("nav.events")}
               </Link>
               <Link
-                href="/map"
+                href={`/${locale}/map`}
                 onClick={closeMenu}
                 className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
               >
-                Mapa
+                {t("nav.map")}
               </Link>
               {session && (
                 <Link
-                  href="/feed"
+                  href={`/${locale}/feed`}
                   onClick={closeMenu}
                   className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                 >
-                  Feed
+                  {t("nav.feed")}
                 </Link>
               )}
               <Link
-                href="/contact"
+                href={`/${locale}/contact`}
                 onClick={closeMenu}
                 className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
               >
-                Contacto
+                {t("nav.contact")}
               </Link>
 
               <div className="my-2 border-t" />
@@ -100,57 +116,57 @@ export function MobileNav() {
                     )}
                   </div>
                   <Link
-                    href="/settings"
+                    href={`/${locale}/settings`}
                     onClick={closeMenu}
                     className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                   >
                     <Settings className="h-4 w-4" />
-                    Definições da Conta
+                    {t("nav.accountSettings")}
                   </Link>
                   {session.user.role === "ADMIN" && (
                     <>
                       <Link
-                        href="/admin/events"
+                        href={`/${locale}/admin/events`}
                         onClick={closeMenu}
                         className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                       >
                         <Shield className="h-4 w-4" />
-                        Gerir Eventos
+                        {t("nav.manageEvents")}
                       </Link>
                       <Link
-                        href="/admin/instagram"
+                        href={`/${locale}/admin/instagram`}
                         onClick={closeMenu}
                         className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                       >
                         <Shield className="h-4 w-4" />
-                        Instagram Generator
+                        {t("nav.instagramGenerator")}
                       </Link>
                       <Link
-                        href="/admin/contacts"
+                        href={`/${locale}/admin/contacts`}
                         onClick={closeMenu}
                         className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
                       >
                         <Shield className="h-4 w-4" />
-                        Contactos Admin
+                        {t("nav.adminContacts")}
                       </Link>
                     </>
                   )}
                   <button
                     onClick={() => {
                       closeMenu();
-                      signOut({ callbackUrl: "/" });
+                      signOut({ callbackUrl: `/${locale}` });
                     }}
                     className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-accent"
                   >
                     <LogOut className="h-4 w-4" />
-                    Sair
+                    {t("nav.signOut")}
                   </button>
                 </>
               ) : (
                 <div className="px-3">
-                  <Link href="/auth/signin" onClick={closeMenu}>
+                  <Link href={`/${locale}/auth/signin`} onClick={closeMenu}>
                     <Button variant="outline" className="w-full">
-                      Entrar
+                      {t("nav.signIn")}
                     </Button>
                   </Link>
                 </div>

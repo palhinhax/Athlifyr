@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { Check, X, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 interface EventVariant {
   id: string;
@@ -38,6 +39,7 @@ export function EventRegistration({
 }: EventRegistrationProps) {
   const { data: session, status } = useSession();
   const { toast } = useToast();
+  const t = useTranslations("events.registration");
   const [userParticipation, setUserParticipation] =
     useState<Participation | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
@@ -90,8 +92,8 @@ export function EventRegistration({
   const handleRegister = async () => {
     if (!session?.user) {
       toast({
-        title: "Autenticação necessária",
-        description: "Faz login para marcar participação",
+        title: t("authRequired"),
+        description: t("authRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -99,8 +101,8 @@ export function EventRegistration({
 
     if (variants.length > 0 && !selectedVariantId) {
       toast({
-        title: "Seleciona uma variante",
-        description: "Escolhe a distância em que vais participar",
+        title: t("selectVariantRequired"),
+        description: t("selectVariantRequiredDesc"),
         variant: "destructive",
       });
       return;
@@ -130,16 +132,16 @@ export function EventRegistration({
       setParticipantsCount((prev) => prev + 1);
 
       toast({
-        title: "✅ Marcado como participante!",
+        title: t("markedAsParticipant"),
         description: selectedVariantId
-          ? `Vais participar em ${participation.variant?.name}`
-          : "Participação registada",
+          ? `${t("willParticipateIn")} ${participation.variant?.name}`
+          : t("participationRegistered"),
       });
     } catch (error) {
       console.error("Error registering:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível registar a participação",
+        title: t("error"),
+        description: t("registrationError"),
         variant: "destructive",
       });
     } finally {
@@ -166,14 +168,14 @@ export function EventRegistration({
       setParticipantsCount((prev) => Math.max(0, prev - 1));
 
       toast({
-        title: "Participação cancelada",
-        description: "Já não estás marcado neste evento",
+        title: t("participationCancelled"),
+        description: t("participationCancelledDesc"),
       });
     } catch (error) {
       console.error("Error unregistering:", error);
       toast({
-        title: "Erro",
-        description: "Não foi possível cancelar a participação",
+        title: t("error"),
+        description: t("cancellationError"),
         variant: "destructive",
       });
     } finally {
@@ -188,20 +190,22 @@ export function EventRegistration({
   return (
     <div className="rounded-lg border bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-xl font-bold">Vais participar?</h3>
+        <h3 className="text-xl font-bold">{t("willYouGo")}</h3>
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Users className="h-4 w-4" />
-          <span>{participantsCount} participantes</span>
+          <span>
+            {participantsCount} {t("participants")}
+          </span>
         </div>
       </div>
 
       {!session?.user ? (
         <div className="text-center">
           <p className="mb-3 text-sm text-muted-foreground">
-            Faz login para marcar que vais participar
+            {t("loginToParticipate")}
           </p>
           <Button asChild size="sm">
-            <a href="/auth/signin">Fazer Login</a>
+            <a href="/auth/signin">{t("signIn")}</a>
           </Button>
         </div>
       ) : (
@@ -210,7 +214,7 @@ export function EventRegistration({
           {variants.length > 0 && !userParticipation && (
             <div>
               <label className="mb-2 block text-sm font-medium">
-                Escolhe a distância/variante:
+                {t("chooseVariant")}
               </label>
               <select
                 value={selectedVariantId}
@@ -218,7 +222,7 @@ export function EventRegistration({
                 className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 disabled={isLoading}
               >
-                <option value="">Seleciona uma variante</option>
+                <option value="">{t("selectVariantPlaceholder")}</option>
                 {variants.map((variant) => {
                   const variantDate = variant.startDate
                     ? new Date(variant.startDate).toLocaleDateString("pt-PT", {
@@ -244,11 +248,11 @@ export function EventRegistration({
             <div className="rounded-md bg-primary/10 p-3 text-sm">
               <div className="mb-1 flex items-center gap-2 font-medium text-primary">
                 <Check className="h-4 w-4" />
-                Estás registado neste evento
+                {t("registered")}
               </div>
               {userParticipation.variant && (
                 <p className="text-muted-foreground">
-                  Variante: {userParticipation.variant.name}
+                  {t("variant")}: {userParticipation.variant.name}
                   {userParticipation.variant.distanceKm &&
                     ` - ${userParticipation.variant.distanceKm}km`}
                   {userParticipation.variant.startDate && (
@@ -280,7 +284,7 @@ export function EventRegistration({
                 size="sm"
               >
                 <Check className="mr-2 h-4 w-4" />
-                Marcar como Vou
+                {t("markAsGoing")}
               </Button>
             ) : (
               <Button
@@ -291,7 +295,7 @@ export function EventRegistration({
                 size="sm"
               >
                 <X className="mr-2 h-4 w-4" />
-                Cancelar Participação
+                {t("cancelParticipation")}
               </Button>
             )}
           </div>

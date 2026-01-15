@@ -22,11 +22,40 @@ interface EventVariant {
   }>;
 }
 
-interface EventVariantsListProps {
-  variants: EventVariant[];
+interface VariantLabels {
+  title: string;
+  distances: string;
+  distance: string;
+  elevationGain: string;
+  elevationLoss: string;
+  cutoffTime: string;
+  time: string;
+  prices: string;
+  currentPhase: string;
 }
 
-export function EventVariantsList({ variants }: EventVariantsListProps) {
+interface EventVariantsListProps {
+  variants: EventVariant[];
+  labels?: VariantLabels;
+}
+
+// Default labels in Portuguese (fallback)
+const defaultLabels: VariantLabels = {
+  title: "Variantes / Distâncias",
+  distances: "Distâncias",
+  distance: "Distância",
+  elevationGain: "D+",
+  elevationLoss: "D-",
+  cutoffTime: "Tempo Limite",
+  time: "Hora",
+  prices: "Preços",
+  currentPhase: "(Atual)",
+};
+
+export function EventVariantsList({
+  variants,
+  labels = defaultLabels,
+}: EventVariantsListProps) {
   if (!variants || variants.length === 0) {
     return null;
   }
@@ -44,7 +73,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
         <div className="flex flex-wrap items-center gap-2">
           <Route className="h-5 w-5 text-primary" />
           <span className="text-sm font-medium text-muted-foreground">
-            Distâncias:
+            {labels.distances}:
           </span>
           {uniqueDistances.length === 1 ? (
             <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
@@ -66,7 +95,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
       {/* Detailed variants */}
       <div className="mb-8">
         <h2 className="mb-3 text-xl font-bold sm:mb-4 sm:text-2xl">
-          Variantes / Distâncias
+          {labels.title}
         </h2>
         <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
           {variants.map((variant) => (
@@ -87,13 +116,17 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
               <div className="space-y-1.5 text-xs sm:space-y-2 sm:text-sm">
                 {variant.distanceKm && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Distância:</span>
+                    <span className="text-muted-foreground">
+                      {labels.distance}:
+                    </span>
                     <span className="font-medium">{variant.distanceKm} km</span>
                   </div>
                 )}
                 {variant.elevationGainM && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">D+:</span>
+                    <span className="text-muted-foreground">
+                      {labels.elevationGain}:
+                    </span>
                     <span className="font-medium">
                       {variant.elevationGainM} m
                     </span>
@@ -101,7 +134,9 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
                 )}
                 {variant.elevationLossM && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">D-:</span>
+                    <span className="text-muted-foreground">
+                      {labels.elevationLoss}:
+                    </span>
                     <span className="font-medium">
                       {variant.elevationLossM} m
                     </span>
@@ -109,7 +144,9 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
                 )}
                 {variant.cutoffTimeHours && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Tempo Limite:</span>
+                    <span className="text-muted-foreground">
+                      {labels.cutoffTime}:
+                    </span>
                     <span className="font-medium">
                       {variant.cutoffTimeHours}h
                     </span>
@@ -129,7 +166,9 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
                 )}
                 {variant.startTime && (
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Hora:</span>
+                    <span className="text-muted-foreground">
+                      {labels.time}:
+                    </span>
                     <span className="font-medium">{variant.startTime}</span>
                   </div>
                 )}
@@ -139,7 +178,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
               {variant.pricingPhases && variant.pricingPhases.length > 0 && (
                 <div className="space-y-1 border-t pt-2 sm:pt-3">
                   <div className="text-xs font-medium text-muted-foreground sm:text-sm">
-                    Preços:
+                    {labels.prices}:
                   </div>
                   {variant.pricingPhases.map((phase) => {
                     const isActive =
@@ -160,7 +199,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
                       >
                         <span className="truncate">
                           {phase.name}
-                          {isActive && " (Atual)"}
+                          {isActive && ` ${labels.currentPhase}`}
                         </span>
                         <span className="whitespace-nowrap font-medium">
                           {phase.price.toFixed(2)}€

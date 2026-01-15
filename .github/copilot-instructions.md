@@ -2,48 +2,36 @@
 
 ## Language and Internationalization Requirements
 
-**CRITICAL**: This project is multilingual and must support **ALL 12 CONFIGURED LANGUAGES**.
+**CRITICAL**: This project is multilingual and must support **ALL 6 CONFIGURED LANGUAGES**.
 
 ### Supported Languages (COMPLETE LIST)
 
-This project supports **12 languages**. NEVER add features without translating to ALL 12:
+This project supports **6 languages**. NEVER add features without translating to ALL 6:
 
 1. **English (en)** - en_US
 2. **Portuguese (pt)** - pt_PT (European Portuguese - see rules below)
 3. **Spanish (es)** - es_ES
 4. **French (fr)** - fr_FR
 5. **German (de)** - de_DE
-6. **Hindi (hi)** - hi_IN
-7. **Bengali (bn)** - bn_BD
-8. **Chinese (zh)** - zh_CN (Simplified Chinese)
-9. **Russian (ru)** - ru_RU
-10. **Japanese (ja)** - ja_JP
-11. **Arabic (ar)** - ar_SA
-12. **Indonesian (id)** - id_ID
+6. **Italian (it)** - it_IT
 
 ### Translation Rules
 
-1. **Always provide translations in ALL 12 supported languages**: en, pt, es, fr, de, hi, bn, zh, ru, ja, ar, id
+1. **Always provide translations in ALL 6 supported languages**: en, pt, es, fr, de, it
 2. **Portuguese variant**: ALWAYS use **European Portuguese (pt-PT)**, never Brazilian Portuguese
    - Use "tu" instead of "você"
    - Use European Portuguese vocabulary and expressions
    - Examples: "ecrã" not "tela", "telemóvel" not "celular", "autocarro" not "ônibus"
-3. **Translation files**: When adding or modifying UI text, update ALL 12 locale files:
-   - `/public/locales/en.json` (English)
-   - `/public/locales/pt.json` (European Portuguese)
-   - `/public/locales/es.json` (Spanish)
-   - `/public/locales/fr.json` (French)
-   - `/public/locales/de.json` (German)
-   - `/public/locales/hi.json` (Hindi)
-   - `/public/locales/bn.json` (Bengali)
-   - `/public/locales/zh.json` (Chinese Simplified)
-   - `/public/locales/ru.json` (Russian)
-   - `/public/locales/ja.json` (Japanese)
-   - `/public/locales/ar.json` (Arabic)
-   - `/public/locales/id.json` (Indonesian)
+3. **Translation files**: When adding or modifying UI text, update ALL 6 locale files:
+   - `/messages/en.json` (English)
+   - `/messages/pt.json` (European Portuguese)
+   - `/messages/es.json` (Spanish)
+   - `/messages/fr.json` (French)
+   - `/messages/de.json` (German)
+   - `/messages/it.json` (Italian)
 4. **Never hardcode text**: Always use translation keys with the `useTranslations` hook
-5. **Consistency**: Keep translation keys organized and consistent across ALL 12 language files
-6. **No Exceptions**: If a feature has user-facing text, it MUST be translated to all 12 languages before committing
+5. **Consistency**: Keep translation keys organized and consistent across ALL 6 language files
+6. **No Exceptions**: If a feature has user-facing text, it MUST be translated to all 6 languages before committing
 
 ---
 

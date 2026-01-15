@@ -2,6 +2,7 @@
 
 import { MapPin, ExternalLink } from "lucide-react";
 import { EventLocationMap } from "./event-location-map";
+import { useTranslations } from "next-intl";
 
 interface EventLocationMobileProps {
   latitude: number;
@@ -20,12 +21,14 @@ export function EventLocationMobile({
   country,
   googleMapsUrl,
 }: EventLocationMobileProps) {
+  const t = useTranslations("events");
+
   return (
     <div className="mb-8 overflow-hidden rounded-lg border bg-card shadow-sm lg:hidden">
       <div className="p-4">
         <h3 className="mb-1 flex items-center gap-2 font-semibold">
           <MapPin className="h-5 w-5 text-primary" />
-          Localização
+          {t("locationTitle")}
         </h3>
         <p className="text-sm text-muted-foreground">
           {city}, {country}
@@ -47,7 +50,7 @@ export function EventLocationMobile({
             className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <ExternalLink className="h-4 w-4" />
-            Abrir no Google Maps
+            {t("openInGoogleMaps")}
           </a>
         ) : (
           <a
@@ -57,7 +60,7 @@ export function EventLocationMobile({
             className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             <ExternalLink className="h-4 w-4" />
-            Abrir no Google Maps
+            {t("openInGoogleMaps")}
           </a>
         )}
       </div>

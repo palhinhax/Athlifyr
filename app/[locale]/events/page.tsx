@@ -84,7 +84,13 @@ async function getUserParticipatingEventIds(
   return new Set(participations.map((p) => p.eventId));
 }
 
-async function EventsList({ sportType }: { sportType?: string }) {
+async function EventsList({
+  sportType,
+  locale,
+}: {
+  sportType?: string;
+  locale: string;
+}) {
   const session = await auth();
 
   // Get user's favorite sports if logged in
@@ -119,6 +125,7 @@ async function EventsList({ sportType }: { sportType?: string }) {
         <EventCard
           key={event.id}
           event={event}
+          locale={locale}
           isParticipating={participatingEventIds.has(event.id)}
         />
       ))}
@@ -126,7 +133,11 @@ async function EventsList({ sportType }: { sportType?: string }) {
   );
 }
 
-export default async function EventsPage({ searchParams }: PageProps) {
+export default async function EventsPage({
+  searchParams,
+  params,
+}: PageProps & { params: { locale: string } }) {
+  const { locale } = await Promise.resolve(params);
   const sportFilter = (searchParams.sport as string) || "ALL";
   const session = await auth();
 
@@ -192,6 +203,7 @@ export default async function EventsPage({ searchParams }: PageProps) {
         >
           <EventsList
             sportType={sportFilter === "ALL" ? undefined : sportFilter}
+            locale={locale}
           />
         </Suspense>
       </section>

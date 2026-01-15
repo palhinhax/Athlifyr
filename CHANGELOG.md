@@ -1,3 +1,9 @@
+# [6.3.0](https://github.com/palhinhax/Athlifyr/compare/v6.2.0...v6.3.0) (2026-01-15)
+
+### Features
+
+- **map:** auto-detect map center from device timezone ([903596b](https://github.com/palhinhax/Athlifyr/commit/903596bb9f175266a7847177866801ae09a22241))
+
 # [6.2.0](https://github.com/palhinhax/Athlifyr/compare/v6.1.0...v6.2.0) (2026-01-15)
 
 ### Features

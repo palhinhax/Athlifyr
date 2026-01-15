@@ -1,3 +1,9 @@
+# [6.7.0](https://github.com/palhinhax/Athlifyr/compare/v6.6.0...v6.7.0) (2026-01-15)
+
+### Features
+
+- **ui:** standardize brand slogan capitalization and improve 404 page ([2d4719e](https://github.com/palhinhax/Athlifyr/commit/2d4719e51f3c723838eff2a39c2674d7405fb31a))
+
 # [6.6.0](https://github.com/palhinhax/Athlifyr/compare/v6.5.0...v6.6.0) (2026-01-15)
 
 ### Features

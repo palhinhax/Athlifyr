@@ -96,7 +96,10 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           `/api/participations?userId=${userId}`
         );
         if (participationsRes.ok) {
-          const participations = await participationsRes.json();
+          const data = await participationsRes.json();
+          const participations = Array.isArray(data)
+            ? data
+            : data.participations || [];
           setParticipatingEventIds(
             new Set(participations.map((p: { eventId: string }) => p.eventId))
           );

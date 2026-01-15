@@ -143,6 +143,16 @@
       "currentPhase": "(Actual)"
     }
   },
+  "feed": {
+    "title": "Feed de Actividad",
+    "emptyTitle": "Feed vacío",
+    "emptyDescription": "¡Sé el primero en publicar algo! Comparte tus entrenamientos, logros o regístrate en eventos.",
+    "exploreEvents": "Explorar Eventos",
+    "commentedOn": "comentó en",
+    "willParticipateIn": "participará en",
+    "reply": "respuesta",
+    "replies": "respuestas"
+  },
   "admin": {
     "contacts": {
       "title": "Mensajes de Contacto",

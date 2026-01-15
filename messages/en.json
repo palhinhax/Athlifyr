@@ -143,6 +143,16 @@
       "currentPhase": "(Current)"
     }
   },
+  "feed": {
+    "title": "Activity Feed",
+    "emptyTitle": "Empty feed",
+    "emptyDescription": "Be the first to post something! Share your workouts, achievements, or register for events.",
+    "exploreEvents": "Explore Events",
+    "commentedOn": "commented on",
+    "willParticipateIn": "will participate in",
+    "reply": "reply",
+    "replies": "replies"
+  },
   "admin": {
     "contacts": {
       "title": "Contact Messages",

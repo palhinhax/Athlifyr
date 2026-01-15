@@ -11,9 +11,16 @@ import { useToast } from "@/components/ui/use-toast";
 interface CreatePostProps {
   eventId?: string;
   onPostCreated?: () => void;
+  userImage?: string | null;
+  userName?: string | null;
 }
 
-export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
+export function CreatePost({
+  eventId,
+  onPostCreated,
+  userImage,
+  userName,
+}: CreatePostProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
   const t = useTranslations("events");
@@ -23,6 +30,10 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Use props if provided, otherwise fall back to session
+  const displayImage = userImage ?? session?.user?.image;
+  const displayName = userName ?? session?.user?.name;
 
   const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -193,17 +204,17 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
       <form onSubmit={handleSubmit}>
         <div className="mb-3 flex items-start gap-3">
           <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-            {session.user.image ? (
+            {displayImage ? (
               <Image
-                src={session.user.image}
-                alt={session.user.name || "User"}
+                src={displayImage}
+                alt={displayName || "User"}
                 fill
                 sizes="40px"
                 className="object-cover"
               />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-                {session.user.name?.[0]?.toUpperCase() || "U"}
+                {displayName?.[0]?.toUpperCase() || "U"}
               </div>
             )}
           </div>

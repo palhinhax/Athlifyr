@@ -3,19 +3,30 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { pt } from "date-fns/locale";
+import { formatDistanceToNow, type Locale } from "date-fns";
+import { pt, enUS, es, fr, de, it } from "date-fns/locale";
 import { MessageSquare, Calendar, Trophy } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
+
+// Map locale codes to date-fns locales
+const dateLocales: Record<string, Locale> = {
+  pt: pt,
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  it: it,
+};
 
 export const metadata: Metadata = {
-  title: "Feed de Atividades",
+  title: "Activity Feed",
   description:
-    "Veja as últimas atualizações dos teus eventos. Acompanha posts, fotos e resultados da comunidade desportiva.",
+    "See the latest updates from your events. Follow posts, photos, and results from the sports community.",
   robots: {
     index: false, // Feed is user-specific, no need to index
     follow: true,
@@ -24,10 +35,32 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
-export default async function FeedPage() {
+export default async function FeedPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "feed" });
+  const dateLocale = dateLocales[locale] || enUS;
   const session = await auth();
 
   if (!session?.user?.id) {
+    redirect("/auth/signin");
+  }
+
+  // Get fresh user data from database (including image)
+  // This ensures we always have the latest profile image even if JWT is stale
+  const currentUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: {
+      id: true,
+      name: true,
+      image: true,
+    },
+  });
+
+  if (!currentUser) {
     redirect("/auth/signin");
   }
 
@@ -196,11 +229,14 @@ export default async function FeedPage() {
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-3xl">
-        <h1 className="mb-8 text-4xl font-bold">Feed de Atividade</h1>
+        <h1 className="mb-8 text-4xl font-bold">{t("title")}</h1>
 
         {/* Create Post */}
         <div className="mb-6">
-          <CreatePost />
+          <CreatePost
+            userImage={currentUser.image}
+            userName={currentUser.name}
+          />
         </div>
 
         {/* Activity Feed */}
@@ -208,14 +244,13 @@ export default async function FeedPage() {
           {activities.length === 0 ? (
             <Card className="p-12 text-center">
               <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-xl font-semibold">Feed vazio</h3>
+              <h3 className="mb-2 text-xl font-semibold">{t("emptyTitle")}</h3>
               <p className="mb-6 text-muted-foreground">
-                Sê o primeiro a publicar algo! Partilha os teus treinos,
-                conquistas ou regista-te em eventos.
+                {t("emptyDescription")}
               </p>
               <Link href="/events">
                 <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                  Explorar Eventos
+                  {t("exploreEvents")}
                 </button>
               </Link>
             </Card>
@@ -268,7 +303,7 @@ export default async function FeedPage() {
                             {activity.data.user.name}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            comentou em
+                            {t("commentedOn")}
                           </span>
                           {activity.data.event && (
                             <Link
@@ -289,7 +324,7 @@ export default async function FeedPage() {
                               <span>
                                 {formatDistanceToNow(activity.date, {
                                   addSuffix: true,
-                                  locale: pt,
+                                  locale: dateLocale,
                                 })}
                               </span>
                               {"replies" in activity.data &&
@@ -298,8 +333,8 @@ export default async function FeedPage() {
                                     <MessageSquare className="h-3 w-3" />
                                     {activity.data.replies.length}{" "}
                                     {activity.data.replies.length === 1
-                                      ? "resposta"
-                                      : "respostas"}
+                                      ? t("reply")
+                                      : t("replies")}
                                   </span>
                                 )}
                             </div>
@@ -329,7 +364,7 @@ export default async function FeedPage() {
                             {activity.data.user.name}
                           </span>
                           <span className="text-sm text-muted-foreground">
-                            vai participar em
+                            {t("willParticipateIn")}
                           </span>
                           {activity.data.event && (
                             <Link

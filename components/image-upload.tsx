@@ -7,6 +7,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, X, Image as ImageIcon } from "lucide-react";
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 
 interface ImageUploadProps {
   folder?: "profiles" | "posts" | "events";
@@ -24,9 +25,10 @@ export function ImageUpload({
   currentImageUrl,
   maxSizeMB,
   acceptedFormats = ["image/jpeg", "image/png", "image/webp", "image/gif"],
-  buttonText = "Upload Image",
+  buttonText,
   className = "",
 }: ImageUploadProps) {
+  const t = useTranslations("upload");
   const { toast } = useToast();
   const { data: session } = useSession();
   const [isUploading, setIsUploading] = useState(false);
@@ -46,9 +48,10 @@ export function ImageUpload({
 
     // Validate file type
     if (!acceptedFormats.includes(file.type)) {
+      const formats = acceptedFormats.map((f) => f.split("/")[1]).join(", ");
       toast({
-        title: "Invalid file type",
-        description: `Only ${acceptedFormats.map((f) => f.split("/")[1]).join(", ")} files are allowed`,
+        title: t("invalidFileType"),
+        description: t("invalidFileTypeDesc", { formats }),
         variant: "destructive",
       });
       return;
@@ -58,8 +61,8 @@ export function ImageUpload({
     const maxBytes = effectiveMaxSizeMB * 1024 * 1024;
     if (file.size > maxBytes) {
       toast({
-        title: "File too large",
-        description: `File size must be less than ${effectiveMaxSizeMB}MB`,
+        title: t("fileTooLarge"),
+        description: t("fileTooLargeDesc", { size: effectiveMaxSizeMB }),
         variant: "destructive",
       });
       return;
@@ -78,8 +81,8 @@ export function ImageUpload({
   const handleUpload = async () => {
     if (!selectedFile) {
       toast({
-        title: "No file selected",
-        description: "Please select an image to upload",
+        title: t("noFileSelected"),
+        description: t("noFileSelectedDesc"),
         variant: "destructive",
       });
       return;
@@ -99,7 +102,7 @@ export function ImageUpload({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Upload failed");
+        throw new Error(error.error || t("uploadFailedDesc"));
       }
 
       const data = await response.json();
@@ -107,15 +110,15 @@ export function ImageUpload({
       onUploadComplete(data.file.url, data.file.fileId, data.file.fileName);
 
       toast({
-        title: "Success",
-        description: "Image uploaded successfully!",
+        title: t("common.success"),
+        description: t("uploadSuccess"),
       });
     } catch (error) {
       console.error("Upload error:", error);
       toast({
-        title: "Upload failed",
+        title: t("uploadFailed"),
         description:
-          error instanceof Error ? error.message : "Failed to upload image",
+          error instanceof Error ? error.message : t("uploadFailedDesc"),
         variant: "destructive",
       });
     } finally {
@@ -159,7 +162,7 @@ export function ImageUpload({
           <div className="text-center">
             <ImageIcon className="mx-auto h-12 w-12 text-muted-foreground" />
             <p className="mt-2 text-sm text-muted-foreground">
-              No image selected
+              {t("noImageSelected")}
             </p>
           </div>
         </div>
@@ -184,7 +187,7 @@ export function ImageUpload({
             disabled={isUploading}
           >
             <Upload className="mr-2 h-4 w-4" />
-            Choose Image
+            {t("chooseImage")}
           </Button>
         </label>
 
@@ -198,12 +201,12 @@ export function ImageUpload({
             {isUploading ? (
               <>
                 <Spinner className="mr-2 h-4 w-4" />
-                Uploading...
+                {t("uploading")}
               </>
             ) : (
               <>
                 <Upload className="mr-2 h-4 w-4" />
-                {buttonText}
+                {buttonText || t("uploadImage")}
               </>
             )}
           </Button>
@@ -212,10 +215,13 @@ export function ImageUpload({
 
       {/* Info */}
       <p className="text-xs text-muted-foreground">
-        Max file size: {effectiveMaxSizeMB}MB
-        {session?.user?.role === "ADMIN" && " (Admin limit)"}. Supported
-        formats:{" "}
-        {acceptedFormats.map((f) => f.split("/")[1].toUpperCase()).join(", ")}
+        {t("maxFileSize", { size: effectiveMaxSizeMB })}
+        {session?.user?.role === "ADMIN" && ` ${t("adminLimit")}`}.{" "}
+        {t("supportedFormats", {
+          formats: acceptedFormats
+            .map((f) => f.split("/")[1].toUpperCase())
+            .join(", "),
+        })}
       </p>
     </div>
   );

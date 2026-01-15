@@ -17,6 +17,24 @@
     "showMore": "Mehr anzeigen",
     "showLess": "Weniger anzeigen"
   },
+  "upload": {
+    "uploadImage": "Bild Hochladen",
+    "chooseImage": "Bild Auswählen",
+    "uploading": "Hochladen...",
+    "noImageSelected": "Kein Bild ausgewählt",
+    "invalidFileType": "Ungültiger Dateityp",
+    "invalidFileTypeDesc": "Nur {formats} Dateien sind erlaubt",
+    "fileTooLarge": "Datei zu groß",
+    "fileTooLargeDesc": "Die Dateigröße muss kleiner als {size}MB sein",
+    "noFileSelected": "Keine Datei ausgewählt",
+    "noFileSelectedDesc": "Bitte wählen Sie ein Bild zum Hochladen",
+    "uploadFailed": "Upload fehlgeschlagen",
+    "uploadFailedDesc": "Fehler beim Hochladen des Bildes",
+    "uploadSuccess": "Bild erfolgreich hochgeladen!",
+    "maxFileSize": "Maximale Dateigröße: {size}MB",
+    "adminLimit": "(Admin-Limit)",
+    "supportedFormats": "Unterstützte Formate: {formats}"
+  },
   "nav": {
     "events": "Veranstaltungen",
     "map": "Karte",

@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "@/lib/translations";
+import { locales } from "@/i18n";
 
 interface SportFilterProps {
   sportTypes: { value: string; label: string }[];
@@ -23,7 +24,10 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
     const segments = pathname.split("/").filter(Boolean);
     const pathLocale = segments[0];
     // Check if first segment is a valid locale
-    if (["pt", "en", "es", "fr", "de", "it"].includes(pathLocale)) {
+    if (
+      pathLocale &&
+      locales.includes(pathLocale as (typeof locales)[number])
+    ) {
       setLocale(pathLocale);
     }
   }, [pathname]);

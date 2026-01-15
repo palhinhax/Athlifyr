@@ -12,6 +12,7 @@ import L from "leaflet";
 import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
 import type { MapEvent } from "./events-map";
+import type { MapFilters } from "./map-filters";
 
 // Fix Leaflet default icon issue
 const customIcon = new L.Icon({
@@ -28,6 +29,7 @@ const customIcon = new L.Icon({
 interface EventsMapClientProps {
   initialCenter?: [number, number];
   initialZoom?: number;
+  filters?: MapFilters;
 }
 
 // Component to handle map events
@@ -59,43 +61,93 @@ function MapEventsHandler({
 export default function EventsMapClient({
   initialCenter = [39.5, -8.0], // Portugal center
   initialZoom = 7,
+  filters: initialFilters,
 }: EventsMapClientProps) {
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<MapFilters | undefined>(
+    initialFilters
+  );
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const mapBoundsRef = useRef<LatLngBounds | null>(null);
+
+  // Listen for filter changes from MapFilters component
+  useEffect(() => {
+    const handleFiltersChange = (event: Event) => {
+      const customEvent = event as CustomEvent<MapFilters>;
+      setFilters(customEvent.detail);
+    };
+
+    window.addEventListener(
+      "mapFiltersChange",
+      handleFiltersChange as EventListener
+    );
+
+    return () => {
+      window.removeEventListener(
+        "mapFiltersChange",
+        handleFiltersChange as EventListener
+      );
+    };
+  }, []);
+
+  // Refetch events when filters change
+  useEffect(() => {
+    if (mapBoundsRef.current) {
+      fetchEvents(mapBoundsRef.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters]);
 
   // Fetch events for the current bounds
-  const fetchEvents = useCallback(async (bounds: LatLngBounds) => {
-    try {
-      const north = bounds.getNorth();
-      const south = bounds.getSouth();
-      const east = bounds.getEast();
-      const west = bounds.getWest();
+  const fetchEvents = useCallback(
+    async (bounds: LatLngBounds) => {
+      try {
+        // Store current bounds for filter changes
+        mapBoundsRef.current = bounds;
 
-      const params = new URLSearchParams({
-        north: north.toString(),
-        south: south.toString(),
-        east: east.toString(),
-        west: west.toString(),
-      });
+        const north = bounds.getNorth();
+        const south = bounds.getSouth();
+        const east = bounds.getEast();
+        const west = bounds.getWest();
 
-      const response = await fetch(`/api/events/map?${params}`);
+        const params = new URLSearchParams({
+          north: north.toString(),
+          south: south.toString(),
+          east: east.toString(),
+          west: west.toString(),
+        });
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch events");
+        // Add filters to params
+        if (filters) {
+          if (filters.sports && filters.sports.length > 0) {
+            params.append("sportTypes", filters.sports.join(","));
+          }
+          if (filters.dateRange) {
+            params.append("dateRange", filters.dateRange);
+          }
+        }
+
+        const response = await fetch(`/api/events/map?${params}`);
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data: { events: MapEvent[]; count: number } =
+          await response.json();
+        setEvents(data.events);
+        setError(null);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        setError("Erro ao carregar eventos");
+      } finally {
+        setLoading(false);
       }
-
-      const data: { events: MapEvent[]; count: number } = await response.json();
-      setEvents(data.events);
-      setError(null);
-    } catch (err) {
-      console.error("Error fetching events:", err);
-      setError("Erro ao carregar eventos");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [filters]
+  );
 
   // Handle bounds change with debounce
   const handleBoundsChange = useCallback(

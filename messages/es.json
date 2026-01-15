@@ -153,6 +153,32 @@
     "reply": "respuesta",
     "replies": "respuestas"
   },
+  "map": {
+    "title": "Mapa de Eventos",
+    "description": "Explora eventos deportivos por ubicación",
+    "filters": {
+      "title": "Filtros",
+      "sports": "Deportes",
+      "allSports": "Todos los Deportes",
+      "selectSports": "Selecciona deportes para filtrar",
+      "dateRange": "Rango de Fechas",
+      "allDates": "Todas las Fechas",
+      "next7Days": "Próximos 7 Días",
+      "next30Days": "Próximos 30 Días",
+      "next3Months": "Próximos 3 Meses",
+      "next6Months": "Próximos 6 Meses",
+      "distance": "Distancia",
+      "allDistances": "Todas las Distancias",
+      "within25km": "Hasta 25 km",
+      "within50km": "Hasta 50 km",
+      "within100km": "Hasta 100 km",
+      "within200km": "Hasta 200 km",
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpiar Filtros",
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "No se encontraron eventos con los filtros actuales"
+    }
+  },
   "admin": {
     "contacts": {
       "title": "Mensajes de Contacto",

@@ -63,6 +63,7 @@ model User {
   receivedFriendships Friendship[] @relation("FriendshipReceiver")
   instagramDrafts     InstagramPostDraft[]
   favoriteSports      SportType[]
+  mapPreferences      MapPreferences?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -441,4 +442,39 @@ model Contact {
   @@index([status])
   @@index([createdAt])
   @@index([email])
+}
+
+// Map filters preferences for authenticated users
+model MapPreferences {
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sports           SportType[] // Filtered sports
+  distanceRadius   Int?        // Distance radius in km (null = all)
+  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
+  centerLat        Float?      // Last map center latitude
+  centerLng        Float?      // Last map center longitude
+  zoom             Int?        // Last zoom level
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+// Map filters preferences for anonymous users
+model AnonymousMapPreferences {
+  id               String      @id @default(cuid())
+  anonymousId      String      @unique // UUID stored in localStorage
+  sports           SportType[] // Filtered sports
+  distanceRadius   Int?        // Distance radius in km (null = all)
+  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
+  centerLat        Float?      // Last map center latitude
+  centerLng        Float?      // Last map center longitude
+  zoom             Int?        // Last zoom level
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  lastAccessedAt   DateTime    @default(now())
+
+  @@index([anonymousId])
+  @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
 }

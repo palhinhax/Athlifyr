@@ -16,7 +16,9 @@ const mapEventsSchema = z.object({
   radiusKm: z.string().optional(),
   // Filtros adicionais
   sportType: z.string().optional(),
+  sportTypes: z.string().optional(), // Multiple sports, comma-separated
   startDate: z.string().optional(),
+  dateRange: z.string().optional(), // "7d", "30d", "3m", "6m"
 });
 
 /**
@@ -35,18 +37,53 @@ export async function GET(request: NextRequest) {
       lng: searchParams.get("lng") ?? undefined,
       radiusKm: searchParams.get("radiusKm") ?? undefined,
       sportType: searchParams.get("sportType") ?? undefined,
+      sportTypes: searchParams.get("sportTypes") ?? undefined,
       startDate: searchParams.get("startDate") ?? undefined,
+      dateRange: searchParams.get("dateRange") ?? undefined,
     });
+
+    // Calculate date range
+    let minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // Default: last 7 days
+    let maxDate: Date | undefined = undefined;
+
+    if (params.dateRange) {
+      const now = new Date();
+      switch (params.dateRange) {
+        case "7d":
+          minDate = now;
+          maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "30d":
+          minDate = now;
+          maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          break;
+        case "3m":
+          minDate = now;
+          maxDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+          break;
+        case "6m":
+          minDate = now;
+          maxDate = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      }
+    }
 
     // Construir where clause
     const where: Prisma.EventWhereInput = {
       // Apenas eventos com coordenadas
       latitude: { not: null },
       longitude: { not: null },
-      // Eventos futuros ou recentes (últimos 7 dias)
-      startDate: {
-        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      },
+      // Eventos futuros ou recentes
+      startDate: maxDate
+        ? {
+            gte: minDate,
+            lte: maxDate,
+          }
+        : {
+            gte: minDate,
+          },
     };
 
     // Filtro por bounding box (viewport do mapa)
@@ -87,8 +124,21 @@ export async function GET(request: NextRequest) {
       };
     }
 
-    // Filtro por tipo de desporto
-    if (
+    // Filtro por tipo de desporto (múltiplos)
+    if (params.sportTypes) {
+      const sportTypesArray = params.sportTypes
+        .split(",")
+        .filter((s) =>
+          Object.values(SportType).includes(s as SportType)
+        ) as SportType[];
+
+      if (sportTypesArray.length > 0) {
+        where.sportTypes = {
+          hasSome: sportTypesArray,
+        };
+      }
+    } else if (
+      // Filtro por tipo de desporto (único, legacy)
       params.sportType &&
       Object.values(SportType).includes(params.sportType as SportType)
     ) {

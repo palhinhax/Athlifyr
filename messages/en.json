@@ -153,6 +153,32 @@
     "reply": "reply",
     "replies": "replies"
   },
+  "map": {
+    "title": "Event Map",
+    "description": "Explore sports events by location",
+    "filters": {
+      "title": "Filters",
+      "sports": "Sports",
+      "allSports": "All Sports",
+      "selectSports": "Select sports to filter",
+      "dateRange": "Date Range",
+      "allDates": "All Dates",
+      "next7Days": "Next 7 Days",
+      "next30Days": "Next 30 Days",
+      "next3Months": "Next 3 Months",
+      "next6Months": "Next 6 Months",
+      "distance": "Distance",
+      "allDistances": "All Distances",
+      "within25km": "Within 25 km",
+      "within50km": "Within 50 km",
+      "within100km": "Within 100 km",
+      "within200km": "Within 200 km",
+      "applyFilters": "Apply Filters",
+      "clearFilters": "Clear Filters",
+      "resultsCount": "{count} events found",
+      "noResults": "No events found with current filters"
+    }
+  },
   "admin": {
     "contacts": {
       "title": "Contact Messages",

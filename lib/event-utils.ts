@@ -4,7 +4,7 @@ export const sportTypeLabels: Record<SportType, string> = {
   RUNNING: "Corrida",
   TRAIL: "Trail",
   HYROX: "HYROX",
-  CROSSFIT: "CrossFit",
+  CROSSFIT: "Cross Training",
   OCR: "OCR",
   BTT: "BTT",
   CYCLING: "Ciclismo",

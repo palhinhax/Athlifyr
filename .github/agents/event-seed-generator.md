@@ -343,6 +343,7 @@ async function main() {
     },
   });
 
+  // Note: Prisma create() returns the full object including id by default
   console.log("✅ Event created with ID:", event.id);
   console.log("📝 Translations created for 6 languages (pt, en, es, fr, de, it)");
 }
@@ -426,7 +427,7 @@ When a user provides event information, you should:
 
 - Always use UTC timezone for dates (`Z` suffix)
 - Slugs should be lowercase with hyphens
-- Coordinates should use decimal degrees format
+- Coordinates use signed decimal degrees (negative for west longitude and south latitude)
 - Prices are in euros
 - Distance in kilometers, elevation in meters
 - Time limits in hours (can be decimal, e.g., 6.5)

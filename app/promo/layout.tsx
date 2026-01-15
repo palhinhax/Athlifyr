@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import "../globals.css";
 
 export const metadata: Metadata = {
   title: "Athlifyr - Promo",
@@ -16,7 +17,7 @@ export default function PromoLayout({
 }) {
   return (
     <html lang="en">
-      <body className="overflow-hidden">{children}</body>
+      <body className="m-0 overflow-hidden p-0">{children}</body>
     </html>
   );
 }

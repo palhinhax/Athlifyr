@@ -5,6 +5,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useTranslations } from "next-intl";
 
 interface CollapsibleDescriptionProps {
   description: string;
@@ -16,6 +17,7 @@ export function CollapsibleDescription({
   maxHeight = 300,
 }: CollapsibleDescriptionProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const t = useTranslations("common");
 
   // Check if description needs collapsing (more than ~400 characters or multiple paragraphs)
   const needsCollapsing =
@@ -58,12 +60,12 @@ export function CollapsibleDescription({
         >
           {isExpanded ? (
             <>
-              Ver menos
+              {t("showLess")}
               <ChevronUp className="h-4 w-4" />
             </>
           ) : (
             <>
-              Ver mais
+              {t("showMore")}
               <ChevronDown className="h-4 w-4" />
             </>
           )}

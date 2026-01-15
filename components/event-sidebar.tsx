@@ -1,7 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import { Calendar, MapPin, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { EventLocationMap } from "./event-location-map";
+import { useTranslations, useLocale } from "next-intl";
 
 interface EventSidebarProps {
   event: {
@@ -17,6 +20,9 @@ interface EventSidebarProps {
 }
 
 export function EventSidebar({ event }: EventSidebarProps) {
+  const t = useTranslations("events");
+  const locale = useLocale();
+
   return (
     <aside className="hidden lg:block">
       <div className="sticky top-4 space-y-6">
@@ -36,7 +42,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
             <div className="space-y-1 text-sm text-muted-foreground">
               <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4" />
-                <span>{formatDate(event.startDate)}</span>
+                <span>{formatDate(event.startDate, locale)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4" />
@@ -54,7 +60,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
             <div className="p-4">
               <h3 className="mb-3 flex items-center gap-2 font-semibold">
                 <MapPin className="h-5 w-5 text-primary" />
-                Localização
+                {t("locationTitle")}
               </h3>
             </div>
             <div className="relative aspect-[4/3] w-full">
@@ -73,7 +79,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Abrir no Google Maps
+                  {t("openInGoogleMaps")}
                 </a>
               ) : (
                 <a
@@ -83,7 +89,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
                   className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  Abrir no Google Maps
+                  {t("openInGoogleMaps")}
                 </a>
               )}
             </div>

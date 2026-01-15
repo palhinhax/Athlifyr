@@ -2,6 +2,7 @@
 
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
+import { useLocale } from "next-intl";
 
 interface PricingPhase {
   id: string;
@@ -22,6 +23,8 @@ export function EventPricingPhases({
   phases,
   variantName,
 }: EventPricingPhasesProps) {
+  const locale = useLocale();
+
   if (!phases || phases.length === 0) {
     return null;
   }
@@ -81,7 +84,7 @@ export function EventPricingPhases({
       {currentPhase && (
         <div className="mt-3 flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          <span>Até {formatDate(new Date(currentPhase.endDate))}</span>
+          <span>Até {formatDate(new Date(currentPhase.endDate), locale)}</span>
         </div>
       )}
     </div>

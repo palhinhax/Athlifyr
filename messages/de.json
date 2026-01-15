@@ -299,5 +299,22 @@
         "closed": "GESCHLOSSEN"
       }
     }
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Alle Sportveranstaltungen an einem Ort.",
+    "featuresTitle": "Funktionen",
+    "features": {
+      "nearYou": "Veranstaltungen in Ihrer Nähe",
+      "filters": "Nach Sport und Datum filtern",
+      "details": "Details und direkte Anmeldelinks",
+      "favorites": "Favoriten speichern",
+      "share": "Mit Freunden teilen"
+    },
+    "ctaTitle": "Finden Sie Ihre nächste Herausforderung",
+    "ctaSubtitle": "Erkunden • filtern • speichern • teilen",
+    "slogan": "one place. all events.",
+    "playVideo": "Video abspielen",
+    "videoLoadError": "Video konnte nicht geladen werden"
   }
 }

@@ -1,17 +1,16 @@
 /**
- * Promo Page Configuration
- * Nike-style video showcase with multiple backgrounds
+ * CrossFit Promo Configuration
  */
 
-export const PROMO_CONFIG = {
+export const CROSSFIT_PROMO_CONFIG = {
   // Video sequence - plays in order
   videos: [
     {
-      src: "/promo/woman-running.mp4",
+      src: "/promo/crossfit-workout.mp4",
       duration: 3000, // ms
     },
     {
-      src: "/promo/crossfit-workout.mp4",
+      src: "/promo/woman-running.mp4",
       duration: 3000,
     },
     {

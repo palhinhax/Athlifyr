@@ -130,12 +130,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
                 {variant.startTime && (
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Hora:</span>
-                    <span className="font-medium">
-                      {new Date(variant.startTime).toLocaleTimeString("pt-PT", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
-                    </span>
+                    <span className="font-medium">{variant.startTime}</span>
                   </div>
                 )}
               </div>

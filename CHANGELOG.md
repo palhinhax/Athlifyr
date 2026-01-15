@@ -1,3 +1,21 @@
+# [6.5.0](https://github.com/palhinhax/Athlifyr/compare/v6.4.1...v6.5.0) (2026-01-15)
+
+### Bug Fixes
+
+- **deps:** update pnpm-lock.yaml to resolve frozen-lockfile error on Vercel ([09e80f3](https://github.com/palhinhax/Athlifyr/commit/09e80f335ffd4967c6020c565011b3aa5f5f7a93))
+- **promo:** add proper HTML structure to prevent hydration errors ([f7269bb](https://github.com/palhinhax/Athlifyr/commit/f7269bbe93081bf122e328b1045951786d0794cc)), closes [#418](https://github.com/palhinhax/Athlifyr/issues/418) [#423](https://github.com/palhinhax/Athlifyr/issues/423)
+- **promo:** add video file and fix hydration error ([1d761db](https://github.com/palhinhax/Athlifyr/commit/1d761db5f71bcaa349a45ed1e73232298488913a))
+- **promo:** improve type safety for feature keys with explicit type definitions ([1686e66](https://github.com/palhinhax/Athlifyr/commit/1686e66446ecbc0db95889d5339d0f8885bc024e))
+
+### Features
+
+- **promo:** add additional video assets with descriptive names ([27d7dd2](https://github.com/palhinhax/Athlifyr/commit/27d7dd2bfd1690ae2408dbdcb42a7310c522120d))
+- **promo:** add auto-animated promo page with video background and i18n support ([1c4600d](https://github.com/palhinhax/Athlifyr/commit/1c4600d9a6690b1667ae7499cf1a4278ffed4e0e))
+- **promo:** add restart button and query parameter support for customization ([5ee07e0](https://github.com/palhinhax/Athlifyr/commit/5ee07e0da38aa0e9f857e5f259f466e10eb97a54))
+- **promo:** add sport-specific promo pages ([7d08654](https://github.com/palhinhax/Athlifyr/commit/7d0865495efdea069c02ea93cebec8e9b89cdf4d))
+- **promo:** redesign as Nike-style video showcase ([0a92054](https://github.com/palhinhax/Athlifyr/commit/0a92054a7e2c0116b7bb3351ede1a7e9956b99ed))
+- **promo:** unify all promo videos with multi-sequence format and update slogan ([c760cac](https://github.com/palhinhax/Athlifyr/commit/c760cacbc85d7db1fbae0f7e5895a8ea96f35dc4))
+
 ## [6.4.1](https://github.com/palhinhax/Athlifyr/compare/v6.4.0...v6.4.1) (2026-01-15)
 
 ### Bug Fixes

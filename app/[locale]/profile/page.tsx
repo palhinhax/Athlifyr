@@ -11,7 +11,12 @@ import { PhotoGallery } from "@/components/photo-gallery";
 
 export const dynamic = "force-dynamic";
 
-export default async function ProfilePage() {
+interface PageProps {
+  params: { locale: string };
+}
+
+export default async function ProfilePage({ params }: PageProps) {
+  const { locale } = await Promise.resolve(params);
   const session = await auth();
 
   if (!session?.user?.id) {
@@ -142,7 +147,7 @@ export default async function ProfilePage() {
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate)}
+                        {formatDate(participation.event.startDate, locale)}
                       </div>
                       <div className="flex items-center gap-2">
                         <MapPin className="h-4 w-4" />
@@ -159,7 +164,11 @@ export default async function ProfilePage() {
                             participation.variant.startDate !==
                               participation.event.startDate && (
                               <span className="ml-1 text-xs">
-                                ({formatDate(participation.variant.startDate)}
+                                (
+                                {formatDate(
+                                  participation.variant.startDate,
+                                  locale
+                                )}
                                 {participation.variant.startTime &&
                                   ` às ${participation.variant.startTime}`}
                                 )
@@ -195,7 +204,7 @@ export default async function ProfilePage() {
                     <div className="space-y-1 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate)}
+                        {formatDate(participation.event.startDate, locale)}
                       </div>
                       {participation.variant && (
                         <div className="flex items-center gap-2">
@@ -207,7 +216,11 @@ export default async function ProfilePage() {
                             participation.variant.startDate !==
                               participation.event.startDate && (
                               <span className="ml-1 text-xs">
-                                ({formatDate(participation.variant.startDate)}
+                                (
+                                {formatDate(
+                                  participation.variant.startDate,
+                                  locale
+                                )}
                                 {participation.variant.startTime &&
                                   ` às ${participation.variant.startTime}`}
                                 )

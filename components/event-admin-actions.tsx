@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -15,9 +15,52 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, Plus, X, ImagePlus, Loader2 } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Pencil,
+  Trash2,
+  Plus,
+  X,
+  ImagePlus,
+  Loader2,
+  Globe,
+} from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { SportType } from "@prisma/client";
+import { SportType, Language } from "@prisma/client";
+
+// Languages configuration
+const SUPPORTED_LANGUAGES: { code: Language; name: string; flag: string }[] = [
+  { code: "en", name: "English", flag: "🇬🇧" },
+  { code: "pt", name: "Português", flag: "🇵🇹" },
+  { code: "es", name: "Español", flag: "🇪🇸" },
+  { code: "fr", name: "Français", flag: "🇫🇷" },
+  { code: "de", name: "Deutsch", flag: "🇩🇪" },
+  { code: "it", name: "Italiano", flag: "🇮🇹" },
+];
+
+interface EventTranslation {
+  language: Language;
+  title: string;
+  description: string;
+  city: string;
+  metaTitle: string;
+  metaDescription: string;
+}
+
+interface VariantTranslation {
+  language: Language;
+  name: string;
+  description: string;
+}
+
+interface VariantFormData {
+  id?: string;
+  name: string;
+  distanceKm: string;
+  startDate: string;
+  startTime: string;
+  translations: Record<Language, VariantTranslation>;
+}
 
 interface EventVariant {
   id: string;
@@ -70,18 +113,141 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     externalUrl: event.externalUrl || "",
   });
 
-  const [variants, setVariants] = useState<
-    { name: string; distanceKm: string; startDate: string; startTime: string }[]
-  >(
+  // Helper to create empty variant translations
+  const createEmptyVariantTranslations = (): Record<
+    Language,
+    VariantTranslation
+  > => {
+    const trans: Record<Language, VariantTranslation> = {} as Record<
+      Language,
+      VariantTranslation
+    >;
+    SUPPORTED_LANGUAGES.forEach((lang) => {
+      trans[lang.code] = {
+        language: lang.code,
+        name: "",
+        description: "",
+      };
+    });
+    return trans;
+  };
+
+  const [variants, setVariants] = useState<VariantFormData[]>(
     event.variants.map((v) => ({
+      id: v.id,
       name: v.name,
       distanceKm: v.distanceKm?.toString() || "",
       startDate: v.startDate
         ? new Date(v.startDate).toISOString().split("T")[0]
         : "",
       startTime: v.startTime || "",
+      translations: createEmptyVariantTranslations(),
     }))
   );
+
+  // Translations state
+  const [translations, setTranslations] = useState<
+    Record<Language, EventTranslation>
+  >(() => {
+    const initial: Record<Language, EventTranslation> = {} as Record<
+      Language,
+      EventTranslation
+    >;
+    SUPPORTED_LANGUAGES.forEach((lang) => {
+      initial[lang.code] = {
+        language: lang.code,
+        title: "",
+        description: "",
+        city: "",
+        metaTitle: "",
+        metaDescription: "",
+      };
+    });
+    return initial;
+  });
+  const [isLoadingTranslations, setIsLoadingTranslations] = useState(false);
+  const [activeTranslationTab, setActiveTranslationTab] = useState<Language>(
+    "en" as Language
+  );
+
+  // Fetch translations when edit dialog opens
+  const fetchTranslations = useCallback(async () => {
+    setIsLoadingTranslations(true);
+    try {
+      const response = await fetch(`/api/events/${event.id}/translations`);
+      if (response.ok) {
+        const data = await response.json();
+
+        // Event translations
+        const translationsMap: Record<Language, EventTranslation> =
+          {} as Record<Language, EventTranslation>;
+        SUPPORTED_LANGUAGES.forEach((lang) => {
+          const existing = data.translations?.find(
+            (t: EventTranslation) => t.language === lang.code
+          );
+          translationsMap[lang.code] = existing || {
+            language: lang.code,
+            title: "",
+            description: "",
+            city: "",
+            metaTitle: "",
+            metaDescription: "",
+          };
+        });
+        setTranslations(translationsMap);
+
+        // Variant translations
+        if (data.variantTranslations) {
+          setVariants((prev) =>
+            prev.map((v) => {
+              if (!v.id) return v;
+              const variantTrans = data.variantTranslations[v.id];
+              if (!variantTrans) return v;
+
+              const newTranslations = { ...v.translations };
+              SUPPORTED_LANGUAGES.forEach((lang) => {
+                const existing = variantTrans.find(
+                  (t: VariantTranslation) => t.language === lang.code
+                );
+                if (existing) {
+                  newTranslations[lang.code] = {
+                    language: lang.code,
+                    name: existing.name || "",
+                    description: existing.description || "",
+                  };
+                }
+              });
+              return { ...v, translations: newTranslations };
+            })
+          );
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching translations:", error);
+    } finally {
+      setIsLoadingTranslations(false);
+    }
+  }, [event.id]);
+
+  useEffect(() => {
+    if (isEditOpen) {
+      fetchTranslations();
+    }
+  }, [isEditOpen, fetchTranslations]);
+
+  const handleTranslationChange = (
+    language: Language,
+    field: keyof EventTranslation,
+    value: string
+  ) => {
+    setTranslations((prev) => ({
+      ...prev,
+      [language]: {
+        ...prev[language],
+        [field]: value,
+      },
+    }));
+  };
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -163,7 +329,13 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
-      { name: "", distanceKm: "", startDate: "", startTime: "" },
+      {
+        name: "",
+        distanceKm: "",
+        startDate: "",
+        startTime: "",
+        translations: createEmptyVariantTranslations(),
+      },
     ]);
   };
 
@@ -171,9 +343,38 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
+  const handleVariantTranslationChange = (
+    variantIndex: number,
+    language: Language,
+    field: keyof VariantTranslation,
+    value: string
+  ) => {
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIndex
+          ? {
+              ...v,
+              translations: {
+                ...v.translations,
+                [language]: {
+                  ...v.translations[language],
+                  [field]: value,
+                },
+              },
+            }
+          : v
+      )
+    );
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
+      // Prepare translations - only include non-empty ones
+      const translationsToSave = Object.values(translations).filter(
+        (t) => t.title.trim() || t.description.trim()
+      );
+
       const payload = {
         ...formData,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
@@ -181,11 +382,16 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
         variants: variants
           .filter((v) => v.name.trim())
           .map((v) => ({
+            id: v.id,
             name: v.name,
             distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
             startDate: v.startDate || null,
             startTime: v.startTime || null,
+            translations: Object.values(v.translations).filter(
+              (t) => t.name.trim() || t.description?.trim()
+            ),
           })),
+        translations: translationsToSave,
       };
       console.log("Updating event with payload:", payload);
 
@@ -545,9 +751,175 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                         />
                       </div>
                     </div>
+
+                    {/* Variant Translations */}
+                    <details className="mt-3">
+                      <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
+                        <Globe className="mr-1 inline h-3 w-3" />
+                        Traduções desta variante
+                      </summary>
+                      <div className="mt-2 space-y-2 rounded-md bg-muted/50 p-2">
+                        {SUPPORTED_LANGUAGES.map((lang) => (
+                          <div
+                            key={lang.code}
+                            className="flex items-center gap-2"
+                          >
+                            <span className="w-8 text-sm">{lang.flag}</span>
+                            <Input
+                              placeholder={`Nome em ${lang.name}`}
+                              value={
+                                variant.translations[lang.code]?.name || ""
+                              }
+                              onChange={(e) =>
+                                handleVariantTranslationChange(
+                                  index,
+                                  lang.code,
+                                  "name",
+                                  e.target.value
+                                )
+                              }
+                              className="flex-1 text-sm"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </details>
                   </div>
                 ))}
               </div>
+            </div>
+
+            {/* Translations Section */}
+            <div className="grid gap-4 rounded-lg border p-4">
+              <div className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-primary" />
+                <h4 className="font-medium">Traduções</h4>
+                {isLoadingTranslations && (
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Adiciona traduções para o evento aparecer corretamente em
+                diferentes idiomas. O conteúdo original (PT) é usado como
+                fallback.
+              </p>
+
+              <Tabs
+                value={activeTranslationTab}
+                onValueChange={(v) => setActiveTranslationTab(v as Language)}
+              >
+                <TabsList className="grid w-full grid-cols-6">
+                  {SUPPORTED_LANGUAGES.map((lang) => (
+                    <TabsTrigger
+                      key={lang.code}
+                      value={lang.code}
+                      className="text-xs"
+                    >
+                      <span className="mr-1">{lang.flag}</span>
+                      <span className="hidden sm:inline">
+                        {lang.code.toUpperCase()}
+                      </span>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
+
+                {SUPPORTED_LANGUAGES.map((lang) => (
+                  <TabsContent key={lang.code} value={lang.code}>
+                    <div className="space-y-4 pt-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor={`title-${lang.code}`}>
+                          Título ({lang.name})
+                        </Label>
+                        <Input
+                          id={`title-${lang.code}`}
+                          value={translations[lang.code]?.title || ""}
+                          onChange={(e) =>
+                            handleTranslationChange(
+                              lang.code,
+                              "title",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Título em ${lang.name}`}
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor={`description-${lang.code}`}>
+                          Descrição ({lang.name})
+                        </Label>
+                        <textarea
+                          id={`description-${lang.code}`}
+                          value={translations[lang.code]?.description || ""}
+                          onChange={(e) =>
+                            handleTranslationChange(
+                              lang.code,
+                              "description",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Descrição em ${lang.name}`}
+                          className="min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor={`city-${lang.code}`}>
+                          Cidade ({lang.name})
+                        </Label>
+                        <Input
+                          id={`city-${lang.code}`}
+                          value={translations[lang.code]?.city || ""}
+                          onChange={(e) =>
+                            handleTranslationChange(
+                              lang.code,
+                              "city",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Nome da cidade em ${lang.name}`}
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor={`metaTitle-${lang.code}`}>
+                          Meta Title SEO ({lang.name})
+                        </Label>
+                        <Input
+                          id={`metaTitle-${lang.code}`}
+                          value={translations[lang.code]?.metaTitle || ""}
+                          onChange={(e) =>
+                            handleTranslationChange(
+                              lang.code,
+                              "metaTitle",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Meta title para SEO em ${lang.name}`}
+                        />
+                      </div>
+
+                      <div className="grid gap-2">
+                        <Label htmlFor={`metaDescription-${lang.code}`}>
+                          Meta Description SEO ({lang.name})
+                        </Label>
+                        <Input
+                          id={`metaDescription-${lang.code}`}
+                          value={translations[lang.code]?.metaDescription || ""}
+                          onChange={(e) =>
+                            handleTranslationChange(
+                              lang.code,
+                              "metaDescription",
+                              e.target.value
+                            )
+                          }
+                          placeholder={`Meta description para SEO em ${lang.name}`}
+                        />
+                      </div>
+                    </div>
+                  </TabsContent>
+                ))}
+              </Tabs>
             </div>
           </div>
           <DialogFooter>

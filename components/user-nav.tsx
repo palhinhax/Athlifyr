@@ -1,6 +1,8 @@
 "use client";
 
 import { useSession, signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,6 +17,18 @@ import { User, LogOut, Settings, Shield } from "lucide-react";
 
 export function UserNav() {
   const { data: session, status } = useSession();
+  const pathname = usePathname();
+  const [locale, setLocale] = useState("pt");
+
+  // Extract locale from pathname (first segment after /)
+  useEffect(() => {
+    const segments = pathname.split("/").filter(Boolean);
+    const pathLocale = segments[0];
+    // Check if first segment is a valid locale
+    if (["pt", "en", "es", "fr", "de", "it"].includes(pathLocale)) {
+      setLocale(pathLocale);
+    }
+  }, [pathname]);
 
   if (status === "loading") {
     return null;
@@ -22,7 +36,7 @@ export function UserNav() {
 
   if (!session) {
     return (
-      <Link href="/auth/signin">
+      <Link href={`/${locale}/auth/signin`}>
         <Button variant="ghost" size="sm">
           Entrar
         </Button>
@@ -54,7 +68,7 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="cursor-pointer">
+          <Link href={`/${locale}/settings`} className="cursor-pointer">
             <Settings className="mr-2 h-4 w-4" />
             Definições da Conta
           </Link>
@@ -63,7 +77,7 @@ export function UserNav() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/admin/events" className="cursor-pointer">
+              <Link href={`/${locale}/admin/events`} className="cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
                 Gerir Eventos
               </Link>
@@ -73,7 +87,7 @@ export function UserNav() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-destructive"
-          onClick={() => signOut({ callbackUrl: "/" })}
+          onClick={() => signOut({ callbackUrl: `/${locale}` })}
         >
           <LogOut className="mr-2 h-4 w-4" />
           Sair

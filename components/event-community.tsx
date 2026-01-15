@@ -1,5 +1,6 @@
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
+import { useTranslations } from "next-intl";
 
 interface EventCommunityProps {
   eventId: string;
@@ -32,14 +33,16 @@ export function EventCommunity({
   currentUserId,
   isAdmin,
 }: EventCommunityProps) {
+  const t = useTranslations("events");
+
   return (
     <div className="mt-12 border-t pt-12">
-      <h2 className="mb-6 text-2xl font-bold">Comunidade</h2>
+      <h2 className="mb-6 text-2xl font-bold">{t("community")}</h2>
       <div className="space-y-4">
         <CreatePost eventId={eventId} />
         {posts.length === 0 ? (
           <p className="py-8 text-center text-muted-foreground">
-            Ainda não há posts. Sê o primeiro a partilhar algo!
+            {t("noPosts")}
           </p>
         ) : (
           posts.map((post) => (

@@ -29,6 +29,15 @@ enum UserRole {
   ADMIN
 }
 
+enum Language {
+  pt
+  en
+  es
+  fr
+  de
+  it
+}
+
 model User {
   id             String          @id @default(cuid())
   name           String?
@@ -37,6 +46,7 @@ model User {
   image          String?
   password       String?
   role           UserRole        @default(USER)
+  locale         String          @default("pt") // User's preferred language (pt, en)
   accounts       Account[]
   sessions       Session[]
   participations Participation[]
@@ -111,9 +121,10 @@ model PasswordResetToken {
 
 model Event {
   id          String         @id @default(cuid())
-  title       String
+  title       String         // Título principal (pt) - fallback
   slug        String         @unique
-  description String         @db.Text
+  description String         @db.Text // Descrição principal (pt) - fallback
+  
   sportTypes  SportType[]
   startDate   DateTime
   endDate     DateTime?
@@ -131,6 +142,8 @@ model Event {
   // Registration
   registrationDeadline DateTime?
   
+  // Relations
+  translations   EventTranslation[]
   variants       EventVariant[]
   pricingPhases  PricingPhase[]
   participations Participation[]
@@ -144,17 +157,43 @@ model Event {
   @@index([startDate])
   @@index([city])
   @@index([isFeatured])
+  @@index([slug])
+}
+
+// Tabela de traduções para eventos - SEO-friendly
+model EventTranslation {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  language    Language
+  
+  title       String   // Título traduzido
+  description String   @db.Text // Descrição traduzida
+  city        String?  // Nome da cidade traduzido (ex: Lisboa -> Lisbon)
+  
+  // SEO fields
+  metaTitle       String? // Meta title específico para SEO
+  metaDescription String? // Meta description para SEO
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([eventId, language]) // Um evento só pode ter uma tradução por idioma
+  @@index([eventId])
+  @@index([language])
+  @@index([title]) // Index para pesquisa por título
 }
 
 model EventVariant {
   id              String         @id @default(cuid())
   eventId         String
   event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  name            String
+  name            String         // Nome principal (pt) - fallback
+  description     String?        // Descrição principal (pt) - fallback
+  
   distanceKm      Int?
   price           Float?         // Preço fixo (se não tiver fases)
   maxParticipants Int?
-  description     String?
   startDate       DateTime?      // Data específica desta variante (se diferente do evento)
   startTime       String?        // Hora de início (ex: "09:00")
   
@@ -166,6 +205,8 @@ model EventVariant {
   atrpGrade       Int?           // Grau ATRP (1-5)
   mountainLevel   Int?           // Mountain Level (1-3)
   
+  // Relations
+  translations   EventVariantTranslation[]
   pricingPhases  PricingPhase[]
   participations Participation[]
   results        Result[]
@@ -174,6 +215,24 @@ model EventVariant {
 
   @@index([eventId])
   @@index([startDate])
+}
+
+// Tabela de traduções para variantes de eventos
+model EventVariantTranslation {
+  id          String       @id @default(cuid())
+  variantId   String
+  variant     EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  language    Language
+  
+  name        String       // Nome traduzido da variante
+  description String?      // Descrição traduzida
+  
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@unique([variantId, language])
+  @@index([variantId])
+  @@index([language])
 }
 
 model PricingPhase {

@@ -4,17 +4,21 @@ import { useState } from "react";
 import { SportType } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { sportTypeLabels, sportTypeIcons } from "@/lib/event-utils";
+import { sportTypeIcons } from "@/lib/event-utils";
 import { cn } from "@/lib/utils";
+import { getTranslations } from "@/lib/translations";
 
 interface FavoriteSportsSelectorProps {
   initialFavorites: SportType[];
+  locale?: string;
 }
 
 export function FavoriteSportsSelector({
   initialFavorites,
+  locale = "pt",
 }: FavoriteSportsSelectorProps) {
   const allSports = Object.keys(SportType) as SportType[];
+  const t = getTranslations(locale);
 
   // If no favorites are set, default to all sports
   const [selectedSports, setSelectedSports] = useState<SportType[]>(
@@ -47,14 +51,23 @@ export function FavoriteSportsSelector({
       }
 
       toast({
-        title: "Desportos favoritos guardados!",
-        description: "As tuas preferências foram atualizadas com sucesso.",
+        title:
+          locale === "pt"
+            ? "Desportos favoritos guardados!"
+            : "Favorite sports saved!",
+        description:
+          locale === "pt"
+            ? "As tuas preferências foram atualizadas com sucesso."
+            : "Your preferences have been successfully updated.",
       });
     } catch (error) {
       console.error(error);
       toast({
-        title: "Erro ao guardar",
-        description: "Não foi possível guardar as tuas preferências.",
+        title: locale === "pt" ? "Erro ao guardar" : "Error saving",
+        description:
+          locale === "pt"
+            ? "Não foi possível guardar as tuas preferências."
+            : "Unable to save your preferences.",
         variant: "destructive",
       });
     } finally {
@@ -68,11 +81,6 @@ export function FavoriteSportsSelector({
 
   return (
     <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        Seleciona os desportos que te interessam. Verás eventos destes desportos
-        em destaque na página inicial.
-      </p>
-
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4">
         {allSports.map((sport) => (
           <button
@@ -87,10 +95,12 @@ export function FavoriteSportsSelector({
           >
             <span className="text-2xl">{sportTypeIcons[sport]}</span>
             <span className="text-center text-sm font-medium">
-              {sportTypeLabels[sport]}
+              {t(`sports.${sport}`)}
             </span>
             {selectedSports.includes(sport) && (
-              <span className="text-xs text-primary">✓ Selecionado</span>
+              <span className="text-xs text-primary">
+                ✓ {locale === "pt" ? "Selecionado" : "Selected"}
+              </span>
             )}
           </button>
         ))}
@@ -102,18 +112,25 @@ export function FavoriteSportsSelector({
             variant="outline"
             onClick={() => setSelectedSports(initialFavorites)}
           >
-            Cancelar
+            {t("common.cancel")}
           </Button>
           <Button onClick={handleSave} disabled={isSaving}>
-            {isSaving ? "A guardar..." : "Guardar Preferências"}
+            {isSaving
+              ? locale === "pt"
+                ? "A guardar..."
+                : "Saving..."
+              : locale === "pt"
+                ? "Guardar Preferências"
+                : "Save Preferences"}
           </Button>
         </div>
       )}
 
       {selectedSports.length === 0 && (
         <p className="text-center text-sm text-muted-foreground">
-          Nenhum desporto selecionado. Seleciona pelo menos um para personalizar
-          a tua experiência.
+          {locale === "pt"
+            ? "Nenhum desporto selecionado. Seleciona pelo menos um para personalizar a tua experiência."
+            : "No sport selected. Select at least one to personalize your experience."}
         </p>
       )}
     </div>

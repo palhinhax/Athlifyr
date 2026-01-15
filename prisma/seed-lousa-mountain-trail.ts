@@ -1,4 +1,4 @@
-import { PrismaClient, SportType } from "@prisma/client";
+import { PrismaClient, SportType, Language } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -263,8 +263,201 @@ Preencher formulário de inscrição e efetuar pagamento por MB Way ou Ref. Mult
   console.log(
     `   - Variants: 3 (Trail Longo 23km, Trail Curto 13km, Caminhada 8km)`
   );
+
+  // Add translations
+  console.log("🌍 Adding translations...");
+
+  const translations = {
+    en: {
+      title: "Lousa Mountain Trail",
+      description: `# Lousa Mountain Trail 2026
+
+The **Lousa Mountain Trail** is an event organized by the **Lousa Parish Council**, in collaboration with **Trail4U**, held in Lousa, Loures County.
+
+## 📍 Start Location
+
+**Lousa Sports Group Headquarters**
+Rua Heróis Ultramar, 2670-759 Lousa
+
+## 🏃 Available Races
+
+### Long Trail 23km
+- **Distance:** 23km
+- **Start:** 09:00
+- **Minimum Age:** 18 years
+
+### Short Trail 13km
+- **Distance:** 13km
+- **Start:** 09:00
+- **Minimum Age:** 18 years
+
+### Walk 8km
+- **Distance:** 8km
+- **Start:** 09:05
+- **Note:** Non-competitive
+
+Registration includes official buff/neck warmer, race number, insurance, and refreshments.`,
+      city: "Lousa",
+      metaTitle: "Lousa Mountain Trail 2026 - Trail Running Event in Portugal",
+      metaDescription:
+        "Trail running event in Lousa with 23km and 13km races, plus 8km walk. January 25, 2026. Registration open!",
+    },
+    es: {
+      title: "Lousa Mountain Trail",
+      description: `# Lousa Mountain Trail 2026
+
+El **Lousa Mountain Trail** es un evento organizado por la **Junta de Freguesia de Lousa**, en colaboración con **Trail4U**, que se celebra en Lousa, Concejo de Loures.
+
+## 📍 Lugar de Salida
+
+**Sede del Grupo Deportivo de Lousa**
+Rua Heróis Ultramar, 2670-759 Lousa
+
+## 🏃 Carreras Disponibles
+
+### Trail Largo 23km
+- **Distancia:** 23km
+- **Salida:** 09h00
+- **Edad Mínima:** 18 años
+
+### Trail Corto 13km
+- **Distancia:** 13km
+- **Salida:** 09h00
+- **Edad Mínima:** 18 años
+
+### Caminata 8km
+- **Distancia:** 8km
+- **Salida:** 09h05
+- **Nota:** Sin carácter competitivo
+
+La inscripción incluye buff/braga oficial, dorsal, seguro y avituallamientos.`,
+      city: "Lousa",
+      metaTitle: "Lousa Mountain Trail 2026 - Carrera de Trail en Portugal",
+      metaDescription:
+        "Evento de trail running en Lousa con carreras de 23km y 13km, más caminata de 8km. 25 de enero de 2026. ¡Inscripciones abiertas!",
+    },
+    fr: {
+      title: "Lousa Mountain Trail",
+      description: `# Lousa Mountain Trail 2026
+
+Le **Lousa Mountain Trail** est un événement organisé par la **Paroisse de Lousa**, en collaboration avec **Trail4U**, qui se déroule à Lousa, Concelho de Loures.
+
+## 📍 Lieu de Départ
+
+**Siège du Groupe Sportif de Lousa**
+Rua Heróis Ultramar, 2670-759 Lousa
+
+## 🏃 Courses Disponibles
+
+### Trail Long 23km
+- **Distance:** 23km
+- **Départ:** 09h00
+- **Âge Minimum:** 18 ans
+
+### Trail Court 13km
+- **Distance:** 13km
+- **Départ:** 09h00
+- **Âge Minimum:** 18 ans
+
+### Randonnée 8km
+- **Distance:** 8km
+- **Départ:** 09h05
+- **Note:** Sans caractère compétitif
+
+L'inscription comprend buff/tour de cou officiel, dossard, assurance et ravitaillements.`,
+      city: "Lousa",
+      metaTitle: "Lousa Mountain Trail 2026 - Course de Trail au Portugal",
+      metaDescription:
+        "Événement de trail running à Lousa avec courses de 23km et 13km, plus randonnée de 8km. 25 janvier 2026. Inscriptions ouvertes!",
+    },
+    de: {
+      title: "Lousa Mountain Trail",
+      description: `# Lousa Mountain Trail 2026
+
+Der **Lousa Mountain Trail** ist eine Veranstaltung der **Gemeinde Lousa** in Zusammenarbeit mit **Trail4U** in Lousa, Kreis Loures.
+
+## 📍 Startort
+
+**Sportgruppe Lousa Hauptquartier**
+Rua Heróis Ultramar, 2670-759 Lousa
+
+## 🏃 Verfügbare Rennen
+
+### Langer Trail 23km
+- **Distanz:** 23km
+- **Start:** 09:00 Uhr
+- **Mindestalter:** 18 Jahre
+
+### Kurzer Trail 13km
+- **Distanz:** 13km
+- **Start:** 09:00 Uhr
+- **Mindestalter:** 18 Jahre
+
+### Wanderung 8km
+- **Distanz:** 8km
+- **Start:** 09:05 Uhr
+- **Hinweis:** Nicht wettkampfmäßig
+
+Die Anmeldung umfasst offizielles Buff/Halstuch, Startnummer, Versicherung und Verpflegung.`,
+      city: "Lousa",
+      metaTitle: "Lousa Mountain Trail 2026 - Trail-Running-Event in Portugal",
+      metaDescription:
+        "Trail-Running-Veranstaltung in Lousa mit 23km und 13km Rennen, plus 8km Wanderung. 25. Januar 2026. Anmeldung offen!",
+    },
+    it: {
+      title: "Lousa Mountain Trail",
+      description: `# Lousa Mountain Trail 2026
+
+Il **Lousa Mountain Trail** è un evento organizzato dalla **Parrocchia di Lousa**, in collaborazione con **Trail4U**, che si svolge a Lousa, Concelho de Loures.
+
+## 📍 Luogo di Partenza
+
+**Sede del Gruppo Sportivo di Lousa**
+Rua Heróis Ultramar, 2670-759 Lousa
+
+## 🏃 Gare Disponibili
+
+### Trail Lungo 23km
+- **Distanza:** 23km
+- **Partenza:** 09:00
+- **Età Minima:** 18 anni
+
+### Trail Corto 13km
+- **Distanza:** 13km
+- **Partenza:** 09:00
+- **Età Minima:** 18 anni
+
+### Camminata 8km
+- **Distanza:** 8km
+- **Partenza:** 09:05
+- **Nota:** Senza carattere competitivo
+
+L'iscrizione include buff/scaldacollo ufficiale, pettorale, assicurazione e ristori.`,
+      city: "Lousa",
+      metaTitle:
+        "Lousa Mountain Trail 2026 - Evento Trail Running in Portogallo",
+      metaDescription:
+        "Evento di trail running a Lousa con gare di 23km e 13km, più camminata di 8km. 25 gennaio 2026. Iscrizioni aperte!",
+    },
+  };
+
+  for (const [lang, trans] of Object.entries(translations)) {
+    await prisma.eventTranslation.create({
+      data: {
+        eventId: event.id,
+        language: lang as Language,
+        title: trans.title,
+        description: trans.description,
+        city: trans.city,
+        metaTitle: trans.metaTitle,
+        metaDescription: trans.metaDescription,
+      },
+    });
+    console.log(`   ✅ ${lang.toUpperCase()}`);
+  }
+
   console.log("");
-  console.log("🏃 Lousa Mountain Trail seeded successfully!");
+  console.log("🏃 Lousa Mountain Trail seeded successfully with translations!");
 }
 
 main()

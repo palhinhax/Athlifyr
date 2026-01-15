@@ -26,7 +26,9 @@ async function getUpcomingEvents(country: string) {
   });
 }
 
-export default async function Home() {
+export default async function Home({ params }: { params: { locale: string } }) {
+  const { locale } = await Promise.resolve(params);
+
   // Get user's country from headers
   const headersList = await headers();
   const userCountry = getUserCountry(
@@ -68,7 +70,7 @@ export default async function Home() {
       <section className="container mx-auto px-4 pb-12">
         <div className="flex flex-wrap justify-center gap-2">
           {sportTypes.map((sportType) => (
-            <Link key={sportType} href={`/events?sport=${sportType}`}>
+            <Link key={sportType} href={`/${locale}/events?sport=${sportType}`}>
               <Button variant="outline" size="sm">
                 {sportTypeLabels[sportType]}
               </Button>
@@ -83,7 +85,7 @@ export default async function Home() {
           <h2 className="text-3xl font-bold">
             Upcoming Events in {userCountry}
           </h2>
-          <Link href="/events">
+          <Link href={`/${locale}/events`}>
             <Button variant="ghost">Ver Todos →</Button>
           </Link>
         </div>
@@ -97,14 +99,14 @@ export default async function Home() {
               Não encontrámos eventos futuros na tua região. Tenta explorar
               outros países!
             </p>
-            <Link href="/events">
+            <Link href={`/${locale}/events`}>
               <Button>Explorar Todos os Eventos</Button>
             </Link>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard key={event.id} event={event} locale={locale} />
             ))}
           </div>
         )}
@@ -120,7 +122,7 @@ export default async function Home() {
             Browse all available events and find the perfect race or competition
             for you.
           </p>
-          <Link href="/events">
+          <Link href={`/${locale}/events`}>
             <Button size="lg">Explore All Events</Button>
           </Link>
         </div>

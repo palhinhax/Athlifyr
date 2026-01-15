@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { ImagePlus, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -15,6 +16,7 @@ interface CreatePostProps {
 export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const t = useTranslations("events");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -208,11 +210,7 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={
-              eventId
-                ? "Partilha algo sobre o evento..."
-                : "No que estás a pensar? Partilha treinos, conquistas ou dicas..."
-            }
+            placeholder={eventId ? t("sharePost") : t("sharePostFeed")}
             className="min-h-[80px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={isSubmitting || isUploading}
           />
@@ -261,7 +259,7 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
                 onClick={() => document.getElementById("post-image")?.click()}
               >
                 <ImagePlus className="mr-2 h-4 w-4" />
-                Adicionar Foto
+                {t("addPhoto")}
               </Button>
             </label>
           </div>
@@ -273,11 +271,11 @@ export function CreatePost({ eventId, onPostCreated }: CreatePostProps) {
             }
           >
             {isSubmitting || isUploading ? (
-              "A publicar..."
+              t("publish")
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Publicar
+                {t("publish")}
               </>
             )}
           </Button>

@@ -22,6 +22,8 @@ import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
+import { Language } from "@prisma/client";
+import { cookies } from "next/headers";
 
 export const dynamic = "force-dynamic";
 
@@ -31,10 +33,19 @@ interface PageProps {
   };
 }
 
-async function getEvent(slug: string, userId?: string) {
-  return await prisma.event.findUnique({
+async function getEvent(
+  slug: string,
+  userId?: string,
+  locale: Language = "pt" as Language
+) {
+  const event = await prisma.event.findUnique({
     where: { slug },
     include: {
+      translations: {
+        where: {
+          language: locale,
+        },
+      },
       variants: {
         include: {
           pricingPhases: {
@@ -85,12 +96,35 @@ async function getEvent(slug: string, userId?: string) {
       },
     },
   });
+
+  if (!event) return null;
+
+  // Use translated content if available, with fallbacks
+  const translation = event.translations[0];
+  if (translation) {
+    return {
+      ...event,
+      title: translation.title || event.title,
+      description: translation.description || event.description,
+      city: translation.city || event.city,
+    };
+  }
+
+  return event;
 }
 
 export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
-  const event = await getEvent(params.slug);
+  // Get user locale
+  const cookieStore = await cookies();
+  const localeCookie = cookieStore.get("NEXT_LOCALE");
+  const localeStr = localeCookie?.value || "pt";
+  const locale: Language = (
+    localeStr in Language ? localeStr : "pt"
+  ) as Language;
+
+  const event = await getEvent(params.slug, undefined, locale);
 
   if (!event) {
     return {
@@ -177,7 +211,26 @@ export async function generateMetadata({
 
 export default async function EventPage({ params }: PageProps) {
   const session = await auth();
-  const event = await getEvent(params.slug, session?.user?.id);
+
+  // Get user locale from session or cookie
+  let locale: Language = "pt" as Language;
+  if (session?.user?.id) {
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { locale: true },
+    });
+    if (user?.locale && user.locale in Language) {
+      locale = user.locale as Language;
+    }
+  } else {
+    const cookieStore = await cookies();
+    const localeCookie = cookieStore.get("NEXT_LOCALE");
+    if (localeCookie?.value && localeCookie.value in Language) {
+      locale = localeCookie.value as Language;
+    }
+  }
+
+  const event = await getEvent(params.slug, session?.user?.id, locale);
   const isAdmin = session?.user?.role === "ADMIN";
 
   if (!event) {

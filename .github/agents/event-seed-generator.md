@@ -41,6 +41,10 @@ Event descriptions support Markdown formatting. Use it for:
 
 Every seed file MUST include:
 
+**Note on TypeScript number types**: In TypeScript, both `Int` and `Float` from Prisma map to `number`, but the agent should:
+- Use integer values for fields expecting `Int` (distance, elevation, participants, ITRA points, etc.)
+- Use decimal values for fields expecting `Float` (coordinates, cutoff times, prices)
+
 #### A. Event Base Data
 ```typescript
 {
@@ -52,8 +56,8 @@ Every seed file MUST include:
   endDate: Date | null,       // Event end date/time (optional)
   city: string,               // City name (Portuguese)
   country: string,            // Country name
-  latitude: number | null,    // GPS latitude
-  longitude: number | null,   // GPS longitude
+  latitude: number | null,    // GPS latitude (decimal degrees, floating-point)
+  longitude: number | null,   // GPS longitude (decimal degrees, floating-point)
   googleMapsUrl: string | null, // Google Maps link
   externalUrl: string | null, // Official event website
   imageUrl: string | null,    // MUST BE EMPTY or null
@@ -126,16 +130,16 @@ variants: {
     {
       name: string,              // Variant name (Portuguese)
       description: string | null, // Variant description (Portuguese)
-      distanceKm: number | null, // Distance in kilometers
-      elevationGainM: number | null, // Elevation gain in meters (D+)
-      elevationLossM: number | null, // Elevation loss in meters (D-)
+      distanceKm: number | null, // Distance in kilometers (integer)
+      elevationGainM: number | null, // Elevation gain in meters (integer, D+)
+      elevationLossM: number | null, // Elevation loss in meters (integer, D-)
       startDate: Date | null,    // Specific start date for this variant
       startTime: string | null,  // Start time (e.g., "09:00")
-      maxParticipants: number | null, // Maximum participants
-      cutoffTimeHours: number | null, // Time limit in hours
-      itraPoints: number | null, // ITRA points (for trail running)
-      atrpGrade: number | null,  // ATRP grade 1-5 (for trail running)
-      mountainLevel: number | null, // Mountain level 1-3
+      maxParticipants: number | null, // Maximum participants (integer)
+      cutoffTimeHours: number | null, // Time limit in hours (can be decimal, e.g., 6.5)
+      itraPoints: number | null, // ITRA points (integer, for trail running)
+      atrpGrade: number | null,  // ATRP grade 1-5 (integer, for trail running)
+      mountainLevel: number | null, // Mountain level 1-3 (integer)
       translations: {
         create: [
           // ALL 6 languages (pt, en, es, fr, de, it)
@@ -159,8 +163,8 @@ pricingPhases: {
       name: string,              // Phase name
       startDate: Date,           // Start date
       endDate: Date,             // End date
-      price: number,             // Price in euros
-      discountPercent: number | null, // Discount percentage
+      price: number,             // Price in euros (decimal)
+      discountPercent: number | null, // Discount percentage (integer, e.g., 10 for 10%)
       note: string | null,       // Additional note
     }
   ]
@@ -340,8 +344,7 @@ async function main() {
   });
 
   console.log("✅ Event created with ID:", event.id);
-  console.log("📝 Translations created for 6 languages");
-  console.log("🏃 Variants created:", event.variants.length);
+  console.log("📝 Translations created for 6 languages (pt, en, es, fr, de, it)");
 }
 
 main()

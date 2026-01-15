@@ -14,5 +14,9 @@ export default function PromoLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <>{children}</>;
+  return (
+    <html lang="en">
+      <body className="overflow-hidden">{children}</body>
+    </html>
+  );
 }

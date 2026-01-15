@@ -1,3 +1,9 @@
+## [6.3.2](https://github.com/palhinhax/Athlifyr/compare/v6.3.1...v6.3.2) (2026-01-15)
+
+### Bug Fixes
+
+- **map:** prevent server-side timezone detection errors ([706a1c5](https://github.com/palhinhax/Athlifyr/commit/706a1c59de6118ffc321191f5adf7597dcad2f8e))
+
 ## [6.3.1](https://github.com/palhinhax/Athlifyr/compare/v6.3.0...v6.3.1) (2026-01-15)
 
 ### Bug Fixes

@@ -12,8 +12,9 @@ export async function PATCH(req: NextRequest) {
 
     const { locale } = await req.json();
 
-    // Validate locale
-    if (!locale || !["pt", "en"].includes(locale)) {
+    // Validate locale - all 6 supported languages
+    const validLocales = ["pt", "en", "es", "fr", "de", "it"];
+    if (!locale || !validLocales.includes(locale)) {
       return NextResponse.json({ error: "Invalid locale" }, { status: 400 });
     }
 

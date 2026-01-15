@@ -57,10 +57,13 @@ describe("TemplateEventHero", () => {
       <TemplateEventHero payload={photoPayload} format="SQUARE" />
     );
 
-    const backgroundDiv = container.querySelector(
-      '[style*="background-image"]'
-    );
-    expect(backgroundDiv).toBeInTheDocument();
+    // Check for img tag with the photo URL
+    const backgroundImg = container.querySelector('img[src*="example.com"]');
+    expect(backgroundImg).toBeInTheDocument();
+
+    // Check for overlay div with opacity
+    const overlay = container.querySelector('[style*="opacity"]');
+    expect(overlay).toBeInTheDocument();
   });
 
   it("should render content with proper z-index layering", () => {

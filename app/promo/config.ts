@@ -29,7 +29,7 @@ export const PROMO_CONFIG = {
     delay: 12000, // ms - after all videos
     tagline: "FIND YOUR NEXT CHALLENGE",
     logo: "ATHLIFYR",
-    subtitle: "ONE PLACE. ALL sports.",
+    subtitle: "one place. all sports.",
   },
 
   // Animation settings

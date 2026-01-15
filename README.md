@@ -1,6 +1,6 @@
 # Athlifyr
 
-**ONE PLACE. ALL sports.**
+**one place. all sports.**
 
 Athlifyr is a public platform for discovering sports events across Portugal. Find races, competitions and challenges near you - from running and trail to HYROX, CrossFit, OCR, BTT, cycling, surf, and triathlon.
 

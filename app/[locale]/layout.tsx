@@ -36,7 +36,7 @@ export const metadata: Metadata = {
     process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com"
   ),
   title: {
-    default: "Athlifyr - ONE PLACE. ALL sports.",
+    default: "Athlifyr - one place. all sports.",
     template: "%s | Athlifyr",
   },
   description:
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
   },
   manifest: "/site.webmanifest",
   openGraph: {
-    title: "Athlifyr - ONE PLACE. ALL sports.",
+    title: "Athlifyr - one place. all sports.",
     description:
       "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
     url: "https://athlifyr.com",
@@ -87,7 +87,7 @@ export const metadata: Metadata = {
         url: "/logo.png",
         width: 1200,
         height: 630,
-        alt: "Athlifyr - ONE PLACE. ALL sports.",
+        alt: "Athlifyr - one place. all sports.",
       },
     ],
     locale: "pt_PT",
@@ -95,7 +95,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Athlifyr - ONE PLACE. ALL sports.",
+    title: "Athlifyr - one place. all sports.",
     description:
       "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
     images: ["/logo.png"],

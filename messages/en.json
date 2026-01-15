@@ -114,6 +114,7 @@
     "description": "Discover the best sports events near you",
     "metaTitle": "All Events - Athlifyr",
     "metaDescription": "Explore all sports events. Find races, competitions and challenges near you.",
+    "viewMap": "View Map",
     "upcoming": "Upcoming Events",
     "featured": "Featured",
     "allEvents": "All Events",

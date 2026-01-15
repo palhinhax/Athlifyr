@@ -39,12 +39,6 @@ export function NavLinks() {
       >
         {t("nav.events")}
       </Link>
-      <Link
-        href={`/${locale}/map`}
-        className="text-sm font-medium hover:underline"
-      >
-        {t("nav.map")}
-      </Link>
       {session && (
         <Link
           href={`/${locale}/feed`}

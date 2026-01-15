@@ -75,13 +75,6 @@ export function MobileNav() {
               >
                 {t("nav.events")}
               </Link>
-              <Link
-                href={`/${locale}/map`}
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-              >
-                {t("nav.map")}
-              </Link>
               {session && (
                 <Link
                   href={`/${locale}/feed`}

@@ -7,6 +7,18 @@
 ### Features
 
 - **events:** add location-based filters with distance radius ([c7ff9e9](https://github.com/palhinhax/Athlifyr/commit/c7ff9e986c6dfba6974bd33e45c3a9cb94265432))
+- **i18n:** add translations for home page ([7bc0948](https://github.com/palhinhax/Athlifyr/commit/7bc0948860509100180f8e715009038f2ccc9894))
+- **i18n:** add translations for image upload component ([1cc73c2](https://github.com/palhinhax/Athlifyr/commit/1cc73c25c189cfe4ccbcf1b8126f67cd506bfbaa))
+
+# [5.1.0](https://github.com/palhinhax/Athlifyr/compare/v5.0.0...v5.1.0) (2026-01-15)
+
+### Bug Fixes
+
+- **i18n:** translate hardcoded strings in legacy events page ([1bc72ea](https://github.com/palhinhax/Athlifyr/commit/1bc72ea0de16bd5cf7c1ccdfd05853b60bc515f0))
+
+### Features
+
+- **events:** add location-based filters with distance radius ([c7ff9e9](https://github.com/palhinhax/Athlifyr/commit/c7ff9e986c6dfba6974bd33e45c3a9cb94265432))
 - **i18n:** add translations for image upload component ([1cc73c2](https://github.com/palhinhax/Athlifyr/commit/1cc73c25c189cfe4ccbcf1b8126f67cd506bfbaa))
 
 # Changelog

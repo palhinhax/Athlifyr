@@ -28,16 +28,16 @@ export const sportTypeIcons: Record<SportType, string> = {
   OTHER: "🎯",
 };
 
-export function formatDate(date: Date): string {
-  return new Intl.DateTimeFormat("pt-PT", {
+export function formatDate(date: Date, locale: string = "pt-PT"): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "long",
     year: "numeric",
   }).format(new Date(date));
 }
 
-export function formatDateShort(date: Date): string {
-  return new Intl.DateTimeFormat("pt-PT", {
+export function formatDateShort(date: Date, locale: string = "pt-PT"): string {
+  return new Intl.DateTimeFormat(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

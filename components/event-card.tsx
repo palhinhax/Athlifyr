@@ -10,11 +10,16 @@ interface EventCardProps {
     variants?: EventVariant[];
   };
   isParticipating?: boolean;
+  locale?: string;
 }
 
-export function EventCard({ event, isParticipating = false }: EventCardProps) {
+export function EventCard({
+  event,
+  isParticipating = false,
+  locale = "pt",
+}: EventCardProps) {
   return (
-    <Link href={`/events/${event.slug}`} className="block">
+    <Link href={`/${locale}/events/${event.slug}`} className="block">
       <Card
         className={`overflow-hidden transition-shadow hover:shadow-lg ${
           isParticipating ? "ring-2 ring-green-500" : ""
@@ -50,7 +55,7 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{formatDateShort(event.startDate)}</span>
+              <span>{formatDateShort(event.startDate, locale)}</span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />

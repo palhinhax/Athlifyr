@@ -1,3 +1,9 @@
+## [6.3.3](https://github.com/palhinhax/Athlifyr/compare/v6.3.2...v6.3.3) (2026-01-15)
+
+### Bug Fixes
+
+- **events:** prevent map error on undefined sportTypes array ([48c55f1](https://github.com/palhinhax/Athlifyr/commit/48c55f13076ac2cb00ba110b06aba2448bf255d9))
+
 ## [6.3.2](https://github.com/palhinhax/Athlifyr/compare/v6.3.1...v6.3.2) (2026-01-15)
 
 ### Bug Fixes

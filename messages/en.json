@@ -269,5 +269,22 @@
         "closed": "CLOSED"
       }
     }
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "All sports events in one place.",
+    "featuresTitle": "Features",
+    "features": {
+      "nearYou": "Events near you",
+      "filters": "Filter by sport and date",
+      "details": "Details and direct registration links",
+      "favorites": "Save favorites",
+      "share": "Share with friends"
+    },
+    "ctaTitle": "Find your next challenge",
+    "ctaSubtitle": "Explore • filter • save • share",
+    "slogan": "one place. all sports.",
+    "playVideo": "Play Video",
+    "videoLoadError": "Video could not be loaded"
   }
 }

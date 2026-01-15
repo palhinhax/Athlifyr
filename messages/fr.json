@@ -269,5 +269,22 @@
         "closed": "FERMÉ"
       }
     }
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Tous les événements sportifs en un seul endroit.",
+    "featuresTitle": "Fonctionnalités",
+    "features": {
+      "nearYou": "Événements près de chez vous",
+      "filters": "Filtrer par sport et date",
+      "details": "Détails et liens d'inscription directs",
+      "favorites": "Enregistrer les favoris",
+      "share": "Partager avec des amis"
+    },
+    "ctaTitle": "Trouvez votre prochain défi",
+    "ctaSubtitle": "Explorez • filtrez • enregistrez • partagez",
+    "slogan": "one place. all sports.",
+    "playVideo": "Lire la vidéo",
+    "videoLoadError": "Impossible de charger la vidéo"
   }
 }

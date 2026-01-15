@@ -43,7 +43,8 @@ export function ResetPasswordForm() {
     } else {
       setToken(tokenParam);
     }
-  }, [searchParams, router, toast, locale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

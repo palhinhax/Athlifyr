@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "@/lib/translations";
 
@@ -15,18 +15,18 @@ const STORAGE_KEY = "athlifyr_sport_filter";
 export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
   const [locale, setLocale] = useState("pt");
 
   useEffect(() => {
-    // Get locale from cookie
-    const cookieLocale = document.cookie
-      .split("; ")
-      .find((row) => row.startsWith("locale="))
-      ?.split("=")[1];
-    if (cookieLocale) {
-      setLocale(cookieLocale);
+    // Extract locale from pathname (first segment after /)
+    const segments = pathname.split("/").filter(Boolean);
+    const pathLocale = segments[0];
+    // Check if first segment is a valid locale
+    if (["pt", "en", "es", "fr", "de", "it"].includes(pathLocale)) {
+      setLocale(pathLocale);
     }
-  }, []);
+  }, [pathname]);
 
   const t = getTranslations(locale);
 
@@ -36,20 +36,20 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
     if (!searchParams.get("sport")) {
       const savedFilter = localStorage.getItem(STORAGE_KEY);
       if (savedFilter && savedFilter !== "ALL") {
-        router.replace(`/events?sport=${savedFilter}`);
+        router.replace(`/${locale}/events?sport=${savedFilter}`);
       }
     }
-  }, [router, searchParams]);
+  }, [router, searchParams, locale]);
 
   const handleFilterClick = (value: string) => {
     // Save to localStorage
     localStorage.setItem(STORAGE_KEY, value);
 
-    // Navigate
+    // Navigate with locale prefix
     if (value === "ALL") {
-      router.push("/events");
+      router.push(`/${locale}/events`);
     } else {
-      router.push(`/events?sport=${value}`);
+      router.push(`/${locale}/events?sport=${value}`);
     }
   };
 

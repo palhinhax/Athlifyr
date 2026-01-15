@@ -52,6 +52,7 @@ Every seed file MUST include:
   slug: string,               // URL-friendly slug (lowercase, hyphens)
   description: string,        // Main description (Portuguese, Markdown)
   sportTypes: SportType[],    // Array of: RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, SWIMMING, OTHER
+                              // Can use enum (SportType.RUNNING) or string literal ("RUNNING")
   startDate: Date,            // Event start date/time (ISO 8601)
   endDate: Date | null,       // Event end date/time (optional)
   city: string,               // City name (Portuguese)
@@ -179,7 +180,8 @@ pricingPhases: {
  * Complete with translations in all 6 languages
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, SportType } from "@prisma/client";
+// Note: SportType import is optional - you can use string literals instead
 
 const prisma = new PrismaClient();
 
@@ -204,7 +206,7 @@ async function main() {
       title: "Event Title",
       slug: "event-slug",
       description: `Event description in Portuguese (European) with Markdown support`,
-      sportTypes: ["RUNNING"],
+      sportTypes: ["RUNNING"], // Can also use SportType.RUNNING if imported
       startDate: new Date("2026-01-01T09:00:00Z"),
       endDate: new Date("2026-01-01T15:00:00Z"),
       city: "City Name",
@@ -343,7 +345,7 @@ async function main() {
     },
   });
 
-  // Note: Prisma create() returns the full object including id by default
+  // Prisma create() returns the complete created object including all auto-generated fields (id, createdAt, updatedAt)
   console.log("✅ Event created with ID:", event.id);
   console.log("📝 Translations created for 6 languages (pt, en, es, fr, de, it)");
 }

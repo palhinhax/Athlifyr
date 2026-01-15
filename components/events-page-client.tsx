@@ -123,23 +123,23 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     <div className="min-h-screen">
       <section className="bg-muted/50 py-12">
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="mb-2 text-4xl font-bold">{t("title")}</h1>
-              <p className="text-muted-foreground">{t("description")}</p>
-            </div>
-            <Button asChild variant="outline" size="lg">
-              <Link href={`/${locale}/map`}>
-                <Map className="mr-2 h-4 w-4" />
-                {t("viewMap")}
-              </Link>
-            </Button>
+          <div>
+            <h1 className="mb-2 text-4xl font-bold">{t("title")}</h1>
+            <p className="text-muted-foreground">{t("description")}</p>
           </div>
         </div>
       </section>
 
       <section className="container mx-auto px-4 py-8">
-        <EventsFilters userId={userId} onFiltersChange={setFilters} />
+        <div className="flex items-center justify-between gap-4">
+          <EventsFilters userId={userId} onFiltersChange={setFilters} />
+          <Button asChild variant="outline" size="lg" className="shrink-0">
+            <Link href={`/${locale}/map`}>
+              <Map className="mr-2 h-4 w-4" />
+              {t("viewMap")}
+            </Link>
+          </Button>
+        </div>
 
         <div className="mt-8">
           {loading ? (

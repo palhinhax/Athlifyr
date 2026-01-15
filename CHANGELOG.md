@@ -1,3 +1,9 @@
+# [6.1.0](https://github.com/palhinhax/Athlifyr/compare/v6.0.1...v6.1.0) (2026-01-15)
+
+### Features
+
+- **events:** add country filtering based on user locale ([6eb6e53](https://github.com/palhinhax/Athlifyr/commit/6eb6e5329b23561b89f4e43318543fb444f20337))
+
 ## [6.0.1](https://github.com/palhinhax/Athlifyr/compare/v6.0.0...v6.0.1) (2026-01-15)
 
 ### Bug Fixes

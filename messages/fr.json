@@ -17,6 +17,24 @@
     "showMore": "Voir plus",
     "showLess": "Voir moins"
   },
+  "upload": {
+    "uploadImage": "Télécharger une Image",
+    "chooseImage": "Choisir une Image",
+    "uploading": "Téléchargement...",
+    "noImageSelected": "Aucune image sélectionnée",
+    "invalidFileType": "Type de fichier invalide",
+    "invalidFileTypeDesc": "Seuls les fichiers {formats} sont autorisés",
+    "fileTooLarge": "Fichier trop volumineux",
+    "fileTooLargeDesc": "La taille du fichier doit être inférieure à {size}MB",
+    "noFileSelected": "Aucun fichier sélectionné",
+    "noFileSelectedDesc": "Veuillez sélectionner une image à télécharger",
+    "uploadFailed": "Échec du téléchargement",
+    "uploadFailedDesc": "Échec du téléchargement de l'image",
+    "uploadSuccess": "Image téléchargée avec succès !",
+    "maxFileSize": "Taille maximale : {size}MB",
+    "adminLimit": "(Limite admin)",
+    "supportedFormats": "Formats supportés : {formats}"
+  },
   "nav": {
     "events": "Événements",
     "map": "Carte",

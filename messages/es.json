@@ -17,6 +17,24 @@
     "showMore": "Ver más",
     "showLess": "Ver menos"
   },
+  "upload": {
+    "uploadImage": "Subir Imagen",
+    "chooseImage": "Elegir Imagen",
+    "uploading": "Subiendo...",
+    "noImageSelected": "Ninguna imagen seleccionada",
+    "invalidFileType": "Tipo de archivo inválido",
+    "invalidFileTypeDesc": "Solo se permiten archivos {formats}",
+    "fileTooLarge": "Archivo demasiado grande",
+    "fileTooLargeDesc": "El tamaño del archivo debe ser menor de {size}MB",
+    "noFileSelected": "Ningún archivo seleccionado",
+    "noFileSelectedDesc": "Por favor selecciona una imagen para subir",
+    "uploadFailed": "Error al subir",
+    "uploadFailedDesc": "Error al subir la imagen",
+    "uploadSuccess": "¡Imagen subida con éxito!",
+    "maxFileSize": "Tamaño máximo: {size}MB",
+    "adminLimit": "(Límite admin)",
+    "supportedFormats": "Formatos soportados: {formats}"
+  },
   "nav": {
     "events": "Eventos",
     "map": "Mapa",

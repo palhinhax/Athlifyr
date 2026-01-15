@@ -17,6 +17,24 @@
     "showMore": "Show more",
     "showLess": "Show less"
   },
+  "upload": {
+    "uploadImage": "Upload Image",
+    "chooseImage": "Choose Image",
+    "uploading": "Uploading...",
+    "noImageSelected": "No image selected",
+    "invalidFileType": "Invalid file type",
+    "invalidFileTypeDesc": "Only {formats} files are allowed",
+    "fileTooLarge": "File too large",
+    "fileTooLargeDesc": "File size must be less than {size}MB",
+    "noFileSelected": "No file selected",
+    "noFileSelectedDesc": "Please select an image to upload",
+    "uploadFailed": "Upload failed",
+    "uploadFailedDesc": "Failed to upload image",
+    "uploadSuccess": "Image uploaded successfully!",
+    "maxFileSize": "Max file size: {size}MB",
+    "adminLimit": "(Admin limit)",
+    "supportedFormats": "Supported formats: {formats}"
+  },
   "nav": {
     "events": "Events",
     "map": "Map",

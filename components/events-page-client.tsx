@@ -65,7 +65,14 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         throw new Error("Failed to fetch events");
       }
 
-      let fetchedEvents: EventWithVariants[] = await response.json();
+      const data = await response.json();
+
+      // Ensure we have an array, not an error object
+      if (!Array.isArray(data)) {
+        throw new Error(data.error || "Invalid response format");
+      }
+
+      let fetchedEvents: EventWithVariants[] = data;
 
       // Filter by distance if location is enabled
       if (
@@ -97,9 +104,12 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         );
         if (participationsRes.ok) {
           const participations = await participationsRes.json();
-          setParticipatingEventIds(
-            new Set(participations.map((p: { eventId: string }) => p.eventId))
-          );
+          // Ensure participations is an array before mapping
+          if (Array.isArray(participations)) {
+            setParticipatingEventIds(
+              new Set(participations.map((p: { eventId: string }) => p.eventId))
+            );
+          }
         }
       }
     } catch (err) {

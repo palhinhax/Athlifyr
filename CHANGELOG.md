@@ -1,3 +1,9 @@
+# [6.6.0](https://github.com/palhinhax/Athlifyr/compare/v6.5.0...v6.6.0) (2026-01-15)
+
+### Features
+
+- **ui:** add random background video to 404 page ([13d8e98](https://github.com/palhinhax/Athlifyr/commit/13d8e985281be6b66d1fe44486df0f7869476ba2))
+
 # [6.5.0](https://github.com/palhinhax/Athlifyr/compare/v6.4.1...v6.5.0) (2026-01-15)
 
 ### Bug Fixes

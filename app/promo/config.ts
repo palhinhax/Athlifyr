@@ -1,55 +1,41 @@
 /**
  * Promo Page Configuration
- * Edit this file to customize the promo page timeline, durations, and texts
+ * Nike-style video showcase with multiple backgrounds
  */
 
-export interface PromoStep {
-  id: string;
-  duration: number; // in seconds
-}
-
-export type FeatureKey =
-  | "nearYou"
-  | "filters"
-  | "details"
-  | "favorites"
-  | "share";
-
 export const PROMO_CONFIG = {
-  // Video configuration
-  video: {
-    mp4: "/promo/promo.mp4",
-    webm: "", // Optional alternative format
-    poster: "", // Optional poster image
+  // Video sequence - plays in order
+  videos: [
+    {
+      src: "/promo/woman-running.mp4",
+      duration: 3000, // ms
+    },
+    {
+      src: "/promo/crossfit-workout.mp4",
+      duration: 3000,
+    },
+    {
+      src: "/promo/group-running.mp4",
+      duration: 3000,
+    },
+    {
+      src: "/promo/promo.mp4",
+      duration: 3000,
+    },
+  ],
+
+  // Text overlay appears after all videos
+  finalOverlay: {
+    delay: 12000, // ms - after all videos
+    tagline: "FIND YOUR NEXT CHALLENGE",
+    logo: "ATHLIFYR",
+    subtitle: "ONE PLACE. ALL EVENTS.",
   },
-
-  // Timeline steps with durations (in seconds)
-  steps: [
-    { id: "intro", duration: 2 },
-    { id: "message", duration: 2.5 },
-    { id: "features", duration: 4 },
-    { id: "cta", duration: 2.5 },
-    { id: "final", duration: 3 },
-  ] as PromoStep[],
-
-  // Feature items to display (will be shown with stagger animation)
-  featureKeys: [
-    "nearYou",
-    "filters",
-    "details",
-    "favorites",
-    "share",
-  ] as const as readonly FeatureKey[],
 
   // Animation settings
   animation: {
-    fadeInDuration: 0.5,
-    fadeOutDuration: 0.4,
-    staggerDelay: 0.15, // Delay between each feature item
+    videoFadeDuration: 1000, // ms
+    textFadeInDuration: 1500, // ms
+    textStagger: 200, // ms between each text element
   },
-};
-
-// Calculate total timeline duration
-export const getTotalDuration = () => {
-  return PROMO_CONFIG.steps.reduce((acc, step) => acc + step.duration, 0);
 };

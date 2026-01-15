@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "@/lib/translations";
@@ -17,19 +17,16 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
-  const [locale, setLocale] = useState("pt");
 
-  useEffect(() => {
-    // Extract locale from pathname (first segment after /)
+  // Extract locale from pathname
+  const locale = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
     const pathLocale = segments[0];
-    // Check if first segment is a valid locale
-    if (
-      pathLocale &&
+    // Check if first segment is a valid locale, otherwise default to 'pt'
+    return pathLocale &&
       locales.includes(pathLocale as (typeof locales)[number])
-    ) {
-      setLocale(pathLocale);
-    }
+      ? pathLocale
+      : "pt";
   }, [pathname]);
 
   const t = getTranslations(locale);

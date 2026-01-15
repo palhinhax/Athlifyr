@@ -1,3 +1,9 @@
+## [6.3.1](https://github.com/palhinhax/Athlifyr/compare/v6.3.0...v6.3.1) (2026-01-15)
+
+### Bug Fixes
+
+- **auth:** add locale prefix to all auth navigation links ([ab21464](https://github.com/palhinhax/Athlifyr/commit/ab214641b47b4cb533ea02af28f0c0716cf90c9e))
+
 # [6.3.0](https://github.com/palhinhax/Athlifyr/compare/v6.2.0...v6.3.0) (2026-01-15)
 
 ### Features

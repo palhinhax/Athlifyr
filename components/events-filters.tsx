@@ -181,9 +181,9 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
         setGettingLocation(false);
       },
       {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 600000, // 10 minutes cache
+        enableHighAccuracy: true, // Better accuracy, may take longer but more reliable
+        timeout: 30000, // 30 seconds - enough time for GPS to warm up
+        maximumAge: 300000, // 5 minutes cache - reduced for fresher data
       }
     );
   };

@@ -159,18 +159,19 @@ function PromoContent() {
             loop
             playsInline
             preload="auto"
-            poster={PROMO_CONFIG.video.poster}
+            {...(PROMO_CONFIG.video.poster && {
+              poster: PROMO_CONFIG.video.poster,
+            })}
             onError={handleVideoError}
           >
             <source src={PROMO_CONFIG.video.mp4} type="video/mp4" />
-            <source src={PROMO_CONFIG.video.webm} type="video/webm" />
+            {PROMO_CONFIG.video.webm && (
+              <source src={PROMO_CONFIG.video.webm} type="video/webm" />
+            )}
             {t.videoLoadError}
           </video>
         ) : (
-          <div
-            className="h-full w-full bg-cover bg-center"
-            style={{ backgroundImage: `url(${PROMO_CONFIG.video.poster})` }}
-          />
+          <div className="h-full w-full bg-gradient-to-br from-gray-900 to-black" />
         )}
         {/* Dark overlay for better text contrast */}
         <div className="absolute inset-0 bg-black/50" />

@@ -19,8 +19,8 @@ export const PROMO_CONFIG = {
   // Video configuration
   video: {
     mp4: "/promo/promo.mp4",
-    webm: "/promo/promo.webm", // Optional alternative format
-    poster: "/promo/poster.jpg",
+    webm: "", // Optional alternative format
+    poster: "", // Optional poster image
   },
 
   // Timeline steps with durations (in seconds)

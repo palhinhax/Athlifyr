@@ -69,7 +69,8 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
       // Ensure we have an array, not an error object
       if (!Array.isArray(data)) {
-        throw new Error(data.error || "Invalid response format");
+        console.error("Invalid events API response:", data);
+        throw new Error("Failed to load events");
       }
 
       let fetchedEvents: EventWithVariants[] = data;
@@ -108,6 +109,11 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           if (Array.isArray(participations)) {
             setParticipatingEventIds(
               new Set(participations.map((p: { eventId: string }) => p.eventId))
+            );
+          } else {
+            console.error(
+              "Invalid participations API response:",
+              participations
             );
           }
         }

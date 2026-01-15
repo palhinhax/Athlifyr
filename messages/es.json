@@ -35,6 +35,19 @@
     "adminLimit": "(Límite admin)",
     "supportedFormats": "Formatos soportados: {formats}"
   },
+  "home": {
+    "heroTitle": "Todos los eventos deportivos.",
+    "heroTitleHighlight": "En un solo lugar.",
+    "heroDescription": "Encuentra carreras, competiciones y desafíos cerca de ti.",
+    "heroDescriptionCountry": "Descubre los mejores eventos deportivos en {country}.",
+    "upcomingEventsTitle": "Próximos Eventos en {country}",
+    "seeAll": "Ver Todos \u2192",
+    "noUpcomingEventsTitle": "Sin eventos próximos en {country}",
+    "noUpcomingEventsDescription": "No encontramos eventos futuros en tu región. ¡Intenta explorar otros países!",
+    "exploreAllEvents": "Explorar Todos los Eventos",
+    "ctaTitle": "¿Listo para encontrar tu próximo desafío?",
+    "ctaDescription": "Explora todos los eventos disponibles y encuentra la carrera o competición perfecta para ti."
+  },
   "nav": {
     "events": "Eventos",
     "map": "Mapa",

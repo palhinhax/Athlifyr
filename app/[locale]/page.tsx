@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { SportType } from "@prisma/client";
 import { sportTypeLabels, getUserCountry } from "@/lib/event-utils";
 import { headers } from "next/headers";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -28,6 +29,7 @@ async function getUpcomingEvents(country: string) {
 
 export default async function Home({ params }: { params: { locale: string } }) {
   const { locale } = await Promise.resolve(params);
+  const t = await getTranslations({ locale, namespace: "home" });
 
   // Get user's country from headers
   const headersList = await headers();
@@ -55,14 +57,14 @@ export default async function Home({ params }: { params: { locale: string } }) {
       {/* Hero */}
       <section className="container mx-auto px-4 py-16 text-center md:py-24">
         <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
-          All sports events.
+          {t("heroTitle")}
           <br />
-          <span className="text-primary">One place.</span>
+          <span className="text-primary">{t("heroTitleHighlight")}</span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
-          Find races, competitions and challenges near you.
+          {t("heroDescription")}
           <br />
-          Discover the best sports events in {userCountry}.
+          {t("heroDescriptionCountry", { country: userCountry })}
         </p>
       </section>
 
@@ -83,24 +85,23 @@ export default async function Home({ params }: { params: { locale: string } }) {
       <section className="container mx-auto px-4 py-12">
         <div className="mb-8 flex items-center justify-between">
           <h2 className="text-3xl font-bold">
-            Upcoming Events in {userCountry}
+            {t("upcomingEventsTitle", { country: userCountry })}
           </h2>
           <Link href={`/${locale}/events`}>
-            <Button variant="ghost">Ver Todos →</Button>
+            <Button variant="ghost">{t("seeAll")}</Button>
           </Link>
         </div>
 
         {upcomingEvents.length === 0 ? (
           <div className="rounded-lg border bg-card p-12 text-center">
             <h3 className="mb-2 text-xl font-semibold">
-              Sem eventos próximos em {userCountry}
+              {t("noUpcomingEventsTitle", { country: userCountry })}
             </h3>
             <p className="mb-6 text-muted-foreground">
-              Não encontrámos eventos futuros na tua região. Tenta explorar
-              outros países!
+              {t("noUpcomingEventsDescription")}
             </p>
             <Link href={`/${locale}/events`}>
-              <Button>Explorar Todos os Eventos</Button>
+              <Button>{t("exploreAllEvents")}</Button>
             </Link>
           </div>
         ) : (
@@ -115,15 +116,12 @@ export default async function Home({ params }: { params: { locale: string } }) {
       {/* CTA Section */}
       <section className="mt-12 bg-muted/50 py-16">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold">
-            Ready to find your next challenge?
-          </h2>
+          <h2 className="mb-4 text-3xl font-bold">{t("ctaTitle")}</h2>
           <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
-            Browse all available events and find the perfect race or competition
-            for you.
+            {t("ctaDescription")}
           </p>
           <Link href={`/${locale}/events`}>
-            <Button size="lg">Explore All Events</Button>
+            <Button size="lg">{t("exploreAllEvents")}</Button>
           </Link>
         </div>
       </section>

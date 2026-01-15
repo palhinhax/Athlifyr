@@ -316,5 +316,13 @@
     "slogan": "one place. all sports.",
     "playVideo": "Video abspielen",
     "videoLoadError": "Video konnte nicht geladen werden"
+  },
+  "notFound": {
+    "title": "Seite Nicht Gefunden",
+    "code": "404",
+    "description": "Hoppla! Die gesuchte Seite existiert nicht.",
+    "suggestion": "Sie wurde möglicherweise verschoben oder gelöscht. Lassen Sie uns zurückkehren.",
+    "backHome": "Zurück zur Startseite",
+    "browseEvents": "Veranstaltungen Durchsuchen"
   }
 }

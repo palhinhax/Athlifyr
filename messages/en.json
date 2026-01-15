@@ -286,5 +286,13 @@
     "slogan": "one place. all sports.",
     "playVideo": "Play Video",
     "videoLoadError": "Video could not be loaded"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "code": "404",
+    "description": "Oops! The page you're looking for doesn't exist.",
+    "suggestion": "It might have been moved or deleted. Let's get you back on track.",
+    "backHome": "Back to Home",
+    "browseEvents": "Browse Events"
   }
 }

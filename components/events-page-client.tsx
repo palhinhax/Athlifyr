@@ -21,7 +21,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
-    dateRange: null,
     distanceRadius: null,
     searchQuery: "",
     userLat: null,
@@ -45,11 +44,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
       // Add sport filters
       if (filters.sports && filters.sports.length > 0) {
         filters.sports.forEach((sport) => params.append("sports", sport));
-      }
-
-      // Add date range filter
-      if (filters.dateRange) {
-        params.append("dateRange", filters.dateRange);
       }
 
       // Add search query
@@ -138,7 +132,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               <p className="text-lg">{t("noEvents")}</p>
               <p className="mt-2">
                 {filters.sports.length > 0 ||
-                filters.dateRange ||
                 filters.searchQuery ||
                 filters.locationEnabled
                   ? t("filters.noResults")

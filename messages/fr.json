@@ -178,6 +178,34 @@
       "currentPhase": "(Actuel)"
     }
   },
+  "eventsPage": {
+    "filters": {
+      "title": "Filtres",
+      "search": "Rechercher",
+      "searchPlaceholder": "Rechercher des événements...",
+      "location": "Localisation",
+      "enableLocation": "Activer la Localisation",
+      "disableLocation": "Désactiver la Localisation",
+      "locationActive": "Active",
+      "radius": "Rayon",
+      "sports": "Sports",
+      "dateRange": "Plage de Dates",
+      "allDates": "Toutes les Dates",
+      "next7Days": "7 Prochains Jours",
+      "next30Days": "30 Prochains Jours",
+      "next3Months": "3 Prochains Mois",
+      "next6Months": "6 Prochains Mois",
+      "applyFilters": "Appliquer les Filtres",
+      "clearFilters": "Effacer",
+      "resultsCount": "{count} événements trouvés",
+      "noResults": "Aucun événement trouvé avec les filtres actuels",
+      "locationNotSupported": "La géolocalisation n'est pas prise en charge par votre navigateur",
+      "locationError": "Impossible de récupérer votre position",
+      "locationDenied": "Accès à la localisation refusé",
+      "locationUnavailable": "Localisation indisponible",
+      "locationTimeout": "Délai d'attente de localisation dépassé"
+    }
+  },
   "feed": {
     "title": "Fil d'Activité",
     "emptyTitle": "Fil vide",

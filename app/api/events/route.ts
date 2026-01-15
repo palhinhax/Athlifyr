@@ -10,7 +10,6 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const limit = searchParams.get("limit");
     const sports = searchParams.getAll("sports");
-    const dateRange = searchParams.get("dateRange");
 
     // Build where clause
     const where: Prisma.EventWhereInput = {
@@ -32,34 +31,6 @@ export async function GET(request: NextRequest) {
     if (sports.length > 0) {
       where.sportTypes = {
         hasSome: sports as SportType[],
-      };
-    }
-
-    // Date range filter
-    if (dateRange && dateRange !== "all") {
-      const now = new Date();
-      let endDate: Date;
-
-      switch (dateRange) {
-        case "7d":
-          endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-          break;
-        case "30d":
-          endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-          break;
-        case "3m":
-          endDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-          break;
-        case "6m":
-          endDate = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-      }
-
-      where.startDate = {
-        gte: now,
-        lte: endDate,
       };
     }
 

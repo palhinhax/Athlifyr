@@ -7,7 +7,16 @@ import {
   getPasswordResetEmailText,
 } from "@/lib/email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Initialize Resend lazily to avoid build-time errors when API key is missing
+const getResend = () => {
+  if (
+    !process.env.RESEND_API_KEY ||
+    process.env.RESEND_API_KEY === "re_placeholder"
+  ) {
+    throw new Error("RESEND_API_KEY not configured");
+  }
+  return new Resend(process.env.RESEND_API_KEY);
+};
 
 export async function POST(request: Request) {
   try {
@@ -54,6 +63,7 @@ export async function POST(request: Request) {
     // Send email with beautiful template
     const resetUrl = `${process.env.NEXTAUTH_URL}/auth/reset-password?token=${resetToken}`;
 
+    const resend = getResend();
     await resend.emails.send({
       from: "Athlifyr <noreply@athlifyr.com>",
       to: email,

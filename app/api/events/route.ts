@@ -1,63 +1,84 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SportType } from "@prisma/client";
+import { SportType, Prisma } from "@prisma/client";
 
-// GET - List all events with optional search and limit
+// GET - List all events with filters
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
     const limit = searchParams.get("limit");
+    const sports = searchParams.getAll("sports");
+    const dateRange = searchParams.get("dateRange");
+
+    // Build where clause
+    const where: Prisma.EventWhereInput = {
+      startDate: {
+        gte: new Date(), // Only future events
+      },
+    };
+
+    // Search filter
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { city: { contains: search, mode: "insensitive" } },
+        { country: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Sport type filter
+    if (sports.length > 0) {
+      where.sportTypes = {
+        hasSome: sports as SportType[],
+      };
+    }
+
+    // Date range filter
+    if (dateRange && dateRange !== "all") {
+      const now = new Date();
+      let endDate: Date;
+
+      switch (dateRange) {
+        case "7d":
+          endDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+          break;
+        case "30d":
+          endDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+          break;
+        case "3m":
+          endDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
+          break;
+        case "6m":
+          endDate = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          endDate = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+      }
+
+      where.startDate = {
+        gte: now,
+        lte: endDate,
+      };
+    }
 
     const events = await prisma.event.findMany({
-      where: search
-        ? {
-            OR: [
-              { title: { contains: search, mode: "insensitive" } },
-              { city: { contains: search, mode: "insensitive" } },
-              { country: { contains: search, mode: "insensitive" } },
-            ],
-          }
-        : undefined,
-      orderBy: {
-        startDate: "desc",
-      },
-      select: {
-        id: true,
-        title: true,
-        slug: true,
-        description: true,
-        sportTypes: true,
-        startDate: true,
-        endDate: true,
-        city: true,
-        country: true,
-        imageUrl: true,
+      where,
+      include: {
         variants: {
-          select: {
-            name: true,
-          },
           orderBy: {
             startDate: "asc",
           },
-          take: 3,
         },
+      },
+      orderBy: {
+        startDate: "asc",
       },
       take: limit ? parseInt(limit) : undefined,
     });
 
-    // Format location and sport for each event
-    const formattedEvents = events.map((event) => ({
-      ...event,
-      location:
-        event.city + (event.country !== "Portugal" ? `, ${event.country}` : ""),
-      sport: {
-        name: event.sportTypes[0] || "RUNNING",
-      },
-    }));
-
-    return NextResponse.json({ events: formattedEvents });
+    return NextResponse.json(events);
   } catch (error) {
     console.error("Error fetching events:", error);
     return NextResponse.json(

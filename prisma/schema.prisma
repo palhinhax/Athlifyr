@@ -64,6 +64,7 @@ model User {
   instagramDrafts     InstagramPostDraft[]
   favoriteSports      SportType[]
   mapPreferences      MapPreferences?
+  eventsPreferences   EventsPreferences?
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt
 
@@ -471,6 +472,43 @@ model AnonymousMapPreferences {
   centerLat        Float?      // Last map center latitude
   centerLng        Float?      // Last map center longitude
   zoom             Int?        // Last zoom level
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  lastAccessedAt   DateTime    @default(now())
+
+  @@index([anonymousId])
+  @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
+}
+
+// Events page filters preferences for authenticated users
+model EventsPreferences {
+  id               String      @id @default(cuid())
+  userId           String      @unique
+  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sports           SportType[] // Filtered sports
+  distanceRadius   Int?        // Distance radius in km (null = all/global)
+  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
+  searchQuery      String?     // Text search query
+  userLat          Float?      // User's last known latitude
+  userLng          Float?      // User's last known longitude
+  locationEnabled  Boolean     @default(false) // Whether location filter is enabled
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([userId])
+}
+
+// Events page filters preferences for anonymous users
+model AnonymousEventsPreferences {
+  id               String      @id @default(cuid())
+  anonymousId      String      @unique // UUID stored in localStorage
+  sports           SportType[] // Filtered sports
+  distanceRadius   Int?        // Distance radius in km (null = all/global)
+  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
+  searchQuery      String?     // Text search query
+  userLat          Float?      // User's last known latitude
+  userLng          Float?      // User's last known longitude
+  locationEnabled  Boolean     @default(false) // Whether location filter is enabled
   createdAt        DateTime    @default(now())
   updatedAt        DateTime    @updatedAt
   lastAccessedAt   DateTime    @default(now())

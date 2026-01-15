@@ -1,3 +1,10 @@
+# [6.4.0](https://github.com/palhinhax/Athlifyr/compare/v6.3.3...v6.4.0) (2026-01-15)
+
+### Features
+
+- **analytics:** add vercel analytics tracking ([bf56372](https://github.com/palhinhax/Athlifyr/commit/bf563728e753c41724905d5d2bcff3499b3349ff))
+- **analytics:** add vercel speed insights tracking ([8594732](https://github.com/palhinhax/Athlifyr/commit/85947321345d79ae794c599545c4c6e3bd77a066))
+
 ## [6.3.3](https://github.com/palhinhax/Athlifyr/compare/v6.3.2...v6.3.3) (2026-01-15)
 
 ### Bug Fixes

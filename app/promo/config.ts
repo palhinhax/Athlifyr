@@ -8,6 +8,13 @@ export interface PromoStep {
   duration: number; // in seconds
 }
 
+export type FeatureKey =
+  | "nearYou"
+  | "filters"
+  | "details"
+  | "favorites"
+  | "share";
+
 export const PROMO_CONFIG = {
   // Video configuration
   video: {
@@ -26,7 +33,13 @@ export const PROMO_CONFIG = {
   ] as PromoStep[],
 
   // Feature items to display (will be shown with stagger animation)
-  featureKeys: ["nearYou", "filters", "details", "favorites", "share"] as const,
+  featureKeys: [
+    "nearYou",
+    "filters",
+    "details",
+    "favorites",
+    "share",
+  ] as const as readonly FeatureKey[],
 
   // Animation settings
   animation: {

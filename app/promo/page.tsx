@@ -7,6 +7,7 @@ import { Play, RotateCcw } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 
 type StepId = "intro" | "message" | "features" | "cta" | "final";
+type FeatureKey = "nearYou" | "filters" | "details" | "favorites" | "share";
 
 // Default translations (English/Portuguese mix as fallback)
 const DEFAULT_TRANSLATIONS = {
@@ -19,7 +20,7 @@ const DEFAULT_TRANSLATIONS = {
     details: "Detalhes e links diretos para inscrição",
     favorites: "Guardar favoritos",
     share: "Partilhar com amigos",
-  },
+  } as Record<FeatureKey, string>,
   ctaTitle: "Encontra o teu próximo desafio",
   ctaSubtitle: "Explora • filtra • guarda • partilha",
   slogan: "one place. all events.",

@@ -1,4 +1,48 @@
 /**
+ * Detects user's country based on browser timezone
+ * Maps IANA timezone to country name
+ */
+export function getCountryFromTimezone(): string | null {
+  try {
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+    // Map common European timezones to countries
+    const timezoneToCountry: Record<string, string> = {
+      "Europe/Lisbon": "Portugal",
+      "Europe/Madrid": "Spain",
+      "Europe/Paris": "France",
+      "Europe/Berlin": "Germany",
+      "Europe/Rome": "Italy",
+      "Europe/London": "United Kingdom",
+      "Europe/Dublin": "Ireland",
+      "Europe/Brussels": "Belgium",
+      "Europe/Amsterdam": "Netherlands",
+      "Europe/Vienna": "Austria",
+      "Europe/Warsaw": "Poland",
+      "Europe/Prague": "Czech Republic",
+      "Europe/Budapest": "Hungary",
+      "Europe/Athens": "Greece",
+      "Europe/Stockholm": "Sweden",
+      "Europe/Oslo": "Norway",
+      "Europe/Copenhagen": "Denmark",
+      "Europe/Helsinki": "Finland",
+      "Europe/Zurich": "Switzerland",
+      "America/New_York": "United States",
+      "America/Chicago": "United States",
+      "America/Los_Angeles": "United States",
+      "America/Denver": "United States",
+      "America/Sao_Paulo": "Brazil",
+      "America/Mexico_City": "Mexico",
+      "America/Toronto": "Canada",
+    };
+
+    return timezoneToCountry[timezone] || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Detects user's country based on locale
  * Returns country name in English for database queries
  */
@@ -27,9 +71,14 @@ export function getUserCountryFromLocale(locale: string): string | null {
 
 /**
  * Gets default country for filtering events
- * Priority: locale detection > default to Portugal (main market)
+ * Priority: timezone > locale > default to Portugal
  */
 export function getDefaultCountry(locale?: string): string {
+  // Try to detect from timezone first (most accurate for device location)
+  const timezoneCountry = getCountryFromTimezone();
+  if (timezoneCountry) return timezoneCountry;
+
+  // Fallback to locale detection
   if (locale) {
     const country = getUserCountryFromLocale(locale);
     if (country) return country;

@@ -1,3 +1,15 @@
+# [6.9.0](https://github.com/palhinhax/Athlifyr/compare/v6.8.0...v6.9.0) (2026-01-15)
+
+### Bug Fixes
+
+- **agents:** clarify integer vs float types in event seed generator ([d7d1d34](https://github.com/palhinhax/Athlifyr/commit/d7d1d3495b002d2651d344057623a7481f999e33))
+- **agents:** harden seed generator with no-nested-creates and manual-only execution ([1d41337](https://github.com/palhinhax/Athlifyr/commit/1d413378f92a07386a59f0d29ed158f4f217acb9))
+
+### Features
+
+- **agents:** add event seed generator specialized agent ([ef6c4e4](https://github.com/palhinhax/Athlifyr/commit/ef6c4e429340b2daa59bc979ebc8d2ec09c1806e))
+- **agents:** add manual seed workflow and idempotent seed requirements ([d7024d5](https://github.com/palhinhax/Athlifyr/commit/d7024d52a4ba31d6a2eb8b1c106a7ac90a064f56))
+
 # [6.8.0](https://github.com/palhinhax/Athlifyr/compare/v6.7.0...v6.8.0) (2026-01-15)
 
 ### Features

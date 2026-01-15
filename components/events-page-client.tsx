@@ -1,11 +1,12 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2 } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
+import { getDefaultCountry } from "@/lib/country-detection";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 
@@ -19,6 +20,7 @@ type EventWithVariants = Event & {
 
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
+  const locale = useLocale();
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
     distanceRadius: null,
@@ -49,6 +51,12 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
       // Add search query
       if (filters.searchQuery) {
         params.append("search", filters.searchQuery);
+      }
+
+      // If location is NOT enabled, filter by user's country
+      if (!filters.locationEnabled) {
+        const defaultCountry = getDefaultCountry(locale);
+        params.append("country", defaultCountry);
       }
 
       // Fetch events
@@ -100,7 +108,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     } finally {
       setLoading(false);
     }
-  }, [filters, userId]);
+  }, [filters, userId, locale]);
 
   useEffect(() => {
     fetchEvents();

@@ -140,6 +140,7 @@ model Event {
   latitude     Float?
   longitude    Float?
   googleMapsUrl String?
+  stravaRouteEmbed String? @db.Text // Strava route embed code
   
   // Registration
   registrationDeadline DateTime?

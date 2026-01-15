@@ -1,3 +1,9 @@
+## [6.0.1](https://github.com/palhinhax/Athlifyr/compare/v6.0.0...v6.0.1) (2026-01-15)
+
+### Bug Fixes
+
+- **events:** improve geolocation reliability and increase timeout ([0b49509](https://github.com/palhinhax/Athlifyr/commit/0b49509bb70196c0c2d30e2cd5d729222cd63fa2))
+
 # [6.0.0](https://github.com/palhinhax/Athlifyr/compare/v5.0.0...v6.0.0) (2026-01-15)
 
 ### Bug Fixes

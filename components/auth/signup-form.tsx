@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ const calculatePasswordStrength = (password: string): number => {
 };
 
 export function SignUpForm() {
+  const locale = useLocale();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -74,7 +76,7 @@ export function SignUpForm() {
         description: "Agora podes fazer login",
       });
 
-      router.push("/auth/signin");
+      router.push(`/${locale}/auth/signin`);
     } catch (error) {
       toast({
         title: "Erro ao criar conta",
@@ -239,7 +241,10 @@ export function SignUpForm() {
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
           Já tens conta?{" "}
-          <Link href="/auth/signin" className="text-primary hover:underline">
+          <Link
+            href={`/${locale}/auth/signin`}
+            className="text-primary hover:underline"
+          >
             Fazer login
           </Link>
         </p>

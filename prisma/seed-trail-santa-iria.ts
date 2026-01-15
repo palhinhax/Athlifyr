@@ -5,21 +5,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🏃 Seeding Trail Santa Iria 2026...");
 
-  // Delete existing event if it exists
-  const existingEvent = await prisma.event.findFirst({
+  // Upsert the event
+  const event = await prisma.event.upsert({
     where: { slug: "trail-santa-iria-2026" },
-  });
-
-  if (existingEvent) {
-    console.log("   Deleting existing Trail Santa Iria 2026 event...");
-    await prisma.event.delete({
-      where: { id: existingEvent.id },
-    });
-  }
-
-  // Create the event
-  const event = await prisma.event.create({
-    data: {
+    update: {},
+    create: {
       title: "Trail Santa Iria 2026",
       slug: "trail-santa-iria-2026",
       sportTypes: [SportType.TRAIL],

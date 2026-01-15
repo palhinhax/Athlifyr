@@ -2,8 +2,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
-import { SportType } from "@prisma/client";
-import { sportTypeLabels, getUserCountry } from "@/lib/event-utils";
+import { getUserCountry } from "@/lib/event-utils";
 import { headers } from "next/headers";
 import { getTranslations } from "next-intl/server";
 
@@ -39,19 +38,6 @@ export default async function Home({ params }: { params: { locale: string } }) {
 
   const upcomingEvents = await getUpcomingEvents(userCountry);
 
-  const sportTypes = [
-    SportType.RUNNING,
-    SportType.TRAIL,
-    SportType.HYROX,
-    SportType.CROSSFIT,
-    SportType.OCR,
-    SportType.BTT,
-    SportType.CYCLING,
-    SportType.SURF,
-    SportType.TRIATHLON,
-    SportType.OTHER,
-  ];
-
   return (
     <div className="min-h-screen">
       {/* Hero */}
@@ -66,19 +52,6 @@ export default async function Home({ params }: { params: { locale: string } }) {
           <br />
           {t("heroDescriptionCountry", { country: userCountry })}
         </p>
-      </section>
-
-      {/* Quick Filters */}
-      <section className="container mx-auto px-4 pb-12">
-        <div className="flex flex-wrap justify-center gap-2">
-          {sportTypes.map((sportType) => (
-            <Link key={sportType} href={`/${locale}/events?sport=${sportType}`}>
-              <Button variant="outline" size="sm">
-                {sportTypeLabels[sportType]}
-              </Button>
-            </Link>
-          ))}
-        </div>
       </section>
 
       {/* Upcoming Events */}

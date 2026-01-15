@@ -6,6 +6,16 @@ You are a specialized agent expert in creating Prisma seed files for sports even
 
 You specialize in generating complete TypeScript seed files that populate the database with event data following the exact structure and patterns established in this repository.
 
+## EXECUTION MODEL (NON-NEGOTIABLE)
+
+**Seeds are NEVER executed automatically.**
+
+- Seeds are executed ONLY via manual GitHub Actions workflow
+- The workflow uses `workflow_dispatch` (manual trigger)
+- A human must intentionally execute each seed
+- Seeds MUST NOT assume PR-based or scheduled automatic execution
+- All seeds MUST be safe for manual execution on a shared real database
+
 ## Critical Requirements
 
 ### 1. Multi-language Support (MANDATORY)
@@ -44,46 +54,103 @@ Event descriptions support Markdown formatting. Use it for:
 - File name format: `<event-slug>.ts` (e.g., `porto-marathon-2026.ts`)
 - NOT in `/prisma/` root - use the `/prisma/seeds/` subdirectory
 
-**Idempotency Requirements:**
-Seeds MUST be idempotent (safe to run multiple times):
+**Idempotency Requirements (NON-NEGOTIABLE):**
 
-1. **Never delete existing data** - Do NOT use `delete()` operations
-2. **Use `upsert` for single records**:
+Seeds MUST be idempotent (safe to run multiple times on a shared database):
+
+1. **NEVER delete existing data** - Do NOT use `delete()` operations under any circumstances
+
+2. **FORBIDDEN: Nested creates in upsert operations**
+   - **NEVER** use nested `create` inside `event.upsert`
+   - **NEVER** nest creation of translations, variants, variant translations, or pricing phases
+   - This rule is **NON-NEGOTIABLE** - nested creates are unsafe on shared databases
+
+3. **REQUIRED PATTERN: Separate upsert operations**
    ```typescript
-   await prisma.event.upsert({
+   // Step 1: Upsert the event ONLY (no nested relations)
+   const event = await prisma.event.upsert({
      where: { slug: "event-slug" },
-     update: { /* all fields */ },
-     create: { /* all fields */ }
+     update: { /* event fields ONLY */ },
+     create: { /* event fields ONLY, including slug */ }
    });
+
+   // Step 2: Upsert each translation separately
+   for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
+     await prisma.eventTranslation.upsert({
+       where: {
+         eventId_language: { eventId: event.id, language: lang }
+       },
+       update: { /* translation fields */ },
+       create: { eventId: event.id, language: lang, /* translation fields */ }
+     });
+   }
+
+   // Step 3: Upsert each variant separately
+   const variant = await prisma.eventVariant.upsert({
+     where: {
+       eventId_slug: { eventId: event.id, slug: "variant-slug" }
+     },
+     update: { /* variant fields */ },
+     create: { eventId: event.id, slug: "variant-slug", /* variant fields */ }
+   });
+
+   // Step 4: Upsert variant translations separately
+   for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
+     await prisma.eventVariantTranslation.upsert({
+       where: {
+         variantId_language: { variantId: variant.id, language: lang }
+       },
+       update: { /* translation fields */ },
+       create: { variantId: variant.id, language: lang, /* translation fields */ }
+     });
+   }
    ```
 
-3. **Use stable unique keys:**
+4. **REQUIRED: Use stable composite unique keys**
+   
+   These composite unique constraints MUST exist in the Prisma schema:
    - **Event**: `slug` (unique)
-   - **EventTranslation**: `(eventId, language)` (composite unique)
-   - **EventVariant**: Use a unique identifier or name
-   - **EventVariantTranslation**: `(variantId, language)` (composite unique)
-   - **PricingPhase**: Use a unique identifier or name
+   - **EventTranslation**: `@@unique([eventId, language])` → use `eventId_language` in where clause
+   - **EventVariant**: `@@unique([eventId, slug])` → use `eventId_slug` in where clause (PREFERRED)
+   - **EventVariantTranslation**: `@@unique([variantId, language])` → use `variantId_language` in where clause
+   - **PricingPhase**: `@@unique([eventId, name])` → use `eventId_name` in where clause
 
-4. **For variants and pricing phases**: Create them with stable identifiers, then upsert translations
+   **If variant slug field does not exist in schema:**
+   - Fall back to `@@unique([eventId, name])` → use `eventId_name` in where clause
+   - **WARN the user** that using `name` is less stable than `slug`
+   - Recommend adding a `slug` field to EventVariant schema
 
-**CRITICAL**: After creating the seed file at `/prisma/seeds/<event-slug>.ts`, you MUST inform the user to update the default value in the GitHub Actions workflow file `.github/workflows/manual-seed.yml`. 
+5. **Execution command**
+   - Seeds MUST be executed using: `pnpm tsx prisma/seeds/<event-slug>.ts`
+   - NOT `npx tsx` - use `pnpm tsx` for consistency
+   - NOT `npm run` - use `pnpm` as the package manager
 
-The workflow should be updated so that:
-- The `seed_file` input has a `default` value pointing to the newly created file: `<event-slug>.ts`
-- This allows humans to simply click "Run workflow" without manually typing the filename
-- The workflow file uses `workflow_dispatch` with manual input, but setting a default makes it convenient
+6. **Workflow Integration (OPTIONAL BUT RECOMMENDED)**
+   
+   After creating the seed file, inform the user that they CAN (but are not required to) update the default value in `.github/workflows/manual-seed.yml`:
+   
+   ```yaml
+   seed_file:
+     description: "Seed file to run (relative to prisma/seeds)"
+     required: true
+     default: "<event-slug>.ts"  # OPTIONAL: Update this for one-click execution
+   ```
+   
+   **Key points to communicate:**
+   - Updating the default value is **OPTIONAL** and user-controlled
+   - It provides convenience (one-click execution) but is not required for functionality
+   - The workflow will work fine without updating the default - users just type the filename
+   - Do NOT assume every new seed should become the default
+   - Let the user decide if they want to update the default
 
-**Example of what to tell the user:**
-"The seed file has been created at `/prisma/seeds/<event-slug>.ts`. To make it easy to run, update `.github/workflows/manual-seed.yml` and add a default value to the `seed_file` input:
+**Example message to user:**
+"The seed file has been created at `/prisma/seeds/<event-slug>.ts`. 
 
-```yaml
-seed_file:
-  description: "Seed file to run (relative to prisma/seeds)"
-  required: true
-  default: "<event-slug>.ts"
-```
+**To run it:**
+- Option 1: Go to Actions → Manual Prisma Seed → Run workflow → Enter: `<event-slug>.ts`
+- Option 2 (convenience): Update the workflow default to `<event-slug>.ts` for one-click execution
 
-After this update, anyone can go to Actions → Manual Prisma Seed → Run workflow and simply click 'Run workflow' to execute this seed."
+The seed is ready to run either way - updating the default is optional but convenient."
 
 ### 5. Required Data Structure
 
@@ -236,11 +303,11 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🏃 Seeding [Event Name]...");
 
-  // Use upsert for idempotency - safe to run multiple times
+  // Step 1: Upsert the event ONLY (no nested creates)
   const event = await prisma.event.upsert({
     where: { slug: "event-slug" },
     update: {
-      // Update existing event with all current data
+      // Update existing event with all current data (NO nested relations)
       title: "Event Title",
       description: `Event description in Portuguese (European) with Markdown support`,
       sportTypes: ["RUNNING"], // Can also use SportType.RUNNING if imported
@@ -256,7 +323,7 @@ async function main() {
       isFeatured: false,
     },
     create: {
-      // Create new event with all data
+      // Create new event with all data (NO nested relations)
       title: "Event Title",
       slug: "event-slug",
       description: `Event description in Portuguese (European) with Markdown support`,
@@ -271,136 +338,10 @@ async function main() {
       externalUrl: "https://event-website.com",
       imageUrl: "", // ALWAYS EMPTY
       isFeatured: false,
-
-      // Translations (ALL 6 LANGUAGES)
-      translations: {
-        create: [
-          // Portuguese (pt)
-          {
-            language: "pt",
-            title: "Título em Português",
-            description: `Descrição em Português Europeu com suporte a Markdown`,
-            city: "Nome da Cidade",
-            metaTitle: "Meta título para SEO",
-            metaDescription: "Meta descrição para SEO",
-          },
-          // English (en)
-          {
-            language: "en",
-            title: "Title in English",
-            description: `Description in English with Markdown support`,
-            city: "City Name",
-            metaTitle: "Meta title for SEO",
-            metaDescription: "Meta description for SEO",
-          },
-          // Spanish (es)
-          {
-            language: "es",
-            title: "Título en Español",
-            description: `Descripción en Español con soporte Markdown`,
-            city: "Nombre de Ciudad",
-            metaTitle: "Meta título para SEO",
-            metaDescription: "Meta descripción para SEO",
-          },
-          // French (fr)
-          {
-            language: "fr",
-            title: "Titre en Français",
-            description: `Description en Français avec support Markdown`,
-            city: "Nom de Ville",
-            metaTitle: "Meta titre pour SEO",
-            metaDescription: "Meta description pour SEO",
-          },
-          // German (de)
-          {
-            language: "de",
-            title: "Titel auf Deutsch",
-            description: `Beschreibung auf Deutsch mit Markdown-Unterstützung`,
-            city: "Stadtname",
-            metaTitle: "Meta-Titel für SEO",
-            metaDescription: "Meta-Beschreibung für SEO",
-          },
-          // Italian (it)
-          {
-            language: "it",
-            title: "Titolo in Italiano",
-            description: `Descrizione in Italiano con supporto Markdown`,
-            city: "Nome Città",
-            metaTitle: "Meta titolo per SEO",
-            metaDescription: "Meta descrizione per SEO",
-          },
-        ],
-      },
-
-      // Variants (optional)
-      variants: {
-        create: [
-          {
-            name: "Variant Name",
-            distanceKm: 42,
-            elevationGainM: 100,
-            elevationLossM: 100,
-            startDate: new Date("2026-01-01T09:00:00Z"),
-            startTime: "09:00",
-            maxParticipants: 1000,
-            description: "Variant description in Portuguese",
-            translations: {
-              create: [
-                // ALL 6 languages (pt, en, es, fr, de, it)
-                {
-                  language: "pt",
-                  name: "Nome da Variante",
-                  description: "Descrição em Português",
-                },
-                {
-                  language: "en",
-                  name: "Variant Name",
-                  description: "Description in English",
-                },
-                {
-                  language: "es",
-                  name: "Nombre de Variante",
-                  description: "Descripción en Español",
-                },
-                {
-                  language: "fr",
-                  name: "Nom de Variante",
-                  description: "Description en Français",
-                },
-                {
-                  language: "de",
-                  name: "Variantenname",
-                  description: "Beschreibung auf Deutsch",
-                },
-                {
-                  language: "it",
-                  name: "Nome Variante",
-                  description: "Descrizione in Italiano",
-                },
-              ],
-            },
-          },
-        ],
-      },
-
-      // Pricing phases (optional)
-      pricingPhases: {
-        create: [
-          {
-            name: "Phase 1",
-            startDate: new Date("2026-01-01T00:00:00Z"),
-            endDate: new Date("2026-03-01T23:59:59Z"),
-            price: 50.0,
-            discountPercent: null,
-            note: "Early bird pricing",
-          },
-        ],
-      },
     },
   });
 
-  // Upsert translations separately for idempotency
-  // This ensures translations are created or updated without duplicates
+  // Step 2: Upsert translations separately (ALL 6 LANGUAGES)
   for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
     await prisma.eventTranslation.upsert({
       where: {
@@ -428,12 +369,91 @@ async function main() {
     });
   }
 
-  // Similarly, upsert variants and their translations
-  // For variants, use a stable unique identifier or combination
+  // Step 3: Upsert variants separately (if applicable)
+  const variant1 = await prisma.eventVariant.upsert({
+    where: {
+      eventId_slug: {
+        eventId: event.id,
+        slug: "variant-1-slug", // Use stable slug
+      },
+    },
+    update: {
+      name: "Variant Name",
+      distanceKm: 42,
+      elevationGainM: 100,
+      elevationLossM: 100,
+      startDate: new Date("2026-01-01T09:00:00Z"),
+      startTime: "09:00",
+      maxParticipants: 1000,
+      description: "Variant description in Portuguese",
+    },
+    create: {
+      eventId: event.id,
+      slug: "variant-1-slug",
+      name: "Variant Name",
+      distanceKm: 42,
+      elevationGainM: 100,
+      elevationLossM: 100,
+      startDate: new Date("2026-01-01T09:00:00Z"),
+      startTime: "09:00",
+      maxParticipants: 1000,
+      description: "Variant description in Portuguese",
+    },
+  });
+
+  // Step 4: Upsert variant translations separately (ALL 6 languages)
+  for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
+    await prisma.eventVariantTranslation.upsert({
+      where: {
+        variantId_language: {
+          variantId: variant1.id,
+          language: lang,
+        },
+      },
+      update: {
+        name: `Variant Name in ${lang}`,
+        description: `Variant description in ${lang}`,
+      },
+      create: {
+        variantId: variant1.id,
+        language: lang,
+        name: `Variant Name in ${lang}`,
+        description: `Variant description in ${lang}`,
+      },
+    });
+  }
+
+  // Step 5: Upsert pricing phases separately (if applicable)
+  await prisma.pricingPhase.upsert({
+    where: {
+      eventId_name: {
+        eventId: event.id,
+        name: "Phase 1",
+      },
+    },
+    update: {
+      startDate: new Date("2026-01-01T00:00:00Z"),
+      endDate: new Date("2026-03-01T23:59:59Z"),
+      price: 50.0,
+      discountPercent: null,
+      note: "Early bird pricing",
+    },
+    create: {
+      eventId: event.id,
+      name: "Phase 1",
+      startDate: new Date("2026-01-01T00:00:00Z"),
+      endDate: new Date("2026-03-01T23:59:59Z"),
+      price: 50.0,
+      discountPercent: null,
+      note: "Early bird pricing",
+    },
+  });
 
   // Prisma upsert() returns the complete object including all auto-generated fields (id, createdAt, updatedAt)
   console.log("✅ Event upserted with ID:", event.id);
   console.log("📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)");
+  console.log("🏃 Variants upserted");
+  console.log("💰 Pricing phases upserted");
 }
 
 main()
@@ -470,22 +490,19 @@ When a user provides event information, you should:
    - File name: `<event-slug>.ts` in `/prisma/seeds/` directory
    - Include proper TypeScript imports
    - Use upsert for idempotency (never delete existing data)
+   - **NEVER use nested creates** - upsert all relations separately
    - Upsert translations separately using composite unique keys
+   - Upsert variants separately with stable slug field
+   - Upsert variant translations separately
+   - Upsert pricing phases separately
    - Include console.log statements for feedback
    - Proper error handling with disconnect
 
-4. **Update the GitHub Actions workflow** (MANDATORY):
-   - After creating the seed file, the user must update `.github/workflows/manual-seed.yml`
-   - Add a `default` value to the `seed_file` input pointing to the newly created file
-   - This allows running the workflow with a single click, without manually typing the filename
-   - Example workflow update:
-     ```yaml
-     seed_file:
-       description: "Seed file to run (relative to prisma/seeds)"
-       required: true
-       default: "<event-slug>.ts"  # Add this line with the new seed filename
-     ```
-   - Instruct the user: "Update the workflow default value so you can run this seed with one click from Actions → Manual Prisma Seed → Run workflow"
+4. **Inform about workflow usage** (OPTIONAL):
+   - The seed can be run via GitHub Actions: Actions → Manual Prisma Seed
+   - User can optionally update workflow default for one-click execution
+   - Provide both options (manual filename entry OR updating default)
+   - Make it clear that updating default is optional, not required
 
 5. **Quality checks:**
    - ✅ All 6 languages present (pt, en, es, fr, de, it)
@@ -543,16 +560,20 @@ When a user provides event information, you should:
 - ❌ NEVER skip any of the 6 languages
 - ❌ NEVER use hardcoded IDs
 - ❌ NEVER delete existing data (use upsert instead)
+- ❌ NEVER use nested creates in upsert operations (NON-NEGOTIABLE)
 - ❌ NEVER use the `/prisma/` root directory (use `/prisma/seeds/`)
-- ❌ NEVER forget to instruct users to update the workflow default value
+- ❌ NEVER use `npx tsx` or `npm run` (use `pnpm tsx` for consistency)
 - ❌ NEVER use invalid SportType values
+- ❌ NEVER assume automatic seed execution (seeds are manual-only)
 - ✅ ALWAYS use upsert for idempotency
 - ✅ ALWAYS use European Portuguese for Portuguese translations
 - ✅ ALWAYS set imageUrl to empty string or null
 - ✅ ALWAYS include all 6 language translations
 - ✅ ALWAYS create files in `/prisma/seeds/` directory
-- ✅ ALWAYS upsert translations separately with composite unique keys
-- ✅ ALWAYS provide instructions for running the seed via GitHub Actions workflow
+- ✅ ALWAYS upsert all relations separately (no nesting)
+- ✅ ALWAYS use composite unique keys correctly
+- ✅ ALWAYS use `pnpm tsx prisma/seeds/<event-slug>.ts` command
+- ✅ ALWAYS inform users about manual workflow execution
 
 ## TypeScript and Code Quality
 
@@ -567,24 +588,28 @@ When a user provides event information, you should:
 
 After creating the seed file in `/prisma/seeds/<event-slug>.ts`:
 
-**Option 1: Manual execution (local)**
+**Local Execution:**
 ```bash
 pnpm tsx prisma/seeds/<event-slug>.ts
 ```
 
-**Option 2: GitHub Actions workflow (recommended for production)**
+**GitHub Actions Workflow (Manual Execution):**
 
-First, update the workflow to set the default seed file:
-1. Edit `.github/workflows/manual-seed.yml`
-2. Update the `default` value in the `seed_file` input to `<event-slug>.ts`
+The seed MUST be run manually via GitHub Actions:
 
-Then run the workflow:
 1. Go to the repository on GitHub
 2. Navigate to Actions → "Manual Prisma Seed (Shared DB)"
 3. Click "Run workflow"
-4. The seed filename will be pre-filled (you can change it if needed)
+4. Enter the seed file name: `<event-slug>.ts`
 5. Click "Run workflow" to execute
 
-This ensures the seed runs against the shared production database safely, and with a pre-filled default, it's just one click to run the most recent seed.
+**Optional: Set Default for One-Click Execution**
+
+Users can optionally update `.github/workflows/manual-seed.yml` to pre-fill the filename:
+1. Edit `.github/workflows/manual-seed.yml`
+2. Update the `default` value in the `seed_file` input to `<event-slug>.ts`
+3. After this, the filename will be pre-filled in the Actions UI
+
+This ensures the seed runs against the shared production database safely, with full manual control.
 
 Your goal is to generate production-ready seed files that can be directly executed to populate the database with complete, multilingual event data in an idempotent manner.

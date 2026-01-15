@@ -48,7 +48,7 @@ The route combines coastal paths, forest trails, and historic sites.
 
 The agent will create a complete TypeScript seed file at:
 ```
-/prisma/seed-cascais-ocean-trail.ts
+/prisma/seeds/cascais-ocean-trail-2026.ts
 ```
 
 ### Step 3: Review and Run
@@ -56,7 +56,7 @@ The agent will create a complete TypeScript seed file at:
 1. **Review the generated file** - check all translations and data
 2. **Run the seed file**:
    ```bash
-   npx tsx prisma/seed-cascais-ocean-trail.ts
+   pnpm tsx prisma/seeds/cascais-ocean-trail-2026.ts
    ```
 
 ## What the Agent Does
@@ -135,21 +135,27 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🏃 Seeding Cascais Ocean Trail 2026...");
 
-  // Delete existing event if it exists
-  const existingEvent = await prisma.event.findUnique({
+  // Use upsert for idempotency - safe to run multiple times
+  const event = await prisma.event.upsert({
     where: { slug: "cascais-ocean-trail-2026" },
-  });
-
-  if (existingEvent) {
-    console.log("🗑️  Deleting existing event...");
-    await prisma.event.delete({
-      where: { slug: "cascais-ocean-trail-2026" },
-    });
-  }
-
-  const event = await prisma.event.create({
-    data: {
-      // Base event data
+    update: {
+      // Update existing event with all current data
+      title: "Cascais Ocean Trail 2026",
+      description: `Markdown description in Portuguese...`,
+      sportTypes: ["TRAIL"],
+      startDate: new Date("2026-03-15T09:00:00Z"),
+      endDate: null,
+      city: "Cascais",
+      country: "Portugal",
+      latitude: 38.6979,
+      longitude: -9.4215,
+      googleMapsUrl: "https://maps.app.goo.gl/...",
+      externalUrl: "https://www.cascaistrail.com",
+      imageUrl: "", // Always empty
+      isFeatured: true,
+    },
+    create: {
+      // Create new event with all data
       title: "Cascais Ocean Trail 2026",
       slug: "cascais-ocean-trail-2026",
       description: `Markdown description in Portuguese...`,
@@ -164,35 +170,41 @@ async function main() {
       externalUrl: "https://www.cascaistrail.com",
       imageUrl: "", // Always empty
       isFeatured: true,
-
-      // Translations for all 6 languages
-      translations: {
-        create: [
-          // Portuguese, English, Spanish, French, German, Italian
-          // Each with title, description, city, metaTitle, metaDescription
-        ],
-      },
-
-      // Variants
-      variants: {
-        create: [
-          // Long Trail (50km)
-          // Short Trail (25km)
-          // Each with translations in all 6 languages
-        ],
-      },
-
-      // Pricing phases
-      pricingPhases: {
-        create: [
-          // Early Bird, Normal, Late pricing
-        ],
-      },
     },
   });
 
-  console.log("✅ Cascais Ocean Trail 2026 created with ID:", event.id);
-  console.log("📝 Translations created for 6 languages");
+  // Upsert translations separately for idempotency
+  for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
+    await prisma.eventTranslation.upsert({
+      where: {
+        eventId_language: {
+          eventId: event.id,
+          language: lang,
+        },
+      },
+      update: {
+        title: `Title in ${lang}`,
+        description: `Description in ${lang}`,
+        city: `City in ${lang}`,
+        metaTitle: `Meta title in ${lang}`,
+        metaDescription: `Meta description in ${lang}`,
+      },
+      create: {
+        eventId: event.id,
+        language: lang,
+        title: `Title in ${lang}`,
+        description: `Description in ${lang}`,
+        city: `City in ${lang}`,
+        metaTitle: `Meta title in ${lang}`,
+        metaDescription: `Meta description in ${lang}`,
+      },
+    });
+  }
+
+  // Similarly, upsert variants and their translations separately
+
+  console.log("✅ Cascais Ocean Trail 2026 upserted with ID:", event.id);
+  console.log("📝 Translations upserted for 6 languages");
   console.log("🏃 2 variants created: Long Trail (50km), Short Trail (25km)");
   console.log("💰 3 pricing phases");
 }
@@ -300,10 +312,10 @@ Once you're satisfied with the generated seed file:
 
 ```bash
 # Run individual seed file
-npx tsx prisma/seed-cascais-ocean-trail.ts
+pnpm tsx prisma/seeds/cascais-ocean-trail-2026.ts
 
 # Or run all seeds (if configured in package.json)
-npm run db:seed
+pnpm run db:seed
 ```
 
 ## Additional Resources

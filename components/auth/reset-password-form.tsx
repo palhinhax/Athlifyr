@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 export function ResetPasswordForm() {
+  const locale = useLocale();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,11 +39,11 @@ export function ResetPasswordForm() {
         description: "Link de recuperação inválido ou expirado",
         variant: "destructive",
       });
-      router.push("/auth/forgot-password");
+      router.push(`/${locale}/auth/forgot-password`);
     } else {
       setToken(tokenParam);
     }
-  }, [searchParams, router, toast]);
+  }, [searchParams, router, toast, locale]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,7 +88,7 @@ export function ResetPasswordForm() {
       });
 
       setTimeout(() => {
-        router.push("/auth/signin");
+        router.push(`/${locale}/auth/signin`);
       }, 2000);
     } catch (error) {
       toast({
@@ -212,7 +214,7 @@ export function ResetPasswordForm() {
           >
             {isLoading ? "A alterar..." : "Alterar Password"}
           </Button>
-          <Link href="/auth/signin" className="w-full">
+          <Link href={`/${locale}/auth/signin`} className="w-full">
             <Button variant="ghost" className="w-full">
               Voltar ao login
             </Button>

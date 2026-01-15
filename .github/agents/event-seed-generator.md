@@ -37,7 +37,38 @@ Event descriptions support Markdown formatting. Use it for:
 - Lists (`-`, `1.`)
 - Paragraphs (blank lines between sections)
 
-### 4. Required Data Structure
+### 4. Seed File Location and Idempotency (MANDATORY)
+
+**File Location:**
+- All seed files MUST be created in `/prisma/seeds/` directory
+- File name format: `<event-slug>.ts` (e.g., `porto-marathon-2026.ts`)
+- NOT in `/prisma/` root - use the `/prisma/seeds/` subdirectory
+
+**Idempotency Requirements:**
+Seeds MUST be idempotent (safe to run multiple times):
+
+1. **Never delete existing data** - Do NOT use `delete()` operations
+2. **Use `upsert` for single records**:
+   ```typescript
+   await prisma.event.upsert({
+     where: { slug: "event-slug" },
+     update: { /* all fields */ },
+     create: { /* all fields */ }
+   });
+   ```
+
+3. **Use stable unique keys:**
+   - **Event**: `slug` (unique)
+   - **EventTranslation**: `(eventId, language)` (composite unique)
+   - **EventVariant**: Use a unique identifier or name
+   - **EventVariantTranslation**: `(variantId, language)` (composite unique)
+   - **PricingPhase**: Use a unique identifier or name
+
+4. **For variants and pricing phases**: Create them with stable identifiers, then upsert translations
+
+**CRITICAL**: After creating the seed file, you MUST update the GitHub Actions workflow at `.github/workflows/manual-seed.yml` to reference the new seed file. The workflow allows manual execution of individual seed files.
+
+### 5. Required Data Structure
 
 Every seed file MUST include:
 
@@ -188,21 +219,27 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🏃 Seeding [Event Name]...");
 
-  // Delete existing event if it exists
-  const existingEvent = await prisma.event.findUnique({
+  // Use upsert for idempotency - safe to run multiple times
+  const event = await prisma.event.upsert({
     where: { slug: "event-slug" },
-  });
-
-  if (existingEvent) {
-    console.log("🗑️  Deleting existing event...");
-    await prisma.event.delete({
-      where: { slug: "event-slug" },
-    });
-  }
-
-  const event = await prisma.event.create({
-    data: {
-      // Base event data
+    update: {
+      // Update existing event with all current data
+      title: "Event Title",
+      description: `Event description in Portuguese (European) with Markdown support`,
+      sportTypes: ["RUNNING"], // Can also use SportType.RUNNING if imported
+      startDate: new Date("2026-01-01T09:00:00Z"),
+      endDate: new Date("2026-01-01T15:00:00Z"),
+      city: "City Name",
+      country: "Country",
+      latitude: 0.0,
+      longitude: 0.0,
+      googleMapsUrl: "https://maps.app.goo.gl/...",
+      externalUrl: "https://event-website.com",
+      imageUrl: "", // ALWAYS EMPTY
+      isFeatured: false,
+    },
+    create: {
+      // Create new event with all data
       title: "Event Title",
       slug: "event-slug",
       description: `Event description in Portuguese (European) with Markdown support`,
@@ -345,9 +382,41 @@ async function main() {
     },
   });
 
-  // Prisma create() returns the complete created object including all auto-generated fields (id, createdAt, updatedAt)
-  console.log("✅ Event created with ID:", event.id);
-  console.log("📝 Translations created for 6 languages (pt, en, es, fr, de, it)");
+  // Upsert translations separately for idempotency
+  // This ensures translations are created or updated without duplicates
+  for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
+    await prisma.eventTranslation.upsert({
+      where: {
+        eventId_language: {
+          eventId: event.id,
+          language: lang,
+        },
+      },
+      update: {
+        title: `Title in ${lang}`,
+        description: `Description in ${lang}`,
+        city: `City in ${lang}`,
+        metaTitle: `Meta title in ${lang}`,
+        metaDescription: `Meta description in ${lang}`,
+      },
+      create: {
+        eventId: event.id,
+        language: lang,
+        title: `Title in ${lang}`,
+        description: `Description in ${lang}`,
+        city: `City in ${lang}`,
+        metaTitle: `Meta title in ${lang}`,
+        metaDescription: `Meta description in ${lang}`,
+      },
+    });
+  }
+
+  // Similarly, upsert variants and their translations
+  // For variants, use a stable unique identifier or combination
+
+  // Prisma upsert() returns the complete object including all auto-generated fields (id, createdAt, updatedAt)
+  console.log("✅ Event upserted with ID:", event.id);
+  console.log("📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)");
 }
 
 main()
@@ -381,13 +450,20 @@ When a user provides event information, you should:
    - Keep technical terms consistent (e.g., "World Athletics Elite Label" remains in English)
 
 3. **Create the seed file** following the exact structure:
-   - File name: `seed-[event-slug].ts` in `/prisma/` directory
+   - File name: `<event-slug>.ts` in `/prisma/seeds/` directory
    - Include proper TypeScript imports
-   - Add deletion logic for existing events
+   - Use upsert for idempotency (never delete existing data)
+   - Upsert translations separately using composite unique keys
    - Include console.log statements for feedback
    - Proper error handling with disconnect
 
-4. **Quality checks:**
+4. **Update the GitHub Actions workflow** (MANDATORY):
+   - After creating the seed file, document that the user should use the manual seed workflow
+   - The workflow is located at `.github/workflows/manual-seed.yml`
+   - It allows running individual seed files via GitHub Actions UI
+   - Provide clear instructions: "To run this seed, go to Actions → Manual Prisma Seed → Run workflow → Enter: `<event-slug>.ts`"
+
+5. **Quality checks:**
    - ✅ All 6 languages present (pt, en, es, fr, de, it)
    - ✅ Portuguese is European Portuguese
    - ✅ imageUrl is empty or null
@@ -442,13 +518,17 @@ When a user provides event information, you should:
 - ❌ NEVER add actual image paths
 - ❌ NEVER skip any of the 6 languages
 - ❌ NEVER use hardcoded IDs
-- ❌ NEVER forget the delete existing event logic
+- ❌ NEVER delete existing data (use upsert instead)
+- ❌ NEVER use the `/prisma/` root directory (use `/prisma/seeds/`)
+- ❌ NEVER forget to document the manual seed workflow usage
 - ❌ NEVER use invalid SportType values
-- ✅ ALWAYS check for existing event by slug
-- ✅ ALWAYS disconnect Prisma after completion
+- ✅ ALWAYS use upsert for idempotency
 - ✅ ALWAYS use European Portuguese for Portuguese translations
 - ✅ ALWAYS set imageUrl to empty string or null
 - ✅ ALWAYS include all 6 language translations
+- ✅ ALWAYS create files in `/prisma/seeds/` directory
+- ✅ ALWAYS upsert translations separately with composite unique keys
+- ✅ ALWAYS provide instructions for running the seed via GitHub Actions workflow
 
 ## TypeScript and Code Quality
 
@@ -459,4 +539,22 @@ When a user provides event information, you should:
 - Type-safe date creation with `new Date()`
 - No `any` types - use proper Prisma types
 
-Your goal is to generate production-ready seed files that can be directly executed to populate the database with complete, multilingual event data.
+## Running the Seed File
+
+After creating the seed file in `/prisma/seeds/<event-slug>.ts`:
+
+**Option 1: Manual execution (local)**
+```bash
+pnpm tsx prisma/seeds/<event-slug>.ts
+```
+
+**Option 2: GitHub Actions workflow (recommended for production)**
+1. Go to the repository on GitHub
+2. Navigate to Actions → "Manual Prisma Seed (Shared DB)"
+3. Click "Run workflow"
+4. Enter the seed file name: `<event-slug>.ts`
+5. Click "Run workflow" to execute
+
+This ensures the seed runs against the shared production database safely.
+
+Your goal is to generate production-ready seed files that can be directly executed to populate the database with complete, multilingual event data in an idempotent manner.

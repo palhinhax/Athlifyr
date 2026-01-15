@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -17,6 +18,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { ArrowLeft, Mail } from "lucide-react";
 
 export function ForgotPasswordForm() {
+  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -76,7 +78,7 @@ export function ForgotPasswordForm() {
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link href="/auth/signin">
+          <Link href={`/${locale}/auth/signin`}>
             <Button variant="ghost">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar ao login
@@ -117,7 +119,7 @@ export function ForgotPasswordForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "A enviar..." : "Enviar instruções"}
           </Button>
-          <Link href="/auth/signin" className="w-full">
+          <Link href={`/${locale}/auth/signin`} className="w-full">
             <Button variant="ghost" className="w-full">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar ao login

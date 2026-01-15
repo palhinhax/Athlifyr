@@ -3,6 +3,7 @@ import { EventsMap } from "@/components/events-map";
 import { MapFiltersWrapper } from "@/components/map-filters-wrapper";
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
+import { getDefaultMapCenter } from "@/lib/country-detection";
 
 export async function generateMetadata({
   params,
@@ -45,7 +46,7 @@ export default async function MapPage({
       {/* Map Container with Filters */}
       <div className="relative flex-1">
         <MapFiltersWrapper userId={session?.user?.id} locale={locale} />
-        <EventsMap />
+        <EventsMap initialCenter={getDefaultMapCenter(locale)} />
       </div>
     </div>
   );

@@ -59,7 +59,7 @@ function MapEventsHandler({
 }
 
 export default function EventsMapClient({
-  initialCenter = [39.5, -8.0], // Portugal center
+  initialCenter = [39.5, -8.0], // Default fallback (will be overridden by server-detected center)
   initialZoom = 7,
   filters: initialFilters,
 }: EventsMapClientProps) {

@@ -43,6 +43,65 @@ export function getCountryFromTimezone(): string | null {
 }
 
 /**
+ * Gets geographic center coordinates for a country
+ * Returns [latitude, longitude]
+ */
+export function getCountryCenter(country: string): [number, number] | null {
+  const countryCoordinates: Record<string, [number, number]> = {
+    Portugal: [39.5, -8.0],
+    Spain: [40.4, -3.7],
+    France: [46.6, 2.3],
+    Germany: [51.2, 10.4],
+    Italy: [42.8, 12.6],
+    "United Kingdom": [54.0, -2.5],
+    Ireland: [53.4, -8.0],
+    Belgium: [50.5, 4.5],
+    Netherlands: [52.1, 5.3],
+    Austria: [47.5, 14.5],
+    Poland: [52.0, 19.0],
+    "Czech Republic": [49.8, 15.5],
+    Hungary: [47.2, 19.5],
+    Greece: [39.0, 22.0],
+    Sweden: [62.0, 15.0],
+    Norway: [60.5, 8.5],
+    Denmark: [56.0, 10.0],
+    Finland: [64.0, 26.0],
+    Switzerland: [46.8, 8.2],
+    "United States": [37.1, -95.7],
+    Brazil: [-14.2, -51.9],
+    Mexico: [23.6, -102.5],
+    Canada: [56.1, -106.3],
+  };
+
+  return countryCoordinates[country] || null;
+}
+
+/**
+ * Gets default map center based on detected country
+ * Priority: timezone > locale > default to Portugal
+ */
+export function getDefaultMapCenter(locale?: string): [number, number] {
+  // Try to detect country from timezone first
+  const timezoneCountry = getCountryFromTimezone();
+  if (timezoneCountry) {
+    const center = getCountryCenter(timezoneCountry);
+    if (center) return center;
+  }
+
+  // Fallback to locale detection
+  if (locale) {
+    const country = getUserCountryFromLocale(locale);
+    if (country) {
+      const center = getCountryCenter(country);
+      if (center) return center;
+    }
+  }
+
+  // Default to Portugal (main market)
+  return [39.5, -8.0];
+}
+
+/**
  * Detects user's country based on locale
  * Returns country name in English for database queries
  */

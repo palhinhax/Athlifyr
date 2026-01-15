@@ -1,3 +1,28 @@
+# [6.4.0](https://github.com/palhinhax/Athlifyr/compare/v6.3.3...v6.4.0) (2026-01-15)
+
+### Features
+
+- **analytics:** add vercel analytics tracking ([bf56372](https://github.com/palhinhax/Athlifyr/commit/bf563728e753c41724905d5d2bcff3499b3349ff))
+- **analytics:** add vercel speed insights tracking ([8594732](https://github.com/palhinhax/Athlifyr/commit/85947321345d79ae794c599545c4c6e3bd77a066))
+
+## [6.3.3](https://github.com/palhinhax/Athlifyr/compare/v6.3.2...v6.3.3) (2026-01-15)
+
+### Bug Fixes
+
+- **events:** prevent map error on undefined sportTypes array ([48c55f1](https://github.com/palhinhax/Athlifyr/commit/48c55f13076ac2cb00ba110b06aba2448bf255d9))
+
+## [6.3.2](https://github.com/palhinhax/Athlifyr/compare/v6.3.1...v6.3.2) (2026-01-15)
+
+### Bug Fixes
+
+- **map:** prevent server-side timezone detection errors ([706a1c5](https://github.com/palhinhax/Athlifyr/commit/706a1c59de6118ffc321191f5adf7597dcad2f8e))
+
+## [6.3.1](https://github.com/palhinhax/Athlifyr/compare/v6.3.0...v6.3.1) (2026-01-15)
+
+### Bug Fixes
+
+- **auth:** add locale prefix to all auth navigation links ([ab21464](https://github.com/palhinhax/Athlifyr/commit/ab214641b47b4cb533ea02af28f0c0716cf90c9e))
+
 # [6.3.0](https://github.com/palhinhax/Athlifyr/compare/v6.2.0...v6.3.0) (2026-01-15)
 
 ### Features

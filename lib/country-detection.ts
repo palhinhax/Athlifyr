@@ -1,8 +1,14 @@
 /**
  * Detects user's country based on browser timezone
  * Maps IANA timezone to country name
+ * Only works in browser context - returns null on server
  */
 export function getCountryFromTimezone(): string | null {
+  // Check if we're in a browser context
+  if (typeof window === "undefined") {
+    return null;
+  }
+
   try {
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 

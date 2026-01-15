@@ -269,5 +269,22 @@
         "closed": "FECHADO"
       }
     }
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Todos os eventos desportivos num só lugar.",
+    "featuresTitle": "Funcionalidades",
+    "features": {
+      "nearYou": "Eventos perto de ti",
+      "filters": "Filtros por desporto e data",
+      "details": "Detalhes e links diretos para inscrição",
+      "favorites": "Guardar favoritos",
+      "share": "Partilhar com amigos"
+    },
+    "ctaTitle": "Encontra o teu próximo desafio",
+    "ctaSubtitle": "Explora • filtra • guarda • partilha",
+    "slogan": "one place. all sports.",
+    "playVideo": "Tocar vídeo",
+    "videoLoadError": "Não foi possível carregar o vídeo"
   }
 }

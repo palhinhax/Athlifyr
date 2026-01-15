@@ -10,6 +10,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const limit = searchParams.get("limit");
     const sports = searchParams.getAll("sports");
+    const country = searchParams.get("country");
 
     // Build where clause
     const where: Prisma.EventWhereInput = {
@@ -17,6 +18,11 @@ export async function GET(request: NextRequest) {
         gte: new Date(), // Only future events
       },
     };
+
+    // Country filter - default to user's country if not using location
+    if (country) {
+      where.country = { equals: country, mode: "insensitive" };
+    }
 
     // Search filter
     if (search) {

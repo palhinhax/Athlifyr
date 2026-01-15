@@ -5,199 +5,110 @@ const prisma = new PrismaClient();
 async function main() {
   console.log("🏃 Seeding Trail Santa Iria 2026...");
 
+  // Event data (used in both update and create)
+  const eventData = {
+    title: "Trail Santa Iria 2026",
+    sportTypes: [SportType.TRAIL],
+    startDate: new Date("2026-02-01T09:00:00.000Z"),
+    registrationDeadline: new Date("2026-01-26T23:59:00.000Z"),
+    city: "Gondomar",
+    country: "Portugal",
+    description: `# Trail Santa Iria 2026
+
+**Trail Running Event in Gondomar, Portugal**
+
+## 🏃 Sobre o Evento
+
+O **Trail Santa Iria 2026** é uma prova de trail running organizada pela **StopAndGo** que terá lugar em Gondomar, Portugal, no dia 1 de fevereiro de 2026.
+
+O evento oferece três distâncias diferentes para corredores de todos os níveis, desde atletas experientes até caminhantes que procuram desfrutar das paisagens naturais da região.
+
+## 🏃 Provas Disponíveis
+
+### 23KM Trail
+- **Distância:** 23 km
+- **Perfil:** Trail de média/longa distância
+- **Nível:** Intermédio a avançado
+
+### 13KM Trail
+- **Distância:** 13 km
+- **Perfil:** Trail de curta/média distância
+- **Nível:** Iniciado a intermédio
+
+### Caminhada 10KM
+- **Distância:** 10 km
+- **Perfil:** Caminhada não competitiva
+- **Nível:** Todos os níveis
+
+## 📍 Local
+
+**Gondomar, Portugal**
+
+A região de Gondomar oferece trilhos e caminhos ideais para a prática de trail running, com paisagens naturais e percursos variados.
+
+## 📅 Quando
+
+**Data:** 1 de fevereiro de 2026
+
+## 📝 Inscrições
+
+As inscrições decorrem em 3 fases com diferentes preços:
+
+### 1ª Fase (19 Nov 2025 - 31 Dez 2025)
+- 23KM: €19.00
+- 13KM: €14.00
+- Caminhada 10KM: €10.00
+
+### 2ª Fase (1 Jan 2026 - 18 Jan 2026)
+- 23KM: €21.00
+- 13KM: €16.00
+- Caminhada 10KM: €10.00
+
+### 3ª Fase (19 Jan 2026 - 26 Jan 2026)
+- 23KM: €25.00
+- 13KM: €21.00
+- Caminhada 10KM: €10.00
+
+**Fim das Inscrições:** 26 de janeiro de 2026 às 23:59
+
+## 🎽 Extras
+
+- **T-Shirt** do evento (opcional)
+
+## 👥 Organização
+
+**Organizador Principal:**
+- **StopAndGo** - Gestão de eventos desportivos
+
+## 📞 Contactos
+
+**Website e Inscrições:**
+- [stopandgo.net](https://stopandgo.net/events/trail-santa-iria-2026/registrations/create)
+
+## 📋 Informações Importantes
+
+⚠️ **A inscrição implica total aceitação do regulamento da prova.**
+
+Para mais informações, consulte o site oficial do evento ou contacte a organização.
+
+---
+
+**© 2026 StopAndGo. Todos os direitos reservados.**`,
+    externalUrl:
+      "https://stopandgo.net/events/trail-santa-iria-2026/registrations/create",
+    imageUrl: "",
+    latitude: 41.1435,
+    longitude: -8.5378,
+    googleMapsUrl: "https://maps.app.goo.gl/QSxvZYCVxHqJmhYX7",
+  };
+
   // Step 1: Upsert the event (no nested relations)
   const event = await prisma.event.upsert({
     where: { slug: "trail-santa-iria-2026" },
-    update: {
-      title: "Trail Santa Iria 2026",
-      sportTypes: [SportType.TRAIL],
-      startDate: new Date("2026-02-01T09:00:00.000Z"),
-      registrationDeadline: new Date("2026-01-26T23:59:00.000Z"),
-      city: "Gondomar",
-      country: "Portugal",
-      description: `# Trail Santa Iria 2026
-
-**Trail Running Event in Gondomar, Portugal**
-
-## 🏃 Sobre o Evento
-
-O **Trail Santa Iria 2026** é uma prova de trail running organizada pela **StopAndGo** que terá lugar em Gondomar, Portugal, no dia 1 de fevereiro de 2026.
-
-O evento oferece três distâncias diferentes para corredores de todos os níveis, desde atletas experientes até caminhantes que procuram desfrutar das paisagens naturais da região.
-
-## 🏃 Provas Disponíveis
-
-### 23KM Trail
-- **Distância:** 23 km
-- **Perfil:** Trail de média/longa distância
-- **Nível:** Intermédio a avançado
-
-### 13KM Trail
-- **Distância:** 13 km
-- **Perfil:** Trail de curta/média distância
-- **Nível:** Iniciado a intermédio
-
-### Caminhada 10KM
-- **Distância:** 10 km
-- **Perfil:** Caminhada não competitiva
-- **Nível:** Todos os níveis
-
-## 📍 Local
-
-**Gondomar, Portugal**
-
-A região de Gondomar oferece trilhos e caminhos ideais para a prática de trail running, com paisagens naturais e percursos variados.
-
-## 📅 Quando
-
-**Data:** 1 de fevereiro de 2026
-
-## 📝 Inscrições
-
-As inscrições decorrem em 3 fases com diferentes preços:
-
-### 1ª Fase (19 Nov 2025 - 31 Dez 2025)
-- 23KM: €19.00
-- 13KM: €14.00
-- Caminhada 10KM: €10.00
-
-### 2ª Fase (1 Jan 2026 - 18 Jan 2026)
-- 23KM: €21.00
-- 13KM: €16.00
-- Caminhada 10KM: €10.00
-
-### 3ª Fase (19 Jan 2026 - 26 Jan 2026)
-- 23KM: €25.00
-- 13KM: €21.00
-- Caminhada 10KM: €10.00
-
-**Fim das Inscrições:** 26 de janeiro de 2026 às 23:59
-
-## 🎽 Extras
-
-- **T-Shirt** do evento (opcional)
-
-## 👥 Organização
-
-**Organizador Principal:**
-- **StopAndGo** - Gestão de eventos desportivos
-
-## 📞 Contactos
-
-**Website e Inscrições:**
-- [stopandgo.net](https://stopandgo.net/events/trail-santa-iria-2026/registrations/create)
-
-## 📋 Informações Importantes
-
-⚠️ **A inscrição implica total aceitação do regulamento da prova.**
-
-Para mais informações, consulte o site oficial do evento ou contacte a organização.
-
----
-
-**© 2026 StopAndGo. Todos os direitos reservados.**`,
-      externalUrl:
-        "https://stopandgo.net/events/trail-santa-iria-2026/registrations/create",
-      imageUrl: "",
-      latitude: 41.1435,
-      longitude: -8.5378,
-      googleMapsUrl: "https://maps.app.goo.gl/QSxvZYCVxHqJmhYX7",
-    },
+    update: eventData,
     create: {
-      title: "Trail Santa Iria 2026",
+      ...eventData,
       slug: "trail-santa-iria-2026",
-      sportTypes: [SportType.TRAIL],
-      startDate: new Date("2026-02-01T09:00:00.000Z"),
-      registrationDeadline: new Date("2026-01-26T23:59:00.000Z"),
-      city: "Gondomar",
-      country: "Portugal",
-      description: `# Trail Santa Iria 2026
-
-**Trail Running Event in Gondomar, Portugal**
-
-## 🏃 Sobre o Evento
-
-O **Trail Santa Iria 2026** é uma prova de trail running organizada pela **StopAndGo** que terá lugar em Gondomar, Portugal, no dia 1 de fevereiro de 2026.
-
-O evento oferece três distâncias diferentes para corredores de todos os níveis, desde atletas experientes até caminhantes que procuram desfrutar das paisagens naturais da região.
-
-## 🏃 Provas Disponíveis
-
-### 23KM Trail
-- **Distância:** 23 km
-- **Perfil:** Trail de média/longa distância
-- **Nível:** Intermédio a avançado
-
-### 13KM Trail
-- **Distância:** 13 km
-- **Perfil:** Trail de curta/média distância
-- **Nível:** Iniciado a intermédio
-
-### Caminhada 10KM
-- **Distância:** 10 km
-- **Perfil:** Caminhada não competitiva
-- **Nível:** Todos os níveis
-
-## 📍 Local
-
-**Gondomar, Portugal**
-
-A região de Gondomar oferece trilhos e caminhos ideais para a prática de trail running, com paisagens naturais e percursos variados.
-
-## 📅 Quando
-
-**Data:** 1 de fevereiro de 2026
-
-## 📝 Inscrições
-
-As inscrições decorrem em 3 fases com diferentes preços:
-
-### 1ª Fase (19 Nov 2025 - 31 Dez 2025)
-- 23KM: €19.00
-- 13KM: €14.00
-- Caminhada 10KM: €10.00
-
-### 2ª Fase (1 Jan 2026 - 18 Jan 2026)
-- 23KM: €21.00
-- 13KM: €16.00
-- Caminhada 10KM: €10.00
-
-### 3ª Fase (19 Jan 2026 - 26 Jan 2026)
-- 23KM: €25.00
-- 13KM: €21.00
-- Caminhada 10KM: €10.00
-
-**Fim das Inscrições:** 26 de janeiro de 2026 às 23:59
-
-## 🎽 Extras
-
-- **T-Shirt** do evento (opcional)
-
-## 👥 Organização
-
-**Organizador Principal:**
-- **StopAndGo** - Gestão de eventos desportivos
-
-## 📞 Contactos
-
-**Website e Inscrições:**
-- [stopandgo.net](https://stopandgo.net/events/trail-santa-iria-2026/registrations/create)
-
-## 📋 Informações Importantes
-
-⚠️ **A inscrição implica total aceitação do regulamento da prova.**
-
-Para mais informações, consulte o site oficial do evento ou contacte a organização.
-
----
-
-**© 2026 StopAndGo. Todos os direitos reservados.**`,
-      externalUrl:
-        "https://stopandgo.net/events/trail-santa-iria-2026/registrations/create",
-      imageUrl: "",
-      latitude: 41.1435,
-      longitude: -8.5378,
-      googleMapsUrl: "https://maps.app.goo.gl/QSxvZYCVxHqJmhYX7",
     },
   });
 
@@ -396,7 +307,7 @@ Para mais informações, consulte o site oficial do evento ou contacte a organiz
       },
       de: {
         name: "10KM Wanderung",
-        description: "Nicht-wettbewerbsfähige Wanderung - 10 km",
+        description: "Nicht-kompetitive Wanderung - 10 km",
       },
       it: {
         name: "Camminata 10KM",

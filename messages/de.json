@@ -208,6 +208,34 @@
       "currentPhase": "(Aktuell)"
     }
   },
+  "eventsPage": {
+    "filters": {
+      "title": "Filter",
+      "search": "Suchen",
+      "searchPlaceholder": "Veranstaltungen suchen...",
+      "location": "Standort",
+      "enableLocation": "Standort Aktivieren",
+      "disableLocation": "Standort Deaktivieren",
+      "locationActive": "Aktiv",
+      "radius": "Radius",
+      "sports": "Sportarten",
+      "dateRange": "Datumsbereich",
+      "allDates": "Alle Daten",
+      "next7Days": "Nächste 7 Tage",
+      "next30Days": "Nächste 30 Tage",
+      "next3Months": "Nächste 3 Monate",
+      "next6Months": "Nächste 6 Monate",
+      "applyFilters": "Filter Anwenden",
+      "clearFilters": "Löschen",
+      "resultsCount": "{count} Veranstaltungen gefunden",
+      "noResults": "Keine Veranstaltungen mit den aktuellen Filtern gefunden",
+      "locationNotSupported": "Geolokalisierung wird von Ihrem Browser nicht unterstützt",
+      "locationError": "Ihr Standort konnte nicht abgerufen werden",
+      "locationDenied": "Zugriff auf Standort verweigert",
+      "locationUnavailable": "Standort nicht verfügbar",
+      "locationTimeout": "Standortanfrage abgelaufen"
+    }
+  },
   "feed": {
     "title": "Aktivitäts-Feed",
     "emptyTitle": "Leerer Feed",

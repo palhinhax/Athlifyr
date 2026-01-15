@@ -41,7 +41,6 @@ export async function POST(request: Request) {
     const body = await request.json();
     const {
       sports,
-      dateRange,
       distanceRadius,
       searchQuery,
       userLat,
@@ -58,7 +57,6 @@ export async function POST(request: Request) {
         where: { userId: session.user.id },
         update: {
           sports: sports as SportType[],
-          dateRange,
           distanceRadius,
           searchQuery,
           userLat,
@@ -68,7 +66,6 @@ export async function POST(request: Request) {
         create: {
           userId: session.user.id,
           sports: sports as SportType[],
-          dateRange,
           distanceRadius,
           searchQuery,
           userLat,
@@ -84,7 +81,6 @@ export async function POST(request: Request) {
         where: { anonymousId },
         update: {
           sports: sports as SportType[],
-          dateRange,
           distanceRadius,
           searchQuery,
           userLat,
@@ -95,7 +91,6 @@ export async function POST(request: Request) {
         create: {
           anonymousId,
           sports: sports as SportType[],
-          dateRange,
           distanceRadius,
           searchQuery,
           userLat,

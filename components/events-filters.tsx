@@ -5,13 +5,6 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -33,7 +26,6 @@ interface EventsFiltersProps {
 
 export interface EventsFilters {
   sports: SportType[];
-  dateRange: string | null;
   distanceRadius: number | null;
   searchQuery: string;
   userLat: number | null;
@@ -67,7 +59,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const [selectedSports, setSelectedSports] = useState<SportType[]>([]);
-  const [dateRange, setDateRange] = useState<string>("all");
   const [distanceRadius, setDistanceRadius] = useState<number>(DEFAULT_RADIUS);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [userLat, setUserLat] = useState<number | null>(null);
@@ -128,7 +119,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
           if (data.preferences) {
             const prefs = data.preferences;
             setSelectedSports(prefs.sports || []);
-            setDateRange(prefs.dateRange || "all");
             setDistanceRadius(prefs.distanceRadius || DEFAULT_RADIUS);
             setSearchQuery(prefs.searchQuery || "");
             setUserLat(prefs.userLat || null);
@@ -138,7 +128,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
             // Notify parent of loaded filters
             stableOnFiltersChange({
               sports: prefs.sports || [],
-              dateRange: prefs.dateRange === "all" ? null : prefs.dateRange,
               distanceRadius: prefs.locationEnabled
                 ? prefs.distanceRadius
                 : null,
@@ -209,7 +198,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
 
       const filters: EventsFilters = {
         sports: selectedSports,
-        dateRange: dateRange === "all" ? null : dateRange,
         distanceRadius: locationEnabled ? distanceRadius : null,
         searchQuery,
         userLat,
@@ -219,7 +207,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
 
       const body = {
         ...filters,
-        dateRange: dateRange,
         distanceRadius: distanceRadius,
         anonymousId: userId ? undefined : getAnonymousId(),
       };
@@ -244,14 +231,12 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
 
   const clearFilters = async () => {
     setSelectedSports([]);
-    setDateRange("all");
     setDistanceRadius(DEFAULT_RADIUS);
     setSearchQuery("");
     setLocationEnabled(false);
 
     const filters: EventsFilters = {
       sports: [],
-      dateRange: null,
       distanceRadius: null,
       searchQuery: "",
       userLat,
@@ -292,7 +277,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
 
   const activeFiltersCount =
     (selectedSports.length > 0 ? 1 : 0) +
-    (dateRange !== "all" ? 1 : 0) +
     (locationEnabled ? 1 : 0) +
     (searchQuery ? 1 : 0);
 
@@ -440,35 +424,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Date Range Filter */}
-          <div className="mb-4">
-            <h4 className="mb-2 text-sm font-medium">
-              {t("eventsPage.filters.dateRange")}
-            </h4>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[60]">
-                <SelectItem value="all">
-                  {t("eventsPage.filters.allDates")}
-                </SelectItem>
-                <SelectItem value="7d">
-                  {t("eventsPage.filters.next7Days")}
-                </SelectItem>
-                <SelectItem value="30d">
-                  {t("eventsPage.filters.next30Days")}
-                </SelectItem>
-                <SelectItem value="3m">
-                  {t("eventsPage.filters.next3Months")}
-                </SelectItem>
-                <SelectItem value="6m">
-                  {t("eventsPage.filters.next6Months")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Actions */}

@@ -178,6 +178,34 @@
       "currentPhase": "(Atual)"
     }
   },
+  "eventsPage": {
+    "filters": {
+      "title": "Filtros",
+      "search": "Pesquisar",
+      "searchPlaceholder": "Pesquisar eventos...",
+      "location": "Localização",
+      "enableLocation": "Ativar Localização",
+      "disableLocation": "Desativar Localização",
+      "locationActive": "Ativa",
+      "radius": "Raio",
+      "sports": "Modalidades",
+      "dateRange": "Intervalo de Datas",
+      "allDates": "Todas as Datas",
+      "next7Days": "Próximos 7 Dias",
+      "next30Days": "Próximos 30 Dias",
+      "next3Months": "Próximos 3 Meses",
+      "next6Months": "Próximos 6 Meses",
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpar",
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "Nenhum evento encontrado com os filtros atuais",
+      "locationNotSupported": "A geolocalização não é suportada pelo teu navegador",
+      "locationError": "Não foi possível obter a tua localização",
+      "locationDenied": "Acesso à localização negado",
+      "locationUnavailable": "Localização indisponível",
+      "locationTimeout": "Pedido de localização expirou"
+    }
+  },
   "feed": {
     "title": "Feed de Atividade",
     "emptyTitle": "Feed vazio",

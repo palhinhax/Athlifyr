@@ -178,6 +178,34 @@
       "currentPhase": "(Current)"
     }
   },
+  "eventsPage": {
+    "filters": {
+      "title": "Filters",
+      "search": "Search",
+      "searchPlaceholder": "Search events...",
+      "location": "Location",
+      "enableLocation": "Enable Location",
+      "disableLocation": "Disable Location",
+      "locationActive": "Active",
+      "radius": "Radius",
+      "sports": "Sports",
+      "dateRange": "Date Range",
+      "allDates": "All Dates",
+      "next7Days": "Next 7 Days",
+      "next30Days": "Next 30 Days",
+      "next3Months": "Next 3 Months",
+      "next6Months": "Next 6 Months",
+      "applyFilters": "Apply Filters",
+      "clearFilters": "Clear",
+      "resultsCount": "{count} events found",
+      "noResults": "No events found with current filters",
+      "locationNotSupported": "Geolocation is not supported by your browser",
+      "locationError": "Unable to retrieve your location",
+      "locationDenied": "Location access denied",
+      "locationUnavailable": "Location unavailable",
+      "locationTimeout": "Location request timed out"
+    }
+  },
   "feed": {
     "title": "Activity Feed",
     "emptyTitle": "Empty feed",

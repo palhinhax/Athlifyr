@@ -68,12 +68,12 @@ A região de Gondomar oferece trilhos e caminhos ideais para a prática de trail
 
 As inscrições decorrem em 3 fases com diferentes preços:
 
-### 1ª Fase (19 Nov 2025 - 1 Jan 2026)
+### 1ª Fase (19 Nov 2025 - 31 Dez 2025)
 - 23KM: €19.00
 - 13KM: €14.00
 - Caminhada 10KM: €10.00
 
-### 2ª Fase (1 Jan 2026 - 19 Jan 2026)
+### 2ª Fase (1 Jan 2026 - 18 Jan 2026)
 - 23KM: €21.00
 - 13KM: €16.00
 - Caminhada 10KM: €10.00

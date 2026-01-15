@@ -5,6 +5,7 @@ This directory contains idempotent seed files for individual events.
 ## Structure
 
 Each seed file:
+
 - **Name**: `<event-slug>.ts` (e.g., `porto-marathon-2026.ts`)
 - **Location**: This directory (`/prisma/seeds/`)
 - **Purpose**: Populate or update a single event with all its data
@@ -29,17 +30,19 @@ All seed files MUST be:
 ## Running a Seed
 
 ### Local Development
+
 ```bash
 pnpm tsx prisma/seeds/<event-slug>.ts
 ```
 
 ### Production (GitHub Actions)
+
 1. Update `.github/workflows/manual-seed.yml` with the seed filename as default:
    ```yaml
    seed_file:
      description: "Seed file to run (relative to prisma/seeds)"
      required: true
-     default: "<event-slug>.ts"  # Your seed filename here
+     default: "<event-slug>.ts" # Your seed filename here
    ```
 2. Go to GitHub → Actions
 3. Select "Manual Prisma Seed (Shared DB)"
@@ -49,6 +52,7 @@ pnpm tsx prisma/seeds/<event-slug>.ts
 ## Creating New Seeds
 
 Use the Event Seed Generator Agent:
+
 ```
 @event-seed-generator Create a seed file for "[Event Name]"
 happening on [date]. [Include event details...]

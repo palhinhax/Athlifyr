@@ -334,16 +334,19 @@ Partecipa a questa fantastica escursione attraverso le magnifiche terre di Oiã!
       name: "Passeio BTT 30km",
       distanceKm: 30,
       price: 6.0,
+      startTime: "09:00",
     },
     {
       name: "Passeio BTT 40km",
       distanceKm: 40,
       price: 7.0,
+      startTime: "09:00",
     },
     {
       name: "Almoço",
       distanceKm: 0,
       price: 7.0,
+      startTime: "09:00",
     },
   ];
 
@@ -362,7 +365,7 @@ Partecipa a questa fantastica escursione attraverso le magnifiche terre di Oiã!
         data: {
           distanceKm: variantData.distanceKm,
           price: variantData.price,
-          startTime: "09:00",
+          startTime: variantData.startTime,
         },
       });
     } else {
@@ -372,7 +375,7 @@ Partecipa a questa fantastica escursione attraverso le magnifiche terre di Oiã!
           name: variantData.name,
           distanceKm: variantData.distanceKm,
           price: variantData.price,
-          startTime: "09:00",
+          startTime: variantData.startTime,
         },
       });
     }

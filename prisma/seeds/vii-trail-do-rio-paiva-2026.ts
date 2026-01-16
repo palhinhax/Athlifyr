@@ -635,51 +635,116 @@ O Trail do Rio Paiva percorre as margens do Rio Paiva, oferecendo vistas deslumb
     }
   };
 
-  // Note: Based on the search results, fees range from €14 (walk) to €22 (35k)
-  // Since no specific phases were mentioned, I'll create reasonable pricing
-
-  await findOrCreatePricingPhase("Fase Única TRP35K", {
-    startDate: new Date("2025-09-01T00:00:00.000Z"),
-    endDate: new Date("2026-01-25T23:59:59.000Z"),
-    price: 22.0,
-    discountPercent: null,
-    note: null,
-  });
-  console.log("   ✅ TRP35K pricing");
-
-  await findOrCreatePricingPhase("Fase Única TRP23K", {
-    startDate: new Date("2025-09-01T00:00:00.000Z"),
-    endDate: new Date("2026-01-25T23:59:59.000Z"),
+  // TRP35K - 3 pricing phases
+  await findOrCreatePricingPhase("1ª Fase TRP35K", {
+    startDate: new Date("2025-09-23T00:00:00.000Z"),
+    endDate: new Date("2025-11-30T23:59:59.000Z"),
     price: 20.0,
     discountPercent: null,
     note: null,
   });
-  console.log("   ✅ TRP23K pricing");
 
-  await findOrCreatePricingPhase("Fase Única TRP15K", {
-    startDate: new Date("2025-09-01T00:00:00.000Z"),
-    endDate: new Date("2026-01-25T23:59:59.000Z"),
+  await findOrCreatePricingPhase("2ª Fase TRP35K", {
+    startDate: new Date("2025-12-01T00:00:00.000Z"),
+    endDate: new Date("2025-12-31T23:59:59.000Z"),
+    price: 22.0,
+    discountPercent: null,
+    note: null,
+  });
+
+  await findOrCreatePricingPhase("3ª Fase TRP35K", {
+    startDate: new Date("2026-01-01T00:00:00.000Z"),
+    endDate: new Date("2026-01-20T23:59:59.000Z"),
+    price: 23.0,
+    discountPercent: null,
+    note: null,
+  });
+  console.log("   ✅ TRP35K pricing (3 phases)");
+
+  // TRP23K - 3 pricing phases
+  await findOrCreatePricingPhase("1ª Fase TRP23K", {
+    startDate: new Date("2025-09-23T00:00:00.000Z"),
+    endDate: new Date("2025-11-30T23:59:59.000Z"),
     price: 18.0,
     discountPercent: null,
     note: null,
   });
-  console.log("   ✅ TRP15K pricing");
 
-  await findOrCreatePricingPhase("Fase Única Caminhada 10K", {
-    startDate: new Date("2025-09-01T00:00:00.000Z"),
-    endDate: new Date("2026-01-25T23:59:59.000Z"),
+  await findOrCreatePricingPhase("2ª Fase TRP23K", {
+    startDate: new Date("2025-12-01T00:00:00.000Z"),
+    endDate: new Date("2025-12-31T23:59:59.000Z"),
+    price: 20.0,
+    discountPercent: null,
+    note: null,
+  });
+
+  await findOrCreatePricingPhase("3ª Fase TRP23K", {
+    startDate: new Date("2026-01-01T00:00:00.000Z"),
+    endDate: new Date("2026-01-20T23:59:59.000Z"),
+    price: 21.0,
+    discountPercent: null,
+    note: null,
+  });
+  console.log("   ✅ TRP23K pricing (3 phases)");
+
+  // TRP15K - 3 pricing phases
+  await findOrCreatePricingPhase("1ª Fase TRP15K", {
+    startDate: new Date("2025-09-23T00:00:00.000Z"),
+    endDate: new Date("2025-11-30T23:59:59.000Z"),
+    price: 16.0,
+    discountPercent: null,
+    note: null,
+  });
+
+  await findOrCreatePricingPhase("2ª Fase TRP15K", {
+    startDate: new Date("2025-12-01T00:00:00.000Z"),
+    endDate: new Date("2025-12-31T23:59:59.000Z"),
+    price: 18.0,
+    discountPercent: null,
+    note: null,
+  });
+
+  await findOrCreatePricingPhase("3ª Fase TRP15K", {
+    startDate: new Date("2026-01-01T00:00:00.000Z"),
+    endDate: new Date("2026-01-20T23:59:59.000Z"),
+    price: 19.0,
+    discountPercent: null,
+    note: null,
+  });
+  console.log("   ✅ TRP15K pricing (3 phases)");
+
+  // Caminhada 10K - 3 pricing phases
+  await findOrCreatePricingPhase("1ª Fase Caminhada 10K", {
+    startDate: new Date("2025-09-23T00:00:00.000Z"),
+    endDate: new Date("2025-11-30T23:59:59.000Z"),
+    price: 13.0,
+    discountPercent: null,
+    note: null,
+  });
+
+  await findOrCreatePricingPhase("2ª Fase Caminhada 10K", {
+    startDate: new Date("2025-12-01T00:00:00.000Z"),
+    endDate: new Date("2025-12-31T23:59:59.000Z"),
     price: 14.0,
     discountPercent: null,
     note: null,
   });
-  console.log("   ✅ Caminhada 10K pricing");
+
+  await findOrCreatePricingPhase("3ª Fase Caminhada 10K", {
+    startDate: new Date("2026-01-01T00:00:00.000Z"),
+    endDate: new Date("2026-01-20T23:59:59.000Z"),
+    price: 15.0,
+    discountPercent: null,
+    note: null,
+  });
+  console.log("   ✅ Caminhada 10K pricing (3 phases)");
 
   console.log("");
   console.log("✅ VII Trail do Rio Paiva 2026 seeded successfully!");
   console.log("📝 Event slug: vii-trail-do-rio-paiva-2026");
   console.log("🌍 Translations: 6 languages (pt, en, es, fr, de, it)");
   console.log("🏃 Variants: 4 (TRP35K, TRP23K, TRP15K, Caminhada 10K)");
-  console.log("💰 Pricing phases: 4 (one per variant)");
+  console.log("💰 Pricing phases: 12 (3 phases per variant)");
 }
 
 main()

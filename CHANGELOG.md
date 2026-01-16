@@ -1,3 +1,9 @@
+# [7.6.0](https://github.com/palhinhax/Athlifyr/compare/v7.5.0...v7.6.0) (2026-01-16)
+
+### Features
+
+- **ui:** improve search accessibility and implement global search ([857b330](https://github.com/palhinhax/Athlifyr/commit/857b330610c651aaef34fad9d8505eca77446176))
+
 # [7.5.0](https://github.com/palhinhax/Athlifyr/compare/v7.4.0...v7.5.0) (2026-01-16)
 
 ### Features

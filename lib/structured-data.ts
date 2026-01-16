@@ -29,6 +29,8 @@ export function generateSportsEventSchema(event: EventWithVariants) {
 
   // Determine validFrom date for offers
   // Priority: 1) First pricing phase start date, 2) Event creation date, 3) 30 days before event
+  // Note: Pricing phases are pre-sorted by startDate (ascending) in the database query,
+  // so pricingPhases[0] is guaranteed to be the earliest phase
   const getValidFromDate = (variant: EventVariantWithPricingPhases): string => {
     // Check variant-specific pricing phases first
     if (variant.pricingPhases.length > 0) {

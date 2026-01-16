@@ -4,7 +4,6 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -12,7 +11,6 @@ import {
   X,
   Loader2,
   MapPin,
-  Search,
   LocateFixed,
   LocateOff,
 } from "lucide-react";
@@ -22,6 +20,7 @@ import { getAnonymousId } from "@/lib/anonymous-id";
 interface EventsFiltersProps {
   userId?: string;
   onFiltersChange: (filters: EventsFilters) => void;
+  searchQuery: string;
 }
 
 export interface EventsFilters {
@@ -49,7 +48,11 @@ const SPORT_TYPES: SportType[] = [
 
 const DEFAULT_RADIUS = 50; // km
 
-export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
+export function EventsFilters({
+  userId,
+  onFiltersChange,
+  searchQuery,
+}: EventsFiltersProps) {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -60,7 +63,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
 
   const [selectedSports, setSelectedSports] = useState<SportType[]>([]);
   const [distanceRadius, setDistanceRadius] = useState<number>(DEFAULT_RADIUS);
-  const [searchQuery, setSearchQuery] = useState<string>("");
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
   const [locationEnabled, setLocationEnabled] = useState<boolean>(false);
@@ -120,7 +122,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
             const prefs = data.preferences;
             setSelectedSports(prefs.sports || []);
             setDistanceRadius(prefs.distanceRadius || DEFAULT_RADIUS);
-            setSearchQuery(prefs.searchQuery || "");
             setUserLat(prefs.userLat || null);
             setUserLng(prefs.userLng || null);
             setLocationEnabled(prefs.locationEnabled || false);
@@ -232,13 +233,12 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
   const clearFilters = async () => {
     setSelectedSports([]);
     setDistanceRadius(DEFAULT_RADIUS);
-    setSearchQuery("");
     setLocationEnabled(false);
 
     const filters: EventsFilters = {
       sports: [],
       distanceRadius: null,
-      searchQuery: "",
+      searchQuery,
       userLat,
       userLng,
       locationEnabled: false,
@@ -249,7 +249,7 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
         sports: [],
         dateRange: "all",
         distanceRadius: DEFAULT_RADIUS,
-        searchQuery: "",
+        searchQuery,
         userLat,
         userLng,
         locationEnabled: false,
@@ -276,9 +276,7 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
   };
 
   const activeFiltersCount =
-    (selectedSports.length > 0 ? 1 : 0) +
-    (locationEnabled ? 1 : 0) +
-    (searchQuery ? 1 : 0);
+    (selectedSports.length > 0 ? 1 : 0) + (locationEnabled ? 1 : 0);
 
   if (loading) {
     return (
@@ -314,23 +312,6 @@ export function EventsFilters({ userId, onFiltersChange }: EventsFiltersProps) {
             <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
               <X className="h-4 w-4" />
             </Button>
-          </div>
-
-          {/* Search Input */}
-          <div className="mb-4">
-            <h4 className="mb-2 text-sm font-medium">
-              {t("eventsPage.filters.search")}
-            </h4>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                type="text"
-                placeholder={t("eventsPage.filters.searchPlaceholder")}
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
           </div>
 
           {/* Location Filter */}

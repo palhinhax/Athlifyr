@@ -162,6 +162,7 @@
       "clearFilters": "Cancella Filtri",
       "resultsCount": "{count} eventi trovati",
       "noResults": "Nessun evento trovato con i filtri attuali",
+      "searchingGlobally": "Ricerca in tutti gli eventi...",
       "locationError": "Impossibile ottenere la posizione",
       "locationPermissionDenied": "Autorizzazione alla posizione negata"
     },

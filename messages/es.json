@@ -198,7 +198,9 @@
     },
     "filters": {
       "resultsCount": "{count} eventos encontrados",
-      "noResults": "No se encontraron eventos con los filtros actuales"
+      "noResults": "No se encontraron eventos con los filtros actuales",
+      "searchPlaceholder": "Buscar eventos...",
+      "searchingGlobally": "Buscando en todos los eventos..."
     }
   },
   "eventsPage": {

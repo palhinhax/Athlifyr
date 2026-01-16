@@ -4,13 +4,14 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Map } from "lucide-react";
+import { Loader2, Map, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import { getDefaultCountry } from "@/lib/country-detection";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 interface EventsPageClientProps {
   userId?: string;
@@ -31,12 +32,22 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     userLng: null,
     locationEnabled: false,
   });
+  const [localSearchQuery, setLocalSearchQuery] = useState<string>("");
   const [events, setEvents] = useState<EventWithVariants[]>([]);
   const [participatingEventIds, setParticipatingEventIds] = useState<
     Set<string>
   >(new Set());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Debounce search query
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setFilters((prev) => ({ ...prev, searchQuery: localSearchQuery }));
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [localSearchQuery]);
 
   const fetchEvents = useCallback(async () => {
     try {
@@ -55,8 +66,9 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         params.append("search", filters.searchQuery);
       }
 
-      // If location is NOT enabled, filter by user's country
-      if (!filters.locationEnabled) {
+      // If location is NOT enabled AND no search query, filter by user's country
+      // When searching, show results from everywhere
+      if (!filters.locationEnabled && !filters.searchQuery) {
         const defaultCountry = getDefaultCountry(locale);
         params.append("country", defaultCountry);
       }
@@ -69,12 +81,13 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
       let fetchedEvents: EventWithVariants[] = await response.json();
 
-      // Filter by distance if location is enabled
+      // Filter by distance if location is enabled (but not when searching)
       if (
         filters.locationEnabled &&
         filters.userLat &&
         filters.userLng &&
-        filters.distanceRadius
+        filters.distanceRadius &&
+        !filters.searchQuery
       ) {
         fetchedEvents = fetchedEvents.filter((event) => {
           if (!event.latitude || !event.longitude) return false;
@@ -131,8 +144,32 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
       </section>
 
       <section className="container mx-auto px-4 py-8">
+        {/* Search Bar - Always Visible */}
+        <div className="mb-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder={t("filters.searchPlaceholder")}
+              value={localSearchQuery}
+              onChange={(e) => setLocalSearchQuery(e.target.value)}
+              className="h-12 pl-11 pr-4 text-base shadow-sm"
+            />
+          </div>
+          {filters.searchQuery && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {t("filters.searchingGlobally")}
+            </p>
+          )}
+        </div>
+
+        {/* Filters and Map Button */}
         <div className="flex items-center justify-between gap-4">
-          <EventsFilters userId={userId} onFiltersChange={setFilters} />
+          <EventsFilters
+            userId={userId}
+            onFiltersChange={setFilters}
+            searchQuery={filters.searchQuery}
+          />
           <Button asChild variant="outline" size="lg" className="shrink-0">
             <Link href={`/${locale}/map`}>
               <Map className="mr-2 h-4 w-4" />

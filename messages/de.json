@@ -162,6 +162,7 @@
       "clearFilters": "Filter löschen",
       "resultsCount": "{count} Veranstaltungen gefunden",
       "noResults": "Keine Veranstaltungen mit den aktuellen Filtern gefunden",
+      "searchingGlobally": "Alle Veranstaltungen durchsuchen...",
       "locationError": "Standort konnte nicht abgerufen werden",
       "locationPermissionDenied": "Standortberechtigung verweigert"
     },

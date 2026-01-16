@@ -1,5 +1,6 @@
 import { Route } from "lucide-react";
 import { TriathlonSegmentsDisplay } from "./triathlon-segments-display";
+import { formatPrice, type Currency } from "@/lib/currency";
 
 interface TriathlonSegment {
   id: string;
@@ -20,6 +21,7 @@ interface EventVariant {
   itraPoints: number | null;
   atrpGrade: number | null;
   startTime: string | null;
+  currency?: Currency;
   triathlonSegments?: TriathlonSegment[];
   pricingPhases: Array<{
     id: string;
@@ -27,6 +29,7 @@ interface EventVariant {
     startDate: Date;
     endDate: Date;
     price: number;
+    currency?: Currency;
     discountPercent: number | null;
     note: string | null;
   }>;
@@ -266,7 +269,7 @@ export function EventVariantsList({
                             {isActive && ` ${labels.currentPhase}`}
                           </span>
                           <span className="whitespace-nowrap font-medium">
-                            {phase.price.toFixed(2)}€
+                            {formatPrice(phase.price, phase.currency)}
                           </span>
                         </div>
                       );

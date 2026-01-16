@@ -38,6 +38,13 @@ enum Language {
   it
 }
 
+enum Currency {
+  EUR  // Euro (€)
+  GBP  // British Pound (£)
+  USD  // US Dollar ($)
+  CHF  // Swiss Franc (CHF)
+}
+
 enum TriathlonSegmentType {
   SWIM
   BIKE
@@ -210,6 +217,7 @@ model EventVariant {
   
   distanceKm      Int?
   price           Float?         // Preço fixo (se não tiver fases)
+  currency        Currency       @default(EUR) // Moeda do preço
   maxParticipants Int?
   startDate       DateTime?      // Data específica desta variante (se diferente do evento)
   startTime       String?        // Hora de início (ex: "09:00")
@@ -282,6 +290,7 @@ model PricingPhase {
   startDate      DateTime
   endDate        DateTime
   price          Float
+  currency       Currency      @default(EUR) // Moeda do preço
   discountPercent Int?         // Percentagem de desconto (opcional)
   note           String?       // Nota adicional (ex: "Desconto de 10% sobre o valor de 600€")
   

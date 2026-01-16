@@ -4,13 +4,13 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Search } from "lucide-react";
 import { useEffect, useState } from "react";
-import "./globals.css";
 
 // Available background videos
 const backgroundVideos = [
   "/promo/group-running.mp4",
   "/promo/woman-running.mp4",
   "/promo/crossfit-workout.mp4",
+  "/promo/warm-up-girl.mp4",
   "/promo/promo.mp4",
 ];
 
@@ -113,6 +113,79 @@ export default function NotFound() {
 
   return (
     <html lang={locale}>
+      <head>
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+              *, ::before, ::after { box-sizing: border-box; border-width: 0; border-style: solid; }
+              html { line-height: 1.5; -webkit-text-size-adjust: 100%; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+              body { margin: 0; line-height: inherit; }
+              .antialiased { -webkit-font-smoothing: antialiased; }
+              .relative { position: relative; }
+              .absolute { position: absolute; }
+              .inset-0 { inset: 0; }
+              .z-10 { z-index: 10; }
+              .flex { display: flex; }
+              .flex-col { flex-direction: column; }
+              .items-center { align-items: center; }
+              .justify-center { justify-content: center; }
+              .min-h-screen { min-height: 100vh; }
+              .overflow-hidden { overflow: hidden; }
+              .h-full { height: 100%; }
+              .w-full { width: 100%; }
+              .object-cover { object-fit: cover; }
+              .mx-auto { margin-left: auto; margin-right: auto; }
+              .max-w-2xl { max-width: 42rem; }
+              .text-center { text-align: center; }
+              .text-9xl { font-size: 8rem; line-height: 1; }
+              .text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+              .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+              .text-base { font-size: 1rem; line-height: 1.5rem; }
+              .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+              .font-bold { font-weight: 700; }
+              .font-medium { font-weight: 500; }
+              .tracking-tighter { letter-spacing: -0.05em; }
+              .tracking-tight { letter-spacing: -0.025em; }
+              .text-white { color: rgb(255 255 255); }
+              .text-white\\/20 { color: rgb(255 255 255 / 0.2); }
+              .text-white\\/30 { color: rgb(255 255 255 / 0.3); }
+              .text-white\\/70 { color: rgb(255 255 255 / 0.7); }
+              .text-white\\/80 { color: rgb(255 255 255 / 0.8); }
+              .text-white\\/90 { color: rgb(255 255 255 / 0.9); }
+              .bg-black\\/60 { background-color: rgb(0 0 0 / 0.6); }
+              .bg-white\\/10 { background-color: rgb(255 255 255 / 0.1); }
+              .bg-white\\/20 { background-color: rgb(255 255 255 / 0.2); }
+              .border-white\\/30 { border-color: rgb(255 255 255 / 0.3); }
+              .backdrop-blur-sm { backdrop-filter: blur(4px); }
+              .px-4 { padding-left: 1rem; padding-right: 1rem; }
+              .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+              .mb-8 { margin-bottom: 2rem; }
+              .mt-2 { margin-top: 0.5rem; }
+              .mt-6 { margin-top: 1.5rem; }
+              .mt-10 { margin-top: 2.5rem; }
+              .mt-16 { margin-top: 4rem; }
+              .-mt-12 { margin-top: -3rem; }
+              .mr-2 { margin-right: 0.5rem; }
+              .h-4 { height: 1rem; }
+              .w-4 { width: 1rem; }
+              .gap-4 { gap: 1rem; }
+              .min-w-\\[160px\\] { min-width: 160px; }
+              .leading-8 { line-height: 2rem; }
+              button, a { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; 
+                font-size: 1rem; font-weight: 500; transition: all 0.2s; cursor: pointer; text-decoration: none; 
+                border-radius: 0.5rem; padding: 0.625rem 1.5rem; border: 1px solid transparent; }
+              button:hover, a:hover { opacity: 0.9; }
+              button { background-color: hsl(222.2 47.4% 11.2%); color: hsl(210 40% 98%); }
+              button + button { background-color: transparent; border-color: rgb(255 255 255 / 0.3); 
+                color: white; backdrop-filter: blur(4px); }
+              @media (min-width: 640px) {
+                .sm\\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
+                .sm\\:flex-row { flex-direction: row; }
+              }
+            `,
+          }}
+        />
+      </head>
       <body className="antialiased">
         <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-16">
           {/* Background Video */}

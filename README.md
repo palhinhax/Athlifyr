@@ -184,7 +184,59 @@ The seed data includes 40+ real and semi-fictional Portuguese sports events:
 
 The app is Vercel-ready and optimized for production deployment.
 
-## 📄 License
+## � Maintenance Mode
+
+Athlifyr includes a built-in maintenance mode to safely perform updates or migrations.
+
+### Quick Start
+
+**Enable maintenance mode:**
+
+```bash
+# Using PowerShell (Windows)
+.\scripts\maintenance.ps1 on
+
+# Using Bash (Linux/Mac)
+./scripts/maintenance.sh on
+```
+
+**Disable maintenance mode:**
+
+```bash
+# Using PowerShell (Windows)
+.\scripts\maintenance.ps1 off
+
+# Using Bash (Linux/Mac)
+./scripts/maintenance.sh off
+```
+
+**Check status:**
+
+```bash
+# Using PowerShell (Windows)
+.\scripts\maintenance.ps1 status
+
+# Using Bash (Linux/Mac)
+./scripts/maintenance.sh status
+```
+
+### Manual Setup
+
+Add to your `.env` file:
+
+```bash
+# Enable maintenance mode
+MAINTENANCE_MODE="true"
+
+# Disable maintenance mode
+MAINTENANCE_MODE="false"
+```
+
+**Important:** Remember to restart your application after changing the `.env` file.
+
+For detailed documentation, see [docs/MAINTENANCE_MODE.md](docs/MAINTENANCE_MODE.md).
+
+## �📄 License
 
 MIT License - see [LICENSE](LICENSE) for details.
 

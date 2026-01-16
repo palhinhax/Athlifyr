@@ -342,6 +342,7 @@
       "fri": "Sex",
       "sat": "Sáb"
     },
+    "gallery": "Galeria",
     "publishPhoto": "Publicar Foto",
     "shareTrainingMoments": "Partilha momentos dos teus treinos e competições!",
     "publishFirstPhoto": "Publicar Primeira Foto",
@@ -363,6 +364,10 @@
     "beFirstToShare": "Sê o primeiro a partilhar uma foto!",
     "confirmDelete": "Eliminar foto?",
     "confirmDeleteDesc": "Esta ação não pode ser revertida.",
-    "deletePhoto": "Eliminar Foto"
+    "deletePhoto": "Eliminar Foto",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "publish": "Publicar"
   }
 }

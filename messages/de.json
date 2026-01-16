@@ -368,6 +368,7 @@
       "fri": "Fr",
       "sat": "Sa"
     },
+    "gallery": "Galerie",
     "publishPhoto": "Foto Veröffentlichen",
     "shareTrainingMoments": "Teile Momente aus deinem Training und Wettkämpfen!",
     "publishFirstPhoto": "Erste Foto Veröffentlichen",
@@ -389,6 +390,10 @@
     "beFirstToShare": "Sei der Erste, der ein Foto teilt!",
     "confirmDelete": "Foto löschen?",
     "confirmDeleteDesc": "Diese Aktion kann nicht rückgängig gemacht werden.",
-    "deletePhoto": "Foto Löschen"
+    "deletePhoto": "Foto Löschen",
+    "close": "Schließen",
+    "cancel": "Abbrechen",
+    "confirm": "Bestätigen",
+    "publish": "Veröffentlichen"
   }
 }

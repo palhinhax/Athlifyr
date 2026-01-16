@@ -342,6 +342,7 @@
       "fri": "Fri",
       "sat": "Sat"
     },
+    "gallery": "Gallery",
     "publishPhoto": "Publish Photo",
     "shareTrainingMoments": "Share moments from your training and competitions!",
     "publishFirstPhoto": "Publish First Photo",
@@ -363,6 +364,10 @@
     "beFirstToShare": "Be the first to share a photo!",
     "confirmDelete": "Delete photo?",
     "confirmDeleteDesc": "This action cannot be undone.",
-    "deletePhoto": "Delete Photo"
+    "deletePhoto": "Delete Photo",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "publish": "Publish"
   }
 }

@@ -342,6 +342,7 @@
       "fri": "Ven",
       "sat": "Sam"
     },
+    "gallery": "Galerie",
     "publishPhoto": "Publier Photo",
     "shareTrainingMoments": "Partagez des moments de vos entraînements et compétitions !",
     "publishFirstPhoto": "Publier Première Photo",
@@ -363,6 +364,10 @@
     "beFirstToShare": "Soyez le premier à partager une photo !",
     "confirmDelete": "Supprimer la photo ?",
     "confirmDeleteDesc": "Cette action est irréversible.",
-    "deletePhoto": "Supprimer Photo"
+    "deletePhoto": "Supprimer Photo",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "confirm": "Confirmer",
+    "publish": "Publier"
   }
 }

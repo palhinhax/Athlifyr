@@ -1,3 +1,10 @@
+# [7.1.0](https://github.com/palhinhax/Athlifyr/compare/v7.0.0...v7.1.0) (2026-01-16)
+
+### Features
+
+- **events:** add triathlon segment support with UI and translations ([abdfa60](https://github.com/palhinhax/Athlifyr/commit/abdfa60ffa27f0c63785f4e175b296394dcab272))
+- **maintenance:** add maintenance mode with dedicated page and scripts ([7a09b47](https://github.com/palhinhax/Athlifyr/commit/7a09b47a357663d156db3fea8c33d14eba6eff5b))
+
 # [7.0.0](https://github.com/palhinhax/Athlifyr/compare/v6.12.1...v7.0.0) (2026-01-16)
 
 - refactor(seed)!: move to seeds directory with full idempotency and translations ([13116d9](https://github.com/palhinhax/Athlifyr/commit/13116d909ae8a26fe57e40942becb47c7971f766))

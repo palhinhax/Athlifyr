@@ -38,7 +38,8 @@ O terreno está sujeito a alterações climatéricas repentinas, e os participan
       country: "Portugal",
       latitude: 41.717,
       longitude: -8.818245,
-      googleMapsUrl: "https://maps.app.goo.gl/VianaDoCastelo",
+      googleMapsUrl:
+        "https://www.google.com/maps/place/41.717,-8.818245/@41.717,-8.818245,17z",
       externalUrl: "https://www.facebook.com/AssociacaoTrilhosdeViana",
       imageUrl: "/events/trilhos-viana.jpg",
       isFeatured: false,
@@ -340,7 +341,7 @@ Attrezzatura obbligatoria per Trail Lungo e Trail Corto: coperta termica, telefo
                   language: "de",
                   name: "Wanderung (8,5km)",
                   description:
-                    "Nicht-wettbewerbsfähige 8,5km Wanderung mit 450m D+ durch das Santa Luzia-Gebirge. Mindestalter: 12 Jahre. Ideal für Familien und Gruppen.",
+                    "Nicht-wettkampforientierte 8,5km Wanderung mit 450m D+ durch das Santa Luzia-Gebirge. Mindestalter: 12 Jahre. Ideal für Familien und Gruppen.",
                 },
                 {
                   language: "it",

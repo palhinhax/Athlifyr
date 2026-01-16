@@ -1,3 +1,10 @@
+# [7.7.0](https://github.com/palhinhax/Athlifyr/compare/v7.6.0...v7.7.0) (2026-01-16)
+
+### Features
+
+- Add legal documents and cookie consent functionality ([1d8054f](https://github.com/palhinhax/Athlifyr/commit/1d8054f964c79c0fe0b61d8361142ff0ac9033b6))
+- Enhance EqualWeb Accessibility Widget with locale support ([0225cd9](https://github.com/palhinhax/Athlifyr/commit/0225cd92397daed8e0eef6f79c2b7f81c1a513cf))
+
 # [7.6.0](https://github.com/palhinhax/Athlifyr/compare/v7.5.0...v7.6.0) (2026-01-16)
 
 ### Features

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useLocale } from "next-intl";
 
 /**
  * EqualWeb Accessibility Widget
@@ -10,11 +11,25 @@ import { useEffect } from "react";
  * @see https://www.equalweb.com/
  */
 export function EqualWebAccessibility() {
+  const locale = useLocale();
+
   useEffect(() => {
     // Only load EqualWeb in production
     if (process.env.NODE_ENV !== "production") {
       return;
     }
+
+    // Map locale to EqualWeb language codes
+    const languageMap: Record<string, string> = {
+      pt: "PT-PT",
+      en: "EN",
+      es: "ES",
+      fr: "FR",
+      de: "DE",
+      it: "IT",
+    };
+
+    const menuLanguage = languageMap[locale] || "EN";
 
     // Configure EqualWeb
     (window as Window & { interdeal?: unknown }).interdeal = {
@@ -28,7 +43,7 @@ export function EqualWebAccessibility() {
         };
       },
       Position: "left",
-      Menulang: "PT-PT",
+      Menulang: menuLanguage,
       draggable: true,
       btnStyle: {
         vPosition: ["80%", "80%"],
@@ -64,7 +79,7 @@ export function EqualWebAccessibility() {
         document.body.removeChild(script);
       }
     };
-  }, []);
+  }, [locale]);
 
   return null; // This component doesn't render anything
 }

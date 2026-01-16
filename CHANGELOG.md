@@ -1,3 +1,9 @@
+# [7.4.0](https://github.com/palhinhax/Athlifyr/compare/v7.3.0...v7.4.0) (2026-01-16)
+
+### Features
+
+- **events:** add Strava route embed support ([d43e7c2](https://github.com/palhinhax/Athlifyr/commit/d43e7c23eba76f7534cb17538b96c374bdae89f4))
+
 # [7.3.0](https://github.com/palhinhax/Athlifyr/compare/v7.2.0...v7.3.0) (2026-01-16)
 
 ### Features

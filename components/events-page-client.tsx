@@ -1,16 +1,29 @@
 "use client";
 
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
 import { useState, useEffect, useCallback } from "react";
-import { Loader2, Map, Search } from "lucide-react";
+import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import dynamic from "next/dynamic";
+
+// Dynamically import the map component to avoid SSR issues
+const EventsMapClient = dynamic(
+  () => import("@/components/events-map-client"),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[600px] items-center justify-center rounded-lg border bg-muted">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
 
 interface EventsPageClientProps {
   userId?: string;
@@ -22,7 +35,7 @@ type EventWithVariants = Event & {
 
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
-  const locale = useLocale();
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
     distanceRadius: null,
@@ -166,19 +179,31 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           )}
         </div>
 
-        {/* Filters and Map Button */}
+        {/* Filters and View Toggle */}
         <div className="flex items-center justify-between gap-4">
           <EventsFilters
             userId={userId}
             onFiltersChange={setFilters}
             searchQuery={filters.searchQuery}
           />
-          <Button asChild variant="outline" size="lg" className="shrink-0">
-            <Link href={`/${locale}/map`}>
+          <div className="flex shrink-0 gap-2">
+            <Button
+              variant={viewMode === "list" ? "default" : "outline"}
+              size="lg"
+              onClick={() => setViewMode("list")}
+            >
+              <LayoutGrid className="mr-2 h-4 w-4" />
+              {t("viewList")}
+            </Button>
+            <Button
+              variant={viewMode === "map" ? "default" : "outline"}
+              size="lg"
+              onClick={() => setViewMode("map")}
+            >
               <Map className="mr-2 h-4 w-4" />
               {t("viewMap")}
-            </Link>
-          </Button>
+            </Button>
+          </div>
         </div>
 
         <div className="mt-8">
@@ -200,6 +225,15 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
                   ? t("filters.noResults")
                   : t("noEventsDescription")}
               </p>
+            </div>
+          ) : viewMode === "map" ? (
+            <div className="overflow-hidden rounded-lg border">
+              <EventsMapClient
+                filters={{
+                  sports: filters.sports,
+                  dateRange: null, // Map doesn't use date range filtering yet
+                }}
+              />
             </div>
           ) : (
             <>

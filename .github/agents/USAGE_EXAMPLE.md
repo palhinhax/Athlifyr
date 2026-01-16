@@ -28,8 +28,8 @@ Variants:
    - Elevation gain: 1200m
    - Start time: 09:00
    - Max participants: 500
-   
-2. Short Trail - 25km  
+
+2. Short Trail - 25km
    - Elevation gain: 600m
    - Start time: 10:00
    - Max participants: 800
@@ -39,14 +39,15 @@ Pricing:
 - Normal (Feb 16 - Mar 10): €55
 - Late (Mar 11 - Mar 14): €65
 
-Description: A scenic coastal trail run along the beautiful Cascais 
-coastline, featuring stunning ocean views and challenging terrain. 
+Description: A scenic coastal trail run along the beautiful Cascais
+coastline, featuring stunning ocean views and challenging terrain.
 The route combines coastal paths, forest trails, and historic sites.
 ```
 
 ### Step 2: Agent Generates the Seed File
 
 The agent will create a complete TypeScript seed file at:
+
 ```
 /prisma/seeds/cascais-ocean-trail-2026.ts
 ```
@@ -223,10 +224,13 @@ main()
 ## Tips for Best Results
 
 ### 1. Be Specific
+
 Provide as much detail as possible in your initial request.
 
 ### 2. Structured Format
+
 Use a clear structure like:
+
 ```
 Event Details:
 - Field: Value
@@ -241,34 +245,41 @@ Pricing:
 ```
 
 ### 3. Check Coordinates
+
 Ensure GPS coordinates are accurate for map display.
 
 ### 4. Verify Translations
+
 While the agent generates translations, always review them for accuracy, especially technical terms and place names.
 
 ### 5. SportType Values
+
 Use valid enum values:
+
 - RUNNING, TRAIL, HYROX, CROSSFIT, OCR
 - BTT, CYCLING, SURF, TRIATHLON, SWIMMING, OTHER
 
 ## Common Scenarios
 
 ### Simple Running Event
+
 ```
-@event-seed-generator Create a seed for "5K City Run 2026" 
+@event-seed-generator Create a seed for "5K City Run 2026"
 on April 20, 2026 in Porto. Simple 5km running race, no variants.
 ```
 
 ### Multi-Distance Event
+
 ```
 @event-seed-generator Create seed for "Marathon Weekend 2026"
-with three variants: Full Marathon (42km), Half Marathon (21km), 
+with three variants: Full Marathon (42km), Half Marathon (21km),
 and 10K run. Each starts at different times.
 ```
 
 ### Trail Event with Technical Data
+
 ```
-@event-seed-generator Create trail race seed with ITRA points, 
+@event-seed-generator Create trail race seed with ITRA points,
 elevation data, and mountain level classification.
 ```
 
@@ -290,19 +301,24 @@ After the agent generates the file, verify:
 ## Troubleshooting
 
 ### Agent asks for more information
+
 Provide the requested details - the agent needs complete information to generate accurate seed files.
 
 ### Translations seem incorrect
+
 You can ask the agent to revise specific translations:
+
 ```
-@event-seed-generator The German translation needs adjustment. 
+@event-seed-generator The German translation needs adjustment.
 Please use "Strecke" instead of "Route" for the course description.
 ```
 
 ### Need to add more variants
+
 Ask the agent to update the file:
+
 ```
-@event-seed-generator Add a third variant "Ultra Trail 75km" 
+@event-seed-generator Add a third variant "Ultra Trail 75km"
 with 2000m elevation gain to the existing seed file.
 ```
 

@@ -1,3 +1,14 @@
+# [6.10.0](https://github.com/palhinhax/Athlifyr/compare/v6.9.1...v6.10.0) (2026-01-16)
+
+### Bug Fixes
+
+- **seed:** update Google Maps URL for Trail do Rio Paiva ([d3f4e48](https://github.com/palhinhax/Athlifyr/commit/d3f4e48bbbb9b626effcb5d4627c52fc6cd08902))
+- **seed:** update pricing phases with correct 3-phase structure ([8a482a1](https://github.com/palhinhax/Athlifyr/commit/8a482a1c51a3ad8940b48636e00018d546543252))
+
+### Features
+
+- **seed:** create VII Trail do Rio Paiva 2026 seed file ([8bc4dea](https://github.com/palhinhax/Athlifyr/commit/8bc4dea10506e23fdb579dd61af53b87661fea1f))
+
 ## [6.9.1](https://github.com/palhinhax/Athlifyr/compare/v6.9.0...v6.9.1) (2026-01-16)
 
 ### Bug Fixes

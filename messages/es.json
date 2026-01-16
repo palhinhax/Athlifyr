@@ -177,6 +177,10 @@
       "time": "Hora",
       "prices": "Precios",
       "currentPhase": "(Actual)"
+    },
+    "filters": {
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "No se encontraron eventos con los filtros actuales"
     }
   },
   "eventsPage": {

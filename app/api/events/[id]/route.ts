@@ -129,6 +129,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       googleMapsUrl,
       imageUrl,
       externalUrl,
+      stravaRouteEmbed,
       variants,
       translations,
     } = body;
@@ -187,6 +188,9 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         }),
         ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
         ...(externalUrl !== undefined && { externalUrl: externalUrl || null }),
+        ...(stravaRouteEmbed !== undefined && {
+          stravaRouteEmbed: stravaRouteEmbed || null,
+        }),
       },
       include: {
         variants: true,

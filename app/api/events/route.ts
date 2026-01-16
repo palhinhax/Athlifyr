@@ -94,6 +94,7 @@ export async function POST(request: Request) {
       country,
       imageUrl,
       externalUrl,
+      stravaRouteEmbed,
       variants,
     } = body;
 
@@ -143,6 +144,7 @@ export async function POST(request: Request) {
         country: country || "Portugal",
         imageUrl: imageUrl || null,
         externalUrl: externalUrl || null,
+        stravaRouteEmbed: stravaRouteEmbed || null,
         variants: {
           create:
             variants?.map(

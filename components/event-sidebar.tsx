@@ -4,6 +4,7 @@ import Image from "next/image";
 import { Calendar, MapPin, ExternalLink } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { EventLocationMap } from "./event-location-map";
+import { StravaRouteEmbed } from "./strava-route-embed";
 import { useTranslations, useLocale } from "next-intl";
 
 interface EventSidebarProps {
@@ -16,6 +17,7 @@ interface EventSidebarProps {
     latitude: number | null;
     longitude: number | null;
     googleMapsUrl: string | null;
+    stravaRouteEmbed: string | null;
   };
 }
 
@@ -93,6 +95,13 @@ export function EventSidebar({ event }: EventSidebarProps) {
                 </a>
               )}
             </div>
+          </div>
+        )}
+
+        {/* Strava Route Embed */}
+        {event.stravaRouteEmbed && (
+          <div className="mb-6">
+            <StravaRouteEmbed embedCode={event.stravaRouteEmbed} />
           </div>
         )}
       </div>

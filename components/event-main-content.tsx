@@ -3,11 +3,13 @@ import { EventPricingPhases } from "@/components/event-pricing-phases";
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { PricingPhase } from "@prisma/client";
+import { StravaRouteEmbed } from "@/components/strava-route-embed";
 
 interface EventMainContentProps {
   description: string;
   pricingPhases: PricingPhase[];
   externalUrl: string | null;
+  stravaRouteEmbed?: string | null;
   translations: {
     aboutEvent: string;
     readyToParticipate: string;
@@ -20,6 +22,7 @@ export function EventMainContent({
   description,
   pricingPhases,
   externalUrl,
+  stravaRouteEmbed,
   translations: t,
 }: EventMainContentProps) {
   return (
@@ -29,6 +32,13 @@ export function EventMainContent({
         <h2 className="mb-4 text-2xl font-bold">{t.aboutEvent}</h2>
         <CollapsibleDescription description={description} />
       </div>
+
+      {/* Strava Route Embed - Mobile Only */}
+      {stravaRouteEmbed && (
+        <div className="mb-8 lg:hidden">
+          <StravaRouteEmbed embedCode={stravaRouteEmbed} />
+        </div>
+      )}
 
       {/* Event Pricing Phases */}
       {pricingPhases && pricingPhases.length > 0 && (

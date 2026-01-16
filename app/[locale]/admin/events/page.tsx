@@ -67,6 +67,7 @@ export default function AdminEventsPage() {
     country: string;
     imageUrl: string;
     externalUrl: string;
+    stravaRouteEmbed: string;
   }>({
     title: "",
     description: "",
@@ -77,6 +78,7 @@ export default function AdminEventsPage() {
     country: "Portugal",
     imageUrl: "",
     externalUrl: "",
+    stravaRouteEmbed: "",
   });
 
   const [variants, setVariants] = useState<
@@ -281,6 +283,7 @@ export default function AdminEventsPage() {
       country: "Portugal",
       imageUrl: "",
       externalUrl: "",
+      stravaRouteEmbed: "",
     });
     setVariants([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
   };
@@ -534,6 +537,23 @@ export default function AdminEventsPage() {
                     onChange={handleInputChange}
                     placeholder="https://..."
                   />
+                </div>
+
+                <div className="grid gap-2">
+                  <Label htmlFor="stravaRouteEmbed">
+                    Strava Route Embed Code
+                  </Label>
+                  <textarea
+                    id="stravaRouteEmbed"
+                    name="stravaRouteEmbed"
+                    value={formData.stravaRouteEmbed}
+                    onChange={handleInputChange}
+                    placeholder='<iframe height="405" width="590" frameborder="0" allowtransparency="true" scrolling="no" src="https://www.strava.com/routes/..."></iframe>'
+                    className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Cole o código de embed do Strava Route (iframe completo)
+                  </p>
                 </div>
 
                 {/* Variants */}

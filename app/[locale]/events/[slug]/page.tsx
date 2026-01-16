@@ -202,6 +202,7 @@ export default async function EventPage({ params }: PageProps) {
     googleMapsUrl: event.googleMapsUrl,
     imageUrl: event.imageUrl,
     externalUrl: event.externalUrl,
+    stravaRouteEmbed: event.stravaRouteEmbed,
     variants: event.variants.map((v) => ({
       id: v.id,
       name: v.name,
@@ -284,6 +285,7 @@ export default async function EventPage({ params }: PageProps) {
               description={event.description}
               pricingPhases={event.pricingPhases}
               externalUrl={event.externalUrl}
+              stravaRouteEmbed={event.stravaRouteEmbed}
               translations={{
                 aboutEvent: t("aboutEvent"),
                 readyToParticipate: t("readyToParticipate"),
@@ -337,6 +339,7 @@ export default async function EventPage({ params }: PageProps) {
               latitude: event.latitude,
               longitude: event.longitude,
               googleMapsUrl: event.googleMapsUrl,
+              stravaRouteEmbed: event.stravaRouteEmbed,
             }}
           />
         </div>

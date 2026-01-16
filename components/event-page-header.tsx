@@ -24,6 +24,7 @@ interface EventPageHeaderProps {
     googleMapsUrl: string | null;
     imageUrl: string | null;
     externalUrl: string | null;
+    stravaRouteEmbed: string | null;
     variants: {
       id: string;
       name: string;

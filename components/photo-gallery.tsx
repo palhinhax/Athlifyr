@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { formatDistanceToNow } from "date-fns";
 import { pt } from "date-fns/locale";
+import { useTranslations } from "next-intl";
 
 interface Photo {
   id: string;
@@ -34,6 +35,7 @@ interface Photo {
 export function PhotoGallery() {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const t = useTranslations();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -281,9 +283,11 @@ export function PhotoGallery() {
       ) : photos.length === 0 ? (
         <Card className="p-12 text-center">
           <Camera className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <h3 className="mb-2 text-lg font-semibold">Sem fotos ainda</h3>
+          <h3 className="mb-2 text-lg font-semibold">
+            {t("profile.noPhotosYet")}
+          </h3>
           <p className="mb-4 text-sm text-muted-foreground">
-            Partilha momentos dos teus treinos e competições!
+            {t("profile.shareTrainingMoments")}
           </p>
           <Button
             onClick={() => fileInputRef.current?.click()}
@@ -291,7 +295,7 @@ export function PhotoGallery() {
             className="gap-2"
           >
             <ImagePlus className="h-4 w-4" />
-            Publicar Primeira Foto
+            {t("profile.publishFirstPhoto")}
           </Button>
         </Card>
       ) : (

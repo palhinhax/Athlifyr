@@ -4,9 +4,7 @@ import "../globals.css";
 import Link from "next/link";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/session-provider";
-import { UserNav } from "@/components/user-nav";
-import { NavLinks } from "@/components/nav-links";
-import { MobileNav } from "@/components/mobile-nav";
+import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { Instagram } from "lucide-react";
 import {
@@ -16,9 +14,11 @@ import {
 import { StructuredData } from "@/components/structured-data";
 import packageJson from "@/package.json";
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { locales, type Locale } from "@/i18n";
+import { routing } from "@/i18n/routing";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -128,15 +128,18 @@ export default async function RootLayout({
   children: React.ReactNode;
   params: { locale: string };
 }>) {
-  const { locale } = await Promise.resolve(params);
+  const { locale } = await params;
 
   // Validate locale
-  if (!locales.includes(locale as Locale)) {
+  if (!routing.locales.includes(locale as (typeof routing.locales)[number])) {
     notFound();
   }
 
+  // Enable static rendering
+  setRequestLocale(locale);
+
   // Get messages for the locale
-  const messages = await getMessages();
+  const messages = await getMessages({ locale });
 
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
@@ -165,13 +168,10 @@ export default async function RootLayout({
                   Athlifyr
                 </Link>
                 {/* Desktop Navigation */}
-                <nav className="hidden items-center gap-6 md:flex">
-                  <NavLinks />
-                  <UserNav />
-                </nav>
+                <DesktopNav />
 
                 {/* Mobile Navigation */}
-                <MobileNav />
+                <MobileNavWrapper />
               </div>
             </header>
             <main className="flex-1">{children}</main>
@@ -179,7 +179,7 @@ export default async function RootLayout({
               <div className="container mx-auto px-4">
                 <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
                   <p className="text-center md:text-left">
-                    Athlifyr - ONE PLACE. ALL sports.
+                    Athlifyr - ONE PLACE. ALL SPORTS.
                   </p>
                   <a
                     href="https://www.instagram.com/athlifyr/"
@@ -200,6 +200,8 @@ export default async function RootLayout({
             <Toaster />
           </SessionProvider>
         </NextIntlClientProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

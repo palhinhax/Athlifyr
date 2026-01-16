@@ -2,11 +2,11 @@
 
 import { useState } from "react";
 import { SportType } from "@prisma/client";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { sportTypeIcons } from "@/lib/event-utils";
 import { cn } from "@/lib/utils";
-import { getTranslations } from "@/lib/translations";
 
 interface FavoriteSportsSelectorProps {
   initialFavorites: SportType[];
@@ -18,7 +18,7 @@ export function FavoriteSportsSelector({
   locale = "pt",
 }: FavoriteSportsSelectorProps) {
   const allSports = Object.keys(SportType) as SportType[];
-  const t = getTranslations(locale);
+  const t = useTranslations();
 
   // If no favorites are set, default to all sports
   const [selectedSports, setSelectedSports] = useState<SportType[]>(

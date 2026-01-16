@@ -1,3 +1,9 @@
+# [7.3.0](https://github.com/palhinhax/Athlifyr/compare/v7.2.0...v7.3.0) (2026-01-16)
+
+### Features
+
+- **db:** add currency support to event pricing ([e0fa8a1](https://github.com/palhinhax/Athlifyr/commit/e0fa8a1f041315b4b739461f1acdd5f88257d6e3))
+
 # [7.2.0](https://github.com/palhinhax/Athlifyr/compare/v7.1.0...v7.2.0) (2026-01-16)
 
 ### Bug Fixes

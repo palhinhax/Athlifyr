@@ -1,3 +1,9 @@
+# [7.5.0](https://github.com/palhinhax/Athlifyr/compare/v7.4.0...v7.5.0) (2026-01-16)
+
+### Features
+
+- **ui:** optimize logo and favicon ([d187f9e](https://github.com/palhinhax/Athlifyr/commit/d187f9e4d1b85a1de0ea86a7c236f06f59f88650))
+
 # [7.4.0](https://github.com/palhinhax/Athlifyr/compare/v7.3.0...v7.4.0) (2026-01-16)
 
 ### Features

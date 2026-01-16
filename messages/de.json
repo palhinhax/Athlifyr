@@ -414,5 +414,170 @@
     "cancel": "Abbrechen",
     "confirm": "Bestätigen",
     "publish": "Veröffentlichen"
+  },
+  "legal": {
+    "cookieConsent": {
+      "title": "Wir Verwenden Cookies 🍪",
+      "description": "Wir verwenden wesentliche Cookies für die Funktion der Website und Analyse-Cookies zur Verbesserung Ihrer Erfahrung.",
+      "acceptAll": "Alle Akzeptieren",
+      "acceptEssential": "Nur Wesentliche",
+      "customize": "Anpassen",
+      "learnMore": "Mehr Erfahren"
+    },
+    "privacy": {
+      "title": "Datenschutzerklärung",
+      "lastUpdated": "Letzte Aktualisierung: {date}",
+      "intro": "Ihre Privatsphäre ist uns wichtig. Diese Richtlinie erklärt, wie wir Ihre persönlichen Daten sammeln, verwenden und schützen.",
+      "sections": {
+        "dataCollection": {
+          "title": "1. Daten, die Wir Sammeln",
+          "content": "Wir sammeln Informationen bei der Registrierung, einschließlich Name, E-Mail, Profilbild (über Google OAuth), Standort (wenn Sie zustimmen) und Nutzungsdaten der Website."
+        },
+        "dataUsage": {
+          "title": "2. Wie Wir Ihre Daten Verwenden",
+          "content": "Wir verwenden Ihre Daten, um: unsere Dienste bereitzustellen und zu verbessern, Ihre Erfahrung zu personalisieren, Benachrichtigungen über Veranstaltungen zu senden, die Nutzung der Website zu analysieren (Google Analytics) und gesetzliche Verpflichtungen zu erfüllen."
+        },
+        "dataSharing": {
+          "title": "3. Datenweitergabe",
+          "content": "Wir verkaufen Ihre Daten nicht. Wir teilen Informationen nur mit: Google (Authentifizierung und Analytics), Backblaze B2 (Bildspeicherung) und wenn gesetzlich vorgeschrieben."
+        },
+        "dataRetention": {
+          "title": "4. Datenspeicherung",
+          "content": "Wir speichern Ihre Daten, solange Ihr Konto aktiv ist. Sie können jederzeit die Löschung Ihres Kontos beantragen."
+        },
+        "rights": {
+          "title": "5. Ihre Rechte (DSGVO)",
+          "content": "Sie haben das Recht auf: Zugriff auf Ihre Daten, Berichtigung falscher Informationen, Löschung Ihres Kontos, Export Ihrer Daten und Widerruf zuvor erteilter Einwilligungen."
+        },
+        "cookies": {
+          "title": "6. Cookies",
+          "content": "Wir verwenden wesentliche Cookies (Authentifizierung, Präferenzen) und Analyse-Cookies (Google Analytics). Sie können Ihre Cookie-Einstellungen in den Einstellungen verwalten."
+        },
+        "security": {
+          "title": "7. Sicherheit",
+          "content": "Wir setzen technische und organisatorische Maßnahmen um, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Zerstörung zu schützen."
+        },
+        "children": {
+          "title": "8. Minderjährige",
+          "content": "Unsere Dienste richten sich nicht an Minderjährige unter 16 Jahren. Wenn wir feststellen, dass wir Daten eines Minderjährigen gesammelt haben, werden wir diese sofort löschen."
+        },
+        "changes": {
+          "title": "9. Änderungen der Richtlinie",
+          "content": "Wir können diese Richtlinie gelegentlich aktualisieren. Wir werden Sie über wesentliche Änderungen informieren."
+        },
+        "contact": {
+          "title": "10. Kontakt",
+          "content": "Bei Fragen zum Datenschutz kontaktieren Sie uns über die Kontaktseite."
+        }
+      }
+    },
+    "terms": {
+      "title": "Nutzungsbedingungen",
+      "lastUpdated": "Letzte Aktualisierung: {date}",
+      "intro": "Durch die Nutzung von Athlifyr akzeptieren Sie diese Bedingungen. Lesen Sie sie sorgfältig.",
+      "sections": {
+        "acceptance": {
+          "title": "1. Annahme der Bedingungen",
+          "content": "Durch den Zugriff auf und die Nutzung von Athlifyr stimmen Sie diesen Nutzungsbedingungen und unserer Datenschutzerklärung zu."
+        },
+        "description": {
+          "title": "2. Beschreibung des Dienstes",
+          "content": "Athlifyr ist eine Plattform, die Informationen über Sportveranstaltungen aggregiert. Wir stellen Links zu offiziellen Veranstaltungsseiten bereit, organisieren aber nicht die aufgeführten Veranstaltungen und sind dafür nicht verantwortlich."
+        },
+        "account": {
+          "title": "3. Benutzerkonto",
+          "content": "Sie müssen mindestens 16 Jahre alt sein, um ein Konto zu erstellen. Sie sind verantwortlich für die Sicherheit Ihres Kontos und alle damit durchgeführten Aktivitäten."
+        },
+        "userContent": {
+          "title": "4. Benutzerinhalte",
+          "content": "Durch das Veröffentlichen von Inhalten (Fotos, Kommentare) garantieren Sie, dass Sie die erforderlichen Rechte haben. Sie gewähren uns eine Lizenz zur Nutzung, Anzeige und Verbreitung dieser Inhalte auf der Plattform."
+        },
+        "prohibited": {
+          "title": "5. Verbotene Nutzung",
+          "content": "Es ist verboten: beleidigende, illegale oder rechtsverletzende Inhalte zu veröffentlichen; den Dienst für Spam oder böswillige Aktivitäten zu nutzen; zu versuchen, auf eingeschränkte Bereiche des Systems zuzugreifen."
+        },
+        "intellectual": {
+          "title": "6. Geistiges Eigentum",
+          "content": "Alle Inhalte von Athlifyr (Design, Code, Marke) sind unser Eigentum oder das unserer Lizenzgeber. Sie dürfen ohne Genehmigung nicht kopiert oder reproduziert werden."
+        },
+        "disclaimer": {
+          "title": "7. Haftungsausschluss",
+          "content": "Der Dienst wird 'wie besehen' bereitgestellt. Wir garantieren nicht die Genauigkeit der Informationen über Veranstaltungen. Wir sind nicht verantwortlich für Absagen, Änderungen oder Probleme mit aufgeführten Veranstaltungen."
+        },
+        "limitation": {
+          "title": "8. Haftungsbeschränkung",
+          "content": "Wir haften nicht für indirekte, zufällige oder Folgeschäden, die sich aus der Nutzung des Dienstes ergeben."
+        },
+        "termination": {
+          "title": "9. Aussetzung und Löschung",
+          "content": "Wir behalten uns das Recht vor, Konten, die gegen diese Bedingungen verstoßen, ohne Vorankündigung auszusetzen oder zu löschen."
+        },
+        "changes": {
+          "title": "10. Änderungen der Bedingungen",
+          "content": "Wir können diese Bedingungen jederzeit ändern. Die weitere Nutzung nach Änderungen stellt die Annahme der neuen Bedingungen dar."
+        },
+        "law": {
+          "title": "11. Anwendbares Recht",
+          "content": "Diese Bedingungen unterliegen den Gesetzen Portugals. Alle Streitigkeiten werden vor portugiesischen Gerichten beigelegt."
+        },
+        "contact": {
+          "title": "12. Kontakt",
+          "content": "Bei Fragen zu diesen Bedingungen kontaktieren Sie uns über die Kontaktseite."
+        }
+      }
+    },
+    "cookies": {
+      "title": "Cookie-Richtlinie",
+      "lastUpdated": "Letzte Aktualisierung: {date}",
+      "intro": "Wir verwenden Cookies, um Ihre Erfahrung auf Athlifyr zu verbessern. Diese Seite erklärt, was Cookies sind und wie wir sie verwenden.",
+      "sections": {
+        "whatAre": {
+          "title": "Was sind Cookies?",
+          "content": "Cookies sind kleine Textdateien, die auf Ihrem Gerät gespeichert werden, wenn Sie eine Website besuchen. Sie ermöglichen es der Website, Sie zu erkennen und sich an Ihre Präferenzen zu erinnern."
+        },
+        "types": {
+          "title": "Arten von Cookies, die Wir Verwenden",
+          "essential": {
+            "title": "Wesentliche Cookies (Erforderlich)",
+            "description": "Notwendig für die grundlegende Funktion der Website. Ohne diese funktioniert die Website nicht richtig.",
+            "examples": "Authentifizierung (Anmeldesitzung), Spracheinstellungen, Cookie-Einwilligung."
+          },
+          "analytics": {
+            "title": "Analyse-Cookies (Optional)",
+            "description": "Helfen uns zu verstehen, wie Besucher die Website nutzen, um die Erfahrung zu verbessern.",
+            "examples": "Google Analytics: besuchte Seiten, Verweildauer auf der Website, Herkunft des Traffics."
+          },
+          "functional": {
+            "title": "Funktionale Cookies (Optional)",
+            "description": "Ermöglichen erweiterte Funktionen und Personalisierung.",
+            "examples": "Veranstaltungsfilter-Präferenzen, gespeicherter Standort, Lieblingssportarten."
+          }
+        },
+        "thirdParty": {
+          "title": "Cookies von Drittanbietern",
+          "content": "Wir verwenden Google Analytics, das Cookies auf Ihrem Gerät platziert. Weitere Informationen finden Sie in der Datenschutzerklärung von Google."
+        },
+        "manage": {
+          "title": "Cookies Verwalten",
+          "content": "Sie können nicht wesentliche Cookies über unser Cookie-Banner akzeptieren oder ablehnen. Sie können auch Ihren Browser so konfigurieren, dass er Cookies blockiert, dies kann jedoch die Funktionalität der Website beeinträchtigen."
+        },
+        "duration": {
+          "title": "Cookie-Dauer",
+          "session": "Sitzungs-Cookies: laufen ab, wenn Sie den Browser schließen",
+          "persistent": "Dauerhafte Cookies: bleiben für einen definierten Zeitraum auf Ihrem Gerät (bis zu 365 Tage)"
+        },
+        "updates": {
+          "title": "Aktualisierungen",
+          "content": "Wir können diese Richtlinie regelmäßig aktualisieren. Überprüfen Sie diese Seite regelmäßig, um informiert zu bleiben."
+        }
+      }
+    },
+    "footer": {
+      "privacy": "Datenschutz",
+      "terms": "Bedingungen",
+      "cookies": "Cookies",
+      "contact": "Kontakt",
+      "allRightsReserved": "© {year} Athlifyr. Alle Rechte vorbehalten."
+    }
   }
 }

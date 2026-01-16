@@ -6,6 +6,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/session-provider";
 import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
+import { CookieConsent } from "@/components/cookie-consent";
+import { EqualWebAccessibility } from "@/components/equalweb-accessibility";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -181,16 +183,36 @@ export default async function RootLayout({
                   <p className="text-center md:text-left">
                     Athlifyr - ONE PLACE. ALL SPORTS.
                   </p>
-                  <a
-                    href="https://www.instagram.com/athlifyr/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                    aria-label="Segue-nos no Instagram"
-                  >
-                    <Instagram className="h-4 w-4" />
-                    <span>@athlifyr</span>
-                  </a>
+                  <div className="flex flex-wrap items-center justify-center gap-4">
+                    <Link
+                      href={`/${locale}/privacy`}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Privacy
+                    </Link>
+                    <Link
+                      href={`/${locale}/terms`}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Terms
+                    </Link>
+                    <Link
+                      href={`/${locale}/cookies`}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Cookies
+                    </Link>
+                    <a
+                      href="https://www.instagram.com/athlifyr/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                      aria-label="Segue-nos no Instagram"
+                    >
+                      <Instagram className="h-4 w-4" />
+                      <span>@athlifyr</span>
+                    </a>
+                  </div>
                   <p className="text-center text-xs md:text-right">
                     © 2026 Athlifyr • v{packageJson.version}
                   </p>
@@ -198,6 +220,8 @@ export default async function RootLayout({
               </div>
             </footer>
             <Toaster />
+            <CookieConsent />
+            <EqualWebAccessibility />
           </SessionProvider>
         </NextIntlClientProvider>
         <Analytics />

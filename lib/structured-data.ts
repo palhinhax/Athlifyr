@@ -27,8 +27,15 @@ export function generateSportsEventSchema(event: EventWithVariants) {
   // Currency defaults to EUR for Portugal-based events
   const currency = event.country === "Portugal" ? "EUR" : "EUR"; // TODO: Add currency field to Event model
 
+  // Athlifyr organization structure (used for both organizer and performer)
+  const athlifyrOrganization = {
+    "@type": "Organization" as const,
+    name: "Athlifyr",
+    url: baseUrl,
+  };
+
   // Determine validFrom date for offers
-  // Priority: 1) First pricing phase start date, 2) Event creation date, 3) 30 days before event
+  // Priority: 1) Variant-specific pricing phase, 2) Event-level pricing phase, 3) Event creation date, 4) 30 days before event
   // Note: Pricing phases are pre-sorted by startDate (ascending) in the database query,
   // so pricingPhases[0] is guaranteed to be the earliest phase
   const getValidFromDate = (variant: EventVariantWithPricingPhases): string => {
@@ -83,16 +90,8 @@ export function generateSportsEventSchema(event: EventWithVariants) {
         addressCountry: event.country,
       },
     },
-    organizer: {
-      "@type": "Organization",
-      name: "Athlifyr",
-      url: baseUrl,
-    },
-    performer: {
-      "@type": "Organization",
-      name: "Athlifyr",
-      url: baseUrl,
-    },
+    organizer: athlifyrOrganization,
+    performer: athlifyrOrganization,
     ...(offers.length > 0 && { offers }),
     sport: event.sportTypes.join(", "),
   };

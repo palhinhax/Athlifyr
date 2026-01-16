@@ -40,14 +40,30 @@ You specialize in generating complete TypeScript seed files that populate the da
 
 **CRITICAL:** The `imageUrl` field MUST ALWAYS be set to an empty string `""` or `null`. Never generate actual image paths.
 
-### 3. Markdown in Descriptions
+### 3. Markdown and Emojis in Descriptions
 
-Event descriptions support Markdown formatting. Use it for:
+Event descriptions support Markdown formatting and emojis to create visually appealing and readable content. Use them to make descriptions more pleasant and engaging:
 
-- Headers (`#`, `##`, `###`)
-- Bold text (`**text**`)
-- Lists (`-`, `1.`)
-- Paragraphs (blank lines between sections)
+- **Headers** (`#`, `##`, `###`) - Use for section titles
+- **Bold text** (`**text**`) - Emphasize important information
+- **Lists** (`-`, `1.`) - Organize information clearly
+- **Emojis** (🏔️, 🏃, 🎒, 💧, etc.) - Add visual interest and make content more scannable
+- **Paragraphs** (blank lines between sections) - Improve readability
+
+**Example:**
+```markdown
+## 🏔️ Event Name 2026
+
+**A unique trail running experience!**
+
+### 🏃 The Races
+- **Long Trail** - 42km
+- **Short Trail** - 21km
+
+### 🎒 Mandatory Equipment
+- 🧊 Thermal blanket
+- 📱 Mobile phone
+```
 
 ### 4. Seed File Location and Idempotency (MANDATORY)
 

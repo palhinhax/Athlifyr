@@ -1,69 +1,69 @@
-import { render, screen } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { BrandFrame } from "@/components/instagram/brand-frame";
 
 describe("BrandFrame", () => {
   it("should render logo by default", () => {
-    render(
+    const { getByAltText } = render(
       <BrandFrame format="SQUARE">
         <div>Content</div>
       </BrandFrame>
     );
 
-    const logo = screen.getByAltText("Athlifyr");
+    const logo = getByAltText("Athlifyr");
     expect(logo).toBeInTheDocument();
   });
 
   it("should hide logo when showLogo is false", () => {
-    render(
+    const { queryByAltText } = render(
       <BrandFrame format="SQUARE" showLogo={false}>
         <div>Content</div>
       </BrandFrame>
     );
 
-    const logo = screen.queryByAltText("Athlifyr");
+    const logo = queryByAltText("Athlifyr");
     expect(logo).not.toBeInTheDocument();
   });
 
   it("should show logo when showLogo is true", () => {
-    render(
+    const { getByAltText } = render(
       <BrandFrame format="SQUARE" showLogo={true}>
         <div>Content</div>
       </BrandFrame>
     );
 
-    const logo = screen.getByAltText("Athlifyr");
+    const logo = getByAltText("Athlifyr");
     expect(logo).toBeInTheDocument();
   });
 
   it("should render children content", () => {
-    render(
+    const { getByText } = render(
       <BrandFrame format="SQUARE">
         <div>Test Content</div>
       </BrandFrame>
     );
 
-    expect(screen.getByText("Test Content")).toBeInTheDocument();
+    expect(getByText("Test Content")).toBeInTheDocument();
   });
 
   it("should render safe area guides when showGuides is true", () => {
-    render(
+    const { getByText } = render(
       <BrandFrame format="SQUARE" showGuides={true}>
         <div>Content</div>
       </BrandFrame>
     );
 
-    const safeAreaText = screen.getByText("SAFE AREA");
+    const safeAreaText = getByText("SAFE AREA");
     expect(safeAreaText).toBeInTheDocument();
   });
 
   it("should not render safe area guides when showGuides is false", () => {
-    render(
+    const { queryByText } = render(
       <BrandFrame format="SQUARE" showGuides={false}>
         <div>Content</div>
       </BrandFrame>
     );
 
-    const safeAreaText = screen.queryByText("SAFE AREA");
+    const safeAreaText = queryByText("SAFE AREA");
     expect(safeAreaText).not.toBeInTheDocument();
   });
 });

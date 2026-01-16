@@ -1,25 +1,25 @@
-import Link from "next/link";
+"use client";
+
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Route, CheckCircle } from "lucide-react";
 import { formatDateShort, sportTypeLabels } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
+import { useLocale } from "next-intl";
 
 interface EventCardProps {
   event: Event & {
     variants?: EventVariant[];
   };
   isParticipating?: boolean;
-  locale?: string;
 }
 
-export function EventCard({
-  event,
-  isParticipating = false,
-  locale = "pt",
-}: EventCardProps) {
+export function EventCard({ event, isParticipating = false }: EventCardProps) {
+  const locale = useLocale();
+
   return (
-    <Link href={`/${locale}/events/${event.slug}`} className="block">
+    <Link href={`/events/${event.slug}`} className="block">
       <Card
         className={`overflow-hidden transition-shadow hover:shadow-lg ${
           isParticipating ? "ring-2 ring-green-500" : ""

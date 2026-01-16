@@ -234,7 +234,6 @@ export default async function EventPage({ params }: PageProps) {
 
       {/* Back button, Admin Actions, and Share */}
       <EventPageHeader
-        locale={locale}
         isAdmin={isAdmin}
         event={eventForHeader}
         shareDescription={shareDescription}

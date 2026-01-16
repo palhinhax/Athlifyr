@@ -1,6 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { useTranslations } from "next-intl";
+import { useRouter, usePathname } from "@/i18n/routing";
 import {
   Select,
   SelectContent,
@@ -10,7 +12,6 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { getTranslations } from "@/lib/translations";
 
 interface LanguageSelectorProps {
   currentLocale: string;
@@ -21,13 +22,14 @@ export function LanguageSelector({
   currentLocale,
   userId,
 }: LanguageSelectorProps) {
+  const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const [locale, setLocale] = useState(currentLocale);
-  const [isLoading, setIsLoading] = useState(false);
-  const t = getTranslations(locale);
+  const t = useTranslations("settings");
 
   const handleLanguageChange = async (newLocale: string) => {
     setLocale(newLocale);
-    setIsLoading(true);
 
     try {
       // Update user preference in database if logged in
@@ -43,89 +45,63 @@ export function LanguageSelector({
         }
       }
 
-      // Set cookie for non-authenticated users
-      document.cookie = `NEXT_LOCALE=${newLocale}; path=/; max-age=31536000`;
-
-      // Reload page to apply new locale
-      window.location.reload();
+      // Use next-intl's router to navigate to the new locale
+      startTransition(() => {
+        router.replace(pathname, {
+          locale: newLocale as "pt" | "en" | "es" | "fr" | "de" | "it",
+        });
+      });
     } catch (error) {
       console.error("Error updating language:", error);
       alert("Failed to update language preference");
       setLocale(currentLocale); // Revert on error
-    } finally {
-      setIsLoading(false);
     }
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="language">{t("settings.language")}</Label>
+        <Label htmlFor="language">{t("language")}</Label>
         <p className="text-sm text-muted-foreground">
-          {t("settings.languageDescription")}
+          {t("languageDescription")}
         </p>
       </div>
 
       <Select
         value={locale}
         onValueChange={handleLanguageChange}
-        disabled={isLoading}
+        disabled={isPending}
       >
         <SelectTrigger id="language" className="w-full">
-          <SelectValue />
+          {isPending ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <SelectValue />
+          )}
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="pt">
             <span className="flex items-center gap-2">
-              🇵🇹 {t("settings.portuguese")}
+              🇵🇹 {t("portuguese")}
             </span>
           </SelectItem>
           <SelectItem value="en">
-            <span className="flex items-center gap-2">
-              🇬🇧 {t("settings.english")}
-            </span>
+            <span className="flex items-center gap-2">🇬🇧 {t("english")}</span>
           </SelectItem>
           <SelectItem value="es">
-            <span className="flex items-center gap-2">
-              🇪🇸 {t("settings.spanish")}
-            </span>
+            <span className="flex items-center gap-2">🇪🇸 {t("spanish")}</span>
           </SelectItem>
           <SelectItem value="fr">
-            <span className="flex items-center gap-2">
-              🇫🇷 {t("settings.french")}
-            </span>
+            <span className="flex items-center gap-2">🇫🇷 {t("french")}</span>
           </SelectItem>
           <SelectItem value="de">
-            <span className="flex items-center gap-2">
-              🇩🇪 {t("settings.german")}
-            </span>
+            <span className="flex items-center gap-2">🇩🇪 {t("german")}</span>
           </SelectItem>
           <SelectItem value="it">
-            <span className="flex items-center gap-2">
-              🇮🇹 {t("settings.italian")}
-            </span>
+            <span className="flex items-center gap-2">🇮🇹 {t("italian")}</span>
           </SelectItem>
         </SelectContent>
       </Select>
-
-      {isLoading && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span>
-            {locale === "pt"
-              ? "A aplicar alterações..."
-              : locale === "es"
-                ? "Aplicando cambios..."
-                : locale === "fr"
-                  ? "Application des modifications..."
-                  : locale === "de"
-                    ? "Änderungen werden angewendet..."
-                    : locale === "it"
-                      ? "Applicazione delle modifiche..."
-                      : "Applying changes..."}
-          </span>
-        </div>
-      )}
     </div>
   );
 }

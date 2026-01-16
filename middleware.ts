@@ -1,17 +1,8 @@
 import createMiddleware from "next-intl/middleware";
-import { locales, defaultLocale } from "./i18n";
+import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
 
-const intlMiddleware = createMiddleware({
-  // A list of all locales that are supported
-  locales,
-
-  // Used when no locale matches
-  defaultLocale,
-
-  // Always use prefix for default locale too (/pt/...)
-  localePrefix: "always",
-});
+const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
   // Check if maintenance mode is enabled

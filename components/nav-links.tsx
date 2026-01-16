@@ -1,71 +1,44 @@
 "use client";
 
-import Link from "next/link";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
-import { getTranslations } from "@/lib/translations";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 export function NavLinks() {
   const { data: session } = useSession();
-  const pathname = usePathname();
-  const [locale, setLocale] = useState("pt");
-
-  // Extract locale from pathname (first segment after /)
-  useEffect(() => {
-    const segments = pathname.split("/").filter(Boolean);
-    const pathLocale = segments[0];
-    // Check if first segment is a valid locale
-    if (["pt", "en", "es", "fr", "de", "it"].includes(pathLocale)) {
-      setLocale(pathLocale);
-    }
-  }, [pathname]);
-
-  const t = getTranslations(locale);
+  const t = useTranslations("nav");
 
   return (
     <>
       {session && (
-        <Link
-          href={`/${locale}/profile`}
-          className="text-sm font-medium hover:underline"
-        >
-          {t("nav.profile")}
+        <Link href="/profile" className="text-sm font-medium hover:underline">
+          {t("profile")}
         </Link>
       )}
-      <Link
-        href={`/${locale}/events`}
-        className="text-sm font-medium hover:underline"
-      >
-        {t("nav.events")}
+      <Link href="/events" className="text-sm font-medium hover:underline">
+        {t("events")}
       </Link>
       {session && (
-        <Link
-          href={`/${locale}/feed`}
-          className="text-sm font-medium hover:underline"
-        >
-          {t("nav.feed")}
+        <Link href="/feed" className="text-sm font-medium hover:underline">
+          {t("feed")}
         </Link>
       )}
-      <Link
-        href={`/${locale}/contact`}
-        className="text-sm font-medium hover:underline"
-      >
-        {t("nav.contact")}
+      <Link href="/contact" className="text-sm font-medium hover:underline">
+        {t("contact")}
       </Link>
       {session?.user?.role === "ADMIN" && (
         <>
           <Link
-            href={`/${locale}/admin/instagram`}
+            href="/admin/instagram"
             className="text-sm font-medium hover:underline"
           >
-            {t("nav.instagram")}
+            {t("instagram")}
           </Link>
           <Link
-            href={`/${locale}/admin/contacts`}
+            href="/admin/contacts"
             className="text-sm font-medium hover:underline"
           >
-            {t("nav.contacts")}
+            {t("contacts")}
           </Link>
         </>
       )}

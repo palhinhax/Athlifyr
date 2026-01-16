@@ -10,8 +10,9 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CalendarDays, ChevronLeft, ChevronRight } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
+import { useTranslations } from "next-intl";
 
 interface EventParticipation {
   id: string;
@@ -37,29 +38,39 @@ interface EventCalendarProps {
   participations: EventParticipation[];
 }
 
-const MONTHS = [
-  "Janeiro",
-  "Fevereiro",
-  "Março",
-  "Abril",
-  "Maio",
-  "Junho",
-  "Julho",
-  "Agosto",
-  "Setembro",
-  "Outubro",
-  "Novembro",
-  "Dezembro",
-];
-
-const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
-
 export function EventCalendar({ participations }: EventCalendarProps) {
+  const t = useTranslations("profile");
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
 
   const currentMonth = currentDate.getMonth();
   const currentYear = currentDate.getFullYear();
+
+  // Get month and weekday names from translations
+  const MONTHS = [
+    t("months.january"),
+    t("months.february"),
+    t("months.march"),
+    t("months.april"),
+    t("months.may"),
+    t("months.june"),
+    t("months.july"),
+    t("months.august"),
+    t("months.september"),
+    t("months.october"),
+    t("months.november"),
+    t("months.december"),
+  ];
+
+  const WEEKDAYS = [
+    t("weekdays.sun"),
+    t("weekdays.mon"),
+    t("weekdays.tue"),
+    t("weekdays.wed"),
+    t("weekdays.thu"),
+    t("weekdays.fri"),
+    t("weekdays.sat"),
+  ];
 
   // Get first day of month and number of days
   const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
@@ -135,13 +146,14 @@ export function EventCalendar({ participations }: EventCalendarProps) {
       <DialogTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <CalendarDays className="h-4 w-4" />
-          Calendário
+          {t("calendar")}
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <CalendarDays className="h-5 w-5" />O Meu Calendário de Eventos
+            <CalendarDays className="h-5 w-5" />
+            {t("myEventCalendar")}
           </DialogTitle>
         </DialogHeader>
 
@@ -160,7 +172,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
               className="h-auto p-0 text-xs text-muted-foreground"
               onClick={goToToday}
             >
-              Ir para hoje
+              {t("goToToday")}
             </Button>
           </div>
           <Button variant="ghost" size="icon" onClick={goToNextMonth}>
@@ -231,7 +243,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
         {eventsInMonth.length > 0 ? (
           <div className="mt-4 max-h-[200px] space-y-2 overflow-y-auto border-t pt-4">
             <h4 className="text-sm font-medium text-muted-foreground">
-              Eventos em {MONTHS[currentMonth]}:
+              {t("eventsInMonth", { month: MONTHS[currentMonth] })}
             </h4>
             {eventsInMonth
               .sort((a, b) => {
@@ -277,7 +289,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
                           <p className="text-xs text-muted-foreground">
                             {eventDate.getDate()} {MONTHS[eventDate.getMonth()]}
                             {p.variant?.startTime &&
-                              ` às ${p.variant.startTime}`}{" "}
+                              ` ${t("at")} ${p.variant.startTime}`}{" "}
                             • {p.event.city}
                           </p>
                         </div>
@@ -289,7 +301,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
                               : "bg-primary/10 text-primary"
                           )}
                         >
-                          {isPastEvent ? "Fui" : "Vou"}
+                          {isPastEvent ? t("went") : t("going")}
                         </span>
                       </div>
                     </div>
@@ -299,7 +311,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
           </div>
         ) : (
           <div className="mt-4 border-t pt-4 text-center text-sm text-muted-foreground">
-            Sem eventos marcados em {MONTHS[currentMonth]}
+            {t("noEventsInMonth", { month: MONTHS[currentMonth] })}
           </div>
         )}
 
@@ -307,11 +319,11 @@ export function EventCalendar({ participations }: EventCalendarProps) {
         <div className="flex items-center justify-center gap-4 border-t pt-3 text-xs text-muted-foreground">
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-primary" />
-            <span>Vou</span>
+            <span>{t("going")}</span>
           </div>
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-green-500" />
-            <span>Fui</span>
+            <span>{t("went")}</span>
           </div>
         </div>
       </DialogContent>

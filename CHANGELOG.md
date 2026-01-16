@@ -1,3 +1,71 @@
+# [7.0.0](https://github.com/palhinhax/Athlifyr/compare/v6.12.1...v7.0.0) (2026-01-16)
+
+- refactor(seed)!: move to seeds directory with full idempotency and translations ([13116d9](https://github.com/palhinhax/Athlifyr/commit/13116d909ae8a26fe57e40942becb47c7971f766))
+
+### Bug Fixes
+
+- **seed:** correct pricing phase dates in description ([06d081b](https://github.com/palhinhax/Athlifyr/commit/06d081ba27e8d5ab62791f72be4e0ac3c85417c4))
+
+### Features
+
+- **seed:** add trail santa iria 2026 event seed ([4738aff](https://github.com/palhinhax/Athlifyr/commit/4738aff8c81166ffcf93b6eee9c9484cd54b0538))
+- **seeds:** add BMW Berlin Marathon 2026 seed file ([b17e99b](https://github.com/palhinhax/Athlifyr/commit/b17e99b04c21dbe49ea47065128474ba8dc40dfb))
+
+### BREAKING CHANGES
+
+- Seed file relocated from prisma/seed-trail-santa-iria.ts to prisma/seeds/trail-santa-iria-2026.ts
+
+* Move seed file to prisma/seeds/ directory (proper location)
+* Remove nested create operations for full idempotency
+* Use separate upsert operations for event, translations, variants, and pricing phases
+* Add translations for all 6 supported languages (pt, en, es, fr, de, it)
+* Add imageUrl field set to empty string
+* Add variant translations for all languages
+* Safe for execution on shared database environments
+
+Co-authored-by: palhinhax <13228131+palhinhax@users.noreply.github.com>
+
+## [6.12.1](https://github.com/palhinhax/Athlifyr/compare/v6.12.0...v6.12.1) (2026-01-16)
+
+### Bug Fixes
+
+- **i18n:** correct translation key namespaces in photo gallery component ([b499cf2](https://github.com/palhinhax/Athlifyr/commit/b499cf2a2971acfd7664440317fb369350309fa9))
+- **i18n:** fix locale params handling in pages ([dff7683](https://github.com/palhinhax/Athlifyr/commit/dff768303cc4aaf64a86e838a0368476214633cf))
+
+# [6.12.0](https://github.com/palhinhax/Athlifyr/compare/v6.11.0...v6.12.0) (2026-01-16)
+
+### Features
+
+- **seo:** add validFrom and performer to SportsEvent schema ([1f97d5b](https://github.com/palhinhax/Athlifyr/commit/1f97d5b249ccaed0503e6880db294dce1617d902))
+
+# [6.11.0](https://github.com/palhinhax/Athlifyr/compare/v6.10.0...v6.11.0) (2026-01-16)
+
+### Bug Fixes
+
+- **seed:** correct Google Maps URL and German translation ([a6ab288](https://github.com/palhinhax/Athlifyr/commit/a6ab28864c24d001ef1e2fad8d5d686d015c9885))
+
+### Features
+
+- **seed:** add VII Trilhos de Viana 2026 event seed file ([533f26f](https://github.com/palhinhax/Athlifyr/commit/533f26f151954470655db807d2c0ae0a4ab8e4b6))
+- **seed:** enhance descriptions with Markdown formatting and emojis ([4b66280](https://github.com/palhinhax/Athlifyr/commit/4b66280bfca79ed5d2e4094b854f56072cc2d3a0))
+
+# [6.10.0](https://github.com/palhinhax/Athlifyr/compare/v6.9.1...v6.10.0) (2026-01-16)
+
+### Bug Fixes
+
+- **seed:** update Google Maps URL for Trail do Rio Paiva ([d3f4e48](https://github.com/palhinhax/Athlifyr/commit/d3f4e48bbbb9b626effcb5d4627c52fc6cd08902))
+- **seed:** update pricing phases with correct 3-phase structure ([8a482a1](https://github.com/palhinhax/Athlifyr/commit/8a482a1c51a3ad8940b48636e00018d546543252))
+
+### Features
+
+- **seed:** create VII Trail do Rio Paiva 2026 seed file ([8bc4dea](https://github.com/palhinhax/Athlifyr/commit/8bc4dea10506e23fdb579dd61af53b87661fea1f))
+
+## [6.9.1](https://github.com/palhinhax/Athlifyr/compare/v6.9.0...v6.9.1) (2026-01-16)
+
+### Bug Fixes
+
+- **i18n:** add missing events.filters.resultsCount translation key ([93d80e9](https://github.com/palhinhax/Athlifyr/commit/93d80e97b081557ec652d2903467d742963e4e7d))
+
 # [6.9.0](https://github.com/palhinhax/Athlifyr/compare/v6.8.0...v6.9.0) (2026-01-15)
 
 ### Bug Fixes

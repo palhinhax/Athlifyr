@@ -1,3 +1,9 @@
+## [6.9.1](https://github.com/palhinhax/Athlifyr/compare/v6.9.0...v6.9.1) (2026-01-16)
+
+### Bug Fixes
+
+- **i18n:** add missing events.filters.resultsCount translation key ([93d80e9](https://github.com/palhinhax/Athlifyr/commit/93d80e97b081557ec652d2903467d742963e4e7d))
+
 # [6.9.0](https://github.com/palhinhax/Athlifyr/compare/v6.8.0...v6.9.0) (2026-01-15)
 
 ### Bug Fixes

@@ -238,7 +238,7 @@ export function EventsFilters({
     const filters: EventsFilters = {
       sports: [],
       distanceRadius: null,
-      searchQuery,
+      searchQuery: "", // Clear search query when clearing filters
       userLat,
       userLng,
       locationEnabled: false,
@@ -249,7 +249,7 @@ export function EventsFilters({
         sports: [],
         dateRange: "all",
         distanceRadius: DEFAULT_RADIUS,
-        searchQuery,
+        searchQuery: "", // Clear search query in preferences too
         userLat,
         userLng,
         locationEnabled: false,

@@ -6,7 +6,6 @@ import { EventCard } from "@/components/event-card";
 import { useState, useEffect, useCallback } from "react";
 import { Loader2, Map, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
-import { getDefaultCountry } from "@/lib/country-detection";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 import Link from "next/link";
@@ -66,12 +65,9 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         params.append("search", filters.searchQuery);
       }
 
-      // If location is NOT enabled AND no search query, filter by user's country
-      // When searching, show results from everywhere
-      if (!filters.locationEnabled && !filters.searchQuery) {
-        const defaultCountry = getDefaultCountry(locale);
-        params.append("country", defaultCountry);
-      }
+      // Don't filter by country by default - show all events
+      // Only filter by location radius if explicitly enabled by user
+      // This allows users to discover events from all countries
 
       // Fetch events
       const response = await fetch(`/api/events?${params}`);
@@ -126,11 +122,18 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     } finally {
       setLoading(false);
     }
-  }, [filters, userId, locale]);
+  }, [filters, userId]);
 
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  // Sync localSearchQuery when filters.searchQuery changes from external source (like clearing filters)
+  useEffect(() => {
+    if (filters.searchQuery === "" && localSearchQuery !== "") {
+      setLocalSearchQuery("");
+    }
+  }, [filters.searchQuery, localSearchQuery]);
 
   return (
     <div className="min-h-screen">

@@ -1,3 +1,30 @@
+# [7.0.0](https://github.com/palhinhax/Athlifyr/compare/v6.12.1...v7.0.0) (2026-01-16)
+
+- refactor(seed)!: move to seeds directory with full idempotency and translations ([13116d9](https://github.com/palhinhax/Athlifyr/commit/13116d909ae8a26fe57e40942becb47c7971f766))
+
+### Bug Fixes
+
+- **seed:** correct pricing phase dates in description ([06d081b](https://github.com/palhinhax/Athlifyr/commit/06d081ba27e8d5ab62791f72be4e0ac3c85417c4))
+
+### Features
+
+- **seed:** add trail santa iria 2026 event seed ([4738aff](https://github.com/palhinhax/Athlifyr/commit/4738aff8c81166ffcf93b6eee9c9484cd54b0538))
+- **seeds:** add BMW Berlin Marathon 2026 seed file ([b17e99b](https://github.com/palhinhax/Athlifyr/commit/b17e99b04c21dbe49ea47065128474ba8dc40dfb))
+
+### BREAKING CHANGES
+
+- Seed file relocated from prisma/seed-trail-santa-iria.ts to prisma/seeds/trail-santa-iria-2026.ts
+
+* Move seed file to prisma/seeds/ directory (proper location)
+* Remove nested create operations for full idempotency
+* Use separate upsert operations for event, translations, variants, and pricing phases
+* Add translations for all 6 supported languages (pt, en, es, fr, de, it)
+* Add imageUrl field set to empty string
+* Add variant translations for all languages
+* Safe for execution on shared database environments
+
+Co-authored-by: palhinhax <13228131+palhinhax@users.noreply.github.com>
+
 ## [6.12.1](https://github.com/palhinhax/Athlifyr/compare/v6.12.0...v6.12.1) (2026-01-16)
 
 ### Bug Fixes

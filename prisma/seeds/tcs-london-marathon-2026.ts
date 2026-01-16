@@ -65,7 +65,7 @@ O acesso à TCS London Marathon funciona através de vários sistemas:
 
 ## 📅 Programa do Evento
 
-**8-9 de Outubro de 2026:**
+**23-25 de Abril de 2026:**
 - Sport Expo e levantamento de kits no ExCeL London
 
 **26 de Abril de 2026 (Domingo):**
@@ -169,7 +169,7 @@ O acesso à TCS London Marathon funciona através de vários sistemas:
 
 ## 📅 Programa do Evento
 
-**8-9 de Outubro de 2026:**
+**23-25 de Abril de 2026:**
 - Sport Expo e levantamento de kits no ExCeL London
 
 **26 de Abril de 2026 (Domingo):**

@@ -21,6 +21,7 @@ interface EventsFiltersProps {
   userId?: string;
   onFiltersChange: (filters: EventsFilters) => void;
   searchQuery: string;
+  viewMode?: "list" | "map";
 }
 
 export interface EventsFilters {
@@ -52,6 +53,7 @@ export function EventsFilters({
   userId,
   onFiltersChange,
   searchQuery,
+  viewMode = "list",
 }: EventsFiltersProps) {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
@@ -314,74 +316,76 @@ export function EventsFilters({
             </Button>
           </div>
 
-          {/* Location Filter */}
-          <div className="mb-4">
-            <h4 className="mb-2 text-sm font-medium">
-              {t("eventsPage.filters.location")}
-            </h4>
-            <div className="space-y-3">
-              {locationEnabled ? (
-                <div className="flex items-center gap-2">
+          {/* Location Filter - Hidden in map mode */}
+          {viewMode !== "map" && (
+            <div className="mb-4">
+              <h4 className="mb-2 text-sm font-medium">
+                {t("eventsPage.filters.location")}
+              </h4>
+              <div className="space-y-3">
+                {locationEnabled ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={disableLocation}
+                      className="flex-1"
+                    >
+                      <LocateOff className="mr-2 h-4 w-4" />
+                      {t("eventsPage.filters.disableLocation")}
+                    </Button>
+                    <span className="text-xs text-green-600">
+                      <MapPin className="inline h-3 w-3" />{" "}
+                      {t("eventsPage.filters.locationActive")}
+                    </span>
+                  </div>
+                ) : (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={disableLocation}
-                    className="flex-1"
+                    onClick={requestLocation}
+                    disabled={gettingLocation}
+                    className="w-full"
                   >
-                    <LocateOff className="mr-2 h-4 w-4" />
-                    {t("eventsPage.filters.disableLocation")}
+                    {gettingLocation ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LocateFixed className="mr-2 h-4 w-4" />
+                    )}
+                    {t("eventsPage.filters.enableLocation")}
                   </Button>
-                  <span className="text-xs text-green-600">
-                    <MapPin className="inline h-3 w-3" />{" "}
-                    {t("eventsPage.filters.locationActive")}
-                  </span>
-                </div>
-              ) : (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={requestLocation}
-                  disabled={gettingLocation}
-                  className="w-full"
-                >
-                  {gettingLocation ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <LocateFixed className="mr-2 h-4 w-4" />
-                  )}
-                  {t("eventsPage.filters.enableLocation")}
-                </Button>
-              )}
-              {locationError && (
-                <p className="text-xs text-destructive">{locationError}</p>
-              )}
+                )}
+                {locationError && (
+                  <p className="text-xs text-destructive">{locationError}</p>
+                )}
 
-              {/* Distance Radius Slider */}
-              {locationEnabled && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
-                      {t("eventsPage.filters.radius")}
-                    </span>
-                    <span className="text-sm font-medium">
-                      {distanceRadius} km
-                    </span>
+                {/* Distance Radius Slider */}
+                {locationEnabled && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {t("eventsPage.filters.radius")}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {distanceRadius} km
+                      </span>
+                    </div>
+                    <Slider
+                      value={[distanceRadius]}
+                      onValueChange={(value) => setDistanceRadius(value[0])}
+                      min={10}
+                      max={500}
+                      step={10}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>10 km</span>
+                      <span>500 km</span>
+                    </div>
                   </div>
-                  <Slider
-                    value={[distanceRadius]}
-                    onValueChange={(value) => setDistanceRadius(value[0])}
-                    min={10}
-                    max={500}
-                    step={10}
-                  />
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>10 km</span>
-                    <span>500 km</span>
-                  </div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Sports Filter */}
           <div className="mb-4">

@@ -51,16 +51,19 @@ Event descriptions support Markdown formatting and emojis to create visually app
 - **Paragraphs** (blank lines between sections) - Improve readability
 
 **Example:**
+
 ```markdown
 ## 🏔️ Event Name 2026
 
 **A unique trail running experience!**
 
 ### 🏃 The Races
+
 - **Long Trail** - 42km
 - **Short Trail** - 21km
 
 ### 🎒 Mandatory Equipment
+
 - 🧊 Thermal blanket
 - 📱 Mobile phone
 ```

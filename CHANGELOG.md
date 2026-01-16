@@ -1,3 +1,13 @@
+# [7.2.0](https://github.com/palhinhax/Athlifyr/compare/v7.1.0...v7.2.0) (2026-01-16)
+
+### Bug Fixes
+
+- **seeds:** correct expo dates for London Marathon 2026 ([8ee551d](https://github.com/palhinhax/Athlifyr/commit/8ee551dd306d67290b1daf7cce84499f4705bf04))
+
+### Features
+
+- **seeds:** add TCS London Marathon 2026 seed file ([40556c4](https://github.com/palhinhax/Athlifyr/commit/40556c423196739467586438b8d99d8bb0391475))
+
 # [7.1.0](https://github.com/palhinhax/Athlifyr/compare/v7.0.0...v7.1.0) (2026-01-16)
 
 ### Features

@@ -1,3 +1,14 @@
+# [8.0.0](https://github.com/palhinhax/Athlifyr/compare/v7.7.0...v8.0.0) (2026-01-16)
+
+### Features
+
+- **events:** add Hybrid Day Leiria and Málaga 2026 seeds and fix filters ([9585b6e](https://github.com/palhinhax/Athlifyr/commit/9585b6e3d49d98bc6a2034ef200441f491533592))
+- **seed:** add Hybrid Day Aveiro 2026 event ([05b4544](https://github.com/palhinhax/Athlifyr/commit/05b4544cdbb6fa77bfc2b410c4f822eb55d565e8))
+
+### BREAKING CHANGES
+
+- **events:** Events page now shows all future events regardless of country by default, instead of filtering by user's country. Users can enable location-based filtering explicitly.
+
 # [7.7.0](https://github.com/palhinhax/Athlifyr/compare/v7.6.0...v7.7.0) (2026-01-16)
 
 ### Features

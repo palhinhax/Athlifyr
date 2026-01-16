@@ -26,8 +26,12 @@ async function getUpcomingEvents(country: string) {
   });
 }
 
-export default async function Home({ params }: { params: { locale: string } }) {
-  const { locale } = await Promise.resolve(params);
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "home" });
 
   // Get user's country from headers

@@ -26,11 +26,26 @@ async function main() {
     data: {
       title: "VII Trilhos de Viana 2026",
       slug: "vii-trilhos-viana-2026",
-      description: `Os VII Trilhos de Viana são uma organização da Associação Trilhos de Viana, com o apoio da Câmara Municipal de Viana do Castelo. Realizam-se a 1 de Fevereiro de 2026, com partidas e chegadas no Estádio Municipal Manuela Machado.
+      description: `## 🏔️ VII Trilhos de Viana 2026
 
-O evento oferece quatro provas por trilhos, caminhos e linhas d'água da montanha de Santa Luzia, com o objetivo de promover a prática desportiva e o contacto com a natureza. As provas incluem Trail Longo (31,5km), Trail Curto (18km), Mini-Trail (12,5km) e Caminhada (8,5km).
+**Uma celebração do trail running na magnifica montanha de Santa Luzia!**
 
-O terreno está sujeito a alterações climatéricas repentinas, e os participantes devem estar preparados para condições meteorológicas variadas. A prova conta com postos de abastecimento ao longo dos percursos e apoio médico dos Bombeiros Voluntários de Viana do Castelo e GOBS - Grupo Operacional Busca e Salvamento.`,
+Os VII Trilhos de Viana são organizados pela **Associação Trilhos de Viana**, com o apoio da Câmara Municipal de Viana do Castelo. O evento realiza-se a **1 de Fevereiro de 2026**, com partidas e chegadas no **Estádio Municipal Manuela Machado**.
+
+### 🏃 Provas Disponíveis
+
+- **Trail Longo** - 31,5km com 1500m D+
+- **Trail Curto** - 18km com 850m D+
+- **Mini-Trail** - 12,5km com 640m D+
+- **Caminhada** - 8,5km com 450m D+
+
+### 🌲 Percurso
+
+O evento oferece quatro provas por **trilhos**, **caminhos** e **linhas d'água** da montanha de Santa Luzia, com o objetivo de promover a prática desportiva e o contacto com a natureza.
+
+### ⚠️ Condições
+
+O terreno está sujeito a **alterações climatéricas repentinas**, e os participantes devem estar preparados para condições meteorológicas variadas. A prova conta com **postos de abastecimento** ao longo dos percursos e apoio médico dos **Bombeiros Voluntários de Viana do Castelo** e **GOBS - Grupo Operacional Busca e Salvamento**.`,
       sportTypes: ["TRAIL"],
       startDate: new Date("2026-02-01T08:30:00Z"),
       endDate: new Date("2026-02-01T15:00:00Z"),
@@ -52,11 +67,32 @@ O terreno está sujeito a alterações climatéricas repentinas, e os participan
           {
             language: "pt",
             title: "VII Trilhos de Viana 2026",
-            description: `Os VII Trilhos de Viana são uma organização da Associação Trilhos de Viana, com o apoio da Câmara Municipal de Viana do Castelo. O evento realiza-se a 1 de Fevereiro de 2026 na montanha de Santa Luzia, oferecendo quatro provas diferentes.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-As provas decorrem por trilhos, caminhos e linhas d'água da montanha de Santa Luzia, com partidas e chegadas no Estádio Municipal Manuela Machado. O evento promove a prática desportiva e o contacto com a natureza.
+**Uma experiência única de trail running na montanha de Santa Luzia!**
 
-Material obrigatório para Trail Longo e Trail Curto: manta térmica, telemóvel, apito e depósito de água (mínimo 0,5 litros). A organização disponibiliza postos de abastecimento, marcação com fitas e bandeirolas laranjas, seguro de acidentes pessoais, medalha de finisher e reforço alimentar na meta.`,
+Os VII Trilhos de Viana são organizados pela **Associação Trilhos de Viana**, com o apoio da Câmara Municipal de Viana do Castelo. O evento realiza-se a **1 de Fevereiro de 2026** na montanha de Santa Luzia, oferecendo quatro provas diferentes.
+
+### 🏃 As Provas
+
+As provas decorrem por **trilhos**, **caminhos** e **linhas d'água** da montanha de Santa Luzia, com partidas e chegadas no **Estádio Municipal Manuela Machado**. O evento promove a prática desportiva e o contacto com a natureza.
+
+### 🎒 Material Obrigatório
+
+Para **Trail Longo** e **Trail Curto**:
+- 🧊 Manta térmica
+- 📱 Telemóvel
+- 🔊 Apito
+- 💧 Depósito de água (mínimo 0,5 litros)
+
+### 🎁 O que está Incluído
+
+A organização disponibiliza:
+- 🍎 Postos de abastecimento ao longo do percurso
+- 🟠 Marcação com fitas e bandeirolas laranjas
+- 🛡️ Seguro de acidentes pessoais
+- 🏅 Medalha de finisher
+- 🍽️ Reforço alimentar na meta`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail na Montanha de Santa Luzia",
@@ -67,11 +103,32 @@ Material obrigatório para Trail Longo e Trail Curto: manta térmica, telemóvel
           {
             language: "en",
             title: "VII Trilhos de Viana 2026",
-            description: `The VII Trilhos de Viana is organized by Associação Trilhos de Viana with support from Viana do Castelo City Council. The event takes place on February 1st, 2026 at Santa Luzia mountain, offering four different races.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-The races run through trails, paths and mountain streams of Santa Luzia mountain, with starts and finishes at Estádio Municipal Manuela Machado. The event promotes sports practice and contact with nature.
+**A unique trail running experience in Santa Luzia mountain!**
 
-Mandatory equipment for Long Trail and Short Trail: thermal blanket, mobile phone, whistle and water container (minimum 0.5 liters). The organization provides aid stations, orange tape and flag markings, personal accident insurance, finisher medal and refreshments at the finish line.`,
+The VII Trilhos de Viana is organized by **Associação Trilhos de Viana** with support from Viana do Castelo City Council. The event takes place on **February 1st, 2026** at Santa Luzia mountain, offering four different races.
+
+### 🏃 The Races
+
+The races run through **trails**, **paths** and **mountain streams** of Santa Luzia mountain, with starts and finishes at **Estádio Municipal Manuela Machado**. The event promotes sports practice and contact with nature.
+
+### 🎒 Mandatory Equipment
+
+For **Long Trail** and **Short Trail**:
+- 🧊 Thermal blanket
+- 📱 Mobile phone
+- 🔊 Whistle
+- 💧 Water container (minimum 0.5 liters)
+
+### 🎁 What's Included
+
+The organization provides:
+- 🍎 Aid stations along the course
+- 🟠 Orange tape and flag markings
+- 🛡️ Personal accident insurance
+- 🏅 Finisher medal
+- 🍽️ Refreshments at the finish line`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail Running at Santa Luzia Mountain",
@@ -82,11 +139,32 @@ Mandatory equipment for Long Trail and Short Trail: thermal blanket, mobile phon
           {
             language: "es",
             title: "VII Trilhos de Viana 2026",
-            description: `Los VII Trilhos de Viana son organizados por la Associação Trilhos de Viana con el apoyo del Ayuntamiento de Viana do Castelo. El evento tiene lugar el 1 de febrero de 2026 en la montaña de Santa Luzia, ofreciendo cuatro carreras diferentes.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-Las carreras transcurren por senderos, caminos y arroyos de montaña de Santa Luzia, con salidas y llegadas en el Estadio Municipal Manuela Machado. El evento promueve la práctica deportiva y el contacto con la naturaleza.
+**¡Una experiencia única de trail running en la montaña de Santa Luzia!**
 
-Material obligatorio para Trail Largo y Trail Corto: manta térmica, teléfono móvil, silbato y recipiente de agua (mínimo 0,5 litros). La organización proporciona puestos de avituallamiento, marcaje con cintas y banderolas naranjas, seguro de accidentes personales, medalla de finisher y refrigerio en la meta.`,
+Los VII Trilhos de Viana son organizados por la **Associação Trilhos de Viana** con el apoyo del Ayuntamiento de Viana do Castelo. El evento tiene lugar el **1 de febrero de 2026** en la montaña de Santa Luzia, ofreciendo cuatro carreras diferentes.
+
+### 🏃 Las Carreras
+
+Las carreras transcurren por **senderos**, **caminos** y **arroyos de montaña** de Santa Luzia, con salidas y llegadas en el **Estadio Municipal Manuela Machado**. El evento promueve la práctica deportiva y el contacto con la naturaleza.
+
+### 🎒 Material Obligatorio
+
+Para **Trail Largo** y **Trail Corto**:
+- 🧊 Manta térmica
+- 📱 Teléfono móvil
+- 🔊 Silbato
+- 💧 Recipiente de agua (mínimo 0,5 litros)
+
+### 🎁 Qué Incluye
+
+La organización proporciona:
+- 🍎 Puestos de avituallamiento a lo largo del recorrido
+- 🟠 Marcaje con cintas y banderolas naranjas
+- 🛡️ Seguro de accidentes personales
+- 🏅 Medalla de finisher
+- 🍽️ Refrigerio en la meta`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail en la Montaña de Santa Luzia",
@@ -97,11 +175,32 @@ Material obligatorio para Trail Largo y Trail Corto: manta térmica, teléfono m
           {
             language: "fr",
             title: "VII Trilhos de Viana 2026",
-            description: `Les VII Trilhos de Viana sont organisés par l'Associação Trilhos de Viana avec le soutien de la Mairie de Viana do Castelo. L'événement a lieu le 1er février 2026 dans la montagne de Santa Luzia, proposant quatre courses différentes.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-Les courses se déroulent sur des sentiers, chemins et cours d'eau de montagne de Santa Luzia, avec départs et arrivées au Stade Municipal Manuela Machado. L'événement promeut la pratique sportive et le contact avec la nature.
+**Une expérience unique de trail running dans la montagne de Santa Luzia !**
 
-Équipement obligatoire pour Trail Long et Trail Court : couverture thermique, téléphone portable, sifflet et contenant d'eau (minimum 0,5 litre). L'organisation fournit des postes de ravitaillement, balisage avec rubans et drapeaux orange, assurance accident personnelle, médaille de finisher et rafraîchissements à l'arrivée.`,
+Les VII Trilhos de Viana sont organisés par l'**Associação Trilhos de Viana** avec le soutien de la Mairie de Viana do Castelo. L'événement a lieu le **1er février 2026** dans la montagne de Santa Luzia, proposant quatre courses différentes.
+
+### 🏃 Les Courses
+
+Les courses se déroulent sur des **sentiers**, **chemins** et **cours d'eau de montagne** de Santa Luzia, avec départs et arrivées au **Stade Municipal Manuela Machado**. L'événement promeut la pratique sportive et le contact avec la nature.
+
+### 🎒 Équipement Obligatoire
+
+Pour **Trail Long** et **Trail Court** :
+- 🧊 Couverture thermique
+- 📱 Téléphone portable
+- 🔊 Sifflet
+- 💧 Contenant d'eau (minimum 0,5 litre)
+
+### 🎁 Ce qui est Inclus
+
+L'organisation fournit :
+- 🍎 Postes de ravitaillement le long du parcours
+- 🟠 Balisage avec rubans et drapeaux orange
+- 🛡️ Assurance accident personnelle
+- 🏅 Médaille de finisher
+- 🍽️ Rafraîchissements à l'arrivée`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail dans la Montagne de Santa Luzia",
@@ -112,11 +211,32 @@ Les courses se déroulent sur des sentiers, chemins et cours d'eau de montagne d
           {
             language: "de",
             title: "VII Trilhos de Viana 2026",
-            description: `Die VII Trilhos de Viana werden von der Associação Trilhos de Viana mit Unterstützung der Stadtverwaltung Viana do Castelo organisiert. Die Veranstaltung findet am 1. Februar 2026 im Santa Luzia-Gebirge statt und bietet vier verschiedene Rennen.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-Die Rennen führen über Pfade, Wege und Bergbäche des Santa Luzia-Gebirges, mit Start und Ziel am Estádio Municipal Manuela Machado. Die Veranstaltung fördert sportliche Betätigung und den Kontakt mit der Natur.
+**Ein einzigartiges Trail Running-Erlebnis im Santa Luzia-Gebirge!**
 
-Pflichtausrüstung für Langen Trail und Kurzen Trail: Thermodecke, Mobiltelefon, Pfeife und Wasserbehälter (mindestens 0,5 Liter). Die Organisation stellt Verpflegungsstationen, orangefarbene Bänder und Flaggenmarkierungen, Unfallversicherung, Finisher-Medaille und Erfrischungen im Ziel bereit.`,
+Die VII Trilhos de Viana werden von der **Associação Trilhos de Viana** mit Unterstützung der Stadtverwaltung Viana do Castelo organisiert. Die Veranstaltung findet am **1. Februar 2026** im Santa Luzia-Gebirge statt und bietet vier verschiedene Rennen.
+
+### 🏃 Die Rennen
+
+Die Rennen führen über **Pfade**, **Wege** und **Bergbäche** des Santa Luzia-Gebirges, mit Start und Ziel am **Estádio Municipal Manuela Machado**. Die Veranstaltung fördert sportliche Betätigung und den Kontakt mit der Natur.
+
+### 🎒 Pflichtausrüstung
+
+Für **Langen Trail** und **Kurzen Trail**:
+- 🧊 Thermodecke
+- 📱 Mobiltelefon
+- 🔊 Pfeife
+- 💧 Wasserbehälter (mindestens 0,5 Liter)
+
+### 🎁 Was ist Enthalten
+
+Die Organisation stellt bereit:
+- 🍎 Verpflegungsstationen entlang der Strecke
+- 🟠 Orangefarbene Bänder und Flaggenmarkierungen
+- 🛡️ Unfallversicherung
+- 🏅 Finisher-Medaille
+- 🍽️ Erfrischungen im Ziel`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail im Santa Luzia-Gebirge",
@@ -127,11 +247,32 @@ Pflichtausrüstung für Langen Trail und Kurzen Trail: Thermodecke, Mobiltelefon
           {
             language: "it",
             title: "VII Trilhos de Viana 2026",
-            description: `I VII Trilhos de Viana sono organizzati dall'Associação Trilhos de Viana con il supporto del Comune di Viana do Castelo. L'evento si svolge il 1° febbraio 2026 nella montagna di Santa Luzia, offrendo quattro gare diverse.
+            description: `## 🏔️ VII Trilhos de Viana 2026
 
-Le gare si svolgono su sentieri, percorsi e torrenti montani della montagna di Santa Luzia, con partenze e arrivi allo Stadio Municipale Manuela Machado. L'evento promuove la pratica sportiva e il contatto con la natura.
+**Un'esperienza unica di trail running nella montagna di Santa Luzia!**
 
-Attrezzatura obbligatoria per Trail Lungo e Trail Corto: coperta termica, telefono cellulare, fischietto e contenitore d'acqua (minimo 0,5 litri). L'organizzazione fornisce punti di ristoro, segnalazione con nastri e bandiere arancioni, assicurazione contro gli infortuni, medaglia di finisher e ristoro al traguardo.`,
+I VII Trilhos de Viana sono organizzati dall'**Associação Trilhos de Viana** con il supporto del Comune di Viana do Castelo. L'evento si svolge il **1° febbraio 2026** nella montagna di Santa Luzia, offrendo quattro gare diverse.
+
+### 🏃 Le Gare
+
+Le gare si svolgono su **sentieri**, **percorsi** e **torrenti montani** della montagna di Santa Luzia, con partenze e arrivi allo **Stadio Municipale Manuela Machado**. L'evento promuove la pratica sportiva e il contatto con la natura.
+
+### 🎒 Attrezzatura Obbligatoria
+
+Per **Trail Lungo** e **Trail Corto**:
+- 🧊 Coperta termica
+- 📱 Telefono cellulare
+- 🔊 Fischietto
+- 💧 Contenitore d'acqua (minimo 0,5 litri)
+
+### 🎁 Cosa è Incluso
+
+L'organizzazione fornisce:
+- 🍎 Punti di ristoro lungo il percorso
+- 🟠 Segnalazione con nastri e bandiere arancioni
+- 🛡️ Assicurazione contro gli infortuni
+- 🏅 Medaglia di finisher
+- 🍽️ Ristoro al traguardo`,
             city: "Viana do Castelo",
             metaTitle:
               "VII Trilhos de Viana 2026 - Trail nella Montagna di Santa Luzia",

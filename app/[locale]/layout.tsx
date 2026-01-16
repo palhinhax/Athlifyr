@@ -7,6 +7,7 @@ import { SessionProvider } from "@/components/session-provider";
 import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
+import { NavigationProgress } from "@/components/navigation-progress";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -158,6 +159,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
         {gaId && <GoogleAnalytics gaId={gaId} />}
+        <NavigationProgress />
         <NextIntlClientProvider messages={messages} locale={locale}>
           <SessionProvider>
             <header className="sticky top-0 z-50 border-b bg-background">

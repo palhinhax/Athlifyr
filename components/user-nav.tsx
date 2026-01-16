@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { User, LogOut, Settings, Shield } from "lucide-react";
+import Image from "next/image";
 
 export function UserNav() {
   const { data: session, status } = useSession();
@@ -37,7 +38,18 @@ export function UserNav() {
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
-          <User className="h-5 w-5" />
+          {session.user.image ? (
+            <Image
+              src={session.user.image}
+              alt={session.user.name || "User"}
+              width={32}
+              height={32}
+              className="rounded-full"
+              unoptimized
+            />
+          ) : (
+            <User className="h-5 w-5" />
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">

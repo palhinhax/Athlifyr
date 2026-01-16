@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
@@ -9,7 +9,6 @@ import { useTranslations } from "next-intl";
 import { SportType } from "@prisma/client";
 
 interface EventPageHeaderProps {
-  locale: string;
   isAdmin: boolean;
   event: {
     id: string;
@@ -37,7 +36,6 @@ interface EventPageHeaderProps {
 }
 
 export function EventPageHeader({
-  locale,
   isAdmin,
   event,
   shareDescription,
@@ -48,7 +46,7 @@ export function EventPageHeader({
   return (
     <div className="container mx-auto px-4 py-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <Link href={`/${locale}/events`}>
+        <Link href="/events">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="mr-2 h-4 w-4" />
             <span className="hidden sm:inline">{t("backToEvents")}</span>

@@ -2,6 +2,7 @@
 
 import { ProfileImageUpload } from "@/components/profile-image-upload";
 import { EventCalendar } from "@/components/event-calendar";
+import { useTranslations } from "next-intl";
 
 interface EventParticipation {
   id: string;
@@ -41,6 +42,8 @@ export function ProfileHeaderClient({
   stats,
   participations,
 }: ProfileHeaderClientProps) {
+  const t = useTranslations("profile");
+
   return (
     <div className="mb-12 flex flex-col items-center gap-6 md:flex-row md:items-start">
       <ProfileImageUpload currentImage={user.image} userName={user.name} />
@@ -61,7 +64,7 @@ export function ProfileHeaderClient({
               {stats.upcomingEvents}
             </div>
             <div className="text-sm text-muted-foreground">
-              Próximos Eventos
+              {t("upcomingEvents")}
             </div>
           </div>
           <div className="text-center">
@@ -69,20 +72,20 @@ export function ProfileHeaderClient({
               {stats.pastEvents}
             </div>
             <div className="text-sm text-muted-foreground">
-              Eventos Passados
+              {t("pastEvents")}
             </div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">
               {stats.friendsCount}
             </div>
-            <div className="text-sm text-muted-foreground">Amigos</div>
+            <div className="text-sm text-muted-foreground">{t("friends")}</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-primary">
               {stats.commentsCount}
             </div>
-            <div className="text-sm text-muted-foreground">Comentários</div>
+            <div className="text-sm text-muted-foreground">{t("comments")}</div>
           </div>
         </div>
       </div>

@@ -4,10 +4,11 @@ import { prisma } from "@/lib/prisma";
 import { Calendar, MapPin, Trophy, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -18,6 +19,7 @@ interface PageProps {
 export default async function ProfilePage({ params }: PageProps) {
   const { locale } = await Promise.resolve(params);
   const session = await auth();
+  const t = await getTranslations({ locale, namespace: "profile" });
 
   if (!session?.user?.id) {
     redirect("/auth/signin");
@@ -132,7 +134,7 @@ export default async function ProfilePage({ params }: PageProps) {
           <div className="mb-12">
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
               <Calendar className="h-6 w-6 text-primary" />
-              Próximos Eventos ({upcomingEvents.length})
+              {t("upcomingEventsCount", { count: upcomingEvents.length })}
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
               {upcomingEvents.map((participation) => (
@@ -170,7 +172,7 @@ export default async function ProfilePage({ params }: PageProps) {
                                   locale
                                 )}
                                 {participation.variant.startTime &&
-                                  ` às ${participation.variant.startTime}`}
+                                  ` ${t("at")} ${participation.variant.startTime}`}
                                 )
                               </span>
                             )}
@@ -189,7 +191,7 @@ export default async function ProfilePage({ params }: PageProps) {
           <div>
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
               <Trophy className="h-6 w-6 text-primary" />
-              Eventos Passados ({pastEvents.length})
+              {t("pastEventsCount", { count: pastEvents.length })}
             </h2>
             <div className="grid gap-4 md:grid-cols-2">
               {pastEvents.slice(0, 6).map((participation) => (
@@ -222,7 +224,7 @@ export default async function ProfilePage({ params }: PageProps) {
                                   locale
                                 )}
                                 {participation.variant.startTime &&
-                                  ` às ${participation.variant.startTime}`}
+                                  ` ${t("at")} ${participation.variant.startTime}`}
                                 )
                               </span>
                             )}
@@ -240,15 +242,13 @@ export default async function ProfilePage({ params }: PageProps) {
         {upcomingEvents.length === 0 && pastEvents.length === 0 && (
           <Card className="p-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-xl font-semibold">
-              Ainda não estás registado em nenhum evento
-            </h3>
+            <h3 className="mb-2 text-xl font-semibold">{t("noEventsTitle")}</h3>
             <p className="mb-6 text-muted-foreground">
-              Explora os eventos disponíveis e marca que vais participar!
+              {t("noEventsDescription")}
             </p>
             <Link href="/events">
               <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                Explorar Eventos
+                {t("exploreEvents")}
               </button>
             </Link>
           </Card>

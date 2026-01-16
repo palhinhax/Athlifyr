@@ -1,12 +1,10 @@
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
 import { getUserCountry } from "@/lib/event-utils";
 import { headers } from "next/headers";
-import { getTranslations } from "next-intl/server";
-
-export const dynamic = "force-dynamic";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -32,6 +30,10 @@ export default async function Home({
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
+
+  // Enable static rendering
+  setRequestLocale(locale);
+
   const t = await getTranslations({ locale, namespace: "home" });
 
   // Get user's country from headers
@@ -64,7 +66,7 @@ export default async function Home({
           <h2 className="text-3xl font-bold">
             {t("upcomingEventsTitle", { country: userCountry })}
           </h2>
-          <Link href={`/${locale}/events`}>
+          <Link href="/events">
             <Button variant="ghost">{t("seeAll")}</Button>
           </Link>
         </div>
@@ -77,14 +79,14 @@ export default async function Home({
             <p className="mb-6 text-muted-foreground">
               {t("noUpcomingEventsDescription")}
             </p>
-            <Link href={`/${locale}/events`}>
+            <Link href="/events">
               <Button>{t("exploreAllEvents")}</Button>
             </Link>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} locale={locale} />
+              <EventCard key={event.id} event={event} />
             ))}
           </div>
         )}
@@ -97,7 +99,7 @@ export default async function Home({
           <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
             {t("ctaDescription")}
           </p>
-          <Link href={`/${locale}/events`}>
+          <Link href="/events">
             <Button size="lg">{t("exploreAllEvents")}</Button>
           </Link>
         </div>

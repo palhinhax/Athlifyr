@@ -466,3 +466,162 @@ Before committing, verify:
 - [ ] Conventional commit format is followed
 
 **GitHub Copilot must enforce these standards in all code suggestions and verify compliance before commits.**
+
+---
+
+## Code Modularity and Component Architecture
+
+**CRITICAL**: This project follows strict modularity principles for maintainability and scalability.
+
+### Component Size and Modularity Rules
+
+1. **Keep components small and focused**:
+   - ❌ Bad: Large page components with 500+ lines mixing logic, UI, and data fetching
+   - ✅ Good: Pages < 200 lines that compose smaller, focused components
+   - Each component should have a **single, clear responsibility**
+
+2. **Break down large components into smaller modules**:
+   - If a component exceeds 200-250 lines, consider splitting it
+   - Extract logical sections into separate components
+   - Create a clear component hierarchy
+
+3. **Component organization patterns**:
+
+   ```
+   ✅ GOOD STRUCTURE:
+   pages/
+     events/
+       [slug]/
+         page.tsx              (< 150 lines - composition only)
+
+   components/
+     event-page-header.tsx     (< 100 lines - header section)
+     event-main-content.tsx    (< 150 lines - main content)
+     event-sidebar.tsx         (< 150 lines - sidebar)
+     event-registration.tsx    (< 100 lines - registration form)
+     event-comments.tsx        (< 200 lines - comments section)
+
+   ❌ BAD STRUCTURE:
+   pages/
+     events/
+       [slug]/
+         page.tsx              (800 lines - everything in one file)
+   ```
+
+4. **Module extraction guidelines**:
+   - **UI Sections**: Extract distinct visual sections (header, sidebar, footer, etc.)
+   - **Form Logic**: Separate forms into dedicated components
+   - **Data Display**: Create components for lists, cards, tables
+   - **Business Logic**: Extract custom hooks for complex logic
+   - **Utilities**: Move helper functions to `lib/` or `utils/`
+
+5. **Clear naming conventions**:
+   - Component names should describe their **single purpose**
+   - Use descriptive names: `EventRegistrationForm` not `Form`
+   - Group related components: `event-card.tsx`, `event-list.tsx`, `event-filters.tsx`
+
+### Practical Examples
+
+#### ❌ Bad: Monolithic Component
+
+```typescript
+// pages/events/[slug]/page.tsx (800 lines)
+export default function EventPage() {
+  // 100 lines of state management
+  // 200 lines of data fetching
+  // 500 lines of JSX mixing everything
+  return (
+    <div>
+      {/* All UI inline - header, content, sidebar, comments, forms */}
+    </div>
+  );
+}
+```
+
+#### ✅ Good: Modular Component
+
+```typescript
+// pages/events/[slug]/page.tsx (120 lines)
+export default async function EventPage({ params }) {
+  const event = await getEventData(params.slug);
+  const user = await getCurrentUser();
+
+  return (
+    <div className="container">
+      <EventPageHeader event={event} user={user} />
+      <div className="grid lg:grid-cols-3">
+        <EventMainContent event={event} className="lg:col-span-2" />
+        <EventSidebar event={event} user={user} />
+      </div>
+      <EventComments eventId={event.id} />
+    </div>
+  );
+}
+
+// components/event-page-header.tsx (80 lines)
+export function EventPageHeader({ event, user }) {
+  return (
+    <header>
+      <EventBackButton />
+      <EventTitle title={event.title} />
+      <EventMeta date={event.date} location={event.location} />
+      {user?.isAdmin && <EventAdminActions eventId={event.id} />}
+    </header>
+  );
+}
+
+// components/event-main-content.tsx (120 lines)
+export function EventMainContent({ event, className }) {
+  return (
+    <main className={className}>
+      <EventDescription description={event.description} />
+      <EventVariantsList variants={event.variants} />
+      <EventLocationMap coordinates={event.coordinates} />
+    </main>
+  );
+}
+
+// components/event-sidebar.tsx (100 lines)
+export function EventSidebar({ event, user }) {
+  return (
+    <aside>
+      <EventRegistration event={event} user={user} />
+      <EventPricingPhases phases={event.pricingPhases} />
+      <FriendsGoing eventId={event.id} userId={user?.id} />
+    </aside>
+  );
+}
+```
+
+### Benefits of Modular Architecture
+
+1. **Maintainability**: Easier to understand, modify, and debug small components
+2. **Reusability**: Components can be reused across different pages
+3. **Testing**: Smaller components are easier to test in isolation
+4. **Performance**: Better code splitting and lazy loading opportunities
+5. **Collaboration**: Multiple developers can work on different components simultaneously
+6. **Readability**: Clear component hierarchy makes the codebase self-documenting
+
+### Refactoring Guidelines
+
+When you encounter a large component:
+
+1. **Identify logical sections**: Group related UI and logic
+2. **Extract components**: Create separate files for each section
+3. **Define clear props**: Each component should have well-defined inputs
+4. **Maintain single responsibility**: Each component does one thing well
+5. **Update imports**: Ensure all imports are correct after extraction
+6. **Test thoroughly**: Verify functionality after refactoring
+
+### GitHub Copilot Requirements for Modularity
+
+When creating or modifying components, GitHub Copilot **MUST**:
+
+1. **Always suggest component extraction** when a component exceeds 200 lines
+2. **Propose clear component names** that describe their single purpose
+3. **Create proper file structure** with components in appropriate directories
+4. **Define clear props interfaces** for all extracted components
+5. **Maintain consistency** with existing component patterns in the project
+6. **Prioritize readability** over cleverness - clear code over compact code
+
+**Remember**: Small, focused components are easier to maintain, test, and understand. Always favor modularity over monolithic files.

@@ -1,23 +1,10 @@
-import type { Metadata } from "next";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
-
-export const metadata: Metadata = {
-  metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com"
-  ),
-};
+﻿// Root layout - minimal wrapper
+// Each route group ([locale], promo, etc.) has its own full layout with html and body
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
-  return (
-    <>
-      {children}
-      <Analytics />
-      <SpeedInsights />
-    </>
-  );
+}) {
+  return children;
 }

@@ -90,8 +90,10 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
       let fetchedEvents: EventWithVariants[] = await response.json();
 
-      // Filter by distance if location is enabled (but not when searching)
+      // Filter by distance if location is enabled (but not when searching or in map mode)
+      // In map mode, the map itself handles the geographic filtering
       if (
+        viewMode === "list" &&
         filters.locationEnabled &&
         filters.userLat &&
         filters.userLng &&
@@ -135,7 +137,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     } finally {
       setLoading(false);
     }
-  }, [filters, userId]);
+  }, [filters, userId, viewMode]);
 
   useEffect(() => {
     fetchEvents();
@@ -185,23 +187,26 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
             userId={userId}
             onFiltersChange={setFilters}
             searchQuery={filters.searchQuery}
+            viewMode={viewMode}
           />
           <div className="flex shrink-0 gap-2">
             <Button
               variant={viewMode === "list" ? "default" : "outline"}
               size="lg"
               onClick={() => setViewMode("list")}
+              className="px-3 md:px-4"
             >
-              <LayoutGrid className="mr-2 h-4 w-4" />
-              {t("viewList")}
+              <LayoutGrid className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t("viewList")}</span>
             </Button>
             <Button
               variant={viewMode === "map" ? "default" : "outline"}
               size="lg"
               onClick={() => setViewMode("map")}
+              className="px-3 md:px-4"
             >
-              <Map className="mr-2 h-4 w-4" />
-              {t("viewMap")}
+              <Map className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">{t("viewMap")}</span>
             </Button>
           </div>
         </div>
@@ -227,7 +232,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               </p>
             </div>
           ) : viewMode === "map" ? (
-            <div className="overflow-hidden rounded-lg border">
+            <div className="h-[600px] overflow-hidden rounded-lg border">
               <EventsMapClient
                 filters={{
                   sports: filters.sports,

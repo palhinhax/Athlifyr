@@ -3,10 +3,15 @@
  * Generates schema.org markup for rich search results
  */
 
-import { Event, EventVariant } from "@prisma/client";
+import { Event, EventVariant, PricingPhase } from "@prisma/client";
+
+interface EventVariantWithPricingPhases extends EventVariant {
+  pricingPhases: PricingPhase[];
+}
 
 interface EventWithVariants extends Event {
-  variants: EventVariant[];
+  variants: EventVariantWithPricingPhases[];
+  pricingPhases: PricingPhase[];
 }
 
 /**
@@ -22,6 +27,39 @@ export function generateSportsEventSchema(event: EventWithVariants) {
   // Currency defaults to EUR for Portugal-based events
   const currency = event.country === "Portugal" ? "EUR" : "EUR"; // TODO: Add currency field to Event model
 
+  // Athlifyr organization structure (used for both organizer and performer)
+  const athlifyrOrganization = {
+    "@type": "Organization" as const,
+    name: "Athlifyr",
+    url: baseUrl,
+  };
+
+  // Determine validFrom date for offers
+  // Priority: 1) Variant-specific pricing phase, 2) Event-level pricing phase, 3) Event creation date, 4) 30 days before event
+  // Note: Pricing phases are pre-sorted by startDate (ascending) in the database query,
+  // so pricingPhases[0] is guaranteed to be the earliest phase
+  const getValidFromDate = (variant: EventVariantWithPricingPhases): string => {
+    // Check variant-specific pricing phases first
+    if (variant.pricingPhases.length > 0) {
+      return variant.pricingPhases[0].startDate.toISOString();
+    }
+
+    // Fall back to event-level pricing phases
+    if (event.pricingPhases.length > 0) {
+      return event.pricingPhases[0].startDate.toISOString();
+    }
+
+    // If no pricing phases, use event creation date
+    if (event.createdAt) {
+      return event.createdAt.toISOString();
+    }
+
+    // Last resort: 30 days before event start
+    const defaultDate = new Date(event.startDate);
+    defaultDate.setDate(defaultDate.getDate() - 30);
+    return defaultDate.toISOString();
+  };
+
   const offers = event.variants.map((variant) => ({
     "@type": "Offer",
     name: variant.name,
@@ -29,6 +67,7 @@ export function generateSportsEventSchema(event: EventWithVariants) {
     priceCurrency: currency,
     availability: "https://schema.org/InStock",
     url: eventUrl,
+    validFrom: getValidFromDate(variant),
   }));
 
   return {
@@ -51,11 +90,8 @@ export function generateSportsEventSchema(event: EventWithVariants) {
         addressCountry: event.country,
       },
     },
-    organizer: {
-      "@type": "Organization",
-      name: "Athlifyr",
-      url: baseUrl,
-    },
+    organizer: athlifyrOrganization,
+    performer: athlifyrOrganization,
     ...(offers.length > 0 && { offers }),
     sport: event.sportTypes.join(", "),
   };

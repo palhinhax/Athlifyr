@@ -1,3 +1,14 @@
+# [6.11.0](https://github.com/palhinhax/Athlifyr/compare/v6.10.0...v6.11.0) (2026-01-16)
+
+### Bug Fixes
+
+- **seed:** correct Google Maps URL and German translation ([a6ab288](https://github.com/palhinhax/Athlifyr/commit/a6ab28864c24d001ef1e2fad8d5d686d015c9885))
+
+### Features
+
+- **seed:** add VII Trilhos de Viana 2026 event seed file ([533f26f](https://github.com/palhinhax/Athlifyr/commit/533f26f151954470655db807d2c0ae0a4ab8e4b6))
+- **seed:** enhance descriptions with Markdown formatting and emojis ([4b66280](https://github.com/palhinhax/Athlifyr/commit/4b66280bfca79ed5d2e4094b854f56072cc2d3a0))
+
 # [6.10.0](https://github.com/palhinhax/Athlifyr/compare/v6.9.1...v6.10.0) (2026-01-16)
 
 ### Bug Fixes

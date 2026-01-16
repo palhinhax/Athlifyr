@@ -9,16 +9,19 @@ Agents are specialized AI assistants with domain-specific knowledge and expertis
 ## Available Agents
 
 ### 1. Event Seed Generator Agent
+
 **File:** `event-seed-generator.md`
 
 **Purpose:** Generate complete Prisma seed files for sports events with full multilingual support.
 
 **When to use:**
+
 - Creating new event seed files
 - Need to populate database with event data
 - Require translations in all 6 supported languages
 
 **Capabilities:**
+
 - Generates TypeScript seed files following project patterns
 - Provides translations in all 6 languages (pt, en, es, fr, de, it)
 - Ensures European Portuguese is used (never Brazilian)
@@ -28,10 +31,11 @@ Agents are specialized AI assistants with domain-specific knowledge and expertis
 - Validates data structure and types
 
 **Example usage:**
+
 ```
-@event-seed-generator Create a seed file for the Lisbon Marathon 2026 
-happening on October 15, 2026. It has three distances: 42km marathon, 
-21km half marathon, and 10km run. Registration opens January 1, 2026 
+@event-seed-generator Create a seed file for the Lisbon Marathon 2026
+happening on October 15, 2026. It has three distances: 42km marathon,
+21km half marathon, and 10km run. Registration opens January 1, 2026
 with early bird pricing at €60 until March 31.
 ```
 
@@ -40,6 +44,7 @@ with early bird pricing at €60 until March 31.
 ### In GitHub Copilot Chat
 
 1. **Tag the agent** by referencing its name or file:
+
    ```
    @event-seed-generator [your request]
    ```
@@ -99,24 +104,31 @@ To create a new agent:
 You are a specialized agent expert in [domain/task].
 
 ## Your Expertise
+
 [Description of what the agent specializes in]
 
 ## Critical Requirements
+
 [List of mandatory requirements]
 
 ## Data Structure
+
 [Expected input/output structures]
 
 ## Template/Example
+
 [Code templates and examples]
 
 ## How to Use This Agent
+
 [Step-by-step usage instructions]
 
 ## Error Prevention
+
 [Common mistakes to avoid]
 
 ## Quality Checks
+
 [Validation checklist]
 ```
 

@@ -41,7 +41,7 @@
     "heroDescription": "Encuentra carreras, competiciones y desafíos cerca de ti.",
     "heroDescriptionCountry": "Descubre los mejores eventos deportivos en {country}.",
     "upcomingEventsTitle": "Próximos Eventos en {country}",
-    "seeAll": "Ver Todos \u2192",
+    "seeAll": "Ver Todos →",
     "noUpcomingEventsTitle": "Sin eventos próximos en {country}",
     "noUpcomingEventsDescription": "No encontramos eventos futuros en tu región. ¡Intenta explorar otros países!",
     "exploreAllEvents": "Explorar Todos los Eventos",
@@ -176,7 +176,25 @@
       "cutoffTime": "Tiempo Límite",
       "time": "Hora",
       "prices": "Precios",
-      "currentPhase": "(Actual)"
+      "currentPhase": "(Actual)",
+      "triathlon": {
+        "segments": "Segmentos de Triatlón",
+        "swim": "Natación",
+        "bike": "Ciclismo",
+        "run": "Carrera",
+        "terrain": "Terreno",
+        "addSegment": "Añadir Segmento",
+        "removeSegment": "Eliminar Segmento",
+        "segmentType": "Tipo de Segmento",
+        "terrainType": "Tipo de Terreno",
+        "terrainTypes": {
+          "POOL": "Piscina",
+          "OPEN_WATER": "Aguas Abiertas",
+          "ROAD": "Carretera",
+          "TRAIL": "Trail",
+          "MIXED": "Mixto"
+        }
+      }
     }
   },
   "eventsPage": {

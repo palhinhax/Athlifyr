@@ -44,6 +44,11 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         variants: {
+          include: {
+            triathlonSegments: {
+              orderBy: { order: "asc" },
+            },
+          },
           orderBy: {
             startDate: "asc",
           },
@@ -146,17 +151,38 @@ export async function POST(request: Request) {
                 distanceKm: number | null;
                 startDate?: string;
                 startTime?: string;
+                triathlonSegments?: Array<{
+                  segmentType: string;
+                  distanceKm: number;
+                  terrainType: string;
+                  order: number;
+                }>;
               }) => ({
                 name: v.name,
                 distanceKm: v.distanceKm,
                 startDate: v.startDate ? new Date(v.startDate) : null,
                 startTime: v.startTime || null,
+                triathlonSegments: v.triathlonSegments
+                  ? {
+                      create: v.triathlonSegments.map((seg) => ({
+                        segmentType: seg.segmentType,
+                        distanceKm: seg.distanceKm,
+                        terrainType: seg.terrainType,
+                        order: seg.order,
+                      })),
+                    }
+                  : undefined,
               })
             ) || [],
         },
       },
       include: {
         variants: {
+          include: {
+            triathlonSegments: {
+              orderBy: { order: "asc" },
+            },
+          },
           orderBy: { startDate: "asc" },
         },
       },

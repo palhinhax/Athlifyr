@@ -57,7 +57,17 @@ export default function AdminEventsPage() {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Form state for new event
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    description: string;
+    sportType: SportType;
+    startDate: string;
+    endDate: string;
+    city: string;
+    country: string;
+    imageUrl: string;
+    externalUrl: string;
+  }>({
     title: "",
     description: "",
     sportType: SportType.RUNNING,
@@ -70,7 +80,18 @@ export default function AdminEventsPage() {
   });
 
   const [variants, setVariants] = useState<
-    { name: string; distanceKm: string; startDate: string; startTime: string }[]
+    {
+      name: string;
+      distanceKm: string;
+      startDate: string;
+      startTime: string;
+      triathlonSegments?: Array<{
+        segmentType: "SWIM" | "BIKE" | "RUN";
+        distanceKm: string;
+        terrainType: "POOL" | "OPEN_WATER" | "ROAD" | "TRAIL" | "MIXED";
+        order: number;
+      }>;
+    }[]
   >([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
 
   // Check if user is admin
@@ -179,6 +200,65 @@ export default function AdminEventsPage() {
     );
   };
 
+  const addTriathlonSegment = (variantIndex: number) => {
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIndex
+          ? {
+              ...v,
+              triathlonSegments: [
+                ...(v.triathlonSegments || []),
+                {
+                  segmentType: "SWIM" as const,
+                  distanceKm: "",
+                  terrainType: "POOL" as const,
+                  order: (v.triathlonSegments?.length || 0) + 1,
+                },
+              ],
+            }
+          : v
+      )
+    );
+  };
+
+  const removeTriathlonSegment = (
+    variantIndex: number,
+    segmentIndex: number
+  ) => {
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIndex
+          ? {
+              ...v,
+              triathlonSegments: v.triathlonSegments?.filter(
+                (_, si) => si !== segmentIndex
+              ),
+            }
+          : v
+      )
+    );
+  };
+
+  const updateTriathlonSegment = (
+    variantIndex: number,
+    segmentIndex: number,
+    field: "segmentType" | "distanceKm" | "terrainType",
+    value: string
+  ) => {
+    setVariants((prev) =>
+      prev.map((v, i) =>
+        i === variantIndex
+          ? {
+              ...v,
+              triathlonSegments: v.triathlonSegments?.map((seg, si) =>
+                si === segmentIndex ? { ...seg, [field]: value } : seg
+              ),
+            }
+          : v
+      )
+    );
+  };
+
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
@@ -229,6 +309,14 @@ export default function AdminEventsPage() {
               distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
               startDate: v.startDate || null,
               startTime: v.startTime || null,
+              triathlonSegments: v.triathlonSegments
+                ?.filter((seg) => seg.distanceKm.trim())
+                .map((seg) => ({
+                  segmentType: seg.segmentType,
+                  distanceKm: parseFloat(seg.distanceKm),
+                  terrainType: seg.terrainType,
+                  order: seg.order,
+                })),
             })),
         }),
       });
@@ -532,6 +620,105 @@ export default function AdminEventsPage() {
                             />
                           </div>
                         </div>
+
+                        {/* Triathlon Segments - Only show for TRIATHLON sport type */}
+                        {formData.sportType === SportType.TRIATHLON && (
+                          <div className="mt-3 space-y-2 border-t pt-3">
+                            <div className="flex items-center justify-between">
+                              <Label className="text-sm font-medium">
+                                Segmentos de Triatlo
+                              </Label>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => addTriathlonSegment(index)}
+                              >
+                                <Plus className="mr-1 h-3 w-3" />
+                                Adicionar Segmento
+                              </Button>
+                            </div>
+                            {variant.triathlonSegments &&
+                              variant.triathlonSegments.length > 0 && (
+                                <div className="space-y-2">
+                                  {variant.triathlonSegments.map(
+                                    (segment, segIndex) => (
+                                      <div
+                                        key={segIndex}
+                                        className="flex items-center gap-2 rounded border bg-muted/50 p-2"
+                                      >
+                                        <select
+                                          value={segment.segmentType}
+                                          onChange={(e) =>
+                                            updateTriathlonSegment(
+                                              index,
+                                              segIndex,
+                                              "segmentType",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="w-24 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                        >
+                                          <option value="SWIM">Natação</option>
+                                          <option value="BIKE">Ciclismo</option>
+                                          <option value="RUN">Corrida</option>
+                                        </select>
+                                        <Input
+                                          placeholder="km"
+                                          value={segment.distanceKm}
+                                          onChange={(e) =>
+                                            updateTriathlonSegment(
+                                              index,
+                                              segIndex,
+                                              "distanceKm",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="w-20 text-xs"
+                                          type="number"
+                                          step="0.1"
+                                        />
+                                        <select
+                                          value={segment.terrainType}
+                                          onChange={(e) =>
+                                            updateTriathlonSegment(
+                                              index,
+                                              segIndex,
+                                              "terrainType",
+                                              e.target.value
+                                            )
+                                          }
+                                          className="flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                        >
+                                          <option value="POOL">Piscina</option>
+                                          <option value="OPEN_WATER">
+                                            Águas Abertas
+                                          </option>
+                                          <option value="ROAD">Estrada</option>
+                                          <option value="TRAIL">Trail</option>
+                                          <option value="MIXED">Misto</option>
+                                        </select>
+                                        <Button
+                                          type="button"
+                                          variant="ghost"
+                                          size="icon"
+                                          className="h-8 w-8"
+                                          onClick={() =>
+                                            removeTriathlonSegment(
+                                              index,
+                                              segIndex
+                                            )
+                                          }
+                                        >
+                                          <X className="h-3 w-3" />
+                                        </Button>
+                                      </div>
+                                    )
+                                  )}
+                                </div>
+                              )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>

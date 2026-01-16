@@ -38,6 +38,20 @@ enum Language {
   it
 }
 
+enum TriathlonSegmentType {
+  SWIM
+  BIKE
+  RUN
+}
+
+enum TriathlonTerrainType {
+  POOL        // Swimming pool
+  OPEN_WATER  // Open water swimming
+  ROAD        // Road cycling/running
+  TRAIL       // Trail cycling/running
+  MIXED       // Mixed terrain
+}
+
 model User {
   id             String          @id @default(cuid())
   name           String?
@@ -210,6 +224,7 @@ model EventVariant {
   
   // Relations
   translations   EventVariantTranslation[]
+  triathlonSegments TriathlonSegment[]
   pricingPhases  PricingPhase[]
   participations Participation[]
   results        Result[]
@@ -236,6 +251,24 @@ model EventVariantTranslation {
   @@unique([variantId, language])
   @@index([variantId])
   @@index([language])
+}
+
+// Triathlon segments for events (swim, bike, run)
+model TriathlonSegment {
+  id          String                @id @default(cuid())
+  variantId   String
+  variant     EventVariant          @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  
+  segmentType TriathlonSegmentType  // SWIM, BIKE, or RUN
+  distanceKm  Float                 // Distance in kilometers
+  terrainType TriathlonTerrainType  // POOL, OPEN_WATER, ROAD, TRAIL, MIXED
+  order       Int                   // Order of the segment (1 = first, 2 = second, 3 = third)
+  
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([variantId])
+  @@index([order])
 }
 
 model PricingPhase {

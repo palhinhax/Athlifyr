@@ -51,6 +51,11 @@ async function getEvent(
               language: locale,
             },
           },
+          triathlonSegments: {
+            orderBy: {
+              order: "asc",
+            },
+          },
           pricingPhases: {
             orderBy: {
               startDate: "asc",

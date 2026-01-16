@@ -2,6 +2,7 @@
 
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
+import { formatPrice, type Currency } from "@/lib/currency";
 import { useLocale } from "next-intl";
 
 interface PricingPhase {
@@ -10,6 +11,7 @@ interface PricingPhase {
   startDate: Date;
   endDate: Date;
   price: number;
+  currency?: Currency;
   discountPercent: number | null;
   note: string | null;
 }
@@ -73,7 +75,7 @@ export function EventPricingPhases({
               </div>
 
               <span className="text-lg font-bold">
-                {phase.price.toFixed(2)}€
+                {formatPrice(phase.price, phase.currency)}
               </span>
             </div>
           );

@@ -1,5 +1,5 @@
 import { generateSportsEventSchema } from "@/lib/structured-data";
-import { SportType } from "@prisma/client";
+import { SportType, Currency } from "@prisma/client";
 
 describe("structured-data", () => {
   describe("generateSportsEventSchema", () => {
@@ -32,6 +32,7 @@ describe("structured-data", () => {
       description: "10 kilometer race",
       distanceKm: 10,
       price: 25.0,
+      currency: Currency.EUR,
       maxParticipants: 100,
       startDate: new Date("2026-06-15T09:00:00Z"),
       startTime: "09:00",
@@ -74,6 +75,7 @@ describe("structured-data", () => {
         startDate: new Date("2026-03-01T00:00:00Z"),
         endDate: new Date("2026-04-30T23:59:59Z"),
         price: 20.0,
+        currency: Currency.EUR,
         discountPercent: null,
         note: null,
         createdAt: new Date("2026-01-01T00:00:00Z"),
@@ -110,6 +112,7 @@ describe("structured-data", () => {
         startDate: new Date("2026-02-01T00:00:00Z"),
         endDate: new Date("2026-06-10T23:59:59Z"),
         price: 25.0,
+        currency: Currency.EUR,
         discountPercent: null,
         note: null,
         createdAt: new Date("2026-01-01T00:00:00Z"),

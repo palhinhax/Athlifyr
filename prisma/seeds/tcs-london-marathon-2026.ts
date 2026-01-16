@@ -4,7 +4,7 @@
  * Idempotent pattern - safe to run multiple times
  */
 
-import { PrismaClient, SportType, Language } from "@prisma/client";
+import { PrismaClient, SportType, Language, Currency } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -508,6 +508,7 @@ Il percorso è rinomato per la sua bellezza panoramica, passando per luoghi embl
     startTime: "08:00",
     maxParticipants: 50000,
     cutoffTimeHours: 8.0,
+    currency: Currency.GBP,
     itraPoints: null,
     atrpGrade: null,
     mountainLevel: null,
@@ -604,6 +605,7 @@ Il percorso è rinomato per la sua bellezza panoramica, passando per luoghi embl
     startDate: new Date("2025-04-01T00:00:00Z"),
     endDate: new Date("2026-04-20T23:59:59Z"),
     price: 69.99,
+    currency: Currency.GBP,
     discountPercent: null,
     note: "Standard UK entry via ballot system. Results announced in October 2025.",
   });
@@ -612,6 +614,7 @@ Il percorso è rinomato per la sua bellezza panoramica, passando per luoghi embl
     startDate: new Date("2025-04-01T00:00:00Z"),
     endDate: new Date("2026-04-20T23:59:59Z"),
     price: 120.0,
+    currency: Currency.GBP,
     discountPercent: null,
     note: "International entry fee for non-UK participants.",
   });
@@ -620,6 +623,7 @@ Il percorso è rinomato per la sua bellezza panoramica, passando per luoghi embl
     startDate: new Date("2025-04-01T00:00:00Z"),
     endDate: new Date("2026-04-20T23:59:59Z"),
     price: 2000.0,
+    currency: Currency.GBP,
     discountPercent: null,
     note: "Minimum fundraising commitment for guaranteed charity place. Guaranteed entry.",
   });

@@ -1,6 +1,6 @@
 {
   "name": "athlifyr",
-  "version": "6.12.1",
+  "version": "7.0.0",
   "private": true,
   "scripts": {
     "dev": "next dev",

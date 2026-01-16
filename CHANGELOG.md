@@ -1,3 +1,10 @@
+## [6.12.1](https://github.com/palhinhax/Athlifyr/compare/v6.12.0...v6.12.1) (2026-01-16)
+
+### Bug Fixes
+
+- **i18n:** correct translation key namespaces in photo gallery component ([b499cf2](https://github.com/palhinhax/Athlifyr/commit/b499cf2a2971acfd7664440317fb369350309fa9))
+- **i18n:** fix locale params handling in pages ([dff7683](https://github.com/palhinhax/Athlifyr/commit/dff768303cc4aaf64a86e838a0368476214633cf))
+
 # [6.12.0](https://github.com/palhinhax/Athlifyr/compare/v6.11.0...v6.12.0) (2026-01-16)
 
 ### Features

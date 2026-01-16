@@ -25,7 +25,6 @@ import {
   Loader2,
   Calendar,
   MapPin,
-  ExternalLink,
   Search,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
@@ -42,6 +41,30 @@ interface Event {
   city: string;
   country: string;
   imageUrl: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  googleMapsUrl: string | null;
+  externalUrl: string | null;
+}
+
+// Helper function to check missing fields
+function getMissingFields(event: Event): string[] {
+  const missing: string[] = [];
+
+  if (!event.latitude || !event.longitude) {
+    missing.push("Coordenadas");
+  }
+  if (!event.googleMapsUrl) {
+    missing.push("Google Maps");
+  }
+  if (!event.externalUrl) {
+    missing.push("Link externo");
+  }
+  if (!event.description || event.description.trim().length === 0) {
+    missing.push("Descrição");
+  }
+
+  return missing;
 }
 
 export default function AdminEventsPage() {
@@ -829,11 +852,40 @@ export default function AdminEventsPage() {
                         </span>
                       </div>
                     </div>
-                    <div className="mt-3 flex items-center gap-2">
-                      <Button variant="outline" size="sm" className="flex-1">
-                        <ExternalLink className="mr-1 h-3 w-3" />
-                        Ver evento
-                      </Button>
+                    <div className="mt-3">
+                      {(() => {
+                        const missingFields = getMissingFields(event);
+                        if (missingFields.length > 0) {
+                          return (
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
+                                <span className="text-amber-600 dark:text-amber-400">
+                                  ⚠️
+                                </span>
+                                <span>Campos em falta</span>
+                              </div>
+                              <div className="flex flex-wrap gap-1">
+                                {missingFields.map((field) => (
+                                  <span
+                                    key={field}
+                                    className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                  >
+                                    {field}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return (
+                          <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
+                            <span className="text-green-600 dark:text-green-400">
+                              ✓
+                            </span>
+                            <span>Completo</span>
+                          </div>
+                        );
+                      })()}
                     </div>
                   </CardContent>
                 </Card>

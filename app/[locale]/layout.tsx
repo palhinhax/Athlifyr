@@ -7,7 +7,6 @@ import { SessionProvider } from "@/components/session-provider";
 import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
-import { EqualWebAccessibility } from "@/components/equalweb-accessibility";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -221,7 +220,6 @@ export default async function RootLayout({
             </footer>
             <Toaster />
             <CookieConsent />
-            <EqualWebAccessibility />
           </SessionProvider>
         </NextIntlClientProvider>
         <Analytics />

@@ -30,6 +30,7 @@ You specialize in generating complete TypeScript seed files that populate the da
 6. **Italian (it)** - it_IT
 
 **Portuguese Language Rules:**
+
 - Use European Portuguese vocabulary ONLY
 - Examples: "ecrã" not "tela", "telemóvel" not "celular", "autocarro" not "ônibus"
 - Use "tu" instead of "você"
@@ -42,6 +43,7 @@ You specialize in generating complete TypeScript seed files that populate the da
 ### 3. Markdown in Descriptions
 
 Event descriptions support Markdown formatting. Use it for:
+
 - Headers (`#`, `##`, `###`)
 - Bold text (`**text**`)
 - Lists (`-`, `1.`)
@@ -50,6 +52,7 @@ Event descriptions support Markdown formatting. Use it for:
 ### 4. Seed File Location and Idempotency (MANDATORY)
 
 **File Location:**
+
 - All seed files MUST be created in `/prisma/seeds/` directory
 - File name format: `<event-slug>.ts` (e.g., `porto-marathon-2026.ts`)
 - NOT in `/prisma/` root - use the `/prisma/seeds/` subdirectory
@@ -66,48 +69,62 @@ Seeds MUST be idempotent (safe to run multiple times on a shared database):
    - This rule is **NON-NEGOTIABLE** - nested creates are unsafe on shared databases
 
 3. **REQUIRED PATTERN: Separate upsert operations**
+
    ```typescript
    // Step 1: Upsert the event ONLY (no nested relations)
    const event = await prisma.event.upsert({
      where: { slug: "event-slug" },
-     update: { /* event fields ONLY */ },
-     create: { /* event fields ONLY, including slug */ }
+     update: {
+       /* event fields ONLY */
+     },
+     create: {
+       /* event fields ONLY, including slug */
+     },
    });
 
    // Step 2: Upsert each translation separately
    for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
      await prisma.eventTranslation.upsert({
        where: {
-         eventId_language: { eventId: event.id, language: lang }
+         eventId_language: { eventId: event.id, language: lang },
        },
-       update: { /* translation fields */ },
-       create: { eventId: event.id, language: lang, /* translation fields */ }
+       update: {
+         /* translation fields */
+       },
+       create: { eventId: event.id, language: lang /* translation fields */ },
      });
    }
 
    // Step 3: Upsert each variant separately
    const variant = await prisma.eventVariant.upsert({
      where: {
-       eventId_slug: { eventId: event.id, slug: "variant-slug" }
+       eventId_slug: { eventId: event.id, slug: "variant-slug" },
      },
-     update: { /* variant fields */ },
-     create: { eventId: event.id, slug: "variant-slug", /* variant fields */ }
+     update: {
+       /* variant fields */
+     },
+     create: { eventId: event.id, slug: "variant-slug" /* variant fields */ },
    });
 
    // Step 4: Upsert variant translations separately
    for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
      await prisma.eventVariantTranslation.upsert({
        where: {
-         variantId_language: { variantId: variant.id, language: lang }
+         variantId_language: { variantId: variant.id, language: lang },
        },
-       update: { /* translation fields */ },
-       create: { variantId: variant.id, language: lang, /* translation fields */ }
+       update: {
+         /* translation fields */
+       },
+       create: {
+         variantId: variant.id,
+         language: lang /* translation fields */,
+       },
      });
    }
    ```
 
 4. **REQUIRED: Use stable composite unique keys**
-   
+
    These composite unique constraints MUST exist in the Prisma schema:
    - **Event**: `slug` (unique)
    - **EventTranslation**: `@@unique([eventId, language])` → use `eventId_language` in where clause
@@ -126,16 +143,16 @@ Seeds MUST be idempotent (safe to run multiple times on a shared database):
    - NOT `npm run` - use `pnpm` as the package manager
 
 6. **Workflow Integration (OPTIONAL BUT RECOMMENDED)**
-   
+
    After creating the seed file, inform the user that they CAN (but are not required to) update the default value in `.github/workflows/manual-seed.yml`:
-   
+
    ```yaml
    seed_file:
      description: "Seed file to run (relative to prisma/seeds)"
      required: true
-     default: "<event-slug>.ts"  # OPTIONAL: Update this for one-click execution
+     default: "<event-slug>.ts" # OPTIONAL: Update this for one-click execution
    ```
-   
+
    **Key points to communicate:**
    - Updating the default value is **OPTIONAL** and user-controlled
    - It provides convenience (one-click execution) but is not required for functionality
@@ -144,9 +161,10 @@ Seeds MUST be idempotent (safe to run multiple times on a shared database):
    - Let the user decide if they want to update the default
 
 **Example message to user:**
-"The seed file has been created at `/prisma/seeds/<event-slug>.ts`. 
+"The seed file has been created at `/prisma/seeds/<event-slug>.ts`.
 
 **To run it:**
+
 - Option 1: Go to Actions → Manual Prisma Seed → Run workflow → Enter: `<event-slug>.ts`
 - Option 2 (convenience): Update the workflow default to `<event-slug>.ts` for one-click execution
 
@@ -157,10 +175,12 @@ The seed is ready to run either way - updating the default is optional but conve
 Every seed file MUST include:
 
 **Note on TypeScript number types**: In TypeScript, both `Int` and `Float` from Prisma map to `number`, but the agent should:
+
 - Use integer values for fields expecting `Int` (distance, elevation, participants, ITRA points, etc.)
 - Use decimal values for fields expecting `Float` (coordinates, cutoff times, prices)
 
 #### A. Event Base Data
+
 ```typescript
 {
   title: string,              // Event title (Portuguese)
@@ -183,19 +203,20 @@ Every seed file MUST include:
 ```
 
 #### B. Event Translations (ALL 6 Languages)
+
 ```typescript
 translations: {
   create: [
     {
-      language: "pt",         // Portuguese (European)
+      language: "pt", // Portuguese (European)
       title: string,
-      description: string,    // Markdown supported
+      description: string, // Markdown supported
       city: string,
-      metaTitle: string,      // SEO meta title
+      metaTitle: string, // SEO meta title
       metaDescription: string, // SEO meta description
     },
     {
-      language: "en",         // English
+      language: "en", // English
       title: string,
       description: string,
       city: string,
@@ -203,7 +224,7 @@ translations: {
       metaDescription: string,
     },
     {
-      language: "es",         // Spanish
+      language: "es", // Spanish
       title: string,
       description: string,
       city: string,
@@ -211,7 +232,7 @@ translations: {
       metaDescription: string,
     },
     {
-      language: "fr",         // French
+      language: "fr", // French
       title: string,
       description: string,
       city: string,
@@ -219,7 +240,7 @@ translations: {
       metaDescription: string,
     },
     {
-      language: "de",         // German
+      language: "de", // German
       title: string,
       description: string,
       city: string,
@@ -227,34 +248,36 @@ translations: {
       metaDescription: string,
     },
     {
-      language: "it",         // Italian
+      language: "it", // Italian
       title: string,
       description: string,
       city: string,
       metaTitle: string,
       metaDescription: string,
     },
-  ]
+  ];
 }
 ```
 
 #### C. Event Variants (Optional but Common)
+
 Race distances/categories within the event:
+
 ```typescript
 variants: {
   create: [
     {
-      name: string,              // Variant name (Portuguese)
+      name: string, // Variant name (Portuguese)
       description: string | null, // Variant description (Portuguese)
       distanceKm: number | null, // Distance in kilometers (integer)
       elevationGainM: number | null, // Elevation gain in meters (integer, D+)
       elevationLossM: number | null, // Elevation loss in meters (integer, D-)
-      startDate: Date | null,    // Specific start date for this variant
-      startTime: string | null,  // Start time (e.g., "09:00")
+      startDate: Date | null, // Specific start date for this variant
+      startTime: string | null, // Start time (e.g., "09:00")
       maxParticipants: number | null, // Maximum participants (integer)
       cutoffTimeHours: number | null, // Time limit in hours (can be decimal, e.g., 6.5)
       itraPoints: number | null, // ITRA points (integer, for trail running)
-      atrpGrade: number | null,  // ATRP grade 1-5 (integer, for trail running)
+      atrpGrade: number | null, // ATRP grade 1-5 (integer, for trail running)
       mountainLevel: number | null, // Mountain level 1-3 (integer)
       translations: {
         create: [
@@ -263,27 +286,28 @@ variants: {
             language: string,
             name: string,
             description: string | null,
-          }
-        ]
-      }
-    }
-  ]
+          },
+        ],
+      },
+    },
+  ];
 }
 ```
 
 #### D. Pricing Phases (Optional)
+
 ```typescript
 pricingPhases: {
   create: [
     {
-      name: string,              // Phase name
-      startDate: Date,           // Start date
-      endDate: Date,             // End date
-      price: number,             // Price in euros (decimal)
+      name: string, // Phase name
+      startDate: Date, // Start date
+      endDate: Date, // End date
+      price: number, // Price in euros (decimal)
       discountPercent: number | null, // Discount percentage (integer, e.g., 10 for 10%)
-      note: string | null,       // Additional note
-    }
-  ]
+      note: string | null, // Additional note
+    },
+  ];
 }
 ```
 
@@ -451,7 +475,9 @@ async function main() {
 
   // Prisma upsert() returns the complete object including all auto-generated fields (id, createdAt, updatedAt)
   console.log("✅ Event upserted with ID:", event.id);
-  console.log("📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)");
+  console.log(
+    "📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)"
+  );
   console.log("🏃 Variants upserted");
   console.log("💰 Pricing phases upserted");
 }
@@ -519,6 +545,7 @@ When a user provides event information, you should:
 **User:** "Create a seed file for the Porto Marathon 2026 on October 15, 2026. It's a running event with 42km and 21km variants."
 
 **Agent Response:**
+
 1. Confirm understanding
 2. Ask for additional details (start time, location coordinates, external URL, pricing)
 3. Generate complete seed file with:
@@ -589,6 +616,7 @@ When a user provides event information, you should:
 After creating the seed file in `/prisma/seeds/<event-slug>.ts`:
 
 **Local Execution:**
+
 ```bash
 pnpm tsx prisma/seeds/<event-slug>.ts
 ```
@@ -606,6 +634,7 @@ The seed MUST be run manually via GitHub Actions:
 **Optional: Set Default for One-Click Execution**
 
 Users can optionally update `.github/workflows/manual-seed.yml` to pre-fill the filename:
+
 1. Edit `.github/workflows/manual-seed.yml`
 2. Update the `default` value in the `seed_file` input to `<event-slug>.ts`
 3. After this, the filename will be pre-filled in the Actions UI

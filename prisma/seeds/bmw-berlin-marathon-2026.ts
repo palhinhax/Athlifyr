@@ -37,9 +37,16 @@ A **BMW BERLIN-MARATHON** é uma das maratonas mais prestigiadas do mundo, parte
 
 ## 📍 Local de Partida e Chegada
 
-**Berlim, Alemanha**
+**Portão de Brandemburgo (Brandenburg Gate)**
+Platz des 18. März, 10117 Berlim, Alemanha
 
-O percurso passa pelos pontos mais emblemáticos de Berlim, incluindo o Portão de Brandemburgo.
+O percurso de 42,195 km passa pelos pontos mais emblemáticos de Berlim:
+- 🏛️ **Brandenburg Gate** (Portão de Brandemburgo) - Partida e Chegada
+- 🏢 **Potsdamer Platz** - Centro moderno de Berlim
+- ⛪ **Berliner Dom** - Catedral de Berlim
+- 🏛️ **Siegessäule** - Coluna da Vitória
+
+O percurso totalmente urbano e plano é considerado o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais.
 
 ## 🏃 A Prova
 
@@ -90,7 +97,13 @@ A BMW BERLIN-MARATHON utiliza um **sistema de lotaria** para inscrições:
 
 A BMW BERLIN-MARATHON é uma das seis maratonas que compõem a prestigiada **Abbott World Marathon Majors Series**, juntamente com Boston, Londres, Chicago, Nova Iorque e Tóquio.
 
-O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais. A corrida atrai atletas de elite e corredores amadores de todo o mundo que procuram alcançar os seus melhores tempos pessoais.
+O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais. A corrida atrai **cerca de 45.000 atletas** de elite e corredores amadores de todo o mundo que procuram alcançar os seus melhores tempos pessoais.
+
+### 🏃 Outras Modalidades
+Além da maratona tradicional, o evento também inclui:
+- ♿ **Maratona em Cadeira de Rodas**
+- 🚴 **Handbike**
+- 🛼 **Inline Skating** (prova separada)
 
 ### Por Que Correr em Berlim?
 
@@ -102,9 +115,13 @@ O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido p
 - 👥 Apoio massivo do público ao longo de todo o percurso
 - 🎉 Experiência completa com EXPO e eventos paralelos
 
-## 📞 Informações
+## 📞 Informações e Links Oficiais
 
-**Website Oficial:** [https://www.bmw-berlin-marathon.com/en/](https://www.bmw-berlin-marathon.com/en/)
+- 🌐 **Website Oficial:** [https://www.bmw-berlin-marathon.com/](https://www.bmw-berlin-marathon.com/)
+- 📘 **Facebook:** [https://www.facebook.com/berlinmarathon](https://www.facebook.com/berlinmarathon)
+- 📸 **Instagram:** [https://www.instagram.com/berlinmarathon/](https://www.instagram.com/berlinmarathon/)
+- 📜 **Regulamento:** [Condições de Participação](https://www.bmw-berlin-marathon.com/en/your-race/conditions-of-participation/)
+- 🗺️ **Mapa do Percurso:** [Ver Percurso](https://www.bmw-berlin-marathon.com/en/your-race/course/)
 
 ---
 
@@ -115,9 +132,9 @@ O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido p
       registrationDeadline: new Date("2025-11-06T23:59:59.000Z"),
       city: "Berlim",
       country: "Alemanha",
-      latitude: 52.52,
-      longitude: 13.405,
-      googleMapsUrl: "https://maps.app.goo.gl/8KqWnXqXqGxYqUQJ6",
+      latitude: 52.516275,
+      longitude: 13.377704,
+      googleMapsUrl: "https://maps.google.com/?q=52.516275,13.377704",
       externalUrl: "https://www.bmw-berlin-marathon.com/en/",
       imageUrl: "",
       isFeatured: true,
@@ -146,9 +163,16 @@ A **BMW BERLIN-MARATHON** é uma das maratonas mais prestigiadas do mundo, parte
 
 ## 📍 Local de Partida e Chegada
 
-**Berlim, Alemanha**
+**Portão de Brandemburgo (Brandenburg Gate)**
+Platz des 18. März, 10117 Berlim, Alemanha
 
-O percurso passa pelos pontos mais emblemáticos de Berlim, incluindo o Portão de Brandemburgo.
+O percurso de 42,195 km passa pelos pontos mais emblemáticos de Berlim:
+- 🏛️ **Brandenburg Gate** (Portão de Brandemburgo) - Partida e Chegada
+- 🏢 **Potsdamer Platz** - Centro moderno de Berlim
+- ⛪ **Berliner Dom** - Catedral de Berlim
+- 🏛️ **Siegessäule** - Coluna da Vitória
+
+O percurso totalmente urbano e plano é considerado o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais.
 
 ## 🏃 A Prova
 
@@ -199,7 +223,13 @@ A BMW BERLIN-MARATHON utiliza um **sistema de lotaria** para inscrições:
 
 A BMW BERLIN-MARATHON é uma das seis maratonas que compõem a prestigiada **Abbott World Marathon Majors Series**, juntamente com Boston, Londres, Chicago, Nova Iorque e Tóquio.
 
-O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais. A corrida atrai atletas de elite e corredores amadores de todo o mundo que procuram alcançar os seus melhores tempos pessoais.
+O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido palco de inúmeros recordes mundiais. A corrida atrai **cerca de 45.000 atletas** de elite e corredores amadores de todo o mundo que procuram alcançar os seus melhores tempos pessoais.
+
+### 🏃 Outras Modalidades
+Além da maratona tradicional, o evento também inclui:
+- ♿ **Maratona em Cadeira de Rodas**
+- 🚴 **Handbike**
+- 🛼 **Inline Skating** (prova separada)
 
 ### Por Que Correr em Berlim?
 
@@ -211,9 +241,13 @@ O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido p
 - 👥 Apoio massivo do público ao longo de todo o percurso
 - 🎉 Experiência completa com EXPO e eventos paralelos
 
-## 📞 Informações
+## 📞 Informações e Links Oficiais
 
-**Website Oficial:** [https://www.bmw-berlin-marathon.com/en/](https://www.bmw-berlin-marathon.com/en/)
+- 🌐 **Website Oficial:** [https://www.bmw-berlin-marathon.com/](https://www.bmw-berlin-marathon.com/)
+- 📘 **Facebook:** [https://www.facebook.com/berlinmarathon](https://www.facebook.com/berlinmarathon)
+- 📸 **Instagram:** [https://www.instagram.com/berlinmarathon/](https://www.instagram.com/berlinmarathon/)
+- 📜 **Regulamento:** [Condições de Participação](https://www.bmw-berlin-marathon.com/en/your-race/conditions-of-participation/)
+- 🗺️ **Mapa do Percurso:** [Ver Percurso](https://www.bmw-berlin-marathon.com/en/your-race/course/)
 
 ---
 
@@ -224,9 +258,9 @@ O percurso de Berlim é famoso por ser o **mais rápido do mundo**, tendo sido p
       registrationDeadline: new Date("2025-11-06T23:59:59.000Z"),
       city: "Berlim",
       country: "Alemanha",
-      latitude: 52.52,
-      longitude: 13.405,
-      googleMapsUrl: "https://maps.app.goo.gl/8KqWnXqXqGxYqUQJ6",
+      latitude: 52.516275,
+      longitude: 13.377704,
+      googleMapsUrl: "https://maps.google.com/?q=52.516275,13.377704",
       externalUrl: "https://www.bmw-berlin-marathon.com/en/",
       imageUrl: "",
       isFeatured: true,

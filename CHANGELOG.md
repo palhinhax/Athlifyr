@@ -1,3 +1,9 @@
+# [6.12.0](https://github.com/palhinhax/Athlifyr/compare/v6.11.0...v6.12.0) (2026-01-16)
+
+### Features
+
+- **seo:** add validFrom and performer to SportsEvent schema ([1f97d5b](https://github.com/palhinhax/Athlifyr/commit/1f97d5b249ccaed0503e6880db294dce1617d902))
+
 # [6.11.0](https://github.com/palhinhax/Athlifyr/compare/v6.10.0...v6.11.0) (2026-01-16)
 
 ### Bug Fixes

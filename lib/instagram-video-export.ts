@@ -123,10 +123,19 @@ export async function exportToVideo({
     const canvas = document.createElement("canvas");
     canvas.width = width;
     canvas.height = height;
-    const ctx = canvas.getContext("2d", {
-      alpha: false, // Optimize for opaque content
-      desynchronized: true, // Better performance for animations
-    });
+
+    // Try to get context with optimizations, fall back to basic context if unsupported
+    let ctx: CanvasRenderingContext2D | null;
+    try {
+      ctx = canvas.getContext("2d", {
+        alpha: false, // Optimize for opaque content
+        desynchronized: true, // Better performance for animations (may not be supported in all browsers)
+      });
+    } catch {
+      // Fallback for browsers that don't support desynchronized option
+      ctx = canvas.getContext("2d", { alpha: false });
+    }
+
     if (!ctx) {
       throw new Error("Could not get canvas context");
     }
@@ -254,14 +263,15 @@ export async function exportToVideo({
             });
           }
 
-          // Capture frame directly to canvas with lower quality settings
+          // Capture frame directly to canvas
+          // Note: cacheBust is disabled for better performance
+          // This is acceptable since we control the timing and the element content
           const dataUrl = await toPng(element, {
             width,
             height,
             pixelRatio: 1,
-            cacheBust: false, // Disable cache busting for better performance
+            cacheBust: false, // Intentionally disabled for performance
             skipFonts: false, // Ensure fonts are rendered
-            quality: 0.85, // Slightly lower quality for smaller size
           });
 
           // Load and draw to canvas

@@ -101,15 +101,19 @@ function getLocale(): SupportedLocale {
 }
 
 export default function NotFound() {
-  const locale = getLocale();
-  const t = translations[locale];
-  const [videoSrc, setVideoSrc] = useState<string>("");
+  const [locale, setLocale] = useState<SupportedLocale>("en");
+  const [videoSrc, setVideoSrc] = useState<string>(backgroundVideos[0]); // Use first video as default
 
   useEffect(() => {
+    // Detect locale client-side only
+    setLocale(getLocale());
+
     // Select random video on mount
     const randomIndex = Math.floor(Math.random() * backgroundVideos.length);
     setVideoSrc(backgroundVideos[randomIndex]);
   }, []);
+
+  const t = translations[locale];
 
   return (
     <html lang={locale}>

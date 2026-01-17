@@ -84,7 +84,15 @@ Choose from 5 brand colors:
 - Upload custom background images
 - Adjust overlay intensity (0-100%) for text readability
 - Supports JPG, PNG formats
-- Max file size: 5MB (configured in upload API)
+- Max file size: 5MB for regular users, 20MB for admins
+
+#### Video Upload
+
+- Upload custom background videos
+- Adjust overlay intensity (0-100%) for text readability
+- Supports MP4, WebM, QuickTime formats
+- Max file size: 50MB for regular users, 100MB for admins
+- Export as WebM video format
 
 ### 4. Safe Area Guides
 

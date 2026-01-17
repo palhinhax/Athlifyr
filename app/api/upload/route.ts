@@ -29,11 +29,11 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(bytes);
 
     // Determine max file size based on user role and file type
-    // Videos can be larger: Admins up to 50MB, regular users up to 20MB
+    // Videos can be larger: Admins up to 100MB, regular users up to 50MB
     // Images: Admins up to 20MB, regular users up to 5MB
     const isVideo = file.type.startsWith("video/");
     const maxSizeMB =
-      session.user.role === "ADMIN" ? (isVideo ? 50 : 20) : isVideo ? 20 : 5;
+      session.user.role === "ADMIN" ? (isVideo ? 100 : 20) : isVideo ? 50 : 5;
 
     // Validate file (image or video)
     const validation = validateFile(buffer, file.type, maxSizeMB);

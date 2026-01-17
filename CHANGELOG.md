@@ -1,3 +1,15 @@
+# [8.1.0](https://github.com/palhinhax/Athlifyr/compare/v8.0.0...v8.1.0) (2026-01-17)
+
+### Features
+
+- **admin:** add visual warnings for incomplete event data ([b3cb3a5](https://github.com/palhinhax/Athlifyr/commit/b3cb3a5e30dbbd427cd0026f925acf552f90a29b))
+- **events:** add GP Atlântico and Corrida da Árvore 2026 seeds ([ea40a03](https://github.com/palhinhax/Athlifyr/commit/ea40a03d4c400bab52695ed899e1c5a72c88a06b))
+- **events:** add lightbox and new event seed ([d561b02](https://github.com/palhinhax/Athlifyr/commit/d561b02c7cb880217705489646563b6392949054))
+- **events:** add map/list toggle view in events page ([ffbdb42](https://github.com/palhinhax/Athlifyr/commit/ffbdb421fb12f29240df4fc54a63be7a13014e93))
+- **events:** hide distance filter and ignore distance in map mode ([dca5946](https://github.com/palhinhax/Athlifyr/commit/dca59467d7f7091afb39fc29cf7b16422936105a))
+- **seeds:** add seeds for Passeio BTT and Trail Terras de Oiá 2026 events ([4f4dbbc](https://github.com/palhinhax/Athlifyr/commit/4f4dbbc9f1718188066de89dc7d3ef2344b0e4af))
+- **seeds:** update Terras de Oiã events with correct data ([8653ffe](https://github.com/palhinhax/Athlifyr/commit/8653ffe238e94b625472f98f751a8bdc7ff8134a))
+
 # [8.0.0](https://github.com/palhinhax/Athlifyr/compare/v7.7.0...v8.0.0) (2026-01-16)
 
 ### Features

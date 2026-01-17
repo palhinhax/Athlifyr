@@ -271,7 +271,6 @@ export async function exportToVideo({
             height,
             pixelRatio: 1,
             cacheBust: false, // Intentionally disabled for performance
-            skipFonts: false, // Ensure fonts are rendered
           });
 
           // Load and draw to canvas

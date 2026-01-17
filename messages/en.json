@@ -167,6 +167,21 @@
     "noPosts": "No posts yet. Be the first to share something!",
     "addPhoto": "Add Photo",
     "publish": "Publish",
+    "share": {
+      "button": "Share",
+      "shareMenu": "Share...",
+      "copyLink": "Copy Link",
+      "linkCopied": "Link copied!",
+      "linkCopiedDesc": "The link has been copied to the clipboard.",
+      "error": "Error",
+      "copyError": "Could not copy the link."
+    },
+    "pricing": {
+      "title": "Registration Prices",
+      "titleWithVariant": "Prices - {variant}",
+      "current": "Current",
+      "until": "Until"
+    },
     "registration": {
       "willYouGo": "Will you go?",
       "participants": "participants",
@@ -318,6 +333,101 @@
         "in_progress": "IN PROGRESS",
         "resolved": "RESOLVED",
         "closed": "CLOSED"
+      },
+      "statusLabels": {
+        "pending": "Pending",
+        "in_progress": "In Progress",
+        "resolved": "Resolved",
+        "closed": "Closed"
+      },
+      "actions": {
+        "reply": "Reply",
+        "delete": "Delete",
+        "cancel": "Cancel",
+        "send": "Send Email",
+        "sending": "Sending...",
+        "deleting": "Deleting..."
+      },
+      "toast": {
+        "statusUpdated": "Status updated",
+        "statusUpdatedDesc": "The contact was marked as {status}.",
+        "error": "Error",
+        "updateError": "Could not update the status.",
+        "updateErrorOccurred": "An error occurred while updating the status.",
+        "emptyMessage": "Please write a message before sending.",
+        "emailSent": "Email sent",
+        "emailSentDesc": "Your reply was sent to {email}.",
+        "sendError": "Error sending",
+        "sendErrorDesc": "Could not send the email.",
+        "sendErrorOccurred": "An error occurred while sending the email.",
+        "contactDeleted": "Contact deleted",
+        "contactDeletedDesc": "The contact was successfully deleted.",
+        "deleteError": "Error deleting",
+        "deleteErrorDesc": "Could not delete the contact.",
+        "deleteErrorOccurred": "An error occurred while deleting the contact."
+      },
+      "replyDialog": {
+        "title": "Reply to {name}",
+        "description": "Send a reply to {email} about \"{subject}\"",
+        "adminName": "Your Name (optional)",
+        "adminNameHelp": "Default: \"Athlifyr Team\"",
+        "adminNamePlaceholder": "Ex: John Silva",
+        "message": "Message",
+        "required": "*",
+        "messagePlaceholder": "Write your reply here...",
+        "messageHelp": "The message will be sent using Athlifyr's professional template.",
+        "originalMessage": "Original Message:"
+      },
+      "deleteDialog": {
+        "title": "Confirm Deletion",
+        "description": "Are you sure you want to delete this contact from {name}?",
+        "subject": "Subject",
+        "email": "Email",
+        "warning": "⚠️ Warning: This action cannot be undone!",
+        "warningDesc": "The contact will be permanently deleted from the database.",
+        "confirmButton": "Delete Contact"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "Invalid file",
+        "invalidFileDesc": "Select a valid image.",
+        "fileTooLarge": "File too large",
+        "fileTooLargeDesc": "The image must be at most {size}MB.",
+        "imageUploaded": "Image uploaded",
+        "imageUploadedDesc": "The image was uploaded successfully.",
+        "uploadError": "Error",
+        "uploadErrorDesc": "Could not upload the image.",
+        "eventUpdated": "Event updated",
+        "eventUpdatedDesc": "The event was updated successfully.",
+        "updateError": "Error",
+        "updateErrorDesc": "Could not update the event.",
+        "eventDeleted": "Event deleted",
+        "eventDeletedDesc": "The event was deleted successfully.",
+        "deleteError": "Error",
+        "deleteErrorDesc": "Could not delete the event."
+      },
+      "actions": {
+        "changeImage": "Change image",
+        "uploadImage": "Upload image",
+        "saving": "Saving...",
+        "saveChanges": "Save changes"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Invalid file type",
+        "invalidFileTypeDesc": "Select a valid image",
+        "fileTooLarge": "File too large",
+        "fileTooLargeDesc": "The image must be at most 5MB",
+        "uploadError": "Error uploading image",
+        "uploadErrorDesc": "Could not upload the image",
+        "emptyContent": "Empty content",
+        "emptyContentDesc": "Write something before publishing",
+        "postPublished": "✅ Post published!",
+        "postPublishedDesc": "Your post was published successfully",
+        "publishError": "Error publishing",
+        "publishErrorDesc": "Could not publish the post"
       }
     }
   },

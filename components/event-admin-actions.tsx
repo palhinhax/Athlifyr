@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, Language } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 // Languages configuration
 const SUPPORTED_LANGUAGES: { code: Language; name: string; flag: string }[] = [
@@ -97,6 +98,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const t = useTranslations("admin.events");
 
   // Form state
   const [formData, setFormData] = useState({
@@ -267,8 +269,8 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     if (!file.type.startsWith("image/")) {
       toast({
         variant: "destructive",
-        title: "Ficheiro inválido",
-        description: "Por favor seleciona uma imagem.",
+        title: t("toast.invalidFile"),
+        description: t("toast.invalidFileDesc"),
       });
       return;
     }
@@ -276,8 +278,8 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     if (file.size > 5 * 1024 * 1024) {
       toast({
         variant: "destructive",
-        title: "Ficheiro muito grande",
-        description: "A imagem deve ter no máximo 5MB.",
+        title: t("toast.fileTooLarge"),
+        description: t("toast.fileTooLargeDesc", { size: "5" }),
       });
       return;
     }
@@ -301,14 +303,14 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       setFormData((prev) => ({ ...prev, imageUrl: uploadData.file.url }));
 
       toast({
-        title: "Imagem carregada",
-        description: "A imagem foi carregada com sucesso.",
+        title: t("toast.imageUploaded"),
+        description: t("toast.imageUploadedDesc"),
       });
     } catch {
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível carregar a imagem.",
+        title: t("toast.uploadError"),
+        description: t("toast.uploadErrorDesc"),
       });
     } finally {
       setIsUploading(false);
@@ -408,16 +410,16 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       }
 
       toast({
-        title: "Evento atualizado",
-        description: "As alterações foram guardadas com sucesso.",
+        title: t("toast.eventUpdated"),
+        description: t("toast.eventUpdatedDesc"),
       });
 
       setIsEditOpen(false);
       router.refresh();
     } catch {
       toast({
-        title: "Erro",
-        description: "Não foi possível atualizar o evento.",
+        title: t("toast.updateError"),
+        description: t("toast.updateErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -437,16 +439,16 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       }
 
       toast({
-        title: "Evento eliminado",
-        description: "O evento foi eliminado com sucesso.",
+        title: t("toast.eventDeleted"),
+        description: t("toast.eventDeletedDesc"),
       });
 
       router.push("/events");
       router.refresh();
     } catch {
       toast({
-        title: "Erro",
-        description: "Não foi possível eliminar o evento.",
+        title: t("toast.deleteError"),
+        description: t("toast.deleteErrorDesc"),
         variant: "destructive",
       });
     } finally {
@@ -598,7 +600,9 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                   ) : (
                     <ImagePlus className="mr-2 h-4 w-4" />
                   )}
-                  {formData.imageUrl ? "Alterar imagem" : "Carregar imagem"}
+                  {formData.imageUrl
+                    ? t("actions.changeImage")
+                    : t("actions.uploadImage")}
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
@@ -948,7 +952,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               Cancelar
             </Button>
             <Button onClick={handleUpdate} disabled={isLoading}>
-              {isLoading ? "A guardar..." : "Guardar alterações"}
+              {isLoading ? t("actions.saving") : t("actions.saveChanges")}
             </Button>
           </DialogFooter>
         </DialogContent>

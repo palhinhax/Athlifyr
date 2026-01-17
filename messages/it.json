@@ -198,6 +198,21 @@
     "noPosts": "Nessun post ancora. Sii il primo a condividere qualcosa!",
     "addPhoto": "Aggiungi foto",
     "publish": "Pubblica",
+    "share": {
+      "button": "Condividi",
+      "shareMenu": "Condividi...",
+      "copyLink": "Copia Link",
+      "linkCopied": "Link copiato!",
+      "linkCopiedDesc": "Il link è stato copiato negli appunti.",
+      "error": "Errore",
+      "copyError": "Impossibile copiare il link."
+    },
+    "pricing": {
+      "title": "Prezzi di Iscrizione",
+      "titleWithVariant": "Prezzi - {variant}",
+      "current": "Attuale",
+      "until": "Fino al"
+    },
     "registration": {
       "willYouGo": "Parteciperai?",
       "participants": "partecipanti",
@@ -343,6 +358,101 @@
         "in_progress": "IN CORSO",
         "resolved": "RISOLTO",
         "closed": "CHIUSO"
+      },
+      "statusLabels": {
+        "pending": "In Attesa",
+        "in_progress": "In Corso",
+        "resolved": "Risolto",
+        "closed": "Chiuso"
+      },
+      "actions": {
+        "reply": "Rispondi",
+        "delete": "Elimina",
+        "cancel": "Annulla",
+        "send": "Invia",
+        "sending": "Invio...",
+        "deleting": "Eliminazione..."
+      },
+      "toast": {
+        "statusUpdated": "Stato aggiornato",
+        "statusUpdatedDesc": "Lo stato del contatto è stato aggiornato con successo.",
+        "error": "Errore",
+        "updateError": "Errore di aggiornamento",
+        "updateErrorOccurred": "Impossibile aggiornare lo stato del contatto.",
+        "emptyMessage": "Il messaggio non può essere vuoto.",
+        "emailSent": "Email inviata",
+        "emailSentDesc": "La risposta è stata inviata con successo.",
+        "sendError": "Errore di invio",
+        "sendErrorDesc": "Impossibile inviare l'email di risposta.",
+        "sendErrorOccurred": "Si è verificato un errore durante l'invio dell'email.",
+        "contactDeleted": "Contatto eliminato",
+        "contactDeletedDesc": "Il contatto è stato eliminato con successo.",
+        "deleteError": "Errore di eliminazione",
+        "deleteErrorDesc": "Impossibile eliminare il contatto.",
+        "deleteErrorOccurred": "Si è verificato un errore durante l'eliminazione del contatto."
+      },
+      "replyDialog": {
+        "title": "Rispondi al contatto",
+        "description": "Invia una risposta via email all'utente",
+        "adminName": "Il tuo nome (admin)",
+        "adminNameHelp": "Nome che apparirà nell'email",
+        "adminNamePlaceholder": "Es: Team Athlifyr",
+        "message": "Messaggio di risposta",
+        "required": "*",
+        "messagePlaceholder": "Scrivi qui la tua risposta...",
+        "messageHelp": "Questo messaggio verrà inviato via email all'utente",
+        "originalMessage": "Messaggio originale"
+      },
+      "deleteDialog": {
+        "title": "Elimina contatto",
+        "description": "Sei sicuro di voler eliminare questo contatto?",
+        "subject": "Oggetto",
+        "email": "Email",
+        "warning": "Attenzione",
+        "warningDesc": "Questa azione è irreversibile. Il contatto verrà eliminato definitivamente.",
+        "confirmButton": "Sì, elimina"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "File non valido",
+        "invalidFileDesc": "Sono consentiti solo file immagine.",
+        "fileTooLarge": "File troppo grande",
+        "fileTooLargeDesc": "Il file deve essere al massimo 10MB.",
+        "imageUploaded": "Immagine caricata",
+        "imageUploadedDesc": "L'immagine è stata caricata con successo.",
+        "uploadError": "Errore di caricamento",
+        "uploadErrorDesc": "Impossibile caricare l'immagine.",
+        "eventUpdated": "Evento aggiornato",
+        "eventUpdatedDesc": "L'evento è stato aggiornato con successo.",
+        "updateError": "Errore di aggiornamento",
+        "updateErrorDesc": "Impossibile aggiornare l'evento.",
+        "eventDeleted": "Evento eliminato",
+        "eventDeletedDesc": "L'evento è stato eliminato con successo.",
+        "deleteError": "Errore di eliminazione",
+        "deleteErrorDesc": "Impossibile eliminare l'evento."
+      },
+      "actions": {
+        "changeImage": "Cambia Immagine",
+        "uploadImage": "Carica Immagine",
+        "saving": "Salvataggio...",
+        "saveChanges": "Salva Modifiche"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Tipo di file non valido",
+        "invalidFileTypeDesc": "Sono consentiti solo file immagine.",
+        "fileTooLarge": "File troppo grande",
+        "fileTooLargeDesc": "Il file deve essere al massimo 5MB.",
+        "uploadError": "Errore di caricamento",
+        "uploadErrorDesc": "Impossibile caricare l'immagine.",
+        "emptyContent": "Contenuto vuoto",
+        "emptyContentDesc": "Per favore scrivi qualcosa prima di pubblicare.",
+        "postPublished": "Pubblicazione creata",
+        "postPublishedDesc": "La tua pubblicazione è stata condivisa con successo.",
+        "publishError": "Errore di pubblicazione",
+        "publishErrorDesc": "Impossibile creare la pubblicazione."
       }
     }
   },

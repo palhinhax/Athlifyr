@@ -20,6 +20,7 @@ interface EventSidebarProps {
     longitude: number | null;
     googleMapsUrl: string | null;
     stravaRouteEmbed: string | null;
+    sportTypes: string[];
   };
 }
 
@@ -80,6 +81,7 @@ export function EventSidebar({ event }: EventSidebarProps) {
                   latitude={event.latitude}
                   longitude={event.longitude}
                   title={event.title}
+                  sportTypes={event.sportTypes}
                 />
               </div>
               <div className="p-4">

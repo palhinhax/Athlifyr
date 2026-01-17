@@ -104,32 +104,14 @@ export function MobileNav() {
                     {t("accountSettings")}
                   </Link>
                   {session.user.role === "ADMIN" && (
-                    <>
-                      <Link
-                        href="/admin/events"
-                        onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                      >
-                        <Shield className="h-4 w-4" />
-                        {t("manageEvents")}
-                      </Link>
-                      <Link
-                        href="/admin/instagram"
-                        onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                      >
-                        <Shield className="h-4 w-4" />
-                        {t("instagramGenerator")}
-                      </Link>
-                      <Link
-                        href="/admin/contacts"
-                        onClick={closeMenu}
-                        className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                      >
-                        <Shield className="h-4 w-4" />
-                        {t("adminContacts")}
-                      </Link>
-                    </>
+                    <Link
+                      href="/admin"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                    >
+                      <Shield className="h-4 w-4" />
+                      {t("admin")}
+                    </Link>
                   )}
                   <button
                     onClick={() => {

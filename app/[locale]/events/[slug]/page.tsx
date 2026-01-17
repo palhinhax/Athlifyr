@@ -277,6 +277,7 @@ export default async function EventPage({ params }: PageProps) {
                 city={event.city}
                 country={event.country}
                 googleMapsUrl={event.googleMapsUrl}
+                sportTypes={event.sportTypes}
               />
             )}
 
@@ -340,6 +341,7 @@ export default async function EventPage({ params }: PageProps) {
               longitude: event.longitude,
               googleMapsUrl: event.googleMapsUrl,
               stravaRouteEmbed: event.stravaRouteEmbed,
+              sportTypes: event.sportTypes,
             }}
           />
         </div>

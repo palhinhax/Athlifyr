@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "@/lib/translations";
 import { locales } from "@/i18n";
+import { getSportIcon } from "@/lib/sport-config";
 
 interface SportFilterProps {
   sportTypes: { value: string; label: string }[];
@@ -64,8 +65,18 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
             variant={currentFilter === sport.value ? "default" : "outline"}
             size="sm"
             onClick={() => handleFilterClick(sport.value)}
+            className="gap-2"
           >
-            {sport.value === "ALL" ? t("nav.all") : t(`sports.${sport.value}`)}
+            {sport.value !== "ALL" && (
+              <span className="text-base leading-none">
+                {getSportIcon(sport.value)}
+              </span>
+            )}
+            <span>
+              {sport.value === "ALL"
+                ? t("nav.all")
+                : t(`sports.${sport.value}`)}
+            </span>
           </Button>
         ))}
       </div>

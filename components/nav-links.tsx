@@ -27,20 +27,9 @@ export function NavLinks() {
         {t("contact")}
       </Link>
       {session?.user?.role === "ADMIN" && (
-        <>
-          <Link
-            href="/admin/instagram"
-            className="text-sm font-medium hover:underline"
-          >
-            {t("instagram")}
-          </Link>
-          <Link
-            href="/admin/contacts"
-            className="text-sm font-medium hover:underline"
-          >
-            {t("contacts")}
-          </Link>
-        </>
+        <Link href="/admin" className="text-sm font-medium hover:underline">
+          {t("admin")}
+        </Link>
       )}
     </>
   );

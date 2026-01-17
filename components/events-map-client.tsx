@@ -13,44 +13,37 @@ import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
 import type { MapEvent } from "./events-map";
 import type { MapFilters } from "./map-filters";
-
-// Sport type icons mapping
-const sportIcons: Record<string, string> = {
-  RUNNING: "🏃",
-  TRAIL: "🥾",
-  CYCLING: "🚴",
-  SWIMMING: "🏊",
-  TRIATHLON: "🏊‍♂️",
-  HYROX: "💪",
-  CROSSFIT: "🏋️",
-  OBSTACLE: "🧗",
-  WALKING: "🚶",
-  OTHER: "📍",
-};
+import {
+  getSportIcon,
+  getSportColors,
+  getPrimarySport,
+} from "@/lib/sport-config";
 
 // Create custom icon based on sport type
 const createCustomIcon = (sportTypes: string[]): DivIcon => {
-  const primarySport = sportTypes[0] || "OTHER";
-  const icon = sportIcons[primarySport] || sportIcons.OTHER;
+  const primarySport = getPrimarySport(sportTypes);
+  const icon = getSportIcon(primarySport);
+  const colors = getSportColors(primarySport);
 
   return L.divIcon({
     html: `
       <div style="
         width: 40px;
         height: 40px;
-        background: linear-gradient(135deg, #FE8818 0%, #FF6B35 100%);
+        background: ${colors.solid};
         border-radius: 50% 50% 50% 0;
         transform: rotate(-45deg);
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 4px 12px rgba(254, 136, 24, 0.4);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         border: 3px solid white;
       ">
         <span style="
           font-size: 20px;
           transform: rotate(45deg);
           display: block;
+          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
         ">${icon}</span>
       </div>
     `,

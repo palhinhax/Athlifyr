@@ -61,20 +61,29 @@ export async function exportToVideo({
 
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
+        console.log("Video chunk received:", event.data.size, "bytes");
         chunks.push(event.data);
       }
     };
 
     mediaRecorder.onstop = async () => {
+      console.log("Recording stopped. Total chunks:", chunks.length);
       const blob = new Blob(chunks, { type: "video/webm" });
+      console.log("Final video blob size:", blob.size, "bytes");
+
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
       link.download = `${filename}.webm`;
       document.body.appendChild(link);
+      console.log("Triggering download:", link.download);
       link.click();
       document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+
+      // Wait a bit before revoking URL
+      setTimeout(() => {
+        URL.revokeObjectURL(url);
+      }, 100);
 
       // Stop video
       if (videoElement) {
@@ -82,15 +91,19 @@ export async function exportToVideo({
       }
     };
 
+    console.log("Starting MediaRecorder...");
     mediaRecorder.start();
 
     const totalFrames = duration * fps;
     let currentFrame = 0;
     const frameInterval = 1000 / fps;
 
+    console.log(`Capturing ${totalFrames} frames at ${fps} FPS...`);
+
     // Capture frames using html-to-image
     const captureFrame = async () => {
       if (currentFrame >= totalFrames) {
+        console.log("All frames captured. Stopping recorder...");
         mediaRecorder.stop();
         return;
       }
@@ -111,8 +124,16 @@ export async function exportToVideo({
           ctx.drawImage(img, 0, 0, width, height);
 
           currentFrame++;
+          if (currentFrame % 30 === 0) {
+            console.log(`Progress: ${currentFrame}/${totalFrames} frames`);
+          }
 
           // Schedule next frame
+          setTimeout(captureFrame, frameInterval);
+        };
+        img.onerror = (error) => {
+          console.error("Error loading frame image:", error);
+          currentFrame++;
           setTimeout(captureFrame, frameInterval);
         };
         img.src = dataUrl;
@@ -125,6 +146,7 @@ export async function exportToVideo({
     };
 
     // Start capturing
+    console.log("Starting frame capture...");
     captureFrame();
   } catch (error) {
     console.error("Error exporting video:", error);

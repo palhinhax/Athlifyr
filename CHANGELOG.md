@@ -1,3 +1,10 @@
+# [8.2.0](https://github.com/palhinhax/Athlifyr/compare/v8.1.0...v8.2.0) (2026-01-17)
+
+### Features
+
+- **events:** add event seeds and infinite scroll implementation ([b024627](https://github.com/palhinhax/Athlifyr/commit/b0246271c329c9915d27e72fba9b319139a5b985))
+- **not-found:** update locale handling and set default video source ([e6199e0](https://github.com/palhinhax/Athlifyr/commit/e6199e0b1333c8ae3c84d5790d61cb4ca7fe2474))
+
 # [8.1.0](https://github.com/palhinhax/Athlifyr/compare/v8.0.0...v8.1.0) (2026-01-17)
 
 ### Features

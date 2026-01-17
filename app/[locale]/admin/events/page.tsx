@@ -78,6 +78,10 @@ export default function AdminEventsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 12;
 
   // Form state for new event
   const [formData, setFormData] = useState<{
@@ -131,15 +135,24 @@ export default function AdminEventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("/api/events?pageSize=1000"); // Fetch all events for admin
+        const params = new URLSearchParams({
+          page: currentPage.toString(),
+          pageSize: PAGE_SIZE.toString(),
+        });
+
+        if (searchQuery.trim()) {
+          params.append("search", searchQuery.trim());
+        }
+
+        const res = await fetch(`/api/events?${params}`);
         if (res.ok) {
           const data = await res.json();
-          // Handle new pagination response format
           if (data.events && Array.isArray(data.events)) {
             setEvents(data.events);
-          } else if (Array.isArray(data)) {
-            // Fallback for old format (backwards compatibility)
-            setEvents(data);
+            if (data.pagination) {
+              setTotalPages(data.pagination.totalPages);
+              setTotalCount(data.pagination.totalCount);
+            }
           }
         }
       } catch (error) {
@@ -152,7 +165,7 @@ export default function AdminEventsPage() {
     if (session?.user?.role === "ADMIN") {
       fetchEvents();
     }
-  }, [session]);
+  }, [session, currentPage, searchQuery, PAGE_SIZE]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -357,9 +370,6 @@ export default function AdminEventsPage() {
         throw new Error("Failed to create event");
       }
 
-      const newEvent = await response.json();
-      setEvents((prev) => [newEvent, ...prev]);
-
       toast({
         title: "Evento criado",
         description: "O evento foi criado com sucesso.",
@@ -367,6 +377,10 @@ export default function AdminEventsPage() {
 
       setIsCreateOpen(false);
       resetForm();
+
+      // Refresh events list after creation
+      setCurrentPage(1);
+      setIsLoading(true);
     } catch {
       toast({
         title: "Erro",
@@ -378,12 +392,15 @@ export default function AdminEventsPage() {
     }
   };
 
-  // Filter events by search query
-  const filteredEvents = events.filter(
-    (event) =>
-      event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      event.city.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // Handle search with debounce
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentPage(1); // Reset to first page on search
+      setIsLoading(true);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   if (status === "loading" || isLoading) {
     return (
@@ -405,7 +422,7 @@ export default function AdminEventsPage() {
           <div>
             <h1 className="text-3xl font-bold">Gerir Eventos</h1>
             <p className="text-muted-foreground">
-              {events.length} eventos no total
+              {totalCount} {totalCount === 1 ? "evento" : "eventos"} no total
             </p>
           </div>
 
@@ -806,7 +823,7 @@ export default function AdminEventsPage() {
         </div>
 
         {/* Events List */}
-        {filteredEvents.length === 0 ? (
+        {events.length === 0 ? (
           <Card className="p-12 text-center">
             <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="mb-2 text-lg font-semibold">
@@ -825,79 +842,141 @@ export default function AdminEventsPage() {
             )}
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredEvents.map((event) => (
-              <Link key={event.id} href={`/events/${event.slug}`}>
-                <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-                  <div className="relative h-40 w-full">
-                    <Image
-                      src={event.imageUrl || "/placeholder-event.jpg"}
-                      alt={event.title}
-                      fill
-                      className="object-cover"
-                    />
-                    <div className="absolute right-2 top-2 rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-                      {sportTypeLabels[event.sportType]}
-                    </div>
-                  </div>
-                  <CardContent className="p-4">
-                    <h3 className="mb-2 line-clamp-1 font-semibold">
-                      {event.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-3 w-3" />
-                        <span>
-                          {formatDateShort(new Date(event.startDate))}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-3 w-3" />
-                        <span>
-                          {event.city}, {event.country}
-                        </span>
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {events.map((event) => (
+                <Link key={event.id} href={`/events/${event.slug}`}>
+                  <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                    <div className="relative h-40 w-full">
+                      <Image
+                        src={event.imageUrl || "/placeholder-event.jpg"}
+                        alt={event.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute right-2 top-2 rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
+                        {sportTypeLabels[event.sportType]}
                       </div>
                     </div>
-                    <div className="mt-3">
-                      {(() => {
-                        const missingFields = getMissingFields(event);
-                        if (missingFields.length > 0) {
-                          return (
-                            <div className="space-y-1">
-                              <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
-                                <span className="text-amber-600 dark:text-amber-400">
-                                  ⚠️
-                                </span>
-                                <span>Campos em falta</span>
-                              </div>
-                              <div className="flex flex-wrap gap-1">
-                                {missingFields.map((field) => (
-                                  <span
-                                    key={field}
-                                    className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                                  >
-                                    {field}
+                    <CardContent className="p-4">
+                      <h3 className="mb-2 line-clamp-1 font-semibold">
+                        {event.title}
+                      </h3>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {formatDateShort(new Date(event.startDate))}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-3 w-3" />
+                          <span>
+                            {event.city}, {event.country}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="mt-3">
+                        {(() => {
+                          const missingFields = getMissingFields(event);
+                          if (missingFields.length > 0) {
+                            return (
+                              <div className="space-y-1">
+                                <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
+                                  <span className="text-amber-600 dark:text-amber-400">
+                                    ⚠️
                                   </span>
-                                ))}
+                                  <span>Campos em falta</span>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                  {missingFields.map((field) => (
+                                    <span
+                                      key={field}
+                                      className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                    >
+                                      {field}
+                                    </span>
+                                  ))}
+                                </div>
                               </div>
+                            );
+                          }
+                          return (
+                            <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
+                              <span className="text-green-600 dark:text-green-400">
+                                ✓
+                              </span>
+                              <span>Completo</span>
                             </div>
                           );
-                        }
-                        return (
-                          <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
-                            <span className="text-green-600 dark:text-green-400">
-                              ✓
+                        })()}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </Link>
+              ))}
+            </div>
+
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex items-center justify-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1)
+                    .filter((page) => {
+                      // Show first page, last page, current page, and pages around current
+                      return (
+                        page === 1 ||
+                        page === totalPages ||
+                        Math.abs(page - currentPage) <= 1
+                      );
+                    })
+                    .map((page, index, array) => {
+                      // Add ellipsis if there's a gap
+                      const prevPage = array[index - 1];
+                      const showEllipsis = prevPage && page - prevPage > 1;
+
+                      return (
+                        <div key={page} className="flex items-center gap-1">
+                          {showEllipsis && (
+                            <span className="px-2 text-muted-foreground">
+                              ...
                             </span>
-                            <span>Completo</span>
-                          </div>
-                        );
-                      })()}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
+                          )}
+                          <Button
+                            variant={
+                              currentPage === page ? "default" : "outline"
+                            }
+                            size="sm"
+                            onClick={() => setCurrentPage(page)}
+                            className="min-w-[2.5rem]"
+                          >
+                            {page}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>

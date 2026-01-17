@@ -1,3 +1,9 @@
+## [8.5.2](https://github.com/palhinhax/Athlifyr/compare/v8.5.1...v8.5.2) (2026-01-17)
+
+### Bug Fixes
+
+- **instagram:** improve video export reliability and increase upload limits ([3707e18](https://github.com/palhinhax/Athlifyr/commit/3707e18736a36a4ae7eedaa31a482e6d80227880))
+
 ## [8.5.1](https://github.com/palhinhax/Athlifyr/compare/v8.5.0...v8.5.1) (2026-01-17)
 
 ### Bug Fixes

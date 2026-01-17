@@ -333,6 +333,101 @@
         "in_progress": "EM PROGRESSO",
         "resolved": "RESOLVIDO",
         "closed": "FECHADO"
+      },
+      "statusLabels": {
+        "pending": "Pendente",
+        "in_progress": "Em Progresso",
+        "resolved": "Resolvido",
+        "closed": "Fechado"
+      },
+      "actions": {
+        "reply": "Responder",
+        "delete": "Apagar",
+        "cancel": "Cancelar",
+        "send": "Enviar Email",
+        "sending": "A enviar...",
+        "deleting": "A eliminar..."
+      },
+      "toast": {
+        "statusUpdated": "Status atualizado",
+        "statusUpdatedDesc": "O contacto foi marcado como {status}.",
+        "error": "Erro",
+        "updateError": "Não foi possível atualizar o status.",
+        "updateErrorOccurred": "Ocorreu um erro ao atualizar o status.",
+        "emptyMessage": "Por favor, escreve uma mensagem antes de enviar.",
+        "emailSent": "Email enviado",
+        "emailSentDesc": "A tua resposta foi enviada para {email}.",
+        "sendError": "Erro ao enviar",
+        "sendErrorDesc": "Não foi possível enviar o email.",
+        "sendErrorOccurred": "Ocorreu um erro ao enviar o email.",
+        "contactDeleted": "Contacto eliminado",
+        "contactDeletedDesc": "O contacto foi eliminado com sucesso.",
+        "deleteError": "Erro ao eliminar",
+        "deleteErrorDesc": "Não foi possível eliminar o contacto.",
+        "deleteErrorOccurred": "Ocorreu um erro ao eliminar o contacto."
+      },
+      "replyDialog": {
+        "title": "Responder a {name}",
+        "description": "Envia uma resposta para {email} sobre \"{subject}\"",
+        "adminName": "Teu Nome (opcional)",
+        "adminNameHelp": "Por defeito: \"Equipa Athlifyr\"",
+        "adminNamePlaceholder": "Ex: João Silva",
+        "message": "Mensagem",
+        "required": "*",
+        "messagePlaceholder": "Escreve a tua resposta aqui...",
+        "messageHelp": "A mensagem será enviada usando o template profissional da Athlifyr.",
+        "originalMessage": "Mensagem Original:"
+      },
+      "deleteDialog": {
+        "title": "Confirmar Eliminação",
+        "description": "Tens a certeza que queres eliminar este contacto de {name}?",
+        "subject": "Assunto",
+        "email": "Email",
+        "warning": "⚠️ Atenção: Esta ação não pode ser desfeita!",
+        "warningDesc": "O contacto será permanentemente eliminado da base de dados.",
+        "confirmButton": "Eliminar Contacto"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "Ficheiro inválido",
+        "invalidFileDesc": "Seleciona uma imagem válida.",
+        "fileTooLarge": "Ficheiro muito grande",
+        "fileTooLargeDesc": "A imagem deve ter no máximo {size}MB.",
+        "imageUploaded": "Imagem carregada",
+        "imageUploadedDesc": "A imagem foi carregada com sucesso.",
+        "uploadError": "Erro",
+        "uploadErrorDesc": "Não foi possível carregar a imagem.",
+        "eventUpdated": "Evento atualizado",
+        "eventUpdatedDesc": "O evento foi atualizado com sucesso.",
+        "updateError": "Erro",
+        "updateErrorDesc": "Não foi possível atualizar o evento.",
+        "eventDeleted": "Evento eliminado",
+        "eventDeletedDesc": "O evento foi eliminado com sucesso.",
+        "deleteError": "Erro",
+        "deleteErrorDesc": "Não foi possível eliminar o evento."
+      },
+      "actions": {
+        "changeImage": "Alterar imagem",
+        "uploadImage": "Carregar imagem",
+        "saving": "A guardar...",
+        "saveChanges": "Guardar alterações"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Tipo de ficheiro inválido",
+        "invalidFileTypeDesc": "Seleciona uma imagem válida",
+        "fileTooLarge": "Ficheiro muito grande",
+        "fileTooLargeDesc": "A imagem deve ter no máximo 5MB",
+        "uploadError": "Erro ao enviar imagem",
+        "uploadErrorDesc": "Não foi possível enviar a imagem",
+        "emptyContent": "Conteúdo vazio",
+        "emptyContentDesc": "Escreve algo antes de publicar",
+        "postPublished": "✅ Post publicado!",
+        "postPublishedDesc": "O teu post foi publicado com sucesso",
+        "publishError": "Erro ao publicar",
+        "publishErrorDesc": "Não foi possível publicar o post"
       }
     }
   },

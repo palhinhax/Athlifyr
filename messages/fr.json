@@ -333,6 +333,101 @@
         "in_progress": "EN COURS",
         "resolved": "RÉSOLU",
         "closed": "FERMÉ"
+      },
+      "statusLabels": {
+        "pending": "En Attente",
+        "in_progress": "En Cours",
+        "resolved": "Résolu",
+        "closed": "Fermé"
+      },
+      "actions": {
+        "reply": "Répondre",
+        "delete": "Supprimer",
+        "cancel": "Annuler",
+        "send": "Envoyer",
+        "sending": "Envoi...",
+        "deleting": "Suppression..."
+      },
+      "toast": {
+        "statusUpdated": "Statut mis à jour",
+        "statusUpdatedDesc": "Le statut du contact a été mis à jour avec succès.",
+        "error": "Erreur",
+        "updateError": "Erreur de mise à jour",
+        "updateErrorOccurred": "Impossible de mettre à jour le statut du contact.",
+        "emptyMessage": "Le message ne peut pas être vide.",
+        "emailSent": "Email envoyé",
+        "emailSentDesc": "La réponse a été envoyée avec succès.",
+        "sendError": "Erreur d'envoi",
+        "sendErrorDesc": "Impossible d'envoyer l'email de réponse.",
+        "sendErrorOccurred": "Une erreur s'est produite lors de l'envoi de l'email.",
+        "contactDeleted": "Contact supprimé",
+        "contactDeletedDesc": "Le contact a été supprimé avec succès.",
+        "deleteError": "Erreur de suppression",
+        "deleteErrorDesc": "Impossible de supprimer le contact.",
+        "deleteErrorOccurred": "Une erreur s'est produite lors de la suppression du contact."
+      },
+      "replyDialog": {
+        "title": "Répondre au contact",
+        "description": "Envoyer une réponse par email à l'utilisateur",
+        "adminName": "Votre nom (admin)",
+        "adminNameHelp": "Nom qui apparaîtra dans l'email",
+        "adminNamePlaceholder": "Ex: Équipe Athlifyr",
+        "message": "Message de réponse",
+        "required": "*",
+        "messagePlaceholder": "Écrivez votre réponse ici...",
+        "messageHelp": "Ce message sera envoyé par email à l'utilisateur",
+        "originalMessage": "Message original"
+      },
+      "deleteDialog": {
+        "title": "Supprimer le contact",
+        "description": "Êtes-vous sûr de vouloir supprimer ce contact ?",
+        "subject": "Sujet",
+        "email": "Email",
+        "warning": "Attention",
+        "warningDesc": "Cette action est irréversible. Le contact sera supprimé définitivement.",
+        "confirmButton": "Oui, supprimer"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "Fichier invalide",
+        "invalidFileDesc": "Seuls les fichiers image sont autorisés.",
+        "fileTooLarge": "Fichier trop volumineux",
+        "fileTooLargeDesc": "Le fichier doit faire au maximum 10MB.",
+        "imageUploaded": "Image téléchargée",
+        "imageUploadedDesc": "L'image a été téléchargée avec succès.",
+        "uploadError": "Erreur de téléchargement",
+        "uploadErrorDesc": "Impossible de télécharger l'image.",
+        "eventUpdated": "Événement mis à jour",
+        "eventUpdatedDesc": "L'événement a été mis à jour avec succès.",
+        "updateError": "Erreur de mise à jour",
+        "updateErrorDesc": "Impossible de mettre à jour l'événement.",
+        "eventDeleted": "Événement supprimé",
+        "eventDeletedDesc": "L'événement a été supprimé avec succès.",
+        "deleteError": "Erreur de suppression",
+        "deleteErrorDesc": "Impossible de supprimer l'événement."
+      },
+      "actions": {
+        "changeImage": "Changer l'Image",
+        "uploadImage": "Télécharger une Image",
+        "saving": "Enregistrement...",
+        "saveChanges": "Enregistrer les Modifications"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Type de fichier invalide",
+        "invalidFileTypeDesc": "Seuls les fichiers image sont autorisés.",
+        "fileTooLarge": "Fichier trop volumineux",
+        "fileTooLargeDesc": "Le fichier doit faire au maximum 5MB.",
+        "uploadError": "Erreur de téléchargement",
+        "uploadErrorDesc": "Impossible de télécharger l'image.",
+        "emptyContent": "Contenu vide",
+        "emptyContentDesc": "Veuillez écrire quelque chose avant de publier.",
+        "postPublished": "Publication créée",
+        "postPublishedDesc": "Votre publication a été partagée avec succès.",
+        "publishError": "Erreur de publication",
+        "publishErrorDesc": "Impossible de créer la publication."
       }
     }
   },

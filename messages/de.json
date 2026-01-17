@@ -358,6 +358,101 @@
         "in_progress": "IN BEARBEITUNG",
         "resolved": "GELÖST",
         "closed": "GESCHLOSSEN"
+      },
+      "statusLabels": {
+        "pending": "Ausstehend",
+        "in_progress": "In Bearbeitung",
+        "resolved": "Gelöst",
+        "closed": "Geschlossen"
+      },
+      "actions": {
+        "reply": "Antworten",
+        "delete": "Löschen",
+        "cancel": "Abbrechen",
+        "send": "Senden",
+        "sending": "Wird gesendet...",
+        "deleting": "Wird gelöscht..."
+      },
+      "toast": {
+        "statusUpdated": "Status aktualisiert",
+        "statusUpdatedDesc": "Der Kontaktstatus wurde erfolgreich aktualisiert.",
+        "error": "Fehler",
+        "updateError": "Aktualisierungsfehler",
+        "updateErrorOccurred": "Der Kontaktstatus konnte nicht aktualisiert werden.",
+        "emptyMessage": "Die Nachricht darf nicht leer sein.",
+        "emailSent": "Email gesendet",
+        "emailSentDesc": "Die Antwort wurde erfolgreich gesendet.",
+        "sendError": "Sendefehler",
+        "sendErrorDesc": "Die Antwort-Email konnte nicht gesendet werden.",
+        "sendErrorOccurred": "Beim Senden der Email ist ein Fehler aufgetreten.",
+        "contactDeleted": "Kontakt gelöscht",
+        "contactDeletedDesc": "Der Kontakt wurde erfolgreich gelöscht.",
+        "deleteError": "Löschfehler",
+        "deleteErrorDesc": "Der Kontakt konnte nicht gelöscht werden.",
+        "deleteErrorOccurred": "Beim Löschen des Kontakts ist ein Fehler aufgetreten."
+      },
+      "replyDialog": {
+        "title": "Auf Kontakt antworten",
+        "description": "Antwort per Email an den Benutzer senden",
+        "adminName": "Ihr Name (Admin)",
+        "adminNameHelp": "Name, der in der Email erscheint",
+        "adminNamePlaceholder": "z.B.: Athlifyr Team",
+        "message": "Antwortnachricht",
+        "required": "*",
+        "messagePlaceholder": "Schreiben Sie hier Ihre Antwort...",
+        "messageHelp": "Diese Nachricht wird per Email an den Benutzer gesendet",
+        "originalMessage": "Ursprüngliche Nachricht"
+      },
+      "deleteDialog": {
+        "title": "Kontakt löschen",
+        "description": "Sind Sie sicher, dass Sie diesen Kontakt löschen möchten?",
+        "subject": "Betreff",
+        "email": "Email",
+        "warning": "Achtung",
+        "warningDesc": "Diese Aktion ist irreversibel. Der Kontakt wird dauerhaft gelöscht.",
+        "confirmButton": "Ja, löschen"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "Ungültige Datei",
+        "invalidFileDesc": "Nur Bilddateien sind erlaubt.",
+        "fileTooLarge": "Datei zu groß",
+        "fileTooLargeDesc": "Die Datei darf maximal 10MB groß sein.",
+        "imageUploaded": "Bild hochgeladen",
+        "imageUploadedDesc": "Das Bild wurde erfolgreich hochgeladen.",
+        "uploadError": "Upload-Fehler",
+        "uploadErrorDesc": "Das Bild konnte nicht hochgeladen werden.",
+        "eventUpdated": "Veranstaltung aktualisiert",
+        "eventUpdatedDesc": "Die Veranstaltung wurde erfolgreich aktualisiert.",
+        "updateError": "Aktualisierungsfehler",
+        "updateErrorDesc": "Die Veranstaltung konnte nicht aktualisiert werden.",
+        "eventDeleted": "Veranstaltung gelöscht",
+        "eventDeletedDesc": "Die Veranstaltung wurde erfolgreich gelöscht.",
+        "deleteError": "Löschfehler",
+        "deleteErrorDesc": "Die Veranstaltung konnte nicht gelöscht werden."
+      },
+      "actions": {
+        "changeImage": "Bild Ändern",
+        "uploadImage": "Bild Hochladen",
+        "saving": "Wird gespeichert...",
+        "saveChanges": "Änderungen Speichern"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Ungültiger Dateityp",
+        "invalidFileTypeDesc": "Nur Bilddateien sind erlaubt.",
+        "fileTooLarge": "Datei zu groß",
+        "fileTooLargeDesc": "Die Datei darf maximal 5MB groß sein.",
+        "uploadError": "Upload-Fehler",
+        "uploadErrorDesc": "Das Bild konnte nicht hochgeladen werden.",
+        "emptyContent": "Leerer Inhalt",
+        "emptyContentDesc": "Bitte schreiben Sie etwas vor der Veröffentlichung.",
+        "postPublished": "Beitrag erstellt",
+        "postPublishedDesc": "Ihr Beitrag wurde erfolgreich geteilt.",
+        "publishError": "Veröffentlichungsfehler",
+        "publishErrorDesc": "Der Beitrag konnte nicht erstellt werden."
       }
     }
   },

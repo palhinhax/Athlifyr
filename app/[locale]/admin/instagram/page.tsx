@@ -41,6 +41,32 @@ const PREVIEW_DESKTOP_CONTAINER_WIDTH = 800;
 const PREVIEW_HEIGHT_RATIO = 0.7;
 const PREVIEW_DEFAULT_SCALE = 0.3;
 
+/**
+ * Helper function to extract error message from upload response
+ * Handles both JSON and plain text error responses
+ */
+async function getUploadErrorMessage(res: Response): Promise<string> {
+  let errorMessage = "Upload failed";
+  try {
+    // Try to get response as text first
+    const responseText = await res.text();
+    console.error("Upload error response:", responseText);
+
+    // Try to parse as JSON
+    try {
+      const errorData = JSON.parse(responseText);
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      // Not JSON, use the text directly
+      errorMessage = responseText || `Upload failed with status ${res.status}`;
+    }
+  } catch (parseError) {
+    console.error("Could not read error response:", parseError);
+    errorMessage = `Upload failed with status ${res.status}`;
+  }
+  return errorMessage;
+}
+
 interface EventItem {
   id: string;
   title: string;
@@ -432,10 +458,13 @@ export default function InstagramGeneratorPage() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        const errorMessage = await getUploadErrorMessage(res);
+        throw new Error(errorMessage);
+      }
 
       const data = await res.json();
-      setPhotoUrl(data.url);
+      setPhotoUrl(data.file.url);
       setBackgroundType("photo");
 
       toast({
@@ -461,8 +490,8 @@ export default function InstagramGeneratorPage() {
     if (!file.type.startsWith("video/")) {
       toast({
         variant: "destructive",
-        title: "Ficheiro inválido",
-        description: "Por favor seleciona um vídeo.",
+        title: "Invalid file",
+        description: "Please select a video.",
       });
       return;
     }
@@ -479,29 +508,28 @@ export default function InstagramGeneratorPage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Upload error response:", errorData);
-        throw new Error(errorData.error || "Upload failed");
+        const errorMessage = await getUploadErrorMessage(res);
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
       console.log("Upload success:", data);
-      setVideoUrl(data.file?.url || data.url);
+      setVideoUrl(data.file.url);
       setBackgroundType("video");
 
       toast({
-        title: "Vídeo carregado",
-        description: "Vídeo de fundo foi carregado com sucesso.",
+        title: "Video uploaded",
+        description: "Background video has been uploaded successfully.",
       });
     } catch (error) {
       console.error("Video upload error:", error);
       toast({
         variant: "destructive",
-        title: "Erro no upload",
+        title: "Upload failed",
         description:
           error instanceof Error
             ? error.message
-            : "Falha ao carregar vídeo. Tenta novamente.",
+            : "Failed to upload video. Please try again.",
       });
     } finally {
       setIsUploadingVideo(false);
@@ -764,8 +792,11 @@ export default function InstagramGeneratorPage() {
         </div>
 
         {/* Right Panel: Preview */}
-        <div className="flex items-center justify-center rounded-lg border bg-muted/50 p-4 sm:p-8">
-          <div style={{ transform: `scale(${previewScale})` }}>
+        <div className="flex min-h-[400px] items-center justify-center overflow-hidden rounded-lg border bg-muted/50 p-4 sm:p-8">
+          <div
+            className="origin-center"
+            style={{ transform: `scale(${previewScale})` }}
+          >
             <CanvasPreview
               ref={canvasRef}
               templateKey={templateKey}

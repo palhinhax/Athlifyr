@@ -3,10 +3,12 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 import { Home, Search } from "lucide-react";
 
 export default function NotFound() {
   const t = useTranslations("notFound");
+  const locale = useLocale();
 
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
@@ -19,13 +21,13 @@ export default function NotFound() {
         {t("suggestion")}
       </p>
       <div className="flex flex-col gap-3 sm:flex-row">
-        <Link href="/">
+        <Link href={`/${locale}`}>
           <Button>
             <Home className="mr-2 h-4 w-4" />
             {t("backHome")}
           </Button>
         </Link>
-        <Link href="/events">
+        <Link href={`/${locale}/events`}>
           <Button variant="outline">
             <Search className="mr-2 h-4 w-4" />
             {t("browseEvents")}

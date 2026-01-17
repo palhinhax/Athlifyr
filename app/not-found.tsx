@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Home, Search } from "lucide-react";
 
 // Default locale for root not-found page (used when URL is outside locale structure)
-const defaultLocale = "pt";
+const defaultLocale: SupportedLocale = "pt";
 
 // Available background videos
 const backgroundVideos = [
@@ -82,7 +82,7 @@ type SupportedLocale = keyof typeof translations;
 
 export default function NotFound() {
   // Use default locale for server-side rendering (no client-side detection)
-  const locale = defaultLocale as SupportedLocale;
+  const locale = defaultLocale;
   const t = translations[locale];
 
   // Use first video to ensure consistent server/client rendering

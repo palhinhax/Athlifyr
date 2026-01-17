@@ -1,3 +1,11 @@
+# [8.5.0](https://github.com/palhinhax/Athlifyr/compare/v8.4.0...v8.5.0) (2026-01-17)
+
+### Features
+
+- **i18n:** add admin section translations for es, fr, de, it ([da364fd](https://github.com/palhinhax/Athlifyr/commit/da364fd20d7acf6151caff77f7fcdf5f4f62d60b))
+- **i18n:** add translations for admin components ([bfafb38](https://github.com/palhinhax/Athlifyr/commit/bfafb38c308acdc5df85be3b4d6bcd5499d7008c))
+- **i18n:** add translations for share button and pricing phases ([6ed769e](https://github.com/palhinhax/Athlifyr/commit/6ed769e57c6f8fdb71abec01c35d805f07b12e58))
+
 # [8.4.0](https://github.com/palhinhax/Athlifyr/compare/v8.3.0...v8.4.0) (2026-01-17)
 
 ### Bug Fixes

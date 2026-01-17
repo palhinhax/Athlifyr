@@ -1,3 +1,13 @@
+# [8.3.0](https://github.com/palhinhax/Athlifyr/compare/v8.2.0...v8.3.0) (2026-01-17)
+
+### Bug Fixes
+
+- **middleware:** enhance static asset matching in maintenance mode ([01db953](https://github.com/palhinhax/Athlifyr/commit/01db95393463363e047a141418622a55bd241a20))
+
+### Features
+
+- **admin:** implement pagination for events management page ([0a9bf7f](https://github.com/palhinhax/Athlifyr/commit/0a9bf7f016de7fb23f274665c168432c091c9bc8))
+
 # [8.2.0](https://github.com/palhinhax/Athlifyr/compare/v8.1.0...v8.2.0) (2026-01-17)
 
 ### Features

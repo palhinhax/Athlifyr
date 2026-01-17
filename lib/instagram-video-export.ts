@@ -59,8 +59,8 @@ export async function exportToVideo({
       try {
         // Update video element time for video backgrounds
         if (videoElement) {
-          // Clamp video time to duration to avoid unexpected looping
-          const videoTime = Math.min(i / fps, duration);
+          // Clamp video time to actual video duration to avoid unexpected looping
+          const videoTime = Math.min(i / fps, videoElement.duration);
           videoElement.currentTime = videoTime;
 
           // Wait for video to seek to the correct time
@@ -91,9 +91,15 @@ export async function exportToVideo({
         });
 
         // Convert to ImageBitmap for faster drawing later
-        const response = await fetch(dataUrl);
-        const blob = await response.blob();
-        const bitmap = await createImageBitmap(blob);
+        // Create an image element to load the dataUrl
+        const img = new Image();
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = reject;
+          img.src = dataUrl;
+        });
+
+        const bitmap = await createImageBitmap(img);
         frames.push(bitmap);
 
         // Progress logging
@@ -106,8 +112,12 @@ export async function exportToVideo({
         console.error(`Error capturing frame ${i}:`, error);
         // Duplicate previous frame to maintain smooth playback rather than showing black
         // This is preferred for video exports where continuity is important
+        // Create a new ImageBitmap to avoid double-close errors in cleanup
         if (frames.length > 0) {
-          frames.push(frames[frames.length - 1]);
+          const duplicateBitmap = await createImageBitmap(
+            frames[frames.length - 1]
+          );
+          frames.push(duplicateBitmap);
         }
       }
     }

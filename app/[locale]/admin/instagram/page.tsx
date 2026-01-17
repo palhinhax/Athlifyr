@@ -456,7 +456,7 @@ export default function InstagramGeneratorPage() {
       }
 
       const data = await res.json();
-      setPhotoUrl(data.file?.url || data.url);
+      setPhotoUrl(data.file.url);
       setBackgroundType("photo");
 
       toast({
@@ -524,7 +524,7 @@ export default function InstagramGeneratorPage() {
 
       const data = await res.json();
       console.log("Upload success:", data);
-      setVideoUrl(data.file?.url || data.url);
+      setVideoUrl(data.file.url);
       setBackgroundType("video");
 
       toast({

@@ -490,8 +490,8 @@ export default function InstagramGeneratorPage() {
     if (!file.type.startsWith("video/")) {
       toast({
         variant: "destructive",
-        title: "Ficheiro inválido",
-        description: "Por favor seleciona um vídeo.",
+        title: "Invalid file",
+        description: "Please select a video.",
       });
       return;
     }
@@ -518,18 +518,18 @@ export default function InstagramGeneratorPage() {
       setBackgroundType("video");
 
       toast({
-        title: "Vídeo carregado",
-        description: "Vídeo de fundo foi carregado com sucesso.",
+        title: "Video uploaded",
+        description: "Background video has been uploaded successfully.",
       });
     } catch (error) {
       console.error("Video upload error:", error);
       toast({
         variant: "destructive",
-        title: "Erro no upload",
+        title: "Upload failed",
         description:
           error instanceof Error
             ? error.message
-            : "Falha ao carregar vídeo. Tenta novamente.",
+            : "Failed to upload video. Please try again.",
       });
     } finally {
       setIsUploadingVideo(false);

@@ -167,6 +167,21 @@
     "noPosts": "No posts yet. Be the first to share something!",
     "addPhoto": "Add Photo",
     "publish": "Publish",
+    "share": {
+      "button": "Share",
+      "shareMenu": "Share...",
+      "copyLink": "Copy Link",
+      "linkCopied": "Link copied!",
+      "linkCopiedDesc": "The link has been copied to the clipboard.",
+      "error": "Error",
+      "copyError": "Could not copy the link."
+    },
+    "pricing": {
+      "title": "Registration Prices",
+      "titleWithVariant": "Prices - {variant}",
+      "current": "Current",
+      "until": "Until"
+    },
     "registration": {
       "willYouGo": "Will you go?",
       "participants": "participants",

@@ -198,6 +198,21 @@
     "noPosts": "Noch keine Beiträge. Seien Sie der Erste, der etwas teilt!",
     "addPhoto": "Foto hinzufügen",
     "publish": "Veröffentlichen",
+    "share": {
+      "button": "Teilen",
+      "shareMenu": "Teilen...",
+      "copyLink": "Link kopieren",
+      "linkCopied": "Link kopiert!",
+      "linkCopiedDesc": "Der Link wurde in die Zwischenablage kopiert.",
+      "error": "Fehler",
+      "copyError": "Der Link konnte nicht kopiert werden."
+    },
+    "pricing": {
+      "title": "Anmeldepreise",
+      "titleWithVariant": "Preise - {variant}",
+      "current": "Aktuell",
+      "until": "Bis"
+    },
     "registration": {
       "willYouGo": "Werden Sie teilnehmen?",
       "participants": "Teilnehmer",

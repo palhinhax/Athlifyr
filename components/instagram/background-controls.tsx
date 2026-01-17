@@ -13,18 +13,24 @@ import { Upload, Loader2 } from "lucide-react";
 import { BRAND_COLORS, BRAND_GRADIENTS } from "@/types/instagram";
 
 interface BackgroundControlsProps {
-  backgroundType: "solid" | "gradient" | "photo";
+  backgroundType: "solid" | "gradient" | "photo" | "video";
   selectedColor: string;
   selectedGradient: string;
   photoUrl: string;
+  videoUrl?: string;
   overlayIntensity: number;
   isUploadingPhoto: boolean;
+  isUploadingVideo?: boolean;
   fileInputRef: RefObject<HTMLInputElement>;
-  onBackgroundTypeChange: (type: "solid" | "gradient" | "photo") => void;
+  videoInputRef?: RefObject<HTMLInputElement>;
+  onBackgroundTypeChange: (
+    type: "solid" | "gradient" | "photo" | "video"
+  ) => void;
   onColorChange: (color: string) => void;
   onGradientChange: (gradient: string) => void;
   onOverlayIntensityChange: (intensity: number) => void;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onVideoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function BackgroundControls({
@@ -32,14 +38,18 @@ export function BackgroundControls({
   selectedColor,
   selectedGradient,
   photoUrl,
+  videoUrl = "",
   overlayIntensity,
   isUploadingPhoto,
+  isUploadingVideo = false,
   fileInputRef,
+  videoInputRef,
   onBackgroundTypeChange,
   onColorChange,
   onGradientChange,
   onOverlayIntensityChange,
   onPhotoUpload,
+  onVideoUpload,
 }: BackgroundControlsProps) {
   return (
     <div className="space-y-4">
@@ -51,7 +61,9 @@ export function BackgroundControls({
         <Select
           value={backgroundType}
           onValueChange={(v) =>
-            onBackgroundTypeChange(v as "solid" | "gradient" | "photo")
+            onBackgroundTypeChange(
+              v as "solid" | "gradient" | "photo" | "video"
+            )
           }
         >
           <SelectTrigger>
@@ -61,6 +73,7 @@ export function BackgroundControls({
             <SelectItem value="solid">Solid Color</SelectItem>
             <SelectItem value="gradient">Gradient</SelectItem>
             <SelectItem value="photo">Photo</SelectItem>
+            <SelectItem value="video">Video</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -159,6 +172,75 @@ export function BackgroundControls({
               />
               <p className="mt-1 text-xs text-muted-foreground">
                 Darken photo to improve text readability
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Video Upload */}
+      {backgroundType === "video" && (
+        <div className="space-y-4">
+          <div>
+            <Label>Video</Label>
+            {videoInputRef && (
+              <input
+                ref={videoInputRef}
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime"
+                onChange={onVideoUpload}
+                className="hidden"
+              />
+            )}
+            <Button
+              variant="outline"
+              onClick={() => videoInputRef?.current?.click()}
+              disabled={isUploadingVideo}
+              className="w-full"
+            >
+              {isUploadingVideo ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload Video
+                </>
+              )}
+            </Button>
+            {videoUrl && (
+              <div className="mt-2 space-y-1">
+                <div className="text-xs font-semibold text-green-600">
+                  ✓ Video uploaded successfully
+                </div>
+                <div className="break-all text-xs text-muted-foreground">
+                  {videoUrl}
+                </div>
+              </div>
+            )}
+            {!videoUrl && !isUploadingVideo && (
+              <div className="mt-2 text-xs text-muted-foreground">
+                Supported formats: MP4, WebM, QuickTime
+              </div>
+            )}
+          </div>
+
+          {/* Overlay Intensity */}
+          {videoUrl && (
+            <div>
+              <Label>Overlay Intensity: {overlayIntensity}%</Label>
+              <Slider
+                value={[overlayIntensity]}
+                onValueChange={(v) => onOverlayIntensityChange(v[0])}
+                min={0}
+                max={100}
+                step={5}
+                className="mt-2"
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                Darken video to improve text readability
               </p>
             </div>
           )}

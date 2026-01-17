@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { uploadToB2, validateImage } from "@/lib/b2-storage";
+import { uploadToB2, validateFile } from "@/lib/b2-storage";
 
 export async function POST(request: Request) {
   try {
@@ -28,12 +28,15 @@ export async function POST(request: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Determine max file size based on user role
-    // Admins can upload up to 20MB, regular users up to 5MB
-    const maxSizeMB = session.user.role === "ADMIN" ? 20 : 5;
+    // Determine max file size based on user role and file type
+    // Videos can be larger: Admins up to 50MB, regular users up to 20MB
+    // Images: Admins up to 20MB, regular users up to 5MB
+    const isVideo = file.type.startsWith("video/");
+    const maxSizeMB =
+      session.user.role === "ADMIN" ? (isVideo ? 50 : 20) : isVideo ? 20 : 5;
 
-    // Validate image
-    const validation = validateImage(buffer, file.type, maxSizeMB);
+    // Validate file (image or video)
+    const validation = validateFile(buffer, file.type, maxSizeMB);
     if (!validation.valid) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }

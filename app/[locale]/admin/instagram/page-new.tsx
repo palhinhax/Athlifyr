@@ -9,6 +9,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";
+import { exportToVideo } from "@/lib/instagram-video-export";
 import { EventSearch } from "@/components/instagram/event-search";
 import { TemplateSelector } from "@/components/instagram/template-selector";
 import { BackgroundControls } from "@/components/instagram/background-controls";
@@ -53,6 +54,7 @@ export default function InstagramGeneratorPage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [previewScale, setPreviewScale] = useState(PREVIEW_DEFAULT_SCALE);
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
@@ -62,13 +64,15 @@ export default function InstagramGeneratorPage() {
 
   // Background state
   const [backgroundType, setBackgroundType] = useState<
-    "solid" | "gradient" | "photo"
+    "solid" | "gradient" | "photo" | "video"
   >("gradient");
   const [selectedColor, setSelectedColor] = useState(BRAND_COLORS.primary);
   const [selectedGradient, setSelectedGradient] = useState(BRAND_GRADIENTS[0]);
   const [photoUrl, setPhotoUrl] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [overlayIntensity, setOverlayIntensity] = useState(50);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
 
   // T1: Event Hero
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
@@ -298,6 +302,13 @@ export default function InstagramGeneratorPage() {
   };
 
   const getBackground = (): Background => {
+    if (backgroundType === "video") {
+      return {
+        type: "video",
+        value: videoUrl,
+        overlayIntensity,
+      };
+    }
     if (backgroundType === "photo") {
       return {
         type: "photo",
@@ -438,10 +449,74 @@ export default function InstagramGeneratorPage() {
     }
   };
 
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("video/")) {
+      toast({
+        variant: "destructive",
+        title: "Ficheiro inválido",
+        description: "Por favor seleciona um vídeo.",
+      });
+      return;
+    }
+
+    setIsUploadingVideo(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("folder", "instagram");
+
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) throw new Error("Upload failed");
+
+      const data = await res.json();
+      setVideoUrl(data.url);
+      setBackgroundType("video");
+
+      toast({
+        title: "Vídeo carregado",
+        description: "Vídeo de fundo foi carregado com sucesso.",
+      });
+    } catch (error) {
+      console.error("Video upload error:", error);
+      toast({
+        variant: "destructive",
+        title: "Erro no upload",
+        description: "Falha ao carregar vídeo. Tenta novamente.",
+      });
+    } finally {
+      setIsUploadingVideo(false);
+    }
+  };
+
   const handleExport = async () => {
     if (!canvasRef.current) return;
 
     try {
+      // Export video if background is video
+      if (backgroundType === "video" && videoUrl) {
+        await exportToVideo({
+          element: canvasRef.current,
+          filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
+          format,
+          duration: 5, // 5 seconds
+          fps: 30,
+        });
+
+        toast({
+          title: "Vídeo exportado!",
+          description: "O vídeo foi exportado com sucesso.",
+        });
+        return;
+      }
+
+      // Export image for other backgrounds
       await exportToImage({
         element: canvasRef.current,
         filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
@@ -534,14 +609,18 @@ export default function InstagramGeneratorPage() {
               selectedColor={selectedColor}
               selectedGradient={selectedGradient}
               photoUrl={photoUrl}
+              videoUrl={videoUrl}
               overlayIntensity={overlayIntensity}
               isUploadingPhoto={isUploadingPhoto}
+              isUploadingVideo={isUploadingVideo}
               fileInputRef={fileInputRef}
+              videoInputRef={videoInputRef}
               onBackgroundTypeChange={setBackgroundType}
               onColorChange={setSelectedColor}
               onGradientChange={setSelectedGradient}
               onOverlayIntensityChange={setOverlayIntensity}
               onPhotoUpload={handlePhotoUpload}
+              onVideoUpload={handleVideoUpload}
             />
           </Card>
 

@@ -163,6 +163,52 @@ export function validateImage(
 }
 
 /**
+ * Validate file (image or video) type and size
+ * @param file File buffer
+ * @param contentType MIME type
+ * @param maxSizeMB Maximum file size in MB (default: 5MB)
+ */
+export function validateFile(
+  file: Buffer,
+  contentType: string,
+  maxSizeMB: number = 5
+): { valid: boolean; error?: string } {
+  // Check file size
+  const maxBytes = maxSizeMB * 1024 * 1024;
+  if (file.length > maxBytes) {
+    return {
+      valid: false,
+      error: `File size exceeds ${maxSizeMB}MB limit`,
+    };
+  }
+
+  // Check content type - allow images and videos
+  const allowedTypes = [
+    // Images
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    // Videos
+    "video/mp4",
+    "video/webm",
+    "video/quicktime",
+    "video/x-msvideo",
+  ];
+
+  if (!allowedTypes.includes(contentType)) {
+    return {
+      valid: false,
+      error:
+        "Only JPEG, PNG, WebP, GIF images and MP4, WebM, QuickTime videos are allowed",
+    };
+  }
+
+  return { valid: true };
+}
+
+/**
  * List all files in the B2 bucket
  * @param maxFileCount Maximum number of files to retrieve (default: 1000)
  * @returns Array of file information

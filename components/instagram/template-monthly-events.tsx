@@ -3,6 +3,7 @@ import {
   type InstagramFormat,
 } from "@/types/instagram";
 import { BrandFrame } from "./brand-frame";
+import { BackgroundRenderer } from "./background-renderer";
 import { Calendar, MapPin } from "lucide-react";
 
 interface TemplateMonthlyEventsProps {
@@ -24,47 +25,12 @@ export function TemplateMonthlyEvents({
 }: TemplateMonthlyEventsProps) {
   const { month, sportType, events, footer, background } = payload;
 
-  // Background rendering
-  const renderBackground = () => {
-    if (background.type === "photo" && background.value) {
-      return (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={background.value}
-            alt=""
-            className="absolute inset-0 z-0 h-full w-full object-cover"
-            crossOrigin="anonymous"
-          />
-          <div
-            className="absolute inset-0 z-0 bg-black"
-            style={{ opacity: (background.overlayIntensity || 60) / 100 }}
-          />
-        </>
-      );
-    }
-    if (background.type === "gradient") {
-      return (
-        <div
-          className="absolute inset-0 z-0"
-          style={{ background: background.value }}
-        />
-      );
-    }
-    return (
-      <div
-        className="absolute inset-0 z-0"
-        style={{ backgroundColor: background.value }}
-      />
-    );
-  };
-
   return (
     <BrandFrame
       format={format}
       showGuides={showGuides}
       showLogo={showLogo}
-      background={renderBackground()}
+      background={<BackgroundRenderer background={background} />}
     >
       <div className="relative z-10 flex flex-1 flex-col text-white">
         {/* Header */}

@@ -2,9 +2,15 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, Suspense } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Calendar, Mail, Instagram } from "lucide-react";
+import { Loader2, Calendar, Mail, Instagram, Database } from "lucide-react";
+
+// Lazy load admin components
+const AdminEventsContent = lazy(() => import("./events/page"));
+const AdminContactsContent = lazy(() => import("./contacts/page"));
+const AdminMediaContent = lazy(() => import("./media/page"));
+const AdminInstagramContent = lazy(() => import("./instagram/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -57,7 +63,7 @@ function AdminContent() {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-3 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
           <TabsTrigger value="events" className="gap-2">
             <Calendar className="h-4 w-4" />
             <span>Eventos</span>
@@ -66,6 +72,10 @@ function AdminContent() {
             <Mail className="h-4 w-4" />
             <span>Contactos</span>
           </TabsTrigger>
+          <TabsTrigger value="media" className="gap-2">
+            <Database className="h-4 w-4" />
+            <span>Media</span>
+          </TabsTrigger>
           <TabsTrigger value="instagram" className="gap-2">
             <Instagram className="h-4 w-4" />
             <span>Instagram</span>
@@ -73,27 +83,51 @@ function AdminContent() {
         </TabsList>
 
         <TabsContent value="events" className="mt-6">
-          <iframe
-            src="/admin/events"
-            className="h-[calc(100vh-200px)] w-full rounded-lg border"
-            title="Events Admin"
-          />
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminEventsContent />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="contacts" className="mt-6">
-          <iframe
-            src="/admin/contacts"
-            className="h-[calc(100vh-200px)] w-full rounded-lg border"
-            title="Contacts Admin"
-          />
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminContactsContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="media" className="mt-6">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminMediaContent />
+          </Suspense>
         </TabsContent>
 
         <TabsContent value="instagram" className="mt-6">
-          <iframe
-            src="/admin/instagram"
-            className="h-[calc(100vh-200px)] w-full rounded-lg border"
-            title="Instagram Admin"
-          />
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminInstagramContent />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

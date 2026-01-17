@@ -41,7 +41,8 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
         router.replace(`/${locale}/events?sport=${savedFilter}`);
       }
     }
-  }, [router, searchParams, locale]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleFilterClick = (value: string) => {
     // Save to localStorage

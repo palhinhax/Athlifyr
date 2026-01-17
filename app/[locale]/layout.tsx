@@ -186,6 +186,12 @@ export default async function RootLayout({
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-4">
                     <Link
+                      href={`/${locale}/contact`}
+                      className="transition-colors hover:text-foreground"
+                    >
+                      Contact
+                    </Link>
+                    <Link
                       href={`/${locale}/privacy`}
                       className="transition-colors hover:text-foreground"
                     >

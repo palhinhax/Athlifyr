@@ -1,10 +1,11 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { User, Mail, Shield, Trophy, Languages } from "lucide-react";
+import { User, Mail, Shield, Trophy, Languages, Database } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { FavoriteSportsSelector } from "@/components/favorite-sports-selector";
 import { LanguageSelector } from "@/components/language-selector";
+import { AccountDataActions } from "@/components/account-data-actions";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -129,8 +130,14 @@ export default async function SettingsPage({
 
           {/* Privacy & Security */}
           <Card className="p-6">
-            <h2 className="mb-4 text-2xl font-semibold">{t("privacy")}</h2>
-            <p className="text-muted-foreground">{t("privacyComingSoon")}</p>
+            <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold">
+              <Database className="h-6 w-6" />
+              {t("privacy")}
+            </h2>
+            <p className="mb-6 text-sm text-muted-foreground">
+              {t("privacyDescription")}
+            </p>
+            <AccountDataActions />
           </Card>
 
           {/* Notifications */}

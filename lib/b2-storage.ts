@@ -161,3 +161,71 @@ export function validateImage(
 
   return { valid: true };
 }
+
+/**
+ * List all files in the B2 bucket
+ * @param maxFileCount Maximum number of files to retrieve (default: 1000)
+ * @returns Array of file information
+ */
+export async function listB2Files(maxFileCount: number = 1000): Promise<
+  Array<{
+    fileId: string;
+    fileName: string;
+    contentType: string;
+    contentLength: number;
+    uploadTimestamp: number;
+    url: string;
+  }>
+> {
+  try {
+    const b2 = await getB2Client();
+    const bucketId = process.env.B2_BUCKET_ID;
+    const bucketName = process.env.B2_BUCKET_NAME;
+    const bucketUrl = process.env.NEXT_PUBLIC_B2_BUCKET_URL;
+
+    if (!bucketId) {
+      throw new Error("B2_BUCKET_ID environment variable is not set");
+    }
+
+    // Use the correct method name from B2 SDK
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = (await (b2 as any).listFileNames({
+      bucketId,
+      maxFileCount,
+    })) as {
+      data: {
+        files: Array<{
+          fileId: string;
+          fileName: string;
+          contentType: string;
+          contentLength: number;
+          uploadTimestamp: number;
+        }>;
+      };
+    };
+
+    return response.data.files.map((file) => ({
+      fileId: file.fileId,
+      fileName: file.fileName,
+      contentType: file.contentType,
+      contentLength: file.contentLength,
+      uploadTimestamp: file.uploadTimestamp,
+      url: `${bucketUrl}/file/${bucketName}/${file.fileName}`,
+    }));
+  } catch (error) {
+    console.error("Error listing B2 files:", error);
+    throw new Error(
+      `Failed to list B2 files: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
+ * Get folder from file name
+ * @param fileName Full file name with folder prefix
+ * @returns Folder name or "unknown"
+ */
+export function getFileFolder(fileName: string): string {
+  const parts = fileName.split("/");
+  return parts.length > 1 ? parts[0] : "unknown";
+}

@@ -14,7 +14,9 @@ export default function middleware(request: NextRequest) {
   const isStaticAsset =
     request.nextUrl.pathname.startsWith("/_next") ||
     request.nextUrl.pathname.startsWith("/static") ||
-    request.nextUrl.pathname.includes(".");
+    request.nextUrl.pathname.match(
+      /\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2)$/i
+    );
 
   // If maintenance mode is enabled and not accessing allowed pages
   if (
@@ -43,5 +45,7 @@ export default function middleware(request: NextRequest) {
 
 export const config = {
   // Match all pathnames except static files and API routes
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2)).*)",
+  ],
 };

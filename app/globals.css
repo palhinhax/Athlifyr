@@ -173,6 +173,16 @@
   @apply bg-background/80 text-xs text-muted-foreground backdrop-blur;
 }
 
+/* Custom map markers */
+.custom-marker {
+  background: transparent !important;
+  border: none !important;
+}
+
+.custom-marker:hover {
+  z-index: 1000 !important;
+}
+
 /* Navigation progress bar animation */
 @keyframes progress {
   0% {

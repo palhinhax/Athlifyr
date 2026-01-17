@@ -8,23 +8,58 @@ import {
   Popup,
   useMapEvents,
 } from "react-leaflet";
-import L from "leaflet";
+import L, { DivIcon } from "leaflet";
 import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
 import type { MapEvent } from "./events-map";
 import type { MapFilters } from "./map-filters";
 
-// Fix Leaflet default icon issue
-const customIcon = new L.Icon({
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  iconRetinaUrl:
-    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-  popupAnchor: [1, -34],
-  shadowSize: [41, 41],
-});
+// Sport type icons mapping
+const sportIcons: Record<string, string> = {
+  RUNNING: "🏃",
+  TRAIL: "🥾",
+  CYCLING: "🚴",
+  SWIMMING: "🏊",
+  TRIATHLON: "🏊‍♂️",
+  HYROX: "💪",
+  CROSSFIT: "🏋️",
+  OBSTACLE: "🧗",
+  WALKING: "🚶",
+  OTHER: "📍",
+};
+
+// Create custom icon based on sport type
+const createCustomIcon = (sportTypes: string[]): DivIcon => {
+  const primarySport = sportTypes[0] || "OTHER";
+  const icon = sportIcons[primarySport] || sportIcons.OTHER;
+
+  return L.divIcon({
+    html: `
+      <div style="
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #FE8818 0%, #FF6B35 100%);
+        border-radius: 50% 50% 50% 0;
+        transform: rotate(-45deg);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(254, 136, 24, 0.4);
+        border: 3px solid white;
+      ">
+        <span style="
+          font-size: 20px;
+          transform: rotate(45deg);
+          display: block;
+        ">${icon}</span>
+      </div>
+    `,
+    className: "custom-marker",
+    iconSize: [40, 40],
+    iconAnchor: [20, 40],
+    popupAnchor: [0, -40],
+  });
+};
 
 interface EventsMapClientProps {
   initialCenter?: [number, number];
@@ -205,7 +240,7 @@ export default function EventsMapClient({
           <Marker
             key={event.id}
             position={[event.latitude, event.longitude]}
-            icon={customIcon}
+            icon={createCustomIcon(event.sportTypes)}
           >
             <Popup>
               <div className="min-w-[200px] space-y-2">
@@ -230,7 +265,7 @@ export default function EventsMapClient({
                 </div>
                 <a
                   href={`/events/${event.slug}`}
-                  className="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  className="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-sm font-medium text-white hover:bg-primary/90"
                 >
                   Ver Evento
                 </a>

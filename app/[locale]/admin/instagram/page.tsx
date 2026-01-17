@@ -41,6 +41,32 @@ const PREVIEW_DESKTOP_CONTAINER_WIDTH = 800;
 const PREVIEW_HEIGHT_RATIO = 0.7;
 const PREVIEW_DEFAULT_SCALE = 0.3;
 
+/**
+ * Helper function to extract error message from upload response
+ * Handles both JSON and plain text error responses
+ */
+async function getUploadErrorMessage(res: Response): Promise<string> {
+  let errorMessage = "Upload failed";
+  try {
+    // Try to get response as text first
+    const responseText = await res.text();
+    console.error("Upload error response:", responseText);
+
+    // Try to parse as JSON
+    try {
+      const errorData = JSON.parse(responseText);
+      errorMessage = errorData.error || errorMessage;
+    } catch {
+      // Not JSON, use the text directly
+      errorMessage = responseText || `Upload failed with status ${res.status}`;
+    }
+  } catch (parseError) {
+    console.error("Could not read error response:", parseError);
+    errorMessage = `Upload failed with status ${res.status}`;
+  }
+  return errorMessage;
+}
+
 interface EventItem {
   id: string;
   title: string;
@@ -433,25 +459,7 @@ export default function InstagramGeneratorPage() {
       });
 
       if (!res.ok) {
-        let errorMessage = "Upload failed";
-        try {
-          // Try to get response as text first
-          const responseText = await res.text();
-          console.error("Upload error response:", responseText);
-
-          // Try to parse as JSON
-          try {
-            const errorData = JSON.parse(responseText);
-            errorMessage = errorData.error || errorMessage;
-          } catch {
-            // Not JSON, use the text directly
-            errorMessage =
-              responseText || `Upload failed with status ${res.status}`;
-          }
-        } catch (parseError) {
-          console.error("Could not read error response:", parseError);
-          errorMessage = `Upload failed with status ${res.status}`;
-        }
+        const errorMessage = await getUploadErrorMessage(res);
         throw new Error(errorMessage);
       }
 
@@ -500,25 +508,7 @@ export default function InstagramGeneratorPage() {
       });
 
       if (!res.ok) {
-        let errorMessage = "Upload failed";
-        try {
-          // Try to get response as text first
-          const responseText = await res.text();
-          console.error("Upload error response:", responseText);
-
-          // Try to parse as JSON
-          try {
-            const errorData = JSON.parse(responseText);
-            errorMessage = errorData.error || errorMessage;
-          } catch {
-            // Not JSON, use the text directly
-            errorMessage =
-              responseText || `Upload failed with status ${res.status}`;
-          }
-        } catch (parseError) {
-          console.error("Could not read error response:", parseError);
-          errorMessage = `Upload failed with status ${res.status}`;
-        }
+        const errorMessage = await getUploadErrorMessage(res);
         throw new Error(errorMessage);
       }
 

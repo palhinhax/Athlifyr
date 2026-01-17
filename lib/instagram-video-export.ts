@@ -1,6 +1,11 @@
 import { type InstagramFormat } from "@/types/instagram";
 import { toPng } from "html-to-image";
 
+// Video export constants
+const VIDEO_BITRATE = 8_000_000; // 8 Mbps
+const TIMESLICE_INTERVAL = 100; // ms - collect chunks every 100ms
+const URL_CLEANUP_DELAY = 1000; // ms - delay before revoking blob URL
+
 interface ExportVideoOptions {
   element: HTMLElement;
   filename: string;
@@ -66,7 +71,7 @@ export async function exportToVideo({
 
     const mediaRecorder = new MediaRecorder(stream, {
       mimeType,
-      videoBitsPerSecond: 8000000, // 8 Mbps
+      videoBitsPerSecond: VIDEO_BITRATE,
     });
 
     const chunks: Blob[] = [];
@@ -116,7 +121,7 @@ export async function exportToVideo({
         document.body.removeChild(link);
         URL.revokeObjectURL(url);
         console.log("Download link cleaned up");
-      }, 1000);
+      }, URL_CLEANUP_DELAY);
 
       // Stop video
       if (videoElement) {
@@ -125,8 +130,8 @@ export async function exportToVideo({
     };
 
     console.log("Starting MediaRecorder with mimeType:", mimeType);
-    // Request data every 100ms to ensure chunks are collected
-    mediaRecorder.start(100);
+    // Request data every TIMESLICE_INTERVAL to ensure chunks are collected
+    mediaRecorder.start(TIMESLICE_INTERVAL);
 
     const totalFrames = duration * fps;
     let currentFrame = 0;

@@ -1,6 +1,11 @@
 import { type InstagramFormat } from "@/types/instagram";
 import { toPng } from "html-to-image";
 
+// Video export constants
+const VIDEO_BITRATE = 8_000_000; // 8 Mbps
+const TIMESLICE_INTERVAL = 100; // ms - collect chunks every 100ms
+const URL_CLEANUP_DELAY = 1000; // ms - delay before revoking blob URL
+
 interface ExportVideoOptions {
   element: HTMLElement;
   filename: string;
@@ -50,11 +55,23 @@ export async function exportToVideo({
       await videoElement.play();
     }
 
-    // Setup MediaRecorder
+    // Setup MediaRecorder with fallback mimeType
     const stream = canvas.captureStream(fps);
+
+    // Try to find a supported mimeType
+    let mimeType = "video/webm;codecs=vp9";
+    if (!MediaRecorder.isTypeSupported(mimeType)) {
+      console.warn("VP9 codec not supported, trying VP8");
+      mimeType = "video/webm;codecs=vp8";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        console.warn("VP8 codec not supported, using default webm");
+        mimeType = "video/webm";
+      }
+    }
+
     const mediaRecorder = new MediaRecorder(stream, {
-      mimeType: "video/webm;codecs=vp9",
-      videoBitsPerSecond: 8000000, // 8 Mbps
+      mimeType,
+      videoBitsPerSecond: VIDEO_BITRATE,
     });
 
     const chunks: Blob[] = [];
@@ -66,10 +83,30 @@ export async function exportToVideo({
       }
     };
 
+    mediaRecorder.onerror = (event) => {
+      console.error("MediaRecorder error:", event);
+      throw new Error("MediaRecorder encountered an error during recording");
+    };
+
+    mediaRecorder.onstart = () => {
+      console.log("MediaRecorder started successfully");
+    };
+
     mediaRecorder.onstop = async () => {
       console.log("Recording stopped. Total chunks:", chunks.length);
-      const blob = new Blob(chunks, { type: "video/webm" });
+
+      if (chunks.length === 0) {
+        console.error("No video chunks were recorded!");
+        throw new Error("Video recording failed - no data captured");
+      }
+
+      const blob = new Blob(chunks, { type: mimeType });
       console.log("Final video blob size:", blob.size, "bytes");
+
+      if (blob.size === 0) {
+        console.error("Video blob is empty!");
+        throw new Error("Video recording failed - empty file");
+      }
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -78,12 +115,13 @@ export async function exportToVideo({
       document.body.appendChild(link);
       console.log("Triggering download:", link.download);
       link.click();
-      document.body.removeChild(link);
 
-      // Wait a bit before revoking URL
+      // Keep the link in the DOM longer and delay URL revocation
       setTimeout(() => {
+        document.body.removeChild(link);
         URL.revokeObjectURL(url);
-      }, 100);
+        console.log("Download link cleaned up");
+      }, URL_CLEANUP_DELAY);
 
       // Stop video
       if (videoElement) {
@@ -91,8 +129,9 @@ export async function exportToVideo({
       }
     };
 
-    console.log("Starting MediaRecorder...");
-    mediaRecorder.start();
+    console.log("Starting MediaRecorder with mimeType:", mimeType);
+    // Request data every TIMESLICE_INTERVAL to ensure chunks are collected
+    mediaRecorder.start(TIMESLICE_INTERVAL);
 
     const totalFrames = duration * fps;
     let currentFrame = 0;

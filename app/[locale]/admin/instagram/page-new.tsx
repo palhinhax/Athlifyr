@@ -107,6 +107,7 @@ export default function InstagramGeneratorPage() {
   const [isLoadingMonthlyEvents, setIsLoadingMonthlyEvents] = useState(false);
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -498,9 +499,16 @@ export default function InstagramGeneratorPage() {
   const handleExport = async () => {
     if (!canvasRef.current) return;
 
+    setIsExporting(true);
+
     try {
       // Export video if background is video
       if (backgroundType === "video" && videoUrl) {
+        toast({
+          title: "Exporting video...",
+          description: "This may take a few seconds. Please wait.",
+        });
+
         await exportToVideo({
           element: canvasRef.current,
           filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
@@ -510,8 +518,8 @@ export default function InstagramGeneratorPage() {
         });
 
         toast({
-          title: "Vídeo exportado!",
-          description: "O vídeo foi exportado com sucesso.",
+          title: "Video exported!",
+          description: "Your video has been downloaded successfully.",
         });
         return;
       }
@@ -532,8 +540,13 @@ export default function InstagramGeneratorPage() {
       toast({
         variant: "destructive",
         title: "Export failed",
-        description: "Failed to export image. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to export. Please try again.",
       });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -740,9 +753,24 @@ export default function InstagramGeneratorPage() {
                 )}
               </Button>
 
-              <Button onClick={handleExport} className="w-full">
-                <Download className="mr-2 h-4 w-4" />
-                Export Image
+              <Button
+                onClick={handleExport}
+                className="w-full"
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="mr-2 h-4 w-4" />
+                    {backgroundType === "video" && videoUrl
+                      ? "Export Video"
+                      : "Export Image"}
+                  </>
+                )}
               </Button>
             </div>
           </Card>

@@ -121,6 +121,8 @@
     "allEvents": "Todos los Eventos",
     "noEvents": "No se encontraron eventos",
     "noEventsDescription": "Intenta ajustar los filtros o vuelve más tarde.",
+    "loadingMore": "Cargando más eventos...",
+    "allEventsLoaded": "Todos los eventos cargados",
     "details": "Detalles del Evento",
     "date": "Fecha",
     "location": "Ubicación",
@@ -240,7 +242,9 @@
     "commentedOn": "comentó en",
     "willParticipateIn": "participará en",
     "reply": "respuesta",
-    "replies": "respuestas"
+    "replies": "respuestas",
+    "loadingMore": "Cargando más publicaciones...",
+    "allPostsLoaded": "Todas las publicaciones cargadas"
   },
   "map": {
     "title": "Mapa de Eventos",

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
@@ -33,6 +33,14 @@ type EventWithVariants = Event & {
   variants: EventVariant[];
 };
 
+interface PaginationInfo {
+  page: number;
+  pageSize: number;
+  totalCount: number;
+  totalPages: number;
+  hasMore: boolean;
+}
+
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -50,7 +58,16 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     Set<string>
   >(new Set());
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pagination, setPagination] = useState<PaginationInfo>({
+    page: 1,
+    pageSize: 12,
+    totalCount: 0,
+    totalPages: 0,
+    hasMore: false,
+  });
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   // Debounce search query
   useEffect(() => {
@@ -61,87 +78,138 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     return () => clearTimeout(timeoutId);
   }, [localSearchQuery]);
 
-  const fetchEvents = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams();
-
-      // Add sport filters
-      if (filters.sports && filters.sports.length > 0) {
-        filters.sports.forEach((sport) => params.append("sports", sport));
-      }
-
-      // Add search query
-      if (filters.searchQuery) {
-        params.append("search", filters.searchQuery);
-      }
-
-      // Don't filter by country by default - show all events
-      // Only filter by location radius if explicitly enabled by user
-      // This allows users to discover events from all countries
-
-      // Fetch events
-      const response = await fetch(`/api/events?${params}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch events");
-      }
-
-      let fetchedEvents: EventWithVariants[] = await response.json();
-
-      // Filter by distance if location is enabled (but not when searching or in map mode)
-      // In map mode, the map itself handles the geographic filtering
-      if (
-        viewMode === "list" &&
-        filters.locationEnabled &&
-        filters.userLat &&
-        filters.userLng &&
-        filters.distanceRadius &&
-        !filters.searchQuery
-      ) {
-        fetchedEvents = fetchedEvents.filter((event) => {
-          if (!event.latitude || !event.longitude) return false;
-
-          const distance = calculateDistance(
-            filters.userLat!,
-            filters.userLng!,
-            event.latitude,
-            event.longitude
-          );
-
-          return distance <= filters.distanceRadius!;
-        });
-      }
-
-      setEvents(fetchedEvents);
-
-      // Fetch user participations if logged in
-      if (userId) {
-        const participationsRes = await fetch(
-          `/api/participations?userId=${userId}`
-        );
-        if (participationsRes.ok) {
-          const data = await participationsRes.json();
-          const participations = Array.isArray(data)
-            ? data
-            : data.participations || [];
-          setParticipatingEventIds(
-            new Set(participations.map((p: { eventId: string }) => p.eventId))
-          );
+  const fetchEvents = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      try {
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
         }
-      }
-    } catch (err) {
-      console.error("Error fetching events:", err);
-      setError(err instanceof Error ? err.message : "Failed to load events");
-    } finally {
-      setLoading(false);
-    }
-  }, [filters, userId, viewMode]);
+        setError(null);
 
+        const params = new URLSearchParams();
+
+        // Add pagination parameters
+        params.append("page", page.toString());
+        params.append("pageSize", "12");
+
+        // Add sport filters
+        if (filters.sports && filters.sports.length > 0) {
+          filters.sports.forEach((sport) => params.append("sports", sport));
+        }
+
+        // Add search query
+        if (filters.searchQuery) {
+          params.append("search", filters.searchQuery);
+        }
+
+        // Fetch events
+        const response = await fetch(`/api/events?${params}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch events");
+        }
+
+        const data: {
+          events: EventWithVariants[];
+          pagination: PaginationInfo;
+        } = await response.json();
+
+        let fetchedEvents = data.events;
+
+        // Filter by distance if location is enabled (but not when searching or in map mode)
+        if (
+          viewMode === "list" &&
+          filters.locationEnabled &&
+          filters.userLat &&
+          filters.userLng &&
+          filters.distanceRadius &&
+          !filters.searchQuery
+        ) {
+          fetchedEvents = fetchedEvents.filter((event) => {
+            if (!event.latitude || !event.longitude) return false;
+
+            const distance = calculateDistance(
+              filters.userLat!,
+              filters.userLng!,
+              event.latitude,
+              event.longitude
+            );
+
+            return distance <= filters.distanceRadius!;
+          });
+        }
+
+        // Append or replace events
+        if (append) {
+          setEvents((prev) => [...prev, ...fetchedEvents]);
+        } else {
+          setEvents(fetchedEvents);
+        }
+
+        setPagination(data.pagination);
+
+        // Fetch user participations if logged in (only on first page)
+        if (userId && page === 1) {
+          const participationsRes = await fetch(
+            `/api/participations?userId=${userId}`
+          );
+          if (participationsRes.ok) {
+            const participationData = await participationsRes.json();
+            const participations = Array.isArray(participationData)
+              ? participationData
+              : participationData.participations || [];
+            setParticipatingEventIds(
+              new Set(participations.map((p: { eventId: string }) => p.eventId))
+            );
+          }
+        }
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        setError(err instanceof Error ? err.message : "Failed to load events");
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
+      }
+    },
+    [filters, userId, viewMode]
+  );
+
+  // Reset to page 1 when filters change
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    setPagination((prev) => ({ ...prev, page: 1 }));
+    fetchEvents(1, false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filters, viewMode]);
+
+  // Infinite scroll observer
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (
+          entries[0].isIntersecting &&
+          pagination.hasMore &&
+          !loading &&
+          !loadingMore &&
+          viewMode === "list"
+        ) {
+          fetchEvents(pagination.page + 1, true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [pagination, loading, loadingMore, viewMode, fetchEvents]);
 
   // Sync localSearchQuery when filters.searchQuery changes from external source (like clearing filters)
   useEffect(() => {
@@ -243,7 +311,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           ) : (
             <>
               <div className="mb-4 text-sm text-muted-foreground">
-                {t("filters.resultsCount", { count: events.length })}
+                {t("filters.resultsCount", { count: pagination.totalCount })}
               </div>
               <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {events.map((event) => (
@@ -254,6 +322,28 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
                   />
                 ))}
               </div>
+
+              {/* Infinite scroll trigger */}
+              {pagination.hasMore && (
+                <div
+                  ref={observerTarget}
+                  className="mt-8 flex items-center justify-center py-8"
+                >
+                  {loadingMore && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>{t("loadingMore")}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* End of results message */}
+              {!pagination.hasMore && events.length > 0 && (
+                <div className="mt-8 py-8 text-center text-sm text-muted-foreground">
+                  {t("allEventsLoaded")}
+                </div>
+              )}
             </>
           )}
         </div>

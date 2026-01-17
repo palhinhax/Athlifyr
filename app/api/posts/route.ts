@@ -80,17 +80,24 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/posts?eventId=xxx or ?userId=xxx - Get posts
+// GET /api/posts?eventId=xxx or ?userId=xxx - Get posts with pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
     const userId = searchParams.get("userId");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
     const where: { eventId?: string; userId?: string } = {};
     if (eventId) where.eventId = eventId;
     if (userId) where.userId = userId;
+
+    // Calculate skip for pagination
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const totalCount = await prisma.post.count({ where });
 
     const posts = await prisma.post.findMany({
       where,
@@ -113,10 +120,24 @@ export async function GET(request: NextRequest) {
       orderBy: {
         createdAt: "desc",
       },
-      take: limit,
+      skip,
+      take: pageSize,
     });
 
-    return NextResponse.json({ posts }, { status: 200 });
+    // Return paginated response with metadata
+    return NextResponse.json(
+      {
+        posts,
+        pagination: {
+          page,
+          pageSize,
+          totalCount,
+          totalPages: Math.ceil(totalCount / pageSize),
+          hasMore: skip + posts.length < totalCount,
+        },
+      },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Error fetching posts:", error);
     return NextResponse.json(

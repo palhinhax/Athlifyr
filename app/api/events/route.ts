@@ -3,12 +3,13 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SportType, Prisma } from "@prisma/client";
 
-// GET - List all events with filters
+// GET - List all events with filters and pagination
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
-    const limit = searchParams.get("limit");
+    const page = parseInt(searchParams.get("page") || "1");
+    const pageSize = parseInt(searchParams.get("pageSize") || "12");
     const sports = searchParams.getAll("sports");
     const country = searchParams.get("country");
 
@@ -40,6 +41,13 @@ export async function GET(request: NextRequest) {
       };
     }
 
+    // Calculate skip for pagination
+    const skip = (page - 1) * pageSize;
+
+    // Get total count for pagination metadata
+    const totalCount = await prisma.event.count({ where });
+
+    // Fetch paginated events
     const events = await prisma.event.findMany({
       where,
       include: {
@@ -57,10 +65,21 @@ export async function GET(request: NextRequest) {
       orderBy: {
         startDate: "asc",
       },
-      take: limit ? parseInt(limit) : undefined,
+      skip,
+      take: pageSize,
     });
 
-    return NextResponse.json(events);
+    // Return paginated response with metadata
+    return NextResponse.json({
+      events,
+      pagination: {
+        page,
+        pageSize,
+        totalCount,
+        totalPages: Math.ceil(totalCount / pageSize),
+        hasMore: skip + events.length < totalCount,
+      },
+    });
   } catch (error) {
     console.error("Error fetching events:", error);
     return NextResponse.json(

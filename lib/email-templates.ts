@@ -152,3 +152,150 @@ Tens dúvidas? Contacta-nos através de: ${process.env.NEXT_PUBLIC_BASE_URL}/con
 Este é um email automático, por favor não respondas.
   `.trim();
 }
+
+/**
+ * Generic Contact Reply Email Template
+ */
+interface ContactReplyEmailProps {
+  recipientName: string;
+  recipientEmail: string;
+  originalSubject: string;
+  replyMessage: string;
+  adminName?: string;
+}
+
+export function getContactReplyEmailHtml({
+  recipientName,
+  originalSubject,
+  replyMessage,
+  adminName = "Equipa Athlifyr",
+}: ContactReplyEmailProps): string {
+  return `
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resposta: ${originalSubject}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+  <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+    <tr>
+      <td align="center" style="padding: 40px 20px;">
+        <!-- Main Container -->
+        <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 12px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header with Brand -->
+          <tr>
+            <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px 12px 0 0;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: -0.5px;">
+                🏃 Athlifyr
+              </h1>
+              <p style="margin: 8px 0 0; color: rgba(255, 255, 255, 0.9); font-size: 14px; font-weight: 500;">
+                A tua plataforma de desporto
+              </p>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <h2 style="margin: 0 0 20px; color: #1a1a1a; font-size: 24px; font-weight: 600; line-height: 1.3;">
+                Olá ${recipientName}! 👋
+              </h2>
+              
+              <p style="margin: 0 0 20px; color: #4a4a4a; font-size: 16px; line-height: 1.6;">
+                Obrigado por contactares a Athlifyr! Aqui está a nossa resposta ao teu pedido sobre:
+              </p>
+
+              <div style="margin: 0 0 30px; padding: 16px; background-color: #f8f9fa; border-left: 4px solid #667eea; border-radius: 8px;">
+                <p style="margin: 0; color: #4a4a4a; font-size: 14px; font-weight: 600;">
+                  "${originalSubject}"
+                </p>
+              </div>
+
+              <!-- Reply Message -->
+              <div style="margin: 0 0 30px; padding: 24px; background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 8px;">
+                <p style="margin: 0; color: #4a4a4a; font-size: 16px; line-height: 1.6; white-space: pre-wrap;">
+                  ${replyMessage}
+                </p>
+              </div>
+
+              <div style="margin: 30px 0 0; padding: 20px; background-color: #e7f3ff; border-left: 4px solid #2196f3; border-radius: 8px;">
+                <p style="margin: 0 0 10px; color: #0d47a1; font-size: 14px; line-height: 1.6;">
+                  <strong>💬 Tens mais questões?</strong>
+                </p>
+                <p style="margin: 0; color: #1565c0; font-size: 14px; line-height: 1.6;">
+                  Podes responder diretamente a este email ou contactar-nos através do nosso <a href="${process.env.NEXT_PUBLIC_BASE_URL}/contact" style="color: #1976d2; text-decoration: underline;">formulário de contacto</a>.
+                </p>
+              </div>
+
+              <p style="margin: 30px 0 0; color: #6b6b6b; font-size: 14px; line-height: 1.6;">
+                Atenciosamente,<br>
+                <strong>${adminName}</strong>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding: 30px 40px; background-color: #f8f9fa; border-radius: 0 0 12px 12px; border-top: 1px solid #e9ecef;">
+              <p style="margin: 0 0 15px; color: #6b6b6b; font-size: 14px; text-align: center; line-height: 1.6;">
+                Obrigado por fazeres parte da comunidade Athlifyr! 🎉
+              </p>
+              
+              <p style="margin: 0; color: #9b9b9b; font-size: 12px; text-align: center; line-height: 1.5;">
+                © ${new Date().getFullYear()} Athlifyr. Todos os direitos reservados.
+              </p>
+
+              <div style="margin: 20px 0 0; text-align: center;">
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL}" style="color: #667eea; text-decoration: none; font-size: 12px; margin: 0 10px;">
+                  🏠 Página Inicial
+                </a>
+                <span style="color: #d0d0d0;">|</span>
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/events" style="color: #667eea; text-decoration: none; font-size: 12px; margin: 0 10px;">
+                  📅 Eventos
+                </a>
+                <span style="color: #d0d0d0;">|</span>
+                <a href="${process.env.NEXT_PUBLIC_BASE_URL}/contact" style="color: #667eea; text-decoration: none; font-size: 12px; margin: 0 10px;">
+                  📧 Contacto
+                </a>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+export function getContactReplyEmailText({
+  recipientName,
+  originalSubject,
+  replyMessage,
+  adminName = "Equipa Athlifyr",
+}: ContactReplyEmailProps): string {
+  return `
+Olá ${recipientName}!
+
+Obrigado por contactares a Athlifyr! Aqui está a nossa resposta ao teu pedido sobre: "${originalSubject}"
+
+---
+
+${replyMessage}
+
+---
+
+💬 Tens mais questões?
+Podes responder diretamente a este email ou contactar-nos através de: ${process.env.NEXT_PUBLIC_BASE_URL}/contact
+
+Atenciosamente,
+${adminName}
+
+---
+© ${new Date().getFullYear()} Athlifyr
+  `.trim();
+}

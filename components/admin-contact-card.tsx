@@ -8,9 +8,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Mail, Calendar, User, ChevronDown, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import {
+  Mail,
+  Calendar,
+  User,
+  ChevronDown,
+  Loader2,
+  Reply,
+  Send,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
 
 const typeIcons: Record<string, string> = {
   suggestion: "💡",
@@ -52,7 +71,12 @@ interface AdminContactCardProps {
 export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
   const [status, setStatus] = useState(contact.status);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  const [replyMessage, setReplyMessage] = useState("");
+  const [adminName, setAdminName] = useState("");
+  const [isSending, setIsSending] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
@@ -66,91 +90,251 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
       if (response.ok) {
         setStatus(newStatus);
         router.refresh();
+        toast({
+          title: "Status atualizado",
+          description: `O contacto foi marcado como ${statusLabels[newStatus]}.`,
+        });
       } else {
-        console.error("Failed to update contact status");
+        toast({
+          title: "Erro",
+          description: "Não foi possível atualizar o status.",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       console.error("Error updating contact status:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao atualizar o status.",
+        variant: "destructive",
+      });
     } finally {
       setIsUpdating(false);
     }
   };
 
-  return (
-    <Card className="p-6">
-      <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-        <div className="flex-1">
-          <div className="mb-2 flex items-center gap-2">
-            <span className="text-xl">{typeIcons[contact.type] || "📧"}</span>
-            <h3 className="text-lg font-semibold">{contact.subject}</h3>
-          </div>
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <User className="h-4 w-4" />
-              {contact.name}
-            </div>
-            <div className="flex items-center gap-1">
-              <Mail className="h-4 w-4" />
-              <a href={`mailto:${contact.email}`} className="hover:underline">
-                {contact.email}
-              </a>
-            </div>
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              {new Date(contact.createdAt).toLocaleDateString(
-                locale === "pt" ? "pt-PT" : "en-US",
-                {
-                  day: "2-digit",
-                  month: "2-digit",
-                  year: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }
-              )}
-            </div>
-          </div>
-        </div>
+  const handleSendReply = async () => {
+    if (!replyMessage.trim()) {
+      toast({
+        title: "Erro",
+        description: "Por favor, escreve uma mensagem antes de enviar.",
+        variant: "destructive",
+      });
+      return;
+    }
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+    setIsSending(true);
+    try {
+      const response = await fetch(`/api/admin/contacts/${contact.id}/reply`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: replyMessage,
+          adminName: adminName.trim() || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Email enviado",
+          description: `A tua resposta foi enviada para ${contact.email}.`,
+        });
+        setIsReplyDialogOpen(false);
+        setReplyMessage("");
+        setAdminName("");
+        router.refresh();
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Erro ao enviar",
+          description: error.error || "Não foi possível enviar o email.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error sending reply:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao enviar o email.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <>
+      <Card className="p-6">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="mb-2 flex items-center gap-2">
+              <span className="text-xl">{typeIcons[contact.type] || "📧"}</span>
+              <h3 className="text-lg font-semibold">{contact.subject}</h3>
+            </div>
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <User className="h-4 w-4" />
+                {contact.name}
+              </div>
+              <div className="flex items-center gap-1">
+                <Mail className="h-4 w-4" />
+                <a href={`mailto:${contact.email}`} className="hover:underline">
+                  {contact.email}
+                </a>
+              </div>
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                {new Date(contact.createdAt).toLocaleDateString(
+                  locale === "pt" ? "pt-PT" : "en-US",
+                  {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-2">
             <Button
               variant="outline"
               size="sm"
-              className={`gap-2 ${statusColors[status] || statusColors.pending}`}
-              disabled={isUpdating}
+              onClick={() => setIsReplyDialogOpen(true)}
             >
-              {isUpdating ? (
-                <Loader2 className="h-3 w-3 animate-spin" />
-              ) : (
-                <span>{statusLabels[status] || "Pendente"}</span>
-              )}
-              <ChevronDown className="h-3 w-3" />
+              <Reply className="mr-2 h-4 w-4" />
+              Responder
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
-              <span className="mr-2">🔴</span>
-              Pendente
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("in_progress")}>
-              <span className="mr-2">🟠</span>
-              Em Progresso
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("resolved")}>
-              <span className="mr-2">🟢</span>
-              Resolvido
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusChange("closed")}>
-              <span className="mr-2">⚫</span>
-              Fechado
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
 
-      <div className="rounded-md bg-muted p-4">
-        <p className="whitespace-pre-wrap text-sm">{contact.message}</p>
-      </div>
-    </Card>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={`gap-2 ${statusColors[status] || statusColors.pending}`}
+                  disabled={isUpdating}
+                >
+                  {isUpdating ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    <span>{statusLabels[status] || "Pendente"}</span>
+                  )}
+                  <ChevronDown className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+                  <span className="mr-2">🔴</span>
+                  Pendente
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange("in_progress")}
+                >
+                  <span className="mr-2">🟠</span>
+                  Em Progresso
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => handleStatusChange("resolved")}
+                >
+                  <span className="mr-2">🟢</span>
+                  Resolvido
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handleStatusChange("closed")}>
+                  <span className="mr-2">⚫</span>
+                  Fechado
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+
+        <div className="rounded-md bg-muted p-4">
+          <p className="whitespace-pre-wrap text-sm">{contact.message}</p>
+        </div>
+      </Card>
+
+      {/* Reply Dialog */}
+      <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Responder a {contact.name}</DialogTitle>
+            <DialogDescription>
+              Envia uma resposta para <strong>{contact.email}</strong> sobre
+              &ldquo;{contact.subject}&rdquo;
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="adminName">
+                Teu Nome (opcional)
+                <span className="ml-1 text-xs text-muted-foreground">
+                  Por defeito: &ldquo;Equipa Athlifyr&rdquo;
+                </span>
+              </Label>
+              <Input
+                id="adminName"
+                placeholder="Ex: João Silva"
+                value={adminName}
+                onChange={(e) => setAdminName(e.target.value)}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="replyMessage">
+                Mensagem <span className="text-destructive">*</span>
+              </Label>
+              <textarea
+                id="replyMessage"
+                className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                placeholder="Escreve a tua resposta aqui..."
+                value={replyMessage}
+                onChange={(e) => setReplyMessage(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">
+                A mensagem será enviada usando o template profissional da
+                Athlifyr.
+              </p>
+            </div>
+
+            <div className="rounded-md bg-muted p-3 text-sm">
+              <p className="mb-1 font-semibold">Mensagem Original:</p>
+              <p className="whitespace-pre-wrap text-muted-foreground">
+                {contact.message}
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsReplyDialogOpen(false);
+                setReplyMessage("");
+                setAdminName("");
+              }}
+              disabled={isSending}
+            >
+              Cancelar
+            </Button>
+            <Button onClick={handleSendReply} disabled={isSending}>
+              {isSending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />A enviar...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Enviar Email
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

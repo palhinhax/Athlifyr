@@ -27,6 +27,7 @@ import {
   Loader2,
   Reply,
   Send,
+  Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
@@ -72,9 +73,11 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
   const [status, setStatus] = useState(contact.status);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isReplyDialogOpen, setIsReplyDialogOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [replyMessage, setReplyMessage] = useState("");
   const [adminName, setAdminName] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
 
@@ -163,6 +166,40 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
     }
   };
 
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const response = await fetch(`/api/admin/contacts/${contact.id}/delete`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast({
+          title: "Contacto eliminado",
+          description: "O contacto foi eliminado com sucesso.",
+        });
+        setIsDeleteDialogOpen(false);
+        router.refresh();
+      } else {
+        const error = await response.json();
+        toast({
+          title: "Erro ao eliminar",
+          description: error.error || "Não foi possível eliminar o contacto.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error deleting contact:", error);
+      toast({
+        title: "Erro",
+        description: "Ocorreu um erro ao eliminar o contacto.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <>
       <Card className="p-6">
@@ -207,6 +244,16 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
             >
               <Reply className="mr-2 h-4 w-4" />
               Responder
+            </Button>
+
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsDeleteDialogOpen(true)}
+              className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Apagar
             </Button>
 
             <DropdownMenu>
@@ -329,6 +376,65 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
                 <>
                   <Send className="mr-2 h-4 w-4" />
                   Enviar Email
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminação</DialogTitle>
+            <DialogDescription>
+              Tens a certeza que queres eliminar este contacto de{" "}
+              <strong>{contact.name}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="rounded-md bg-muted p-4">
+              <p className="mb-2 text-sm font-semibold">
+                Assunto: {contact.subject}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Email: {contact.email}
+              </p>
+            </div>
+
+            <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
+              <p className="text-sm font-semibold text-destructive">
+                ⚠️ Atenção: Esta ação não pode ser desfeita!
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                O contacto será permanentemente eliminado da base de dados.
+              </p>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />A eliminar...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Eliminar Contacto
                 </>
               )}
             </Button>

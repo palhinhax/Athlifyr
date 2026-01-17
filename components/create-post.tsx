@@ -24,6 +24,7 @@ export function CreatePost({
   const { data: session } = useSession();
   const { toast } = useToast();
   const t = useTranslations("events");
+  const tAdmin = useTranslations("admin.posts.toast");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -42,8 +43,8 @@ export function CreatePost({
     // Validate file type
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Tipo de ficheiro inválido",
-        description: "Seleciona uma imagem válida",
+        title: tAdmin("invalidFileType"),
+        description: tAdmin("invalidFileTypeDesc"),
         variant: "destructive",
       });
       return;
@@ -52,8 +53,8 @@ export function CreatePost({
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "Ficheiro muito grande",
-        description: "A imagem deve ter no máximo 5MB",
+        title: tAdmin("fileTooLarge"),
+        description: tAdmin("fileTooLargeDesc"),
         variant: "destructive",
       });
       return;
@@ -106,8 +107,8 @@ export function CreatePost({
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
-        title: "Erro ao enviar imagem",
-        description: "Não foi possível enviar a imagem",
+        title: tAdmin("uploadError"),
+        description: tAdmin("uploadErrorDesc"),
         variant: "destructive",
       });
       return null;
@@ -121,8 +122,8 @@ export function CreatePost({
 
     if (!content.trim()) {
       toast({
-        title: "Conteúdo vazio",
-        description: "Escreve algo antes de publicar",
+        title: tAdmin("emptyContent"),
+        description: tAdmin("emptyContentDesc"),
         variant: "destructive",
       });
       return;
@@ -141,8 +142,8 @@ export function CreatePost({
         // If image upload failed, don't proceed
         if (!finalImageUrl && imageFile) {
           toast({
-            title: "Erro ao enviar imagem",
-            description: "Não foi possível enviar a imagem. Tenta novamente.",
+            title: tAdmin("uploadError"),
+            description: tAdmin("uploadErrorDesc"),
             variant: "destructive",
           });
           setIsSubmitting(false);
@@ -175,8 +176,8 @@ export function CreatePost({
       setImageUrl("");
 
       toast({
-        title: "✅ Post publicado!",
-        description: "O teu post foi publicado com sucesso",
+        title: tAdmin("postPublished"),
+        description: tAdmin("postPublishedDesc"),
       });
 
       // Callback to refresh posts
@@ -186,8 +187,8 @@ export function CreatePost({
     } catch (error) {
       console.error("Error creating post:", error);
       toast({
-        title: "Erro ao publicar",
-        description: "Não foi possível publicar o post",
+        title: tAdmin("publishError"),
+        description: tAdmin("publishErrorDesc"),
         variant: "destructive",
       });
     } finally {

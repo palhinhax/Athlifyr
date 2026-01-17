@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 const typeIcons: Record<string, string> = {
   suggestion: "💡",
@@ -46,13 +47,6 @@ const statusColors: Record<string, string> = {
     "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
   resolved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
   closed: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-};
-
-const statusLabels: Record<string, string> = {
-  pending: "Pendente",
-  in_progress: "Em Progresso",
-  resolved: "Resolvido",
-  closed: "Fechado",
 };
 
 interface AdminContactCardProps {
@@ -80,6 +74,14 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const t = useTranslations("admin.contacts");
+
+  const statusLabels: Record<string, string> = {
+    pending: t("statusLabels.pending"),
+    in_progress: t("statusLabels.in_progress"),
+    resolved: t("statusLabels.resolved"),
+    closed: t("statusLabels.closed"),
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     setIsUpdating(true);
@@ -94,21 +96,23 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
         setStatus(newStatus);
         router.refresh();
         toast({
-          title: "Status atualizado",
-          description: `O contacto foi marcado como ${statusLabels[newStatus]}.`,
+          title: t("toast.statusUpdated"),
+          description: t("toast.statusUpdatedDesc", {
+            status: statusLabels[newStatus],
+          }),
         });
       } else {
         toast({
-          title: "Erro",
-          description: "Não foi possível atualizar o status.",
+          title: t("toast.error"),
+          description: t("toast.updateError"),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error updating contact status:", error);
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao atualizar o status.",
+        title: t("toast.error"),
+        description: t("toast.updateErrorOccurred"),
         variant: "destructive",
       });
     } finally {
@@ -119,8 +123,8 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
   const handleSendReply = async () => {
     if (!replyMessage.trim()) {
       toast({
-        title: "Erro",
-        description: "Por favor, escreve uma mensagem antes de enviar.",
+        title: t("toast.error"),
+        description: t("toast.emptyMessage"),
         variant: "destructive",
       });
       return;
@@ -139,8 +143,8 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
 
       if (response.ok) {
         toast({
-          title: "Email enviado",
-          description: `A tua resposta foi enviada para ${contact.email}.`,
+          title: t("toast.emailSent"),
+          description: t("toast.emailSentDesc", { email: contact.email }),
         });
         setIsReplyDialogOpen(false);
         setReplyMessage("");
@@ -149,16 +153,16 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
       } else {
         const error = await response.json();
         toast({
-          title: "Erro ao enviar",
-          description: error.error || "Não foi possível enviar o email.",
+          title: t("toast.sendError"),
+          description: error.error || t("toast.sendErrorDesc"),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error sending reply:", error);
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao enviar o email.",
+        title: t("toast.error"),
+        description: t("toast.sendErrorOccurred"),
         variant: "destructive",
       });
     } finally {
@@ -175,24 +179,24 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
 
       if (response.ok) {
         toast({
-          title: "Contacto eliminado",
-          description: "O contacto foi eliminado com sucesso.",
+          title: t("toast.contactDeleted"),
+          description: t("toast.contactDeletedDesc"),
         });
         setIsDeleteDialogOpen(false);
         router.refresh();
       } else {
         const error = await response.json();
         toast({
-          title: "Erro ao eliminar",
-          description: error.error || "Não foi possível eliminar o contacto.",
+          title: t("toast.deleteError"),
+          description: error.error || t("toast.deleteErrorDesc"),
           variant: "destructive",
         });
       }
     } catch (error) {
       console.error("Error deleting contact:", error);
       toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao eliminar o contacto.",
+        title: t("toast.error"),
+        description: t("toast.deleteErrorOccurred"),
         variant: "destructive",
       });
     } finally {
@@ -243,7 +247,7 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
               onClick={() => setIsReplyDialogOpen(true)}
             >
               <Reply className="mr-2 h-4 w-4" />
-              Responder
+              {t("actions.reply")}
             </Button>
 
             <Button
@@ -253,7 +257,7 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
               className="text-destructive hover:bg-destructive hover:text-destructive-foreground"
             >
               <Trash2 className="mr-2 h-4 w-4" />
-              Apagar
+              {t("actions.delete")}
             </Button>
 
             <DropdownMenu>
@@ -267,7 +271,7 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
                   {isUpdating ? (
                     <Loader2 className="h-3 w-3 animate-spin" />
                   ) : (
-                    <span>{statusLabels[status] || "Pendente"}</span>
+                    <span>{statusLabels[status] || statusLabels.pending}</span>
                   )}
                   <ChevronDown className="h-3 w-3" />
                 </Button>
@@ -275,23 +279,23 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
               <DropdownMenuContent align="end">
                 <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
                   <span className="mr-2">🔴</span>
-                  Pendente
+                  {t("statusLabels.pending")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleStatusChange("in_progress")}
                 >
                   <span className="mr-2">🟠</span>
-                  Em Progresso
+                  {t("statusLabels.in_progress")}
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => handleStatusChange("resolved")}
                 >
                   <span className="mr-2">🟢</span>
-                  Resolvido
+                  {t("statusLabels.resolved")}
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => handleStatusChange("closed")}>
                   <span className="mr-2">⚫</span>
-                  Fechado
+                  {t("statusLabels.closed")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -307,24 +311,28 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
       <Dialog open={isReplyDialogOpen} onOpenChange={setIsReplyDialogOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Responder a {contact.name}</DialogTitle>
+            <DialogTitle>
+              {t("replyDialog.title", { name: contact.name })}
+            </DialogTitle>
             <DialogDescription>
-              Envia uma resposta para <strong>{contact.email}</strong> sobre
-              &ldquo;{contact.subject}&rdquo;
+              {t("replyDialog.description", {
+                email: contact.email,
+                subject: contact.subject,
+              })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="adminName">
-                Teu Nome (opcional)
+                {t("replyDialog.adminName")}
                 <span className="ml-1 text-xs text-muted-foreground">
-                  Por defeito: &ldquo;Equipa Athlifyr&rdquo;
+                  {t("replyDialog.adminNameHelp")}
                 </span>
               </Label>
               <Input
                 id="adminName"
-                placeholder="Ex: João Silva"
+                placeholder={t("replyDialog.adminNamePlaceholder")}
                 value={adminName}
                 onChange={(e) => setAdminName(e.target.value)}
               />
@@ -332,23 +340,27 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
 
             <div className="space-y-2">
               <Label htmlFor="replyMessage">
-                Mensagem <span className="text-destructive">*</span>
+                {t("replyDialog.message")}{" "}
+                <span className="text-destructive">
+                  {t("replyDialog.required")}
+                </span>
               </Label>
               <textarea
                 id="replyMessage"
                 className="flex min-h-[200px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                placeholder="Escreve a tua resposta aqui..."
+                placeholder={t("replyDialog.messagePlaceholder")}
                 value={replyMessage}
                 onChange={(e) => setReplyMessage(e.target.value)}
               />
               <p className="text-xs text-muted-foreground">
-                A mensagem será enviada usando o template profissional da
-                Athlifyr.
+                {t("replyDialog.messageHelp")}
               </p>
             </div>
 
             <div className="rounded-md bg-muted p-3 text-sm">
-              <p className="mb-1 font-semibold">Mensagem Original:</p>
+              <p className="mb-1 font-semibold">
+                {t("replyDialog.originalMessage")}
+              </p>
               <p className="whitespace-pre-wrap text-muted-foreground">
                 {contact.message}
               </p>
@@ -365,17 +377,18 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
               }}
               disabled={isSending}
             >
-              Cancelar
+              {t("actions.cancel")}
             </Button>
             <Button onClick={handleSendReply} disabled={isSending}>
               {isSending ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />A enviar...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("actions.sending")}
                 </>
               ) : (
                 <>
                   <Send className="mr-2 h-4 w-4" />
-                  Enviar Email
+                  {t("actions.send")}
                 </>
               )}
             </Button>
@@ -387,29 +400,28 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
       <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar Eliminação</DialogTitle>
+            <DialogTitle>{t("deleteDialog.title")}</DialogTitle>
             <DialogDescription>
-              Tens a certeza que queres eliminar este contacto de{" "}
-              <strong>{contact.name}</strong>?
+              {t("deleteDialog.description", { name: contact.name })}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-4">
             <div className="rounded-md bg-muted p-4">
               <p className="mb-2 text-sm font-semibold">
-                Assunto: {contact.subject}
+                {t("deleteDialog.subject")}: {contact.subject}
               </p>
               <p className="text-sm text-muted-foreground">
-                Email: {contact.email}
+                {t("deleteDialog.email")}: {contact.email}
               </p>
             </div>
 
             <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4">
               <p className="text-sm font-semibold text-destructive">
-                ⚠️ Atenção: Esta ação não pode ser desfeita!
+                {t("deleteDialog.warning")}
               </p>
               <p className="mt-2 text-sm text-muted-foreground">
-                O contacto será permanentemente eliminado da base de dados.
+                {t("deleteDialog.warningDesc")}
               </p>
             </div>
           </div>
@@ -420,7 +432,7 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
               onClick={() => setIsDeleteDialogOpen(false)}
               disabled={isDeleting}
             >
-              Cancelar
+              {t("actions.cancel")}
             </Button>
             <Button
               variant="destructive"
@@ -429,12 +441,13 @@ export function AdminContactCard({ contact, locale }: AdminContactCardProps) {
             >
               {isDeleting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />A eliminar...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  {t("actions.deleting")}
                 </>
               ) : (
                 <>
                   <Trash2 className="mr-2 h-4 w-4" />
-                  Eliminar Contacto
+                  {t("deleteDialog.confirmButton")}
                 </>
               )}
             </Button>

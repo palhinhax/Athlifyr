@@ -211,13 +211,6 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     };
   }, [pagination, loading, loadingMore, viewMode, fetchEvents]);
 
-  // Sync localSearchQuery when filters.searchQuery changes from external source (like clearing filters)
-  useEffect(() => {
-    if (filters.searchQuery === "" && localSearchQuery !== "") {
-      setLocalSearchQuery("");
-    }
-  }, [filters.searchQuery, localSearchQuery]);
-
   return (
     <div className="min-h-screen">
       <section className="bg-muted/50 py-12">

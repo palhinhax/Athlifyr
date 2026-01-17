@@ -20,7 +20,7 @@ export function BackgroundRenderer({ background }: BackgroundRendererProps) {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 z-0 h-full w-full object-cover"
+          className="absolute inset-0 z-0 h-full w-full object-contain"
           crossOrigin="anonymous"
           onError={(e) => {
             console.error("Video load error:", e);

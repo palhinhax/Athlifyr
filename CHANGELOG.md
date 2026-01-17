@@ -1,3 +1,9 @@
+## [8.5.4](https://github.com/palhinhax/Athlifyr/compare/v8.5.3...v8.5.4) (2026-01-17)
+
+### Bug Fixes
+
+- **instagram:** maintain video aspect ratio in creator ([1fbf980](https://github.com/palhinhax/Athlifyr/commit/1fbf980bc246530f22e6d3c510793b7328f73514))
+
 ## [8.5.3](https://github.com/palhinhax/Athlifyr/compare/v8.5.2...v8.5.3) (2026-01-17)
 
 ### Bug Fixes

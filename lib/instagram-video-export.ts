@@ -59,7 +59,8 @@ export async function exportToVideo({
       try {
         // Update video element time for video backgrounds
         if (videoElement) {
-          const videoTime = (i / fps) % duration;
+          // Clamp video time to duration to avoid unexpected looping
+          const videoTime = Math.min(i / fps, duration);
           videoElement.currentTime = videoTime;
 
           // Wait for video to seek to the correct time
@@ -72,8 +73,11 @@ export async function exportToVideo({
                 resolve();
               };
               videoElement.addEventListener("seeked", onSeeked);
-              // Timeout to prevent hanging
-              setTimeout(resolve, 200);
+              // Timeout to prevent hanging and clean up event listener
+              setTimeout(() => {
+                videoElement.removeEventListener("seeked", onSeeked);
+                resolve();
+              }, 200);
             }
           });
         }
@@ -100,7 +104,8 @@ export async function exportToVideo({
         }
       } catch (error) {
         console.error(`Error capturing frame ${i}:`, error);
-        // Use previous frame or black frame as fallback
+        // Duplicate previous frame to maintain smooth playback rather than showing black
+        // This is preferred for video exports where continuity is important
         if (frames.length > 0) {
           frames.push(frames[frames.length - 1]);
         }
@@ -156,75 +161,78 @@ export async function exportToVideo({
     const frameInterval = 1000 / fps;
     let currentFrame = 0;
 
-    await new Promise<void>((resolve, reject) => {
-      mediaRecorder.onstop = () => {
-        console.log("Recording stopped. Total chunks:", chunks.length);
+    try {
+      await new Promise<void>((resolve, reject) => {
+        mediaRecorder.onstop = () => {
+          console.log("Recording stopped. Total chunks:", chunks.length);
 
-        if (chunks.length === 0) {
-          reject(new Error("Video recording failed - no data captured"));
-          return;
-        }
+          if (chunks.length === 0) {
+            reject(new Error("Video recording failed - no data captured"));
+            return;
+          }
 
-        const blob = new Blob(chunks, { type: mimeType });
-        console.log("Final video blob size:", blob.size, "bytes");
+          const blob = new Blob(chunks, { type: mimeType });
+          console.log("Final video blob size:", blob.size, "bytes");
 
-        if (blob.size === 0) {
-          reject(new Error("Video recording failed - empty file"));
-          return;
-        }
+          if (blob.size === 0) {
+            reject(new Error("Video recording failed - empty file"));
+            return;
+          }
 
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `${filename}.webm`;
-        document.body.appendChild(link);
-        console.log("Triggering download:", link.download);
-        link.click();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `${filename}.webm`;
+          document.body.appendChild(link);
+          console.log("Triggering download:", link.download);
+          link.click();
 
-        // Keep the link in the DOM longer and delay URL revocation
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-          console.log("Download link cleaned up");
-        }, URL_CLEANUP_DELAY);
+          // Keep the link in the DOM longer and delay URL revocation
+          setTimeout(() => {
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            console.log("Download link cleaned up");
+          }, URL_CLEANUP_DELAY);
 
-        // Clean up frames
-        frames.forEach((frame) => frame.close());
+          resolve();
+        };
 
-        resolve();
-      };
+        console.log("Starting MediaRecorder with mimeType:", mimeType);
+        mediaRecorder.start(TIMESLICE_INTERVAL);
 
-      console.log("Starting MediaRecorder with mimeType:", mimeType);
-      mediaRecorder.start(TIMESLICE_INTERVAL);
+        // Draw frames at correct intervals
+        const drawFrame = () => {
+          if (currentFrame >= frames.length) {
+            console.log("All frames played. Stopping recorder...");
+            mediaRecorder.stop();
+            return;
+          }
 
-      // Draw frames at correct intervals
-      const drawFrame = () => {
-        if (currentFrame >= frames.length) {
-          console.log("All frames played. Stopping recorder...");
-          mediaRecorder.stop();
-          return;
-        }
+          // Draw current frame to canvas
+          ctx.clearRect(0, 0, width, height);
+          ctx.drawImage(frames[currentFrame], 0, 0, width, height);
 
-        // Draw current frame to canvas
-        ctx.clearRect(0, 0, width, height);
-        ctx.drawImage(frames[currentFrame], 0, 0, width, height);
+          if (currentFrame % 30 === 0) {
+            console.log(
+              `Encoding: ${currentFrame}/${frames.length} frames (${Math.round((currentFrame / frames.length) * 100)}%)`
+            );
+          }
 
-        if (currentFrame % 30 === 0) {
-          console.log(
-            `Encoding: ${currentFrame}/${frames.length} frames (${Math.round((currentFrame / frames.length) * 100)}%)`
-          );
-        }
+          currentFrame++;
+          setTimeout(drawFrame, frameInterval);
+        };
 
-        currentFrame++;
-        setTimeout(drawFrame, frameInterval);
-      };
+        // Start playback
+        console.log("Starting frame playback...");
+        drawFrame();
+      });
 
-      // Start playback
-      console.log("Starting frame playback...");
-      drawFrame();
-    });
-
-    console.log("Video export complete!");
+      console.log("Video export complete!");
+    } finally {
+      // Always clean up ImageBitmap resources to prevent memory leaks
+      frames.forEach((frame) => frame.close());
+      console.log("Cleaned up frame resources");
+    }
   } catch (error) {
     console.error("Error exporting video:", error);
     throw error;

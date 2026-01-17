@@ -432,10 +432,31 @@ export default function InstagramGeneratorPage() {
         body: formData,
       });
 
-      if (!res.ok) throw new Error("Upload failed");
+      if (!res.ok) {
+        let errorMessage = "Upload failed";
+        try {
+          // Try to get response as text first
+          const responseText = await res.text();
+          console.error("Upload error response:", responseText);
+
+          // Try to parse as JSON
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            // Not JSON, use the text directly
+            errorMessage =
+              responseText || `Upload failed with status ${res.status}`;
+          }
+        } catch (parseError) {
+          console.error("Could not read error response:", parseError);
+          errorMessage = `Upload failed with status ${res.status}`;
+        }
+        throw new Error(errorMessage);
+      }
 
       const data = await res.json();
-      setPhotoUrl(data.url);
+      setPhotoUrl(data.file?.url || data.url);
       setBackgroundType("photo");
 
       toast({
@@ -479,9 +500,26 @@ export default function InstagramGeneratorPage() {
       });
 
       if (!res.ok) {
-        const errorData = await res.json();
-        console.error("Upload error response:", errorData);
-        throw new Error(errorData.error || "Upload failed");
+        let errorMessage = "Upload failed";
+        try {
+          // Try to get response as text first
+          const responseText = await res.text();
+          console.error("Upload error response:", responseText);
+
+          // Try to parse as JSON
+          try {
+            const errorData = JSON.parse(responseText);
+            errorMessage = errorData.error || errorMessage;
+          } catch {
+            // Not JSON, use the text directly
+            errorMessage =
+              responseText || `Upload failed with status ${res.status}`;
+          }
+        } catch (parseError) {
+          console.error("Could not read error response:", parseError);
+          errorMessage = `Upload failed with status ${res.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await res.json();
@@ -764,8 +802,11 @@ export default function InstagramGeneratorPage() {
         </div>
 
         {/* Right Panel: Preview */}
-        <div className="flex items-center justify-center rounded-lg border bg-muted/50 p-4 sm:p-8">
-          <div style={{ transform: `scale(${previewScale})` }}>
+        <div className="flex min-h-[400px] items-center justify-center overflow-hidden rounded-lg border bg-muted/50 p-4 sm:p-8">
+          <div
+            className="origin-center"
+            style={{ transform: `scale(${previewScale})` }}
+          >
             <CanvasPreview
               ref={canvasRef}
               templateKey={templateKey}

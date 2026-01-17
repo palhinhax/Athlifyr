@@ -3,6 +3,7 @@ import {
   type InstagramFormat,
 } from "@/types/instagram";
 import { BrandFrame } from "./brand-frame";
+import { Calendar, MapPin } from "lucide-react";
 
 interface TemplateWeeklyPicksProps {
   payload: WeeklyPicksPayload;
@@ -14,6 +15,7 @@ interface TemplateWeeklyPicksProps {
 /**
  * Template T3: Weekly Picks
  * List of 3-5 events with header and footer
+ * Now with calendar-style date badges like Monthly Events
  */
 export function TemplateWeeklyPicks({
   payload,
@@ -22,6 +24,24 @@ export function TemplateWeeklyPicks({
   showLogo = true,
 }: TemplateWeeklyPicksProps) {
   const { header, items, footer, background } = payload;
+
+  // Parse items to extract title, date, and location
+  // Format expected: "Event Title • 15 jan" or "Event Title • 15 jan • Location"
+  const parseItem = (item: string) => {
+    const parts = item.split("•").map((p) => p.trim());
+    if (parts.length >= 2) {
+      return {
+        title: parts[0],
+        date: parts[1],
+        location: parts[2] || "",
+      };
+    }
+    return {
+      title: item,
+      date: "",
+      location: "",
+    };
+  };
 
   // Background rendering
   const renderBackground = () => {
@@ -80,24 +100,54 @@ export function TemplateWeeklyPicks({
           <div className="mx-auto h-1 w-40 bg-white/50" />
         </div>
 
-        {/* Items List */}
-        <div className="flex-1 space-y-8 py-16">
-          {items.slice(0, 5).map((item, index) => (
-            <div key={index} className="flex items-start gap-8">
+        {/* Events List - Calendar Style */}
+        <div className="flex-1 space-y-6 py-12">
+          {items.slice(0, 5).map((item, index) => {
+            const parsed = parseItem(item);
+            return (
               <div
-                className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full bg-white/20 font-bold backdrop-blur-sm"
-                style={{ fontSize: "40px" }}
+                key={index}
+                className="flex items-start gap-6 rounded-2xl bg-white/10 p-6 backdrop-blur-sm transition-all hover:bg-white/15"
               >
-                {index + 1}
+                {/* Date Badge */}
+                {parsed.date && (
+                  <div
+                    className="flex h-24 w-24 flex-shrink-0 flex-col items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm"
+                    style={{ minWidth: "96px" }}
+                  >
+                    <Calendar
+                      className="mb-1"
+                      style={{ width: "28px", height: "28px" }}
+                    />
+                    <span
+                      className="text-center font-bold uppercase leading-tight"
+                      style={{ fontSize: "20px" }}
+                    >
+                      {parsed.date}
+                    </span>
+                  </div>
+                )}
+
+                {/* Event Info */}
+                <div className="flex-1 pt-1">
+                  <h3
+                    className="mb-2 font-bold leading-tight"
+                    style={{ fontSize: "32px" }}
+                  >
+                    {parsed.title}
+                  </h3>
+                  {parsed.location && (
+                    <div className="flex items-center gap-2 opacity-90">
+                      <MapPin style={{ width: "20px", height: "20px" }} />
+                      <span style={{ fontSize: "24px" }}>
+                        {parsed.location}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <p
-                className="flex-1 pt-3 font-medium leading-snug"
-                style={{ fontSize: "44px" }}
-              >
-                {item}
-              </p>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Footer */}

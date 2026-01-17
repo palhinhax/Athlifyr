@@ -179,9 +179,9 @@ export default function NotFound() {
                 font-size: 1rem; font-weight: 500; transition: all 0.2s; cursor: pointer; text-decoration: none; 
                 border-radius: 0.5rem; padding: 0.625rem 1.5rem; border: 1px solid transparent; }
               button:hover, a:hover { opacity: 0.9; }
-              button { background-color: hsl(222.2 47.4% 11.2%); color: hsl(210 40% 98%); }
-              button + button { background-color: transparent; border-color: rgb(255 255 255 / 0.3); 
-                color: white; backdrop-filter: blur(4px); }
+              .bg-white { background-color: white !important; }
+              .text-black { color: black !important; }
+              .hover\\:bg-white\\/90:hover { background-color: rgb(255 255 255 / 0.9) !important; }
               @media (min-width: 640px) {
                 .sm\\:text-4xl { font-size: 2.25rem; line-height: 2.5rem; }
                 .sm\\:flex-row { flex-direction: row; }
@@ -231,7 +231,11 @@ export default function NotFound() {
 
             {/* Action Buttons */}
             <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
-              <Button asChild size="lg" className="min-w-[160px]">
+              <Button
+                asChild
+                size="lg"
+                className="min-w-[160px] border-white/30 bg-white text-black backdrop-blur-sm hover:bg-white/90"
+              >
                 <Link href={`/${locale}`}>
                   <Home className="mr-2 h-4 w-4" />
                   {t.backHome}

@@ -84,6 +84,16 @@ export default function InstagramGeneratorPage() {
     "Trail Mondego • 20K\nHYROX Lisboa • Singles\nMaratona do Porto"
   );
   const [t3Footer, setT3Footer] = useState("athlifyr.com");
+  const [t3AllEvents, setT3AllEvents] = useState<
+    Array<{
+      id: string;
+      title: string;
+      date: string;
+      location: string;
+      selected: boolean;
+    }>
+  >([]);
+  const [isLoadingWeeklyEvents, setIsLoadingWeeklyEvents] = useState(false);
 
   // T4: Minimal Quote
   const [t4Quote, setT4Quote] = useState(
@@ -95,7 +105,13 @@ export default function InstagramGeneratorPage() {
   const [t5Month, setT5Month] = useState("2026-01"); // YYYY-MM format
   const [t5SportType, setT5SportType] = useState("TRAIL");
   const [t5Events, setT5Events] = useState<
-    Array<{ title: string; date: string; location: string }>
+    Array<{
+      id: string;
+      title: string;
+      date: string;
+      location: string;
+      selected: boolean;
+    }>
   >([]);
   const [isLoadingMonthlyEvents, setIsLoadingMonthlyEvents] = useState(false);
 
@@ -189,7 +205,18 @@ export default function InstagramGeneratorPage() {
         );
         if (res.ok) {
           const data = await res.json();
-          setT5Events(data.events || []);
+          const eventsWithSelection = (data.events || []).map(
+            (event: {
+              id: string;
+              title: string;
+              date: string;
+              location: string;
+            }) => ({
+              ...event,
+              selected: true, // Select all by default
+            })
+          );
+          setT5Events(eventsWithSelection);
         } else {
           toast({
             variant: "destructive",
@@ -211,6 +238,39 @@ export default function InstagramGeneratorPage() {
 
     loadMonthlyEvents();
   }, [templateKey, t5Month, t5SportType]);
+
+  // Load weekly events for T3
+  useEffect(() => {
+    if (templateKey !== "T3") return;
+
+    const loadWeeklyEvents = async () => {
+      setIsLoadingWeeklyEvents(true);
+      try {
+        const res = await fetch("/api/events/weekly");
+        if (res.ok) {
+          const data = await res.json();
+          const eventsWithSelection = (data.events || []).map(
+            (event: {
+              id: string;
+              title: string;
+              date: string;
+              location: string;
+            }) => ({
+              ...event,
+              selected: true, // Select all by default
+            })
+          );
+          setT3AllEvents(eventsWithSelection);
+        }
+      } catch (error) {
+        console.error("Error loading weekly events:", error);
+      } finally {
+        setIsLoadingWeeklyEvents(false);
+      }
+    };
+
+    loadWeeklyEvents();
+  }, [templateKey]);
 
   const handleSelectEvent = (event: (typeof eventSearchResults)[0]) => {
     // Format date - show day and month, or date range if endDate exists
@@ -286,6 +346,34 @@ export default function InstagramGeneratorPage() {
     });
   };
 
+  // Toggle event selection for T3 (Weekly Events)
+  const toggleT3Event = (eventId: string) => {
+    setT3AllEvents((prev) =>
+      prev.map((event) =>
+        event.id === eventId ? { ...event, selected: !event.selected } : event
+      )
+    );
+  };
+
+  // Toggle event selection for T5 (Monthly Events)
+  const toggleT5Event = (eventId: string) => {
+    setT5Events((prev) =>
+      prev.map((event) =>
+        event.id === eventId ? { ...event, selected: !event.selected } : event
+      )
+    );
+  };
+
+  // Select/Deselect all events for T3
+  const toggleAllT3Events = (selected: boolean) => {
+    setT3AllEvents((prev) => prev.map((event) => ({ ...event, selected })));
+  };
+
+  // Select/Deselect all events for T5
+  const toggleAllT5Events = (selected: boolean) => {
+    setT5Events((prev) => prev.map((event) => ({ ...event, selected })));
+  };
+
   const getBackground = (): Background => {
     if (backgroundType === "photo") {
       return {
@@ -331,9 +419,17 @@ export default function InstagramGeneratorPage() {
         } as CategoryCardPayload;
 
       case "T3":
+        // Use selected events from t3AllEvents if available, otherwise fall back to manual input
+        const t3EventItems =
+          t3AllEvents.length > 0
+            ? t3AllEvents
+                .filter((e) => e.selected)
+                .map((e) => `${e.title} • ${e.date}`)
+            : t3Items.split("\n").filter(Boolean);
+
         return {
           header: t3Header,
-          items: t3Items.split("\n").filter(Boolean),
+          items: t3EventItems,
           footer: t3Footer,
           background,
         } as WeeklyPicksPayload;
@@ -346,6 +442,15 @@ export default function InstagramGeneratorPage() {
         } as MinimalQuotePayload;
 
       case "T5":
+        // Only include selected events
+        const selectedEvents = t5Events
+          .filter((e) => e.selected)
+          .map((e) => ({
+            title: e.title,
+            date: e.date,
+            location: e.location,
+          }));
+
         return {
           month: new Date(t5Month + "-01")
             .toLocaleDateString("pt-PT", {
@@ -354,7 +459,7 @@ export default function InstagramGeneratorPage() {
             })
             .toUpperCase(),
           sportType: t5SportType,
-          events: t5Events,
+          events: selectedEvents,
           footer: "athlifyr.com",
           background,
         } as MonthlyEventsPayload;
@@ -875,15 +980,85 @@ export default function InstagramGeneratorPage() {
                       placeholder="EVENTOS DA SEMANA"
                     />
                   </div>
-                  <div>
-                    <Label>Items (one per line, 3-5 items) *</Label>
-                    <textarea
-                      value={t3Items}
-                      onChange={(e) => setT3Items(e.target.value)}
-                      placeholder="Trail Mondego • 20K&#10;HYROX Lisboa • Singles&#10;Maratona do Porto"
-                      className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    />
+
+                  {/* Event Selection List */}
+                  <div className="rounded-md border border-input bg-muted/50 p-4">
+                    {isLoadingWeeklyEvents ? (
+                      <div className="flex items-center justify-center py-8">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                        <span className="ml-2 text-sm">
+                          A carregar eventos...
+                        </span>
+                      </div>
+                    ) : t3AllEvents.length > 0 ? (
+                      <div>
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-sm font-semibold">
+                            Eventos desta semana (
+                            {t3AllEvents.filter((e) => e.selected).length}/
+                            {t3AllEvents.length} selecionados):
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleAllT3Events(true)}
+                              className="h-7 text-xs"
+                            >
+                              Selecionar todos
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleAllT3Events(false)}
+                              className="h-7 text-xs"
+                            >
+                              Limpar
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="space-y-2">
+                          {t3AllEvents.map((event) => (
+                            <label
+                              key={event.id}
+                              className="flex cursor-pointer items-start gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-accent"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={event.selected}
+                                onChange={() => toggleT3Event(event.id)}
+                                className="mt-1 h-4 w-4 rounded border-gray-300"
+                              />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium">
+                                  {event.title}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {event.date} • {event.location}
+                                </div>
+                              </div>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ) : (
+                      <div>
+                        <p className="mb-3 text-center text-sm text-muted-foreground">
+                          Nenhum evento encontrado para esta semana.
+                        </p>
+                        <div>
+                          <Label>Items manuais (um por linha, 3-5 items)</Label>
+                          <textarea
+                            value={t3Items}
+                            onChange={(e) => setT3Items(e.target.value)}
+                            placeholder="Trail Mondego • 20K&#10;HYROX Lisboa • Singles&#10;Maratona do Porto"
+                            className="min-h-[120px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
+
                   <div>
                     <Label>Footer *</Label>
                     <Input
@@ -970,21 +1145,57 @@ export default function InstagramGeneratorPage() {
                       </div>
                     ) : t5Events.length > 0 ? (
                       <div>
-                        <p className="mb-2 text-sm font-semibold">
-                          {t5Events.length} eventos encontrados:
-                        </p>
-                        <ul className="space-y-1 text-xs">
-                          {t5Events.slice(0, 8).map((event, idx) => (
-                            <li key={idx} className="text-muted-foreground">
-                              {event.date} - {event.title} ({event.location})
-                            </li>
+                        <div className="mb-3 flex items-center justify-between">
+                          <p className="text-sm font-semibold">
+                            {t5Events.filter((e) => e.selected).length}/
+                            {t5Events.length} eventos selecionados:
+                          </p>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleAllT5Events(true)}
+                              className="h-7 text-xs"
+                            >
+                              Selecionar todos
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toggleAllT5Events(false)}
+                              className="h-7 text-xs"
+                            >
+                              Limpar
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="max-h-[400px] space-y-2 overflow-y-auto pr-2">
+                          {t5Events.map((event) => (
+                            <label
+                              key={event.id}
+                              className="flex cursor-pointer items-start gap-3 rounded-lg border bg-background p-3 transition-colors hover:bg-accent"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={event.selected}
+                                onChange={() => toggleT5Event(event.id)}
+                                className="mt-1 h-4 w-4 rounded border-gray-300"
+                              />
+                              <div className="flex-1">
+                                <div className="text-sm font-medium">
+                                  {event.title}
+                                </div>
+                                <div className="text-xs text-muted-foreground">
+                                  {event.date} • {event.location}
+                                </div>
+                              </div>
+                            </label>
                           ))}
-                          {t5Events.length > 8 && (
-                            <li className="italic text-muted-foreground">
-                              + {t5Events.length - 8} mais...
-                            </li>
-                          )}
-                        </ul>
+                        </div>
+                        <p className="mt-3 text-xs text-muted-foreground">
+                          💡 Dica: Seleciona apenas os eventos mais importantes
+                          (máximo 8 aparecem no post)
+                        </p>
                       </div>
                     ) : (
                       <p className="text-center text-sm text-muted-foreground">

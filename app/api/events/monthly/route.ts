@@ -16,7 +16,10 @@ export async function GET(req: NextRequest) {
     }
 
     // Validate sport type
-    if (!Object.values(SportType).includes(sportType as SportType)) {
+    if (
+      sportType !== "ALL" &&
+      !Object.values(SportType).includes(sportType as SportType)
+    ) {
       return NextResponse.json(
         { error: "Invalid sport type" },
         { status: 400 }
@@ -36,17 +39,25 @@ export async function GET(req: NextRequest) {
     const startDate = new Date(year, monthNum - 1, 1); // First day of month
     const endDate = new Date(year, monthNum, 0, 23, 59, 59); // Last day of month
 
+    // Build where clause
+    const whereClause: {
+      startDate: { gte: Date; lte: Date };
+      sportTypes?: { has: SportType };
+    } = {
+      startDate: {
+        gte: startDate,
+        lte: endDate,
+      },
+    };
+
+    // Add sport type filter if not "ALL"
+    if (sportType !== "ALL") {
+      whereClause.sportTypes = { has: sportType as SportType };
+    }
+
     // Fetch events
     const events = await prisma.event.findMany({
-      where: {
-        sportTypes: {
-          has: sportType as SportType,
-        },
-        startDate: {
-          gte: startDate,
-          lte: endDate,
-        },
-      },
+      where: whereClause,
       select: {
         id: true,
         title: true,

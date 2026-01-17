@@ -1,3 +1,10 @@
+## [8.5.1](https://github.com/palhinhax/Athlifyr/compare/v8.5.0...v8.5.1) (2026-01-17)
+
+### Bug Fixes
+
+- **instagram:** improve video upload error handling and mobile responsiveness ([f2f0a10](https://github.com/palhinhax/Athlifyr/commit/f2f0a10331a61d454c41ae37d36155ed760e8813))
+- **instagram:** standardize error messages to English ([95780af](https://github.com/palhinhax/Athlifyr/commit/95780af6ed130f0dd6a25c2efcda26adf5eac8da))
+
 # [8.5.0](https://github.com/palhinhax/Athlifyr/compare/v8.4.0...v8.5.0) (2026-01-17)
 
 ### Features

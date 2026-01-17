@@ -19,6 +19,7 @@ interface BackgroundControlsProps {
   photoUrl: string;
   videoUrl?: string;
   overlayIntensity: number;
+  videoScale?: number;
   isUploadingPhoto: boolean;
   isUploadingVideo?: boolean;
   fileInputRef: RefObject<HTMLInputElement>;
@@ -29,6 +30,7 @@ interface BackgroundControlsProps {
   onColorChange: (color: string) => void;
   onGradientChange: (gradient: string) => void;
   onOverlayIntensityChange: (intensity: number) => void;
+  onVideoScaleChange?: (scale: number) => void;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onVideoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
@@ -40,6 +42,7 @@ export function BackgroundControls({
   photoUrl,
   videoUrl = "",
   overlayIntensity,
+  videoScale = 100,
   isUploadingPhoto,
   isUploadingVideo = false,
   fileInputRef,
@@ -48,6 +51,7 @@ export function BackgroundControls({
   onColorChange,
   onGradientChange,
   onOverlayIntensityChange,
+  onVideoScaleChange,
   onPhotoUpload,
   onVideoUpload,
 }: BackgroundControlsProps) {
@@ -229,20 +233,40 @@ export function BackgroundControls({
 
           {/* Overlay Intensity */}
           {videoUrl && (
-            <div>
-              <Label>Overlay Intensity: {overlayIntensity}%</Label>
-              <Slider
-                value={[overlayIntensity]}
-                onValueChange={(v) => onOverlayIntensityChange(v[0])}
-                min={0}
-                max={100}
-                step={5}
-                className="mt-2"
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                Darken video to improve text readability
-              </p>
-            </div>
+            <>
+              <div>
+                <Label>Overlay Intensity: {overlayIntensity}%</Label>
+                <Slider
+                  value={[overlayIntensity]}
+                  onValueChange={(v) => onOverlayIntensityChange(v[0])}
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="mt-2"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Darken video to improve text readability
+                </p>
+              </div>
+
+              {/* Video Scale */}
+              <div>
+                <Label>Video Size: {videoScale}%</Label>
+                <Slider
+                  value={[videoScale]}
+                  onValueChange={(v) => onVideoScaleChange?.(v[0])}
+                  min={100}
+                  max={200}
+                  step={5}
+                  className="mt-2"
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {videoScale <= 100
+                    ? "Video fits inside frame (no cropping)"
+                    : `Video zoomed to ${videoScale}% (may crop edges)`}
+                </p>
+              </div>
+            </>
           )}
         </div>
       )}

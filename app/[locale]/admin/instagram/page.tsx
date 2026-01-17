@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
+import { Slider } from "@/components/ui/slider";
 import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";
@@ -97,8 +98,11 @@ export default function InstagramGeneratorPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [overlayIntensity, setOverlayIntensity] = useState(50);
+  const [videoScale, setVideoScale] = useState(100); // Default 100% (contain)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoDuration, setVideoDuration] = useState(5); // Default 5 seconds
+  const [exportProgress, setExportProgress] = useState(0); // Export progress 0-100
 
   // T1: Event Hero
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
@@ -335,6 +339,7 @@ export default function InstagramGeneratorPage() {
           type: "video" as const,
           value: videoUrl,
           overlayIntensity,
+          videoScale,
         };
       }
       if (backgroundType === "photo") {
@@ -547,15 +552,17 @@ export default function InstagramGeneratorPage() {
       if (backgroundType === "video" && videoUrl) {
         toast({
           title: "Exporting video...",
-          description: "This may take a few seconds. Please wait.",
+          description: `Exporting ${videoDuration}s video. Please wait...`,
         });
+
+        setExportProgress(0);
 
         await exportToVideo({
           element: canvasRef.current,
           filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
           format,
-          duration: 5, // 5 seconds
-          fps: 30,
+          duration: videoDuration, // Use user-selected duration
+          onProgress: setExportProgress, // Update progress
         });
 
         toast({
@@ -665,6 +672,7 @@ export default function InstagramGeneratorPage() {
               photoUrl={photoUrl}
               videoUrl={videoUrl}
               overlayIntensity={overlayIntensity}
+              videoScale={videoScale}
               isUploadingPhoto={isUploadingPhoto}
               isUploadingVideo={isUploadingVideo}
               fileInputRef={fileInputRef}
@@ -673,6 +681,7 @@ export default function InstagramGeneratorPage() {
               onColorChange={setSelectedColor}
               onGradientChange={setSelectedGradient}
               onOverlayIntensityChange={setOverlayIntensity}
+              onVideoScaleChange={setVideoScale}
               onPhotoUpload={handlePhotoUpload}
               onVideoUpload={handleVideoUpload}
             />
@@ -793,6 +802,49 @@ export default function InstagramGeneratorPage() {
                   </>
                 )}
               </Button>
+
+              {/* Video Duration Control - Only show when video background is selected */}
+              {backgroundType === "video" && videoUrl && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-sm font-medium">
+                      Video Duration
+                    </label>
+                    <span className="text-sm text-muted-foreground">
+                      {videoDuration}s
+                    </span>
+                  </div>
+                  <Slider
+                    value={[videoDuration]}
+                    onValueChange={(value) => setVideoDuration(value[0])}
+                    min={1}
+                    max={15}
+                    step={1}
+                    className="w-full"
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    Longer videos may take more time to export
+                  </p>
+                </div>
+              )}
+
+              {/* Progress Bar - Show during export */}
+              {isExporting && exportProgress > 0 && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Export Progress</span>
+                    <span className="text-sm text-muted-foreground">
+                      {exportProgress}%
+                    </span>
+                  </div>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
+                    <div
+                      className="h-full bg-primary transition-all duration-300"
+                      style={{ width: `${exportProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
 
               <Button
                 onClick={handleExport}

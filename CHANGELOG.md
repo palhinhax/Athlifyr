@@ -1,3 +1,19 @@
+# [8.4.0](https://github.com/palhinhax/Athlifyr/compare/v8.3.0...v8.4.0) (2026-01-17)
+
+### Bug Fixes
+
+- **ui:** resolve button styling and search input bugs ([bd931a3](https://github.com/palhinhax/Athlifyr/commit/bd931a340d00aece8ea33fc4571ba85edae353b6))
+
+### Features
+
+- **admin:** add delete functionality for contact messages ([98ed440](https://github.com/palhinhax/Athlifyr/commit/98ed4401e062259a75cb91a6176034cc9b5f911a))
+- **admin:** add email reply functionality for contact messages ([3081492](https://github.com/palhinhax/Athlifyr/commit/30814923c48cd267adbfc081d0cb308284a4c87b))
+- **admin:** implement admin dashboard with tab navigation and contact management ([607f173](https://github.com/palhinhax/Athlifyr/commit/607f17367bbffa14df47204e9104655213c6e724))
+- Implement weekly events API endpoint and related components for Instagram templates ([8336aa5](https://github.com/palhinhax/Athlifyr/commit/8336aa5a20d85a3f87298fd0593840d667a2a3ba))
+- **instagram:** add video background support with export functionality ([fdbba6d](https://github.com/palhinhax/Athlifyr/commit/fdbba6d8a6455fedf419c9e2781f936e08165371))
+- **instagram:** enhance video export with detailed logging and improved chunk handling ([9edf356](https://github.com/palhinhax/Athlifyr/commit/9edf3567289819f24988902ab0a34465e24302ac))
+- **map:** add custom sport-themed markers and improve button styling ([6ad0543](https://github.com/palhinhax/Athlifyr/commit/6ad0543939c51357f832a6fc034b8e9ad53a55c6))
+
 # [8.3.0](https://github.com/palhinhax/Athlifyr/compare/v8.2.0...v8.3.0) (2026-01-17)
 
 ### Bug Fixes

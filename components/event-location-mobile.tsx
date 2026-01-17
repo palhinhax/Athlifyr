@@ -11,6 +11,7 @@ interface EventLocationMobileProps {
   city: string;
   country: string;
   googleMapsUrl: string | null;
+  sportTypes: string[];
 }
 
 export function EventLocationMobile({
@@ -20,6 +21,7 @@ export function EventLocationMobile({
   city,
   country,
   googleMapsUrl,
+  sportTypes,
 }: EventLocationMobileProps) {
   const t = useTranslations("events");
 
@@ -39,6 +41,7 @@ export function EventLocationMobile({
           latitude={latitude}
           longitude={longitude}
           title={title}
+          sportTypes={sportTypes}
         />
       </div>
       <div className="p-4">

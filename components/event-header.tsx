@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { SportType } from "@prisma/client";
-import { sportTypeLabels } from "@/lib/event-utils";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
+import { SportBadge } from "@/components/sport-badge";
 
 interface EventHeaderProps {
   title: string;
@@ -37,12 +37,12 @@ export function EventHeader({ title, imageUrl, sportTypes }: EventHeaderProps) {
           <div className="container mx-auto">
             <div className="mb-3 flex flex-wrap gap-2 sm:mb-4">
               {sportTypes.map((sportType) => (
-                <div
+                <SportBadge
                   key={sportType}
-                  className="inline-block rounded-full bg-primary px-3 py-1.5 text-xs font-medium text-primary-foreground shadow-lg sm:text-sm"
-                >
-                  {sportTypeLabels[sportType]}
-                </div>
+                  sportType={sportType}
+                  size="lg"
+                  className="shadow-lg"
+                />
               ))}
             </div>
             <h1 className="text-3xl font-bold text-white drop-shadow-lg sm:text-4xl md:text-5xl">

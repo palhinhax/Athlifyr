@@ -4,9 +4,10 @@ import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Route, CheckCircle } from "lucide-react";
-import { formatDateShort, sportTypeLabels } from "@/lib/event-utils";
+import { formatDateShort } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
 import { useLocale } from "next-intl";
+import { SportBadge } from "@/components/sport-badge";
 
 interface EventCardProps {
   event: Event & {
@@ -36,12 +37,7 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
             {Array.isArray(event.sportTypes) &&
               event.sportTypes.map((sportType) => (
-                <div
-                  key={sportType}
-                  className="rounded-full bg-primary px-3 py-1 text-sm font-medium text-primary-foreground"
-                >
-                  {sportTypeLabels[sportType]}
-                </div>
+                <SportBadge key={sportType} sportType={sportType} size="md" />
               ))}
           </div>
           {isParticipating && (

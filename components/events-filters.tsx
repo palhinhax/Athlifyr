@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SportType } from "@prisma/client";
 import { getAnonymousId } from "@/lib/anonymous-id";
+import { getSportIcon } from "@/lib/sport-config";
 
 interface EventsFiltersProps {
   userId?: string;
@@ -402,9 +403,12 @@ export function EventsFilters({
                   />
                   <label
                     htmlFor={`events-sport-${sport}`}
-                    className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    className="flex cursor-pointer items-center gap-2 text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                   >
-                    {t(`sports.${sport}`)}
+                    <span className="text-base leading-none">
+                      {getSportIcon(sport)}
+                    </span>
+                    <span>{t(`sports.${sport}`)}</span>
                   </label>
                 </div>
               ))}

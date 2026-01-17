@@ -2,27 +2,12 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Card } from "@/components/ui/card";
-import { Mail, Calendar, User, MessageSquare } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { getTranslations } from "@/lib/translations";
+import { AdminContactCard } from "@/components/admin-contact-card";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
-
-const typeIcons: Record<string, string> = {
-  suggestion: "💡",
-  bug: "🐛",
-  question: "❓",
-  feedback: "💬",
-  other: "📧",
-};
-
-const statusColors: Record<string, string> = {
-  pending: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
-  in_progress:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-  resolved: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
-  closed: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200",
-};
 
 export default async function ContactsAdminPage() {
   const session = await auth();
@@ -107,54 +92,11 @@ export default async function ContactsAdminPage() {
           </Card>
         ) : (
           contacts.map((contact) => (
-            <Card key={contact.id} className="p-6">
-              <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div className="mb-2 flex items-center gap-2">
-                    <span className="text-xl">
-                      {typeIcons[contact.type] || "📧"}
-                    </span>
-                    <h3 className="text-lg font-semibold">{contact.subject}</h3>
-                  </div>
-                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      {contact.name}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-4 w-4" />
-                      <a
-                        href={`mailto:${contact.email}`}
-                        className="hover:underline"
-                      >
-                        {contact.email}
-                      </a>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Calendar className="h-4 w-4" />
-                      {new Date(contact.createdAt).toLocaleDateString(
-                        locale === "pt" ? "pt-PT" : "en-US",
-                        {
-                          day: "2-digit",
-                          month: locale === "pt" ? "short" : "short",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
-                    </div>
-                  </div>
-                </div>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold ${statusColors[contact.status] || statusColors.pending}`}
-                >
-                  {t(`admin.contacts.status.${contact.status}`)}
-                </span>
-              </div>
-              <div className="rounded-md bg-muted p-4">
-                <p className="whitespace-pre-wrap text-sm">{contact.message}</p>
-              </div>
-            </Card>
+            <AdminContactCard
+              key={contact.id}
+              contact={contact}
+              locale={locale}
+            />
           ))
         )}
       </div>

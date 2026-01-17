@@ -78,9 +78,9 @@ export function UserNav() {
           <>
             <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
-              <Link href="/admin/events" className="cursor-pointer">
+              <Link href="/admin" className="cursor-pointer">
                 <Shield className="mr-2 h-4 w-4" />
-                {t("manageEvents")}
+                {t("admin")}
               </Link>
             </DropdownMenuItem>
           </>

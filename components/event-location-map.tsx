@@ -7,6 +7,7 @@ interface EventLocationMapProps {
   latitude: number;
   longitude: number;
   title: string;
+  sportTypes?: string[];
   zoom?: number;
 }
 

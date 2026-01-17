@@ -72,6 +72,7 @@ export default function InstagramGeneratorPage() {
   const [photoUrl, setPhotoUrl] = useState("");
   const [videoUrl, setVideoUrl] = useState("");
   const [overlayIntensity, setOverlayIntensity] = useState(50);
+  const [videoScale, setVideoScale] = useState(100); // Default 100% (contain)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [isUploadingVideo, setIsUploadingVideo] = useState(false);
   const [videoDuration, setVideoDuration] = useState(5); // Default 5 seconds
@@ -311,6 +312,7 @@ export default function InstagramGeneratorPage() {
         type: "video",
         value: videoUrl,
         overlayIntensity,
+        videoScale,
       };
     }
     if (backgroundType === "photo") {
@@ -629,6 +631,7 @@ export default function InstagramGeneratorPage() {
               photoUrl={photoUrl}
               videoUrl={videoUrl}
               overlayIntensity={overlayIntensity}
+              videoScale={videoScale}
               isUploadingPhoto={isUploadingPhoto}
               isUploadingVideo={isUploadingVideo}
               fileInputRef={fileInputRef}
@@ -637,6 +640,7 @@ export default function InstagramGeneratorPage() {
               onColorChange={setSelectedColor}
               onGradientChange={setSelectedGradient}
               onOverlayIntensityChange={setOverlayIntensity}
+              onVideoScaleChange={setVideoScale}
               onPhotoUpload={handlePhotoUpload}
               onVideoUpload={handleVideoUpload}
             />

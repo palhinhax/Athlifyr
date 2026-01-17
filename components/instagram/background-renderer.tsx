@@ -11,6 +11,7 @@ interface BackgroundRendererProps {
 export function BackgroundRenderer({ background }: BackgroundRendererProps) {
   // Video background
   if (background.type === "video" && background.value) {
+    const scale = background.videoScale || 100; // Default to 100% (contain)
     return (
       <>
         <video
@@ -20,7 +21,11 @@ export function BackgroundRenderer({ background }: BackgroundRendererProps) {
           muted
           playsInline
           preload="auto"
-          className="absolute inset-0 z-0 h-full w-full object-contain"
+          className="absolute inset-0 z-0 h-full w-full"
+          style={{
+            objectFit: scale <= 100 ? "contain" : "cover",
+            transform: scale > 100 ? `scale(${scale / 100})` : undefined,
+          }}
           crossOrigin="anonymous"
           onError={(e) => {
             console.error("Video load error:", e);

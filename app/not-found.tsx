@@ -1,9 +1,9 @@
-"use client";
-
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Search } from "lucide-react";
-import { useEffect, useState } from "react";
+
+// Default locale for root not-found page (used when URL is outside locale structure)
+const defaultLocale = "pt";
 
 // Available background videos
 const backgroundVideos = [
@@ -80,36 +80,14 @@ const translations = {
 
 type SupportedLocale = keyof typeof translations;
 
-// Detect locale from URL or browser, default to 'en'
-function getLocale(): SupportedLocale {
-  if (typeof window !== "undefined") {
-    // Check URL path for locale
-    const path = window.location.pathname;
-    const localeMatch = path.match(/^\/(pt|en|es|fr|de|it)(\/|$)/);
-    if (localeMatch) {
-      return localeMatch[1] as SupportedLocale;
-    }
-
-    // Fallback to browser language
-    const browserLang = navigator.language.split("-")[0];
-    if (browserLang in translations) {
-      return browserLang as SupportedLocale;
-    }
-  }
-
-  return "en";
-}
-
 export default function NotFound() {
-  const locale = getLocale();
+  // Use default locale for server-side rendering (no client-side detection)
+  const locale = defaultLocale as SupportedLocale;
   const t = translations[locale];
-  const [videoSrc, setVideoSrc] = useState<string>("");
 
-  useEffect(() => {
-    // Select random video on mount
-    const randomIndex = Math.floor(Math.random() * backgroundVideos.length);
-    setVideoSrc(backgroundVideos[randomIndex]);
-  }, []);
+  // Select a random video (server-side)
+  const randomIndex = Math.floor(Math.random() * backgroundVideos.length);
+  const videoSrc = backgroundVideos[randomIndex];
 
   return (
     <html lang={locale}>
@@ -189,18 +167,15 @@ export default function NotFound() {
       <body className="antialiased">
         <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-4 py-16">
           {/* Background Video */}
-          {videoSrc && (
-            <video
-              autoPlay
-              loop
-              muted
-              playsInline
-              className="absolute inset-0 h-full w-full object-cover"
-              key={videoSrc}
-            >
-              <source src={videoSrc} type="video/mp4" />
-            </video>
-          )}
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="absolute inset-0 h-full w-full object-cover"
+          >
+            <source src={videoSrc} type="video/mp4" />
+          </video>
 
           {/* Overlay to darken video */}
           <div className="absolute inset-0 bg-black/60" />

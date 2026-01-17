@@ -1,3 +1,10 @@
+## [8.5.3](https://github.com/palhinhax/Athlifyr/compare/v8.5.2...v8.5.3) (2026-01-17)
+
+### Bug Fixes
+
+- **instagram:** fix ImageBitmap double-close issue and improve efficiency ([2ebe974](https://github.com/palhinhax/Athlifyr/commit/2ebe974c27865378c2a44b35c65adecd80cb0a07))
+- **instagram:** improve video export frame rate from ~3fps to 30fps ([bce1202](https://github.com/palhinhax/Athlifyr/commit/bce1202e6e7a0bafd225df752678f3d043fdc8ec))
+
 ## [8.5.2](https://github.com/palhinhax/Athlifyr/compare/v8.5.1...v8.5.2) (2026-01-17)
 
 ### Bug Fixes

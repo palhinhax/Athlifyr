@@ -1,3 +1,18 @@
+# [8.6.0](https://github.com/palhinhax/Athlifyr/compare/v8.5.4...v8.6.0) (2026-01-17)
+
+### Bug Fixes
+
+- **instagram:** address code review feedback on video export ([ddb9aab](https://github.com/palhinhax/Athlifyr/commit/ddb9aab61bfe2bc748e676dea9aafee63f05e9a0))
+
+### Features
+
+- **instagram:** add video duration control with progress indicator ([7a2081a](https://github.com/palhinhax/Athlifyr/commit/7a2081a57f9fec3752c453074b27e6faa0ec72f3))
+- **instagram:** add video scale control to adjust video size in frame ([a74ccb7](https://github.com/palhinhax/Athlifyr/commit/a74ccb7a0ace9047107f3b78bc9ebc37ff9649b5))
+
+### Performance Improvements
+
+- **instagram:** optimize video export with adaptive bitrate and FPS ([7a03c3b](https://github.com/palhinhax/Athlifyr/commit/7a03c3bdaddd3935322fc7f2d99173c452478606))
+
 ## [8.5.4](https://github.com/palhinhax/Athlifyr/compare/v8.5.3...v8.5.4) (2026-01-17)
 
 ### Bug Fixes

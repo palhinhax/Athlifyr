@@ -131,10 +131,16 @@ export default function AdminEventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("/api/events");
+        const res = await fetch("/api/events?pageSize=1000"); // Fetch all events for admin
         if (res.ok) {
           const data = await res.json();
-          setEvents(data);
+          // Handle new pagination response format
+          if (data.events && Array.isArray(data.events)) {
+            setEvents(data.events);
+          } else if (Array.isArray(data)) {
+            // Fallback for old format (backwards compatibility)
+            setEvents(data);
+          }
         }
       } catch (error) {
         console.error("Error fetching events:", error);

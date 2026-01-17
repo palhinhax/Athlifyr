@@ -121,6 +121,8 @@
     "allEvents": "Tous les Événements",
     "noEvents": "Aucun événement trouvé",
     "noEventsDescription": "Essayez d'ajuster les filtres ou revenez plus tard.",
+    "loadingMore": "Chargement de plus d'événements...",
+    "allEventsLoaded": "Tous les événements chargés",
     "details": "Détails de l'Événement",
     "date": "Date",
     "location": "Emplacement",
@@ -240,7 +242,9 @@
     "commentedOn": "a commenté sur",
     "willParticipateIn": "participera à",
     "reply": "réponse",
-    "replies": "réponses"
+    "replies": "réponses",
+    "loadingMore": "Chargement de plus de publications...",
+    "allPostsLoaded": "Toutes les publications chargées"
   },
   "map": {
     "title": "Carte des Événements",

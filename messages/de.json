@@ -121,6 +121,8 @@
     "allEvents": "Alle Veranstaltungen",
     "noEvents": "Keine Veranstaltungen gefunden",
     "noEventsDescription": "Versuchen Sie, die Filter anzupassen, oder schauen Sie später noch einmal vorbei.",
+    "loadingMore": "Weitere Veranstaltungen werden geladen...",
+    "allEventsLoaded": "Alle Veranstaltungen geladen",
     "details": "Veranstaltungsdetails",
     "date": "Datum",
     "location": "Standort",
@@ -265,7 +267,9 @@
     "commentedOn": "hat kommentiert zu",
     "willParticipateIn": "wird teilnehmen an",
     "reply": "Antwort",
-    "replies": "Antworten"
+    "replies": "Antworten",
+    "loadingMore": "Weitere Beiträge werden geladen...",
+    "allPostsLoaded": "Alle Beiträge geladen"
   },
   "map": {
     "title": "Event-Karte",

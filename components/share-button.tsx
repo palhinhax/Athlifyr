@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import { useTranslations } from "next-intl";
 
 interface ShareButtonProps {
   title: string;
@@ -19,6 +20,7 @@ interface ShareButtonProps {
 
 export function ShareButton({ title, url, description }: ShareButtonProps) {
   const { toast } = useToast();
+  const t = useTranslations("events.share");
   const [copied, setCopied] = useState(false);
 
   // Use current URL if not provided
@@ -31,16 +33,16 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       toast({
-        title: "Link copiado!",
-        description: "O link foi copiado para a área de transferência.",
+        title: t("linkCopied"),
+        description: t("linkCopiedDesc"),
       });
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
       console.error("Failed to copy:", error);
       toast({
         variant: "destructive",
-        title: "Erro",
-        description: "Não foi possível copiar o link.",
+        title: t("error"),
+        description: t("copyError"),
       });
     }
   };
@@ -96,14 +98,14 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm" className="gap-2">
           <Share2 className="h-4 w-4" />
-          Partilhar
+          {t("button")}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">
         {hasNativeShare && (
           <DropdownMenuItem onClick={handleNativeShare}>
             <Share2 className="mr-2 h-4 w-4" />
-            Partilhar...
+            {t("shareMenu")}
           </DropdownMenuItem>
         )}
         <DropdownMenuItem onClick={handleCopyLink}>
@@ -112,7 +114,7 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
           ) : (
             <Copy className="mr-2 h-4 w-4" />
           )}
-          Copiar Link
+          {t("copyLink")}
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleShareFacebook}>
           <Facebook className="mr-2 h-4 w-4" />

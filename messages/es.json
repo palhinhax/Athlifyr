@@ -167,6 +167,21 @@
     "noPosts": "Aún no hay publicaciones. ¡Sé el primero en compartir algo!",
     "addPhoto": "Agregar Foto",
     "publish": "Publicar",
+    "share": {
+      "button": "Compartir",
+      "shareMenu": "Compartir...",
+      "copyLink": "Copiar Enlace",
+      "linkCopied": "¡Enlace copiado!",
+      "linkCopiedDesc": "El enlace ha sido copiado al portapapeles.",
+      "error": "Error",
+      "copyError": "No se pudo copiar el enlace."
+    },
+    "pricing": {
+      "title": "Precios de Inscripción",
+      "titleWithVariant": "Precios - {variant}",
+      "current": "Actual",
+      "until": "Hasta"
+    },
     "registration": {
       "willYouGo": "¿Vas a participar?",
       "participants": "participantes",

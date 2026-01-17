@@ -3,7 +3,7 @@
 import { Calendar } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { formatPrice, type Currency } from "@/lib/currency";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface PricingPhase {
   id: string;
@@ -26,6 +26,7 @@ export function EventPricingPhases({
   variantName,
 }: EventPricingPhasesProps) {
   const locale = useLocale();
+  const t = useTranslations("events.pricing");
 
   if (!phases || phases.length === 0) {
     return null;
@@ -41,7 +42,9 @@ export function EventPricingPhases({
   return (
     <div className="rounded-lg border bg-card p-4">
       <h3 className="mb-3 text-base font-semibold">
-        {variantName ? `Preços - ${variantName}` : "Preços de Inscrição"}
+        {variantName
+          ? t("titleWithVariant", { variant: variantName })
+          : t("title")}
       </h3>
 
       <div className="space-y-2">
@@ -64,7 +67,7 @@ export function EventPricingPhases({
                 <span className="font-medium">{phase.name}</span>
                 {isActive && (
                   <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
-                    Atual
+                    {t("current")}
                   </span>
                 )}
                 {phase.discountPercent && phase.discountPercent > 0 && (
@@ -86,7 +89,9 @@ export function EventPricingPhases({
       {currentPhase && (
         <div className="mt-3 flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
-          <span>Até {formatDate(new Date(currentPhase.endDate), locale)}</span>
+          <span>
+            {t("until")} {formatDate(new Date(currentPhase.endDate), locale)}
+          </span>
         </div>
       )}
     </div>

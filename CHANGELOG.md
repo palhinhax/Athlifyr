@@ -1,3 +1,10 @@
+# [8.8.0](https://github.com/palhinhax/Athlifyr/compare/v8.7.0...v8.8.0) (2026-01-18)
+
+### Features
+
+- **i18n:** add TikTok translations for all 6 languages ([9de8dbc](https://github.com/palhinhax/Athlifyr/commit/9de8dbce4881a8c90960836cce3d3f0dbeb5b582))
+- **instagram:** add modern Instagram and TikTok templates with new formats ([b529a34](https://github.com/palhinhax/Athlifyr/commit/b529a34faac628657dd9381320d31b1194d3b916))
+
 # [8.7.0](https://github.com/palhinhax/Athlifyr/compare/v8.6.0...v8.7.0) (2026-01-18)
 
 ### Bug Fixes

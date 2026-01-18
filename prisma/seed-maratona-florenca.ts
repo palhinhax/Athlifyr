@@ -43,7 +43,6 @@ O evento é regulamentado pela FIDAL e segue as normas da World Athletics. Os pa
       externalUrl: "https://www.firenzemarathon.it",
       imageUrl: "/events/maratona-florenca.jpg",
       isFeatured: true,
-      registrationDeadline: new Date("2026-11-20T23:59:59Z"),
 
       // Translations
       translations: {
@@ -141,7 +140,7 @@ L'evento è regolamentato dalla FIDAL e segue gli standard della World Athletics
           // Marathon 42.195K
           {
             name: "Estra Firenze Marathon 42.195K",
-            distanceKm: 42,
+            distanceKm: 42.195,
             elevationGainM: 200,
             startDate: new Date("2026-11-29T08:30:00Z"),
             startTime: "08:30",

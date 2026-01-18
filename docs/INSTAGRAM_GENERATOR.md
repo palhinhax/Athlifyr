@@ -86,13 +86,12 @@ Choose from 5 brand colors:
 - Supports JPG, PNG formats
 - Max file size: 5MB for regular users, 20MB for admins
 
-#### Video Upload
+#### Transparent Background
 
-- Upload custom background videos
-- Adjust overlay intensity (0-100%) for text readability
-- Supports MP4, WebM, QuickTime formats
-- Max file size: 50MB for regular users, 100MB for admins
-- Export as WebM video format
+- Generate images with transparent backgrounds
+- Ideal for overlaying content on videos in external apps
+- Exports as PNG with transparency support
+- No overlay controls (background is fully transparent)
 
 ### 4. Safe Area Guides
 
@@ -107,8 +106,8 @@ Guides are visible only in preview, not in exported images.
 
 ### 5. Export Options
 
-- **PNG**: Default format, lossless quality
-- **JPG**: Alternative format, smaller file size
+- **PNG**: Default format, lossless quality, supports transparency
+- **JPG**: Alternative format, smaller file size (no transparency)
 - High-quality export (2x pixel ratio)
 - Automatic font loading before export
 - Filename format: `athlifyr-{template}-{format}.{extension}`
@@ -162,10 +161,11 @@ The generator enforces Athlifyr brand consistency:
 4. Select background:
    - Solid color, or
    - Gradient, or
-   - Upload photo (and adjust overlay)
+   - Upload photo (and adjust overlay), or
+   - Transparent (for overlaying on videos)
 5. Fill in template fields
 6. Toggle safe area guides to check layout
-7. Click "Download PNG" or "Download JPG"
+7. Click "Export Image"
 
 ### Saving a Draft
 

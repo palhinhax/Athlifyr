@@ -182,10 +182,14 @@ export async function exportToVideo({
     // STEP 1: Stream frames directly to MediaRecorder
     let currentFrame = 0;
     const frameInterval = 1000 / adaptiveFps;
+    const startTime = performance.now();
 
     await new Promise<void>((resolve, reject) => {
       mediaRecorder.onstop = () => {
-        console.log("Recording stopped. Total chunks:", chunks.length);
+        const actualDuration = (performance.now() - startTime) / 1000;
+        console.log(
+          `Recording stopped. Total chunks: ${chunks.length}, Actual duration: ${actualDuration.toFixed(2)}s`
+        );
 
         if (chunks.length === 0) {
           reject(new Error("Video recording failed - no data captured"));
@@ -228,13 +232,15 @@ export async function exportToVideo({
       console.log("Starting MediaRecorder with mimeType:", mimeType);
       mediaRecorder.start(TIMESLICE_INTERVAL);
 
-      // Capture and draw frames on-the-fly
+      // Capture and draw frames on-the-fly with precise timing
       const captureAndDrawFrame = async () => {
         if (currentFrame >= totalFrames) {
           console.log("All frames captured. Stopping recorder...");
           mediaRecorder.stop();
           return;
         }
+
+        const frameStartTime = performance.now();
 
         try {
           // Update video element time for video backgrounds
@@ -299,12 +305,25 @@ export async function exportToVideo({
           }
 
           currentFrame++;
-          setTimeout(captureAndDrawFrame, frameInterval);
+
+          // Calculate precise timing for next frame
+          // Target time for this frame based on when recording started
+          const targetTime = startTime + currentFrame * frameInterval;
+          const currentTime = performance.now();
+          const timeToWait = Math.max(0, targetTime - currentTime);
+
+          setTimeout(captureAndDrawFrame, timeToWait);
         } catch (error) {
           console.error(`Error processing frame ${currentFrame}:`, error);
           // Try to continue with next frame
           currentFrame++;
-          setTimeout(captureAndDrawFrame, frameInterval);
+
+          // Calculate precise timing even for error case
+          const targetTime = startTime + currentFrame * frameInterval;
+          const currentTime = performance.now();
+          const timeToWait = Math.max(0, targetTime - currentTime);
+
+          setTimeout(captureAndDrawFrame, timeToWait);
         }
       };
 

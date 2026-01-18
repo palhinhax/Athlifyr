@@ -707,13 +707,115 @@
           "content": "Wir können diese Richtlinie regelmäßig aktualisieren. Überprüfen Sie diese Seite regelmäßig, um informiert zu bleiben."
         }
       }
-    },
-    "footer": {
-      "privacy": "Datenschutz",
-      "terms": "Bedingungen",
-      "cookies": "Cookies",
-      "contact": "Kontakt",
-      "allRightsReserved": "© {year} Athlifyr. Alle Rechte vorbehalten."
     }
+  },
+  "venues": {
+    "title": "Standorte",
+    "description": "Finden Sie Fitnessstudios, Boxen und Trainingszentren",
+    "list": "Alle Standorte",
+    "viewVenue": "Standort Anzeigen",
+    "joinVenue": "Standort Beitreten",
+    "createVenue": "Standort Erstellen",
+    "editVenue": "Standort Bearbeiten",
+    "venueDetails": "Standortdetails",
+    "noVenues": "Keine Standorte gefunden",
+    "types": {
+      "CROSSFIT_BOX": "CrossFit Box",
+      "GYM": "Fitnessstudio",
+      "PT_STUDIO": "Personal Training Studio",
+      "MASSAGE": "Massage",
+      "PHYSIO": "Physiotherapie",
+      "NUTRITION": "Ernährung",
+      "OTHER": "Andere"
+    },
+    "roles": {
+      "OWNER": "Eigentümer",
+      "ADMIN": "Administrator",
+      "COACH": "Trainer",
+      "CLIENT": "Kunde"
+    },
+    "status": {
+      "PENDING": "Ausstehend",
+      "ACTIVE": "Aktiv",
+      "SUSPENDED": "Gesperrt",
+      "LEFT": "Verlassen"
+    },
+    "bookingStatus": {
+      "BOOKED": "Gebucht",
+      "CANCELLED": "Storniert",
+      "NO_SHOW": "Nicht Erschienen",
+      "ATTENDED": "Teilgenommen"
+    },
+    "info": {
+      "name": "Name",
+      "description": "Beschreibung",
+      "type": "Typ",
+      "phone": "Telefon",
+      "email": "E-Mail",
+      "website": "Webseite",
+      "instagram": "Instagram",
+      "address": "Adresse",
+      "city": "Stadt",
+      "country": "Land",
+      "location": "Standort"
+    },
+    "membership": {
+      "title": "Mitgliedschaft",
+      "members": "Mitglieder",
+      "team": "Team",
+      "requestToJoin": "Beitrittsanfrage",
+      "inviteMember": "Mitglied Einladen",
+      "manageMembers": "Mitglieder Verwalten",
+      "yourRole": "Ihre Rolle",
+      "status": "Status"
+    },
+    "plans": {
+      "title": "Pläne",
+      "subscribe": "Abonnieren",
+      "viewPlans": "Pläne Anzeigen",
+      "managePlans": "Pläne Verwalten",
+      "createPlan": "Plan Erstellen",
+      "editPlan": "Plan Bearbeiten",
+      "planDetails": "Plandetails",
+      "price": "Preis",
+      "perMonth": "pro Monat",
+      "unlimited": "Unbegrenzter Zugang",
+      "limited": "Begrenzter Zugang"
+    },
+    "sessions": {
+      "title": "Sitzungen",
+      "class": "Kurs",
+      "appointment": "Termin",
+      "bookSession": "Sitzung Buchen",
+      "cancelBooking": "Buchung Stornieren",
+      "myBookings": "Meine Buchungen",
+      "createSession": "Sitzung Erstellen",
+      "manageSessions": "Sitzungen Verwalten",
+      "capacity": "Kapazität",
+      "available": "Verfügbar",
+      "full": "Ausgebucht",
+      "startsAt": "Beginnt um",
+      "endsAt": "Endet um",
+      "duration": "Dauer",
+      "coach": "Trainer"
+    },
+    "booking": {
+      "success": "Buchung erfolgreich!",
+      "cancelled": "Buchung storniert",
+      "error": "Buchung fehlgeschlagen",
+      "limitReached": "Buchungslimit erreicht",
+      "sessionFull": "Sitzung ist voll",
+      "alreadyBooked": "Bereits gebucht",
+      "notAllowed": "Buchung nicht erlaubt",
+      "noSubscription": "Kein aktives Abonnement",
+      "outsideTimeWindow": "Außerhalb des zulässigen Zeitfensters"
+    }
+  },
+  "footer": {
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen",
+    "cookies": "Cookies",
+    "contact": "Kontakt",
+    "allRightsReserved": "© {year} Athlifyr. Alle Rechte vorbehalten."
   }
 }

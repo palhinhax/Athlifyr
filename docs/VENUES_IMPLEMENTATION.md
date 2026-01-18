@@ -21,9 +21,42 @@ Complete implementation of a venues and booking system for Athlifyr, enabling gy
 - Four role levels: OWNER > ADMIN > COACH > CLIENT
 - Four status states: PENDING, ACTIVE, SUSPENDED, LEFT
 
-### 3. Flexible Plan System (Modalidades)
+### 3. Payment System
 
-Plans control access and enforce booking limits through JSON policy:
+**Three payment modes per venue:**
+
+- **IN_APP**: All payments processed in-app (checkout system)
+- **EXTERNAL**: All payments handled outside app (venue confirms)
+- **MIXED**: Each plan chooses IN_APP or EXTERNAL
+
+**Payment Flows:**
+
+**IN_APP Payment:**
+```typescript
+1. User subscribes → PaymentIntent created (CREATED status)
+2. User confirms payment → PaymentIntent confirmed
+3. Subscription activated → ACTIVE + PAID
+4. User can now book sessions
+```
+
+**EXTERNAL Payment:**
+```typescript
+1. User subscribes → Subscription PENDING + PENDING_PAYMENT
+2. App shows venue payment instructions (MBWay, bank transfer, etc.)
+3. User pays at venue
+4. Staff marks as paid → ACTIVE + PAID
+5. User can now book sessions
+```
+
+**Payment Tracking:**
+- Payment status tracked per subscription
+- Payment method, amount, and notes recorded (EXTERNAL)
+- Staff user recorded for audit trail
+- Payment confirmation timestamps
+
+### 4. Flexible Plan System (Modalidades)
+
+Plans control access, pricing, and enforce booking limits through JSON policy:
 
 ```typescript
 {
@@ -37,19 +70,20 @@ Plans control access and enforce booking limits through JSON policy:
 }
 ```
 
-### 3. Session Management
+### 5. Session Management
 
 Two session types:
 
 - **CLASS**: Group sessions with capacity limits
 - **APPOINTMENT**: 1:1 sessions (massage, PT, physio)
 
-### 4. Smart Booking Validation
+### 6. Smart Booking Validation
 
 Comprehensive validation enforces all plan policies:
 
 - ✅ Membership status (must be ACTIVE)
 - ✅ Active subscription required
+- ✅ **Payment status (must be PAID)**
 - ✅ Capacity limits (for classes)
 - ✅ Daily booking limits
 - ✅ Weekly booking limits
@@ -58,7 +92,7 @@ Comprehensive validation enforces all plan policies:
 - ✅ Service type restrictions
 - ✅ Prevents duplicate bookings
 
-### 5. Invite & Join System
+### 7. Invite & Join System
 
 - **Invites**: Owners/admins invite staff (admin/coach) via token
 - **Join Requests**: Users request to join as clients
@@ -67,26 +101,32 @@ Comprehensive validation enforces all plan policies:
 
 ## Database Schema
 
-### New Models (7)
+### New Models (8)
 
-1. **Venue** - Core venue information
+1. **Venue** - Core venue information + payment configuration
 2. **VenueMember** - User membership with role and status
 3. **VenueInvite** - Token-based invitations
-4. **VenuePlan** - Subscription plans with policies
-5. **VenueSubscription** - User's active subscription
+4. **VenuePlan** - Subscription plans with policies + payment provider
+5. **VenueSubscription** - User's active subscription + payment tracking
 6. **VenueSession** - Classes and appointments
 7. **VenueBooking** - User bookings with status tracking
+8. **PaymentIntent** - IN_APP payment tracking (MVP)
 
-### New Enums (6)
+### New Enums (10)
 
 - VenueType (7 types: CROSSFIT_BOX, GYM, PT_STUDIO, etc.)
 - VenueRole (4 roles: OWNER, ADMIN, COACH, CLIENT)
-- MemberStatus (4 states)
-- InviteStatus (5 states)
+- MemberStatus (4 states: PENDING, ACTIVE, SUSPENDED, LEFT)
+- InviteStatus (5 states: PENDING, ACCEPTED, REJECTED, EXPIRED, CANCELLED)
 - SessionType (2 types: CLASS, APPOINTMENT)
 - BookingStatus (4 states: BOOKED, CANCELLED, NO_SHOW, ATTENDED)
+- **PaymentMode** (3 modes: IN_APP, EXTERNAL, MIXED)
+- **PaymentProvider** (2 providers: IN_APP, EXTERNAL)
+- **PaymentStatus** (3 states: PENDING_PAYMENT, PAID, NOT_REQUIRED)
+- **PaymentIntentStatus** (4 states: CREATED, CONFIRMED, FAILED, CANCELLED)
+- BookingStatus (4 states: BOOKED, CANCELLED, NO_SHOW, ATTENDED)
 
-## API Endpoints (18)
+## API Endpoints (22)
 
 ### Public Venues
 
@@ -99,6 +139,7 @@ Comprehensive validation enforces all plan policies:
 - `POST /api/venues` - Create venue
 - `PATCH /api/venues/[id]` - Update venue
 - `DELETE /api/venues/[id]` - Delete venue (soft delete)
+- **`PATCH /api/venues/[id]/payment-settings`** - Configure payment mode
 
 ### Membership Management
 
@@ -111,9 +152,15 @@ Comprehensive validation enforces all plan policies:
 ### Plans & Subscriptions
 
 - `GET /api/venues/[id]/plans` - List plans
-- `POST /api/venues/[id]/plans` - Create plan
+- `POST /api/venues/[id]/plans` - Create plan (with paymentProvider)
 - `POST /api/venues/[id]/subscriptions` - Subscribe to plan
 - `GET /api/me/subscriptions` - User's subscriptions
+
+### Payment System
+
+- **`POST /api/venues/[id]/payment-intents`** - Create payment intent (IN_APP)
+- **`POST /api/payment-intents/[id]/confirm`** - Confirm payment (MVP)
+- **`POST /api/venues/[id]/subscriptions/[subscriptionId]/mark-paid`** - Mark as paid (EXTERNAL)
 
 ### Sessions & Bookings
 

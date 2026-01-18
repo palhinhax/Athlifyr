@@ -6,14 +6,24 @@ export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const sportType = searchParams.get("sportType"); // Optional: filter by sport type
+    const startDateParam = searchParams.get("startDate"); // Optional: custom start date (ISO format)
 
-    // Calculate date range for the current week (next 7 days from today)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // Calculate date range for the week
+    let weekStart: Date;
 
-    const nextWeek = new Date(today);
-    nextWeek.setDate(today.getDate() + 7);
-    nextWeek.setHours(23, 59, 59, 999);
+    if (startDateParam) {
+      // Use custom start date if provided
+      weekStart = new Date(startDateParam);
+      weekStart.setHours(0, 0, 0, 0);
+    } else {
+      // Default to today
+      weekStart = new Date();
+      weekStart.setHours(0, 0, 0, 0);
+    }
+
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekStart.getDate() + 7);
+    weekEnd.setHours(23, 59, 59, 999);
 
     // Build where clause
     const whereClause: {
@@ -21,8 +31,8 @@ export async function GET(req: NextRequest) {
       sportTypes?: { has: SportType };
     } = {
       startDate: {
-        gte: today,
-        lte: nextWeek,
+        gte: weekStart,
+        lte: weekEnd,
       },
     };
 
@@ -71,8 +81,8 @@ export async function GET(req: NextRequest) {
       total: formattedEvents.length,
       sportType: sportType || "ALL",
       dateRange: {
-        start: today.toISOString(),
-        end: nextWeek.toISOString(),
+        start: weekStart.toISOString(),
+        end: weekEnd.toISOString(),
       },
     });
   } catch (error) {

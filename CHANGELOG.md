@@ -1,3 +1,9 @@
+# [8.10.0](https://github.com/palhinhax/Athlifyr/compare/v8.9.0...v8.10.0) (2026-01-18)
+
+### Features
+
+- **seed:** add Marathon des Alpes-Maritimes Nice-Cannes 2026 seed file ([d11020d](https://github.com/palhinhax/Athlifyr/commit/d11020d7e0e02194a155a5dbcf0586649918ae36))
+
 # [8.9.0](https://github.com/palhinhax/Athlifyr/compare/v8.8.0...v8.9.0) (2026-01-18)
 
 ### Bug Fixes

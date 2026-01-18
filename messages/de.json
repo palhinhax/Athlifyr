@@ -810,7 +810,16 @@
       "notAllowed": "Buchung nicht erlaubt",
       "noSubscription": "Kein aktives Abonnement",
       "outsideTimeWindow": "Außerhalb des zulässigen Zeitfensters"
-    }
+    },
+    "loading": "Wird geladen...",
+    "loadMore": "Mehr Laden",
+    "venueNotFound": "Venue nicht gefunden",
+    "venueNotFoundDesc": "Der Venue, den Sie suchen, existiert nicht oder wurde entfernt.",
+    "signInToJoin": "Melden Sie sich an, um diesem Venue beizutreten oder Sessions zu buchen",
+    "signIn": "Anmelden",
+    "noPlansAvailable": "Noch keine Pläne verfügbar.",
+    "sessionsComingSoon": "Sitzungskalender kommt bald",
+    "noTeamMembers": "Noch keine Teammitglieder."
   },
   "footer": {
     "privacy": "Datenschutz",

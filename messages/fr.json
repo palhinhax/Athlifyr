@@ -785,7 +785,16 @@
       "notAllowed": "Réservation non autorisée",
       "noSubscription": "Aucun abonnement actif",
       "outsideTimeWindow": "En dehors de la période autorisée"
-    }
+    },
+    "loading": "Chargement...",
+    "loadMore": "Charger Plus",
+    "venueNotFound": "Venue introuvable",
+    "venueNotFoundDesc": "Le venue que vous recherchez n'existe pas ou a été supprimé.",
+    "signInToJoin": "Connectez-vous pour rejoindre ce venue ou réserver des sessions",
+    "signIn": "Se Connecter",
+    "noPlansAvailable": "Aucun plan disponible pour le moment.",
+    "sessionsComingSoon": "Calendrier des sessions à venir",
+    "noTeamMembers": "Pas encore de membres de l'équipe."
   },
   "footer": {
     "privacy": "Confidentialité",

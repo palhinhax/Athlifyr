@@ -785,7 +785,16 @@
       "notAllowed": "Não é permitido reservar",
       "noSubscription": "Sem subscrição ativa",
       "outsideTimeWindow": "Fora do período permitido"
-    }
+    },
+    "loading": "A carregar...",
+    "loadMore": "Carregar Mais",
+    "venueNotFound": "Venue não encontrado",
+    "venueNotFoundDesc": "O venue que procuras não existe ou foi removido.",
+    "signInToJoin": "Inicia sessão para aderires a este venue ou marcares sessões",
+    "signIn": "Iniciar Sessão",
+    "noPlansAvailable": "Ainda não há planos disponíveis.",
+    "sessionsComingSoon": "Calendário de sessões em breve",
+    "noTeamMembers": "Ainda não há membros da equipa."
   },
   "footer": {
     "privacy": "Privacidade",

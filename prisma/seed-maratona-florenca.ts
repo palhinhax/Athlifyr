@@ -34,7 +34,7 @@ A 42ª edição realizar-se-á no domingo 29 de novembro de 2026, com partida à
 O evento é regulamentado pela FIDAL e segue as normas da World Athletics. Os participantes dispõem de 6 horas para completar o percurso, com checkpoints intermédios aos 21,097 km (3 horas) e aos 30 km (4 horas e 15 minutos). A organização disponibiliza pacemakers para vários tempos objetivo, postos de hidratação e alimentação, assistência médica completa, e uma Marathon EXPO nos dias 27 e 28 de novembro na Stazione Leopolda.`,
       sportTypes: ["RUNNING"],
       startDate: new Date("2026-11-29T08:30:00Z"),
-      endDate: new Date("2026-11-29T14:30:00Z"),
+      endDate: new Date("2026-11-29T14:30:00Z"), // Start time + 6h cutoff time
       city: "Florença",
       country: "Itália",
       latitude: 43.7696,
@@ -150,7 +150,7 @@ L'evento è regolamentato dalla FIDAL e segue gli standard della World Athletics
             description: `Percurso completo de 42,195 km pelas ruas históricas de Florença. Partida na Piazza Duomo com chegada na mesma praça após percorrer as principais atracções da cidade.
 
 **Requisitos de Participação**:
-- Idade mínima: 20 anos (nascidos em 2006 ou anteriores)
+- Idade mínima: 20 anos (nascidos em 2006 ou anteriores - 2026 event requires age 20)
 - Certificado médico de aptidão física para desporto competitivo específico para atletismo válido em 29 de novembro de 2026
 - Filiação FIDAL, RUN CARD ou RUN CARD EPS válida
 
@@ -289,7 +289,7 @@ L'evento è regolamentato dalla FIDAL e segue gli standard della World Athletics
   );
   console.log("   - Cutoff times: 21.097km (3h), 30km (4h15m), Finish (6h)");
   console.log(
-    "   - Split times: km 5, 10, 15, 21.097, 25, 30, 35, 40 + surprise times"
+    "   - Split times: km 5, 10, 15, 21.097, 25, 30, 35, 40 + additional intermediate checkpoints"
   );
   console.log("   - Disabled athletes rate: €30 (FISPESS and FSSI members)");
 }

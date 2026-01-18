@@ -610,11 +610,12 @@ model AnonymousEventsPreferences {
 
 // Venues System
 model Venue {
-  id          String    @id @default(cuid())
-  slug        String    @unique
+  id          String      @id @default(cuid())
+  slug        String      @unique
   name        String
   type        VenueType
-  description String?   @db.Text
+  sportTypes  SportType[] // Sports offered at this venue (e.g., [CROSSFIT, HYROX])
+  description String?     @db.Text
 
   // Contact information
   phone     String?
@@ -650,6 +651,7 @@ model Venue {
   @@index([city])
   @@index([isActive])
   @@index([createdByUserId])
+  @@index([sportTypes])
 }
 
 model VenueMember {

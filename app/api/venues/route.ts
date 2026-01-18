@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { VenueType, Prisma } from "@prisma/client";
+import { VenueType, SportType, Prisma } from "@prisma/client";
 
 // GET - List all venues with filters and pagination
 export async function GET(request: NextRequest) {
@@ -11,6 +11,7 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
     const type = searchParams.get("type") as VenueType | null;
+    const sports = searchParams.getAll("sports");
     const city = searchParams.get("city");
 
     // Build where clause
@@ -30,6 +31,13 @@ export async function GET(request: NextRequest) {
     // Type filter
     if (type && Object.values(VenueType).includes(type)) {
       where.type = type;
+    }
+
+    // Sport type filter
+    if (sports.length > 0) {
+      where.sportTypes = {
+        hasSome: sports as SportType[],
+      };
     }
 
     // City filter
@@ -94,6 +102,7 @@ export async function POST(request: Request) {
     const {
       name,
       type,
+      sportTypes,
       description,
       phone,
       email,
@@ -122,6 +131,19 @@ export async function POST(request: Request) {
       );
     }
 
+    // Validate sport types if provided
+    if (sportTypes && Array.isArray(sportTypes)) {
+      const validSportTypes = sportTypes.every((sport: string) =>
+        Object.values(SportType).includes(sport as SportType)
+      );
+      if (!validSportTypes) {
+        return NextResponse.json(
+          { error: "Invalid sport type(s)" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Generate slug from name
     let slug = name
       .toLowerCase()
@@ -145,6 +167,7 @@ export async function POST(request: Request) {
         name,
         slug,
         type,
+        sportTypes: sportTypes || [],
         description: description || null,
         phone: phone || null,
         email: email || null,

@@ -6,14 +6,22 @@ Complete implementation of a venues and booking system for Athlifyr, enabling gy
 
 ## Core Features
 
-### 1. Multi-Venue Membership System
+### 1. Multi-Sport Venues
+
+- Venues can offer multiple sports (e.g., CrossFit, HYROX, Open Gym)
+- Sport types tracked at venue level for filtering and categorization
+- Sessions tagged with specific sports for detailed classification
+- Supports hierarchical organization:
+  - Venue → Sports → Plans/Sessions → Bookings
+
+### 2. Multi-Venue Membership System
 
 - Users can be members of multiple venues simultaneously
 - Each venue membership has independent role and status
 - Four role levels: OWNER > ADMIN > COACH > CLIENT
 - Four status states: PENDING, ACTIVE, SUSPENDED, LEFT
 
-### 2. Flexible Plan System (Modalidades)
+### 3. Flexible Plan System (Modalidades)
 
 Plans control access and enforce booking limits through JSON policy:
 

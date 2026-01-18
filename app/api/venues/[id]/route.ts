@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
+import { SportType } from "@prisma/client";
 
 // GET - Get venue by ID or slug
 export async function GET(
@@ -84,6 +85,7 @@ export async function PATCH(
     const {
       name,
       type,
+      sportTypes,
       description,
       phone,
       email,
@@ -97,12 +99,26 @@ export async function PATCH(
       isActive,
     } = body;
 
+    // Validate sport types if provided
+    if (sportTypes && Array.isArray(sportTypes)) {
+      const validSportTypes = sportTypes.every((sport: string) =>
+        Object.values(SportType).includes(sport as SportType)
+      );
+      if (!validSportTypes) {
+        return NextResponse.json(
+          { error: "Invalid sport type(s)" },
+          { status: 400 }
+        );
+      }
+    }
+
     // Update venue
     const venue = await prisma.venue.update({
       where: { id },
       data: {
         ...(name && { name }),
         ...(type && { type }),
+        ...(sportTypes !== undefined && { sportTypes }),
         ...(description !== undefined && { description }),
         ...(phone !== undefined && { phone }),
         ...(email !== undefined && { email }),

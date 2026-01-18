@@ -37,10 +37,9 @@ O evento é regulamentado pela FIDAL e segue as normas da World Athletics. Os pa
       endDate: new Date("2026-11-29T14:30:00Z"), // Start time + 6h cutoff time
       city: "Florença",
       country: "Itália",
-      latitude: 43.7696,
-      longitude: 11.2558,
-      googleMapsUrl:
-        "https://www.google.com/maps/search/?api=1&query=Piazza+del+Duomo,Florence,Italy",
+      latitude: 43.7731,
+      longitude: 11.256,
+      googleMapsUrl: "https://maps.google.com/?q=43.7731,11.2560",
       externalUrl: "https://www.firenzemarathon.it",
       imageUrl: "/events/maratona-florenca.jpg",
       isFeatured: true,

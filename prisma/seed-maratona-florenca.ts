@@ -39,7 +39,8 @@ O evento é regulamentado pela FIDAL e segue as normas da World Athletics. Os pa
       country: "Itália",
       latitude: 43.7696,
       longitude: 11.2558,
-      googleMapsUrl: "https://maps.app.goo.gl/Florence",
+      googleMapsUrl:
+        "https://www.google.com/maps/search/?api=1&query=Piazza+del+Duomo,Florence,Italy",
       externalUrl: "https://www.firenzemarathon.it",
       imageUrl: "/events/maratona-florenca.jpg",
       isFeatured: true,

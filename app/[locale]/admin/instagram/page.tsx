@@ -17,6 +17,11 @@ import { CategoryCardForm } from "@/components/instagram/category-card-form";
 import { WeeklyPicksForm } from "@/components/instagram/weekly-picks-form";
 import { MinimalQuoteForm } from "@/components/instagram/minimal-quote-form";
 import { MonthlyEventsForm } from "@/components/instagram/monthly-events-form";
+import { BoldTextOverlayForm } from "@/components/instagram/bold-text-overlay-form";
+import { SplitScreenForm } from "@/components/instagram/split-screen-form";
+import { TestimonialStatsForm } from "@/components/instagram/testimonial-stats-form";
+import { VerticalChallengeForm } from "@/components/instagram/vertical-challenge-form";
+import { HookCtaForm } from "@/components/instagram/hook-cta-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -26,6 +31,11 @@ import {
   type WeeklyPicksPayload,
   type MinimalQuotePayload,
   type MonthlyEventsPayload,
+  type BoldTextOverlayPayload,
+  type SplitScreenPayload,
+  type TestimonialStatsPayload,
+  type VerticalChallengePayload,
+  type HookCtaPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -132,6 +142,45 @@ export default function InstagramGeneratorPage() {
   const [t5SportType, setT5SportType] = useState("ALL");
   const [t5Events, setT5Events] = useState<EventItem[]>([]);
   const [isLoadingMonthlyEvents, setIsLoadingMonthlyEvents] = useState(false);
+
+  // T6: Bold Text Overlay
+  const [t6MainText, setT6MainText] = useState("FIND YOUR CHALLENGE");
+  const [t6SubText, setT6SubText] = useState("1000+ Events Available");
+  const [t6Emoji, setT6Emoji] = useState("🔥");
+
+  // T7: Split Screen
+  const [t7LeftTitle, setT7LeftTitle] = useState("BEFORE");
+  const [t7LeftSubtitle, setT7LeftSubtitle] = useState("Searching everywhere");
+  const [t7RightTitle, setT7RightTitle] = useState("AFTER");
+  const [t7RightSubtitle, setT7RightSubtitle] = useState(
+    "One place. All sports."
+  );
+  const [t7VsText, setT7VsText] = useState("VS");
+
+  // T8: Testimonial/Stats
+  const [t8StatNumber, setT8StatNumber] = useState("1000+");
+  const [t8StatLabel, setT8StatLabel] = useState("EVENTOS DESCOBERTOS");
+  const [t8Quote, setT8Quote] = useState(
+    "A melhor plataforma para encontrar eventos desportivos em Portugal"
+  );
+  const [t8Author, setT8Author] = useState("João Silva");
+
+  // T9: Vertical Challenge
+  const [t9ChallengeTitle, setT9ChallengeTitle] = useState("30-DAY CHALLENGE");
+  const [t9Steps, setT9Steps] = useState([
+    "Complete 3 events this month",
+    "Try a new sport",
+    "Share your journey",
+  ]);
+  const [t9Hashtag, setT9Hashtag] = useState("AthlifyrChallenge");
+  const [t9Cta, setT9Cta] = useState("Join Now");
+
+  // T10: Hook + CTA
+  const [t10Hook, setT10Hook] = useState("STOP SCROLLING");
+  const [t10Body, setT10Body] = useState(
+    "Discover 1000+ sports events across Portugal. From running to CrossFit, find your next challenge."
+  );
+  const [t10Cta, setT10Cta] = useState("DISCOVER NOW");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -438,10 +487,52 @@ export default function InstagramGeneratorPage() {
           background,
         } as MonthlyEventsPayload;
 
+      case "T6":
+        return {
+          mainText: t6MainText,
+          subText: t6SubText || undefined,
+          emoji: t6Emoji || undefined,
+          background,
+        } as BoldTextOverlayPayload;
+
+      case "T7":
+        return {
+          leftTitle: t7LeftTitle,
+          leftSubtitle: t7LeftSubtitle || undefined,
+          rightTitle: t7RightTitle,
+          rightSubtitle: t7RightSubtitle || undefined,
+          vsText: t7VsText || "VS",
+          background,
+        } as SplitScreenPayload;
+
+      case "T8":
+        return {
+          statNumber: t8StatNumber,
+          statLabel: t8StatLabel,
+          quote: t8Quote || undefined,
+          author: t8Author || undefined,
+          background,
+        } as TestimonialStatsPayload;
+
+      case "T9":
+        return {
+          challengeTitle: t9ChallengeTitle,
+          steps: t9Steps.filter(Boolean),
+          hashtag: t9Hashtag || undefined,
+          cta: t9Cta || undefined,
+          background,
+        } as VerticalChallengePayload;
+
+      case "T10":
+        return {
+          hook: t10Hook,
+          body: t10Body,
+          cta: t10Cta,
+          background,
+        } as HookCtaPayload;
+
       default:
-        throw new Error(
-          `Unknown template: ${templateKey}. Expected T1, T2, T3, T4, or T5.`
-        );
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T10.`);
     }
   };
 
@@ -571,10 +662,11 @@ export default function InstagramGeneratorPage() {
     <div className="container mx-auto px-4 py-6 sm:py-8">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold sm:text-3xl">
-          Instagram Post Generator
+          Instagram & TikTok Post Generator
         </h1>
         <p className="text-sm text-muted-foreground sm:text-base">
-          Create branded Instagram content with Athlifyr templates
+          Create branded social media content with modern templates for
+          Instagram and TikTok
         </p>
       </div>
 
@@ -674,6 +766,69 @@ export default function InstagramGeneratorPage() {
                 onSportTypeChange={setT5SportType}
                 onToggleEvent={toggleT5Event}
                 onToggleAllEvents={toggleAllT5Events}
+              />
+            )}
+
+            {templateKey === "T6" && (
+              <BoldTextOverlayForm
+                mainText={t6MainText}
+                subText={t6SubText}
+                emoji={t6Emoji}
+                onMainTextChange={setT6MainText}
+                onSubTextChange={setT6SubText}
+                onEmojiChange={setT6Emoji}
+              />
+            )}
+
+            {templateKey === "T7" && (
+              <SplitScreenForm
+                leftTitle={t7LeftTitle}
+                leftSubtitle={t7LeftSubtitle}
+                rightTitle={t7RightTitle}
+                rightSubtitle={t7RightSubtitle}
+                vsText={t7VsText}
+                onLeftTitleChange={setT7LeftTitle}
+                onLeftSubtitleChange={setT7LeftSubtitle}
+                onRightTitleChange={setT7RightTitle}
+                onRightSubtitleChange={setT7RightSubtitle}
+                onVsTextChange={setT7VsText}
+              />
+            )}
+
+            {templateKey === "T8" && (
+              <TestimonialStatsForm
+                statNumber={t8StatNumber}
+                statLabel={t8StatLabel}
+                quote={t8Quote}
+                author={t8Author}
+                onStatNumberChange={setT8StatNumber}
+                onStatLabelChange={setT8StatLabel}
+                onQuoteChange={setT8Quote}
+                onAuthorChange={setT8Author}
+              />
+            )}
+
+            {templateKey === "T9" && (
+              <VerticalChallengeForm
+                challengeTitle={t9ChallengeTitle}
+                steps={t9Steps}
+                hashtag={t9Hashtag}
+                cta={t9Cta}
+                onChallengeTitleChange={setT9ChallengeTitle}
+                onStepsChange={setT9Steps}
+                onHashtagChange={setT9Hashtag}
+                onCtaChange={setT9Cta}
+              />
+            )}
+
+            {templateKey === "T10" && (
+              <HookCtaForm
+                hook={t10Hook}
+                body={t10Body}
+                cta={t10Cta}
+                onHookChange={setT10Hook}
+                onBodyChange={setT10Body}
+                onCtaChange={setT10Cta}
               />
             )}
           </Card>

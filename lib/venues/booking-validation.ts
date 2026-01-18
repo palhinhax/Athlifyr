@@ -50,12 +50,13 @@ export async function validateBooking(
     };
   }
 
-  // 2. Check if user has an active subscription
+  // 2. Check if user has an active subscription with payment confirmed
   const subscription = await prisma.venueSubscription.findFirst({
     where: {
       venueId,
       userId,
       status: "ACTIVE",
+      paymentStatus: "PAID", // Must be paid to book
     },
     include: {
       plan: true,

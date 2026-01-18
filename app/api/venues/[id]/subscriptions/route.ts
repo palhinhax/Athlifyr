@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { PaymentProvider } from "@prisma/client";
 
 // POST - Subscribe to a plan
 export async function POST(
@@ -28,6 +29,9 @@ export async function POST(
     // Check if plan exists and is active
     const plan = await prisma.venuePlan.findUnique({
       where: { id: planId },
+      include: {
+        venue: true,
+      },
     });
 
     if (!plan || !plan.isActive || plan.venueId !== venueId) {
@@ -71,20 +75,39 @@ export async function POST(
       });
     }
 
-    // Check if user already has an active subscription to this venue
+    // Check if user already has an active subscription to this plan
     const existingSubscription = await prisma.venueSubscription.findFirst({
       where: {
         venueId,
         userId: session.user.id,
-        status: "ACTIVE",
+        planId,
+        status: {
+          in: ["PENDING", "ACTIVE"],
+        },
       },
     });
 
     if (existingSubscription) {
       return NextResponse.json(
-        { error: "Already have an active subscription" },
+        { error: "Already have an active or pending subscription to this plan" },
         { status: 400 }
       );
+    }
+
+    // Determine payment status and subscription status based on payment provider
+    let subscriptionStatus = "PENDING";
+    let paymentStatus: "PENDING_PAYMENT" | "PAID" | "NOT_REQUIRED" =
+      "PENDING_PAYMENT";
+
+    if (plan.paymentProvider === PaymentProvider.EXTERNAL) {
+      // EXTERNAL payment - subscription stays pending until staff confirms
+      subscriptionStatus = "PENDING";
+      paymentStatus = "PENDING_PAYMENT";
+    } else if (plan.paymentProvider === PaymentProvider.IN_APP) {
+      // IN_APP payment - subscription stays pending until payment is confirmed
+      // User needs to create a payment intent and confirm it
+      subscriptionStatus = "PENDING";
+      paymentStatus = "PENDING_PAYMENT";
     }
 
     // Create subscription
@@ -93,7 +116,8 @@ export async function POST(
         venueId,
         userId: session.user.id,
         planId,
-        status: "ACTIVE",
+        status: subscriptionStatus,
+        paymentStatus,
       },
       include: {
         plan: true,
@@ -102,6 +126,8 @@ export async function POST(
             id: true,
             name: true,
             slug: true,
+            paymentMode: true,
+            externalPaymentInstructions: true,
           },
         },
       },

@@ -1,3 +1,15 @@
+# [8.9.0](https://github.com/palhinhax/Athlifyr/compare/v8.8.0...v8.9.0) (2026-01-18)
+
+### Bug Fixes
+
+- **seeds:** address code review feedback for Florence Marathon ([8b8d597](https://github.com/palhinhax/Athlifyr/commit/8b8d597c11a74cc58150fcf62600c827d5c72897))
+- **seeds:** improve Google Maps URL for Florence Marathon ([75eac55](https://github.com/palhinhax/Athlifyr/commit/75eac55ad8744b7624dbcf6c327b650396a3f1c2))
+- **seeds:** update Florence Marathon coordinates and Google Maps link ([46b72c2](https://github.com/palhinhax/Athlifyr/commit/46b72c2d436dad024e9bb0cec548f87ae45b854c))
+
+### Features
+
+- **seeds:** add Estra Firenze Marathon 2026 seed ([c00e0a7](https://github.com/palhinhax/Athlifyr/commit/c00e0a7e42b2ab029a802b478a9d1640a1b84ced))
+
 # [8.8.0](https://github.com/palhinhax/Athlifyr/compare/v8.7.0...v8.8.0) (2026-01-18)
 
 ### Features

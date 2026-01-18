@@ -39,10 +39,10 @@ enum Language {
 }
 
 enum Currency {
-  EUR  // Euro (€)
-  GBP  // British Pound (£)
-  USD  // US Dollar ($)
-  CHF  // Swiss Franc (CHF)
+  EUR // Euro (€)
+  GBP // British Pound (£)
+  USD // US Dollar ($)
+  CHF // Swiss Franc (CHF)
 }
 
 enum TriathlonSegmentType {
@@ -52,42 +52,90 @@ enum TriathlonSegmentType {
 }
 
 enum TriathlonTerrainType {
-  POOL        // Swimming pool
-  OPEN_WATER  // Open water swimming
-  ROAD        // Road cycling/running
-  TRAIL       // Trail cycling/running
-  MIXED       // Mixed terrain
+  POOL // Swimming pool
+  OPEN_WATER // Open water swimming
+  ROAD // Road cycling/running
+  TRAIL // Trail cycling/running
+  MIXED // Mixed terrain
+}
+
+enum VenueType {
+  CROSSFIT_BOX
+  GYM
+  PT_STUDIO
+  MASSAGE
+  PHYSIO
+  NUTRITION
+  OTHER
+}
+
+enum VenueRole {
+  OWNER
+  ADMIN
+  COACH
+  CLIENT
+}
+
+enum MemberStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  LEFT
+}
+
+enum InviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
+}
+
+enum SessionType {
+  CLASS
+  APPOINTMENT
+}
+
+enum BookingStatus {
+  BOOKED
+  CANCELLED
+  NO_SHOW
+  ATTENDED
 }
 
 model User {
-  id             String          @id @default(cuid())
-  name           String?
-  email          String          @unique
-  emailVerified  DateTime?
-  image          String?
-  password       String?
-  role           UserRole        @default(USER)
-  locale         String          @default("pt") // User's preferred language (pt, en)
-  accounts       Account[]
-  sessions       Session[]
-  participations Participation[]
-  comments       Comment[]
-  posts          Post[]
-  postLikes      PostLike[]
-  postComments   PostComment[]
-  results        Result[]
-  photos         ProfilePhoto[]
+  id                  String               @id @default(cuid())
+  name                String?
+  email               String               @unique
+  emailVerified       DateTime?
+  image               String?
+  password            String?
+  role                UserRole             @default(USER)
+  locale              String               @default("pt") // User's preferred language (pt, en)
+  accounts            Account[]
+  sessions            Session[]
+  participations      Participation[]
+  comments            Comment[]
+  posts               Post[]
+  postLikes           PostLike[]
+  postComments        PostComment[]
+  results             Result[]
+  photos              ProfilePhoto[]
   // Friendships where user sent the request
   // Friendships where user sent the request
-  sentFriendships     Friendship[] @relation("FriendshipSender")
+  sentFriendships     Friendship[]         @relation("FriendshipSender")
   // Friendships where user received the request
-  receivedFriendships Friendship[] @relation("FriendshipReceiver")
+  receivedFriendships Friendship[]         @relation("FriendshipReceiver")
   instagramDrafts     InstagramPostDraft[]
   favoriteSports      SportType[]
   mapPreferences      MapPreferences?
   eventsPreferences   EventsPreferences?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  // Venues relations
+  venueMembers        VenueMember[]
+  venueSubscriptions  VenueSubscription[]
+  venueBookings       VenueBooking[]
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
 
   @@index([email])
   @@index([name])
@@ -143,29 +191,29 @@ model PasswordResetToken {
 }
 
 model Event {
-  id          String         @id @default(cuid())
-  title       String         // Título principal (pt) - fallback
-  slug        String         @unique
-  description String         @db.Text // Descrição principal (pt) - fallback
-  
+  id          String @id @default(cuid())
+  title       String // Título principal (pt) - fallback
+  slug        String @unique
+  description String @db.Text // Descrição principal (pt) - fallback
+
   sportTypes  SportType[]
   startDate   DateTime
   endDate     DateTime?
   city        String
-  country     String         @default("Portugal")
+  country     String      @default("Portugal")
   imageUrl    String?
   externalUrl String?
-  isFeatured  Boolean        @default(false)
-  
+  isFeatured  Boolean     @default(false)
+
   // Geolocation
-  latitude     Float?
-  longitude    Float?
-  googleMapsUrl String?
+  latitude         Float?
+  longitude        Float?
+  googleMapsUrl    String?
   stravaRouteEmbed String? @db.Text // Strava route embed code
-  
+
   // Registration
   registrationDeadline DateTime?
-  
+
   // Relations
   translations   EventTranslation[]
   variants       EventVariant[]
@@ -174,8 +222,8 @@ model Event {
   comments       Comment[]
   posts          Post[]
   results        Result[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
 
   @@index([sportTypes])
   @@index([startDate])
@@ -186,21 +234,21 @@ model Event {
 
 // Tabela de traduções para eventos - SEO-friendly
 model EventTranslation {
-  id          String   @id @default(cuid())
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  language    Language
-  
-  title       String   // Título traduzido
-  description String   @db.Text // Descrição traduzida
-  city        String?  // Nome da cidade traduzido (ex: Lisboa -> Lisbon)
-  
+  id       String   @id @default(cuid())
+  eventId  String
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  language Language
+
+  title       String // Título traduzido
+  description String  @db.Text // Descrição traduzida
+  city        String? // Nome da cidade traduzido (ex: Lisboa -> Lisbon)
+
   // SEO fields
   metaTitle       String? // Meta title específico para SEO
   metaDescription String? // Meta description para SEO
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([eventId, language]) // Um evento só pode ter uma tradução por idioma
   @@index([eventId])
@@ -209,35 +257,35 @@ model EventTranslation {
 }
 
 model EventVariant {
-  id              String         @id @default(cuid())
-  eventId         String
-  event           Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  name            String         // Nome principal (pt) - fallback
-  description     String?        // Descrição principal (pt) - fallback
-  
+  id          String  @id @default(cuid())
+  eventId     String
+  event       Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name        String // Nome principal (pt) - fallback
+  description String? // Descrição principal (pt) - fallback
+
   distanceKm      Int?
-  price           Float?         // Preço fixo (se não tiver fases)
-  currency        Currency       @default(EUR) // Moeda do preço
+  price           Float? // Preço fixo (se não tiver fases)
+  currency        Currency  @default(EUR) // Moeda do preço
   maxParticipants Int?
-  startDate       DateTime?      // Data específica desta variante (se diferente do evento)
-  startTime       String?        // Hora de início (ex: "09:00")
-  
+  startDate       DateTime? // Data específica desta variante (se diferente do evento)
+  startTime       String? // Hora de início (ex: "09:00")
+
   // Technical data (especially for trail/endurance events)
-  elevationGainM  Int?           // Desnível positivo em metros (D+)
-  elevationLossM  Int?           // Desnível negativo em metros (D-)
-  cutoffTimeHours Float?         // Tempo limite em horas
-  itraPoints      Int?           // Pontos ITRA
-  atrpGrade       Int?           // Grau ATRP (1-5)
-  mountainLevel   Int?           // Mountain Level (1-3)
-  
+  elevationGainM  Int? // Desnível positivo em metros (D+)
+  elevationLossM  Int? // Desnível negativo em metros (D-)
+  cutoffTimeHours Float? // Tempo limite em horas
+  itraPoints      Int? // Pontos ITRA
+  atrpGrade       Int? // Grau ATRP (1-5)
+  mountainLevel   Int? // Mountain Level (1-3)
+
   // Relations
-  translations   EventVariantTranslation[]
+  translations      EventVariantTranslation[]
   triathlonSegments TriathlonSegment[]
-  pricingPhases  PricingPhase[]
-  participations Participation[]
-  results        Result[]
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
+  pricingPhases     PricingPhase[]
+  participations    Participation[]
+  results           Result[]
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
 
   @@index([eventId])
   @@index([startDate])
@@ -245,16 +293,16 @@ model EventVariant {
 
 // Tabela de traduções para variantes de eventos
 model EventVariantTranslation {
-  id          String       @id @default(cuid())
-  variantId   String
-  variant     EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  language    Language
-  
-  name        String       // Nome traduzido da variante
-  description String?      // Descrição traduzida
-  
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id        String       @id @default(cuid())
+  variantId String
+  variant   EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  language  Language
+
+  name        String // Nome traduzido da variante
+  description String? // Descrição traduzida
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@unique([variantId, language])
   @@index([variantId])
@@ -263,39 +311,39 @@ model EventVariantTranslation {
 
 // Triathlon segments for events (swim, bike, run)
 model TriathlonSegment {
-  id          String                @id @default(cuid())
-  variantId   String
-  variant     EventVariant          @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  
-  segmentType TriathlonSegmentType  // SWIM, BIKE, or RUN
-  distanceKm  Float                 // Distance in kilometers
-  terrainType TriathlonTerrainType  // POOL, OPEN_WATER, ROAD, TRAIL, MIXED
-  order       Int                   // Order of the segment (1 = first, 2 = second, 3 = third)
-  
-  createdAt   DateTime              @default(now())
-  updatedAt   DateTime              @updatedAt
+  id        String       @id @default(cuid())
+  variantId String
+  variant   EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  segmentType TriathlonSegmentType // SWIM, BIKE, or RUN
+  distanceKm  Float // Distance in kilometers
+  terrainType TriathlonTerrainType // POOL, OPEN_WATER, ROAD, TRAIL, MIXED
+  order       Int // Order of the segment (1 = first, 2 = second, 3 = third)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([variantId])
   @@index([order])
 }
 
 model PricingPhase {
-  id             String        @id @default(cuid())
-  eventId        String?       // Se for ao nível do evento (todas as variantes)
-  event          Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  variantId      String?       // Se for específico de uma variante
-  variant        EventVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  
-  name           String        // Ex: "1ª Fase", "Early Bird", "Fase Normal"
-  startDate      DateTime
-  endDate        DateTime
-  price          Float
-  currency       Currency      @default(EUR) // Moeda do preço
-  discountPercent Int?         // Percentagem de desconto (opcional)
-  note           String?       // Nota adicional (ex: "Desconto de 10% sobre o valor de 600€")
-  
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  eventId   String? // Se for ao nível do evento (todas as variantes)
+  event     Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  variantId String? // Se for específico de uma variante
+  variant   EventVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  name            String // Ex: "1ª Fase", "Early Bird", "Fase Normal"
+  startDate       DateTime
+  endDate         DateTime
+  price           Float
+  currency        Currency @default(EUR) // Moeda do preço
+  discountPercent Int? // Percentagem de desconto (opcional)
+  note            String? // Nota adicional (ex: "Desconto de 10% sobre o valor de 600€")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([eventId])
   @@index([variantId])
@@ -327,7 +375,7 @@ model Result {
   event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   variantId String?
   variant   EventVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  time      String        // formato: "HH:MM:SS"
+  time      String // formato: "HH:MM:SS"
   position  Int?
   notes     String?       @db.Text
   createdAt DateTime      @default(now())
@@ -356,18 +404,18 @@ model Comment {
 }
 
 model Post {
-  id        String        @id @default(cuid())
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String?
-  event     Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  content   String        @db.Text
-  imageUrl  String?
-  isAutoPost Boolean      @default(false) // Auto-generated posts (participation announcements)
-  likes     PostLike[]
-  comments  PostComment[]
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  userId     String
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  eventId    String?
+  event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  content    String        @db.Text
+  imageUrl   String?
+  isAutoPost Boolean       @default(false) // Auto-generated posts (participation announcements)
+  likes      PostLike[]
+  comments   PostComment[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@index([userId])
   @@index([eventId])
@@ -375,14 +423,14 @@ model Post {
 }
 
 model PostComment {
-  id        String        @id @default(cuid())
+  id        String   @id @default(cuid())
   postId    String
-  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String        @db.Text
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([postId])
   @@index([userId])
@@ -438,20 +486,20 @@ model Friendship {
 }
 
 enum InstagramFormat {
-  SQUARE   // 1:1 (1080x1080)
+  SQUARE // 1:1 (1080x1080)
   PORTRAIT // 4:5 (1080x1350)
-  STORY    // 9:16 (1080x1920)
+  STORY // 9:16 (1080x1920)
 }
 
 model InstagramPostDraft {
-  id            String          @id @default(cuid())
-  userId        String
-  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  templateKey   String          // T1, T2, T3, T4
-  format        InstagramFormat @default(SQUARE)
-  payload       Json            // All template fields, colors, overlay, backgroundUrl
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateKey String // T1, T2, T3, T4
+  format      InstagramFormat @default(SQUARE)
+  payload     Json // All template fields, colors, overlay, backgroundUrl
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
 
   @@index([userId])
   @@index([createdAt])
@@ -473,15 +521,15 @@ enum ContactStatus {
 }
 
 model Contact {
-  id        String        @id @default(cuid())
+  id        String   @id @default(cuid())
   name      String
   email     String
-  type      String        @default("other")
+  type      String   @default("other")
   subject   String
-  message   String        @db.Text
-  status    String        @default("pending")
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  message   String   @db.Text
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([status])
   @@index([createdAt])
@@ -490,34 +538,34 @@ model Contact {
 
 // Map filters preferences for authenticated users
 model MapPreferences {
-  id               String      @id @default(cuid())
-  userId           String      @unique
-  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sports           SportType[] // Filtered sports
-  distanceRadius   Int?        // Distance radius in km (null = all)
-  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
-  centerLat        Float?      // Last map center latitude
-  centerLng        Float?      // Last map center longitude
-  zoom             Int?        // Last zoom level
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sports         SportType[] // Filtered sports
+  distanceRadius Int? // Distance radius in km (null = all)
+  dateRange      String? // "7d", "30d", "3m", "6m", "all"
+  centerLat      Float? // Last map center latitude
+  centerLng      Float? // Last map center longitude
+  zoom           Int? // Last zoom level
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   @@index([userId])
 }
 
 // Map filters preferences for anonymous users
 model AnonymousMapPreferences {
-  id               String      @id @default(cuid())
-  anonymousId      String      @unique // UUID stored in localStorage
-  sports           SportType[] // Filtered sports
-  distanceRadius   Int?        // Distance radius in km (null = all)
-  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
-  centerLat        Float?      // Last map center latitude
-  centerLng        Float?      // Last map center longitude
-  zoom             Int?        // Last zoom level
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  lastAccessedAt   DateTime    @default(now())
+  id             String      @id @default(cuid())
+  anonymousId    String      @unique // UUID stored in localStorage
+  sports         SportType[] // Filtered sports
+  distanceRadius Int? // Distance radius in km (null = all)
+  dateRange      String? // "7d", "30d", "3m", "6m", "all"
+  centerLat      Float? // Last map center latitude
+  centerLng      Float? // Last map center longitude
+  zoom           Int? // Last zoom level
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  lastAccessedAt DateTime    @default(now())
 
   @@index([anonymousId])
   @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
@@ -525,37 +573,222 @@ model AnonymousMapPreferences {
 
 // Events page filters preferences for authenticated users
 model EventsPreferences {
-  id               String      @id @default(cuid())
-  userId           String      @unique
-  user             User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sports           SportType[] // Filtered sports
-  distanceRadius   Int?        // Distance radius in km (null = all/global)
-  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
-  searchQuery      String?     // Text search query
-  userLat          Float?      // User's last known latitude
-  userLng          Float?      // User's last known longitude
-  locationEnabled  Boolean     @default(false) // Whether location filter is enabled
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sports          SportType[] // Filtered sports
+  distanceRadius  Int? // Distance radius in km (null = all/global)
+  dateRange       String? // "7d", "30d", "3m", "6m", "all"
+  searchQuery     String? // Text search query
+  userLat         Float? // User's last known latitude
+  userLng         Float? // User's last known longitude
+  locationEnabled Boolean     @default(false) // Whether location filter is enabled
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@index([userId])
 }
 
 // Events page filters preferences for anonymous users
 model AnonymousEventsPreferences {
-  id               String      @id @default(cuid())
-  anonymousId      String      @unique // UUID stored in localStorage
-  sports           SportType[] // Filtered sports
-  distanceRadius   Int?        // Distance radius in km (null = all/global)
-  dateRange        String?     // "7d", "30d", "3m", "6m", "all"
-  searchQuery      String?     // Text search query
-  userLat          Float?      // User's last known latitude
-  userLng          Float?      // User's last known longitude
-  locationEnabled  Boolean     @default(false) // Whether location filter is enabled
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-  lastAccessedAt   DateTime    @default(now())
+  id              String      @id @default(cuid())
+  anonymousId     String      @unique // UUID stored in localStorage
+  sports          SportType[] // Filtered sports
+  distanceRadius  Int? // Distance radius in km (null = all/global)
+  dateRange       String? // "7d", "30d", "3m", "6m", "all"
+  searchQuery     String? // Text search query
+  userLat         Float? // User's last known latitude
+  userLng         Float? // User's last known longitude
+  locationEnabled Boolean     @default(false) // Whether location filter is enabled
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  lastAccessedAt  DateTime    @default(now())
 
   @@index([anonymousId])
   @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
+}
+
+// Venues System
+model Venue {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  type        VenueType
+  description String?   @db.Text
+
+  // Contact information
+  phone     String?
+  email     String?
+  website   String?
+  instagram String?
+
+  // Location
+  address   String?
+  city      String?
+  country   String  @default("Portugal")
+  latitude  Float?
+  longitude Float?
+
+  // Metadata
+  createdByUserId String
+  isVerified      Boolean @default(false)
+  isActive        Boolean @default(true)
+
+  // Relations
+  members       VenueMember[]
+  invites       VenueInvite[]
+  plans         VenuePlan[]
+  sessions      VenueSession[]
+  subscriptions VenueSubscription[]
+  bookings      VenueBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([slug])
+  @@index([type])
+  @@index([city])
+  @@index([isActive])
+  @@index([createdByUserId])
+}
+
+model VenueMember {
+  id      String @id @default(cuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  role     VenueRole
+  status   MemberStatus @default(PENDING)
+  joinedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([venueId, userId])
+  @@index([venueId])
+  @@index([userId])
+  @@index([status])
+}
+
+model VenueInvite {
+  id              String  @id @default(cuid())
+  venueId         String
+  venue           Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  invitedUserId   String? // If inviting existing user
+  invitedEmail    String? // If inviting by email
+  invitedByUserId String
+
+  role      VenueRole
+  token     String       @unique
+  status    InviteStatus @default(PENDING)
+  expiresAt DateTime
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([invitedUserId])
+  @@index([invitedEmail])
+  @@index([token])
+  @@index([status])
+}
+
+model VenuePlan {
+  id      String @id @default(cuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String?  @db.Text
+  price       Float?
+  currency    Currency @default(EUR)
+  isActive    Boolean  @default(true)
+
+  // Policy stored as JSON for flexibility
+  policy Json? // { maxBookingsPerDay, maxBookingsPerWeek, allowedStartTimeFrom, etc. }
+
+  // Relations
+  subscriptions VenueSubscription[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([isActive])
+}
+
+model VenueSubscription {
+  id      String    @id @default(cuid())
+  venueId String
+  venue   Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId  String
+  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  planId  String
+  plan    VenuePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  status   String    @default("ACTIVE") // ACTIVE, PAUSED, CANCELLED
+  startsAt DateTime  @default(now())
+  endsAt   DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+}
+
+model VenueSession {
+  id      String @id @default(cuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  type        SessionType
+  title       String
+  description String?     @db.Text
+
+  startsAt DateTime
+  endsAt   DateTime
+  capacity Int? // null for appointments (1:1)
+
+  coachId   String? // Optional coach/provider
+  serviceId String? // Optional service reference
+  tags      String[] // e.g., ["CrossFit", "Open Gym", "Hyrox"]
+
+  // Relations
+  bookings VenueBooking[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([type])
+  @@index([startsAt])
+  @@index([coachId])
+}
+
+model VenueBooking {
+  id        String       @id @default(cuid())
+  venueId   String
+  venue     Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  sessionId String
+  session   VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  status BookingStatus @default(BOOKED)
+  notes  String?       @db.Text
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([sessionId, userId])
+  @@index([venueId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
 }

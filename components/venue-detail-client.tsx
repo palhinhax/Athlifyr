@@ -56,6 +56,7 @@ export function VenueDetailClient({
   slug: string;
   userId?: string;
 }) {
+  const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
   const tRoles = useTranslations("venues.roles");
   const tInfo = useTranslations("venues.info");
@@ -98,10 +99,9 @@ export function VenueDetailClient({
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="mb-2 text-lg font-medium">Venue not found</p>
+          <p className="mb-2 text-lg font-medium">{t("venueNotFound")}</p>
           <p className="text-sm text-muted-foreground">
-            The venue you&apos;re looking for doesn&apos;t exist or has been
-            removed.
+            {t("venueNotFoundDesc")}
           </p>
         </div>
       </div>
@@ -214,10 +214,8 @@ export function VenueDetailClient({
 
           {!userId && (
             <div className="rounded-lg bg-muted p-6">
-              <p className="mb-4 text-sm">
-                Sign in to join this venue or book sessions
-              </p>
-              <Button>Sign In</Button>
+              <p className="mb-4 text-sm">{t("signInToJoin")}</p>
+              <Button>{t("signIn")}</Button>
             </div>
           )}
         </TabsContent>
@@ -226,7 +224,7 @@ export function VenueDetailClient({
         <TabsContent value="plans" className="space-y-6">
           {venue.plans.length === 0 ? (
             <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">No plans available yet.</p>
+              <p className="text-muted-foreground">{t("noPlansAvailable")}</p>
             </div>
           ) : (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -257,9 +255,7 @@ export function VenueDetailClient({
         {/* Sessions Tab */}
         <TabsContent value="sessions">
           <div className="rounded-lg border border-dashed p-12 text-center">
-            <p className="text-muted-foreground">
-              Sessions calendar coming soon
-            </p>
+            <p className="text-muted-foreground">{t("sessionsComingSoon")}</p>
           </div>
         </TabsContent>
 
@@ -267,7 +263,7 @@ export function VenueDetailClient({
         <TabsContent value="team" className="space-y-4">
           {venue.members.length === 0 ? (
             <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">No team members yet.</p>
+              <p className="text-muted-foreground">{t("noTeamMembers")}</p>
             </div>
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

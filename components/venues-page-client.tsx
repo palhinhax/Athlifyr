@@ -148,7 +148,7 @@ export function VenuesPageClient() {
           {hasMore && (
             <div className="mt-8 text-center">
               <Button onClick={loadMore} disabled={loading} variant="outline">
-                {loading ? "Loading..." : "Load More"}
+                {loading ? t("loading") : t("loadMore")}
               </Button>
             </div>
           )}

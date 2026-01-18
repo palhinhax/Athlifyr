@@ -50,6 +50,7 @@
   },
   "nav": {
     "events": "Veranstaltungen",
+    "venues": "Venues",
     "map": "Karte",
     "feed": "Feed",
     "profile": "Profil",

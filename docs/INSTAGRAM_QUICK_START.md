@@ -26,10 +26,9 @@
 - **Gradient**: 8 predefined brand gradients
 - **Photo**: Upload image + adjust overlay (0-100%)
   - Max size: 5MB (users), 20MB (admins)
-- **Video**: Upload video + adjust overlay (0-100%)
-  - Max size: 50MB (users), 100MB (admins)
-  - Supported formats: MP4, WebM, QuickTime
-  - Export as WebM video format
+- **Transparent**: Generate with transparent background
+  - Ideal for overlaying on videos in external apps
+  - Exports as PNG with transparency
 
 ### 4. Fill Content
 
@@ -37,9 +36,8 @@ Fill the template fields according to character limits
 
 ### 5. Export
 
-- **PNG**: High quality, larger file (for images)
-- **JPG**: Smaller file size (for images)
-- **WebM Video**: For video backgrounds (5 seconds at 30 FPS)
+- **PNG**: High quality, lossless, supports transparency
+- **JPG**: Smaller file size (no transparency support)
 
 ## Tips
 

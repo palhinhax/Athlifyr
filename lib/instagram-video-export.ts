@@ -240,8 +240,6 @@ export async function exportToVideo({
           return;
         }
 
-        const frameStartTime = performance.now();
-
         try {
           // Update video element time for video backgrounds
           if (videoElement) {

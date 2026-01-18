@@ -1,6 +1,21 @@
-export type TemplateKey = "T1" | "T2" | "T3" | "T4" | "T5";
+export type TemplateKey =
+  | "T1"
+  | "T2"
+  | "T3"
+  | "T4"
+  | "T5"
+  | "T6"
+  | "T7"
+  | "T8"
+  | "T9"
+  | "T10";
 
-export type InstagramFormat = "SQUARE" | "PORTRAIT" | "STORY";
+export type InstagramFormat =
+  | "SQUARE"
+  | "PORTRAIT"
+  | "STORY"
+  | "REELS"
+  | "TIKTOK";
 
 export interface InstagramSize {
   width: number;
@@ -12,6 +27,8 @@ export const INSTAGRAM_SIZES: Record<InstagramFormat, InstagramSize> = {
   SQUARE: { width: 1080, height: 1080, ratio: "1:1" },
   PORTRAIT: { width: 1080, height: 1350, ratio: "4:5" },
   STORY: { width: 1080, height: 1920, ratio: "9:16" },
+  REELS: { width: 1080, height: 1920, ratio: "9:16" }, // Instagram Reels format
+  TIKTOK: { width: 1080, height: 1920, ratio: "9:16" }, // TikTok optimized format
 };
 
 export type BackgroundType = "solid" | "gradient" | "photo" | "transparent";
@@ -67,12 +84,61 @@ export interface MonthlyEventsPayload {
   background: Background;
 }
 
+// Template T6: Bold Text Overlay (Modern trending style)
+export interface BoldTextOverlayPayload {
+  mainText: string; // required, max 60 chars - bold statement
+  subText?: string; // optional, max 40 chars
+  emoji?: string; // optional, single emoji
+  background: Background;
+}
+
+// Template T7: Split Screen (Comparison/Before-After style)
+export interface SplitScreenPayload {
+  leftTitle: string; // required, max 30 chars
+  leftSubtitle?: string; // optional, max 40 chars
+  rightTitle: string; // required, max 30 chars
+  rightSubtitle?: string; // optional, max 40 chars
+  vsText?: string; // optional, default "VS", max 5 chars
+  background: Background;
+}
+
+// Template T8: Testimonial/Stats Card (Social proof)
+export interface TestimonialStatsPayload {
+  statNumber: string; // required, max 10 chars (e.g., "1000+", "95%")
+  statLabel: string; // required, max 30 chars
+  quote?: string; // optional, max 150 chars
+  author?: string; // optional, max 30 chars
+  background: Background;
+}
+
+// Template T9: Vertical Challenge Card (TikTok/Reels optimized)
+export interface VerticalChallengePayload {
+  challengeTitle: string; // required, max 40 chars
+  steps: string[]; // 3-5 items, each max 50 chars
+  hashtag?: string; // optional, max 30 chars
+  cta?: string; // optional, max 30 chars
+  background: Background;
+}
+
+// Template T10: Hook + CTA (Viral TikTok format)
+export interface HookCtaPayload {
+  hook: string; // required, max 80 chars - attention grabber
+  body: string; // required, max 120 chars - main content
+  cta: string; // required, max 40 chars - call to action
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
   | WeeklyPicksPayload
   | MinimalQuotePayload
-  | MonthlyEventsPayload;
+  | MonthlyEventsPayload
+  | BoldTextOverlayPayload
+  | SplitScreenPayload
+  | TestimonialStatsPayload
+  | VerticalChallengePayload
+  | HookCtaPayload;
 
 export interface InstagramDraft {
   id: string;
@@ -93,16 +159,25 @@ export const BRAND_COLORS = {
   textDark: "#000000",
 };
 
-// Brand gradients
+// Brand gradients (Modern and trendy combinations)
 export const BRAND_GRADIENTS = [
-  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-  "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-  "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-  "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)",
-  "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-  "linear-gradient(135deg, #30cfd0 0%, #330867 100%)",
-  "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)",
-  "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)",
+  "linear-gradient(135deg, #667eea 0%, #764ba2 100%)", // Purple dream
+  "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)", // Pink passion
+  "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)", // Ocean blue
+  "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)", // Fresh mint
+  "linear-gradient(135deg, #fa709a 0%, #fee140 100%)", // Sunset glow
+  "linear-gradient(135deg, #30cfd0 0%, #330867 100%)", // Deep ocean
+  "linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)", // Soft pastel
+  "linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%)", // Cotton candy
+  // New modern gradients for 2024-2026
+  "linear-gradient(135deg, #ff6b6b 0%, #feca57 100%)", // Warm energy
+  "linear-gradient(135deg, #5f27cd 0%, #341f97 100%)", // Royal purple
+  "linear-gradient(135deg, #00d2ff 0%, #3a7bd5 100%)", // Sky gradient
+  "linear-gradient(135deg, #f953c6 0%, #b91d73 100%)", // Magenta burst
+  "linear-gradient(135deg, #ee0979 0%, #ff6a00 100%)", // Fire sunset
+  "linear-gradient(135deg, #56ab2f 0%, #a8e063 100%)", // Nature green
+  "linear-gradient(135deg, #2c3e50 0%, #3498db 100%)", // Professional blue
+  "linear-gradient(135deg, #000000 0%, #434343 100%)", // Dramatic dark
 ];
 
 // Safe area margins (in pixels at 1080px width base)
@@ -122,6 +197,18 @@ export const SAFE_AREAS = {
   STORY: {
     top: 150, // More space for device UI
     bottom: 150,
+    left: 60,
+    right: 60,
+  },
+  REELS: {
+    top: 180, // More space for Reels UI (profile, like buttons)
+    bottom: 200, // Space for comments, share buttons
+    left: 60,
+    right: 60,
+  },
+  TIKTOK: {
+    top: 180, // Space for TikTok UI
+    bottom: 220, // Space for TikTok action buttons and description
     left: 60,
     right: 60,
   },

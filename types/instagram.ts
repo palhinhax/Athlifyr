@@ -14,13 +14,12 @@ export const INSTAGRAM_SIZES: Record<InstagramFormat, InstagramSize> = {
   STORY: { width: 1080, height: 1920, ratio: "9:16" },
 };
 
-export type BackgroundType = "solid" | "gradient" | "photo" | "video";
+export type BackgroundType = "solid" | "gradient" | "photo" | "transparent";
 
 export interface Background {
   type: BackgroundType;
-  value: string; // Color hex for solid, gradient CSS for gradient, URL for photo/video
-  overlayIntensity?: number; // 0-100 for photo/video backgrounds
-  videoScale?: number; // 100-200 for video backgrounds (100=contain, 200=2x zoom)
+  value: string; // Color hex for solid, gradient CSS for gradient, URL for photo, empty for transparent
+  overlayIntensity?: number; // 0-100 for photo backgrounds
 }
 
 // Template T1: Event Hero

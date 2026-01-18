@@ -15,6 +15,7 @@ interface BrandFrameProps {
   showLogo?: boolean;
   className?: string;
   background?: React.ReactNode;
+  isTransparent?: boolean;
 }
 
 /**
@@ -30,6 +31,7 @@ export function BrandFrame({
   showLogo = true,
   className = "",
   background,
+  isTransparent = false,
 }: BrandFrameProps) {
   const size = INSTAGRAM_SIZES[format];
   const safeArea = SAFE_AREAS[format];
@@ -39,7 +41,7 @@ export function BrandFrame({
 
   return (
     <div
-      className={`relative overflow-hidden bg-black ${className}`}
+      className={`relative overflow-hidden ${isTransparent ? "" : "bg-black"} ${className}`}
       style={{
         width: `${size.width}px`,
         height: `${size.height}px`,

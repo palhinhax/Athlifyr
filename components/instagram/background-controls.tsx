@@ -13,26 +13,20 @@ import { Upload, Loader2 } from "lucide-react";
 import { BRAND_COLORS, BRAND_GRADIENTS } from "@/types/instagram";
 
 interface BackgroundControlsProps {
-  backgroundType: "solid" | "gradient" | "photo" | "video";
+  backgroundType: "solid" | "gradient" | "photo" | "transparent";
   selectedColor: string;
   selectedGradient: string;
   photoUrl: string;
-  videoUrl?: string;
   overlayIntensity: number;
-  videoScale?: number;
   isUploadingPhoto: boolean;
-  isUploadingVideo?: boolean;
   fileInputRef: RefObject<HTMLInputElement>;
-  videoInputRef?: RefObject<HTMLInputElement>;
   onBackgroundTypeChange: (
-    type: "solid" | "gradient" | "photo" | "video"
+    type: "solid" | "gradient" | "photo" | "transparent"
   ) => void;
   onColorChange: (color: string) => void;
   onGradientChange: (gradient: string) => void;
   onOverlayIntensityChange: (intensity: number) => void;
-  onVideoScaleChange?: (scale: number) => void;
   onPhotoUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  onVideoUpload?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
 export function BackgroundControls({
@@ -40,20 +34,14 @@ export function BackgroundControls({
   selectedColor,
   selectedGradient,
   photoUrl,
-  videoUrl = "",
   overlayIntensity,
-  videoScale = 100,
   isUploadingPhoto,
-  isUploadingVideo = false,
   fileInputRef,
-  videoInputRef,
   onBackgroundTypeChange,
   onColorChange,
   onGradientChange,
   onOverlayIntensityChange,
-  onVideoScaleChange,
   onPhotoUpload,
-  onVideoUpload,
 }: BackgroundControlsProps) {
   return (
     <div className="space-y-4">
@@ -66,7 +54,7 @@ export function BackgroundControls({
           value={backgroundType}
           onValueChange={(v) =>
             onBackgroundTypeChange(
-              v as "solid" | "gradient" | "photo" | "video"
+              v as "solid" | "gradient" | "photo" | "transparent"
             )
           }
         >
@@ -77,7 +65,7 @@ export function BackgroundControls({
             <SelectItem value="solid">Solid Color</SelectItem>
             <SelectItem value="gradient">Gradient</SelectItem>
             <SelectItem value="photo">Photo</SelectItem>
-            <SelectItem value="video">Video</SelectItem>
+            <SelectItem value="transparent">Transparent</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -178,95 +166,6 @@ export function BackgroundControls({
                 Darken photo to improve text readability
               </p>
             </div>
-          )}
-        </div>
-      )}
-
-      {/* Video Upload */}
-      {backgroundType === "video" && (
-        <div className="space-y-4">
-          <div>
-            <Label>Video</Label>
-            {videoInputRef && (
-              <input
-                ref={videoInputRef}
-                type="file"
-                accept="video/mp4,video/webm,video/quicktime"
-                onChange={onVideoUpload}
-                className="hidden"
-              />
-            )}
-            <Button
-              variant="outline"
-              onClick={() => videoInputRef?.current?.click()}
-              disabled={isUploadingVideo}
-              className="w-full"
-            >
-              {isUploadingVideo ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Uploading...
-                </>
-              ) : (
-                <>
-                  <Upload className="mr-2 h-4 w-4" />
-                  Upload Video
-                </>
-              )}
-            </Button>
-            {videoUrl && (
-              <div className="mt-2 space-y-1">
-                <div className="text-xs font-semibold text-green-600">
-                  ✓ Video uploaded successfully
-                </div>
-                <div className="break-all text-xs text-muted-foreground">
-                  {videoUrl}
-                </div>
-              </div>
-            )}
-            {!videoUrl && !isUploadingVideo && (
-              <div className="mt-2 text-xs text-muted-foreground">
-                Supported formats: MP4, WebM, QuickTime
-              </div>
-            )}
-          </div>
-
-          {/* Overlay Intensity */}
-          {videoUrl && (
-            <>
-              <div>
-                <Label>Overlay Intensity: {overlayIntensity}%</Label>
-                <Slider
-                  value={[overlayIntensity]}
-                  onValueChange={(v) => onOverlayIntensityChange(v[0])}
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="mt-2"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Darken video to improve text readability
-                </p>
-              </div>
-
-              {/* Video Scale */}
-              <div>
-                <Label>Video Size: {videoScale}%</Label>
-                <Slider
-                  value={[videoScale]}
-                  onValueChange={(v) => onVideoScaleChange?.(v[0])}
-                  min={100}
-                  max={200}
-                  step={5}
-                  className="mt-2"
-                />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {videoScale <= 100
-                    ? "Video fits inside frame (no cropping)"
-                    : `Video zoomed to ${videoScale}% (may crop edges)`}
-                </p>
-              </div>
-            </>
           )}
         </div>
       )}

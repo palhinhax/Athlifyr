@@ -31,6 +31,7 @@ export function TemplateEventHero({
       showGuides={showGuides}
       showLogo={showLogo}
       background={<BackgroundRenderer background={background} />}
+      isTransparent={background.type === "transparent"}
     >
       <div className="relative z-10 flex flex-1 flex-col items-center justify-center text-center text-white">
         {/* Main Title */}

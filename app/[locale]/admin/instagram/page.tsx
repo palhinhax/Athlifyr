@@ -10,7 +10,6 @@ import { Slider } from "@/components/ui/slider";
 import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";
-import { exportToVideo } from "@/lib/instagram-video-export";
 import { EventSearch } from "@/components/instagram/event-search";
 import { TemplateSelector } from "@/components/instagram/template-selector";
 import { BackgroundControls } from "@/components/instagram/background-controls";
@@ -81,7 +80,6 @@ export default function InstagramGeneratorPage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [previewScale, setPreviewScale] = useState(PREVIEW_DEFAULT_SCALE);
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
@@ -91,18 +89,13 @@ export default function InstagramGeneratorPage() {
 
   // Background state
   const [backgroundType, setBackgroundType] = useState<
-    "solid" | "gradient" | "photo" | "video"
+    "solid" | "gradient" | "photo" | "transparent"
   >("gradient");
   const [selectedColor, setSelectedColor] = useState(BRAND_COLORS.primary);
   const [selectedGradient, setSelectedGradient] = useState(BRAND_GRADIENTS[0]);
   const [photoUrl, setPhotoUrl] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
   const [overlayIntensity, setOverlayIntensity] = useState(50);
-  const [videoScale, setVideoScale] = useState(100); // Default 100% (contain)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoDuration, setVideoDuration] = useState(5); // Default 5 seconds
-  const [exportProgress, setExportProgress] = useState(0); // Export progress 0-100
 
   // T1: Event Hero
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
@@ -349,12 +342,10 @@ export default function InstagramGeneratorPage() {
 
   const getBackground = (): Background => {
     const bg = (() => {
-      if (backgroundType === "video") {
+      if (backgroundType === "transparent") {
         return {
-          type: "video" as const,
-          value: videoUrl,
-          overlayIntensity,
-          videoScale,
+          type: "transparent" as const,
+          value: "",
         };
       }
       if (backgroundType === "photo") {
@@ -504,90 +495,13 @@ export default function InstagramGeneratorPage() {
     }
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("video/")) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file",
-        description: "Please select a video.",
-      });
-      return;
-    }
-
-    setIsUploadingVideo(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "instagram");
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errorMessage = await getUploadErrorMessage(res);
-        throw new Error(errorMessage);
-      }
-
-      const data = await res.json();
-      console.log("Upload success:", data);
-      setVideoUrl(data.file.url);
-      setBackgroundType("video");
-
-      toast({
-        title: "Video uploaded",
-        description: "Background video has been uploaded successfully.",
-      });
-    } catch (error) {
-      console.error("Video upload error:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to upload video. Please try again.",
-      });
-    } finally {
-      setIsUploadingVideo(false);
-    }
-  };
-
   const handleExport = async () => {
     if (!canvasRef.current) return;
 
     setIsExporting(true);
 
     try {
-      // Export video if background is video
-      if (backgroundType === "video" && videoUrl) {
-        toast({
-          title: "Exporting video...",
-          description: `Exporting ${videoDuration}s video. Please wait...`,
-        });
-
-        setExportProgress(0);
-
-        await exportToVideo({
-          element: canvasRef.current,
-          filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
-          format,
-          duration: videoDuration, // Use user-selected duration
-          onProgress: setExportProgress, // Update progress
-        });
-
-        toast({
-          title: "Video exported!",
-          description: "Your video has been downloaded successfully.",
-        });
-        return;
-      }
-
-      // Export image for other backgrounds
+      // Export image (PNG with optional transparency)
       await exportToImage({
         element: canvasRef.current,
         filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
@@ -685,20 +599,14 @@ export default function InstagramGeneratorPage() {
               selectedColor={selectedColor}
               selectedGradient={selectedGradient}
               photoUrl={photoUrl}
-              videoUrl={videoUrl}
               overlayIntensity={overlayIntensity}
-              videoScale={videoScale}
               isUploadingPhoto={isUploadingPhoto}
-              isUploadingVideo={isUploadingVideo}
               fileInputRef={fileInputRef}
-              videoInputRef={videoInputRef}
               onBackgroundTypeChange={setBackgroundType}
               onColorChange={setSelectedColor}
               onGradientChange={setSelectedGradient}
               onOverlayIntensityChange={setOverlayIntensity}
-              onVideoScaleChange={setVideoScale}
               onPhotoUpload={handlePhotoUpload}
-              onVideoUpload={handleVideoUpload}
             />
           </Card>
 
@@ -820,49 +728,6 @@ export default function InstagramGeneratorPage() {
                 )}
               </Button>
 
-              {/* Video Duration Control - Only show when video background is selected */}
-              {backgroundType === "video" && videoUrl && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">
-                      Video Duration
-                    </label>
-                    <span className="text-sm text-muted-foreground">
-                      {videoDuration}s
-                    </span>
-                  </div>
-                  <Slider
-                    value={[videoDuration]}
-                    onValueChange={(value) => setVideoDuration(value[0])}
-                    min={1}
-                    max={15}
-                    step={1}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Longer videos may take more time to export
-                  </p>
-                </div>
-              )}
-
-              {/* Progress Bar - Show during export */}
-              {isExporting && exportProgress > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Export Progress</span>
-                    <span className="text-sm text-muted-foreground">
-                      {exportProgress}%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${exportProgress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
               <Button
                 onClick={handleExport}
                 className="w-full"
@@ -876,9 +741,7 @@ export default function InstagramGeneratorPage() {
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    {backgroundType === "video" && videoUrl
-                      ? "Export Video"
-                      : "Export Image"}
+                    Export Image
                   </>
                 )}
               </Button>

@@ -97,6 +97,11 @@ export default function InstagramGeneratorPage() {
   const [t3Footer, setT3Footer] = useState("athlifyr.com");
   const [t3AllEvents, setT3AllEvents] = useState<EventItem[]>([]);
   const [t3SportType, setT3SportType] = useState("ALL");
+  const [t3WeekStart, setT3WeekStart] = useState(() => {
+    // Default to today in YYYY-MM-DD format
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
   // T4: Minimal Quote
   const [t4Quote, setT4Quote] = useState(
@@ -149,10 +154,20 @@ export default function InstagramGeneratorPage() {
 
     const loadWeeklyEvents = async () => {
       try {
-        const url =
-          t3SportType === "ALL"
-            ? "/api/events/weekly"
-            : `/api/events/weekly?sportType=${t3SportType}`;
+        let url = "/api/events/weekly";
+        const params = new URLSearchParams();
+
+        if (t3SportType !== "ALL") {
+          params.append("sportType", t3SportType);
+        }
+
+        if (t3WeekStart) {
+          params.append("startDate", t3WeekStart);
+        }
+
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
 
         const res = await fetch(url);
         if (res.ok) {
@@ -171,7 +186,7 @@ export default function InstagramGeneratorPage() {
     };
 
     loadWeeklyEvents();
-  }, [templateKey, t3SportType]);
+  }, [templateKey, t3SportType, t3WeekStart]);
 
   // Load monthly events for T5
   useEffect(() => {
@@ -686,6 +701,8 @@ export default function InstagramGeneratorPage() {
                 onToggleAllEvents={toggleAllT3Events}
                 sportType={t3SportType}
                 onSportTypeChange={setT3SportType}
+                weekStart={t3WeekStart}
+                onWeekStartChange={setT3WeekStart}
                 onEventsLoaded={setT3AllEvents}
               />
             )}

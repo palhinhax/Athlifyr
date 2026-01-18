@@ -1,3 +1,14 @@
+# [8.7.0](https://github.com/palhinhax/Athlifyr/compare/v8.6.0...v8.7.0) (2026-01-18)
+
+### Bug Fixes
+
+- **instagram:** correct video export timing to match input duration ([9188f85](https://github.com/palhinhax/Athlifyr/commit/9188f8539285d1909386f21c62cc9ce8d87fa1f2))
+- **instagram:** remove unused frameStartTime variable ([2a0f122](https://github.com/palhinhax/Athlifyr/commit/2a0f122db6298664beb2dccff34b45e814e4c4ad))
+
+### Features
+
+- **instagram:** add week picker to weekly picks template ([f7f9840](https://github.com/palhinhax/Athlifyr/commit/f7f984050d9a1ee3190856b100bb4297b5884b65))
+
 # [8.6.0](https://github.com/palhinhax/Athlifyr/compare/v8.5.4...v8.6.0) (2026-01-17)
 
 ### Bug Fixes

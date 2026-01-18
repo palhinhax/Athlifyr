@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Slider } from "@/components/ui/slider";
 import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";

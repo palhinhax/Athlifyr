@@ -858,6 +858,17 @@
       "feed": "Feed",
       "sessions": "Sessioni",
       "team": "Team"
+    },
+    "edit": {
+      "description": "Aggiorna le informazioni della struttura, le foto e i contatti",
+      "logo": "Logo",
+      "coverImage": "Immagine di Copertina",
+      "uploadLogo": "Carica Logo",
+      "uploadCover": "Carica Immagine di Copertina",
+      "imageUploadSuccess": "Immagine caricata con successo",
+      "imageUploadError": "Errore nel caricamento dell'immagine",
+      "updateSuccess": "Struttura aggiornata con successo",
+      "updateError": "Errore nell'aggiornamento della struttura"
     }
   },
   "footer": {

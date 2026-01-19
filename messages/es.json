@@ -827,6 +827,17 @@
       "feed": "Feed",
       "sessions": "Sesiones",
       "team": "Equipo"
+    },
+    "edit": {
+      "description": "Actualiza información del local, fotos y contactos",
+      "logo": "Logo",
+      "coverImage": "Imagen de Portada",
+      "uploadLogo": "Subir Logo",
+      "uploadCover": "Subir Imagen de Portada",
+      "imageUploadSuccess": "Imagen subida con éxito",
+      "imageUploadError": "Error al subir imagen",
+      "updateSuccess": "Local actualizado con éxito",
+      "updateError": "Error al actualizar local"
     }
   },
   "footer": {

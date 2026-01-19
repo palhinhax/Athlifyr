@@ -827,6 +827,17 @@
       "feed": "Feed",
       "sessions": "Sessions",
       "team": "Team"
+    },
+    "edit": {
+      "description": "Update venue information, photos, and contact details",
+      "logo": "Logo",
+      "coverImage": "Cover Image",
+      "uploadLogo": "Upload Logo",
+      "uploadCover": "Upload Cover Image",
+      "imageUploadSuccess": "Image uploaded successfully",
+      "imageUploadError": "Failed to upload image",
+      "updateSuccess": "Venue updated successfully",
+      "updateError": "Failed to update venue"
     }
   },
   "footer": {

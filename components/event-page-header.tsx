@@ -12,6 +12,7 @@ interface EventPageHeaderProps {
   isAdmin: boolean;
   event: {
     id: string;
+    slug: string;
     title: string;
     description: string;
     sportTypes: SportType[];
@@ -34,15 +35,21 @@ interface EventPageHeaderProps {
     }[];
   };
   shareDescription: string;
+  locale: string;
 }
 
 export function EventPageHeader({
   isAdmin,
   event,
   shareDescription,
+  locale,
 }: EventPageHeaderProps) {
   const t = useTranslations("events");
   const tCommon = useTranslations("common");
+
+  // Construct the full event URL for sharing
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
 
   return (
     <div className="container mx-auto px-4 py-4">
@@ -56,7 +63,11 @@ export function EventPageHeader({
         </Link>
         <div className="flex flex-wrap items-center gap-2">
           {isAdmin && <EventAdminActions event={event} />}
-          <ShareButton title={event.title} description={shareDescription} />
+          <ShareButton
+            title={event.title}
+            description={shareDescription}
+            url={eventUrl}
+          />
         </div>
       </div>
     </div>

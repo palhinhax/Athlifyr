@@ -190,6 +190,7 @@ export default async function EventPage({ params }: PageProps) {
   // Prepare event data for header component
   const eventForHeader = {
     id: event.id,
+    slug: event.slug,
     title: event.title,
     description: event.description,
     sportTypes: event.sportTypes,
@@ -238,6 +239,7 @@ export default async function EventPage({ params }: PageProps) {
         isAdmin={isAdmin}
         event={eventForHeader}
         shareDescription={shareDescription}
+        locale={locale}
       />
 
       {/* Event Header */}

@@ -34,7 +34,14 @@ export async function generateEventMetadata({
 }: EventMetadataProps): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
   const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
-  const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
+
+  // Ensure image URL is absolute
+  let eventImage = event.imageUrl || `${baseUrl}/logo.png`;
+
+  // If imageUrl exists but is relative, make it absolute
+  if (event.imageUrl && !event.imageUrl.startsWith("http")) {
+    eventImage = `${baseUrl}${event.imageUrl.startsWith("/") ? "" : "/"}${event.imageUrl}`;
+  }
 
   // Create rich description with event details (max 160 chars for SEO)
   const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;

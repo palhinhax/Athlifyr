@@ -89,7 +89,9 @@ export async function POST(
 
     if (existingSubscription) {
       return NextResponse.json(
-        { error: "Already have an active or pending subscription to this plan" },
+        {
+          error: "Already have an active or pending subscription to this plan",
+        },
         { status: 400 }
       );
     }

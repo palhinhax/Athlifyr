@@ -321,7 +321,7 @@ Before deploying to production:
    ```
 
 2. **Environment Variables**
-   - Ensure `DATABASE_PG_URL` is configured
+   - Ensure `DATABASE_URL` is configured
    - Ensure file upload is configured (S3/B2)
 
 3. **Test the Feature**

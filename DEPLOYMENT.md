@@ -21,7 +21,7 @@
    Create a `.env` file:
 
    ```env
-   DATABASE_PG_URL="postgresql://USER:PASSWORD@HOST:PORT/athlifyr"
+   DATABASE_URL="postgresql://USER:PASSWORD@HOST:PORT/athlifyr"
    ```
 
 3. **Run database migrations**
@@ -70,7 +70,7 @@ You'll need a PostgreSQL database. Options:
 In Vercel project settings, add:
 
 ```
-DATABASE_PG_URL=your_production_database_url
+DATABASE_URL=your_production_database_url
 NEXT_PUBLIC_BASE_URL=https://your-domain.vercel.app
 NEXT_PUBLIC_GA_MEASUREMENT_ID=G-XXXXXXXXXX
 ```
@@ -193,7 +193,7 @@ prisma/
 
 ### Build fails
 
-- Make sure DATABASE_PG_URL is not required at build time
+- Make sure DATABASE_URL is not required at build time
 - The app is configured to work without database at build time
 
 ### No events showing

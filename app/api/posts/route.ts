@@ -8,6 +8,7 @@ const createPostSchema = z.object({
   content: z.string().min(1, "Content is required").max(5000),
   imageUrl: z.string().url().optional(),
   eventId: z.string().cuid().optional(),
+  venueId: z.string().cuid().optional(),
 });
 
 // POST /api/posts - Create a new post
@@ -38,12 +39,24 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If venueId provided, check if venue exists
+    if (validatedData.venueId) {
+      const venue = await prisma.venue.findUnique({
+        where: { id: validatedData.venueId },
+      });
+
+      if (!venue) {
+        return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+      }
+    }
+
     const post = await prisma.post.create({
       data: {
         userId: session.user.id,
         content: validatedData.content,
         imageUrl: validatedData.imageUrl || null,
         eventId: validatedData.eventId,
+        venueId: validatedData.venueId,
       },
       include: {
         user: {
@@ -80,18 +93,20 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/posts?eventId=xxx or ?userId=xxx - Get posts with pagination
+// GET /api/posts?eventId=xxx or ?userId=xxx or ?venueId=xxx - Get posts with pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
     const userId = searchParams.get("userId");
+    const venueId = searchParams.get("venueId");
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
-    const where: { eventId?: string; userId?: string } = {};
+    const where: { eventId?: string; userId?: string; venueId?: string } = {};
     if (eventId) where.eventId = eventId;
     if (userId) where.userId = userId;
+    if (venueId) where.venueId = venueId;
 
     // Calculate skip for pagination
     const skip = (page - 1) * pageSize;

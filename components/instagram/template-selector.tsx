@@ -41,6 +41,11 @@ export function TemplateSelector({
             <SelectItem value="T3">T3: Weekly Picks</SelectItem>
             <SelectItem value="T4">T4: Minimal Quote</SelectItem>
             <SelectItem value="T5">T5: Monthly Events</SelectItem>
+            <SelectItem value="T6">T6: Bold Text Overlay (Modern)</SelectItem>
+            <SelectItem value="T7">T7: Split Screen (Comparison)</SelectItem>
+            <SelectItem value="T8">T8: Testimonial/Stats Card</SelectItem>
+            <SelectItem value="T9">T9: Vertical Challenge (TikTok)</SelectItem>
+            <SelectItem value="T10">T10: Hook + CTA (Viral)</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -59,6 +64,8 @@ export function TemplateSelector({
             <SelectItem value="SQUARE">Square (1:1)</SelectItem>
             <SelectItem value="PORTRAIT">Portrait (4:5)</SelectItem>
             <SelectItem value="STORY">Story (9:16)</SelectItem>
+            <SelectItem value="REELS">Reels (9:16) - Instagram</SelectItem>
+            <SelectItem value="TIKTOK">TikTok (9:16) - Optimized</SelectItem>
           </SelectContent>
         </Select>
       </div>

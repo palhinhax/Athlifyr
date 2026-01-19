@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_PG_URL: ${{ secrets.DATABASE_PG_URL }}
 
     steps:
       - name: Checkout

@@ -1,3 +1,9 @@
+# [9.3.0](https://github.com/palhinhax/Athlifyr/compare/v9.2.0...v9.3.0) (2026-01-19)
+
+### Features
+
+- **i18n:** add translations to error pages ([5ae2f2d](https://github.com/palhinhax/Athlifyr/commit/5ae2f2dde2a698e2db04609e355ff8eafcb830dd))
+
 # [9.2.0](https://github.com/palhinhax/Athlifyr/compare/v9.1.0...v9.2.0) (2026-01-19)
 
 ### Features

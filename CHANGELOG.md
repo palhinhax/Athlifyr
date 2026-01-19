@@ -1,3 +1,13 @@
+## [9.3.3](https://github.com/palhinhax/Athlifyr/compare/v9.3.2...v9.3.3) (2026-01-19)
+
+### Bug Fixes
+
+- **ui:** improve venues admin page mobile layout ([f2879b0](https://github.com/palhinhax/Athlifyr/commit/f2879b026abc6042e8adf909e54a20e07b722a1d))
+
+### Performance Improvements
+
+- **admin:** optimize event search performance ([77aa910](https://github.com/palhinhax/Athlifyr/commit/77aa91073368f509149f44b18868001153335be9))
+
 ## [9.3.2](https://github.com/palhinhax/Athlifyr/compare/v9.3.1...v9.3.2) (2026-01-19)
 
 ### Bug Fixes

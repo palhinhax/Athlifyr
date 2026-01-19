@@ -726,6 +726,8 @@
     "title": "Strutture",
     "description": "Trova palestre, box e centri di allenamento",
     "list": "Tutte le Strutture",
+    "myVenues": "Le Mie Strutture",
+    "viewAll": "Vedi Tutte",
     "viewVenue": "Visualizza Struttura",
     "joinVenue": "Unisciti alla Struttura",
     "createVenue": "Crea Struttura",

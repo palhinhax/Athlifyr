@@ -5,13 +5,24 @@ import { useSession, signOut } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { Menu, X, User, LogOut, Settings, Shield } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  LogOut,
+  Settings,
+  Shield,
+  Building2,
+} from "lucide-react";
+import { useUserVenues } from "@/hooks/use-user-venues";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
   const locale = useLocale();
   const t = useTranslations("nav");
+  const tVenues = useTranslations("venues");
+  const { venues } = useUserVenues();
 
   const closeMenu = () => setIsOpen(false);
 
@@ -79,6 +90,42 @@ export function MobileNav() {
                 >
                   {t("feed")}
                 </Link>
+              )}
+
+              {/* User Venues Section */}
+              {session && venues.length > 0 && (
+                <>
+                  <div className="my-2 border-t" />
+                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground">
+                    {tVenues("myVenues")}
+                  </div>
+                  {venues.slice(0, 5).map((venue) => (
+                    <Link
+                      key={venue.id}
+                      href={`/venues/${venue.slug}`}
+                      onClick={closeMenu}
+                      className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Building2 className="h-4 w-4" />
+                        <span className="truncate">{venue.name}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {venue.role}
+                      </span>
+                    </Link>
+                  ))}
+                  {venues.length > 5 && (
+                    <Link
+                      href="/venues"
+                      onClick={closeMenu}
+                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-accent"
+                    >
+                      <Building2 className="h-4 w-4" />
+                      {tVenues("viewAll")} ({venues.length})
+                    </Link>
+                  )}
+                </>
               )}
 
               <div className="my-2 border-t" />

@@ -238,11 +238,11 @@ export default function AdminVenuesPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="mb-8 flex items-center justify-between">
+    <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestão de Venues</h1>
-          <p className="text-muted-foreground">
+          <h1 className="text-2xl font-bold sm:text-3xl">Gestão de Venues</h1>
+          <p className="text-sm text-muted-foreground sm:text-base">
             Criar e gerir ginásios, boxes e estúdios
           </p>
         </div>
@@ -439,18 +439,20 @@ export default function AdminVenuesPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {venues.map((venue) => (
             <Card key={venue.id} className="relative">
-              <CardHeader>
-                <CardTitle className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold">{venue.name}</h3>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-lg font-semibold">
+                      {venue.name}
+                    </h3>
                     <p className="text-sm text-muted-foreground">
                       {venueTypeLabels[venue.type]}
                     </p>
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex shrink-0 gap-1">
                     <Button
                       variant="ghost"
                       size="sm"
@@ -468,15 +470,17 @@ export default function AdminVenuesPage() {
                   </div>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-0">
                 <div className="space-y-2 text-sm">
                   {venue.description && (
-                    <p className="text-muted-foreground">{venue.description}</p>
+                    <p className="line-clamp-2 text-muted-foreground">
+                      {venue.description}
+                    </p>
                   )}
                   <div className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{venue.address}</p>
+                    <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate">{venue.address}</p>
                       <p className="text-muted-foreground">
                         {venue.city}, {venue.country}
                       </p>
@@ -484,7 +488,7 @@ export default function AdminVenuesPage() {
                   </div>
                   {(venue.latitude || venue.longitude) && (
                     <div className="pt-2 text-xs text-muted-foreground">
-                      <span>
+                      <span className="block truncate">
                         📍 {venue.latitude?.toFixed(4)},{" "}
                         {venue.longitude?.toFixed(4)}
                       </span>

@@ -32,6 +32,7 @@ Complete implementation of a venues and booking system for Athlifyr, enabling gy
 **Payment Flows:**
 
 **IN_APP Payment:**
+
 ```typescript
 1. User subscribes → PaymentIntent created (CREATED status)
 2. User confirms payment → PaymentIntent confirmed
@@ -40,6 +41,7 @@ Complete implementation of a venues and booking system for Athlifyr, enabling gy
 ```
 
 **EXTERNAL Payment:**
+
 ```typescript
 1. User subscribes → Subscription PENDING + PENDING_PAYMENT
 2. App shows venue payment instructions (MBWay, bank transfer, etc.)
@@ -49,6 +51,7 @@ Complete implementation of a venues and booking system for Athlifyr, enabling gy
 ```
 
 **Payment Tracking:**
+
 - Payment status tracked per subscription
 - Payment method, amount, and notes recorded (EXTERNAL)
 - Staff user recorded for audit trail

@@ -82,6 +82,11 @@ export async function PATCH(
     }
 
     const body = await request.json();
+
+    console.log("Received venue update request:", body);
+    console.log("Logo value:", body.logo);
+    console.log("CoverImage value:", body.coverImage);
+
     const {
       name,
       type,
@@ -132,8 +137,9 @@ export async function PATCH(
         ...(latitude !== undefined && { latitude }),
         ...(longitude !== undefined && { longitude }),
         ...(isActive !== undefined && { isActive }),
-        ...(logo !== undefined && { logo }),
-        ...(coverImage !== undefined && { coverImage }),
+        // Images: update even if empty string (to clear images)
+        ...(logo !== undefined && logo !== null && { logo }),
+        ...(coverImage !== undefined && coverImage !== null && { coverImage }),
       },
     });
 

@@ -1,3 +1,24 @@
+# [9.0.0](https://github.com/palhinhax/Athlifyr/compare/v8.11.0...v9.0.0) (2026-01-19)
+
+### Bug Fixes
+
+- **venues:** internationalize all hardcoded strings in UI components ([681dbcf](https://github.com/palhinhax/Athlifyr/commit/681dbcfaef71125f75fc7be4797c793262307dfb))
+
+### Features
+
+- **i18n:** add comprehensive venues translations for all 6 languages ([035db79](https://github.com/palhinhax/Athlifyr/commit/035db799f869f2760320f7eb38c6e8185456e325))
+- **i18n:** add missing venues translations for all 6 languages ([21ed3cc](https://github.com/palhinhax/Athlifyr/commit/21ed3cc928fb43ee2009919d0811d26e89ba680c))
+- **instagram:** add new content templates and schema migrations ([f13caef](https://github.com/palhinhax/Athlifyr/commit/f13caef177dcb6a49f7a8de8122c136ad6809dec))
+- **venues:** add database schema and core API endpoints ([f3164b4](https://github.com/palhinhax/Athlifyr/commit/f3164b4c52e60178a2607d7ea7e22d51d9ad0d85))
+- **venues:** add membership management and invite endpoints ([96888b5](https://github.com/palhinhax/Athlifyr/commit/96888b5e25dddf6a09755f4079cf853b976bd630))
+- **venues:** add multi-sport support with sportTypes field ([51e43a0](https://github.com/palhinhax/Athlifyr/commit/51e43a0bb758611815aa435e3c1efa141d6d83c5))
+- **venues:** add payment system with IN_APP and EXTERNAL modes ([64b6668](https://github.com/palhinhax/Athlifyr/commit/64b666832dc26b52997027cfcb1fc434f417b9e7))
+- **venues:** add venues list and detail pages with navigation ([8f5a2e6](https://github.com/palhinhax/Athlifyr/commit/8f5a2e677e28683e52f8731fdfee6e440381c5b3))
+
+### BREAKING CHANGES
+
+- **instagram:** Database schema updated with new venue and booking models
+
 # [8.11.0](https://github.com/palhinhax/Athlifyr/compare/v8.10.0...v8.11.0) (2026-01-19)
 
 ### Features

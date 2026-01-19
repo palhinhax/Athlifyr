@@ -144,7 +144,7 @@ export default function AdminEventsPage() {
           params.append("search", searchQuery.trim());
         }
 
-        const res = await fetch(`/api/events?${params}`);
+        const res = await fetch(`/api/admin/events?${params}`);
         if (res.ok) {
           const data = await res.json();
           if (data.events && Array.isArray(data.events)) {

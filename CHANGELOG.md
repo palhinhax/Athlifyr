@@ -1,3 +1,9 @@
+# [9.2.0](https://github.com/palhinhax/Athlifyr/compare/v9.1.0...v9.2.0) (2026-01-19)
+
+### Features
+
+- add custom error pages and improve admin UX ([dd83538](https://github.com/palhinhax/Athlifyr/commit/dd83538b47c70db1e515da41de3fa5e5a78bd49f))
+
 # [9.1.0](https://github.com/palhinhax/Athlifyr/compare/v9.0.0...v9.1.0) (2026-01-19)
 
 ### Features

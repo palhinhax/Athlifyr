@@ -23,6 +23,8 @@ interface Venue {
   address: string | null;
   city: string | null;
   country: string;
+  latitude: number | null;
+  longitude: number | null;
   members: Array<{
     id: string;
     role: string;

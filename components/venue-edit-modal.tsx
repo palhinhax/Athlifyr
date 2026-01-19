@@ -33,6 +33,8 @@ interface VenueEditModalProps {
     address: string | null;
     city: string | null;
     country: string;
+    latitude: number | null;
+    longitude: number | null;
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -65,6 +67,8 @@ export function VenueEditModal({
     country: venue.country,
     logo: venue.logo || "",
     coverImage: venue.coverImage || "",
+    latitude: venue.latitude?.toString() || "",
+    longitude: venue.longitude?.toString() || "",
   });
 
   const handleInputChange = (
@@ -102,12 +106,19 @@ export function VenueEditModal({
     setLoading(true);
 
     try {
+      // Prepare data with proper type conversions
+      const submitData = {
+        ...formData,
+        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+      };
+
       const response = await fetch(`/api/venues/${venue.id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -313,6 +324,49 @@ export function VenueEditModal({
                 name="country"
                 value={formData.country}
                 onChange={handleInputChange}
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          {/* Coordinates - Grid */}
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* Latitude */}
+            <div className="space-y-2">
+              <Label htmlFor="latitude">
+                {tInfo("latitude")}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  (ex: 38.7223)
+                </span>
+              </Label>
+              <Input
+                id="latitude"
+                name="latitude"
+                type="text"
+                inputMode="decimal"
+                value={formData.latitude}
+                onChange={handleInputChange}
+                placeholder="38.7223"
+                disabled={loading}
+              />
+            </div>
+
+            {/* Longitude */}
+            <div className="space-y-2">
+              <Label htmlFor="longitude">
+                {tInfo("longitude")}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  (ex: -9.1393)
+                </span>
+              </Label>
+              <Input
+                id="longitude"
+                name="longitude"
+                type="text"
+                inputMode="decimal"
+                value={formData.longitude}
+                onChange={handleInputChange}
+                placeholder="-9.1393"
                 disabled={loading}
               />
             </div>

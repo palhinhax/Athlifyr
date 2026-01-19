@@ -758,7 +758,9 @@
       "address": "Dirección",
       "city": "Ciudad",
       "country": "País",
-      "location": "Ubicación"
+      "location": "Ubicación",
+      "latitude": "Latitud",
+      "longitude": "Longitud"
     },
     "membership": {
       "title": "Membresía",

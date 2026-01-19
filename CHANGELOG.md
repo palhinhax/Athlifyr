@@ -1,3 +1,9 @@
+## [9.3.5](https://github.com/palhinhax/Athlifyr/compare/v9.3.4...v9.3.5) (2026-01-19)
+
+### Bug Fixes
+
+- **seo:** ensure event share button uses correct URL and image ([64bdc65](https://github.com/palhinhax/Athlifyr/commit/64bdc65094c1deeabe4ccb045374029a2c3e60a5))
+
 ## [9.3.4](https://github.com/palhinhax/Athlifyr/compare/v9.3.3...v9.3.4) (2026-01-19)
 
 ### Bug Fixes

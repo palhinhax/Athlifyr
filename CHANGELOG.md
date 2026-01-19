@@ -1,3 +1,9 @@
+## [9.8.2](https://github.com/palhinhax/Athlifyr/compare/v9.8.1...v9.8.2) (2026-01-19)
+
+### Bug Fixes
+
+- **venues:** allow app admins to edit any venue ([826cf29](https://github.com/palhinhax/Athlifyr/commit/826cf29fe18e09cd05701b4cf652b9b13e50f682))
+
 ## [9.8.1](https://github.com/palhinhax/Athlifyr/compare/v9.8.0...v9.8.1) (2026-01-19)
 
 ### Bug Fixes

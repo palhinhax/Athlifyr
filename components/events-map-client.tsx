@@ -10,6 +10,7 @@ import {
 } from "react-leaflet";
 import L, { DivIcon } from "leaflet";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { LatLngBounds } from "leaflet";
 import type { MapEvent } from "./events-map";
 import type { MapFilters } from "./map-filters";
@@ -256,12 +257,9 @@ export default function EventsMapClient({
                     </span>
                   ))}
                 </div>
-                <a
-                  href={`/events/${event.slug}`}
-                  className="mt-2 inline-block w-full rounded-md bg-primary px-3 py-1.5 text-center text-sm font-medium text-white hover:bg-primary/90"
-                >
-                  Ver Evento
-                </a>
+                <Button asChild className="mt-2 w-full" size="sm">
+                  <a href={`/events/${event.slug}`}>Ver Evento</a>
+                </Button>
               </div>
             </Popup>
           </Marker>

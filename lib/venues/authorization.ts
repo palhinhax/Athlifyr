@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { VenueRole, MemberStatus } from "@prisma/client";
+import { VenueRole, MemberStatus, UserRole } from "@prisma/client";
 
 /**
  * Check if user has a specific role or higher in a venue
@@ -115,11 +115,26 @@ export interface AuthorizationResult {
 
 /**
  * Check if user can manage venue (owner or admin only)
+ * Also allows app-level admins to manage any venue
  */
 export async function canManageVenue(
   userId: string,
   venueId: string
 ): Promise<AuthorizationResult> {
+  // First, check if user is an app-level admin
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  // App admins can manage any venue
+  if (user?.role === UserRole.ADMIN) {
+    return {
+      authorized: true,
+    };
+  }
+
+  // Otherwise, check if user is venue admin/owner
   const isAdmin = await isVenueAdmin(userId, venueId);
 
   if (!isAdmin) {

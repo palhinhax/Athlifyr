@@ -1,3 +1,9 @@
+## [9.8.3](https://github.com/palhinhax/Athlifyr/compare/v9.8.2...v9.8.3) (2026-01-19)
+
+### Bug Fixes
+
+- **venues:** improve members and sessions display for owners/admins ([01876a6](https://github.com/palhinhax/Athlifyr/commit/01876a61a83f9c17942e66d42ed0e2625625fbda))
+
 ## [9.8.2](https://github.com/palhinhax/Athlifyr/compare/v9.8.1...v9.8.2) (2026-01-19)
 
 ### Bug Fixes

@@ -257,7 +257,12 @@ export default function EventsMapClient({
                     </span>
                   ))}
                 </div>
-                <Button asChild className="mt-2 w-full" size="sm">
+                <Button
+                  asChild
+                  variant="link"
+                  className="mt-2 w-full"
+                  size="sm"
+                >
                   <a href={`/events/${event.slug}`}>Ver Evento</a>
                 </Button>
               </div>

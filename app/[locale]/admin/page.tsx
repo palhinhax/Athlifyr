@@ -71,28 +71,30 @@ function AdminContent() {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
-          <TabsTrigger value="events" className="gap-2">
-            <Calendar className="h-4 w-4" />
-            <span>Eventos</span>
-          </TabsTrigger>
-          <TabsTrigger value="venues" className="gap-2">
-            <Building2 className="h-4 w-4" />
-            <span>Venues</span>
-          </TabsTrigger>
-          <TabsTrigger value="contacts" className="gap-2">
-            <Mail className="h-4 w-4" />
-            <span>Contactos</span>
-          </TabsTrigger>
-          <TabsTrigger value="media" className="gap-2">
-            <Database className="h-4 w-4" />
-            <span>Media</span>
-          </TabsTrigger>
-          <TabsTrigger value="instagram" className="gap-2">
-            <Instagram className="h-4 w-4" />
-            <span>Instagram</span>
-          </TabsTrigger>
-        </TabsList>
+        <div className="mb-6 overflow-x-auto">
+          <TabsList className="inline-flex h-auto w-full min-w-max flex-nowrap lg:w-auto">
+            <TabsTrigger value="events" className="flex-shrink-0 gap-2">
+              <Calendar className="h-4 w-4" />
+              <span className="hidden sm:inline">Eventos</span>
+            </TabsTrigger>
+            <TabsTrigger value="venues" className="flex-shrink-0 gap-2">
+              <Building2 className="h-4 w-4" />
+              <span className="hidden sm:inline">Venues</span>
+            </TabsTrigger>
+            <TabsTrigger value="contacts" className="flex-shrink-0 gap-2">
+              <Mail className="h-4 w-4" />
+              <span className="hidden sm:inline">Contactos</span>
+            </TabsTrigger>
+            <TabsTrigger value="media" className="flex-shrink-0 gap-2">
+              <Database className="h-4 w-4" />
+              <span className="hidden sm:inline">Media</span>
+            </TabsTrigger>
+            <TabsTrigger value="instagram" className="flex-shrink-0 gap-2">
+              <Instagram className="h-4 w-4" />
+              <span className="hidden sm:inline">Instagram</span>
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="events" className="mt-6">
           <Suspense

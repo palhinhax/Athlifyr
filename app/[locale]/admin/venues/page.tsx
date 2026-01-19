@@ -25,7 +25,18 @@ import {
 } from "@/components/ui/select";
 import { Plus, Loader2, MapPin, Edit, Trash2, Building2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
-import { VenueType, Currency } from "@prisma/client";
+
+// Local type definitions instead of importing from Prisma
+type VenueType =
+  | "CROSSFIT_BOX"
+  | "GYM"
+  | "PT_STUDIO"
+  | "MASSAGE"
+  | "PHYSIO"
+  | "NUTRITION"
+  | "OTHER";
+
+type Currency = "EUR" | "GBP" | "USD" | "CHF";
 
 interface Venue {
   id: string;
@@ -83,14 +94,14 @@ export default function AdminVenuesPage() {
   }>({
     name: "",
     slug: "",
-    type: VenueType.CROSSFIT_BOX,
+    type: "CROSSFIT_BOX",
     description: "",
     address: "",
     city: "",
     country: "Portugal",
     latitude: "",
     longitude: "",
-    currency: Currency.EUR,
+    currency: "EUR",
   });
 
   useEffect(() => {
@@ -217,14 +228,14 @@ export default function AdminVenuesPage() {
     setFormData({
       name: "",
       slug: "",
-      type: VenueType.CROSSFIT_BOX,
+      type: "CROSSFIT_BOX",
       description: "",
       address: "",
       city: "",
       country: "Portugal",
       latitude: "",
       longitude: "",
-      currency: Currency.EUR,
+      currency: "EUR",
     });
   };
 

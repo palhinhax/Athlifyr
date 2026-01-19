@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -271,10 +272,12 @@ export function VenueDetailClient({
                 <div key={member.id} className="rounded-lg border p-4">
                   <div className="flex items-center gap-3">
                     {member.user.image ? (
-                      <img
+                      <Image
                         src={member.user.image}
                         alt={member.user.name || "User"}
-                        className="h-12 w-12 rounded-full"
+                        width={48}
+                        height={48}
+                        className="h-12 w-12 rounded-full object-cover"
                       />
                     ) : (
                       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">

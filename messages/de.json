@@ -789,7 +789,9 @@
       "address": "Adresse",
       "city": "Stadt",
       "country": "Land",
-      "location": "Standort"
+      "location": "Standort",
+      "latitude": "Breitengrad",
+      "longitude": "Längengrad"
     },
     "membership": {
       "title": "Mitgliedschaft",

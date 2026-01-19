@@ -758,7 +758,9 @@
       "address": "Address",
       "city": "City",
       "country": "Country",
-      "location": "Location"
+      "location": "Location",
+      "latitude": "Latitude",
+      "longitude": "Longitude"
     },
     "membership": {
       "title": "Membership",

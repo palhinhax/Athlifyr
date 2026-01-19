@@ -758,7 +758,9 @@
       "address": "Morada",
       "city": "Cidade",
       "country": "País",
-      "location": "Localização"
+      "location": "Localização",
+      "latitude": "Latitude",
+      "longitude": "Longitude"
     },
     "membership": {
       "title": "Associação",

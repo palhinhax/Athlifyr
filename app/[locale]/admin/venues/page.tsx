@@ -457,11 +457,16 @@ export default function AdminVenuesPage() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="latitude">Latitude</Label>
+                  <Label htmlFor="latitude">
+                    Latitude
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (ex: 38.7223)
+                    </span>
+                  </Label>
                   <Input
                     id="latitude"
-                    type="number"
-                    step="any"
+                    type="text"
+                    inputMode="decimal"
                     value={formData.latitude}
                     onChange={(e) =>
                       setFormData({ ...formData, latitude: e.target.value })
@@ -471,11 +476,16 @@ export default function AdminVenuesPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="longitude">Longitude</Label>
+                  <Label htmlFor="longitude">
+                    Longitude
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (ex: -9.1393)
+                    </span>
+                  </Label>
                   <Input
                     id="longitude"
-                    type="number"
-                    step="any"
+                    type="text"
+                    inputMode="decimal"
                     value={formData.longitude}
                     onChange={(e) =>
                       setFormData({ ...formData, longitude: e.target.value })

@@ -31,6 +31,8 @@ interface VenueProfileHeaderProps {
     email: string | null;
     website: string | null;
     instagram: string | null;
+    latitude: number | null;
+    longitude: number | null;
     members: Array<{
       id: string;
       role: string;

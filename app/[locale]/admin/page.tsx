@@ -4,13 +4,21 @@ import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, Suspense, lazy } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Calendar, Mail, Instagram, Database } from "lucide-react";
+import {
+  Loader2,
+  Calendar,
+  Mail,
+  Instagram,
+  Database,
+  Building2,
+} from "lucide-react";
 
 // Lazy load admin components
 const AdminEventsContent = lazy(() => import("./events/page"));
 const AdminContactsContent = lazy(() => import("./contacts/page"));
 const AdminMediaContent = lazy(() => import("./media/page"));
 const AdminInstagramContent = lazy(() => import("./instagram/page"));
+const AdminVenuesContent = lazy(() => import("./venues/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -63,10 +71,14 @@ function AdminContent() {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <TabsList className="grid w-full grid-cols-4 lg:w-auto">
+        <TabsList className="grid w-full grid-cols-5 lg:w-auto">
           <TabsTrigger value="events" className="gap-2">
             <Calendar className="h-4 w-4" />
             <span>Eventos</span>
+          </TabsTrigger>
+          <TabsTrigger value="venues" className="gap-2">
+            <Building2 className="h-4 w-4" />
+            <span>Venues</span>
           </TabsTrigger>
           <TabsTrigger value="contacts" className="gap-2">
             <Mail className="h-4 w-4" />
@@ -91,6 +103,18 @@ function AdminContent() {
             }
           >
             <AdminEventsContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="venues" className="mt-6">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminVenuesContent />
           </Suspense>
         </TabsContent>
 

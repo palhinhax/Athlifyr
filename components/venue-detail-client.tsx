@@ -159,7 +159,7 @@ export function VenueDetailClient({
               className="flex items-center gap-2 hover:text-primary"
             >
               <Globe className="h-4 w-4" />
-              Website
+              {tInfo("website")}
             </a>
           )}
           {venue.instagram && (
@@ -179,10 +179,10 @@ export function VenueDetailClient({
       {/* Tabs */}
       <Tabs defaultValue="about" className="w-full">
         <TabsList>
-          <TabsTrigger value="about">About</TabsTrigger>
+          <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
           <TabsTrigger value="plans">{tPlans("title")}</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="team">Team</TabsTrigger>
+          <TabsTrigger value="sessions">{t("tabs.sessions")}</TabsTrigger>
+          <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
         </TabsList>
 
         {/* About Tab */}
@@ -192,7 +192,7 @@ export function VenueDetailClient({
               {tInfo("description")}
             </h2>
             <p className="text-muted-foreground">
-              {venue.description || "No description available."}
+              {venue.description || t("noDescription")}
             </p>
 
             <div className="mt-6 flex gap-4">
@@ -200,14 +200,18 @@ export function VenueDetailClient({
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">{venue.members.length}</p>
-                  <p className="text-xs text-muted-foreground">Members</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("membership.members")}
+                  </p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <Calendar className="h-5 w-5 text-muted-foreground" />
                 <div>
                   <p className="text-sm font-medium">{venue._count.sessions}</p>
-                  <p className="text-xs text-muted-foreground">Sessions</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("sessions.title")}
+                  </p>
                 </div>
               </div>
             </div>

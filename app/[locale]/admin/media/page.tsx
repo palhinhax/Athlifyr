@@ -294,8 +294,8 @@ export default function MediaManagerPage() {
   const folders = stats ? Object.keys(stats.byFolder) : [];
 
   return (
-    <div className="container mx-auto max-w-7xl space-y-6 p-6">
-      <div>
+    <div className="space-y-6 px-0 py-6 sm:px-0">
+      <div className="px-4 sm:px-6">
         <h1 className="text-3xl font-bold">Media Manager</h1>
         <p className="text-muted-foreground">
           Gere todos os ficheiros do Backblaze B2 e identifique ficheiros órfãos
@@ -304,7 +304,7 @@ export default function MediaManagerPage() {
 
       {/* Statistics Cards */}
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
           <Card className="p-4">
             <div className="flex items-center gap-3">
               <ImageIcon className="h-8 w-8 text-blue-500" />
@@ -377,7 +377,7 @@ export default function MediaManagerPage() {
 
       {/* Bulk Actions */}
       {stats && stats.orphanFiles > 0 && (
-        <Card className="border-amber-500/50 bg-amber-50/50 p-4 dark:bg-amber-950/20">
+        <Card className="mx-4 border-amber-500/50 bg-amber-50/50 p-4 dark:bg-amber-950/20 sm:mx-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <AlertTriangle className="h-5 w-5 text-amber-500" />
@@ -416,7 +416,7 @@ export default function MediaManagerPage() {
       )}
 
       {/* Filters */}
-      <Card className="p-4">
+      <Card className="mx-4 p-4 sm:mx-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex-1">
             <div className="relative">
@@ -462,7 +462,7 @@ export default function MediaManagerPage() {
       </Card>
 
       {/* Files Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+      <div className="grid gap-4 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-3 xl:grid-cols-4">
         {displayedFiles.map((file) => (
           <Card
             key={file.fileId}
@@ -549,7 +549,7 @@ export default function MediaManagerPage() {
 
       {/* Empty State */}
       {displayedFiles.length === 0 && !loading && (
-        <Card className="p-12 text-center">
+        <Card className="mx-4 p-12 text-center sm:mx-6">
           <ImageIcon className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <p className="text-lg font-medium">Nenhum ficheiro encontrado</p>
           <p className="text-sm text-muted-foreground">

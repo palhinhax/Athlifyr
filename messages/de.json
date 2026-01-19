@@ -726,6 +726,8 @@
     "title": "Standorte",
     "description": "Finden Sie Fitnessstudios, Boxen und Trainingszentren",
     "list": "Alle Standorte",
+    "myVenues": "Meine Standorte",
+    "viewAll": "Alle Anzeigen",
     "viewVenue": "Standort Anzeigen",
     "joinVenue": "Standort Beitreten",
     "createVenue": "Standort Erstellen",

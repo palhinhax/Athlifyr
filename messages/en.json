@@ -695,6 +695,8 @@
     "title": "Venues",
     "description": "Find gyms, boxes, and training centers",
     "list": "All Venues",
+    "myVenues": "My Venues",
+    "viewAll": "View All",
     "viewVenue": "View Venue",
     "joinVenue": "Join Venue",
     "createVenue": "Create Venue",

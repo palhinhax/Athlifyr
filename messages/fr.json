@@ -695,6 +695,8 @@
     "title": "Lieux",
     "description": "Trouvez des salles de sport, boxes et centres d'entraînement",
     "list": "Tous les Lieux",
+    "myVenues": "Mes Lieux",
+    "viewAll": "Voir Tout",
     "viewVenue": "Voir le Lieu",
     "joinVenue": "Rejoindre le Lieu",
     "createVenue": "Créer un Lieu",

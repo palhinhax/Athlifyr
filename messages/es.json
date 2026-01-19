@@ -695,6 +695,8 @@
     "title": "Locales",
     "description": "Encuentra gimnasios, boxes y centros de entrenamiento",
     "list": "Todos los Locales",
+    "myVenues": "Mis Locales",
+    "viewAll": "Ver Todos",
     "viewVenue": "Ver Local",
     "joinVenue": "Unirse al Local",
     "createVenue": "Crear Local",

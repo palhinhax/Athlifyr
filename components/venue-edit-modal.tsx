@@ -113,6 +113,10 @@ export function VenueEditModal({
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
       };
 
+      console.log("Submitting venue data:", submitData);
+      console.log("Logo:", submitData.logo);
+      console.log("Cover:", submitData.coverImage);
+
       const response = await fetch(`/api/venues/${venue.id}`, {
         method: "PATCH",
         headers: {

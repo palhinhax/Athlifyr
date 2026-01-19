@@ -1,3 +1,9 @@
+# [9.1.0](https://github.com/palhinhax/Athlifyr/compare/v9.0.0...v9.1.0) (2026-01-19)
+
+### Features
+
+- **admin:** add venues management dashboard ([d1ebac3](https://github.com/palhinhax/Athlifyr/commit/d1ebac3b0a9635e4a3485cf42ce77ae5b19d198f))
+
 # [9.0.0](https://github.com/palhinhax/Athlifyr/compare/v8.11.0...v9.0.0) (2026-01-19)
 
 ### Bug Fixes

@@ -1,3 +1,9 @@
+# [9.9.0](https://github.com/palhinhax/Athlifyr/compare/v9.8.3...v9.9.0) (2026-01-19)
+
+### Features
+
+- **venues:** add user venues quick access menu ([edffbb3](https://github.com/palhinhax/Athlifyr/commit/edffbb346017c3cf9d41f616ac67bdd82d99cec3))
+
 ## [9.8.3](https://github.com/palhinhax/Athlifyr/compare/v9.8.2...v9.8.3) (2026-01-19)
 
 ### Bug Fixes

@@ -113,6 +113,7 @@ export async function POST(request: Request) {
       country,
       latitude,
       longitude,
+      ownerId, // Optional: if admin is creating for someone else
     } = body;
 
     // Validate required fields
@@ -121,6 +122,33 @@ export async function POST(request: Request) {
         { error: "Name and type are required" },
         { status: 400 }
       );
+    }
+
+    // Determine the actual owner
+    // If ownerId is provided, verify the user exists (admin creating for someone)
+    // Otherwise, the creator becomes the owner
+    const actualOwnerId = ownerId || session.user.id;
+
+    if (ownerId && ownerId !== session.user.id) {
+      // Only admins can create venues for other users
+      if (session.user.role !== "ADMIN") {
+        return NextResponse.json(
+          { error: "Only admins can create venues for other users" },
+          { status: 403 }
+        );
+      }
+
+      // Verify the owner user exists
+      const ownerUser = await prisma.user.findUnique({
+        where: { id: ownerId },
+      });
+
+      if (!ownerUser) {
+        return NextResponse.json(
+          { error: "Owner user not found" },
+          { status: 404 }
+        );
+      }
     }
 
     // Validate venue type
@@ -161,7 +189,9 @@ export async function POST(request: Request) {
       slug = `${slug}-${Date.now()}`;
     }
 
-    // Create venue with owner as first member
+    // Create venue with specified owner (or creator if not specified)
+    // createdByUserId tracks who created it (e.g., admin)
+    // The owner is set in the members relation
     const venue = await prisma.venue.create({
       data: {
         name,
@@ -178,10 +208,10 @@ export async function POST(request: Request) {
         country: country || "Portugal",
         latitude: latitude || null,
         longitude: longitude || null,
-        createdByUserId: session.user.id,
+        createdByUserId: session.user.id, // Who created it (e.g., admin)
         members: {
           create: {
-            userId: session.user.id,
+            userId: actualOwnerId, // The actual owner
             role: "OWNER",
             status: "ACTIVE",
             joinedAt: new Date(),

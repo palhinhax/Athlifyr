@@ -1,6 +1,6 @@
 {
   "name": "athlifyr",
-  "version": "9.3.5",
+  "version": "9.3.6",
   "private": true,
   "scripts": {
     "dev": "next dev",

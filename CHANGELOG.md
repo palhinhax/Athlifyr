@@ -1,3 +1,9 @@
+## [9.8.1](https://github.com/palhinhax/Athlifyr/compare/v9.8.0...v9.8.1) (2026-01-19)
+
+### Bug Fixes
+
+- **venues:** allow negative coordinates in latitude/longitude fields ([cb26d2f](https://github.com/palhinhax/Athlifyr/commit/cb26d2f4a6cd46bd6d701c5ae5c969d6253c5697))
+
 # [9.8.0](https://github.com/palhinhax/Athlifyr/compare/v9.7.0...v9.8.0) (2026-01-19)
 
 ### Features

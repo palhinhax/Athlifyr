@@ -62,13 +62,15 @@ export function MobileNav() {
               >
                 {t("events")}
               </Link>
-              <Link
-                href="/venues"
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-              >
-                {t("venues")}
-              </Link>
+              {session?.user?.role === "ADMIN" && (
+                <Link
+                  href="/venues"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                >
+                  {t("venues")}
+                </Link>
+              )}
               {session && (
                 <Link
                   href="/feed"

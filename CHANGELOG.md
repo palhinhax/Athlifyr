@@ -1,3 +1,9 @@
+## [9.3.4](https://github.com/palhinhax/Athlifyr/compare/v9.3.3...v9.3.4) (2026-01-19)
+
+### Bug Fixes
+
+- **seo:** add locale to event Open Graph URLs for proper WhatsApp sharing ([91795ab](https://github.com/palhinhax/Athlifyr/commit/91795abc7f01683ce48c202529f05737cb5ce689))
+
 ## [9.3.3](https://github.com/palhinhax/Athlifyr/compare/v9.3.2...v9.3.3) (2026-01-19)
 
 ### Bug Fixes

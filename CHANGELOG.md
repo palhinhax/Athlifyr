@@ -1,3 +1,9 @@
+# [9.7.0](https://github.com/palhinhax/Athlifyr/compare/v9.6.0...v9.7.0) (2026-01-19)
+
+### Features
+
+- **i18n:** add new translations for empty feed messages across multiple languages ([7147195](https://github.com/palhinhax/Athlifyr/commit/7147195284bb16fa9f17b38a16bf0441d0defa85))
+
 # [9.6.0](https://github.com/palhinhax/Athlifyr/compare/v9.5.1...v9.6.0) (2026-01-19)
 
 ### Features

@@ -1,3 +1,9 @@
+## [9.3.1](https://github.com/palhinhax/Athlifyr/compare/v9.3.0...v9.3.1) (2026-01-19)
+
+### Performance Improvements
+
+- **admin:** add dedicated admin events endpoint ([3110fd5](https://github.com/palhinhax/Athlifyr/commit/3110fd54d7a6bae6b80b9b163f305fa3e810c808))
+
 # [9.3.0](https://github.com/palhinhax/Athlifyr/compare/v9.2.0...v9.3.0) (2026-01-19)
 
 ### Features

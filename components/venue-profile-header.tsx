@@ -139,28 +139,33 @@ export function VenueProfileHeader({
 
               {/* Stats */}
               <div className="flex flex-wrap gap-6">
-                <div className="flex items-center gap-2">
-                  <Users className="h-5 w-5 text-muted-foreground" />
+                {/* Members count - only visible to owners/admins */}
+                {isOwnerOrAdmin && (
                   <div>
-                    <p className="text-lg font-semibold">
-                      {venue.members.length}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("membership.members")}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-lg font-semibold">
+                          {venue.members.length}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("membership.members")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="text-lg font-semibold">
+                          {venue._count.sessions}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {t("sessions.title")}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <p className="text-lg font-semibold">
-                      {venue._count.sessions}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {t("sessions.title")}
-                    </p>
-                  </div>
-                </div>
+                )}
               </div>
             </div>
 

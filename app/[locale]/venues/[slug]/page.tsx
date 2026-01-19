@@ -49,6 +49,7 @@ export default async function VenueDetailPage({
       userId={session?.user?.id}
       userName={session?.user?.name}
       userImage={session?.user?.image}
+      userRole={session?.user?.role}
     />
   );
 }

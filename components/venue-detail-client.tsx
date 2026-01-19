@@ -52,11 +52,13 @@ export function VenueDetailClient({
   userId,
   userName,
   userImage,
+  userRole,
 }: {
   slug: string;
   userId?: string;
   userName?: string | null;
   userImage?: string | null;
+  userRole?: string;
 }) {
   const t = useTranslations("venues");
   const tRoles = useTranslations("venues.roles");
@@ -70,10 +72,21 @@ export function VenueDetailClient({
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
     userId &&
-    venue?.members.some(
-      (m) => m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
-    )
+    (userRole === "ADMIN" || // App admin can edit any venue
+      venue?.members.some(
+        (m) =>
+          m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
+      ))
   );
+
+  // Debug log
+  console.log("Debug venue edit access:", {
+    userId,
+    userRole,
+    venueMembers: venue?.members,
+    isOwnerOrAdmin,
+    userMember: venue?.members.find((m) => m.user.id === userId),
+  });
 
   // Check if user is a member (any role)
   const isMember = Boolean(

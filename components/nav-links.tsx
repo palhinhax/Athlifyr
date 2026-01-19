@@ -18,9 +18,11 @@ export function NavLinks() {
       <Link href="/events" className="text-sm font-medium hover:underline">
         {t("events")}
       </Link>
-      <Link href="/venues" className="text-sm font-medium hover:underline">
-        {t("venues")}
-      </Link>
+      {session?.user?.role === "ADMIN" && (
+        <Link href="/venues" className="text-sm font-medium hover:underline">
+          {t("venues")}
+        </Link>
+      )}
       {session && (
         <Link href="/feed" className="text-sm font-medium hover:underline">
           {t("feed")}

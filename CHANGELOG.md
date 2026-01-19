@@ -1,3 +1,9 @@
+# [9.8.0](https://github.com/palhinhax/Athlifyr/compare/v9.7.0...v9.8.0) (2026-01-19)
+
+### Features
+
+- **venues:** add edit functionality for venue owners and admins ([b061175](https://github.com/palhinhax/Athlifyr/commit/b061175fafd0479adcc794121f01f8fde4d3f928))
+
 # [9.7.0](https://github.com/palhinhax/Athlifyr/compare/v9.6.0...v9.7.0) (2026-01-19)
 
 ### Features

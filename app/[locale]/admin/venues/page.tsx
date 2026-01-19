@@ -23,7 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Plus, Loader2, MapPin, Edit, Trash2, Building2 } from "lucide-react";
+import {
+  Plus,
+  Loader2,
+  MapPin,
+  Edit,
+  Trash2,
+  Building2,
+  UserPlus,
+  Search,
+} from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 // Local type definitions instead of importing from Prisma
@@ -50,6 +59,13 @@ interface Venue {
   createdAt: string;
 }
 
+interface User {
+  id: string;
+  name: string | null;
+  email: string | null;
+  image: string | null;
+}
+
 const venueTypeLabels: Record<VenueType, string> = {
   CROSSFIT_BOX: "CrossFit Box",
   GYM: "Ginásio",
@@ -67,6 +83,11 @@ export default function AdminVenuesPage() {
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false);
+  const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [userSearch, setUserSearch] = useState("");
+  const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
+  const [searchingUsers, setSearchingUsers] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -223,6 +244,76 @@ export default function AdminVenuesPage() {
       latitude: "",
       longitude: "",
     });
+  };
+
+  const searchUsers = async (query: string) => {
+    if (!query || query.length < 2) {
+      setSearchedUsers([]);
+      return;
+    }
+
+    setSearchingUsers(true);
+    try {
+      const response = await fetch(
+        `/api/users/search?q=${encodeURIComponent(query)}`
+      );
+      if (!response.ok) throw new Error("Failed to search users");
+      const users = await response.json();
+      setSearchedUsers(users);
+    } catch (error) {
+      console.error("Error searching users:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao procurar utilizadores",
+        variant: "destructive",
+      });
+    } finally {
+      setSearchingUsers(false);
+    }
+  };
+
+  const handleSetOwner = async (userId: string) => {
+    if (!selectedVenue) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `/api/admin/venues/${selectedVenue.id}/set-owner`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to set owner");
+
+      toast({
+        title: "Sucesso",
+        description: "Owner definido com sucesso",
+      });
+
+      setIsOwnerDialogOpen(false);
+      setUserSearch("");
+      setSearchedUsers([]);
+      fetchVenues();
+    } catch (error) {
+      console.error("Error setting owner:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao definir owner",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const openOwnerDialog = (venue: Venue) => {
+    setSelectedVenue(venue);
+    setIsOwnerDialogOpen(true);
+    setUserSearch("");
+    setSearchedUsers([]);
   };
 
   if (status === "loading" || loading) {
@@ -420,6 +511,105 @@ export default function AdminVenuesPage() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Set Owner Dialog */}
+        <Dialog open={isOwnerDialogOpen} onOpenChange={setIsOwnerDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Definir Owner</DialogTitle>
+              <DialogDescription>
+                Procurar e definir o proprietário para {selectedVenue?.name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="userSearch">Procurar Utilizador</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    id="userSearch"
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value);
+                      searchUsers(e.target.value);
+                    }}
+                    placeholder="Nome ou email do utilizador"
+                    className="pl-10"
+                  />
+                </div>
+              </div>
+
+              {searchingUsers && (
+                <div className="flex items-center justify-center py-4">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              )}
+
+              {searchedUsers.length > 0 && (
+                <div className="max-h-[300px] space-y-2 overflow-y-auto rounded-md border p-2">
+                  {searchedUsers.map((user) => (
+                    <button
+                      key={user.id}
+                      onClick={() => handleSetOwner(user.id)}
+                      disabled={isSubmitting}
+                      className="flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors hover:bg-muted disabled:opacity-50"
+                    >
+                      {user.image ? (
+                        <img
+                          src={user.image}
+                          alt={user.name || "User"}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          {user.name?.[0] || user.email?.[0] || "?"}
+                        </div>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
+                          {user.name || "Sem nome"}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+
+              {userSearch.length >= 2 &&
+                !searchingUsers &&
+                searchedUsers.length === 0 && (
+                  <div className="py-8 text-center text-muted-foreground">
+                    Nenhum utilizador encontrado
+                  </div>
+                )}
+
+              {userSearch.length < 2 && (
+                <div className="py-8 text-center text-sm text-muted-foreground">
+                  Digite pelo menos 2 caracteres para procurar
+                </div>
+              )}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setIsOwnerDialogOpen(false);
+                  setUserSearch("");
+                  setSearchedUsers([]);
+                }}
+                disabled={isSubmitting}
+              >
+                Cancelar
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {venues.length === 0 ? (
@@ -453,6 +643,14 @@ export default function AdminVenuesPage() {
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openOwnerDialog(venue)}
+                      title="Definir Owner"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"

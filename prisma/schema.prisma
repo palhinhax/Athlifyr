@@ -642,6 +642,10 @@ model Venue {
   sportTypes  SportType[] // Sports offered at this venue (e.g., [CROSSFIT, HYROX])
   description String?     @db.Text
 
+  // Profile images
+  logo      String? // Profile logo/avatar image
+  coverImage String? // Hero/banner image
+
   // Contact information
   phone     String?
   email     String?

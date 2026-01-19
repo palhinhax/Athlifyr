@@ -5,21 +5,15 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
-  Instagram,
-  Users,
-  Calendar,
-} from "lucide-react";
+import { VenueProfileHeader } from "@/components/venue-profile-header";
 
 interface Venue {
   id: string;
   slug: string;
   name: string;
   type: string;
+  logo: string | null;
+  coverImage: string | null;
   description: string | null;
   phone: string | null;
   email: string | null;
@@ -58,7 +52,6 @@ export function VenueDetailClient({
   userId?: string;
 }) {
   const t = useTranslations("venues");
-  const tTypes = useTranslations("venues.types");
   const tRoles = useTranslations("venues.roles");
   const tInfo = useTranslations("venues.info");
   const tPlans = useTranslations("venues.plans");
@@ -66,6 +59,14 @@ export function VenueDetailClient({
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Check if user is owner or admin
+  const isOwnerOrAdmin = Boolean(
+    userId &&
+    venue?.members.some(
+      (m) => m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
+    )
+  );
 
   useEffect(() => {
     const fetchVenue = async () => {
@@ -110,197 +111,124 @@ export function VenueDetailClient({
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="mb-4">
-          <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-            {tTypes(venue.type)}
-          </span>
-        </div>
-        <h1 className="mb-4 text-4xl font-bold">{venue.name}</h1>
+    <div className="min-h-screen bg-background">
+      {/* Modern Profile Header */}
+      <VenueProfileHeader
+        venue={venue}
+        userId={userId}
+        isOwnerOrAdmin={isOwnerOrAdmin}
+      />
 
-        {/* Location */}
-        {venue.city && (
-          <div className="mb-4 flex items-center gap-2 text-muted-foreground">
-            <MapPin className="h-5 w-5" />
-            <span>
-              {venue.address && `${venue.address}, `}
-              {venue.city}, {venue.country}
-            </span>
-          </div>
-        )}
+      {/* Main Content */}
+      <div className="container mx-auto px-4 py-6">
+        {/* Tabs */}
+        <Tabs defaultValue="about" className="w-full">
+          <TabsList>
+            <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
+            <TabsTrigger value="plans">{tPlans("title")}</TabsTrigger>
+            <TabsTrigger value="sessions">{t("tabs.sessions")}</TabsTrigger>
+            <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
+          </TabsList>
 
-        {/* Contact Info */}
-        <div className="flex flex-wrap gap-4 text-sm">
-          {venue.phone && (
-            <a
-              href={`tel:${venue.phone}`}
-              className="flex items-center gap-2 hover:text-primary"
-            >
-              <Phone className="h-4 w-4" />
-              {venue.phone}
-            </a>
-          )}
-          {venue.email && (
-            <a
-              href={`mailto:${venue.email}`}
-              className="flex items-center gap-2 hover:text-primary"
-            >
-              <Mail className="h-4 w-4" />
-              {venue.email}
-            </a>
-          )}
-          {venue.website && (
-            <a
-              href={venue.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-primary"
-            >
-              <Globe className="h-4 w-4" />
-              {tInfo("website")}
-            </a>
-          )}
-          {venue.instagram && (
-            <a
-              href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 hover:text-primary"
-            >
-              <Instagram className="h-4 w-4" />@
-              {venue.instagram.replace("@", "")}
-            </a>
-          )}
-        </div>
-      </div>
+          {/* About Tab */}
+          <TabsContent value="about" className="space-y-6">
+            <div className="rounded-lg border bg-card p-6">
+              <h2 className="mb-4 text-2xl font-semibold">
+                {tInfo("description")}
+              </h2>
+              <p className="text-muted-foreground">
+                {venue.description || t("noDescription")}
+              </p>
+            </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="about" className="w-full">
-        <TabsList>
-          <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
-          <TabsTrigger value="plans">{tPlans("title")}</TabsTrigger>
-          <TabsTrigger value="sessions">{t("tabs.sessions")}</TabsTrigger>
-          <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
-        </TabsList>
-
-        {/* About Tab */}
-        <TabsContent value="about" className="space-y-6">
-          <div className="rounded-lg border p-6">
-            <h2 className="mb-4 text-2xl font-semibold">
-              {tInfo("description")}
-            </h2>
-            <p className="text-muted-foreground">
-              {venue.description || t("noDescription")}
-            </p>
-
-            <div className="mt-6 flex gap-4">
-              <div className="flex items-center gap-2">
-                <Users className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">{venue.members.length}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("membership.members")}
-                  </p>
-                </div>
+            {!userId && (
+              <div className="rounded-lg bg-muted p-6">
+                <p className="mb-4 text-sm">{t("signInToJoin")}</p>
+                <Button>{t("signIn")}</Button>
               </div>
-              <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm font-medium">{venue._count.sessions}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {t("sessions.title")}
-                  </p>
-                </div>
+            )}
+          </TabsContent>
+
+          {/* Plans Tab */}
+          <TabsContent value="plans" className="space-y-6">
+            {venue.plans.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-12 text-center">
+                <p className="text-muted-foreground">{t("noPlansAvailable")}</p>
               </div>
-            </div>
-          </div>
-
-          {!userId && (
-            <div className="rounded-lg bg-muted p-6">
-              <p className="mb-4 text-sm">{t("signInToJoin")}</p>
-              <Button>{t("signIn")}</Button>
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Plans Tab */}
-        <TabsContent value="plans" className="space-y-6">
-          {venue.plans.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">{t("noPlansAvailable")}</p>
-            </div>
-          ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-              {venue.plans.map((plan) => (
-                <div key={plan.id} className="rounded-lg border p-6">
-                  <h3 className="mb-2 text-xl font-semibold">{plan.name}</h3>
-                  {plan.description && (
-                    <p className="mb-4 text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  )}
-                  {plan.price && (
-                    <p className="mb-4 text-2xl font-bold">
-                      {plan.price} {plan.currency}
-                      <span className="text-sm font-normal text-muted-foreground">
-                        {" "}
-                        / {tPlans("perMonth")}
-                      </span>
-                    </p>
-                  )}
-                  <Button className="w-full">{tPlans("subscribe")}</Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-
-        {/* Sessions Tab */}
-        <TabsContent value="sessions">
-          <div className="rounded-lg border border-dashed p-12 text-center">
-            <p className="text-muted-foreground">{t("sessionsComingSoon")}</p>
-          </div>
-        </TabsContent>
-
-        {/* Team Tab */}
-        <TabsContent value="team" className="space-y-4">
-          {venue.members.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">{t("noTeamMembers")}</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {venue.members.map((member) => (
-                <div key={member.id} className="rounded-lg border p-4">
-                  <div className="flex items-center gap-3">
-                    {member.user.image ? (
-                      <Image
-                        src={member.user.image}
-                        alt={member.user.name || "User"}
-                        width={48}
-                        height={48}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                        {member.user.name?.[0] || "?"}
-                      </div>
-                    )}
-                    <div>
-                      <p className="font-medium">{member.user.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tRoles(member.role)}
+            ) : (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {venue.plans.map((plan) => (
+                  <div key={plan.id} className="rounded-lg border bg-card p-6">
+                    <h3 className="mb-2 text-xl font-semibold">{plan.name}</h3>
+                    {plan.description && (
+                      <p className="mb-4 text-sm text-muted-foreground">
+                        {plan.description}
                       </p>
+                    )}
+                    {plan.price && (
+                      <p className="mb-4 text-2xl font-bold">
+                        {plan.price} {plan.currency}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {" "}
+                          / {tPlans("perMonth")}
+                        </span>
+                      </p>
+                    )}
+                    <Button className="w-full">{tPlans("subscribe")}</Button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          {/* Sessions Tab */}
+          <TabsContent value="sessions">
+            <div className="rounded-lg border border-dashed p-12 text-center">
+              <p className="text-muted-foreground">{t("sessionsComingSoon")}</p>
+            </div>
+          </TabsContent>
+
+          {/* Team Tab */}
+          <TabsContent value="team" className="space-y-4">
+            {venue.members.length === 0 ? (
+              <div className="rounded-lg border border-dashed p-12 text-center">
+                <p className="text-muted-foreground">{t("noTeamMembers")}</p>
+              </div>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {venue.members.map((member) => (
+                  <div
+                    key={member.id}
+                    className="rounded-lg border bg-card p-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      {member.user.image ? (
+                        <Image
+                          src={member.user.image}
+                          alt={member.user.name || "User"}
+                          width={48}
+                          height={48}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          {member.user.name?.[0] || "?"}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium">{member.user.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {tRoles(member.role)}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </TabsContent>
-      </Tabs>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }

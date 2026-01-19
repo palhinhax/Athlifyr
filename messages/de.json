@@ -858,6 +858,17 @@
       "feed": "Feed",
       "sessions": "Sitzungen",
       "team": "Team"
+    },
+    "edit": {
+      "description": "Standortinformationen, Fotos und Kontaktdaten aktualisieren",
+      "logo": "Logo",
+      "coverImage": "Titelbild",
+      "uploadLogo": "Logo Hochladen",
+      "uploadCover": "Titelbild Hochladen",
+      "imageUploadSuccess": "Bild erfolgreich hochgeladen",
+      "imageUploadError": "Fehler beim Hochladen des Bildes",
+      "updateSuccess": "Standort erfolgreich aktualisiert",
+      "updateError": "Fehler beim Aktualisieren des Standorts"
     }
   },
   "footer": {

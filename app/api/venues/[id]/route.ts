@@ -97,6 +97,8 @@ export async function PATCH(
       latitude,
       longitude,
       isActive,
+      logo,
+      coverImage,
     } = body;
 
     // Validate sport types if provided
@@ -130,6 +132,8 @@ export async function PATCH(
         ...(latitude !== undefined && { latitude }),
         ...(longitude !== undefined && { longitude }),
         ...(isActive !== undefined && { isActive }),
+        ...(logo !== undefined && { logo }),
+        ...(coverImage !== undefined && { coverImage }),
       },
     });
 

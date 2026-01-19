@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,6 +14,7 @@ import {
   Edit,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
+import { VenueEditModal } from "@/components/venue-edit-modal";
 
 interface VenueProfileHeaderProps {
   venue: {
@@ -55,6 +57,7 @@ export function VenueProfileHeader({
   const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
   const tInfo = useTranslations("venues.info");
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   return (
     <div className="mb-6 w-full">
@@ -83,9 +86,10 @@ export function VenueProfileHeader({
             variant="secondary"
             size="sm"
             className="absolute right-4 top-4"
+            onClick={() => setEditModalOpen(true)}
           >
             <Edit className="mr-2 h-4 w-4" />
-            Editar Perfil
+            {t("editVenue")}
           </Button>
         )}
       </div>
@@ -212,6 +216,15 @@ export function VenueProfileHeader({
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {isOwnerOrAdmin && (
+        <VenueEditModal
+          venue={venue}
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+        />
+      )}
     </div>
   );
 }

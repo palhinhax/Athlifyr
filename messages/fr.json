@@ -827,6 +827,17 @@
       "feed": "Fil d'actualité",
       "sessions": "Sessions",
       "team": "Équipe"
+    },
+    "edit": {
+      "description": "Mettre à jour les informations du lieu, les photos et les contacts",
+      "logo": "Logo",
+      "coverImage": "Image de Couverture",
+      "uploadLogo": "Télécharger le Logo",
+      "uploadCover": "Télécharger l'Image de Couverture",
+      "imageUploadSuccess": "Image téléchargée avec succès",
+      "imageUploadError": "Échec du téléchargement de l'image",
+      "updateSuccess": "Lieu mis à jour avec succès",
+      "updateError": "Échec de la mise à jour du lieu"
     }
   },
   "footer": {

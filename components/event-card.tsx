@@ -4,7 +4,7 @@ import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Route, CheckCircle } from "lucide-react";
-import { formatDateShort } from "@/lib/event-utils";
+import { formatDateRange } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
 import { useLocale } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
@@ -52,7 +52,9 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <div className="space-y-1 text-sm text-muted-foreground">
             <div className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
-              <span>{formatDateShort(event.startDate, locale)}</span>
+              <span>
+                {formatDateRange(event.startDate, event.endDate, locale)}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               <MapPin className="h-4 w-4" />

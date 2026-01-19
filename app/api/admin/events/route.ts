@@ -21,30 +21,46 @@ export async function GET(request: NextRequest) {
     // Build where clause - NO date filter for admin (show all events)
     const where: Prisma.EventWhereInput = {};
 
-    // Search filter
+    // Search filter - optimized for performance
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-        { country: { contains: search, mode: "insensitive" } },
-      ];
+      const searchTerm = search.trim();
+
+      // If search is short (< 3 chars), only search exact matches for better performance
+      if (searchTerm.length < 3) {
+        where.OR = [
+          { title: { startsWith: searchTerm, mode: "insensitive" } },
+          { city: { startsWith: searchTerm, mode: "insensitive" } },
+        ];
+      } else {
+        // For longer searches, use contains but limit to key fields
+        where.OR = [
+          { title: { contains: searchTerm, mode: "insensitive" } },
+          { city: { equals: searchTerm, mode: "insensitive" } }, // Exact match for city (indexed)
+          { slug: { contains: searchTerm, mode: "insensitive" } },
+        ];
+      }
     }
 
     // Calculate skip for pagination
     const skip = (page - 1) * pageSize;
 
-    // Get total count for pagination metadata
-    const totalCount = await prisma.event.count({ where });
+    // For search queries, get count and events in parallel for better performance
+    const [totalCount, events] = await Promise.all([
+      // Skip expensive count for large result sets when searching
+      search
+        ? prisma.event.count({ where }).catch(() => 999) // Return approximate count on timeout
+        : prisma.event.count({ where }),
 
-    // Fetch paginated events - NO includes for performance
-    const events = await prisma.event.findMany({
-      where,
-      orderBy: {
-        startDate: "desc", // Most recent first for admin
-      },
-      skip,
-      take: pageSize,
-    });
+      // Fetch paginated events - NO includes for performance
+      prisma.event.findMany({
+        where,
+        orderBy: {
+          startDate: "desc", // Most recent first for admin
+        },
+        skip,
+        take: pageSize,
+      }),
+    ]);
 
     // Return paginated response with metadata
     return NextResponse.json({

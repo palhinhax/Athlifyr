@@ -58,7 +58,7 @@ function AdminContent() {
   };
 
   return (
-    <div className="container mx-auto py-8">
+    <div className="container mx-auto px-4 py-8 sm:px-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Admin Dashboard</h1>
         <p className="text-muted-foreground">
@@ -96,7 +96,7 @@ function AdminContent() {
           </TabsList>
         </div>
 
-        <TabsContent value="events" className="mt-6">
+        <TabsContent value="events">
           <Suspense
             fallback={
               <div className="flex min-h-[400px] items-center justify-center">
@@ -108,7 +108,7 @@ function AdminContent() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="venues" className="mt-6">
+        <TabsContent value="venues">
           <Suspense
             fallback={
               <div className="flex min-h-[400px] items-center justify-center">
@@ -120,7 +120,7 @@ function AdminContent() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="contacts" className="mt-6">
+        <TabsContent value="contacts">
           <Suspense
             fallback={
               <div className="flex min-h-[400px] items-center justify-center">
@@ -132,7 +132,7 @@ function AdminContent() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="media" className="mt-6">
+        <TabsContent value="media">
           <Suspense
             fallback={
               <div className="flex min-h-[400px] items-center justify-center">
@@ -144,7 +144,7 @@ function AdminContent() {
           </Suspense>
         </TabsContent>
 
-        <TabsContent value="instagram" className="mt-6">
+        <TabsContent value="instagram">
           <Suspense
             fallback={
               <div className="flex min-h-[400px] items-center justify-center">

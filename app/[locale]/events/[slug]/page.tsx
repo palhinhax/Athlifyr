@@ -155,7 +155,7 @@ export async function generateMetadata({
     };
   }
 
-  return generateEventMetadata({ event });
+  return generateEventMetadata({ event, locale });
 }
 
 export default async function EventPage({ params }: PageProps) {

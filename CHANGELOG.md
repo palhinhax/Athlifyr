@@ -1,3 +1,9 @@
+## [9.3.6](https://github.com/palhinhax/Athlifyr/compare/v9.3.5...v9.3.6) (2026-01-19)
+
+### Bug Fixes
+
+- **ui:** remove lateral padding from admin tabs in mobile ([cab18e1](https://github.com/palhinhax/Athlifyr/commit/cab18e1a5dc7cb58ada4e4d2e36ab87f1498c4fb))
+
 ## [9.3.5](https://github.com/palhinhax/Athlifyr/compare/v9.3.4...v9.3.5) (2026-01-19)
 
 ### Bug Fixes

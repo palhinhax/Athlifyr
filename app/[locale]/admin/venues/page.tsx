@@ -36,21 +36,17 @@ type VenueType =
   | "NUTRITION"
   | "OTHER";
 
-type Currency = "EUR" | "GBP" | "USD" | "CHF";
-
 interface Venue {
   id: string;
   name: string;
   slug: string;
   type: VenueType;
   description: string | null;
-  address: string;
-  city: string;
+  address: string | null;
+  city: string | null;
   country: string;
   latitude: number | null;
   longitude: number | null;
-  currency: Currency;
-  stripeAccountId: string | null;
   createdAt: string;
 }
 
@@ -62,13 +58,6 @@ const venueTypeLabels: Record<VenueType, string> = {
   PHYSIO: "Fisioterapia",
   NUTRITION: "Nutrição",
   OTHER: "Outro",
-};
-
-const currencyLabels: Record<Currency, string> = {
-  EUR: "Euro (€)",
-  GBP: "Libra (£)",
-  USD: "Dólar ($)",
-  CHF: "Franco Suíço (CHF)",
 };
 
 export default function AdminVenuesPage() {
@@ -90,7 +79,6 @@ export default function AdminVenuesPage() {
     country: string;
     latitude: string;
     longitude: string;
-    currency: Currency;
   }>({
     name: "",
     slug: "",
@@ -101,7 +89,6 @@ export default function AdminVenuesPage() {
     country: "Portugal",
     latitude: "",
     longitude: "",
-    currency: "EUR",
   });
 
   useEffect(() => {
@@ -122,7 +109,7 @@ export default function AdminVenuesPage() {
 
   const fetchVenues = async () => {
     try {
-      const response = await fetch("/api/venues");
+      const response = await fetch("/api/admin/venues");
       if (!response.ok) throw new Error("Failed to fetch venues");
       const data = await response.json();
       setVenues(data);
@@ -166,7 +153,7 @@ export default function AdminVenuesPage() {
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
       };
 
-      const response = await fetch("/api/venues", {
+      const response = await fetch("/api/admin/venues", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -202,7 +189,7 @@ export default function AdminVenuesPage() {
     if (!confirm("Tens a certeza que queres eliminar este venue?")) return;
 
     try {
-      const response = await fetch(`/api/venues/${venueId}`, {
+      const response = await fetch(`/api/admin/venues?id=${venueId}`, {
         method: "DELETE",
       });
 
@@ -235,7 +222,6 @@ export default function AdminVenuesPage() {
       country: "Portugal",
       latitude: "",
       longitude: "",
-      currency: "EUR",
     });
   };
 
@@ -408,27 +394,6 @@ export default function AdminVenuesPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="currency">Moeda *</Label>
-                <Select
-                  value={formData.currency}
-                  onValueChange={(value: Currency) =>
-                    setFormData({ ...formData, currency: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(currencyLabels).map(([key, label]) => (
-                      <SelectItem key={key} value={key}>
-                        {label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
               <DialogFooter>
                 <Button
                   type="button"
@@ -517,16 +482,14 @@ export default function AdminVenuesPage() {
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <span className="text-xs text-muted-foreground">
-                      {currencyLabels[venue.currency]}
-                    </span>
-                    {venue.stripeAccountId && (
-                      <span className="rounded-full bg-green-100 px-2 py-1 text-xs text-green-800 dark:bg-green-900 dark:text-green-100">
-                        Stripe Ativo
+                  {(venue.latitude || venue.longitude) && (
+                    <div className="pt-2 text-xs text-muted-foreground">
+                      <span>
+                        📍 {venue.latitude?.toFixed(4)},{" "}
+                        {venue.longitude?.toFixed(4)}
                       </span>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>

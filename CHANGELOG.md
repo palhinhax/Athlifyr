@@ -1,3 +1,10 @@
+## [9.5.1](https://github.com/palhinhax/Athlifyr/compare/v9.5.0...v9.5.1) (2026-01-19)
+
+### Bug Fixes
+
+- **i18n:** add missing translations for venues page and event filters ([3c89ead](https://github.com/palhinhax/Athlifyr/commit/3c89eadcd058c2e7f5cb36140e5fd321ca94a2f0))
+- **map:** change Ver Evento button to link variant for consistency ([4357f06](https://github.com/palhinhax/Athlifyr/commit/4357f0632c7034939dfb9d09497502049e98aeab))
+
 # [9.5.0](https://github.com/palhinhax/Athlifyr/compare/v9.4.0...v9.5.0) (2026-01-19)
 
 ### Features

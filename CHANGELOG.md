@@ -1,3 +1,9 @@
+# [8.11.0](https://github.com/palhinhax/Athlifyr/compare/v8.10.0...v8.11.0) (2026-01-19)
+
+### Features
+
+- **events:** add date range display on event cards ([98450c9](https://github.com/palhinhax/Athlifyr/commit/98450c960bac56404b0d260ed6e8e00be38c42d5))
+
 # [8.10.0](https://github.com/palhinhax/Athlifyr/compare/v8.9.0...v8.10.0) (2026-01-18)
 
 ### Features

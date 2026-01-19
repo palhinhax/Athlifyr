@@ -1,3 +1,9 @@
+## [9.3.2](https://github.com/palhinhax/Athlifyr/compare/v9.3.1...v9.3.2) (2026-01-19)
+
+### Bug Fixes
+
+- **admin:** fix venues page and create dedicated admin endpoint ([5e85e7a](https://github.com/palhinhax/Athlifyr/commit/5e85e7a7a4931939f6599da283286ad4a7a90c28))
+
 ## [9.3.1](https://github.com/palhinhax/Athlifyr/compare/v9.3.0...v9.3.1) (2026-01-19)
 
 ### Performance Improvements

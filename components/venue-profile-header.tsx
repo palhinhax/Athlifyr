@@ -72,6 +72,8 @@ export function VenueProfileHeader({
             fill
             className="object-cover"
             priority
+            unoptimized
+            key={venue.coverImage}
           />
         ) : (
           <div className="flex h-full items-center justify-center">
@@ -109,6 +111,8 @@ export function VenueProfileHeader({
                   fill
                   className="object-cover"
                   priority
+                  unoptimized
+                  key={venue.logo}
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center bg-primary/10 text-4xl font-bold text-primary md:text-5xl">

@@ -15,13 +15,15 @@ interface EventMetadataProps {
     createdAt: Date;
     updatedAt: Date;
   };
+  locale?: string;
 }
 
 export async function generateEventMetadata({
   event,
+  locale = "pt",
 }: EventMetadataProps): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
-  const eventUrl = `${baseUrl}/events/${event.slug}`;
+  const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
   const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
 
   // Create rich description with event details (max 160 chars for SEO)
@@ -50,6 +52,17 @@ export async function generateEventMetadata({
     formatDate(event.startDate),
   ];
 
+  // Map locale to OpenGraph locale format
+  const ogLocaleMap: Record<string, string> = {
+    pt: "pt_PT",
+    en: "en_US",
+    es: "es_ES",
+    fr: "fr_FR",
+    de: "de_DE",
+    it: "it_IT",
+  };
+  const ogLocale = ogLocaleMap[locale] || "pt_PT";
+
   return {
     title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]} | Athlifyr`,
     description: metaDescription,
@@ -70,7 +83,7 @@ export async function generateEventMetadata({
           alt: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]}`,
         },
       ],
-      locale: "pt_PT",
+      locale: ogLocale,
       type: "article",
       publishedTime: event.createdAt.toISOString(),
       modifiedTime: event.updatedAt.toISOString(),

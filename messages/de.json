@@ -852,6 +852,7 @@
     "noDescription": "Keine Beschreibung verfügbar.",
     "tabs": {
       "about": "Über",
+      "feed": "Feed",
       "sessions": "Sitzungen",
       "team": "Team"
     }

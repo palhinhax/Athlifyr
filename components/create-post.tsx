@@ -8,15 +8,29 @@ import { ImagePlus, X, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
+interface PostWithDetails {
+  id: string;
+  content: string;
+  imageUrl: string | null;
+  createdAt: Date;
+  user: {
+    id: string;
+    name: string;
+    image: string | null;
+  };
+}
+
 interface CreatePostProps {
   eventId?: string;
-  onPostCreated?: () => void;
+  venueId?: string;
+  onPostCreated?: (post?: PostWithDetails) => void;
   userImage?: string | null;
   userName?: string | null;
 }
 
 export function CreatePost({
   eventId,
+  venueId,
   onPostCreated,
   userImage,
   userName,
@@ -162,12 +176,15 @@ export function CreatePost({
           content: content.trim(),
           imageUrl: finalImageUrl || undefined,
           eventId: eventId || undefined,
+          venueId: venueId || undefined,
         }),
       });
 
       if (!response.ok) {
         throw new Error("Failed to create post");
       }
+
+      const newPost = await response.json();
 
       // Reset form
       setContent("");
@@ -182,7 +199,7 @@ export function CreatePost({
 
       // Callback to refresh posts
       if (onPostCreated) {
-        onPostCreated();
+        onPostCreated(newPost);
       }
     } catch (error) {
       console.error("Error creating post:", error);

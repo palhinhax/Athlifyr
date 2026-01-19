@@ -43,5 +43,12 @@ export default async function VenueDetailPage({
   const session = await auth();
   const { slug } = await Promise.resolve(params);
 
-  return <VenueDetailClient slug={slug} userId={session?.user?.id} />;
+  return (
+    <VenueDetailClient
+      slug={slug}
+      userId={session?.user?.id}
+      userName={session?.user?.name}
+      userImage={session?.user?.image}
+    />
+  );
 }

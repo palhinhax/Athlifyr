@@ -821,6 +821,7 @@
     "noDescription": "Aucune description disponible.",
     "tabs": {
       "about": "À Propos",
+      "feed": "Fil d'actualité",
       "sessions": "Sessions",
       "team": "Équipe"
     }

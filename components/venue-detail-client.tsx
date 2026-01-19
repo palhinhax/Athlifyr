@@ -6,6 +6,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
+import { VenueFeed } from "@/components/venue-feed";
 
 interface Venue {
   id: string;
@@ -47,9 +48,13 @@ interface Venue {
 export function VenueDetailClient({
   slug,
   userId,
+  userName,
+  userImage,
 }: {
   slug: string;
   userId?: string;
+  userName?: string | null;
+  userImage?: string | null;
 }) {
   const t = useTranslations("venues");
   const tRoles = useTranslations("venues.roles");
@@ -66,6 +71,11 @@ export function VenueDetailClient({
     venue?.members.some(
       (m) => m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
     )
+  );
+
+  // Check if user is a member (any role)
+  const isMember = Boolean(
+    userId && venue?.members.some((m) => m.user.id === userId)
   );
 
   useEffect(() => {
@@ -122,13 +132,25 @@ export function VenueDetailClient({
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
-        <Tabs defaultValue="about" className="w-full">
+        <Tabs defaultValue="feed" className="w-full">
           <TabsList>
+            <TabsTrigger value="feed">{t("tabs.feed")}</TabsTrigger>
             <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
             <TabsTrigger value="plans">{tPlans("title")}</TabsTrigger>
             <TabsTrigger value="sessions">{t("tabs.sessions")}</TabsTrigger>
             <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
           </TabsList>
+
+          {/* Feed Tab */}
+          <TabsContent value="feed">
+            <VenueFeed
+              venueId={venue.id}
+              userId={userId}
+              userName={userName}
+              userImage={userImage}
+              isMember={isMember}
+            />
+          </TabsContent>
 
           {/* About Tab */}
           <TabsContent value="about" className="space-y-6">

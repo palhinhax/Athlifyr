@@ -31,6 +31,8 @@ interface WeeklyPicksFormProps {
   onToggleAllEvents: (selected: boolean) => void;
   sportType: string;
   onSportTypeChange: (sportType: string) => void;
+  weekStart: string;
+  onWeekStartChange: (weekStart: string) => void;
   onEventsLoaded?: (events: EventItem[]) => void;
 }
 
@@ -46,20 +48,32 @@ export function WeeklyPicksForm({
   onToggleAllEvents,
   sportType,
   onSportTypeChange,
+  weekStart,
+  onWeekStartChange,
   onEventsLoaded,
 }: WeeklyPicksFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [localEvents, setLocalEvents] = useState<EventItem[]>(allEvents);
 
-  // Load events when sport type changes
+  // Load events when sport type or week start changes
   useEffect(() => {
     const loadEvents = async () => {
       setIsLoading(true);
       try {
-        const url =
-          sportType === "ALL"
-            ? "/api/events/weekly"
-            : `/api/events/weekly?sportType=${sportType}`;
+        let url = "/api/events/weekly";
+        const params = new URLSearchParams();
+
+        if (sportType !== "ALL") {
+          params.append("sportType", sportType);
+        }
+
+        if (weekStart) {
+          params.append("startDate", weekStart);
+        }
+
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
 
         const res = await fetch(url);
         if (res.ok) {
@@ -89,7 +103,7 @@ export function WeeklyPicksForm({
     };
 
     loadEvents();
-  }, [sportType, onEventsLoaded]);
+  }, [sportType, weekStart, onEventsLoaded]);
 
   // Sync local events with parent
   useEffect(() => {
@@ -118,6 +132,19 @@ export function WeeklyPicksForm({
           maxLength={30}
           placeholder="EVENTOS DA SEMANA"
         />
+      </div>
+
+      {/* Week Start Date Picker */}
+      <div>
+        <Label>Semana *</Label>
+        <Input
+          type="date"
+          value={weekStart}
+          onChange={(e) => onWeekStartChange(e.target.value)}
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Seleciona o primeiro dia da semana (7 dias a partir desta data)
+        </p>
       </div>
 
       {/* Sport Type Selector */}

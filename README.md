@@ -65,7 +65,7 @@ Athlifyr is a public platform for discovering sports events across Portugal. Fin
    Update `.env` with your database URL:
 
    ```env
-   DATABASE_URL="postgresql://postgres:password@localhost:5432/athlifyr"
+   DATABASE_PG_URL="postgresql://postgres:password@localhost:5432/athlifyr"
    ```
 
 4. Run database migrations:
@@ -178,7 +178,7 @@ The seed data includes 40+ real and semi-fictional Portuguese sports events:
 1. Push your code to GitHub
 2. Import the project in Vercel
 3. Set environment variable:
-   - `DATABASE_URL`
+   - `DATABASE_PG_URL`
 4. Run database migrations in the Vercel dashboard
 5. Deploy!
 

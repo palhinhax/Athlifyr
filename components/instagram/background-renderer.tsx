@@ -5,42 +5,13 @@ interface BackgroundRendererProps {
 }
 
 /**
- * BackgroundRenderer handles all background types: solid, gradient, photo, video
+ * BackgroundRenderer handles all background types: solid, gradient, photo, transparent
  * Used by all Instagram templates to render backgrounds consistently
  */
 export function BackgroundRenderer({ background }: BackgroundRendererProps) {
-  // Video background
-  if (background.type === "video" && background.value) {
-    const scale = background.videoScale || 100; // Default to 100% (contain)
-    return (
-      <>
-        <video
-          src={background.value}
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 z-0 h-full w-full"
-          style={{
-            objectFit: scale <= 100 ? "contain" : "cover",
-            transform: scale > 100 ? `scale(${scale / 100})` : undefined,
-          }}
-          crossOrigin="anonymous"
-          onError={(e) => {
-            console.error("Video load error:", e);
-            console.error("Video URL:", background.value);
-          }}
-          onLoadedData={() => {
-            console.log("Video loaded successfully:", background.value);
-          }}
-        />
-        <div
-          className="absolute inset-0 z-10 bg-black"
-          style={{ opacity: (background.overlayIntensity || 50) / 100 }}
-        />
-      </>
-    );
+  // Transparent background
+  if (background.type === "transparent") {
+    return null; // No background layer
   }
 
   // Photo background

@@ -1,3 +1,45 @@
+# [8.11.0](https://github.com/palhinhax/Athlifyr/compare/v8.10.0...v8.11.0) (2026-01-19)
+
+### Features
+
+- **events:** add date range display on event cards ([98450c9](https://github.com/palhinhax/Athlifyr/commit/98450c960bac56404b0d260ed6e8e00be38c42d5))
+
+# [8.10.0](https://github.com/palhinhax/Athlifyr/compare/v8.9.0...v8.10.0) (2026-01-18)
+
+### Features
+
+- **seed:** add Marathon des Alpes-Maritimes Nice-Cannes 2026 seed file ([d11020d](https://github.com/palhinhax/Athlifyr/commit/d11020d7e0e02194a155a5dbcf0586649918ae36))
+
+# [8.9.0](https://github.com/palhinhax/Athlifyr/compare/v8.8.0...v8.9.0) (2026-01-18)
+
+### Bug Fixes
+
+- **seeds:** address code review feedback for Florence Marathon ([8b8d597](https://github.com/palhinhax/Athlifyr/commit/8b8d597c11a74cc58150fcf62600c827d5c72897))
+- **seeds:** improve Google Maps URL for Florence Marathon ([75eac55](https://github.com/palhinhax/Athlifyr/commit/75eac55ad8744b7624dbcf6c327b650396a3f1c2))
+- **seeds:** update Florence Marathon coordinates and Google Maps link ([46b72c2](https://github.com/palhinhax/Athlifyr/commit/46b72c2d436dad024e9bb0cec548f87ae45b854c))
+
+### Features
+
+- **seeds:** add Estra Firenze Marathon 2026 seed ([c00e0a7](https://github.com/palhinhax/Athlifyr/commit/c00e0a7e42b2ab029a802b478a9d1640a1b84ced))
+
+# [8.8.0](https://github.com/palhinhax/Athlifyr/compare/v8.7.0...v8.8.0) (2026-01-18)
+
+### Features
+
+- **i18n:** add TikTok translations for all 6 languages ([9de8dbc](https://github.com/palhinhax/Athlifyr/commit/9de8dbce4881a8c90960836cce3d3f0dbeb5b582))
+- **instagram:** add modern Instagram and TikTok templates with new formats ([b529a34](https://github.com/palhinhax/Athlifyr/commit/b529a34faac628657dd9381320d31b1194d3b916))
+
+# [8.7.0](https://github.com/palhinhax/Athlifyr/compare/v8.6.0...v8.7.0) (2026-01-18)
+
+### Bug Fixes
+
+- **instagram:** correct video export timing to match input duration ([9188f85](https://github.com/palhinhax/Athlifyr/commit/9188f8539285d1909386f21c62cc9ce8d87fa1f2))
+- **instagram:** remove unused frameStartTime variable ([2a0f122](https://github.com/palhinhax/Athlifyr/commit/2a0f122db6298664beb2dccff34b45e814e4c4ad))
+
+### Features
+
+- **instagram:** add week picker to weekly picks template ([f7f9840](https://github.com/palhinhax/Athlifyr/commit/f7f984050d9a1ee3190856b100bb4297b5884b65))
+
 # [8.6.0](https://github.com/palhinhax/Athlifyr/compare/v8.5.4...v8.6.0) (2026-01-17)
 
 ### Bug Fixes

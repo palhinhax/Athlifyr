@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Slider } from "@/components/ui/slider";
 import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";
-import { exportToVideo } from "@/lib/instagram-video-export";
 import { EventSearch } from "@/components/instagram/event-search";
 import { TemplateSelector } from "@/components/instagram/template-selector";
 import { BackgroundControls } from "@/components/instagram/background-controls";
@@ -19,6 +17,11 @@ import { CategoryCardForm } from "@/components/instagram/category-card-form";
 import { WeeklyPicksForm } from "@/components/instagram/weekly-picks-form";
 import { MinimalQuoteForm } from "@/components/instagram/minimal-quote-form";
 import { MonthlyEventsForm } from "@/components/instagram/monthly-events-form";
+import { BoldTextOverlayForm } from "@/components/instagram/bold-text-overlay-form";
+import { SplitScreenForm } from "@/components/instagram/split-screen-form";
+import { TestimonialStatsForm } from "@/components/instagram/testimonial-stats-form";
+import { VerticalChallengeForm } from "@/components/instagram/vertical-challenge-form";
+import { HookCtaForm } from "@/components/instagram/hook-cta-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -28,6 +31,11 @@ import {
   type WeeklyPicksPayload,
   type MinimalQuotePayload,
   type MonthlyEventsPayload,
+  type BoldTextOverlayPayload,
+  type SplitScreenPayload,
+  type TestimonialStatsPayload,
+  type VerticalChallengePayload,
+  type HookCtaPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -81,7 +89,6 @@ export default function InstagramGeneratorPage() {
   const router = useRouter();
   const canvasRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const videoInputRef = useRef<HTMLInputElement>(null);
 
   const [previewScale, setPreviewScale] = useState(PREVIEW_DEFAULT_SCALE);
   const [templateKey, setTemplateKey] = useState<TemplateKey>("T1");
@@ -91,18 +98,13 @@ export default function InstagramGeneratorPage() {
 
   // Background state
   const [backgroundType, setBackgroundType] = useState<
-    "solid" | "gradient" | "photo" | "video"
+    "solid" | "gradient" | "photo" | "transparent"
   >("gradient");
   const [selectedColor, setSelectedColor] = useState(BRAND_COLORS.primary);
   const [selectedGradient, setSelectedGradient] = useState(BRAND_GRADIENTS[0]);
   const [photoUrl, setPhotoUrl] = useState("");
-  const [videoUrl, setVideoUrl] = useState("");
   const [overlayIntensity, setOverlayIntensity] = useState(50);
-  const [videoScale, setVideoScale] = useState(100); // Default 100% (contain)
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
-  const [videoDuration, setVideoDuration] = useState(5); // Default 5 seconds
-  const [exportProgress, setExportProgress] = useState(0); // Export progress 0-100
 
   // T1: Event Hero
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
@@ -123,6 +125,11 @@ export default function InstagramGeneratorPage() {
   const [t3Footer, setT3Footer] = useState("athlifyr.com");
   const [t3AllEvents, setT3AllEvents] = useState<EventItem[]>([]);
   const [t3SportType, setT3SportType] = useState("ALL");
+  const [t3WeekStart, setT3WeekStart] = useState(() => {
+    // Default to today in YYYY-MM-DD format
+    const today = new Date();
+    return today.toISOString().split("T")[0];
+  });
 
   // T4: Minimal Quote
   const [t4Quote, setT4Quote] = useState(
@@ -135,6 +142,45 @@ export default function InstagramGeneratorPage() {
   const [t5SportType, setT5SportType] = useState("ALL");
   const [t5Events, setT5Events] = useState<EventItem[]>([]);
   const [isLoadingMonthlyEvents, setIsLoadingMonthlyEvents] = useState(false);
+
+  // T6: Bold Text Overlay
+  const [t6MainText, setT6MainText] = useState("FIND YOUR CHALLENGE");
+  const [t6SubText, setT6SubText] = useState("1000+ Events Available");
+  const [t6Emoji, setT6Emoji] = useState("🔥");
+
+  // T7: Split Screen
+  const [t7LeftTitle, setT7LeftTitle] = useState("BEFORE");
+  const [t7LeftSubtitle, setT7LeftSubtitle] = useState("Searching everywhere");
+  const [t7RightTitle, setT7RightTitle] = useState("AFTER");
+  const [t7RightSubtitle, setT7RightSubtitle] = useState(
+    "One place. All sports."
+  );
+  const [t7VsText, setT7VsText] = useState("VS");
+
+  // T8: Testimonial/Stats
+  const [t8StatNumber, setT8StatNumber] = useState("1000+");
+  const [t8StatLabel, setT8StatLabel] = useState("EVENTOS DESCOBERTOS");
+  const [t8Quote, setT8Quote] = useState(
+    "A melhor plataforma para encontrar eventos desportivos em Portugal"
+  );
+  const [t8Author, setT8Author] = useState("João Silva");
+
+  // T9: Vertical Challenge
+  const [t9ChallengeTitle, setT9ChallengeTitle] = useState("30-DAY CHALLENGE");
+  const [t9Steps, setT9Steps] = useState([
+    "Complete 3 events this month",
+    "Try a new sport",
+    "Share your journey",
+  ]);
+  const [t9Hashtag, setT9Hashtag] = useState("AthlifyrChallenge");
+  const [t9Cta, setT9Cta] = useState("Join Now");
+
+  // T10: Hook + CTA
+  const [t10Hook, setT10Hook] = useState("STOP SCROLLING");
+  const [t10Body, setT10Body] = useState(
+    "Discover 1000+ sports events across Portugal. From running to CrossFit, find your next challenge."
+  );
+  const [t10Cta, setT10Cta] = useState("DISCOVER NOW");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -175,10 +221,20 @@ export default function InstagramGeneratorPage() {
 
     const loadWeeklyEvents = async () => {
       try {
-        const url =
-          t3SportType === "ALL"
-            ? "/api/events/weekly"
-            : `/api/events/weekly?sportType=${t3SportType}`;
+        let url = "/api/events/weekly";
+        const params = new URLSearchParams();
+
+        if (t3SportType !== "ALL") {
+          params.append("sportType", t3SportType);
+        }
+
+        if (t3WeekStart) {
+          params.append("startDate", t3WeekStart);
+        }
+
+        if (params.toString()) {
+          url += `?${params.toString()}`;
+        }
 
         const res = await fetch(url);
         if (res.ok) {
@@ -197,7 +253,7 @@ export default function InstagramGeneratorPage() {
     };
 
     loadWeeklyEvents();
-  }, [templateKey, t3SportType]);
+  }, [templateKey, t3SportType, t3WeekStart]);
 
   // Load monthly events for T5
   useEffect(() => {
@@ -334,12 +390,10 @@ export default function InstagramGeneratorPage() {
 
   const getBackground = (): Background => {
     const bg = (() => {
-      if (backgroundType === "video") {
+      if (backgroundType === "transparent") {
         return {
-          type: "video" as const,
-          value: videoUrl,
-          overlayIntensity,
-          videoScale,
+          type: "transparent" as const,
+          value: "",
         };
       }
       if (backgroundType === "photo") {
@@ -433,10 +487,52 @@ export default function InstagramGeneratorPage() {
           background,
         } as MonthlyEventsPayload;
 
+      case "T6":
+        return {
+          mainText: t6MainText,
+          subText: t6SubText || undefined,
+          emoji: t6Emoji || undefined,
+          background,
+        } as BoldTextOverlayPayload;
+
+      case "T7":
+        return {
+          leftTitle: t7LeftTitle,
+          leftSubtitle: t7LeftSubtitle || undefined,
+          rightTitle: t7RightTitle,
+          rightSubtitle: t7RightSubtitle || undefined,
+          vsText: t7VsText || "VS",
+          background,
+        } as SplitScreenPayload;
+
+      case "T8":
+        return {
+          statNumber: t8StatNumber,
+          statLabel: t8StatLabel,
+          quote: t8Quote || undefined,
+          author: t8Author || undefined,
+          background,
+        } as TestimonialStatsPayload;
+
+      case "T9":
+        return {
+          challengeTitle: t9ChallengeTitle,
+          steps: t9Steps.filter(Boolean),
+          hashtag: t9Hashtag || undefined,
+          cta: t9Cta || undefined,
+          background,
+        } as VerticalChallengePayload;
+
+      case "T10":
+        return {
+          hook: t10Hook,
+          body: t10Body,
+          cta: t10Cta,
+          background,
+        } as HookCtaPayload;
+
       default:
-        throw new Error(
-          `Unknown template: ${templateKey}. Expected T1, T2, T3, T4, or T5.`
-        );
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T10.`);
     }
   };
 
@@ -489,90 +585,13 @@ export default function InstagramGeneratorPage() {
     }
   };
 
-  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("video/")) {
-      toast({
-        variant: "destructive",
-        title: "Invalid file",
-        description: "Please select a video.",
-      });
-      return;
-    }
-
-    setIsUploadingVideo(true);
-    try {
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("folder", "instagram");
-
-      const res = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        const errorMessage = await getUploadErrorMessage(res);
-        throw new Error(errorMessage);
-      }
-
-      const data = await res.json();
-      console.log("Upload success:", data);
-      setVideoUrl(data.file.url);
-      setBackgroundType("video");
-
-      toast({
-        title: "Video uploaded",
-        description: "Background video has been uploaded successfully.",
-      });
-    } catch (error) {
-      console.error("Video upload error:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description:
-          error instanceof Error
-            ? error.message
-            : "Failed to upload video. Please try again.",
-      });
-    } finally {
-      setIsUploadingVideo(false);
-    }
-  };
-
   const handleExport = async () => {
     if (!canvasRef.current) return;
 
     setIsExporting(true);
 
     try {
-      // Export video if background is video
-      if (backgroundType === "video" && videoUrl) {
-        toast({
-          title: "Exporting video...",
-          description: `Exporting ${videoDuration}s video. Please wait...`,
-        });
-
-        setExportProgress(0);
-
-        await exportToVideo({
-          element: canvasRef.current,
-          filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
-          format,
-          duration: videoDuration, // Use user-selected duration
-          onProgress: setExportProgress, // Update progress
-        });
-
-        toast({
-          title: "Video exported!",
-          description: "Your video has been downloaded successfully.",
-        });
-        return;
-      }
-
-      // Export image for other backgrounds
+      // Export image (PNG with optional transparency)
       await exportToImage({
         element: canvasRef.current,
         filename: `athlifyr-${templateKey.toLowerCase()}-${format.toLowerCase()}`,
@@ -643,10 +662,11 @@ export default function InstagramGeneratorPage() {
     <div className="container mx-auto px-4 py-6 sm:py-8">
       <div className="mb-6 sm:mb-8">
         <h1 className="text-2xl font-bold sm:text-3xl">
-          Instagram Post Generator
+          Instagram & TikTok Post Generator
         </h1>
         <p className="text-sm text-muted-foreground sm:text-base">
-          Create branded Instagram content with Athlifyr templates
+          Create branded social media content with modern templates for
+          Instagram and TikTok
         </p>
       </div>
 
@@ -670,20 +690,14 @@ export default function InstagramGeneratorPage() {
               selectedColor={selectedColor}
               selectedGradient={selectedGradient}
               photoUrl={photoUrl}
-              videoUrl={videoUrl}
               overlayIntensity={overlayIntensity}
-              videoScale={videoScale}
               isUploadingPhoto={isUploadingPhoto}
-              isUploadingVideo={isUploadingVideo}
               fileInputRef={fileInputRef}
-              videoInputRef={videoInputRef}
               onBackgroundTypeChange={setBackgroundType}
               onColorChange={setSelectedColor}
               onGradientChange={setSelectedGradient}
               onOverlayIntensityChange={setOverlayIntensity}
-              onVideoScaleChange={setVideoScale}
               onPhotoUpload={handlePhotoUpload}
-              onVideoUpload={handleVideoUpload}
             />
           </Card>
 
@@ -727,6 +741,8 @@ export default function InstagramGeneratorPage() {
                 onToggleAllEvents={toggleAllT3Events}
                 sportType={t3SportType}
                 onSportTypeChange={setT3SportType}
+                weekStart={t3WeekStart}
+                onWeekStartChange={setT3WeekStart}
                 onEventsLoaded={setT3AllEvents}
               />
             )}
@@ -750,6 +766,69 @@ export default function InstagramGeneratorPage() {
                 onSportTypeChange={setT5SportType}
                 onToggleEvent={toggleT5Event}
                 onToggleAllEvents={toggleAllT5Events}
+              />
+            )}
+
+            {templateKey === "T6" && (
+              <BoldTextOverlayForm
+                mainText={t6MainText}
+                subText={t6SubText}
+                emoji={t6Emoji}
+                onMainTextChange={setT6MainText}
+                onSubTextChange={setT6SubText}
+                onEmojiChange={setT6Emoji}
+              />
+            )}
+
+            {templateKey === "T7" && (
+              <SplitScreenForm
+                leftTitle={t7LeftTitle}
+                leftSubtitle={t7LeftSubtitle}
+                rightTitle={t7RightTitle}
+                rightSubtitle={t7RightSubtitle}
+                vsText={t7VsText}
+                onLeftTitleChange={setT7LeftTitle}
+                onLeftSubtitleChange={setT7LeftSubtitle}
+                onRightTitleChange={setT7RightTitle}
+                onRightSubtitleChange={setT7RightSubtitle}
+                onVsTextChange={setT7VsText}
+              />
+            )}
+
+            {templateKey === "T8" && (
+              <TestimonialStatsForm
+                statNumber={t8StatNumber}
+                statLabel={t8StatLabel}
+                quote={t8Quote}
+                author={t8Author}
+                onStatNumberChange={setT8StatNumber}
+                onStatLabelChange={setT8StatLabel}
+                onQuoteChange={setT8Quote}
+                onAuthorChange={setT8Author}
+              />
+            )}
+
+            {templateKey === "T9" && (
+              <VerticalChallengeForm
+                challengeTitle={t9ChallengeTitle}
+                steps={t9Steps}
+                hashtag={t9Hashtag}
+                cta={t9Cta}
+                onChallengeTitleChange={setT9ChallengeTitle}
+                onStepsChange={setT9Steps}
+                onHashtagChange={setT9Hashtag}
+                onCtaChange={setT9Cta}
+              />
+            )}
+
+            {templateKey === "T10" && (
+              <HookCtaForm
+                hook={t10Hook}
+                body={t10Body}
+                cta={t10Cta}
+                onHookChange={setT10Hook}
+                onBodyChange={setT10Body}
+                onCtaChange={setT10Cta}
               />
             )}
           </Card>
@@ -803,49 +882,6 @@ export default function InstagramGeneratorPage() {
                 )}
               </Button>
 
-              {/* Video Duration Control - Only show when video background is selected */}
-              {backgroundType === "video" && videoUrl && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium">
-                      Video Duration
-                    </label>
-                    <span className="text-sm text-muted-foreground">
-                      {videoDuration}s
-                    </span>
-                  </div>
-                  <Slider
-                    value={[videoDuration]}
-                    onValueChange={(value) => setVideoDuration(value[0])}
-                    min={1}
-                    max={15}
-                    step={1}
-                    className="w-full"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Longer videos may take more time to export
-                  </p>
-                </div>
-              )}
-
-              {/* Progress Bar - Show during export */}
-              {isExporting && exportProgress > 0 && (
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Export Progress</span>
-                    <span className="text-sm text-muted-foreground">
-                      {exportProgress}%
-                    </span>
-                  </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">
-                    <div
-                      className="h-full bg-primary transition-all duration-300"
-                      style={{ width: `${exportProgress}%` }}
-                    />
-                  </div>
-                </div>
-              )}
-
               <Button
                 onClick={handleExport}
                 className="w-full"
@@ -859,9 +895,7 @@ export default function InstagramGeneratorPage() {
                 ) : (
                   <>
                     <Download className="mr-2 h-4 w-4" />
-                    {backgroundType === "video" && videoUrl
-                      ? "Export Video"
-                      : "Export Image"}
+                    Export Image
                   </>
                 )}
               </Button>

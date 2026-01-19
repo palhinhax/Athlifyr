@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
-    const type = searchParams.get("type") as VenueType | null;
+    const types = searchParams.getAll("types");
     const sports = searchParams.getAll("sports");
     const city = searchParams.get("city");
 
@@ -28,9 +28,9 @@ export async function GET(request: NextRequest) {
       ];
     }
 
-    // Type filter
-    if (type && Object.values(VenueType).includes(type)) {
-      where.type = type;
+    // Types filter
+    if (types.length > 0) {
+      where.type = { in: types as VenueType[] };
     }
 
     // Sport type filter

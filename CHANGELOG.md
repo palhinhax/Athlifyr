@@ -1,3 +1,10 @@
+# [9.6.0](https://github.com/palhinhax/Athlifyr/compare/v9.5.1...v9.6.0) (2026-01-19)
+
+### Features
+
+- **venues:** add modern social profile design with cover image ([2d344f2](https://github.com/palhinhax/Athlifyr/commit/2d344f239c9e73f464d92981ba6fd8436925815d))
+- **venues:** add social feed tab to venue profiles ([721af77](https://github.com/palhinhax/Athlifyr/commit/721af7750204332b43e4382edaafd8d6a182b63e))
+
 ## [9.5.1](https://github.com/palhinhax/Athlifyr/compare/v9.5.0...v9.5.1) (2026-01-19)
 
 ### Bug Fixes

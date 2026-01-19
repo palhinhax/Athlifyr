@@ -1,3 +1,9 @@
+# [9.5.0](https://github.com/palhinhax/Athlifyr/compare/v9.4.0...v9.5.0) (2026-01-19)
+
+### Features
+
+- **venues:** allow admins to create venues for other users with ownerId ([3a13e8b](https://github.com/palhinhax/Athlifyr/commit/3a13e8beda1229096a1524acad437fc86aab996e))
+
 # [9.4.0](https://github.com/palhinhax/Athlifyr/compare/v9.3.6...v9.4.0) (2026-01-19)
 
 ### Bug Fixes

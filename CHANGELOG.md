@@ -1,3 +1,14 @@
+# [9.4.0](https://github.com/palhinhax/Athlifyr/compare/v9.3.6...v9.4.0) (2026-01-19)
+
+### Bug Fixes
+
+- **ui:** resolve TypeScript and ESLint errors ([69b804b](https://github.com/palhinhax/Athlifyr/commit/69b804b3870e7c87548f5621f0b56f73b0e9d651))
+
+### Features
+
+- **auth:** restrict venues navigation to admin users ([5c9a090](https://github.com/palhinhax/Athlifyr/commit/5c9a090c6404a9a9f1d557b7666ee047bfb19dc8))
+- **venues:** add complete venues page with filters and map view ([35a071e](https://github.com/palhinhax/Athlifyr/commit/35a071e19492a3a38726d887b3c0ed34d0a1f335))
+
 ## [9.3.6](https://github.com/palhinhax/Athlifyr/compare/v9.3.5...v9.3.6) (2026-01-19)
 
 ### Bug Fixes

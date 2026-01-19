@@ -1,0 +1,217 @@
+"use client";
+
+import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Globe,
+  Instagram,
+  Users,
+  Calendar,
+  Edit,
+} from "lucide-react";
+import { useTranslations } from "next-intl";
+
+interface VenueProfileHeaderProps {
+  venue: {
+    id: string;
+    name: string;
+    type: string;
+    logo: string | null;
+    coverImage: string | null;
+    description: string | null;
+    city: string | null;
+    country: string;
+    address: string | null;
+    phone: string | null;
+    email: string | null;
+    website: string | null;
+    instagram: string | null;
+    members: Array<{
+      id: string;
+      role: string;
+      user: {
+        id: string;
+        name: string;
+        image: string | null;
+      };
+    }>;
+    _count: {
+      sessions: number;
+      bookings: number;
+    };
+  };
+  userId?: string;
+  isOwnerOrAdmin?: boolean;
+}
+
+export function VenueProfileHeader({
+  venue,
+  userId,
+  isOwnerOrAdmin,
+}: VenueProfileHeaderProps) {
+  const t = useTranslations("venues");
+  const tTypes = useTranslations("venues.types");
+  const tInfo = useTranslations("venues.info");
+
+  return (
+    <div className="mb-6 w-full">
+      {/* Cover Image */}
+      <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gradient-to-r from-primary/20 to-primary/10 md:h-64 lg:h-80">
+        {venue.coverImage ? (
+          <Image
+            src={venue.coverImage}
+            alt={`${venue.name} cover`}
+            fill
+            className="object-cover"
+            priority
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <div className="text-center text-muted-foreground">
+              <MapPin className="mx-auto mb-2 h-12 w-12 opacity-50" />
+              <p className="text-sm">{venue.city}</p>
+            </div>
+          </div>
+        )}
+
+        {/* Edit button for owners/admins */}
+        {isOwnerOrAdmin && (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="absolute right-4 top-4"
+          >
+            <Edit className="mr-2 h-4 w-4" />
+            Editar Perfil
+          </Button>
+        )}
+      </div>
+
+      {/* Profile Info Container */}
+      <div className="container mx-auto px-4">
+        <div className="relative -mt-16 md:-mt-20">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
+            {/* Logo */}
+            <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border-4 border-background bg-background shadow-xl md:h-40 md:w-40">
+              {venue.logo ? (
+                <Image
+                  src={venue.logo}
+                  alt={venue.name}
+                  fill
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center bg-primary/10 text-4xl font-bold text-primary md:text-5xl">
+                  {venue.name[0].toUpperCase()}
+                </div>
+              )}
+            </div>
+
+            {/* Name and Type */}
+            <div className="flex-1 pb-4">
+              <div className="mb-2">
+                <h1 className="text-3xl font-bold md:text-4xl">{venue.name}</h1>
+                <span className="mt-2 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+                  {tTypes(venue.type)}
+                </span>
+              </div>
+
+              {/* Location */}
+              {venue.city && (
+                <div className="mb-3 flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-4 w-4" />
+                  <span className="text-sm">
+                    {venue.address && `${venue.address}, `}
+                    {venue.city}, {venue.country}
+                  </span>
+                </div>
+              )}
+
+              {/* Stats */}
+              <div className="flex flex-wrap gap-6">
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-lg font-semibold">
+                      {venue.members.length}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("membership.members")}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5 text-muted-foreground" />
+                  <div>
+                    <p className="text-lg font-semibold">
+                      {venue._count.sessions}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("sessions.title")}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pb-4">
+              {!userId && <Button>{t("signIn")}</Button>}
+              {userId && !isOwnerOrAdmin && (
+                <Button>{t("membership.join")}</Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Contact Links */}
+        <div className="mt-6 flex flex-wrap gap-4 border-b pb-6 text-sm">
+          {venue.phone && (
+            <a
+              href={`tel:${venue.phone}`}
+              className="flex items-center gap-2 transition-colors hover:text-primary"
+            >
+              <Phone className="h-4 w-4" />
+              {venue.phone}
+            </a>
+          )}
+          {venue.email && (
+            <a
+              href={`mailto:${venue.email}`}
+              className="flex items-center gap-2 transition-colors hover:text-primary"
+            >
+              <Mail className="h-4 w-4" />
+              {venue.email}
+            </a>
+          )}
+          {venue.website && (
+            <a
+              href={venue.website}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 transition-colors hover:text-primary"
+            >
+              <Globe className="h-4 w-4" />
+              {tInfo("website")}
+            </a>
+          )}
+          {venue.instagram && (
+            <a
+              href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-2 transition-colors hover:text-primary"
+            >
+              <Instagram className="h-4 w-4" />@
+              {venue.instagram.replace("@", "")}
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

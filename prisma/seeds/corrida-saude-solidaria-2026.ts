@@ -29,8 +29,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Estádio+Universitário+de+Lisboa",
       externalUrl: "https://xistarca.pt/corrida-saude-solidaria-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/corrida-saude-solidaria-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-25T23:59:59.000Z"),
     },
@@ -48,8 +47,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Estádio+Universitário+de+Lisboa",
       externalUrl: "https://xistarca.pt/corrida-saude-solidaria-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/corrida-saude-solidaria-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-25T23:59:59.000Z"),
     },

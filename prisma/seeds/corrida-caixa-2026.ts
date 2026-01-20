@@ -28,8 +28,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Lisboa+Portugal",
       externalUrl: "https://xistarca.pt/corrida-caixa-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/corrida-caixa-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-18T23:59:59.000Z"),
     },
@@ -47,8 +46,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Lisboa+Portugal",
       externalUrl: "https://xistarca.pt/corrida-caixa-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/corrida-caixa-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-18T23:59:59.000Z"),
     },

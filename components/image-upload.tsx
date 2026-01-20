@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useId } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -36,6 +36,16 @@ export function ImageUpload({
     currentImageUrl || null
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // Generate unique ID for this instance to avoid conflicts with multiple ImageUpload components
+  const uniqueId = useId();
+  const inputId = `file-upload-${uniqueId}`;
+
+  // Sync preview with currentImageUrl prop changes
+  useEffect(() => {
+    setPreviewUrl(currentImageUrl || null);
+    setSelectedFile(null);
+  }, [currentImageUrl]);
 
   // Determine max file size based on user role
   // Admins can upload up to 20MB, regular users up to 5MB
@@ -170,9 +180,9 @@ export function ImageUpload({
 
       {/* Upload Controls */}
       <div className="flex gap-2">
-        <label htmlFor="file-upload" className="flex-1">
+        <label htmlFor={inputId} className="flex-1">
           <input
-            id="file-upload"
+            id={inputId}
             type="file"
             accept={acceptedFormats.join(",")}
             onChange={handleFileSelect}
@@ -183,7 +193,7 @@ export function ImageUpload({
             type="button"
             variant="outline"
             className="w-full"
-            onClick={() => document.getElementById("file-upload")?.click()}
+            onClick={() => document.getElementById(inputId)?.click()}
             disabled={isUploading}
           >
             <Upload className="mr-2 h-4 w-4" />

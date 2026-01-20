@@ -1,6 +1,7 @@
 {
   "feed": {
     "title": "Fil d'Activité",
+    "description": "Consultez les dernières mises à jour de votre communauté et événements",
     "emptyTitle": "Fil vide",
     "emptyDescription": "Sois le premier à publier quelque chose ! Partage tes entraînements, réussites ou inscris-toi à des événements.",
     "exploreEvents": "Explorer les Événements",

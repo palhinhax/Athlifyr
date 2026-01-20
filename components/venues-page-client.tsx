@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { VenuesFilters } from "@/components/venues-filters";
 import { VenueCard } from "@/components/venue-card";
@@ -9,7 +9,16 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { VenuesFilters as VenuesFiltersType } from "@/components/venues-filters";
+import { HeroBackground } from "@/components/hero-background";
 import dynamic from "next/dynamic";
+
+// Venue hero images
+const VENUE_HERO_IMAGES = [
+  "/images/venues/venue-1.jpg",
+  "/images/venues/venue-2.jpg",
+  "/images/venues/venue-3.jpg",
+  "/images/venues/venue-4.jpg",
+];
 
 // Dynamically import the map component to avoid SSR issues
 const VenuesMapClient = dynamic(
@@ -72,6 +81,13 @@ export function VenuesPageClient() {
     hasMore: false,
   });
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Random hero image (stable per session)
+  const heroImage = useMemo(() => {
+    return VENUE_HERO_IMAGES[
+      Math.floor(Math.random() * VENUE_HERO_IMAGES.length)
+    ];
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -193,14 +209,11 @@ export function VenuesPageClient() {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-muted/50 py-12">
-        <div className="container mx-auto px-4">
-          <div>
-            <h1 className="mb-2 text-4xl font-bold">{t("title")}</h1>
-            <p className="text-muted-foreground">{t("description")}</p>
-          </div>
-        </div>
-      </section>
+      <HeroBackground
+        image={heroImage}
+        title={t("title")}
+        description={t("description")}
+      />
 
       <section className="container mx-auto px-4 py-8">
         {/* Search Bar */}

@@ -89,20 +89,36 @@ export function VenueProfileHeader({
           <Button
             variant="secondary"
             size="sm"
-            className="absolute right-4 top-4"
+            className="absolute right-4 top-4 z-20"
             onClick={() => setEditModalOpen(true)}
           >
             <Edit className="mr-2 h-4 w-4" />
             {t("editVenue")}
           </Button>
         )}
+
+        {/* Venue Name and Type - Overlaid at bottom of cover, positioned to right of logo */}
+        <div className="absolute bottom-4 left-4 right-4 z-10 flex items-end gap-4 md:gap-6">
+          {/* Spacer for logo (logo will be positioned here via the profile container) */}
+          <div className="h-16 w-32 shrink-0 md:h-20 md:w-40" />
+
+          {/* Name and Badge */}
+          <div className="flex-1">
+            <h1 className="mb-2 text-2xl font-bold text-white drop-shadow-lg [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] md:text-3xl lg:text-4xl">
+              {venue.name}
+            </h1>
+            <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
+              {tTypes(venue.type)}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Profile Info Container */}
       <div className="container mx-auto px-4">
         <div className="relative -mt-16 md:-mt-20">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:gap-6">
-            {/* Logo */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+            {/* Logo - positioned half on cover, half below */}
             <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border-4 border-background bg-background shadow-xl md:h-40 md:w-40">
               {venue.logo ? (
                 <Image
@@ -121,15 +137,8 @@ export function VenueProfileHeader({
               )}
             </div>
 
-            {/* Name and Type */}
-            <div className="flex-1 pb-4">
-              <div className="mb-2">
-                <h1 className="text-3xl font-bold md:text-4xl">{venue.name}</h1>
-                <span className="mt-2 inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
-                  {tTypes(venue.type)}
-                </span>
-              </div>
-
+            {/* Info below cover - Location and Stats */}
+            <div className="flex-1 pt-2 sm:pt-16 md:pt-20">
               {/* Location */}
               {venue.city && (
                 <div className="mb-3 flex items-center gap-2 text-muted-foreground">
@@ -145,7 +154,7 @@ export function VenueProfileHeader({
               <div className="flex flex-wrap gap-6">
                 {/* Members count - only visible to owners/admins */}
                 {isOwnerOrAdmin && (
-                  <div>
+                  <>
                     <div className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-muted-foreground" />
                       <div>
@@ -168,18 +177,20 @@ export function VenueProfileHeader({
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </>
                 )}
               </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-2 pb-4">
-              {!userId && <Button>{t("signIn")}</Button>}
-              {userId && !isOwnerOrAdmin && (
-                <Button>{t("membership.join")}</Button>
-              )}
-            </div>
+            {/* Action Buttons - only show if there are buttons to display */}
+            {(!userId || (userId && !isOwnerOrAdmin)) && (
+              <div className="flex gap-2 pt-2 sm:pt-16 md:pt-20">
+                {!userId && <Button>{t("signIn")}</Button>}
+                {userId && !isOwnerOrAdmin && (
+                  <Button>{t("membership.join")}</Button>
+                )}
+              </div>
+            )}
           </div>
         </div>
 

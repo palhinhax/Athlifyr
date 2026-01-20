@@ -10,8 +10,17 @@ import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import { CreatePost } from "@/components/create-post";
 import { PostCard } from "@/components/post-card";
+import { HeroBackground } from "@/components/hero-background";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+
+// Feed hero images
+const FEED_HERO_IMAGES = [
+  "/images/feed/feed-1.jpg",
+  "/images/feed/feed-2.jpg",
+  "/images/feed/feed-3.jpg",
+  "/images/feed/feed-4.jpg",
+];
 
 // Map locale codes to date-fns locales
 const dateLocales: Record<string, Locale> = {
@@ -226,189 +235,203 @@ export default async function FeedPage({
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
+  // Random hero image
+  const heroImage =
+    FEED_HERO_IMAGES[Math.floor(Math.random() * FEED_HERO_IMAGES.length)];
+
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-3xl">
-        <h1 className="mb-8 text-4xl font-bold">{t("title")}</h1>
+    <div className="min-h-screen">
+      <HeroBackground
+        image={heroImage}
+        title={t("title")}
+        description={t("description")}
+      />
 
-        {/* Create Post */}
-        <div className="mb-6">
-          <CreatePost
-            userImage={currentUser.image}
-            userName={currentUser.name}
-          />
-        </div>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mx-auto max-w-3xl">
+          {/* Create Post */}
+          <div className="mb-6">
+            <CreatePost
+              userImage={currentUser.image}
+              userName={currentUser.name}
+            />
+          </div>
 
-        {/* Activity Feed */}
-        <div className="space-y-4">
-          {activities.length === 0 ? (
-            <Card className="p-12 text-center">
-              <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-              <h3 className="mb-2 text-xl font-semibold">{t("emptyTitle")}</h3>
-              <p className="mb-6 text-muted-foreground">
-                {t("emptyDescription")}
-              </p>
-              <Link href="/events">
-                <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                  {t("exploreEvents")}
-                </button>
-              </Link>
-            </Card>
-          ) : (
-            activities.map((activity, index) => {
-              if (activity.type === "post" && "content" in activity.data) {
-                const postData = activity.data as (typeof recentPosts)[0];
+          {/* Activity Feed */}
+          <div className="space-y-4">
+            {activities.length === 0 ? (
+              <Card className="p-12 text-center">
+                <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-xl font-semibold">
+                  {t("emptyTitle")}
+                </h3>
+                <p className="mb-6 text-muted-foreground">
+                  {t("emptyDescription")}
+                </p>
+                <Link href="/events">
+                  <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                    {t("exploreEvents")}
+                  </button>
+                </Link>
+              </Card>
+            ) : (
+              activities.map((activity, index) => {
+                if (activity.type === "post" && "content" in activity.data) {
+                  const postData = activity.data as (typeof recentPosts)[0];
+                  return (
+                    <PostCard
+                      key={`post-${index}`}
+                      post={{
+                        id: postData.id,
+                        content: postData.content,
+                        imageUrl: postData.imageUrl,
+                        createdAt: activity.date,
+                        userId: postData.userId,
+                        user: postData.user,
+                        event: postData.event,
+                        likesCount: postData._count.likes,
+                        isLikedByUser: postData.likes.length > 0,
+                        commentsCount: postData._count.comments,
+                      }}
+                      currentUserId={session.user.id}
+                      isAdmin={session.user.role === "ADMIN"}
+                    />
+                  );
+                }
+
                 return (
-                  <PostCard
-                    key={`post-${index}`}
-                    post={{
-                      id: postData.id,
-                      content: postData.content,
-                      imageUrl: postData.imageUrl,
-                      createdAt: activity.date,
-                      userId: postData.userId,
-                      user: postData.user,
-                      event: postData.event,
-                      likesCount: postData._count.likes,
-                      isLikedByUser: postData.likes.length > 0,
-                      commentsCount: postData._count.comments,
-                    }}
-                    currentUserId={session.user.id}
-                    isAdmin={session.user.role === "ADMIN"}
-                  />
-                );
-              }
-
-              return (
-                <Card key={`${activity.type}-${index}`} className="p-4">
-                  {activity.type === "comment" ? (
-                    <div className="flex gap-4">
-                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                        {activity.data.user.image ? (
-                          <Image
-                            src={activity.data.user.image}
-                            alt={activity.data.user.name || "User"}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-                            {activity.data.user.name?.[0]?.toUpperCase() || "U"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="mb-1 flex items-center gap-2">
-                          <span className="font-semibold">
-                            {activity.data.user.name}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {t("commentedOn")}
-                          </span>
-                          {activity.data.event && (
-                            <Link
-                              href={`/events/${activity.data.event.slug}`}
-                              className="text-sm font-medium text-primary hover:underline"
-                            >
-                              {activity.data.event.title}
-                            </Link>
+                  <Card key={`${activity.type}-${index}`} className="p-4">
+                    {activity.type === "comment" ? (
+                      <div className="flex gap-4">
+                        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                          {activity.data.user.image ? (
+                            <Image
+                              src={activity.data.user.image}
+                              alt={activity.data.user.name || "User"}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+                              {activity.data.user.name?.[0]?.toUpperCase() ||
+                                "U"}
+                            </div>
                           )}
                         </div>
-                        {"content" in activity.data && (
-                          <>
-                            <p className="mb-2 text-sm text-muted-foreground">
-                              {activity.data.content.slice(0, 150)}
-                              {activity.data.content.length > 150 && "..."}
-                            </p>
-                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                              <span>
-                                {formatDistanceToNow(activity.date, {
-                                  addSuffix: true,
-                                  locale: dateLocale,
-                                })}
-                              </span>
-                              {"replies" in activity.data &&
-                                activity.data.replies.length > 0 && (
+                        <div className="flex-1">
+                          <div className="mb-1 flex items-center gap-2">
+                            <span className="font-semibold">
+                              {activity.data.user.name}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {t("commentedOn")}
+                            </span>
+                            {activity.data.event && (
+                              <Link
+                                href={`/events/${activity.data.event.slug}`}
+                                className="text-sm font-medium text-primary hover:underline"
+                              >
+                                {activity.data.event.title}
+                              </Link>
+                            )}
+                          </div>
+                          {"content" in activity.data && (
+                            <>
+                              <p className="mb-2 text-sm text-muted-foreground">
+                                {activity.data.content.slice(0, 150)}
+                                {activity.data.content.length > 150 && "..."}
+                              </p>
+                              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                <span>
+                                  {formatDistanceToNow(activity.date, {
+                                    addSuffix: true,
+                                    locale: dateLocale,
+                                  })}
+                                </span>
+                                {"replies" in activity.data &&
+                                  activity.data.replies.length > 0 && (
+                                    <span className="flex items-center gap-1">
+                                      <MessageSquare className="h-3 w-3" />
+                                      {activity.data.replies.length}{" "}
+                                      {activity.data.replies.length === 1
+                                        ? t("reply")
+                                        : t("replies")}
+                                    </span>
+                                  )}
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex gap-3 sm:gap-4">
+                        <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+                          {activity.data.user.image ? (
+                            <Image
+                              src={activity.data.user.image}
+                              alt={activity.data.user.name || "User"}
+                              fill
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
+                              {activity.data.user.name?.[0]?.toUpperCase() ||
+                                "U"}
+                            </div>
+                          )}
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                            <span className="font-semibold">
+                              {activity.data.user.name}
+                            </span>
+                            <span className="text-sm text-muted-foreground">
+                              {t("willParticipateIn")}
+                            </span>
+                            {activity.data.event && (
+                              <Link
+                                href={`/events/${activity.data.event.slug}`}
+                                className="text-sm font-medium text-primary hover:underline"
+                              >
+                                {activity.data.event.title}
+                              </Link>
+                            )}
+                          </div>
+                          {"variant" in activity.data && (
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                              {activity.data.variant && (
+                                <span className="flex items-center gap-1">
+                                  <Trophy className="h-3 w-3 flex-shrink-0" />
+                                  <span className="truncate">
+                                    {activity.data.variant.name}
+                                    {activity.data.variant.distanceKm &&
+                                      ` - ${activity.data.variant.distanceKm} km`}
+                                  </span>
+                                </span>
+                              )}
+                              {"startDate" in activity.data.event &&
+                                activity.data.event.startDate && (
                                   <span className="flex items-center gap-1">
-                                    <MessageSquare className="h-3 w-3" />
-                                    {activity.data.replies.length}{" "}
-                                    {activity.data.replies.length === 1
-                                      ? t("reply")
-                                      : t("replies")}
+                                    <Calendar className="h-3 w-3 flex-shrink-0" />
+                                    {formatDate(activity.data.event.startDate)}
                                   </span>
                                 )}
                             </div>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="flex gap-3 sm:gap-4">
-                      <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                        {activity.data.user.image ? (
-                          <Image
-                            src={activity.data.user.image}
-                            alt={activity.data.user.name || "User"}
-                            fill
-                            className="object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-full w-full items-center justify-center text-sm font-medium text-muted-foreground">
-                            {activity.data.user.name?.[0]?.toUpperCase() || "U"}
-                          </div>
-                        )}
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex flex-wrap items-center gap-x-2 gap-y-0.5">
-                          <span className="font-semibold">
-                            {activity.data.user.name}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            {t("willParticipateIn")}
-                          </span>
-                          {activity.data.event && (
-                            <Link
-                              href={`/events/${activity.data.event.slug}`}
-                              className="text-sm font-medium text-primary hover:underline"
-                            >
-                              {activity.data.event.title}
-                            </Link>
                           )}
-                        </div>
-                        {"variant" in activity.data && (
-                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
-                            {activity.data.variant && (
-                              <span className="flex items-center gap-1">
-                                <Trophy className="h-3 w-3 flex-shrink-0" />
-                                <span className="truncate">
-                                  {activity.data.variant.name}
-                                  {activity.data.variant.distanceKm &&
-                                    ` - ${activity.data.variant.distanceKm} km`}
-                                </span>
-                              </span>
-                            )}
-                            {"startDate" in activity.data.event &&
-                              activity.data.event.startDate && (
-                                <span className="flex items-center gap-1">
-                                  <Calendar className="h-3 w-3 flex-shrink-0" />
-                                  {formatDate(activity.data.event.startDate)}
-                                </span>
-                              )}
+                          <div className="mt-1 text-xs text-muted-foreground">
+                            {formatDistanceToNow(activity.date, {
+                              addSuffix: true,
+                              locale: pt,
+                            })}
                           </div>
-                        )}
-                        <div className="mt-1 text-xs text-muted-foreground">
-                          {formatDistanceToNow(activity.date, {
-                            addSuffix: true,
-                            locale: pt,
-                          })}
                         </div>
                       </div>
-                    </div>
-                  )}
-                </Card>
-              );
-            })
-          )}
+                    )}
+                  </Card>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </div>

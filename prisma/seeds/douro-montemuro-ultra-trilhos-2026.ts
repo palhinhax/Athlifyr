@@ -277,6 +277,7 @@ async function main() {
 
   const variants = [
     {
+      slug: "trail-ultra-51k",
       namePt: "DMUT Trail Ultra",
       distanceKm: 51,
       elevationGainM: 2800,
@@ -307,6 +308,7 @@ async function main() {
       },
     },
     {
+      slug: "trail-longo-33k",
       namePt: "DMUT Trail Longo",
       distanceKm: 33,
       elevationGainM: 1750,
@@ -337,6 +339,7 @@ async function main() {
       },
     },
     {
+      slug: "trail-curto-21k",
       namePt: "DMUT Trail Curto",
       distanceKm: 21,
       elevationGainM: 1200,
@@ -367,6 +370,7 @@ async function main() {
       },
     },
     {
+      slug: "mini-trail-12k",
       namePt: "DMUT Mini Trail",
       distanceKm: 12,
       elevationGainM: 650,
@@ -397,6 +401,7 @@ async function main() {
       },
     },
     {
+      slug: "caminhada-12k",
       namePt: "Caminhada DMUT",
       distanceKm: 12,
       elevationGainM: 650,
@@ -429,47 +434,46 @@ async function main() {
   ];
 
   for (const v of variants) {
-    // EventVariant doesn't have a slug field or unique constraint beyond id
-    // Use findFirst + conditional update/create pattern
-    const existing = await prisma.eventVariant.findFirst({
-      where: { eventId: event.id, name: v.namePt },
+    // Try to find existing variant by name and eventId
+    const existingVariant = await prisma.eventVariant.findFirst({
+      where: {
+        eventId: event.id,
+        name: v.namePt,
+      },
     });
 
-    const variant = existing
-      ? await prisma.eventVariant.update({
-          where: { id: existing.id },
-          data: {
-            name: v.namePt,
-            description: v.descriptionPt,
-            distanceKm: v.distanceKm,
-            elevationGainM: v.elevationGainM,
-            elevationLossM: v.elevationLossM,
-            startDate: v.startDate,
-            startTime: v.startTime,
-            maxParticipants: v.maxParticipants,
-            cutoffTimeHours: v.cutoffTimeHours,
-            itraPoints: null,
-            atrpGrade: null,
-            mountainLevel: null,
-          },
-        })
-      : await prisma.eventVariant.create({
-          data: {
-            eventId: event.id,
-            name: v.namePt,
-            description: v.descriptionPt,
-            distanceKm: v.distanceKm,
-            elevationGainM: v.elevationGainM,
-            elevationLossM: v.elevationLossM,
-            startDate: v.startDate,
-            startTime: v.startTime,
-            maxParticipants: v.maxParticipants,
-            cutoffTimeHours: v.cutoffTimeHours,
-            itraPoints: null,
-            atrpGrade: null,
-            mountainLevel: null,
-          },
-        });
+    const variant = await prisma.eventVariant.upsert({
+      where: { id: existingVariant?.id || "new-variant" },
+      update: {
+        name: v.namePt,
+        description: v.descriptionPt,
+        distanceKm: v.distanceKm,
+        elevationGainM: v.elevationGainM,
+        elevationLossM: v.elevationLossM,
+        startDate: v.startDate,
+        startTime: v.startTime,
+        maxParticipants: v.maxParticipants,
+        cutoffTimeHours: v.cutoffTimeHours,
+        itraPoints: null,
+        atrpGrade: null,
+        mountainLevel: null,
+      },
+      create: {
+        eventId: event.id,
+        name: v.namePt,
+        description: v.descriptionPt,
+        distanceKm: v.distanceKm,
+        elevationGainM: v.elevationGainM,
+        elevationLossM: v.elevationLossM,
+        startDate: v.startDate,
+        startTime: v.startTime,
+        maxParticipants: v.maxParticipants,
+        cutoffTimeHours: v.cutoffTimeHours,
+        itraPoints: null,
+        atrpGrade: null,
+        mountainLevel: null,
+      },
+    });
 
     for (const lang of LANGS) {
       await prisma.eventVariantTranslation.upsert({
@@ -496,7 +500,6 @@ async function main() {
       startDate: new Date("2026-01-03T20:00:00Z"),
       endDate: new Date("2026-03-01T23:59:59Z"),
       price: 12,
-      currency: "EUR" as const,
       note: "Preços: Ultra 32€, Longo 25€, Curto 20€, Mini 16€, Caminhada 12€.",
     },
     {
@@ -504,7 +507,6 @@ async function main() {
       startDate: new Date("2026-03-02T00:00:00Z"),
       endDate: new Date("2026-05-03T23:59:59Z"),
       price: 14,
-      currency: "EUR" as const,
       note: "Preços: Ultra 37€, Longo 29€, Curto 24€, Mini 20€, Caminhada 14€.",
     },
     {
@@ -512,43 +514,38 @@ async function main() {
       startDate: new Date("2026-05-04T00:00:00Z"),
       endDate: new Date("2026-05-24T22:59:00Z"),
       price: 16,
-      currency: "EUR" as const,
       note: "Preços: Ultra 42€, Longo 33€, Curto 28€, Mini 24€, Caminhada 16€. Fim das inscrições: 24/05/2026 23:59 (Lisboa).",
     },
   ];
 
-  // PricingPhase does not have a unique constraint - use findFirst + conditional update/create
   for (const p of pricing) {
-    const existing = await prisma.pricingPhase.findFirst({
-      where: { eventId: event.id, name: p.name },
+    // Try to find existing pricing phase by name and eventId
+    const existingPhase = await prisma.pricingPhase.findFirst({
+      where: {
+        eventId: event.id,
+        name: p.name,
+      },
     });
 
-    if (existing) {
-      await prisma.pricingPhase.update({
-        where: { id: existing.id },
-        data: {
-          startDate: p.startDate,
-          endDate: p.endDate,
-          price: p.price,
-          currency: p.currency,
-          discountPercent: null,
-          note: p.note,
-        },
-      });
-    } else {
-      await prisma.pricingPhase.create({
-        data: {
-          eventId: event.id,
-          name: p.name,
-          startDate: p.startDate,
-          endDate: p.endDate,
-          price: p.price,
-          currency: p.currency,
-          discountPercent: null,
-          note: p.note,
-        },
-      });
-    }
+    await prisma.pricingPhase.upsert({
+      where: { id: existingPhase?.id || "new-phase" },
+      update: {
+        startDate: p.startDate,
+        endDate: p.endDate,
+        price: p.price,
+        discountPercent: null,
+        note: p.note,
+      },
+      create: {
+        eventId: event.id,
+        name: p.name,
+        startDate: p.startDate,
+        endDate: p.endDate,
+        price: p.price,
+        discountPercent: null,
+        note: p.note,
+      },
+    });
   }
 
   console.log("✅ Seed concluído:", slug, "->", event.id);

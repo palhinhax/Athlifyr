@@ -76,8 +76,8 @@ export function HeroBackground({
 
       {/* Content */}
       {(title || description || children) && (
-        <div className="container relative z-10 mx-auto px-4">
-          <div className="text-white">
+        <div className="container relative z-10 mx-auto h-full px-4">
+          <div className="flex h-full flex-col text-white">
             {title && (
               <h1 className="mb-2 text-4xl font-bold drop-shadow-lg">
                 {title}

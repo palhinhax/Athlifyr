@@ -38,14 +38,15 @@ export const dynamic = "force-dynamic";
 export default async function VenueDetailPage({
   params,
 }: {
-  params: { slug: string };
+  params: { slug: string; locale: string };
 }) {
   const session = await auth();
-  const { slug } = await Promise.resolve(params);
+  const { slug, locale } = await Promise.resolve(params);
 
   return (
     <VenueDetailClient
       slug={slug}
+      locale={locale}
       userId={session?.user?.id}
       userName={session?.user?.name}
       userImage={session?.user?.image}

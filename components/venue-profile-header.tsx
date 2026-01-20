@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { VenueEditModal } from "@/components/venue-edit-modal";
+import { ShareButton } from "@/components/share-button";
 
 interface VenueProfileHeaderProps {
   venue: {
@@ -49,17 +50,26 @@ interface VenueProfileHeaderProps {
   };
   userId?: string;
   isOwnerOrAdmin?: boolean;
+  slug: string;
+  locale: string;
 }
 
 export function VenueProfileHeader({
   venue,
   userId,
   isOwnerOrAdmin,
+  slug,
+  locale,
 }: VenueProfileHeaderProps) {
   const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
   const tInfo = useTranslations("venues.info");
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Create share URL and description
+  const venueUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com"}/${locale}/venues/${slug}`;
+  const shareDescription =
+    `${venue.description || ""} ${venue.address ? `${venue.address}, ` : ""}${venue.city}, ${venue.country}`.trim();
 
   return (
     <div className="mb-6 w-full">
@@ -84,32 +94,43 @@ export function VenueProfileHeader({
           </div>
         )}
 
-        {/* Edit button for owners/admins */}
-        {isOwnerOrAdmin && (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="absolute right-4 top-4 z-20"
-            onClick={() => setEditModalOpen(true)}
-          >
-            <Edit className="mr-2 h-4 w-4" />
-            {t("editVenue")}
-          </Button>
-        )}
-
         {/* Venue Name and Type - Overlaid at bottom of cover, positioned to right of logo */}
-        <div className="absolute bottom-4 left-4 right-4 z-10 flex items-end gap-4 md:gap-6">
-          {/* Spacer for logo (logo will be positioned here via the profile container) */}
-          <div className="h-16 w-32 shrink-0 md:h-20 md:w-40" />
+        <div className="container absolute bottom-0 left-0 right-0 px-4 pb-6 sm:px-6 sm:pb-8">
+          <div className="mx-auto flex items-end gap-4 md:gap-6">
+            {/* Spacer for logo (logo will be positioned here via the profile container) */}
+            <div className="h-16 w-32 shrink-0 md:h-20 md:w-40" />
 
-          {/* Name and Badge */}
-          <div className="flex-1">
-            <h1 className="mb-2 text-2xl font-bold text-white drop-shadow-lg [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] md:text-3xl lg:text-4xl">
-              {venue.name}
-            </h1>
-            <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
-              {tTypes(venue.type)}
-            </span>
+            {/* Name and Badge */}
+            <div className="flex-1">
+              <h1 className="mb-2 text-2xl font-bold text-white drop-shadow-lg [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] md:text-3xl lg:text-4xl">
+                {venue.name}
+              </h1>
+              <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
+                {tTypes(venue.type)}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Action buttons - Edit and Share */}
+        <div className="container absolute left-0 right-0 top-0 px-4 py-4 sm:px-6">
+          <div className="mx-auto flex items-center justify-end gap-2">
+            {isOwnerOrAdmin && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"
+                onClick={() => setEditModalOpen(true)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                {t("editVenue")}
+              </Button>
+            )}
+            <ShareButton
+              title={venue.name}
+              description={shareDescription}
+              url={venueUrl}
+            />
           </div>
         </div>
       </div>
@@ -138,10 +159,10 @@ export function VenueProfileHeader({
             </div>
 
             {/* Info below cover - Location and Stats */}
-            <div className="flex-1 pt-2 sm:pt-16 md:pt-20">
+            <div className="flex-1 pt-6 sm:pt-16 md:pt-20">
               {/* Location */}
               {venue.city && (
-                <div className="mb-3 flex items-center gap-2 text-muted-foreground">
+                <div className="mb-3 mt-3 flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <span className="text-sm">
                     {venue.address && `${venue.address}, `}
@@ -158,10 +179,10 @@ export function VenueProfileHeader({
                     <div className="flex items-center gap-2">
                       <Users className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="text-lg font-semibold">
+                        <p className="flex justify-center text-lg font-semibold">
                           {venue.members.length}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="flex text-xs text-muted-foreground">
                           {t("membership.members")}
                         </p>
                       </div>
@@ -169,10 +190,10 @@ export function VenueProfileHeader({
                     <div className="flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="text-lg font-semibold">
+                        <p className="flex text-lg font-semibold">
                           {venue._count.sessions}
                         </p>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="flex justify-center text-xs text-muted-foreground">
                           {t("sessions.title")}
                         </p>
                       </div>

@@ -461,7 +461,11 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       {/* Edit Dialog */}
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1 px-2 sm:px-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-1 border-white/20 bg-black/30 px-2 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white sm:px-3"
+          >
             <Pencil className="h-4 w-4" />
             <span className="hidden sm:inline">Editar</span>
           </Button>
@@ -964,7 +968,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
           <Button
             variant="destructive"
             size="sm"
-            className="gap-1 px-2 sm:px-3"
+            className="gap-1 bg-red-600/80 px-2 backdrop-blur-sm hover:bg-red-700/90 sm:px-3"
           >
             <Trash2 className="h-4 w-4" />
             <span className="hidden sm:inline">Eliminar</span>

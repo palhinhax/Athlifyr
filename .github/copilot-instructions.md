@@ -1,4 +1,4 @@
-# GitHub Copilot Instructions - TheBate
+# GitHub Copilot Instructions - Athlifyr
 
 ## Language and Internationalization Requirements
 
@@ -625,3 +625,22 @@ When creating or modifying components, GitHub Copilot **MUST**:
 6. **Prioritize readability** over cleverness - clear code over compact code
 
 **Remember**: Small, focused components are easier to maintain, test, and understand. Always favor modularity over monolithic files.
+
+---
+
+## Database Seeding Instructions
+
+**CRITICAL**: When creating database seed files for events or any data population, **ALWAYS follow the instructions in**:
+
+📄 **`.github/agents/my-agent.agent.md`**
+
+This agent specification contains:
+
+- Complete seed file structure and patterns
+- Multi-language translation requirements (ALL 6 languages)
+- Idempotency rules (safe to run multiple times)
+- Image URL rules and markdown formatting guidelines
+- Proper file location (`/prisma/seeds/`) and naming conventions
+- Step-by-step examples and templates
+
+**Never create seed files without consulting this agent specification first.**

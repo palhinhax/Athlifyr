@@ -52,6 +52,12 @@ importers:
       "@radix-ui/react-tooltip":
         specifier: ^1.2.8
         version: 1.2.8(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      "@stripe/react-stripe-js":
+        specifier: ^5.4.1
+        version: 5.4.1(@stripe/stripe-js@8.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      "@stripe/stripe-js":
+        specifier: ^8.6.3
+        version: 8.6.3
       "@tanstack/react-query":
         specifier: ^5.90.12
         version: 5.90.12(react@18.3.1)
@@ -121,6 +127,9 @@ importers:
       resend:
         specifier: ^6.7.0
         version: 6.7.0
+      stripe:
+        specifier: ^20.2.0
+        version: 20.2.0(@types/node@20.19.25)
       tailwind-merge:
         specifier: ^3.4.0
         version: 3.4.0
@@ -2450,6 +2459,23 @@ packages:
       {
         integrity: sha512-e7Mew686owMaPJVNNLs55PUvgz371nKgwsc4vxE49zsODpJEnxgxRo2y/OKrqueavXgZNMDVj3DdHFlaSAeU8g==,
       }
+
+  "@stripe/react-stripe-js@5.4.1":
+    resolution:
+      {
+        integrity: sha512-ipeYcAHa4EPmjwfv0lFE+YDVkOQ0TMKkFWamW+BqmnSkEln/hO8rmxGPPWcd9WjqABx6Ro8Xg4pAS7evCcR9cw==,
+      }
+    peerDependencies:
+      "@stripe/stripe-js": ">=8.0.0 <9.0.0"
+      react: ">=16.8.0 <20.0.0"
+      react-dom: ">=16.8.0 <20.0.0"
+
+  "@stripe/stripe-js@8.6.3":
+    resolution:
+      {
+        integrity: sha512-MQsPNsMMprOu+p+BWYvD69aPjD52yQNXZaENRQX7IkbWqu7lp9k04D+RPeHWJEsuyzmCCoHx3Kqqf3tcXPoNvQ==,
+      }
+    engines: { node: ">=12.16" }
 
   "@swc/core-darwin-arm64@1.15.3":
     resolution:
@@ -7616,6 +7642,13 @@ packages:
         integrity: sha512-oTUZM/NAZS8p7ANR3SHh30kXB+zK2r2BPcEn/awJIbOvq82WoMN4p62AWWp3Hhw50G0xMsw1mhIBLqHw64EcNQ==,
       }
 
+  qs@6.14.1:
+    resolution:
+      {
+        integrity: sha512-4EK3+xJl8Ts67nLYNwqw/dsFVnCf+qR7RgXSK9jEEm9unao3njwMDdmsdvoKBKHzxd7tCYz5e5M+SnMjdtXGQQ==,
+      }
+    engines: { node: ">=0.6" }
+
   queue-microtask@1.2.3:
     resolution:
       {
@@ -8407,6 +8440,18 @@ packages:
         integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==,
       }
     engines: { node: ">=8" }
+
+  stripe@20.2.0:
+    resolution:
+      {
+        integrity: sha512-m8niTfdm3nPP/yQswRWMwQxqEUcTtB3RTJQ9oo6NINDzgi7aPOadsH/fPXIIfL1Sc5+lqQFKSk7WiO6CXmvaeA==,
+      }
+    engines: { node: ">=16" }
+    peerDependencies:
+      "@types/node": ">=16"
+    peerDependenciesMeta:
+      "@types/node":
+        optional: true
 
   style-to-js@1.1.21:
     resolution:
@@ -10841,6 +10886,15 @@ snapshots:
   "@stablelib/base64@1.0.1": {}
 
   "@standard-schema/utils@0.3.0": {}
+
+  "@stripe/react-stripe-js@5.4.1(@stripe/stripe-js@8.6.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)":
+    dependencies:
+      "@stripe/stripe-js": 8.6.3
+      prop-types: 15.8.1
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  "@stripe/stripe-js@8.6.3": {}
 
   "@swc/core-darwin-arm64@1.15.3":
     optional: true
@@ -14272,6 +14326,10 @@ snapshots:
 
   pure-rand@7.0.1: {}
 
+  qs@6.14.1:
+    dependencies:
+      side-channel: 1.1.0
+
   queue-microtask@1.2.3: {}
 
   rc@1.2.8:
@@ -14838,6 +14896,12 @@ snapshots:
   strip-json-comments@2.0.1: {}
 
   strip-json-comments@3.1.1: {}
+
+  stripe@20.2.0(@types/node@20.19.25):
+    dependencies:
+      qs: 6.14.1
+    optionalDependencies:
+      "@types/node": 20.19.25
 
   style-to-js@1.1.21:
     dependencies:

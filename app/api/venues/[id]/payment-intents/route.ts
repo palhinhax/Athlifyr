@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PaymentProvider } from "@prisma/client";
+import { stripe, toStripeAmount } from "@/lib/stripe";
 
-// POST - Create payment intent for IN_APP payment
+// POST - Create payment intent for IN_APP payment with Stripe
 export async function POST(
   request: Request,
   { params }: { params: { id: string } }
@@ -29,6 +30,12 @@ export async function POST(
     // Get venue and plan
     const venue = await prisma.venue.findUnique({
       where: { id: venueId },
+      select: {
+        id: true,
+        name: true,
+        isActive: true,
+        paymentMode: true,
+      },
     });
 
     if (!venue || !venue.isActive) {
@@ -47,6 +54,13 @@ export async function POST(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
+    if (!plan.price || plan.price <= 0) {
+      return NextResponse.json(
+        { error: "Plan must have a valid price" },
+        { status: 400 }
+      );
+    }
+
     // Check if plan is IN_APP
     if (plan.paymentProvider !== PaymentProvider.IN_APP) {
       return NextResponse.json(
@@ -63,20 +77,46 @@ export async function POST(
       );
     }
 
-    // Create payment intent
+    // Create Stripe Payment Intent
+    const stripePaymentIntent = await stripe.paymentIntents.create({
+      amount: toStripeAmount(plan.price),
+      currency: plan.currency.toLowerCase(),
+      metadata: {
+        venueId,
+        venueName: venue.name,
+        planId,
+        planName: plan.name,
+        userId: session.user.id,
+        userEmail: session.user.email || "",
+        userName: session.user.name || "",
+      },
+      description: `${venue.name} - ${plan.name}`,
+      automatic_payment_methods: {
+        enabled: true,
+      },
+    });
+
+    // Save payment intent to database
     const paymentIntent = await prisma.paymentIntent.create({
       data: {
         venueId,
         userId: session.user.id,
         planId,
-        amount: plan.price || 0,
+        amount: plan.price,
         currency: plan.currency,
         status: "CREATED",
-        provider: "INTERNAL_MVP",
+        provider: "STRIPE",
+        stripePaymentIntentId: stripePaymentIntent.id,
       },
     });
 
-    return NextResponse.json(paymentIntent, { status: 201 });
+    return NextResponse.json(
+      {
+        paymentIntent,
+        clientSecret: stripePaymentIntent.client_secret,
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating payment intent:", error);
     return NextResponse.json(

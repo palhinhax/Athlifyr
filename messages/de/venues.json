@@ -134,6 +134,17 @@
     "sessionsComingSoon": "Sitzungskalender kommt bald",
     "noTeamMembers": "Noch keine Teammitglieder.",
     "noDescription": "Keine Beschreibung verfügbar.",
+    "payment": {
+      "title": "Zahlung",
+      "processing": "Wird verarbeitet...",
+      "pay": "Jetzt Bezahlen",
+      "cancel": "Abbrechen",
+      "success": "Zahlung erfolgreich!",
+      "failed": "Zahlung fehlgeschlagen",
+      "inApp": "In der App Bezahlen",
+      "external": "Vor Ort Bezahlen",
+      "instructions": "Zahlungsanweisungen"
+    },
     "tabs": {
       "about": "Über",
       "feed": "Feed",

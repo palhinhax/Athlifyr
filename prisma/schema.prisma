@@ -752,7 +752,8 @@ model VenuePlan {
   policy Json? // { maxBookingsPerDay, maxBookingsPerWeek, allowedStartTimeFrom, etc. }
 
   // Relations
-  subscriptions VenueSubscription[]
+  subscriptions  VenueSubscription[]
+  paymentIntents PaymentIntent[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -853,11 +854,16 @@ model PaymentIntent {
   userId  String
   user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   planId  String
+  plan    VenuePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
   amount   Float
   currency Currency              @default(EUR)
   status   PaymentIntentStatus   @default(CREATED)
-  provider String                @default("INTERNAL_MVP") // INTERNAL_MVP, STRIPE (future)
+  provider String                @default("INTERNAL_MVP") // INTERNAL_MVP, STRIPE
+
+  // Stripe integration
+  stripePaymentIntentId String? @unique
+  confirmedAt           DateTime?
 
   // Metadata
   metadata Json? // For future extensibility
@@ -870,4 +876,5 @@ model PaymentIntent {
   @@index([planId])
   @@index([status])
   @@index([createdAt])
+  @@index([stripePaymentIntentId])
 }

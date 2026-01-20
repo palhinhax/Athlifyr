@@ -55,6 +55,7 @@ export async function GET(request: Request) {
         email: true,
         image: true,
         role: true,
+        isBanned: true,
         locale: true,
         createdAt: true,
         _count: {

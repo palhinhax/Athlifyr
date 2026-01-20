@@ -135,6 +135,7 @@ model User {
   image               String?
   password            String?
   role                UserRole             @default(USER)
+  isBanned            Boolean              @default(false)
   locale              String               @default("pt") // User's preferred language (pt, en)
   accounts            Account[]
   sessions            Session[]

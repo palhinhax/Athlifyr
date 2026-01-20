@@ -158,18 +158,66 @@ async function main() {
       event: {
         title: "Lisbon Eco Marathon",
         slug: "lisbon-eco-marathon-2026",
-        description:
-          "Maratona ecológica em Monsanto, Lisboa. No pulmão verde da capital.",
+        description: `🌳 **Maratona Eco-Responsável em Lisboa**
+
+A Lisbon Eco Marathon é um evento desportivo eco-responsável que promove a sustentabilidade e o respeito pelo ambiente. Com partida e chegada na **Alameda Cardeal Cerejeira, Parque Eduardo VII**, os percursos atravessam o Parque Florestal de Monsanto.
+
+## 🌍 Compromisso Ambiental
+
+♻️ **Sem lixo** - desqualificação imediata por atirar lixo
+🥤 **Sem copos descartáveis** - traz o teu próprio recipiente reutilizável
+🌿 **Preservação ambiental** obrigatória em todas as zonas de prova
+👥 Limitado a **3.000 participantes** em todas as distâncias
+
+## 🏃 Distâncias Disponíveis
+
+### Maratona 42km
+⏰ Partida: 08:30 | ⏱️ Tempo limite: 6 horas
+📍 Postos: Km 4, 10, 16, 22, 28, 36 e Meta
+
+### Meia Maratona 21km
+⏰ Partida: 09:30 | ⏱️ Tempo limite: 6 horas
+📍 Postos: Km 4, 10, 15 e Meta
+
+### Mini Maratona 13km
+⏰ Partida: 10:00 | ⏱️ Tempo limite: 6 horas
+📍 Postos: Km 7 e Meta
+
+### Caminhada 8km
+⏰ Partida: 10:15 | 👨‍👩‍👧‍👦 Crianças acompanhadas permitidas
+📍 Postos: Km 3.5 e Meta
+
+## 💰 Preços de Inscrição
+
+| Distância | 1ª Fase (Out) | 2ª Fase (Nov-Dez) | 3ª Fase (Jan-Mar) | 4ª Fase (Mar-Abr) |
+|-----------|---------------|-------------------|-------------------|-------------------|
+| **42km**  | 40€           | 45€               | 48€               | 50€               |
+| **21km**  | 18€           | 22€               | 25€               | 30€               |
+| **13km**  | 12€           | 15€               | 17€               | 20€               |
+| **8km**   | 6€            | 7€                | 8€                | 12€               |
+
+💎 **Pack Premium** (+28€): Inclui almoço e massagem desportiva
+
+## 🎁 Kit de Participação
+
+✅ T-shirt técnica do evento
+✅ Dorsal com chip não destacável
+✅ Pulseira para depósito de bagagem
+🏅 Medalha de finisher
+🛡️ Seguro de acidentes pessoais
+
+📅 **Inscrições até:** 5 de abril 2026
+🌐 **Website:** lisbonecomarathon.com`,
         sportTypes: [SportType.RUNNING],
         startDate: new Date("2026-04-12"),
         city: "Lisboa",
         isFeatured: true,
       },
       variants: [
-        { name: "Maratona", distanceKm: 42 },
-        { name: "Meia Maratona", distanceKm: 21 },
-        { name: "Corrida 12K", distanceKm: 12 },
-        { name: "Caminhada", distanceKm: 8 },
+        { name: "Maratona 42km", distanceKm: 42 },
+        { name: "Meia Maratona 21km", distanceKm: 21 },
+        { name: "Mini Maratona 13km", distanceKm: 13 },
+        { name: "Caminhada 8km", distanceKm: 8 },
       ],
     },
     {

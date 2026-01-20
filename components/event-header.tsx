@@ -68,15 +68,16 @@ export function EventHeader({
     <>
       <HeroBackground
         image={imageUrl || "/placeholder-event.jpg"}
-        height="default"
+        height="custom"
+        customHeight="280px"
         clickable={hasImage}
         onImageClick={() => hasImage && setIsLightboxOpen(true)}
         overlayOpacity="medium"
-        className="relative"
+        className="relative flex flex-col"
       >
         {/* Top Navigation Buttons */}
-        <div className="absolute left-0 right-0 top-0 px-4 py-4 sm:px-6">
-          <div className="container mx-auto flex flex-wrap items-center justify-between gap-2">
+        <div className="z-30 px-4 py-4 sm:px-6">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Link href="/events">
               <Button
                 variant="ghost"
@@ -102,22 +103,20 @@ export function EventHeader({
         </div>
 
         {/* Bottom Content - Title and Badges */}
-        <div className="absolute bottom-0 left-0 right-0 px-4 pb-6 sm:px-6 sm:pb-8">
-          <div className="container mx-auto">
-            <div className="mb-3 flex flex-wrap gap-2 sm:mb-4">
-              {sportTypes.map((sportType) => (
-                <SportBadge
-                  key={sportType}
-                  sportType={sportType}
-                  size="lg"
-                  className="shadow-lg"
-                />
-              ))}
-            </div>
-            <h1 className="text-3xl font-bold text-white [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl">
-              {title}
-            </h1>
+        <div className="z-10 mt-auto px-4 pb-6 sm:px-6 sm:pb-8">
+          <div className="mb-3 flex flex-wrap gap-2 sm:mb-4">
+            {sportTypes.map((sportType) => (
+              <SportBadge
+                key={sportType}
+                sportType={sportType}
+                size="lg"
+                className="shadow-lg"
+              />
+            ))}
           </div>
+          <h1 className="text-3xl font-bold text-white [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] sm:text-4xl md:text-5xl">
+            {title}
+          </h1>
         </div>
       </HeroBackground>
 

@@ -49,12 +49,14 @@ interface Venue {
 
 export function VenueDetailClient({
   slug,
+  locale,
   userId,
   userName,
   userImage,
   userRole,
 }: {
   slug: string;
+  locale: string;
   userId?: string;
   userName?: string | null;
   userImage?: string | null;
@@ -142,6 +144,8 @@ export function VenueDetailClient({
         venue={venue}
         userId={userId}
         isOwnerOrAdmin={isOwnerOrAdmin}
+        slug={slug}
+        locale={locale}
       />
 
       {/* Main Content */}

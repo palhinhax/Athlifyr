@@ -1,6 +1,7 @@
 {
   "feed": {
     "title": "Feed de Atividade",
+    "description": "Vê as últimas atualizações da tua comunidade e eventos",
     "emptyTitle": "Feed vazio",
     "emptyDescription": "Sê o primeiro a publicar algo! Partilha os teus treinos, conquistas ou regista-te em eventos.",
     "exploreEvents": "Explorar Eventos",

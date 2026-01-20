@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useId } from "react";
+import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -36,10 +36,6 @@ export function ImageUpload({
     currentImageUrl || null
   );
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-
-  // Generate unique ID for this instance to avoid conflicts with multiple ImageUpload components
-  const uniqueId = useId();
-  const inputId = `file-upload-${uniqueId}`;
 
   // Sync preview with currentImageUrl prop changes
   useEffect(() => {
@@ -180,9 +176,9 @@ export function ImageUpload({
 
       {/* Upload Controls */}
       <div className="flex gap-2">
-        <label htmlFor={inputId} className="flex-1">
+        <label htmlFor="file-upload" className="flex-1">
           <input
-            id={inputId}
+            id="file-upload"
             type="file"
             accept={acceptedFormats.join(",")}
             onChange={handleFileSelect}
@@ -193,7 +189,7 @@ export function ImageUpload({
             type="button"
             variant="outline"
             className="w-full"
-            onClick={() => document.getElementById(inputId)?.click()}
+            onClick={() => document.getElementById("file-upload")?.click()}
             disabled={isUploading}
           >
             <Upload className="mr-2 h-4 w-4" />

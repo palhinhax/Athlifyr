@@ -12,8 +12,6 @@ import {
   Search,
   Trash2,
   ExternalLink,
-  Copy,
-  Check,
 } from "lucide-react";
 
 interface MediaFile {
@@ -54,7 +52,6 @@ export default function MediaManagerPage() {
   const [filterOrphans, setFilterOrphans] = useState(false);
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
-  const [copiedUrl, setCopiedUrl] = useState<string | null>(null);
 
   // Infinite scroll state
   const [displayedFiles, setDisplayedFiles] = useState<MediaFile[]>([]);
@@ -139,17 +136,6 @@ export default function MediaManagerPage() {
         newSet.delete(fileId);
         return newSet;
       });
-    }
-  };
-
-  const handleCopyUrl = async (url: string, fileId: string) => {
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedUrl(fileId);
-      setTimeout(() => setCopiedUrl(null), 2000);
-    } catch (error) {
-      console.error("Failed to copy URL:", error);
-      alert("Erro ao copiar URL");
     }
   };
 
@@ -531,22 +517,8 @@ export default function MediaManagerPage() {
                   size="sm"
                   className="flex-1"
                   onClick={() => window.open(file.url, "_blank")}
-                  title="Abrir imagem"
                 >
                   <ExternalLink className="h-3 w-3" />
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="flex-1"
-                  onClick={() => handleCopyUrl(file.url, file.fileId)}
-                  title="Copiar URL"
-                >
-                  {copiedUrl === file.fileId ? (
-                    <Check className="h-3 w-3 text-green-600" />
-                  ) : (
-                    <Copy className="h-3 w-3" />
-                  )}
                 </Button>
                 {file.isOrphan && (
                   <Button
@@ -554,7 +526,6 @@ export default function MediaManagerPage() {
                     size="sm"
                     onClick={() => handleDeleteFile(file.fileId, file.fileName)}
                     disabled={deletingFiles.has(file.fileId)}
-                    title="Eliminar ficheiro órfão"
                   >
                     {deletingFiles.has(file.fileId) ? (
                       <Loader2 className="h-3 w-3 animate-spin" />

@@ -11,7 +11,6 @@ import {
   Instagram,
   Database,
   Building2,
-  Users,
 } from "lucide-react";
 
 // Lazy load admin components
@@ -20,7 +19,6 @@ const AdminContactsContent = lazy(() => import("./contacts/page"));
 const AdminMediaContent = lazy(() => import("./media/page"));
 const AdminInstagramContent = lazy(() => import("./instagram/page"));
 const AdminVenuesContent = lazy(() => import("./venues/page"));
-const AdminUsersContent = lazy(() => import("./users/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -74,7 +72,7 @@ function AdminContent() {
         className="w-full"
       >
         <div className="mb-6 overflow-x-auto">
-          <TabsList className="flex h-auto w-full flex-nowrap lg:w-auto">
+          <TabsList className="inline-flex h-auto w-full min-w-max flex-nowrap lg:w-auto">
             <TabsTrigger value="events" className="flex-shrink-0 gap-2">
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Eventos</span>
@@ -82,10 +80,6 @@ function AdminContent() {
             <TabsTrigger value="venues" className="flex-shrink-0 gap-2">
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Venues</span>
-            </TabsTrigger>
-            <TabsTrigger value="users" className="flex-shrink-0 gap-2">
-              <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Utilizadores</span>
             </TabsTrigger>
             <TabsTrigger value="contacts" className="flex-shrink-0 gap-2">
               <Mail className="h-4 w-4" />
@@ -123,18 +117,6 @@ function AdminContent() {
             }
           >
             <AdminVenuesContent />
-          </Suspense>
-        </TabsContent>
-
-        <TabsContent value="users">
-          <Suspense
-            fallback={
-              <div className="flex min-h-[400px] items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            }
-          >
-            <AdminUsersContent />
           </Suspense>
         </TabsContent>
 

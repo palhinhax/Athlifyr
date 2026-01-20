@@ -1,6 +1,7 @@
 {
   "feed": {
     "title": "Activity Feed",
+    "description": "See the latest updates from your community and events",
     "emptyTitle": "Empty feed",
     "emptyDescription": "Be the first to post something! Share your workouts, achievements, or register for events.",
     "exploreEvents": "Explore Events",

@@ -3,14 +3,22 @@
 import { useTranslations } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { HeroBackground } from "@/components/hero-background";
 import dynamic from "next/dynamic";
+
+// Event hero images
+const EVENT_HERO_IMAGES = [
+  "/images/events/event-1.jpg",
+  "/images/events/event-2.jpg",
+  "/images/events/event-3.jpg",
+];
 
 // Dynamically import the map component to avoid SSR issues
 const EventsMapClient = dynamic(
@@ -68,6 +76,13 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     hasMore: false,
   });
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Random hero image (stable per session)
+  const heroImage = useMemo(() => {
+    return EVENT_HERO_IMAGES[
+      Math.floor(Math.random() * EVENT_HERO_IMAGES.length)
+    ];
+  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -213,14 +228,11 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
   return (
     <div className="min-h-screen">
-      <section className="bg-muted/50 py-12">
-        <div className="container mx-auto px-4">
-          <div>
-            <h1 className="mb-2 text-4xl font-bold">{t("title")}</h1>
-            <p className="text-muted-foreground">{t("description")}</p>
-          </div>
-        </div>
-      </section>
+      <HeroBackground
+        image={heroImage}
+        title={t("title")}
+        description={t("description")}
+      />
 
       <section className="container mx-auto px-4 py-8">
         {/* Search Bar - Always Visible */}

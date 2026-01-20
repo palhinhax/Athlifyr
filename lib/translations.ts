@@ -1,35 +1,12 @@
-// Import from backup folder (monolithic files kept for compatibility)
-import ptMessages from "@/messages/backup/pt.json";
-import enMessages from "@/messages/backup/en.json";
-import esMessages from "@/messages/backup/es.json";
-import frMessages from "@/messages/backup/fr.json";
-import deMessages from "@/messages/backup/de.json";
-import itMessages from "@/messages/backup/it.json";
+/**
+ * This file is deprecated.
+ * We now use next-intl for translations.
+ * Translation files are located in /messages/{locale}/ folders.
+ */
 
-type Messages = typeof ptMessages;
-
-const messagesMap: Record<string, Messages> = {
-  pt: ptMessages,
-  en: enMessages,
-  es: esMessages,
-  fr: frMessages,
-  de: deMessages,
-  it: itMessages,
-};
-
-export function getTranslations(locale: string = "pt") {
-  const messages: Messages = messagesMap[locale] || ptMessages;
-
+export function getTranslations(_locale: string = "pt") {
+  console.warn("getTranslations is deprecated. Use next-intl instead.");
   return function t(key: string): string {
-    const keys = key.split(".");
-    let value: unknown = messages;
-
-    for (const k of keys) {
-      if (typeof value === "object" && value !== null) {
-        value = (value as Record<string, unknown>)[k];
-      }
-    }
-
-    return typeof value === "string" ? value : key;
+    return key;
   };
 }

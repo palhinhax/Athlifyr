@@ -148,12 +148,22 @@ export function VenueDetailClient({
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
         <Tabs defaultValue="feed" className="w-full">
-          <TabsList>
-            <TabsTrigger value="feed">{t("tabs.feed")}</TabsTrigger>
-            <TabsTrigger value="about">{t("tabs.about")}</TabsTrigger>
-            <TabsTrigger value="plans">{tPlans("title")}</TabsTrigger>
-            <TabsTrigger value="sessions">{t("tabs.sessions")}</TabsTrigger>
-            <TabsTrigger value="team">{t("tabs.team")}</TabsTrigger>
+          <TabsList className="w-full">
+            <TabsTrigger value="feed" className="flex-1">
+              {t("tabs.feed")}
+            </TabsTrigger>
+            <TabsTrigger value="about" className="flex-1">
+              {t("tabs.about")}
+            </TabsTrigger>
+            <TabsTrigger value="plans" className="flex-1">
+              {tPlans("title")}
+            </TabsTrigger>
+            <TabsTrigger value="sessions" className="flex-1">
+              {t("tabs.sessions")}
+            </TabsTrigger>
+            <TabsTrigger value="team" className="flex-1">
+              {t("tabs.team")}
+            </TabsTrigger>
           </TabsList>
 
           {/* Feed Tab */}

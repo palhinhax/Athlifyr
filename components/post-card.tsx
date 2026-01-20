@@ -357,7 +357,6 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
                   console.error("Failed to load image:", post.imageUrl);
                   setImageError(true);
                 }}
-                unoptimized
               />
             ) : (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">

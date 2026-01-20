@@ -14,7 +14,21 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  DEFAULT_PLAN_POLICY,
+  type VenuePlanPolicy,
+  type PlanDuration,
+} from "@/types/venue-plan";
 
 interface VenuePlanModalProps {
   open: boolean;
@@ -26,6 +40,7 @@ interface VenuePlanModalProps {
     description: string | null;
     price: number | null;
     currency: string;
+    policy?: VenuePlanPolicy | null;
   } | null;
   onSuccess: () => void;
 }
@@ -38,6 +53,7 @@ export function VenuePlanModal({
   onSuccess,
 }: VenuePlanModalProps) {
   const t = useTranslations("venues.plans");
+  const tPolicy = useTranslations("venues.plan");
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
@@ -46,7 +62,12 @@ export function VenuePlanModal({
     description: plan?.description || "",
     price: plan?.price?.toString() || "",
     currency: plan?.currency || "EUR",
+    paymentProvider: "IN_APP",
   });
+
+  const [policy, setPolicy] = useState<VenuePlanPolicy>(
+    plan?.policy || DEFAULT_PLAN_POLICY
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +90,8 @@ export function VenuePlanModal({
           description: formData.description || null,
           price: formData.price ? parseFloat(formData.price) : null,
           currency: formData.currency,
+          paymentProvider: formData.paymentProvider,
+          policy: policy,
         }),
       });
 
@@ -99,9 +122,30 @@ export function VenuePlanModal({
     }
   };
 
+  const DAYS_OF_WEEK = [
+    "MONDAY",
+    "TUESDAY",
+    "WEDNESDAY",
+    "THURSDAY",
+    "FRIDAY",
+    "SATURDAY",
+    "SUNDAY",
+  ];
+
+  const toggleDay = (day: string) => {
+    const currentDays = policy.allowedDays || [];
+    const newDays = currentDays.includes(day)
+      ? currentDays.filter((d) => d !== day)
+      : [...currentDays, day];
+    setPolicy({
+      ...policy,
+      allowedDays: newDays.length > 0 ? newDays : undefined,
+    });
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[700px]">
         <DialogHeader>
           <DialogTitle>{plan ? t("editPlan") : t("createPlan")}</DialogTitle>
           <DialogDescription>
@@ -110,68 +154,442 @@ export function VenuePlanModal({
         </DialogHeader>
 
         <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">{t("name")}</Label>
-              <Input
-                id="name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-                placeholder={t("namePlaceholder")}
-                required
-              />
-            </div>
+          <Tabs defaultValue="basic" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="basic">{t("basicInfo")}</TabsTrigger>
+              <TabsTrigger value="policy">{tPolicy("policy")}</TabsTrigger>
+            </TabsList>
 
-            <div className="space-y-2">
-              <Label htmlFor="description">{t("description")}</Label>
-              <Textarea
-                id="description"
-                value={formData.description}
-                onChange={(e) =>
-                  setFormData({ ...formData, description: e.target.value })
-                }
-                placeholder={t("descriptionPlaceholder")}
-                rows={3}
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
+            <TabsContent value="basic" className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="price">{t("price")}</Label>
+                <Label htmlFor="name">{t("name")}</Label>
                 <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
+                  id="name"
+                  value={formData.name}
                   onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
+                    setFormData({ ...formData, name: e.target.value })
                   }
-                  placeholder="0.00"
+                  placeholder={t("namePlaceholder")}
+                  required
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="currency">{t("currency")}</Label>
-                <Input
-                  id="currency"
-                  value={formData.currency}
+                <Label htmlFor="description">{t("description")}</Label>
+                <Textarea
+                  id="description"
+                  value={formData.description}
                   onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      currency: e.target.value.toUpperCase(),
-                    })
+                    setFormData({ ...formData, description: e.target.value })
                   }
-                  placeholder="EUR"
-                  maxLength={3}
+                  placeholder={t("descriptionPlaceholder")}
+                  rows={3}
                 />
               </div>
-            </div>
-          </div>
 
-          <DialogFooter>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="price">{t("price")}</Label>
+                  <Input
+                    id="price"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    placeholder="0.00"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="currency">{t("currency")}</Label>
+                  <Input
+                    id="currency"
+                    value={formData.currency}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        currency: e.target.value.toUpperCase(),
+                      })
+                    }
+                    placeholder="EUR"
+                    maxLength={3}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="paymentProvider">{t("paymentMethod")}</Label>
+                <Select
+                  value={formData.paymentProvider}
+                  onValueChange={(value) =>
+                    setFormData({ ...formData, paymentProvider: value })
+                  }
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={t("selectPaymentMethod")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="IN_APP">
+                      {t("paymentInApp")} (Stripe)
+                    </SelectItem>
+                    <SelectItem value="EXTERNAL">
+                      {t("paymentExternal")}
+                    </SelectItem>
+                    <SelectItem value="BOTH">{t("paymentBoth")}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="policy" className="space-y-6">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="mb-3 text-sm font-medium">
+                    {tPolicy("duration")}
+                  </h3>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="durationType">
+                        {tPolicy("durationType.MONTHLY")}
+                      </Label>
+                      <Select
+                        value={policy.duration}
+                        onValueChange={(value: PlanDuration) =>
+                          setPolicy({ ...policy, duration: value })
+                        }
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="DAILY">
+                            {tPolicy("durationType.DAILY")}
+                          </SelectItem>
+                          <SelectItem value="WEEKLY">
+                            {tPolicy("durationType.WEEKLY")}
+                          </SelectItem>
+                          <SelectItem value="MONTHLY">
+                            {tPolicy("durationType.MONTHLY")}
+                          </SelectItem>
+                          <SelectItem value="QUARTERLY">
+                            {tPolicy("durationType.QUARTERLY")}
+                          </SelectItem>
+                          <SelectItem value="YEARLY">
+                            {tPolicy("durationType.YEARLY")}
+                          </SelectItem>
+                          <SelectItem value="ONE_TIME">
+                            {tPolicy("durationType.ONE_TIME")}
+                          </SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    {policy.duration !== "ONE_TIME" && (
+                      <div className="space-y-2">
+                        <Label htmlFor="durationValue">
+                          {tPolicy("durationValue")}
+                        </Label>
+                        <Input
+                          id="durationValue"
+                          type="number"
+                          min="1"
+                          value={policy.durationValue || 1}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              durationValue: parseInt(e.target.value) || 1,
+                            })
+                          }
+                          placeholder="1"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                          {tPolicy("durationValueHint", {
+                            duration: policy.duration.toLowerCase(),
+                          })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-medium">
+                    {tPolicy("accessLimits")}
+                  </h3>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="maxPerDay">
+                        {tPolicy("maxBookingsPerDay")}
+                      </Label>
+                      <Input
+                        id="maxPerDay"
+                        type="number"
+                        min="0"
+                        value={policy.maxBookingsPerDay || ""}
+                        onChange={(e) =>
+                          setPolicy({
+                            ...policy,
+                            maxBookingsPerDay: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder={tPolicy("unlimited")}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="maxPerWeek">
+                        {tPolicy("maxBookingsPerWeek")}
+                      </Label>
+                      <Input
+                        id="maxPerWeek"
+                        type="number"
+                        min="0"
+                        value={policy.maxBookingsPerWeek || ""}
+                        onChange={(e) =>
+                          setPolicy({
+                            ...policy,
+                            maxBookingsPerWeek: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder={tPolicy("unlimited")}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="maxPerMonth">
+                        {tPolicy("maxBookingsPerMonth")}
+                      </Label>
+                      <Input
+                        id="maxPerMonth"
+                        type="number"
+                        min="0"
+                        value={policy.maxBookingsPerMonth || ""}
+                        onChange={(e) =>
+                          setPolicy({
+                            ...policy,
+                            maxBookingsPerMonth: e.target.value
+                              ? parseInt(e.target.value)
+                              : undefined,
+                          })
+                        }
+                        placeholder={tPolicy("unlimited")}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-medium">
+                    {tPolicy("timeRestrictions")}
+                  </h3>
+
+                  <div className="space-y-3">
+                    <div>
+                      <Label className="mb-2 block">
+                        {tPolicy("allowedDays")}
+                      </Label>
+                      <div className="grid grid-cols-4 gap-2">
+                        {DAYS_OF_WEEK.map((day) => (
+                          <div
+                            key={day}
+                            className="flex items-center space-x-2"
+                          >
+                            <Checkbox
+                              id={day}
+                              checked={(policy.allowedDays || []).includes(day)}
+                              onCheckedChange={() => toggleDay(day)}
+                            />
+                            <label
+                              htmlFor={day}
+                              className="cursor-pointer text-sm"
+                            >
+                              {tPolicy(`daysOfWeek.${day}`)}
+                            </label>
+                          </div>
+                        ))}
+                      </div>
+                      {(!policy.allowedDays ||
+                        policy.allowedDays.length === 0) && (
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          {tPolicy("allDays")}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="timeFrom">
+                          {tPolicy("allowedStartTimeFrom")}
+                        </Label>
+                        <Input
+                          id="timeFrom"
+                          type="time"
+                          value={policy.allowedStartTimeFrom || ""}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              allowedStartTimeFrom: e.target.value || undefined,
+                            })
+                          }
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="timeTo">
+                          {tPolicy("allowedStartTimeTo")}
+                        </Label>
+                        <Input
+                          id="timeTo"
+                          type="time"
+                          value={policy.allowedStartTimeTo || ""}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              allowedStartTimeTo: e.target.value || undefined,
+                            })
+                          }
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="mb-3 text-sm font-medium">
+                    {tPolicy("advancedSettings")}
+                  </h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="advanceBooking"
+                        checked={policy.requiresAdvanceBooking}
+                        onCheckedChange={(checked) =>
+                          setPolicy({
+                            ...policy,
+                            requiresAdvanceBooking: checked === true,
+                          })
+                        }
+                      />
+                      <label
+                        htmlFor="advanceBooking"
+                        className="cursor-pointer text-sm"
+                      >
+                        {tPolicy("requiresAdvanceBooking")}
+                      </label>
+                    </div>
+
+                    {policy.requiresAdvanceBooking && (
+                      <div className="ml-6 space-y-2">
+                        <Label htmlFor="advanceHours">
+                          {tPolicy("advanceBookingHours")}
+                        </Label>
+                        <Input
+                          id="advanceHours"
+                          type="number"
+                          min="1"
+                          value={policy.advanceBookingHours || ""}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              advanceBookingHours:
+                                parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="allowCancel"
+                        checked={policy.allowCancellation}
+                        onCheckedChange={(checked) =>
+                          setPolicy({
+                            ...policy,
+                            allowCancellation: checked === true,
+                          })
+                        }
+                      />
+                      <label
+                        htmlFor="allowCancel"
+                        className="cursor-pointer text-sm"
+                      >
+                        {tPolicy("allowCancellation")}
+                      </label>
+                    </div>
+
+                    {policy.allowCancellation && (
+                      <div className="ml-6 space-y-2">
+                        <Label htmlFor="cancelHours">
+                          {tPolicy("cancellationHours")}
+                        </Label>
+                        <Input
+                          id="cancelHours"
+                          type="number"
+                          min="0"
+                          value={policy.cancellationHours || ""}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              cancellationHours: parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="hasTrial"
+                        checked={policy.hasTrialPeriod}
+                        onCheckedChange={(checked) =>
+                          setPolicy({
+                            ...policy,
+                            hasTrialPeriod: checked === true,
+                          })
+                        }
+                      />
+                      <label
+                        htmlFor="hasTrial"
+                        className="cursor-pointer text-sm"
+                      >
+                        {tPolicy("hasTrialPeriod")}
+                      </label>
+                    </div>
+
+                    {policy.hasTrialPeriod && (
+                      <div className="ml-6 space-y-2">
+                        <Label htmlFor="trialDays">
+                          {tPolicy("trialDays")}
+                        </Label>
+                        <Input
+                          id="trialDays"
+                          type="number"
+                          min="1"
+                          value={policy.trialDays || ""}
+                          onChange={(e) =>
+                            setPolicy({
+                              ...policy,
+                              trialDays: parseInt(e.target.value) || 0,
+                            })
+                          }
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          <DialogFooter className="mt-6">
             <Button
               type="button"
               variant="outline"

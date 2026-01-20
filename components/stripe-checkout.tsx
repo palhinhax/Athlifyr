@@ -35,6 +35,7 @@ export function StripeCheckout({
   onCancel,
 }: StripeCheckoutProps) {
   const [clientSecret, setClientSecret] = useState<string>("");
+  const [paymentIntentId, setPaymentIntentId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -60,6 +61,7 @@ export function StripeCheckout({
 
         const data = await response.json();
         setClientSecret(data.clientSecret);
+        setPaymentIntentId(data.paymentIntent.id); // Save payment intent ID
       } catch (err) {
         console.error("Error creating payment intent:", err);
         setError(
@@ -144,7 +146,11 @@ export function StripeCheckout({
           </div>
         </CardHeader>
         <CardContent>
-          <CheckoutForm onSuccess={onSuccess} onCancel={onCancel} />
+          <CheckoutForm
+            paymentIntentId={paymentIntentId}
+            onSuccess={onSuccess}
+            onCancel={onCancel}
+          />
         </CardContent>
       </Card>
     </Elements>

@@ -112,6 +112,7 @@ enum PaymentMode {
 enum PaymentProvider {
   IN_APP
   EXTERNAL
+  BOTH
 }
 
 enum PaymentStatus {

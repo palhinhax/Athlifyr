@@ -82,7 +82,6 @@ export function VenueProfileHeader({
             fill
             className="object-cover"
             priority
-            unoptimized
             key={venue.coverImage}
           />
         ) : (
@@ -148,7 +147,6 @@ export function VenueProfileHeader({
                   fill
                   className="object-cover"
                   priority
-                  unoptimized
                   key={venue.logo}
                 />
               ) : (

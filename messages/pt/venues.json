@@ -49,7 +49,9 @@
       "PENDING": "Pendente",
       "ACTIVE": "Ativo",
       "SUSPENDED": "Suspenso",
-      "LEFT": "Saiu"
+      "LEFT": "Saiu",
+      "EXPIRED": "Expirado",
+      "CANCELLED": "Cancelado"
     },
     "bookingStatus": {
       "BOOKED": "Reservado",
@@ -86,6 +88,8 @@
     "plans": {
       "title": "Planos",
       "subscribe": "Subscrever",
+      "subscribed": "Subscrito",
+      "validUntil": "Válido até",
       "subscribeTo": "Subscrever",
       "viewPlans": "Ver Planos",
       "managePlans": "Gerir Planos",
@@ -109,10 +113,22 @@
       "planCreatedDescription": "O teu novo plano já está disponível",
       "planUpdated": "Plano atualizado com sucesso",
       "planUpdatedDescription": "O plano foi atualizado",
+      "basicInfo": "Informação Básica",
       "saving": "A guardar...",
       "save": "Guardar",
       "create": "Criar",
-      "cancel": "Cancelar"
+      "cancel": "Cancelar",
+      "delete": "Apagar",
+      "deleting": "A apagar...",
+      "deleteConfirmTitle": "Apagar Plano?",
+      "deleteConfirmDescription": "Tens a certeza que queres apagar este plano? Esta ação não pode ser desfeita. Planos com subscrições ativas não podem ser apagados.",
+      "subscriptionSuccess": "Subscrição Bem-Sucedida!",
+      "subscriptionSuccessDescription": "A tua subscrição foi ativada. Bem-vindo!",
+      "paymentMethod": "Método de Pagamento",
+      "selectPaymentMethod": "Seleciona o método de pagamento",
+      "paymentInApp": "Pagamento na App",
+      "paymentExternal": "Pagamento no Local",
+      "paymentBoth": "Escolha do Utilizador (App ou Local)"
     },
     "sessions": {
       "title": "Sessões",
@@ -157,11 +173,23 @@
       "processing": "A processar...",
       "pay": "Pagar Agora",
       "cancel": "Cancelar",
-      "success": "Pagamento bem-sucedido!",
-      "failed": "Pagamento falhou",
+      "success": "Pagamento efetuado com sucesso!",
+      "failed": "Pagamento falhado",
       "inApp": "Pagar na App",
       "external": "Pagar no Local",
-      "instructions": "Instruções de Pagamento"
+      "instructions": "Instruções de Pagamento",
+      "chooseMethod": "Escolhe o teu método de pagamento:",
+      "inAppDescription": "Paga de forma segura com cartão via Stripe",
+      "externalDescription": "Paga diretamente no local",
+      "onSiteTitle": "Pagamento Presencial Necessário",
+      "onSiteInstructions": "Esta mensalidade requer pagamento diretamente no local. Por favor visita as instalações para completares a tua subscrição.",
+      "onSiteSteps": "Próximos Passos:",
+      "onSiteStep1": "Visita o local pessoalmente",
+      "onSiteStep2": "Fala com o staff sobre este plano de adesão",
+      "onSiteStep3": "Completa o pagamento na receção",
+      "onSiteNote": "A tua adesão será ativada assim que o pagamento for confirmado pelo staff do local.",
+      "goBack": "Voltar",
+      "confirmOnSite": "Compreendo"
     },
     "tabs": {
       "about": "Sobre",
@@ -182,6 +210,48 @@
       "imageUploadError": "Erro ao carregar imagem",
       "updateSuccess": "Local atualizado com sucesso",
       "updateError": "Erro ao atualizar local"
+    },
+    "plan": {
+      "policy": "Política do Plano",
+      "duration": "Duração",
+      "durationType": {
+        "DAILY": "Diário",
+        "WEEKLY": "Semanal",
+        "MONTHLY": "Mensal",
+        "QUARTERLY": "Trimestral",
+        "YEARLY": "Anual",
+        "ONE_TIME": "Acesso Único"
+      },
+      "durationValue": "Valor da Duração",
+      "durationValueHint": "Número de períodos de {duration}",
+      "accessLimits": "Limites de Acesso",
+      "maxBookingsPerDay": "Máx. Visitas por Dia",
+      "maxBookingsPerWeek": "Máx. Visitas por Semana",
+      "maxBookingsPerMonth": "Máx. Visitas por Mês",
+      "unlimited": "Ilimitado",
+      "timeRestrictions": "Restrições de Horário",
+      "allowedDays": "Dias Permitidos",
+      "allowedStartTimeFrom": "Acesso A Partir De",
+      "allowedStartTimeTo": "Acesso Até",
+      "allDays": "Todos os Dias",
+      "advancedSettings": "Definições Avançadas",
+      "requiresAdvanceBooking": "Requer Marcação Antecipada",
+      "advanceBookingHours": "Horas de Antecedência para Marcação",
+      "allowCancellation": "Permitir Cancelamento",
+      "cancellationHours": "Aviso de Cancelamento (horas)",
+      "trialPeriod": "Período Experimental",
+      "hasTrialPeriod": "Incluir Período Experimental",
+      "trialDays": "Dias de Teste",
+      "policyDescription": "Define regras de acesso, limites e restrições para este plano",
+      "daysOfWeek": {
+        "MONDAY": "Segunda-feira",
+        "TUESDAY": "Terça-feira",
+        "WEDNESDAY": "Quarta-feira",
+        "THURSDAY": "Quinta-feira",
+        "FRIDAY": "Sexta-feira",
+        "SATURDAY": "Sábado",
+        "SUNDAY": "Domingo"
+      }
     }
   }
 }

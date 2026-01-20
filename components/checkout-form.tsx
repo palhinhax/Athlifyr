@@ -11,11 +11,16 @@ import { Spinner } from "@/components/ui/spinner";
 import { useTranslations } from "next-intl";
 
 interface CheckoutFormProps {
+  paymentIntentId: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
-export function CheckoutForm({ onSuccess, onCancel }: CheckoutFormProps) {
+export function CheckoutForm({
+  paymentIntentId,
+  onSuccess,
+  onCancel,
+}: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
   const t = useTranslations("venues.payment");
@@ -34,7 +39,7 @@ export function CheckoutForm({ onSuccess, onCancel }: CheckoutFormProps) {
     setErrorMessage(null);
 
     try {
-      const { error } = await stripe.confirmPayment({
+      const { error: paymentError } = await stripe.confirmPayment({
         elements,
         confirmParams: {
           return_url: `${window.location.origin}/payment-success`,
@@ -42,13 +47,33 @@ export function CheckoutForm({ onSuccess, onCancel }: CheckoutFormProps) {
         redirect: "if_required",
       });
 
-      if (error) {
-        setErrorMessage(error.message || "Payment failed");
+      if (paymentError) {
+        setErrorMessage(paymentError.message || "Payment failed");
         setIsProcessing(false);
       } else {
-        // Pagamento bem-sucedido
-        if (onSuccess) {
-          onSuccess();
+        // Pagamento bem-sucedido - criar subscrição
+        try {
+          const confirmResponse = await fetch(
+            `/api/payment-intents/${paymentIntentId}/confirm`,
+            {
+              method: "POST",
+            }
+          );
+
+          if (!confirmResponse.ok) {
+            throw new Error("Failed to activate subscription");
+          }
+
+          // Tudo correu bem
+          if (onSuccess) {
+            onSuccess();
+          }
+        } catch (confirmError) {
+          console.error("Error confirming subscription:", confirmError);
+          setErrorMessage(
+            "Payment successful but subscription activation failed. Please contact support."
+          );
+          setIsProcessing(false);
         }
       }
     } catch (err) {

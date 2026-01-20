@@ -48,7 +48,6 @@ export function UserNav() {
               width={32}
               height={32}
               className="rounded-full"
-              unoptimized
             />
           ) : (
             <User className="h-5 w-5" />

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { calculatePlanEndDate, type VenuePlanPolicy } from "@/types/venue-plan";
 
 // POST - Confirm payment intent (MVP - simulated)
 export async function POST(
@@ -16,12 +17,19 @@ export async function POST(
 
     const intentId = params.id;
 
-    // Get payment intent
+    // Get payment intent with plan policy
     const intent = await prisma.paymentIntent.findUnique({
       where: { id: intentId },
       include: {
         venue: true,
         user: true,
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            policy: true,
+          },
+        },
       },
     });
 
@@ -52,8 +60,18 @@ export async function POST(
       );
     }
 
-    // In MVP, we simulate confirmation
-    // In production, this would integrate with Stripe or other payment provider
+    // Calculate end date based on plan policy
+    const startDate = new Date();
+    let endDate: Date | undefined;
+
+    if (intent.plan?.policy) {
+      const policy = intent.plan.policy as unknown as VenuePlanPolicy;
+      endDate = calculatePlanEndDate(
+        startDate,
+        policy.duration,
+        policy.durationValue
+      );
+    }
 
     // Update payment intent to CONFIRMED
     const updatedIntent = await prisma.paymentIntent.update({
@@ -81,6 +99,8 @@ export async function POST(
           status: "ACTIVE",
           paymentStatus: "PAID",
           paymentConfirmedAt: new Date(),
+          startsAt: startDate,
+          endsAt: endDate,
         },
       });
     } else {
@@ -93,6 +113,8 @@ export async function POST(
           status: "ACTIVE",
           paymentStatus: "PAID",
           paymentConfirmedAt: new Date(),
+          startsAt: startDate,
+          endsAt: endDate,
         },
       });
     }

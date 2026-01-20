@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
-import { Currency, PaymentProvider } from "@prisma/client";
+import { Currency } from "@prisma/client";
 
 // GET - List plans for a venue
 export async function GET(
@@ -78,14 +78,14 @@ export async function POST(
     }
 
     // Validate paymentProvider if provided
-    if (
-      paymentProvider &&
-      !Object.values(PaymentProvider).includes(paymentProvider)
-    ) {
-      return NextResponse.json(
-        { error: "Invalid payment provider" },
-        { status: 400 }
-      );
+    if (paymentProvider) {
+      const validProviders = ["IN_APP", "EXTERNAL", "BOTH"];
+      if (!validProviders.includes(paymentProvider)) {
+        return NextResponse.json(
+          { error: "Invalid payment provider" },
+          { status: 400 }
+        );
+      }
     }
 
     // Get venue to check paymentMode
@@ -112,12 +112,12 @@ export async function POST(
     let finalPaymentProvider = paymentProvider;
     if (!finalPaymentProvider) {
       if (venue.paymentMode === "IN_APP") {
-        finalPaymentProvider = PaymentProvider.IN_APP;
+        finalPaymentProvider = "IN_APP";
       } else if (venue.paymentMode === "EXTERNAL") {
-        finalPaymentProvider = PaymentProvider.EXTERNAL;
+        finalPaymentProvider = "EXTERNAL";
       } else {
         // MIXED - default to IN_APP if not specified
-        finalPaymentProvider = PaymentProvider.IN_APP;
+        finalPaymentProvider = "IN_APP";
       }
     }
 

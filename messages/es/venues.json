@@ -134,6 +134,17 @@
     "sessionsComingSoon": "Calendario de sesiones próximamente",
     "noTeamMembers": "Todavía no hay miembros del equipo.",
     "noDescription": "Sin descripción disponible.",
+    "payment": {
+      "title": "Pago",
+      "processing": "Procesando...",
+      "pay": "Pagar Ahora",
+      "cancel": "Cancelar",
+      "success": "¡Pago exitoso!",
+      "failed": "Pago fallido",
+      "inApp": "Pagar en App",
+      "external": "Pagar en el Local",
+      "instructions": "Instrucciones de Pago"
+    },
     "tabs": {
       "about": "Acerca de",
       "feed": "Feed",

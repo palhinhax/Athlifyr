@@ -134,6 +134,17 @@
     "sessionsComingSoon": "Sessions calendar coming soon",
     "noTeamMembers": "No team members yet.",
     "noDescription": "No description available.",
+    "payment": {
+      "title": "Payment",
+      "processing": "Processing...",
+      "pay": "Pay Now",
+      "cancel": "Cancel",
+      "success": "Payment successful!",
+      "failed": "Payment failed",
+      "inApp": "Pay in App",
+      "external": "Pay at Venue",
+      "instructions": "Payment Instructions"
+    },
     "tabs": {
       "about": "About",
       "feed": "Feed",

@@ -86,6 +86,7 @@
     "plans": {
       "title": "Forfaits",
       "subscribe": "S'abonner",
+      "subscribeTo": "S'abonner à",
       "viewPlans": "Voir les Forfaits",
       "managePlans": "Gérer les Forfaits",
       "createPlan": "Créer un Forfait",

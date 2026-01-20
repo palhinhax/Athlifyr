@@ -164,34 +164,18 @@
     "openInGoogleMaps": "Apri in Google Maps",
     "filters": {
       "title": "Filtri",
-      "sports": "Sport",
-      "allSports": "Tutti gli Sport",
-      "selectSports": "Seleziona gli sport da filtrare",
-      "dateRange": "Periodo",
-      "allDates": "Tutte le Date",
-      "next7Days": "Prossimi 7 Giorni",
-      "next30Days": "Prossimi 30 Giorni",
-      "next3Months": "Prossimi 3 Mesi",
-      "next6Months": "Prossimi 6 Mesi",
-      "distance": "Distanza",
-      "radius": "Raggio",
-      "nearMe": "Vicino a Me",
-      "enableLocation": "Attiva Posizione",
-      "disableLocation": "Disattiva Posizione",
-      "within25km": "Entro 25 km",
-      "within50km": "Entro 50 km",
-      "within100km": "Entro 100 km",
-      "within200km": "Entro 200 km",
-      "allDistances": "Tutte le Distanze",
-      "search": "Cerca",
-      "searchPlaceholder": "Cerca eventi...",
-      "applyFilters": "Applica Filtri",
-      "clearFilters": "Cancella Filtri",
+      "locationFilter": "Filtro Posizione",
       "resultsCount": "{count} eventi trovati",
       "noResults": "Nessun evento trovato con i filtri attuali",
+      "searchPlaceholder": "Cerca eventi...",
       "searchingGlobally": "Ricerca in tutti gli eventi...",
-      "locationError": "Impossibile ottenere la posizione",
-      "locationPermissionDenied": "Autorizzazione alla posizione negata"
+      "enabled": "Attivato",
+      "disabled": "Disattivato",
+      "radius": "Raggio: {distance} km",
+      "clearAll": "Cancella Tutto",
+      "apply": "Applica",
+      "locationNotSupported": "La geolocalizzazione non è supportata dal tuo browser",
+      "locationError": "Impossibile ottenere la tua posizione"
     },
     "sharePost": "Condividi qualcosa sull'evento...",
     "sharePostFeed": "A cosa stai pensando? Condividi allenamenti, risultati o consigli...",
@@ -268,14 +252,6 @@
           "MIXED": "Misto"
         }
       }
-    },
-    "filters": {
-      "title": "Filtri",
-      "locationFilter": "Filtro Posizione",
-      "resultsCount": "{count} eventi trovati",
-      "noResults": "Nessun evento trovato con i filtri attuali",
-      "searchPlaceholder": "Cerca eventi...",
-      "searchingGlobally": "Ricerca in tutti gli eventi..."
     }
   },
   "eventsPage": {

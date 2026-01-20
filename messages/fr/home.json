@@ -1,0 +1,40 @@
+{
+  "home": {
+    "heroTitle": "Tous les événements sportifs.",
+    "heroTitleHighlight": "En un seul endroit.",
+    "heroDescription": "Trouvez des courses, compétitions et défis près de chez vous.",
+    "heroDescriptionCountry": "Découvrez les meilleurs événements sportifs en {country}.",
+    "upcomingEventsTitle": "Événements à Venir en {country}",
+    "seeAll": "Voir Tout →",
+    "noUpcomingEventsTitle": "Aucun événement à venir en {country}",
+    "noUpcomingEventsDescription": "Nous n'avons trouvé aucun événement futur dans votre région. Essayez d'explorer d'autres pays !",
+    "exploreAllEvents": "Explorer Tous les Événements",
+    "ctaTitle": "Prêt à trouver votre prochain défi ?",
+    "ctaDescription": "Parcourez tous les événements disponibles et trouvez la course ou compétition parfaite pour vous."
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Tous les événements sportifs en un seul endroit.",
+    "featuresTitle": "Fonctionnalités",
+    "features": {
+      "nearYou": "Événements près de chez vous",
+      "filters": "Filtrer par sport et date",
+      "details": "Détails et liens d'inscription directs",
+      "favorites": "Enregistrer les favoris",
+      "share": "Partager avec des amis"
+    },
+    "ctaTitle": "Trouvez votre prochain défi",
+    "ctaSubtitle": "Explorez • filtrez • enregistrez • partagez",
+    "slogan": "one place. all sports.",
+    "playVideo": "Lire la vidéo",
+    "videoLoadError": "Impossible de charger la vidéo"
+  },
+  "notFound": {
+    "title": "Page Non Trouvée",
+    "code": "404",
+    "description": "Oups ! La page que vous recherchez n'existe pas.",
+    "suggestion": "Elle a peut-être été déplacée ou supprimée. Remettons-vous sur la bonne voie.",
+    "backHome": "Retour à l'accueil",
+    "browseEvents": "Parcourir les Événements"
+  }
+}

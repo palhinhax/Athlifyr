@@ -1,0 +1,51 @@
+{
+  "common": {
+    "appName": "Athlifyr",
+    "loading": "Caricamento...",
+    "error": "Errore",
+    "success": "Successo",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "delete": "Elimina",
+    "edit": "Modifica",
+    "back": "Indietro",
+    "next": "Avanti",
+    "submit": "Invia",
+    "search": "Cerca",
+    "filter": "Filtra",
+    "close": "Chiudi",
+    "showMore": "Mostra di più",
+    "showLess": "Mostra meno"
+  },
+  "upload": {
+    "uploadImage": "Carica Immagine",
+    "chooseImage": "Scegli Immagine",
+    "uploading": "Caricamento...",
+    "noImageSelected": "Nessuna immagine selezionata",
+    "invalidFileType": "Tipo di file non valido",
+    "invalidFileTypeDesc": "Solo file {formats} sono consentiti",
+    "fileTooLarge": "File troppo grande",
+    "fileTooLargeDesc": "La dimensione del file deve essere inferiore a {size}MB",
+    "noFileSelected": "Nessun file selezionato",
+    "noFileSelectedDesc": "Seleziona un'immagine da caricare",
+    "uploadFailed": "Caricamento fallito",
+    "uploadFailedDesc": "Errore nel caricamento dell'immagine",
+    "uploadSuccess": "Immagine caricata con successo!",
+    "maxFileSize": "Dimensione massima: {size}MB",
+    "adminLimit": "(Limite admin)",
+    "supportedFormats": "Formati supportati: {formats}"
+  },
+  "sports": {
+    "RUNNING": "Corsa",
+    "TRAIL": "Trail",
+    "HYROX": "HYROX",
+    "CROSSFIT": "Cross Training",
+    "OCR": "OCR",
+    "BTT": "Mountain Bike",
+    "CYCLING": "Ciclismo",
+    "SURF": "Surf",
+    "TRIATHLON": "Triathlon",
+    "SWIMMING": "Nuoto",
+    "OTHER": "Altri"
+  }
+}

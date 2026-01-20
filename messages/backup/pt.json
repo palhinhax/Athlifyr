@@ -244,7 +244,14 @@
       "resultsCount": "{count} eventos encontrados",
       "noResults": "Nenhum evento encontrado com os filtros atuais",
       "searchPlaceholder": "Pesquisar eventos...",
-      "searchingGlobally": "A pesquisar em todos os eventos..."
+      "searchingGlobally": "A pesquisar em todos os eventos...",
+      "enabled": "Ativado",
+      "disabled": "Desativado",
+      "radius": "Raio: {distance} km",
+      "clearAll": "Limpar Tudo",
+      "apply": "Aplicar",
+      "locationNotSupported": "A geolocalização não é suportada pelo teu navegador",
+      "locationError": "Não foi possível obter a tua localização"
     }
   },
   "eventsPage": {

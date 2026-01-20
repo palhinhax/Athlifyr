@@ -1,0 +1,40 @@
+{
+  "home": {
+    "heroTitle": "Todos os eventos desportivos.",
+    "heroTitleHighlight": "Num só lugar.",
+    "heroDescription": "Encontra corridas, competições e desafios perto de ti.",
+    "heroDescriptionCountry": "Descobre os melhores eventos desportivos em {country}.",
+    "upcomingEventsTitle": "Próximos Eventos em {country}",
+    "seeAll": "Ver Todos →",
+    "noUpcomingEventsTitle": "Sem eventos próximos em {country}",
+    "noUpcomingEventsDescription": "Não encontrámos eventos futuros na tua região. Tenta explorar outros países!",
+    "exploreAllEvents": "Explorar Todos os Eventos",
+    "ctaTitle": "Pronto para encontrar o teu próximo desafio?",
+    "ctaDescription": "Explora todos os eventos disponíveis e encontra a corrida ou competição perfeita para ti."
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Todos os eventos desportivos num só lugar.",
+    "featuresTitle": "Funcionalidades",
+    "features": {
+      "nearYou": "Eventos perto de ti",
+      "filters": "Filtros por desporto e data",
+      "details": "Detalhes e links diretos para inscrição",
+      "favorites": "Guardar favoritos",
+      "share": "Partilhar com amigos"
+    },
+    "ctaTitle": "Encontra o teu próximo desafio",
+    "ctaSubtitle": "Explora • filtra • guarda • partilha",
+    "slogan": "one place. all sports.",
+    "playVideo": "Tocar vídeo",
+    "videoLoadError": "Não foi possível carregar o vídeo"
+  },
+  "notFound": {
+    "title": "Página Não Encontrada",
+    "code": "404",
+    "description": "Ups! A página que procuras não existe.",
+    "suggestion": "Pode ter sido movida ou eliminada. Vamos colocar-te de volta no caminho certo.",
+    "backHome": "Voltar ao Início",
+    "browseEvents": "Ver Eventos"
+  }
+}

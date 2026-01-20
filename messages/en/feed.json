@@ -1,0 +1,16 @@
+{
+  "feed": {
+    "title": "Activity Feed",
+    "emptyTitle": "Empty feed",
+    "emptyDescription": "Be the first to post something! Share your workouts, achievements, or register for events.",
+    "exploreEvents": "Explore Events",
+    "noPosts": "No posts yet",
+    "beFirstToPost": "Be the first to share something!",
+    "commentedOn": "commented on",
+    "willParticipateIn": "will participate in",
+    "reply": "reply",
+    "replies": "replies",
+    "loadingMore": "Loading more posts...",
+    "allPostsLoaded": "All posts loaded"
+  }
+}

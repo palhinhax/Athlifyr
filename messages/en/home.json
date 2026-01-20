@@ -1,0 +1,40 @@
+{
+  "home": {
+    "heroTitle": "All sports events.",
+    "heroTitleHighlight": "One place.",
+    "heroDescription": "Find races, competitions and challenges near you.",
+    "heroDescriptionCountry": "Discover the best sports events in {country}.",
+    "upcomingEventsTitle": "Upcoming Events in {country}",
+    "seeAll": "See All →",
+    "noUpcomingEventsTitle": "No upcoming events in {country}",
+    "noUpcomingEventsDescription": "We couldn't find any future events in your region. Try exploring other countries!",
+    "exploreAllEvents": "Explore All Events",
+    "ctaTitle": "Ready to find your next challenge?",
+    "ctaDescription": "Browse all available events and find the perfect race or competition for you."
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "All sports events in one place.",
+    "featuresTitle": "Features",
+    "features": {
+      "nearYou": "Events near you",
+      "filters": "Filter by sport and date",
+      "details": "Details and direct registration links",
+      "favorites": "Save favorites",
+      "share": "Share with friends"
+    },
+    "ctaTitle": "Find your next challenge",
+    "ctaSubtitle": "Explore • filter • save • share",
+    "slogan": "one place. all sports.",
+    "playVideo": "Play Video",
+    "videoLoadError": "Video could not be loaded"
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "code": "404",
+    "description": "Oops! The page you're looking for doesn't exist.",
+    "suggestion": "It might have been moved or deleted. Let's get you back on track.",
+    "backHome": "Back to Home",
+    "browseEvents": "Browse Events"
+  }
+}

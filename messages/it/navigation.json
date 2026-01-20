@@ -1,0 +1,33 @@
+{
+  "nav": {
+    "events": "Eventi",
+    "venues": "Venues",
+    "map": "Mappa",
+    "feed": "Feed",
+    "profile": "Profilo",
+    "settings": "Impostazioni",
+    "admin": "Admin",
+    "signIn": "Accedi",
+    "signOut": "Esci",
+    "contact": "Contatto",
+    "contacts": "Contatti",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "socialMedia": "Social Media",
+    "filterBySport": "Filtra per sport:",
+    "accountSettings": "Impostazioni Account",
+    "manageEvents": "Gestisci Eventi",
+    "instagramGenerator": "Generatore Instagram & TikTok",
+    "adminContacts": "Contatti Admin",
+    "openMenu": "Apri menu",
+    "closeMenu": "Chiudi menu",
+    "all": "Tutti"
+  },
+  "footer": {
+    "privacy": "Privacy",
+    "terms": "Termini",
+    "cookies": "Cookie",
+    "contact": "Contatto",
+    "allRightsReserved": "© {year} Athlifyr. Tutti i diritti riservati."
+  }
+}

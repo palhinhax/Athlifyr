@@ -1,0 +1,51 @@
+{
+  "common": {
+    "appName": "Athlifyr",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit",
+    "search": "Search",
+    "filter": "Filter",
+    "close": "Close",
+    "showMore": "Show more",
+    "showLess": "Show less"
+  },
+  "upload": {
+    "uploadImage": "Upload Image",
+    "chooseImage": "Choose Image",
+    "uploading": "Uploading...",
+    "noImageSelected": "No image selected",
+    "invalidFileType": "Invalid file type",
+    "invalidFileTypeDesc": "Only {formats} files are allowed",
+    "fileTooLarge": "File too large",
+    "fileTooLargeDesc": "File size must be less than {size}MB",
+    "noFileSelected": "No file selected",
+    "noFileSelectedDesc": "Please select an image to upload",
+    "uploadFailed": "Upload failed",
+    "uploadFailedDesc": "Failed to upload image",
+    "uploadSuccess": "Image uploaded successfully!",
+    "maxFileSize": "Max file size: {size}MB",
+    "adminLimit": "(Admin limit)",
+    "supportedFormats": "Supported formats: {formats}"
+  },
+  "sports": {
+    "RUNNING": "Running",
+    "TRAIL": "Trail",
+    "HYROX": "HYROX",
+    "CROSSFIT": "Cross Training",
+    "OCR": "OCR",
+    "BTT": "Mountain Bike",
+    "CYCLING": "Cycling",
+    "SURF": "Surf",
+    "TRIATHLON": "Triathlon",
+    "SWIMMING": "Swimming",
+    "OTHER": "Other"
+  }
+}

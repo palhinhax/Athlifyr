@@ -1,9 +1,10 @@
-import ptMessages from "@/messages/pt.json";
-import enMessages from "@/messages/en.json";
-import esMessages from "@/messages/es.json";
-import frMessages from "@/messages/fr.json";
-import deMessages from "@/messages/de.json";
-import itMessages from "@/messages/it.json";
+// Import from backup folder (monolithic files kept for compatibility)
+import ptMessages from "@/messages/backup/pt.json";
+import enMessages from "@/messages/backup/en.json";
+import esMessages from "@/messages/backup/es.json";
+import frMessages from "@/messages/backup/fr.json";
+import deMessages from "@/messages/backup/de.json";
+import itMessages from "@/messages/backup/it.json";
 
 type Messages = typeof ptMessages;
 

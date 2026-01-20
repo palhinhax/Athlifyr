@@ -1,0 +1,16 @@
+{
+  "feed": {
+    "title": "Fil d'Activité",
+    "emptyTitle": "Fil vide",
+    "emptyDescription": "Sois le premier à publier quelque chose ! Partage tes entraînements, réussites ou inscris-toi à des événements.",
+    "exploreEvents": "Explorer les Événements",
+    "noPosts": "Pas encore de publications",
+    "beFirstToPost": "Soyez le premier à partager quelque chose !",
+    "commentedOn": "a commenté sur",
+    "willParticipateIn": "participera à",
+    "reply": "réponse",
+    "replies": "réponses",
+    "loadingMore": "Chargement de plus de publications...",
+    "allPostsLoaded": "Toutes les publications chargées"
+  }
+}

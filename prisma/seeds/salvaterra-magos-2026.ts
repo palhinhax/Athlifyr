@@ -28,8 +28,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Largo+dos+Combatentes+Salvaterra+de+Magos",
       externalUrl: "https://xistarca.pt/salvaterra-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/salvaterra-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-03-21T23:59:59.000Z"),
     },
@@ -47,8 +46,7 @@ async function main() {
       googleMapsUrl:
         "https://www.google.com/maps/search/?api=1&query=Largo+dos+Combatentes+Salvaterra+de+Magos",
       externalUrl: "https://xistarca.pt/salvaterra-2026",
-      imageUrl:
-        "https://xistarca.pt/wp-content/uploads/2025/salvaterra-2026.jpg",
+      imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-03-21T23:59:59.000Z"),
     },

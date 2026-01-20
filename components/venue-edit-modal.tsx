@@ -169,7 +169,6 @@ export function VenueEditModal({
                     width={80}
                     height={80}
                     className="h-20 w-20 rounded-lg object-cover"
-                    unoptimized
                     key={formData.logo}
                   />
                   <Button
@@ -208,7 +207,6 @@ export function VenueEditModal({
                     <Image
                       src={formData.coverImage}
                       alt="Cover"
-                      unoptimized
                       key={formData.coverImage}
                       fill
                       className="object-cover"

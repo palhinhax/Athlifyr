@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PaymentProvider } from "@prisma/client";
 import { stripe, toStripeAmount } from "@/lib/stripe";
 
 // POST - Create payment intent for IN_APP payment with Stripe
@@ -61,8 +60,22 @@ export async function POST(
       );
     }
 
-    // Check if plan is IN_APP
-    if (plan.paymentProvider !== PaymentProvider.IN_APP) {
+    // Debug log to help diagnose paymentProvider issues
+    console.log("Payment Intent Debug:", {
+      planId,
+      planName: plan.name,
+      paymentProvider: plan.paymentProvider,
+      paymentProviderType: typeof plan.paymentProvider,
+      venuePaymentMode: venue.paymentMode,
+    });
+
+    // Check if plan supports IN_APP payments (IN_APP or BOTH)
+    if (plan.paymentProvider !== "IN_APP" && plan.paymentProvider !== "BOTH") {
+      console.error("Payment provider validation failed:", {
+        planId,
+        paymentProvider: plan.paymentProvider,
+        expected: "IN_APP or BOTH",
+      });
       return NextResponse.json(
         { error: "Plan does not support IN_APP payments" },
         { status: 400 }

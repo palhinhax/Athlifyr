@@ -49,7 +49,9 @@
       "PENDING": "En Attente",
       "ACTIVE": "Actif",
       "SUSPENDED": "Suspendu",
-      "LEFT": "Parti"
+      "LEFT": "Parti",
+      "EXPIRED": "Expiré",
+      "CANCELLED": "Annulé"
     },
     "bookingStatus": {
       "BOOKED": "Réservé",
@@ -86,6 +88,8 @@
     "plans": {
       "title": "Forfaits",
       "subscribe": "S'abonner",
+      "subscribed": "Abonné",
+      "validUntil": "Valable jusqu'au",
       "subscribeTo": "S'abonner à",
       "viewPlans": "Voir les Forfaits",
       "managePlans": "Gérer les Forfaits",
@@ -95,7 +99,36 @@
       "price": "Prix",
       "perMonth": "par mois",
       "unlimited": "Accès Illimité",
-      "limited": "Accès Limité"
+      "limited": "Accès Limité",
+      "name": "Nom",
+      "description": "Description",
+      "currency": "Devise",
+      "namePlaceholder": "ex : Abonnement Mensuel",
+      "descriptionPlaceholder": "Brève description de ce qui est inclus",
+      "createPlanDescription": "Remplissez les détails pour créer un nouveau forfait",
+      "createFirstPlan": "Cliquez sur 'Créer un Forfait' pour ajouter votre premier forfait d'adhésion",
+      "editPlanDescription": "Mettre à jour les détails du forfait",
+      "edit": "Modifier",
+      "planCreated": "Forfait créé avec succès",
+      "planCreatedDescription": "Votre nouveau forfait est maintenant disponible",
+      "planUpdated": "Forfait mis à jour avec succès",
+      "planUpdatedDescription": "Le forfait a été mis à jour",
+      "basicInfo": "Informations de Base",
+      "saving": "Enregistrement...",
+      "save": "Enregistrer",
+      "create": "Créer",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleting": "Suppression...",
+      "deleteConfirmTitle": "Supprimer le Forfait ?",
+      "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer ce forfait ? Cette action ne peut pas être annulée. Les forfaits avec des abonnements actifs ne peuvent pas être supprimés.",
+      "subscriptionSuccess": "Abonnement Réussi !",
+      "subscriptionSuccessDescription": "Votre abonnement a été activé. Bienvenue !",
+      "paymentMethod": "Méthode de Paiement",
+      "selectPaymentMethod": "Sélectionnez la méthode de paiement",
+      "paymentInApp": "Paiement dans l'App",
+      "paymentExternal": "Paiement sur Place",
+      "paymentBoth": "Choix de l'Utilisateur (App ou sur Place)"
     },
     "sessions": {
       "title": "Séances",
@@ -144,7 +177,19 @@
       "failed": "Paiement échoué",
       "inApp": "Payer dans l'App",
       "external": "Payer sur Place",
-      "instructions": "Instructions de Paiement"
+      "instructions": "Instructions de Paiement",
+      "chooseMethod": "Choisissez votre méthode de paiement :",
+      "inAppDescription": "Payez en toute sécurité par carte via Stripe",
+      "externalDescription": "Payez directement sur place",
+      "onSiteTitle": "Paiement sur Place Requis",
+      "onSiteInstructions": "Cette adhésion nécessite un paiement directement sur place. Veuillez vous rendre dans les installations pour finaliser votre abonnement.",
+      "onSiteSteps": "Prochaines Étapes :",
+      "onSiteStep1": "Rendez-vous sur place en personne",
+      "onSiteStep2": "Discutez avec le personnel de ce plan d'adhésion",
+      "onSiteStep3": "Effectuez le paiement à la réception",
+      "onSiteNote": "Votre adhésion sera activée une fois le paiement confirmé par le personnel.",
+      "goBack": "Retour",
+      "confirmOnSite": "J'ai Compris"
     },
     "tabs": {
       "about": "À Propos",
@@ -165,6 +210,48 @@
       "imageUploadError": "Échec du téléchargement de l'image",
       "updateSuccess": "Lieu mis à jour avec succès",
       "updateError": "Échec de la mise à jour du lieu"
+    },
+    "plan": {
+      "policy": "Politique du Plan",
+      "duration": "Durée",
+      "durationType": {
+        "DAILY": "Quotidien",
+        "WEEKLY": "Hebdomadaire",
+        "MONTHLY": "Mensuel",
+        "QUARTERLY": "Trimestriel",
+        "YEARLY": "Annuel",
+        "ONE_TIME": "Accès Unique"
+      },
+      "durationValue": "Valeur de Durée",
+      "durationValueHint": "Nombre de périodes de {duration}",
+      "accessLimits": "Limites d'Accès",
+      "maxBookingsPerDay": "Max. Visites par Jour",
+      "maxBookingsPerWeek": "Max. Visites par Semaine",
+      "maxBookingsPerMonth": "Max. Visites par Mois",
+      "unlimited": "Illimité",
+      "timeRestrictions": "Restrictions Horaires",
+      "allowedDays": "Jours Autorisés",
+      "allowedStartTimeFrom": "Accès À Partir De",
+      "allowedStartTimeTo": "Accès Jusqu'à",
+      "allDays": "Tous les Jours",
+      "advancedSettings": "Paramètres Avancés",
+      "requiresAdvanceBooking": "Nécessite une Réservation Anticipée",
+      "advanceBookingHours": "Heures d'Avance pour la Réservation",
+      "allowCancellation": "Autoriser l'Annulation",
+      "cancellationHours": "Préavis d'Annulation (heures)",
+      "trialPeriod": "Période d'Essai",
+      "hasTrialPeriod": "Inclure une Période d'Essai",
+      "trialDays": "Jours d'Essai",
+      "policyDescription": "Définir les règles d'accès, les limites et les restrictions pour ce plan",
+      "daysOfWeek": {
+        "MONDAY": "Lundi",
+        "TUESDAY": "Mardi",
+        "WEDNESDAY": "Mercredi",
+        "THURSDAY": "Jeudi",
+        "FRIDAY": "Vendredi",
+        "SATURDAY": "Samedi",
+        "SUNDAY": "Dimanche"
+      }
     }
   }
 }

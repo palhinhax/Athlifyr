@@ -11,6 +11,8 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const session = await auth();
+    const currentUserId = session?.user?.id;
 
     // Try to find by ID first, then by slug
     const venue = await prisma.venue.findFirst({
@@ -36,6 +38,35 @@ export async function GET(
         plans: {
           where: {
             isActive: true,
+          },
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            currency: true,
+            paymentProvider: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true,
+            // Include user's subscription if logged in
+            subscriptions: currentUserId
+              ? {
+                  where: {
+                    userId: currentUserId,
+                    status: "ACTIVE",
+                  },
+                  select: {
+                    id: true,
+                    status: true,
+                    paymentStatus: true,
+                    startsAt: true,
+                    endsAt: true,
+                    createdAt: true,
+                  },
+                  take: 1,
+                }
+              : false,
           },
         },
         _count: {

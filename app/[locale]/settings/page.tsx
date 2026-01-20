@@ -1,11 +1,20 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { User, Mail, Shield, Trophy, Languages, Database } from "lucide-react";
+import {
+  User,
+  Mail,
+  Shield,
+  Trophy,
+  Languages,
+  Database,
+  CreditCard,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { FavoriteSportsSelector } from "@/components/favorite-sports-selector";
 import { LanguageSelector } from "@/components/language-selector";
 import { AccountDataActions } from "@/components/account-data-actions";
+import { SubscriptionsHistory } from "@/components/subscriptions-history";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -126,6 +135,15 @@ export default async function SettingsPage({
               {t("language")}
             </h2>
             <LanguageSelector currentLocale={locale} userId={user.id} />
+          </Card>
+
+          {/* Subscriptions History */}
+          <Card className="p-6">
+            <h2 className="mb-4 flex items-center gap-2 text-2xl font-semibold">
+              <CreditCard className="h-6 w-6" />
+              {t("subscriptions.title")}
+            </h2>
+            <SubscriptionsHistory />
           </Card>
 
           {/* Privacy & Security */}

@@ -49,7 +49,9 @@
       "PENDING": "Ausstehend",
       "ACTIVE": "Aktiv",
       "SUSPENDED": "Gesperrt",
-      "LEFT": "Verlassen"
+      "LEFT": "Verlassen",
+      "EXPIRED": "Abgelaufen",
+      "CANCELLED": "Storniert"
     },
     "bookingStatus": {
       "BOOKED": "Gebucht",
@@ -86,6 +88,8 @@
     "plans": {
       "title": "Pläne",
       "subscribe": "Abonnieren",
+      "subscribed": "Abonniert",
+      "validUntil": "Gültig bis",
       "subscribeTo": "Abonnieren",
       "viewPlans": "Pläne Anzeigen",
       "managePlans": "Pläne Verwalten",
@@ -95,7 +99,36 @@
       "price": "Preis",
       "perMonth": "pro Monat",
       "unlimited": "Unbegrenzter Zugang",
-      "limited": "Begrenzter Zugang"
+      "limited": "Begrenzter Zugang",
+      "name": "Name",
+      "description": "Beschreibung",
+      "currency": "Währung",
+      "namePlaceholder": "z.B.: Monatsmitgliedschaft",
+      "descriptionPlaceholder": "Kurze Beschreibung dessen, was enthalten ist",
+      "createPlanDescription": "Füllen Sie die Details aus, um einen neuen Plan zu erstellen",
+      "createFirstPlan": "Klicken Sie auf 'Plan Erstellen', um Ihren ersten Mitgliedschaftsplan hinzuzufügen",
+      "editPlanDescription": "Plandetails aktualisieren",
+      "edit": "Bearbeiten",
+      "planCreated": "Plan erfolgreich erstellt",
+      "planCreatedDescription": "Ihr neuer Plan ist jetzt verfügbar",
+      "planUpdated": "Plan erfolgreich aktualisiert",
+      "planUpdatedDescription": "Der Plan wurde aktualisiert",
+      "basicInfo": "Grundlegende Informationen",
+      "saving": "Speichern...",
+      "save": "Speichern",
+      "create": "Erstellen",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "deleting": "Löschen...",
+      "deleteConfirmTitle": "Plan Löschen?",
+      "deleteConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Pläne mit aktiven Abonnements können nicht gelöscht werden.",
+      "subscriptionSuccess": "Abonnement Erfolgreich!",
+      "subscriptionSuccessDescription": "Ihr Abonnement wurde aktiviert. Willkommen an Bord!",
+      "paymentMethod": "Zahlungsmethode",
+      "selectPaymentMethod": "Wählen Sie die Zahlungsmethode",
+      "paymentInApp": "Zahlung in der App",
+      "paymentExternal": "Zahlung vor Ort",
+      "paymentBoth": "Benutzerauswahl (App oder vor Ort)"
     },
     "sessions": {
       "title": "Sitzungen",
@@ -144,7 +177,19 @@
       "failed": "Zahlung fehlgeschlagen",
       "inApp": "In der App Bezahlen",
       "external": "Vor Ort Bezahlen",
-      "instructions": "Zahlungsanweisungen"
+      "instructions": "Zahlungsanweisungen",
+      "chooseMethod": "Wählen Sie Ihre Zahlungsmethode:",
+      "inAppDescription": "Sicher mit Karte über Stripe bezahlen",
+      "externalDescription": "Direkt vor Ort bezahlen",
+      "onSiteTitle": "Zahlung vor Ort Erforderlich",
+      "onSiteInstructions": "Diese Mitgliedschaft erfordert eine Zahlung direkt vor Ort. Bitte besuchen Sie die Einrichtung, um Ihr Abonnement abzuschließen.",
+      "onSiteSteps": "Nächste Schritte:",
+      "onSiteStep1": "Besuchen Sie den Standort persönlich",
+      "onSiteStep2": "Sprechen Sie mit dem Personal über diesen Mitgliedschaftsplan",
+      "onSiteStep3": "Schließen Sie die Zahlung an der Rezeption ab",
+      "onSiteNote": "Ihre Mitgliedschaft wird aktiviert, sobald die Zahlung vom Personal bestätigt wurde.",
+      "goBack": "Zurück",
+      "confirmOnSite": "Verstanden"
     },
     "tabs": {
       "about": "Über",
@@ -165,6 +210,48 @@
       "imageUploadError": "Fehler beim Hochladen des Bildes",
       "updateSuccess": "Standort erfolgreich aktualisiert",
       "updateError": "Fehler beim Aktualisieren des Standorts"
+    },
+    "plan": {
+      "policy": "Plan-Richtlinie",
+      "duration": "Dauer",
+      "durationType": {
+        "DAILY": "Täglich",
+        "WEEKLY": "Wöchentlich",
+        "MONTHLY": "Monatlich",
+        "QUARTERLY": "Vierteljährlich",
+        "YEARLY": "Jährlich",
+        "ONE_TIME": "Einmaliger Zugang"
+      },
+      "durationValue": "Dauerwert",
+      "durationValueHint": "Anzahl der {duration}-Perioden",
+      "accessLimits": "Zugriffsbeschränkungen",
+      "maxBookingsPerDay": "Max. Besuche pro Tag",
+      "maxBookingsPerWeek": "Max. Besuche pro Woche",
+      "maxBookingsPerMonth": "Max. Besuche pro Monat",
+      "unlimited": "Unbegrenzt",
+      "timeRestrictions": "Zeitbeschränkungen",
+      "allowedDays": "Erlaubte Tage",
+      "allowedStartTimeFrom": "Zugang Ab",
+      "allowedStartTimeTo": "Zugang Bis",
+      "allDays": "Alle Tage",
+      "advancedSettings": "Erweiterte Einstellungen",
+      "requiresAdvanceBooking": "Erfordert Vorausbuchung",
+      "advanceBookingHours": "Buchungsvorlaufzeit (Stunden)",
+      "allowCancellation": "Stornierung Erlauben",
+      "cancellationHours": "Stornierungsfrist (Stunden)",
+      "trialPeriod": "Testzeitraum",
+      "hasTrialPeriod": "Testzeitraum Einschließen",
+      "trialDays": "Testtage",
+      "policyDescription": "Definieren Sie Zugriffsregeln, Limits und Einschränkungen für diesen Plan",
+      "daysOfWeek": {
+        "MONDAY": "Montag",
+        "TUESDAY": "Dienstag",
+        "WEDNESDAY": "Mittwoch",
+        "THURSDAY": "Donnerstag",
+        "FRIDAY": "Freitag",
+        "SATURDAY": "Samstag",
+        "SUNDAY": "Sonntag"
+      }
     }
   }
 }

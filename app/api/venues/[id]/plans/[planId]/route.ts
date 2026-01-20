@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
-import { Currency, PaymentProvider } from "@prisma/client";
+import { Currency } from "@prisma/client";
 
 // PUT - Update plan
 export async function PUT(
@@ -46,14 +46,14 @@ export async function PUT(
     }
 
     // Validate paymentProvider if provided
-    if (
-      paymentProvider &&
-      !Object.values(PaymentProvider).includes(paymentProvider)
-    ) {
-      return NextResponse.json(
-        { error: "Invalid payment provider" },
-        { status: 400 }
-      );
+    if (paymentProvider) {
+      const validProviders = ["IN_APP", "EXTERNAL", "BOTH"];
+      if (!validProviders.includes(paymentProvider)) {
+        return NextResponse.json(
+          { error: "Invalid payment provider" },
+          { status: 400 }
+        );
+      }
     }
 
     // Update plan

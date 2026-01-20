@@ -12,10 +12,23 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { useToast } from "@/components/ui/use-toast";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
 import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal";
+import { Trash2, CheckCircle, Calendar } from "lucide-react";
+import type { VenuePlanPolicy } from "@/types/venue-plan";
 
 interface Venue {
   id: string;
@@ -49,6 +62,16 @@ interface Venue {
     description: string | null;
     price: number | null;
     currency: string;
+    paymentProvider: string;
+    policy?: VenuePlanPolicy | null;
+    subscriptions?: Array<{
+      id: string;
+      status: string;
+      paymentStatus: string;
+      startsAt: string;
+      endsAt: string | null;
+      createdAt: string;
+    }>;
   }>;
   _count: {
     sessions: number;
@@ -75,6 +98,8 @@ export function VenueDetailClient({
   const tRoles = useTranslations("venues.roles");
   const tInfo = useTranslations("venues.info");
   const tPlans = useTranslations("venues.plans");
+  const tPolicy = useTranslations("venues.plan");
+  const { toast } = useToast();
 
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
@@ -84,6 +109,7 @@ export function VenueDetailClient({
     name: string;
     price: number;
     currency: string;
+    paymentProvider: string;
   } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [planModalOpen, setPlanModalOpen] = useState(false);
@@ -94,6 +120,9 @@ export function VenueDetailClient({
     price: number | null;
     currency: string;
   } | null>(null);
+  const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
+  const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
@@ -124,6 +153,7 @@ export function VenueDetailClient({
     name: string;
     price: number | null;
     currency: string;
+    paymentProvider: string;
   }) => {
     if (!plan.price) return;
     setSelectedPlan({
@@ -131,6 +161,7 @@ export function VenueDetailClient({
       name: plan.name,
       price: plan.price,
       currency: plan.currency,
+      paymentProvider: plan.paymentProvider,
     });
     setCheckoutOpen(true);
   };
@@ -138,6 +169,14 @@ export function VenueDetailClient({
   const handleCheckoutSuccess = () => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
+
+    // Show success toast
+    toast({
+      title: tPlans("subscriptionSuccess"),
+      description: tPlans("subscriptionSuccessDescription"),
+      variant: "default",
+    });
+
     // Refresh venue data to show new subscription
     fetchVenue();
   };
@@ -145,6 +184,47 @@ export function VenueDetailClient({
   const handleCheckoutCancel = () => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
+  };
+
+  const handleDeletePlanClick = (planId: string) => {
+    setDeletePlanId(planId);
+    setDeleteAlertOpen(true);
+  };
+
+  const handleDeletePlanConfirm = async () => {
+    if (!deletePlanId || !venue) return;
+
+    try {
+      setIsDeleting(true);
+
+      const response = await fetch(
+        `/api/venues/${venue.id}/plans/${deletePlanId}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to delete plan");
+      }
+
+      // Refresh venue data
+      await fetchVenue();
+
+      // Close dialog
+      setDeleteAlertOpen(false);
+      setDeletePlanId(null);
+    } catch (err) {
+      console.error("Error deleting plan:", err);
+      alert(
+        err instanceof Error
+          ? err.message
+          : "Failed to delete plan. Please try again."
+      );
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const fetchVenue = useCallback(async () => {
@@ -283,16 +363,26 @@ export function VenueDetailClient({
                     <div className="mb-2 flex items-start justify-between">
                       <h3 className="text-xl font-semibold">{plan.name}</h3>
                       {isOwnerOrAdmin && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setEditingPlan(plan);
-                            setPlanModalOpen(true);
-                          }}
-                        >
-                          {tPlans("edit")}
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setEditingPlan(plan);
+                              setPlanModalOpen(true);
+                            }}
+                          >
+                            {tPlans("edit")}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeletePlanClick(plan.id)}
+                            className="text-destructive hover:text-destructive"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       )}
                     </div>
                     {plan.description && (
@@ -300,6 +390,59 @@ export function VenueDetailClient({
                         {plan.description}
                       </p>
                     )}
+
+                    {/* Plan Policy Info */}
+                    {plan.policy && (
+                      <div className="mb-4 space-y-2 rounded-lg bg-muted/30 p-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-muted-foreground" />
+                          <span className="font-medium">
+                            {tPolicy(`durationType.${plan.policy.duration}`)}
+                            {plan.policy.durationValue &&
+                              plan.policy.durationValue > 1 && (
+                                <span> ({plan.policy.durationValue}x)</span>
+                              )}
+                          </span>
+                        </div>
+                        {(plan.policy.maxBookingsPerDay ||
+                          plan.policy.maxBookingsPerWeek ||
+                          plan.policy.maxBookingsPerMonth) && (
+                          <div className="text-xs text-muted-foreground">
+                            {plan.policy.maxBookingsPerDay && (
+                              <div>
+                                • Max {plan.policy.maxBookingsPerDay}{" "}
+                                {tPolicy("maxBookingsPerDay")
+                                  .toLowerCase()
+                                  .split(" ")
+                                  .slice(1)
+                                  .join(" ")}
+                              </div>
+                            )}
+                            {plan.policy.maxBookingsPerWeek && (
+                              <div>
+                                • Max {plan.policy.maxBookingsPerWeek}{" "}
+                                {tPolicy("maxBookingsPerWeek")
+                                  .toLowerCase()
+                                  .split(" ")
+                                  .slice(1)
+                                  .join(" ")}
+                              </div>
+                            )}
+                            {plan.policy.maxBookingsPerMonth && (
+                              <div>
+                                • Max {plan.policy.maxBookingsPerMonth}{" "}
+                                {tPolicy("maxBookingsPerMonth")
+                                  .toLowerCase()
+                                  .split(" ")
+                                  .slice(1)
+                                  .join(" ")}
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+
                     {plan.price && (
                       <p className="mb-4 text-2xl font-bold">
                         {plan.price} {plan.currency}
@@ -309,13 +452,41 @@ export function VenueDetailClient({
                         </span>
                       </p>
                     )}
-                    <Button
-                      className="w-full"
-                      onClick={() => handleSubscribeClick(plan)}
-                      disabled={!userId || !plan.price}
-                    >
-                      {tPlans("subscribe")}
-                    </Button>
+
+                    {/* Check if user has active subscription */}
+                    {plan.subscriptions && plan.subscriptions.length > 0 ? (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                          <CheckCircle className="h-5 w-5" />
+                          <span className="font-medium">
+                            {tPlans("subscribed")}
+                          </span>
+                        </div>
+                        {plan.subscriptions[0].endsAt && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4" />
+                            <span>
+                              {tPlans("validUntil")}:{" "}
+                              {new Date(
+                                plan.subscriptions[0].endsAt
+                              ).toLocaleDateString(locale, {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <Button
+                        className="w-full"
+                        onClick={() => handleSubscribeClick(plan)}
+                        disabled={!userId || !plan.price}
+                      >
+                        {tPlans("subscribe")}
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -371,7 +542,7 @@ export function VenueDetailClient({
         </Tabs>
       </div>
 
-      {/* Stripe Checkout Dialog */}
+      {/* Checkout Dialog */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
@@ -387,16 +558,133 @@ export function VenueDetailClient({
             </DialogDescription>
           </DialogHeader>
           {selectedPlan && venue && (
-            <StripeCheckout
-              venueId={venue.id}
-              venueName={venue.name}
-              planId={selectedPlan.id}
-              planName={selectedPlan.name}
-              price={selectedPlan.price}
-              currency={selectedPlan.currency}
-              onSuccess={handleCheckoutSuccess}
-              onCancel={handleCheckoutCancel}
-            />
+            <>
+              {/* EXTERNAL: On-site payment only */}
+              {selectedPlan.paymentProvider === "EXTERNAL" && (
+                <div className="space-y-4">
+                  <div className="rounded-lg border border-muted bg-muted/50 p-6">
+                    <h3 className="mb-3 text-lg font-semibold">
+                      {t("payment.onSiteTitle")}
+                    </h3>
+                    <p className="mb-4 text-sm text-muted-foreground">
+                      {t("payment.onSiteInstructions")}
+                    </p>
+                    <div className="space-y-3">
+                      <p className="text-sm font-medium">
+                        {t("payment.onSiteSteps")}
+                      </p>
+                      <ol className="ml-4 list-decimal space-y-2 text-sm text-muted-foreground">
+                        <li>{t("payment.onSiteStep1")}</li>
+                        <li>{t("payment.onSiteStep2")}</li>
+                        <li>{t("payment.onSiteStep3")}</li>
+                      </ol>
+                      <p className="mt-4 text-xs text-muted-foreground">
+                        {t("payment.onSiteNote")}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <Button variant="outline" onClick={handleCheckoutCancel}>
+                      {t("payment.goBack")}
+                    </Button>
+                    <Button onClick={handleCheckoutCancel}>
+                      {t("payment.confirmOnSite")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* IN_APP: Stripe checkout only */}
+              {selectedPlan.paymentProvider === "IN_APP" && (
+                <StripeCheckout
+                  venueId={venue.id}
+                  venueName={venue.name}
+                  planId={selectedPlan.id}
+                  planName={selectedPlan.name}
+                  price={selectedPlan.price}
+                  currency={selectedPlan.currency}
+                  onSuccess={handleCheckoutSuccess}
+                  onCancel={handleCheckoutCancel}
+                />
+              )}
+
+              {/* BOTH: Choice between in-app and on-site */}
+              {selectedPlan.paymentProvider === "BOTH" && (
+                <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    {t("payment.chooseMethod")}
+                  </p>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {/* In-App Payment Option */}
+                    <button
+                      onClick={() => {
+                        setSelectedPlan({
+                          ...selectedPlan,
+                          paymentProvider: "IN_APP",
+                        });
+                      }}
+                      className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
+                    >
+                      <svg
+                        className="mb-3 h-12 w-12 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                        />
+                      </svg>
+                      <h3 className="mb-2 font-semibold">
+                        {t("payment.inApp")}
+                      </h3>
+                      <p className="text-center text-xs text-muted-foreground">
+                        {t("payment.inAppDescription")}
+                      </p>
+                    </button>
+
+                    {/* On-Site Payment Option */}
+                    <button
+                      onClick={() => {
+                        setSelectedPlan({
+                          ...selectedPlan,
+                          paymentProvider: "EXTERNAL",
+                        });
+                      }}
+                      className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
+                    >
+                      <svg
+                        className="mb-3 h-12 w-12 text-primary"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                        />
+                      </svg>
+                      <h3 className="mb-2 font-semibold">
+                        {t("payment.external")}
+                      </h3>
+                      <p className="text-center text-xs text-muted-foreground">
+                        {t("payment.externalDescription")}
+                      </p>
+                    </button>
+                  </div>
+                  <div className="flex justify-end">
+                    <Button variant="outline" onClick={handleCheckoutCancel}>
+                      {t("payment.cancel")}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </DialogContent>
       </Dialog>
@@ -413,6 +701,30 @@ export function VenueDetailClient({
           fetchVenue();
         }}
       />
+
+      {/* Delete Plan Confirmation Dialog */}
+      <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tPlans("deleteConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tPlans("deleteConfirmDescription")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>
+              {tPlans("cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePlanConfirm}
+              disabled={isDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isDeleting ? tPlans("deleting") : tPlans("delete")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

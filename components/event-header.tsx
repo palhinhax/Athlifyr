@@ -76,7 +76,7 @@ export function EventHeader({
         className="relative flex flex-col"
       >
         {/* Top Navigation Buttons */}
-        <div className="z-30 px-4 py-4 sm:px-6">
+        <div className="z-30 py-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Link href="/events">
               <Button
@@ -103,7 +103,7 @@ export function EventHeader({
         </div>
 
         {/* Bottom Content - Title and Badges */}
-        <div className="z-10 mt-auto px-4 pb-6 sm:px-6 sm:pb-8">
+        <div className="z-10 mt-auto pb-6 sm:pb-8">
           <div className="mb-3 flex flex-wrap gap-2 sm:mb-4">
             {sportTypes.map((sportType) => (
               <SportBadge

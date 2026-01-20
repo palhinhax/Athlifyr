@@ -96,7 +96,11 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="outline" size="sm" className="gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 border-white/20 bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
+        >
           <Share2 className="h-4 w-4" />
           {t("button")}
         </Button>

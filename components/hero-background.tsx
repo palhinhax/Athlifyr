@@ -8,6 +8,12 @@ interface HeroBackgroundProps {
   description?: string;
   children?: React.ReactNode;
   className?: string;
+  height?: "default" | "tall" | "custom";
+  customHeight?: string;
+  clickable?: boolean;
+  onImageClick?: () => void;
+  imageQuality?: number;
+  overlayOpacity?: "light" | "medium" | "dark";
 }
 
 export function HeroBackground({
@@ -16,21 +22,52 @@ export function HeroBackground({
   description,
   children,
   className = "",
+  height = "default",
+  customHeight,
+  clickable = false,
+  onImageClick,
+  imageQuality = 90,
+  overlayOpacity = "medium",
 }: HeroBackgroundProps) {
+  const heightClasses = {
+    default: "py-24",
+    tall: "h-[400px]",
+    custom: customHeight || "py-24",
+  };
+
+  const overlayClasses = {
+    light: "bg-black/30",
+    medium: "bg-black/50",
+    dark: "bg-black/70",
+  };
+
   return (
-    <section className={`relative overflow-hidden py-24 ${className}`}>
+    <section
+      className={`relative overflow-hidden ${height === "custom" ? "" : heightClasses[height]} ${className}`}
+      style={
+        height === "custom" && customHeight
+          ? { height: customHeight }
+          : undefined
+      }
+    >
       {image ? (
         <>
-          <div className="absolute inset-0 z-0">
+          <div
+            className={`absolute inset-0 z-0 ${clickable ? "cursor-pointer" : ""}`}
+            onClick={clickable && onImageClick ? onImageClick : undefined}
+          >
             <Image
               src={image}
               alt={title || "Hero background"}
               fill
-              className="object-cover"
+              className="object-cover object-center transition-transform duration-300 hover:scale-105"
               priority
-              quality={90}
+              quality={imageQuality}
+              sizes="100vw"
             />
-            <div className="absolute inset-0 bg-black/50" />
+            <div
+              className={`absolute inset-0 ${overlayClasses[overlayOpacity]}`}
+            />
           </div>
         </>
       ) : (

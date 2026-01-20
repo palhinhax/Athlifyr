@@ -15,7 +15,6 @@ import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
-import { EventPageHeader } from "@/components/event-page-header";
 import { EventMainContent } from "@/components/event-main-content";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
@@ -234,19 +233,15 @@ export default async function EventPage({ params }: PageProps) {
       <StructuredData data={sportsEventSchema} />
       <StructuredData data={breadcrumbSchema} />
 
-      {/* Back button, Admin Actions, and Share */}
-      <EventPageHeader
-        isAdmin={isAdmin}
-        event={eventForHeader}
-        shareDescription={shareDescription}
-        locale={locale}
-      />
-
-      {/* Event Header */}
+      {/* Event Header with Navigation and Title */}
       <EventHeader
         title={event.title}
         imageUrl={event.imageUrl}
         sportTypes={event.sportTypes}
+        isAdmin={isAdmin}
+        event={eventForHeader}
+        shareDescription={shareDescription}
+        locale={locale}
       />
 
       {/* Event Details */}

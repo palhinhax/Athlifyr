@@ -86,6 +86,7 @@
     "plans": {
       "title": "Planes",
       "subscribe": "Suscribirse",
+      "subscribeTo": "Suscribirse a",
       "viewPlans": "Ver Planes",
       "managePlans": "Gestionar Planes",
       "createPlan": "Crear Plan",

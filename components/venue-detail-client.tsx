@@ -1,12 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
+import { StripeCheckout } from "@/components/stripe-checkout";
+import { VenuePlanModal } from "@/components/venue-plan-modal";
 
 interface Venue {
   id: string;
@@ -70,6 +79,21 @@ export function VenueDetailClient({
   const [venue, setVenue] = useState<Venue | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+  } | null>(null);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [planModalOpen, setPlanModalOpen] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<{
+    id: string;
+    name: string;
+    description: string | null;
+    price: number | null;
+    currency: string;
+  } | null>(null);
 
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
@@ -95,26 +119,54 @@ export function VenueDetailClient({
     userId && venue?.members.some((m) => m.user.id === userId)
   );
 
-  useEffect(() => {
-    const fetchVenue = async () => {
-      try {
-        const response = await fetch(`/api/venues/${slug}`);
+  const handleSubscribeClick = (plan: {
+    id: string;
+    name: string;
+    price: number | null;
+    currency: string;
+  }) => {
+    if (!plan.price) return;
+    setSelectedPlan({
+      id: plan.id,
+      name: plan.name,
+      price: plan.price,
+      currency: plan.currency,
+    });
+    setCheckoutOpen(true);
+  };
 
-        if (!response.ok) {
-          throw new Error("Venue not found");
-        }
-
-        const data = await response.json();
-        setVenue(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load venue");
-      } finally {
-        setLoading(false);
-      }
-    };
-
+  const handleCheckoutSuccess = () => {
+    setCheckoutOpen(false);
+    setSelectedPlan(null);
+    // Refresh venue data to show new subscription
     fetchVenue();
+  };
+
+  const handleCheckoutCancel = () => {
+    setCheckoutOpen(false);
+    setSelectedPlan(null);
+  };
+
+  const fetchVenue = useCallback(async () => {
+    try {
+      const response = await fetch(`/api/venues/${slug}`);
+
+      if (!response.ok) {
+        throw new Error("Venue not found");
+      }
+
+      const data = await response.json();
+      setVenue(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load venue");
+    } finally {
+      setLoading(false);
+    }
   }, [slug]);
+
+  useEffect(() => {
+    fetchVenue();
+  }, [fetchVenue]);
 
   if (loading) {
     return (
@@ -202,15 +254,47 @@ export function VenueDetailClient({
 
           {/* Plans Tab */}
           <TabsContent value="plans" className="space-y-6">
+            {isOwnerOrAdmin && (
+              <div className="flex justify-end">
+                <Button
+                  onClick={() => {
+                    setEditingPlan(null);
+                    setPlanModalOpen(true);
+                  }}
+                >
+                  {tPlans("createPlan")}
+                </Button>
+              </div>
+            )}
+
             {venue.plans.length === 0 ? (
               <div className="rounded-lg border border-dashed p-12 text-center">
                 <p className="text-muted-foreground">{t("noPlansAvailable")}</p>
+                {isOwnerOrAdmin && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {tPlans("createFirstPlan")}
+                  </p>
+                )}
               </div>
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {venue.plans.map((plan) => (
                   <div key={plan.id} className="rounded-lg border bg-card p-6">
-                    <h3 className="mb-2 text-xl font-semibold">{plan.name}</h3>
+                    <div className="mb-2 flex items-start justify-between">
+                      <h3 className="text-xl font-semibold">{plan.name}</h3>
+                      {isOwnerOrAdmin && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setEditingPlan(plan);
+                            setPlanModalOpen(true);
+                          }}
+                        >
+                          {tPlans("edit")}
+                        </Button>
+                      )}
+                    </div>
                     {plan.description && (
                       <p className="mb-4 text-sm text-muted-foreground">
                         {plan.description}
@@ -225,7 +309,13 @@ export function VenueDetailClient({
                         </span>
                       </p>
                     )}
-                    <Button className="w-full">{tPlans("subscribe")}</Button>
+                    <Button
+                      className="w-full"
+                      onClick={() => handleSubscribeClick(plan)}
+                      disabled={!userId || !plan.price}
+                    >
+                      {tPlans("subscribe")}
+                    </Button>
                   </div>
                 ))}
               </div>
@@ -280,6 +370,49 @@ export function VenueDetailClient({
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Stripe Checkout Dialog */}
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{tPlans("subscribe")}</DialogTitle>
+            <DialogDescription>
+              {selectedPlan && (
+                <>
+                  {tPlans("subscribeTo")} {selectedPlan.name} -{" "}
+                  {selectedPlan.price} {selectedPlan.currency} /{" "}
+                  {tPlans("perMonth")}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPlan && venue && (
+            <StripeCheckout
+              venueId={venue.id}
+              venueName={venue.name}
+              planId={selectedPlan.id}
+              planName={selectedPlan.name}
+              price={selectedPlan.price}
+              currency={selectedPlan.currency}
+              onSuccess={handleCheckoutSuccess}
+              onCancel={handleCheckoutCancel}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Plan Management Modal */}
+      <VenuePlanModal
+        open={planModalOpen}
+        onOpenChange={setPlanModalOpen}
+        venueId={venue?.id || ""}
+        plan={editingPlan}
+        onSuccess={() => {
+          setPlanModalOpen(false);
+          setEditingPlan(null);
+          fetchVenue();
+        }}
+      />
     </div>
   );
 }

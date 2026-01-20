@@ -137,9 +137,11 @@ export async function PATCH(
         ...(latitude !== undefined && { latitude }),
         ...(longitude !== undefined && { longitude }),
         ...(isActive !== undefined && { isActive }),
-        // Images: update even if empty string (to clear images)
-        ...(logo !== undefined && logo !== null && { logo }),
-        ...(coverImage !== undefined && coverImage !== null && { coverImage }),
+        // Images: update if provided (even empty string to clear), but not if undefined
+        ...(logo !== undefined && { logo: logo || null }),
+        ...(coverImage !== undefined && {
+          coverImage: coverImage || null,
+        }),
       },
     });
 

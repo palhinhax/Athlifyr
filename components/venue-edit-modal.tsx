@@ -84,15 +84,12 @@ export function VenueEditModal({
     fileName: string,
     type: "logo" | "cover"
   ) => {
+    console.log(`${type} upload completed:`, { url, fileId, fileName });
+
     setFormData((prev) => ({
       ...prev,
       [type === "logo" ? "logo" : "coverImage"]: url,
     }));
-
-    toast({
-      title: tCommon("success"),
-      description: t("edit.imageUploadSuccess"),
-    });
 
     if (type === "logo") {
       setUploadingLogo(false);
@@ -114,8 +111,6 @@ export function VenueEditModal({
       };
 
       console.log("Submitting venue data:", submitData);
-      console.log("Logo:", submitData.logo);
-      console.log("Cover:", submitData.coverImage);
 
       const response = await fetch(`/api/venues/${venue.id}`, {
         method: "PATCH",
@@ -126,8 +121,13 @@ export function VenueEditModal({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to update venue");
+        const errorData = await response.json();
+        console.error("Update failed:", errorData);
+        throw new Error(errorData.error || "Failed to update venue");
       }
+
+      const updatedVenue = await response.json();
+      console.log("Venue updated successfully:", updatedVenue);
 
       toast({
         title: tCommon("success"),
@@ -160,29 +160,41 @@ export function VenueEditModal({
           {/* Logo Upload */}
           <div className="space-y-2">
             <Label htmlFor="logo">{t("edit.logo")}</Label>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col gap-4">
               {formData.logo && (
-                <Image
-                  src={formData.logo}
-                  alt="Logo"
-                  width={80}
-                  height={80}
-                  className="h-20 w-20 rounded-lg object-cover"
-                  unoptimized
-                  key={formData.logo}
-                />
+                <div className="flex items-center gap-2">
+                  <Image
+                    src={formData.logo}
+                    alt="Logo"
+                    width={80}
+                    height={80}
+                    className="h-20 w-20 rounded-lg object-cover"
+                    unoptimized
+                    key={formData.logo}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, logo: "" }))
+                    }
+                  >
+                    {t("edit.removeImage")}
+                  </Button>
+                </div>
               )}
-              <div className="flex-1">
-                <ImageUpload
-                  folder="events"
-                  onUploadComplete={(url, fileId, fileName) => {
-                    setUploadingLogo(false);
-                    handleImageUpload(url, fileId, fileName, "logo");
-                  }}
-                  currentImageUrl={formData.logo}
-                  buttonText={t("edit.uploadLogo")}
-                />
-              </div>
+              <ImageUpload
+                folder="events"
+                onUploadComplete={(url, fileId, fileName) => {
+                  console.log("Logo uploaded:", { url, fileId, fileName });
+                  handleImageUpload(url, fileId, fileName, "logo");
+                }}
+                currentImageUrl={formData.logo}
+                buttonText={
+                  formData.logo ? t("edit.changeLogo") : t("edit.uploadLogo")
+                }
+              />
             </div>
           </div>
 
@@ -191,25 +203,42 @@ export function VenueEditModal({
             <Label htmlFor="coverImage">{t("edit.coverImage")}</Label>
             <div className="flex flex-col gap-4">
               {formData.coverImage && (
-                <div className="relative h-32 w-full">
-                  <Image
-                    src={formData.coverImage}
-                    alt="Cover"
-                    unoptimized
-                    key={formData.coverImage}
-                    fill
-                    className="rounded-lg object-cover"
-                  />
+                <div className="relative">
+                  <div className="relative h-32 w-full overflow-hidden rounded-lg">
+                    <Image
+                      src={formData.coverImage}
+                      alt="Cover"
+                      unoptimized
+                      key={formData.coverImage}
+                      fill
+                      className="object-cover"
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="mt-2"
+                    onClick={() =>
+                      setFormData((prev) => ({ ...prev, coverImage: "" }))
+                    }
+                  >
+                    {t("edit.removeImage")}
+                  </Button>
                 </div>
               )}
               <ImageUpload
                 folder="events"
                 onUploadComplete={(url, fileId, fileName) => {
-                  setUploadingCover(false);
+                  console.log("Cover uploaded:", { url, fileId, fileName });
                   handleImageUpload(url, fileId, fileName, "cover");
                 }}
                 currentImageUrl={formData.coverImage}
-                buttonText={t("edit.uploadCover")}
+                buttonText={
+                  formData.coverImage
+                    ? t("edit.changeCover")
+                    : t("edit.uploadCover")
+                }
               />
             </div>
           </div>

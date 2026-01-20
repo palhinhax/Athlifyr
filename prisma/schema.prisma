@@ -26,6 +26,7 @@ enum SportType {
 
 enum UserRole {
   USER
+  MOD
   ADMIN
 }
 
@@ -136,6 +137,7 @@ model User {
   password            String?
   role                UserRole             @default(USER)
   locale              String               @default("pt") // User's preferred language (pt, en)
+  isVerified          Boolean              @default(false) // Admin verification status
   accounts            Account[]
   sessions            Session[]
   participations      Participation[]

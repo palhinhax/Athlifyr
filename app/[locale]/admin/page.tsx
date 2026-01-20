@@ -11,6 +11,7 @@ import {
   Instagram,
   Database,
   Building2,
+  Users,
 } from "lucide-react";
 
 // Lazy load admin components
@@ -19,6 +20,7 @@ const AdminContactsContent = lazy(() => import("./contacts/page"));
 const AdminMediaContent = lazy(() => import("./media/page"));
 const AdminInstagramContent = lazy(() => import("./instagram/page"));
 const AdminVenuesContent = lazy(() => import("./venues/page"));
+const AdminUsersContent = lazy(() => import("./users/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -81,6 +83,10 @@ function AdminContent() {
               <Building2 className="h-4 w-4" />
               <span className="hidden sm:inline">Venues</span>
             </TabsTrigger>
+            <TabsTrigger value="users" className="flex-shrink-0 gap-2">
+              <Users className="h-4 w-4" />
+              <span className="hidden sm:inline">Utilizadores</span>
+            </TabsTrigger>
             <TabsTrigger value="contacts" className="flex-shrink-0 gap-2">
               <Mail className="h-4 w-4" />
               <span className="hidden sm:inline">Contactos</span>
@@ -117,6 +123,18 @@ function AdminContent() {
             }
           >
             <AdminVenuesContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="users">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminUsersContent />
           </Suspense>
         </TabsContent>
 

@@ -57,10 +57,12 @@ export async function GET(request: Request) {
         role: true,
         locale: true,
         createdAt: true,
+        isVerified: true,
         _count: {
           select: {
             posts: true,
             comments: true,
+            participations: true,
           },
         },
       },

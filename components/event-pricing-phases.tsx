@@ -32,12 +32,23 @@ export function EventPricingPhases({
     return null;
   }
 
-  // Find current active phase
+  // Check current date
   const now = new Date();
-  const currentPhase = phases.find(
+
+  // Find all currently active phases
+  const activePhases = phases.filter(
     (phase) =>
       new Date(phase.startDate) <= now && new Date(phase.endDate) >= now
   );
+
+  // Get the earliest end date from active phases for display
+  const earliestEndDate =
+    activePhases.length > 0
+      ? activePhases.reduce((earliest, phase) => {
+          const phaseEndDate = new Date(phase.endDate);
+          return phaseEndDate < earliest ? phaseEndDate : earliest;
+        }, new Date(activePhases[0].endDate))
+      : null;
 
   return (
     <div className="rounded-lg border bg-card p-4">
@@ -49,7 +60,8 @@ export function EventPricingPhases({
 
       <div className="space-y-2">
         {phases.map((phase) => {
-          const isActive = currentPhase?.id === phase.id;
+          const isActive =
+            new Date(phase.startDate) <= now && new Date(phase.endDate) >= now;
           const isPast = new Date(phase.endDate) < now;
 
           return (
@@ -86,11 +98,11 @@ export function EventPricingPhases({
       </div>
 
       {/* Show current phase dates */}
-      {currentPhase && (
+      {earliestEndDate && (
         <div className="mt-3 flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
           <span>
-            {t("until")} {formatDate(new Date(currentPhase.endDate), locale)}
+            {t("until")} {formatDate(earliestEndDate, locale)}
           </span>
         </div>
       )}

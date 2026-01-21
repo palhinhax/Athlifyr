@@ -1,3 +1,15 @@
+# [11.4.0](https://github.com/palhinhax/Athlifyr/compare/v11.3.0...v11.4.0) (2026-01-21)
+
+### Bug Fixes
+
+- **seeds:** correct longitude coordinate in Google Maps URL ([eb9e489](https://github.com/palhinhax/Athlifyr/commit/eb9e48960f9228fd31e03e130af33e94f536386b))
+
+### Features
+
+- **seeds:** add Leadville Trail 100 Run 2026 - Race Across the Sky ([5882ac3](https://github.com/palhinhax/Athlifyr/commit/5882ac3e3c4e3c7375bae172c2877d5f26c64a77))
+- **seeds:** add Ragnar Trail Atlanta 2026 complete seed file ([86080e2](https://github.com/palhinhax/Athlifyr/commit/86080e21e7c69967e2fa41db60e1f5c968a9ae8a))
+- **seeds:** add Ragnar Trail Zion 2026 seed file ([6debddb](https://github.com/palhinhax/Athlifyr/commit/6debddb75c5e7d4c3c91df5148f196501de8f51c))
+
 # [11.3.0](https://github.com/palhinhax/Athlifyr/compare/v11.2.0...v11.3.0) (2026-01-21)
 
 ### Features

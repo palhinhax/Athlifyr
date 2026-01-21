@@ -322,6 +322,10 @@ A 5ª edição do Trail Manuelino realiza-se em Abiul, Pombal, uma freguesia de 
 
 ⚠️ **Penalização de 15 minutos** para quem não apresentar o material obrigatório.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5ª Edição | Abiul, Pombal | 1 Fevereiro",
+      metaDescription:
+        "Trail Manuelino 2026 - 5ª edição a 1 de fevereiro em Abiul, Pombal. Provas: Trail 32km, Sprint 18km, Mini Trail 12km, Caminhada 12km e Trail Kids. Circuito ADAL e Trail Series 100.",
     },
     en: {
       title: "Trail Manuelino 2026",
@@ -375,6 +379,10 @@ The 5th edition of Trail Manuelino takes place in Abiul, Pombal, a parish of hil
 
 ⚠️ **15-minute penalty** for those without mandatory equipment.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5th Edition | Abiul, Pombal | February 1",
+      metaDescription:
+        "Trail Manuelino 2026 - 5th edition on February 1st in Abiul, Pombal. Races: Trail 32km, Sprint 18km, Mini Trail 12km, Walk 12km and Trail Kids. ADAL Circuit and Trail Series 100.",
     },
     es: {
       title: "Trail Manuelino 2026",
@@ -428,6 +436,10 @@ La 5ª edición del Trail Manuelino se celebra en Abiul, Pombal, una parroquia d
 
 ⚠️ **Penalización de 15 minutos** para quien no presente el material obligatorio.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5ª Edición | Abiul, Pombal | 1 Febrero",
+      metaDescription:
+        "Trail Manuelino 2026 - 5ª edición el 1 de febrero en Abiul, Pombal. Carreras: Trail 32km, Sprint 18km, Mini Trail 12km, Caminata 12km y Trail Kids. Circuito ADAL y Trail Series 100.",
     },
     fr: {
       title: "Trail Manuelino 2026",
@@ -481,6 +493,10 @@ La 5ème édition du Trail Manuelino a lieu à Abiul, Pombal, une paroisse de co
 
 ⚠️ **Pénalité de 15 minutes** pour ceux sans matériel obligatoire.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5ème Édition | Abiul, Pombal | 1er Février",
+      metaDescription:
+        "Trail Manuelino 2026 - 5ème édition le 1er février à Abiul, Pombal. Courses: Trail 32km, Sprint 18km, Mini Trail 12km, Randonnée 12km et Trail Kids. Circuit ADAL et Trail Series 100.",
     },
     de: {
       title: "Trail Manuelino 2026",
@@ -534,6 +550,10 @@ Die 5. Ausgabe des Trail Manuelino findet in Abiul, Pombal statt, einer Gemeinde
 
 ⚠️ **15 Minuten Strafe** für Teilnehmer ohne Pflichtausrüstung.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5. Ausgabe | Abiul, Pombal | 1. Februar",
+      metaDescription:
+        "Trail Manuelino 2026 - 5. Ausgabe am 1. Februar in Abiul, Pombal. Rennen: Trail 32km, Sprint 18km, Mini Trail 12km, Wanderung 12km und Trail Kids. ADAL Circuit und Trail Series 100.",
     },
     it: {
       title: "Trail Manuelino 2026",
@@ -587,6 +607,10 @@ La 5ª edizione del Trail Manuelino si svolge ad Abiul, Pombal, una parrocchia d
 
 ⚠️ **Penalità di 15 minuti** per chi non presenta l'attrezzatura obbligatoria.`,
       city: "Pombal",
+      metaTitle:
+        "Trail Manuelino 2026 - 5ª Edizione | Abiul, Pombal | 1 Febbraio",
+      metaDescription:
+        "Trail Manuelino 2026 - 5ª edizione il 1° febbraio ad Abiul, Pombal. Gare: Trail 32km, Sprint 18km, Mini Trail 12km, Camminata 12km e Trail Kids. Circuito ADAL e Trail Series 100.",
     },
   };
 
@@ -602,6 +626,8 @@ La 5ª edizione del Trail Manuelino si svolge ad Abiul, Pombal, una parrocchia d
         title: translations[lang].title,
         description: translations[lang].description,
         city: translations[lang].city,
+        metaTitle: translations[lang].metaTitle,
+        metaDescription: translations[lang].metaDescription,
       },
       create: {
         eventId: event.id,
@@ -609,6 +635,8 @@ La 5ª edizione del Trail Manuelino si svolge ad Abiul, Pombal, una parrocchia d
         title: translations[lang].title,
         description: translations[lang].description,
         city: translations[lang].city,
+        metaTitle: translations[lang].metaTitle,
+        metaDescription: translations[lang].metaDescription,
       },
     });
   }

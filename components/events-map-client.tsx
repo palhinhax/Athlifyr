@@ -98,7 +98,7 @@ export default function EventsMapClient({
   const [filters, setFilters] = useState<MapFilters | undefined>(
     initialFilters
   );
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
 
   // Listen for filter changes from MapFilters component

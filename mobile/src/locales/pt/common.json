@@ -1,0 +1,33 @@
+{
+  "app": {
+    "name": "Athlifyr",
+    "welcome": "Bem-vindo ao Athlifyr"
+  },
+  "navigation": {
+    "home": "Início",
+    "events": "Eventos",
+    "venues": "Locais",
+    "profile": "Perfil"
+  },
+  "auth": {
+    "login": "Entrar",
+    "logout": "Sair",
+    "email": "E-mail",
+    "password": "Palavra-passe",
+    "forgotPassword": "Esqueceste-te da palavra-passe?",
+    "noAccount": "Não tens conta?",
+    "signUp": "Regista-te"
+  },
+  "common": {
+    "loading": "A carregar...",
+    "error": "Erro",
+    "retry": "Tentar novamente",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Apagar",
+    "edit": "Editar",
+    "search": "Pesquisar",
+    "filter": "Filtrar",
+    "close": "Fechar"
+  }
+}

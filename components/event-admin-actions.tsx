@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -15,20 +14,22 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Pencil,
-  Trash2,
-  Plus,
-  X,
-  ImagePlus,
-  Loader2,
-  Globe,
-} from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, Language } from "@prisma/client";
 import { useTranslations } from "next-intl";
-import { sportTypeLabels } from "@/lib/event-utils";
+import { EventImageUpload } from "@/components/event-image-upload";
+import { SportTypeSelector } from "@/components/sport-type-selector";
+import {
+  EventVariantsManager,
+  type VariantFormData,
+  type VariantTranslation,
+} from "@/components/event-variants-manager";
+import {
+  EventTranslationsEditor,
+  type EventTranslation,
+} from "@/components/event-translations-editor";
+import { EventLocationFields } from "@/components/event-location-fields";
 
 // Languages configuration
 const SUPPORTED_LANGUAGES: { code: Language; name: string; flag: string }[] = [
@@ -39,30 +40,6 @@ const SUPPORTED_LANGUAGES: { code: Language; name: string; flag: string }[] = [
   { code: "de", name: "Deutsch", flag: "🇩🇪" },
   { code: "it", name: "Italiano", flag: "🇮🇹" },
 ];
-
-interface EventTranslation {
-  language: Language;
-  title: string;
-  description: string;
-  city: string;
-  metaTitle: string;
-  metaDescription: string;
-}
-
-interface VariantTranslation {
-  language: Language;
-  name: string;
-  description: string;
-}
-
-interface VariantFormData {
-  id?: string;
-  name: string;
-  distanceKm: string;
-  startDate: string;
-  startTime: string;
-  translations: Record<Language, VariantTranslation>;
-}
 
 interface EventVariant {
   id: string;
@@ -94,11 +71,9 @@ interface EventAdminActionsProps {
 
 export function EventAdminActions({ event }: EventAdminActionsProps) {
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isUploading, setIsUploading] = useState(false);
   const t = useTranslations("admin.events");
 
   // Form state
@@ -285,64 +260,6 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     });
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-      toast({
-        variant: "destructive",
-        title: t("toast.invalidFile"),
-        description: t("toast.invalidFileDesc"),
-      });
-      return;
-    }
-
-    if (file.size > 5 * 1024 * 1024) {
-      toast({
-        variant: "destructive",
-        title: t("toast.fileTooLarge"),
-        description: t("toast.fileTooLargeDesc", { size: "5" }),
-      });
-      return;
-    }
-
-    setIsUploading(true);
-    try {
-      const formDataUpload = new FormData();
-      formDataUpload.append("file", file);
-      formDataUpload.append("folder", "events");
-
-      const uploadRes = await fetch("/api/upload", {
-        method: "POST",
-        body: formDataUpload,
-      });
-
-      if (!uploadRes.ok) {
-        throw new Error("Failed to upload image");
-      }
-
-      const uploadData = await uploadRes.json();
-      setFormData((prev) => ({ ...prev, imageUrl: uploadData.file.url }));
-
-      toast({
-        title: t("toast.imageUploaded"),
-        description: t("toast.imageUploadedDesc"),
-      });
-    } catch {
-      toast({
-        variant: "destructive",
-        title: t("toast.uploadError"),
-        description: t("toast.uploadErrorDesc"),
-      });
-    } finally {
-      setIsUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
-    }
-  };
-
   const handleVariantChange = (
     index: number,
     field: "name" | "distanceKm" | "startDate" | "startTime",
@@ -420,7 +337,6 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
           })),
         translations: translationsToSave,
       };
-      console.log("Updating event with payload:", payload);
 
       const response = await fetch(`/api/events/${event.id}`, {
         method: "PATCH",
@@ -522,28 +438,10 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               />
             </div>
 
-            <div className="grid gap-2">
-              <Label>{t("sportsLabel")} *</Label>
-              <p className="text-xs text-muted-foreground">
-                {t("selectSportsDesc")}
-              </p>
-              <div className="grid grid-cols-2 gap-3 rounded-md border border-input p-3">
-                {Object.values(SportType).map((type) => (
-                  <label
-                    key={type}
-                    className="flex cursor-pointer items-center space-x-2 rounded-md p-2 hover:bg-muted"
-                  >
-                    <input
-                      type="checkbox"
-                      checked={formData.sportTypes.includes(type)}
-                      onChange={() => toggleSportType(type)}
-                      className="h-4 w-4 rounded border-gray-300"
-                    />
-                    <span className="text-sm">{sportTypeLabels[type]}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
+            <SportTypeSelector
+              selectedSportTypes={formData.sportTypes}
+              onToggleSportType={toggleSportType}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
@@ -589,65 +487,12 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               </div>
             </div>
 
-            <div className="grid gap-2">
-              <Label>Imagem do Evento</Label>
-              {formData.imageUrl && (
-                <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                  <Image
-                    src={formData.imageUrl}
-                    alt="Preview"
-                    fill
-                    sizes="(max-width: 768px) 100vw, 600px"
-                    className="object-cover"
-                  />
-                  <button
-                    type="button"
-                    onClick={() =>
-                      setFormData((prev) => ({ ...prev, imageUrl: "" }))
-                    }
-                    className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-white hover:bg-destructive/90"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                </div>
-              )}
-              <div className="flex gap-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isUploading}
-                  className="flex-1"
-                >
-                  {isUploading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ImagePlus className="mr-2 h-4 w-4" />
-                  )}
-                  {formData.imageUrl
-                    ? t("actions.changeImage")
-                    : t("actions.uploadImage")}
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Ou insere um URL diretamente:
-              </p>
-              <Input
-                id="imageUrl"
-                name="imageUrl"
-                value={formData.imageUrl}
-                onChange={handleInputChange}
-                placeholder="https://..."
-              />
-            </div>
+            <EventImageUpload
+              imageUrl={formData.imageUrl}
+              onImageUrlChange={(url) =>
+                setFormData((prev) => ({ ...prev, imageUrl: url }))
+              }
+            />
 
             <div className="grid gap-2">
               <Label htmlFor="externalUrl">URL Externo (inscrições)</Label>
@@ -675,305 +520,36 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               </p>
             </div>
 
-            {/* Location Coordinates */}
-            <div className="grid gap-4 rounded-lg border p-4">
-              <h4 className="font-medium">Localização no Mapa</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="latitude">Latitude</Label>
-                  <Input
-                    id="latitude"
-                    name="latitude"
-                    type="number"
-                    step="any"
-                    value={formData.latitude}
-                    onChange={handleInputChange}
-                    placeholder="Ex: 41.5518"
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="longitude">Longitude</Label>
-                  <Input
-                    id="longitude"
-                    name="longitude"
-                    type="number"
-                    step="any"
-                    value={formData.longitude}
-                    onChange={handleInputChange}
-                    placeholder="Ex: -8.4229"
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="googleMapsUrl">
-                  URL do Google Maps (opcional)
-                </Label>
-                <Input
-                  id="googleMapsUrl"
-                  name="googleMapsUrl"
-                  value={formData.googleMapsUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://maps.google.com/..."
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Dica: Pesquisa o local no Google Maps, clica com o botão direito
-                e copia as coordenadas.
-              </p>
-            </div>
+            <EventLocationFields
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              googleMapsUrl={formData.googleMapsUrl}
+              onLatitudeChange={(value) =>
+                setFormData((prev) => ({ ...prev, latitude: value }))
+              }
+              onLongitudeChange={(value) =>
+                setFormData((prev) => ({ ...prev, longitude: value }))
+              }
+              onGoogleMapsUrlChange={(value) =>
+                setFormData((prev) => ({ ...prev, googleMapsUrl: value }))
+              }
+            />
 
-            {/* Variants */}
-            <div className="grid gap-2">
-              <div className="flex items-center justify-between">
-                <Label>Variantes / Distâncias</Label>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addVariant}
-                >
-                  <Plus className="mr-1 h-3 w-3" />
-                  Adicionar
-                </Button>
-              </div>
-              <div className="space-y-3">
-                {variants.map((variant, index) => (
-                  <div key={index} className="rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <Input
-                        placeholder="Nome (ex: 21km, Singles Pro)"
-                        value={variant.name}
-                        onChange={(e) =>
-                          handleVariantChange(index, "name", e.target.value)
-                        }
-                        className="flex-1"
-                      />
-                      <Input
-                        placeholder="km"
-                        value={variant.distanceKm}
-                        onChange={(e) =>
-                          handleVariantChange(
-                            index,
-                            "distanceKm",
-                            e.target.value
-                          )
-                        }
-                        className="w-20"
-                        type="number"
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => removeVariant(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="flex-1">
-                        <Label className="text-xs text-muted-foreground">
-                          Data (opcional)
-                        </Label>
-                        <Input
-                          type="date"
-                          value={variant.startDate}
-                          onChange={(e) =>
-                            handleVariantChange(
-                              index,
-                              "startDate",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="w-24">
-                        <Label className="text-xs text-muted-foreground">
-                          Hora (opcional)
-                        </Label>
-                        <Input
-                          type="time"
-                          value={variant.startTime}
-                          onChange={(e) =>
-                            handleVariantChange(
-                              index,
-                              "startTime",
-                              e.target.value
-                            )
-                          }
-                        />
-                      </div>
-                    </div>
+            <EventVariantsManager
+              variants={variants}
+              onVariantChange={handleVariantChange}
+              onAddVariant={addVariant}
+              onRemoveVariant={removeVariant}
+              onVariantTranslationChange={handleVariantTranslationChange}
+            />
 
-                    {/* Variant Translations */}
-                    <details className="mt-3">
-                      <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
-                        <Globe className="mr-1 inline h-3 w-3" />
-                        Traduções desta variante
-                      </summary>
-                      <div className="mt-2 space-y-2 rounded-md bg-muted/50 p-2">
-                        {SUPPORTED_LANGUAGES.map((lang) => (
-                          <div
-                            key={lang.code}
-                            className="flex items-center gap-2"
-                          >
-                            <span className="w-8 text-sm">{lang.flag}</span>
-                            <Input
-                              placeholder={`Nome em ${lang.name}`}
-                              value={
-                                variant.translations[lang.code]?.name || ""
-                              }
-                              onChange={(e) =>
-                                handleVariantTranslationChange(
-                                  index,
-                                  lang.code,
-                                  "name",
-                                  e.target.value
-                                )
-                              }
-                              className="flex-1 text-sm"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Translations Section */}
-            <div className="grid gap-4 rounded-lg border p-4">
-              <div className="flex items-center gap-2">
-                <Globe className="h-5 w-5 text-primary" />
-                <h4 className="font-medium">Traduções</h4>
-                {isLoadingTranslations && (
-                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                )}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Adiciona traduções para o evento aparecer corretamente em
-                diferentes idiomas. O conteúdo original (PT) é usado como
-                fallback.
-              </p>
-
-              <Tabs
-                value={activeTranslationTab}
-                onValueChange={(v) => setActiveTranslationTab(v as Language)}
-              >
-                <TabsList className="grid w-full grid-cols-6">
-                  {SUPPORTED_LANGUAGES.map((lang) => (
-                    <TabsTrigger
-                      key={lang.code}
-                      value={lang.code}
-                      className="text-xs"
-                    >
-                      <span className="mr-1">{lang.flag}</span>
-                      <span className="hidden sm:inline">
-                        {lang.code.toUpperCase()}
-                      </span>
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-
-                {SUPPORTED_LANGUAGES.map((lang) => (
-                  <TabsContent key={lang.code} value={lang.code}>
-                    <div className="space-y-4 pt-4">
-                      <div className="grid gap-2">
-                        <Label htmlFor={`title-${lang.code}`}>
-                          Título ({lang.name})
-                        </Label>
-                        <Input
-                          id={`title-${lang.code}`}
-                          value={translations[lang.code]?.title || ""}
-                          onChange={(e) =>
-                            handleTranslationChange(
-                              lang.code,
-                              "title",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Título em ${lang.name}`}
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <Label htmlFor={`description-${lang.code}`}>
-                          Descrição ({lang.name})
-                        </Label>
-                        <textarea
-                          id={`description-${lang.code}`}
-                          value={translations[lang.code]?.description || ""}
-                          onChange={(e) =>
-                            handleTranslationChange(
-                              lang.code,
-                              "description",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Descrição em ${lang.name}`}
-                          className="min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <Label htmlFor={`city-${lang.code}`}>
-                          Cidade ({lang.name})
-                        </Label>
-                        <Input
-                          id={`city-${lang.code}`}
-                          value={translations[lang.code]?.city || ""}
-                          onChange={(e) =>
-                            handleTranslationChange(
-                              lang.code,
-                              "city",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Nome da cidade em ${lang.name}`}
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <Label htmlFor={`metaTitle-${lang.code}`}>
-                          Meta Title SEO ({lang.name})
-                        </Label>
-                        <Input
-                          id={`metaTitle-${lang.code}`}
-                          value={translations[lang.code]?.metaTitle || ""}
-                          onChange={(e) =>
-                            handleTranslationChange(
-                              lang.code,
-                              "metaTitle",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Meta title para SEO em ${lang.name}`}
-                        />
-                      </div>
-
-                      <div className="grid gap-2">
-                        <Label htmlFor={`metaDescription-${lang.code}`}>
-                          Meta Description SEO ({lang.name})
-                        </Label>
-                        <Input
-                          id={`metaDescription-${lang.code}`}
-                          value={translations[lang.code]?.metaDescription || ""}
-                          onChange={(e) =>
-                            handleTranslationChange(
-                              lang.code,
-                              "metaDescription",
-                              e.target.value
-                            )
-                          }
-                          placeholder={`Meta description para SEO em ${lang.name}`}
-                        />
-                      </div>
-                    </div>
-                  </TabsContent>
-                ))}
-              </Tabs>
-            </div>
+            <EventTranslationsEditor
+              translations={translations}
+              activeTab={activeTranslationTab}
+              isLoading={isLoadingTranslations}
+              onTranslationChange={handleTranslationChange}
+              onTabChange={setActiveTranslationTab}
+            />
           </div>
           <DialogFooter>
             <Button

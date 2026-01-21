@@ -18,6 +18,9 @@ jest.mock("@/lib/prisma", () => ({
     venueMember: {
       findUnique: jest.fn(),
     },
+    user: {
+      findUnique: jest.fn(),
+    },
   },
 }));
 
@@ -259,6 +262,10 @@ describe("authorization", () => {
 
   describe("canManageVenue", () => {
     it("should allow owner to manage venue", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: userId,
+        role: "USER", // Not an admin at app level
+      });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
         role: VenueRole.OWNER,
@@ -271,6 +278,10 @@ describe("authorization", () => {
     });
 
     it("should allow admin to manage venue", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: userId,
+        role: "USER", // Not an admin at app level
+      });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
         role: VenueRole.ADMIN,
@@ -283,6 +294,10 @@ describe("authorization", () => {
     });
 
     it("should not allow coach to manage venue", async () => {
+      (prisma.user.findUnique as jest.Mock).mockResolvedValue({
+        id: userId,
+        role: "USER", // Not an admin at app level
+      });
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
         role: VenueRole.COACH,

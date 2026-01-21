@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -42,6 +43,12 @@ export async function POST(req: Request) {
         email: true,
         role: true,
       },
+    });
+
+    // Track successful registration on server
+    await trackServerEvent(ANALYTICS_EVENTS.SIGNUP_COMPLETED, {
+      method: "email",
+      userId: user.id,
     });
 
     return NextResponse.json(

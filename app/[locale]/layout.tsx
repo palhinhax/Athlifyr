@@ -22,6 +22,7 @@ import { notFound } from "next/navigation";
 import { routing } from "@/i18n/routing";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { LogoLink } from "@/components/logo-link";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -165,12 +166,7 @@ export default async function RootLayout({
           <SessionProvider>
             <header className="sticky top-0 z-50 border-b bg-background">
               <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                <Link
-                  href={`/${locale}`}
-                  className="text-2xl font-bold transition-opacity hover:opacity-80"
-                >
-                  Athlifyr
-                </Link>
+                <LogoLink locale={locale} />
                 {/* Desktop Navigation */}
                 <DesktopNav />
 

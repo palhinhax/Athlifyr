@@ -11,14 +11,21 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
+import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 interface ShareButtonProps {
   title: string;
   url?: string;
   description?: string;
+  eventId?: string; // Optional event ID for tracking
 }
 
-export function ShareButton({ title, url, description }: ShareButtonProps) {
+export function ShareButton({
+  title,
+  url,
+  description,
+  eventId,
+}: ShareButtonProps) {
   const { toast } = useToast();
   const t = useTranslations("events.share");
   const [copied, setCopied] = useState(false);
@@ -32,6 +39,15 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
+
+      // Track share event
+      if (eventId) {
+        analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+          eventId,
+          method: "copy_link",
+        });
+      }
+
       toast({
         title: t("linkCopied"),
         description: t("linkCopiedDesc"),
@@ -48,26 +64,66 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
   };
 
   const handleShareFacebook = () => {
+    // Track share event
+    if (eventId) {
+      analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+        eventId,
+        method: "facebook",
+      });
+    }
+
     const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(title)}`;
     window.open(facebookUrl, "_blank", "width=600,height=400");
   };
 
   const handleShareTwitter = () => {
+    // Track share event
+    if (eventId) {
+      analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+        eventId,
+        method: "twitter",
+      });
+    }
+
     const twitterUrl = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`;
     window.open(twitterUrl, "_blank", "width=600,height=400");
   };
 
   const handleShareWhatsApp = () => {
+    // Track share event
+    if (eventId) {
+      analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+        eventId,
+        method: "whatsapp",
+      });
+    }
+
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n${shareUrl}`)}`;
     window.open(whatsappUrl, "_blank");
   };
 
   const handleShareLinkedIn = () => {
+    // Track share event
+    if (eventId) {
+      analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+        eventId,
+        method: "linkedin",
+      });
+    }
+
     const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`;
     window.open(linkedinUrl, "_blank", "width=600,height=400");
   };
 
   const handleShareEmail = () => {
+    // Track share event
+    if (eventId) {
+      analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+        eventId,
+        method: "email",
+      });
+    }
+
     const subject = encodeURIComponent(title);
     const body = encodeURIComponent(`${shareText}\n\n${shareUrl}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
@@ -81,6 +137,14 @@ export function ShareButton({ title, url, description }: ShareButtonProps) {
           text: shareText,
           url: shareUrl,
         });
+
+        // Track share event
+        if (eventId) {
+          analyticsEvent(ANALYTICS_EVENTS.EVENT_SHARE, {
+            eventId,
+            method: "native",
+          });
+        }
       } catch (error) {
         // User cancelled or share failed
         if ((error as Error).name !== "AbortError") {

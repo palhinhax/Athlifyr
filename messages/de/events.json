@@ -64,7 +64,9 @@
       "title": "Anmeldepreise",
       "titleWithVariant": "Preise - {variant}",
       "current": "Aktuell",
-      "until": "Bis"
+      "until": "Bis",
+      "showAll": "Alle anzeigen",
+      "showLess": "Weniger anzeigen"
     },
     "registration": {
       "willYouGo": "Werden Sie teilnehmen?",

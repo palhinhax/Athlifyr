@@ -64,7 +64,9 @@
       "title": "Prezzi di Iscrizione",
       "titleWithVariant": "Prezzi - {variant}",
       "current": "Attuale",
-      "until": "Fino al"
+      "until": "Fino a",
+      "showAll": "Mostra tutto",
+      "showLess": "Mostra meno"
     },
     "registration": {
       "willYouGo": "Parteciperai?",

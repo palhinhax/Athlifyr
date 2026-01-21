@@ -49,7 +49,9 @@
       "title": "Prix d'Inscription",
       "titleWithVariant": "Prix - {variant}",
       "current": "Actuel",
-      "until": "Jusqu'au"
+      "until": "Jusqu'à",
+      "showAll": "Voir tout",
+      "showLess": "Voir moins"
     },
     "registration": {
       "willYouGo": "Allez-vous participer?",

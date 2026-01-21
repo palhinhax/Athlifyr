@@ -430,6 +430,8 @@
       }
     },
     "events": {
+      "sportsLabel": "Sportarten",
+      "selectSportsDesc": "Wähle eine oder mehrere Sportarten",
       "toast": {
         "invalidFile": "Ungültige Datei",
         "invalidFileDesc": "Nur Bilddateien sind erlaubt.",

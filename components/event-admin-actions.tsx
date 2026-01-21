@@ -28,6 +28,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { SportType, Language } from "@prisma/client";
 import { useTranslations } from "next-intl";
+import { sportTypeLabels } from "@/lib/event-utils";
 
 // Languages configuration
 const SUPPORTED_LANGUAGES: { code: Language; name: string; flag: string }[] = [
@@ -260,6 +261,28 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleSportType = (sportType: SportType) => {
+    setFormData((prev) => {
+      const currentSports = prev.sportTypes;
+      if (currentSports.includes(sportType)) {
+        // Remove if already selected (but keep at least one)
+        if (currentSports.length > 1) {
+          return {
+            ...prev,
+            sportTypes: currentSports.filter((s) => s !== sportType),
+          };
+        }
+        return prev;
+      } else {
+        // Add if not selected
+        return {
+          ...prev,
+          sportTypes: [...currentSports, sportType],
+        };
+      }
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -499,23 +522,28 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               />
             </div>
 
-            {/* TODO: Update to multi-select for sportTypes array */}
-            {/* <div className="grid gap-2">
-              <Label htmlFor="sportType">Modalidade</Label>
-              <select
-                id="sportType"
-                name="sportType"
-                value={formData.sportType}
-                onChange={handleInputChange}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-              >
+            <div className="grid gap-2">
+              <Label>{t("sportsLabel")} *</Label>
+              <p className="text-xs text-muted-foreground">
+                {t("selectSportsDesc")}
+              </p>
+              <div className="grid grid-cols-2 gap-3 rounded-md border border-input p-3">
                 {Object.values(SportType).map((type) => (
-                  <option key={type} value={type}>
-                    {sportTypeLabels[type]}
-                  </option>
+                  <label
+                    key={type}
+                    className="flex cursor-pointer items-center space-x-2 rounded-md p-2 hover:bg-muted"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={formData.sportTypes.includes(type)}
+                      onChange={() => toggleSportType(type)}
+                      className="h-4 w-4 rounded border-gray-300"
+                    />
+                    <span className="text-sm">{sportTypeLabels[type]}</span>
+                  </label>
                 ))}
-              </select>
-            </div> */}
+              </div>
+            </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">

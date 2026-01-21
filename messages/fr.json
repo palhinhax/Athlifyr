@@ -399,6 +399,8 @@
       }
     },
     "events": {
+      "sportsLabel": "Sports",
+      "selectSportsDesc": "Sélectionnez un ou plusieurs sports",
       "toast": {
         "invalidFile": "Fichier invalide",
         "invalidFileDesc": "Seuls les fichiers image sont autorisés.",

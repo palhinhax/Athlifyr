@@ -644,3 +644,53 @@ This agent specification contains:
 - Step-by-step examples and templates
 
 **Never create seed files without consulting this agent specification first.**
+
+### SEO Requirements for Event Seeds (CRITICAL)
+
+**MANDATORY**: ALL event seeds MUST include complete SEO metadata for ALL 6 languages:
+
+1. **metaTitle** - Required for every language translation
+   - Format: `"Event Name - Edition | City, Region | Date"`
+   - Example: `"Trail Manuelino 2026 - 5ª Edição | Abiul, Pombal | 1 Fevereiro"`
+   - Must be optimized for search engines (< 60 characters recommended)
+   - Include key identifiers: event name, edition number, location, date
+
+2. **metaDescription** - Required for every language translation
+   - Format: Brief summary with key event details
+   - Example: `"Trail Manuelino 2026 - 5ª edição a 1 de fevereiro em Abiul, Pombal. Provas: Trail 32km, Sprint 18km, Mini Trail 12km, Caminhada 12km e Trail Kids. Circuito ADAL e Trail Series 100."`
+   - Must include: date, location, race variants, key circuits/certifications
+   - Length: 150-160 characters recommended
+   - Optimized for Google search snippets
+
+3. **Implementation in EventTranslation upsert**:
+
+   ```typescript
+   await prisma.eventTranslation.upsert({
+     where: { eventId_language: { eventId: event.id, language: lang } },
+     update: {
+       title: translations[lang].title,
+       description: translations[lang].description,
+       city: translations[lang].city,
+       metaTitle: translations[lang].metaTitle, // ✅ REQUIRED
+       metaDescription: translations[lang].metaDescription, // ✅ REQUIRED
+     },
+     create: {
+       eventId: event.id,
+       language: lang,
+       title: translations[lang].title,
+       description: translations[lang].description,
+       city: translations[lang].city,
+       metaTitle: translations[lang].metaTitle, // ✅ REQUIRED
+       metaDescription: translations[lang].metaDescription, // ✅ REQUIRED
+     },
+   });
+   ```
+
+4. **Quality Checklist** - EVERY seed must have:
+   - ✅ metaTitle in ALL 6 languages (pt, en, es, fr, de, it)
+   - ✅ metaDescription in ALL 6 languages (pt, en, es, fr, de, it)
+   - ✅ Both fields included in EventTranslation upsert (update AND create blocks)
+   - ✅ Consistent format across all languages
+   - ✅ Localized dates and formatting per language (e.g., "1 February" vs "1 Fevereiro")
+
+**GitHub Copilot must NEVER create event seeds without complete SEO metadata.**

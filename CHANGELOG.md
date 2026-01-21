@@ -1,3 +1,11 @@
+# [10.3.0](https://github.com/palhinhax/Athlifyr/compare/v10.2.0...v10.3.0) (2026-01-21)
+
+### Features
+
+- **analytics:** add email-based exclusion from all tracking ([520dcc3](https://github.com/palhinhax/Athlifyr/commit/520dcc335b3f0feade8f7c348c545a5d8cefc016))
+- **seeds:** add ZUT Zebra Ultra Trail 2026 event seed ([230a6a2](https://github.com/palhinhax/Athlifyr/commit/230a6a2f2a362883c5a9022f2656dacb21c5abe5))
+- **seeds:** enhance ZUT 2026 seed with dynamic pricing phase creation and currency support ([a2ed34c](https://github.com/palhinhax/Athlifyr/commit/a2ed34c2cf20d5d2e60c1a4b0dea8d9793061741))
+
 # [10.2.0](https://github.com/palhinhax/Athlifyr/compare/v10.1.0...v10.2.0) (2026-01-21)
 
 ### Bug Fixes

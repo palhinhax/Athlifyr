@@ -1,33 +1,38 @@
-# Seeds - Eventos por Mês
+# Seeds - Eventos por País
 
-Estrutura organizada por mês do evento para facilitar a gestão dos ficheiros de seed.
+Estrutura organizada por país do evento para facilitar a gestão dos ficheiros de seed.
 
 ## Estrutura das Pastas
 
-- **01-janeiro/** - 19 eventos
-- **02-fevereiro/** - 11 eventos
-- **03-marco/** - 5 eventos
-- **04-abril/** - 7 eventos
-- **05-maio/** - 4 eventos
-- **06-junho/** - 2 eventos
-- **07-julho/** - 4 eventos
-- **08-agosto/** - (vazio)
-- **09-setembro/** - 2 eventos
-- **10-outubro/** - 3 eventos
-- **11-novembro/** - 3 eventos
-- **12-dezembro/** - (vazio)
+### 🌍 Distribuição por País
+
+- 🇵🇹 **portugal/** - 51 eventos
+- 🇪🇸 **espanha/** - 6 eventos
+- 🇫🇷 **franca/** - 3 eventos
+- 🇺🇸 **eua/** - 4 eventos
+- 🇬🇧 **reino-unido/** - 1 evento
+- 🇩🇪 **alemanha/** - 1 evento
+- 🇮🇹 **italia/** - 1 evento
+
+**Total:** 67 eventos em 7 países
 
 ## Como usar
 
-Para executar todos os seeds de um mês específico:
+Para executar um seed específico:
 
 ```bash
-# Exemplo: Janeiro
-npx tsx prisma/seeds/01-janeiro/linhas-torres-100-2026.ts
+# Exemplo: Evento em Portugal
+npx tsx prisma/seeds/portugal/linhas-torres-100-2026.ts
+
+# Exemplo: Evento nos EUA
+npx tsx prisma/seeds/eua/leadville-trail-100-2026.ts
 ```
 
 ## Convenções
 
 - Cada ficheiro representa um evento específico
-- Os ficheiros estão organizados pelo **mês do evento**, não pelo mês de criação
-- Usar o formato: `nome-evento-2026.ts` ou `seed-nome-evento.ts`
+- Os ficheiros estão organizados pelo **país do evento**
+- Formato dos nomes: `nome-evento-2026.ts` ou `seed-nome-evento.ts`
+- Todos os seeds seguem o padrão idempotente (safe to re-run)
+- Cada seed inclui traduções em 6 idiomas (pt, en, es, fr, de, it)
+- SEO metadata completo para todos os eventos

@@ -36,7 +36,7 @@ interface Event {
   title: string;
   slug: string;
   description: string;
-  sportType: SportType;
+  sportTypes: SportType[];
   startDate: string;
   city: string;
   country: string;
@@ -87,7 +87,7 @@ export default function AdminEventsPage() {
   const [formData, setFormData] = useState<{
     title: string;
     description: string;
-    sportType: SportType;
+    sportTypes: SportType[];
     startDate: string;
     endDate: string;
     city: string;
@@ -98,7 +98,7 @@ export default function AdminEventsPage() {
   }>({
     title: "",
     description: "",
-    sportType: SportType.RUNNING,
+    sportTypes: [SportType.RUNNING],
     startDate: "",
     endDate: "",
     city: "",
@@ -174,6 +174,28 @@ export default function AdminEventsPage() {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleSportType = (sportType: SportType) => {
+    setFormData((prev) => {
+      const currentSports = prev.sportTypes;
+      if (currentSports.includes(sportType)) {
+        // Remove if already selected (but keep at least one)
+        if (currentSports.length > 1) {
+          return {
+            ...prev,
+            sportTypes: currentSports.filter((s) => s !== sportType),
+          };
+        }
+        return prev;
+      } else {
+        // Add if not selected
+        return {
+          ...prev,
+          sportTypes: [...currentSports, sportType],
+        };
+      }
+    });
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -318,7 +340,7 @@ export default function AdminEventsPage() {
     setFormData({
       title: "",
       description: "",
-      sportType: SportType.RUNNING,
+      sportTypes: [SportType.RUNNING],
       startDate: "",
       endDate: "",
       city: "",
@@ -465,20 +487,26 @@ export default function AdminEventsPage() {
                 </div>
 
                 <div className="grid gap-2">
-                  <Label htmlFor="sportType">Modalidade</Label>
-                  <select
-                    id="sportType"
-                    name="sportType"
-                    value={formData.sportType}
-                    onChange={handleInputChange}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  >
+                  <Label>Modalidades *</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Seleciona uma ou mais modalidades
+                  </p>
+                  <div className="grid grid-cols-2 gap-3 rounded-md border border-input p-3">
                     {Object.values(SportType).map((type) => (
-                      <option key={type} value={type}>
-                        {sportTypeLabels[type]}
-                      </option>
+                      <label
+                        key={type}
+                        className="flex cursor-pointer items-center space-x-2 rounded-md p-2 hover:bg-muted"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={formData.sportTypes.includes(type)}
+                          onChange={() => toggleSportType(type)}
+                          className="h-4 w-4 rounded border-gray-300"
+                        />
+                        <span className="text-sm">{sportTypeLabels[type]}</span>
+                      </label>
                     ))}
-                  </select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
@@ -688,7 +716,7 @@ export default function AdminEventsPage() {
                         </div>
 
                         {/* Triathlon Segments - Only show for TRIATHLON sport type */}
-                        {formData.sportType === SportType.TRIATHLON && (
+                        {formData.sportTypes.includes(SportType.TRIATHLON) && (
                           <div className="mt-3 space-y-2 border-t pt-3">
                             <div className="flex items-center justify-between">
                               <Label className="text-sm font-medium">
@@ -854,8 +882,15 @@ export default function AdminEventsPage() {
                         fill
                         className="object-cover"
                       />
-                      <div className="absolute right-2 top-2 rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground">
-                        {sportTypeLabels[event.sportType]}
+                      <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+                        {event.sportTypes.map((sport) => (
+                          <span
+                            key={sport}
+                            className="rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
+                          >
+                            {sportTypeLabels[sport]}
+                          </span>
+                        ))}
                       </div>
                     </div>
                     <CardContent className="p-4">

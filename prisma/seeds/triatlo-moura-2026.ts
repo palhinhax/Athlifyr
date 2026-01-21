@@ -5,7 +5,7 @@
  * Partner: Município de Moura
  */
 
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Language } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -47,10 +47,11 @@ As vagas são **limitadas**. Garante já o teu lugar e aproveita o desconto de i
       endDate: new Date("2026-04-26T16:00:00Z"),
       city: "Moura",
       country: "Portugal",
-      latitude: 38.1400,
-      longitude: -7.4500,
+      latitude: 38.14,
+      longitude: -7.45,
       googleMapsUrl: "https://maps.app.goo.gl/YQxV8zKJMqXyZ7jR9",
-      externalUrl: "https://www.federacao-triatlo.pt/media-distancia-moura-2026/",
+      externalUrl:
+        "https://www.federacao-triatlo.pt/media-distancia-moura-2026/",
       imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-25T23:59:59Z"),
@@ -88,10 +89,11 @@ As vagas são **limitadas**. Garante já o teu lugar e aproveita o desconto de i
       endDate: new Date("2026-04-26T16:00:00Z"),
       city: "Moura",
       country: "Portugal",
-      latitude: 38.1400,
-      longitude: -7.4500,
+      latitude: 38.14,
+      longitude: -7.45,
       googleMapsUrl: "https://maps.app.goo.gl/YQxV8zKJMqXyZ7jR9",
-      externalUrl: "https://www.federacao-triatlo.pt/media-distancia-moura-2026/",
+      externalUrl:
+        "https://www.federacao-triatlo.pt/media-distancia-moura-2026/",
       imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-04-25T23:59:59Z"),
@@ -101,9 +103,16 @@ As vagas são **limitadas**. Garante já o teu lugar e aproveita o desconto de i
   console.log("✅ Event upserted with ID:", event.id);
 
   // Step 2: Upsert translations separately (ALL 6 LANGUAGES)
-  const translations = [
+  const translations: Array<{
+    language: Language;
+    title: string;
+    description: string;
+    city: string;
+    metaTitle: string;
+    metaDescription: string;
+  }> = [
     {
-      language: "pt",
+      language: Language.pt,
       title: "Triatlo de Média Distância de Moura 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Triatlo de Média Distância de Moura 2026
 
@@ -131,11 +140,13 @@ As vagas são **limitadas**. Garante já o teu lugar e aproveita o desconto de i
 - 💷 **Março:** 100€
 - 💸 **Abril:** 120€`,
       city: "Moura",
-      metaTitle: "Triatlo de Média Distância de Moura 2026 | Alentejo, Portugal",
-      metaDescription: "Inscreve-te no Triatlo de Média Distância de Moura 2026 (26 de abril). Desconto especial em janeiro - 80€! Organizado pela Federação de Triatlo de Portugal no coração do Alentejo.",
+      metaTitle:
+        "Triatlo de Média Distância de Moura 2026 | Alentejo, Portugal",
+      metaDescription:
+        "Inscreve-te no Triatlo de Média Distância de Moura 2026 (26 de abril). Desconto especial em janeiro - 80€! Organizado pela Federação de Triatlo de Portugal no coração do Alentejo.",
     },
     {
-      language: "en",
+      language: Language.en,
       title: "Moura Middle Distance Triathlon 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Moura Middle Distance Triathlon 2026
 
@@ -164,10 +175,11 @@ Spots are **limited**. Secure your place now and take advantage of the early yea
 - 💸 **April:** €120`,
       city: "Moura",
       metaTitle: "Moura Middle Distance Triathlon 2026 | Alentejo, Portugal",
-      metaDescription: "Register for the Moura Middle Distance Triathlon 2026 (April 26). Special January discount - €80! Organized by the Portuguese Triathlon Federation in the heart of Alentejo.",
+      metaDescription:
+        "Register for the Moura Middle Distance Triathlon 2026 (April 26). Special January discount - €80! Organized by the Portuguese Triathlon Federation in the heart of Alentejo.",
     },
     {
-      language: "es",
+      language: Language.es,
       title: "Triatlón de Media Distancia de Moura 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Triatlón de Media Distancia de Moura 2026
 
@@ -195,11 +207,13 @@ Las plazas son **limitadas**. ¡Asegura tu plaza ya y aprovecha el descuento de 
 - 💷 **Marzo:** 100€
 - 💸 **Abril:** 120€`,
       city: "Moura",
-      metaTitle: "Triatlón de Media Distancia de Moura 2026 | Alentejo, Portugal",
-      metaDescription: "Inscríbete en el Triatlón de Media Distancia de Moura 2026 (26 de abril). ¡Descuento especial en enero - 80€! Organizado por la Federación Portuguesa de Triatlón en el corazón del Alentejo.",
+      metaTitle:
+        "Triatlón de Media Distancia de Moura 2026 | Alentejo, Portugal",
+      metaDescription:
+        "Inscríbete en el Triatlón de Media Distancia de Moura 2026 (26 de abril). ¡Descuento especial en enero - 80€! Organizado por la Federación Portuguesa de Triatlón en el corazón del Alentejo.",
     },
     {
-      language: "fr",
+      language: Language.fr,
       title: "Triathlon Moyenne Distance de Moura 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon Moyenne Distance de Moura 2026
 
@@ -227,11 +241,13 @@ Les places sont **limitées**. Réservez votre place dès maintenant et profitez
 - 💷 **Mars :** 100€
 - 💸 **Avril :** 120€`,
       city: "Moura",
-      metaTitle: "Triathlon Moyenne Distance de Moura 2026 | Alentejo, Portugal",
-      metaDescription: "Inscrivez-vous au Triathlon Moyenne Distance de Moura 2026 (26 avril). Réduction spéciale en janvier - 80€ ! Organisé par la Fédération Portugaise de Triathlon au cœur de l'Alentejo.",
+      metaTitle:
+        "Triathlon Moyenne Distance de Moura 2026 | Alentejo, Portugal",
+      metaDescription:
+        "Inscrivez-vous au Triathlon Moyenne Distance de Moura 2026 (26 avril). Réduction spéciale en janvier - 80€ ! Organisé par la Fédération Portugaise de Triathlon au cœur de l'Alentejo.",
     },
     {
-      language: "de",
+      language: Language.de,
       title: "Moura Mitteldistanz-Triathlon 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Moura Mitteldistanz-Triathlon 2026
 
@@ -260,10 +276,11 @@ Die Plätze sind **begrenzt**. Sichern Sie sich jetzt Ihren Platz und nutzen Sie
 - 💸 **April:** 120€`,
       city: "Moura",
       metaTitle: "Moura Mitteldistanz-Triathlon 2026 | Alentejo, Portugal",
-      metaDescription: "Melden Sie sich für den Moura Mitteldistanz-Triathlon 2026 (26. April) an. Sonderrabatt im Januar - 80€! Organisiert vom Portugiesischen Triathlon-Verband im Herzen des Alentejo.",
+      metaDescription:
+        "Melden Sie sich für den Moura Mitteldistanz-Triathlon 2026 (26. April) an. Sonderrabatt im Januar - 80€! Organisiert vom Portugiesischen Triathlon-Verband im Herzen des Alentejo.",
     },
     {
-      language: "it",
+      language: Language.it,
       title: "Triathlon Media Distanza di Moura 2026",
       description: `## 🏊‍♂️🚴‍♂️🏃‍♂️ Triathlon Media Distanza di Moura 2026
 
@@ -291,8 +308,10 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
 - 💷 **Marzo:** 100€
 - 💸 **Aprile:** 120€`,
       city: "Moura",
-      metaTitle: "Triathlon Media Distanza di Moura 2026 | Alentejo, Portogallo",
-      metaDescription: "Iscriviti al Triathlon Media Distanza di Moura 2026 (26 aprile). Sconto speciale a gennaio - 80€! Organizzato dalla Federazione Portoghese di Triathlon nel cuore dell'Alentejo.",
+      metaTitle:
+        "Triathlon Media Distanza di Moura 2026 | Alentejo, Portogallo",
+      metaDescription:
+        "Iscriviti al Triathlon Media Distanza di Moura 2026 (26 aprile). Sconto speciale a gennaio - 80€! Organizzato dalla Federazione Portoghese di Triathlon nel cuore dell'Alentejo.",
     },
   ];
 
@@ -323,7 +342,9 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
     });
   }
 
-  console.log("📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)");
+  console.log(
+    "📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)"
+  );
 
   // Step 3: Find or create variant (no unique constraint on EventVariant)
   let variant = await prisma.eventVariant.findFirst({
@@ -338,7 +359,8 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
     variant = await prisma.eventVariant.update({
       where: { id: variant.id },
       data: {
-        description: "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
+        description:
+          "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
         distanceKm: 113, // Total distance: 1.9 + 90 + 21 = 112.9km
         elevationGainM: null,
         elevationLossM: null,
@@ -357,7 +379,8 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
       data: {
         eventId: event.id,
         name: "Média Distância",
-        description: "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
+        description:
+          "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
         distanceKm: 113,
         elevationGainM: null,
         elevationLossM: null,
@@ -375,36 +398,46 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
   console.log("🏃 Variant created/updated with ID:", variant.id);
 
   // Step 4: Upsert variant translations separately (ALL 6 languages)
-  const variantTranslations = [
+  const variantTranslations: Array<{
+    language: Language;
+    name: string;
+    description: string;
+  }> = [
     {
-      language: "pt",
+      language: Language.pt,
       name: "Média Distância",
-      description: "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
+      description:
+        "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
     },
     {
-      language: "en",
+      language: Language.en,
       name: "Middle Distance",
-      description: "Middle distance triathlon: 1.9 km swim + 90 km bike + 21 km run",
+      description:
+        "Middle distance triathlon: 1.9 km swim + 90 km bike + 21 km run",
     },
     {
-      language: "es",
+      language: Language.es,
       name: "Media Distancia",
-      description: "Triatlón de media distancia: 1,9 km natación + 90 km ciclismo + 21 km carrera",
+      description:
+        "Triatlón de media distancia: 1,9 km natación + 90 km ciclismo + 21 km carrera",
     },
     {
-      language: "fr",
+      language: Language.fr,
       name: "Moyenne Distance",
-      description: "Triathlon moyenne distance : 1,9 km natation + 90 km vélo + 21 km course",
+      description:
+        "Triathlon moyenne distance : 1,9 km natation + 90 km vélo + 21 km course",
     },
     {
-      language: "de",
+      language: Language.de,
       name: "Mitteldistanz",
-      description: "Mitteldistanz-Triathlon: 1,9 km Schwimmen + 90 km Radfahren + 21 km Laufen",
+      description:
+        "Mitteldistanz-Triathlon: 1,9 km Schwimmen + 90 km Radfahren + 21 km Laufen",
     },
     {
-      language: "it",
+      language: Language.it,
       name: "Media Distanza",
-      description: "Triathlon media distanza: 1,9 km nuoto + 90 km ciclismo + 21 km corsa",
+      description:
+        "Triathlon media distanza: 1,9 km nuoto + 90 km ciclismo + 21 km corsa",
     },
   ];
 
@@ -468,30 +501,37 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
   ];
 
   for (const phase of pricingPhases) {
-    await prisma.pricingPhase.upsert({
+    const existingPhase = await prisma.pricingPhase.findFirst({
       where: {
-        eventId_name: {
-          eventId: event.id,
-          name: phase.name,
-        },
-      },
-      update: {
-        startDate: phase.startDate,
-        endDate: phase.endDate,
-        price: phase.price,
-        discountPercent: phase.discountPercent,
-        note: phase.note,
-      },
-      create: {
         eventId: event.id,
         name: phase.name,
-        startDate: phase.startDate,
-        endDate: phase.endDate,
-        price: phase.price,
-        discountPercent: phase.discountPercent,
-        note: phase.note,
       },
     });
+
+    if (existingPhase) {
+      await prisma.pricingPhase.update({
+        where: { id: existingPhase.id },
+        data: {
+          startDate: phase.startDate,
+          endDate: phase.endDate,
+          price: phase.price,
+          discountPercent: phase.discountPercent,
+          note: phase.note,
+        },
+      });
+    } else {
+      await prisma.pricingPhase.create({
+        data: {
+          eventId: event.id,
+          name: phase.name,
+          startDate: phase.startDate,
+          endDate: phase.endDate,
+          price: phase.price,
+          discountPercent: phase.discountPercent,
+          note: phase.note,
+        },
+      });
+    }
   }
 
   console.log("💰 Pricing phases upserted (4 phases)");

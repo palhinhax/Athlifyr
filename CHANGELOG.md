@@ -1,3 +1,9 @@
+# [11.2.0](https://github.com/palhinhax/Athlifyr/compare/v11.1.0...v11.2.0) (2026-01-21)
+
+### Features
+
+- **event:** implement multi-select for sport types in event creation ([928e39a](https://github.com/palhinhax/Athlifyr/commit/928e39ab621ba0e176ab02f0f8f96f446b1fffab))
+
 # [11.1.0](https://github.com/palhinhax/Athlifyr/compare/v11.0.0...v11.1.0) (2026-01-21)
 
 ### Features

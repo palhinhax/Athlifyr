@@ -1,12 +1,29 @@
 import Stripe from "stripe";
 
-if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is not defined in environment variables");
+let stripeInstance: Stripe | null = null;
+
+// Lazy initialization of Stripe client
+export function getStripe(): Stripe {
+  if (!stripeInstance) {
+    const secretKey = process.env.STRIPE_SECRET_KEY;
+    if (!secretKey) {
+      throw new Error(
+        "STRIPE_SECRET_KEY is not defined in environment variables"
+      );
+    }
+    stripeInstance = new Stripe(secretKey, {
+      typescript: true,
+    });
+  }
+  return stripeInstance;
 }
 
-// Inicializar Stripe no servidor
-export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  typescript: true,
+// Deprecated: Use getStripe() instead
+// Kept for backward compatibility during migration
+export const stripe = new Proxy({} as Stripe, {
+  get(target, prop) {
+    return getStripe()[prop as keyof Stripe];
+  },
 });
 
 // Helper para formatar valores monetários para Stripe (centavos)

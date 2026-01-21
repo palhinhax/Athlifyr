@@ -7,7 +7,13 @@ import {
   getContactReplyEmailText,
 } from "@/lib/email-templates";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  return new Resend(apiKey);
+}
 
 export async function POST(
   request: NextRequest,
@@ -56,6 +62,7 @@ export async function POST(
       adminName: adminName || session.user.name || "Equipa Athlifyr",
     });
 
+    const resend = getResendClient();
     await resend.emails.send({
       from: "Athlifyr <hello@athlifyr.com>",
       to: contact.email,

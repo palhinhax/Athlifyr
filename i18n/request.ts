@@ -14,29 +14,34 @@ export default getRequestConfig(async ({ requestLocale }) => {
     ? (requested as string)
     : routing.defaultLocale;
 
-  // Check if modular structure exists
+  // Load messages from modular structure
   const localeDir = path.join(process.cwd(), "messages", locale);
-  const hasModularStructure =
-    fs.existsSync(localeDir) && fs.statSync(localeDir).isDirectory();
 
-  let messages;
+  // Ensure the locale directory exists
+  if (!fs.existsSync(localeDir) || !fs.statSync(localeDir).isDirectory()) {
+    throw new Error(
+      `Messages directory not found for locale "${locale}". ` +
+        `Expected directory at: ${localeDir}`
+    );
+  }
 
-  if (hasModularStructure) {
-    // Load all JSON files from the locale folder and merge them
-    const files = fs
-      .readdirSync(localeDir)
-      .filter((file) => file.endsWith(".json"));
+  // Load all JSON files from the locale folder and merge them
+  const files = fs
+    .readdirSync(localeDir)
+    .filter((file) => file.endsWith(".json"));
 
-    messages = {};
-    for (const file of files) {
-      const fileMessages = JSON.parse(
-        fs.readFileSync(path.join(localeDir, file), "utf-8")
-      );
-      Object.assign(messages, fileMessages);
-    }
-  } else {
-    // Fallback to monolithic file (backwards compatibility)
-    messages = (await import(`../messages/${locale}.json`)).default;
+  if (files.length === 0) {
+    throw new Error(
+      `No translation files found for locale "${locale}" in ${localeDir}`
+    );
+  }
+
+  const messages = {};
+  for (const file of files) {
+    const fileMessages = JSON.parse(
+      fs.readFileSync(path.join(localeDir, file), "utf-8")
+    );
+    Object.assign(messages, fileMessages);
   }
 
   return {

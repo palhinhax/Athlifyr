@@ -406,19 +406,17 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             className="gap-1 border-white/20 bg-black/30 px-2 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white sm:px-3"
           >
             <Pencil className="h-4 w-4" />
-            <span className="hidden sm:inline">Editar</span>
+            <span className="hidden sm:inline">{t("editButton")}</span>
           </Button>
         </DialogTrigger>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[900px] lg:max-w-[1100px]">
           <DialogHeader>
-            <DialogTitle>Editar Evento</DialogTitle>
-            <DialogDescription>
-              Faz alterações aos detalhes do evento.
-            </DialogDescription>
+            <DialogTitle>{t("editTitle")}</DialogTitle>
+            <DialogDescription>{t("editDescription")}</DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="title">Título</Label>
+              <Label htmlFor="title">{t("titleLabel")}</Label>
               <Input
                 id="title"
                 name="title"
@@ -428,7 +426,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="description">Descrição</Label>
+              <Label htmlFor="description">{t("descriptionLabel")}</Label>
               <textarea
                 id="description"
                 name="description"
@@ -445,7 +443,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="startDate">Data de Início</Label>
+                <Label htmlFor="startDate">{t("startDateLabel")}</Label>
                 <Input
                   id="startDate"
                   name="startDate"
@@ -455,7 +453,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="endDate">Data de Fim (opcional)</Label>
+                <Label htmlFor="endDate">{t("endDateLabel")}</Label>
                 <Input
                   id="endDate"
                   name="endDate"
@@ -468,7 +466,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
 
             <div className="grid grid-cols-2 gap-4">
               <div className="grid gap-2">
-                <Label htmlFor="city">Cidade</Label>
+                <Label htmlFor="city">{t("cityLabel")}</Label>
                 <Input
                   id="city"
                   name="city"
@@ -477,7 +475,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="country">País</Label>
+                <Label htmlFor="country">{t("countryLabel")}</Label>
                 <Input
                   id="country"
                   name="country"
@@ -495,7 +493,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             />
 
             <div className="grid gap-2">
-              <Label htmlFor="externalUrl">URL Externo (inscrições)</Label>
+              <Label htmlFor="externalUrl">{t("externalUrlLabel")}</Label>
               <Input
                 id="externalUrl"
                 name="externalUrl"
@@ -506,7 +504,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="stravaRouteEmbed">Strava Route Embed Code</Label>
+              <Label htmlFor="stravaRouteEmbed">{t("stravaEmbedLabel")}</Label>
               <textarea
                 id="stravaRouteEmbed"
                 name="stravaRouteEmbed"
@@ -516,7 +514,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                 className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
               <p className="text-xs text-muted-foreground">
-                Cole o código de embed do Strava Route (iframe completo)
+                {t("stravaEmbedHelp")}
               </p>
             </div>
 
@@ -557,7 +555,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               onClick={() => setIsEditOpen(false)}
               disabled={isLoading}
             >
-              Cancelar
+              {t("cancelButton")}
             </Button>
             <Button onClick={handleUpdate} disabled={isLoading}>
               {isLoading ? t("actions.saving") : t("actions.saveChanges")}
@@ -575,17 +573,13 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             className="gap-1 bg-red-600/80 px-2 backdrop-blur-sm hover:bg-red-700/90 sm:px-3"
           >
             <Trash2 className="h-4 w-4" />
-            <span className="hidden sm:inline">Eliminar</span>
+            <span className="hidden sm:inline">{t("deleteButton")}</span>
           </Button>
         </DialogTrigger>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Eliminar Evento</DialogTitle>
-            <DialogDescription>
-              Tens a certeza que queres eliminar este evento? Esta ação não pode
-              ser revertida. Todos os dados associados (comentários, posts,
-              inscrições) serão eliminados.
-            </DialogDescription>
+            <DialogTitle>{t("deleteTitle")}</DialogTitle>
+            <DialogDescription>{t("deleteDescription")}</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button
@@ -593,14 +587,14 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               onClick={() => setIsDeleteOpen(false)}
               disabled={isLoading}
             >
-              Cancelar
+              {t("cancelButton")}
             </Button>
             <Button
               variant="destructive"
               onClick={handleDelete}
               disabled={isLoading}
             >
-              {isLoading ? "A eliminar..." : "Sim, eliminar"}
+              {isLoading ? t("deletingButton") : t("confirmDeleteButton")}
             </Button>
           </DialogFooter>
         </DialogContent>

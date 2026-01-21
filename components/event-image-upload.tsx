@@ -82,7 +82,7 @@ export function EventImageUpload({
 
   return (
     <div className="grid gap-2">
-      <Label>Imagem do Evento</Label>
+      <Label>{t("eventImageLabel")}</Label>
       {imageUrl && (
         <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
           <Image
@@ -126,7 +126,7 @@ export function EventImageUpload({
         </Button>
       </div>
       <p className="text-xs text-muted-foreground">
-        Ou insere um URL diretamente:
+        {t("imageUrlDirectLabel")}
       </p>
       <Input
         id="imageUrl"

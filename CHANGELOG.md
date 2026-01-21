@@ -1,3 +1,9 @@
+# [11.5.0](https://github.com/palhinhax/Athlifyr/compare/v11.4.0...v11.5.0) (2026-01-21)
+
+### Features
+
+- **seeds:** add Boston Marathon 2026 seed and TOP 100 events checklist ([c5607d3](https://github.com/palhinhax/Athlifyr/commit/c5607d326201998435f43f32663b9c6c7017a885))
+
 # [11.4.0](https://github.com/palhinhax/Athlifyr/compare/v11.3.0...v11.4.0) (2026-01-21)
 
 ### Bug Fixes

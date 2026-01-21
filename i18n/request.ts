@@ -36,11 +36,11 @@ export default getRequestConfig(async ({ requestLocale }) => {
     );
   }
 
-  const messages = {};
+  const messages: Record<string, unknown> = {};
   for (const file of files) {
     const fileMessages = JSON.parse(
       fs.readFileSync(path.join(localeDir, file), "utf-8")
-    );
+    ) as Record<string, unknown>;
     Object.assign(messages, fileMessages);
   }
 

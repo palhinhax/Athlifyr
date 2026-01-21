@@ -1,3 +1,42 @@
+# [10.0.0](https://github.com/palhinhax/Athlifyr/compare/v9.9.0...v10.0.0) (2026-01-21)
+
+### Bug Fixes
+
+- **i18n:** remove problematic dynamic import fallback in request.ts ([7b77c1d](https://github.com/palhinhax/Athlifyr/commit/7b77c1d4c637428d43902caf0609fc555e5f9a49))
+- **i18n:** replace filesystem loading with dynamic imports for serverless compatibility ([83eb251](https://github.com/palhinhax/Athlifyr/commit/83eb2514fd6c20e521723a4db22f762c2c975bb5))
+- **ui:** show Current badge on all active pricing phases ([a46d4a1](https://github.com/palhinhax/Athlifyr/commit/a46d4a182d8279059a639e7121d8c76a8fbb8c84))
+- **venues:** allow app admins to update any venue ([4a14f23](https://github.com/palhinhax/Athlifyr/commit/4a14f23a3f105b8d7fa3c0251ac5604635610ffc))
+- **venues:** force image reload with unoptimized and key props ([210c44c](https://github.com/palhinhax/Athlifyr/commit/210c44c196f16e239a71763a2b2a3c2eff338652))
+- **venues:** resolve image upload conflicts in venue edit modal ([d68021f](https://github.com/palhinhax/Athlifyr/commit/d68021fda7b0aa65b01ab1668a80b715bb3c2750))
+
+### Code Refactoring
+
+- **seeds:** move seed files to prisma/seeds directory ([589b5c2](https://github.com/palhinhax/Athlifyr/commit/589b5c21cd0cd9bc4aee48c99fa6485288b1ca07))
+
+### Features
+
+- add seed script for Montepio Meia Maratona de Cascais 2026 with multilingual support and event variants ([1e77604](https://github.com/palhinhax/Athlifyr/commit/1e77604e283848f3f5153751adff6540ee18710e))
+- **admin:** add comprehensive user management with ban functionality ([8d03578](https://github.com/palhinhax/Athlifyr/commit/8d03578bf367fc91efc0fc103fd056f39edfaedd))
+- **admin:** add users management page with pagination and search ([43ef499](https://github.com/palhinhax/Athlifyr/commit/43ef499f767a0c9f2ecd59dc187fefc077477032))
+- **dx:** add event seed generator custom agent ([edc852a](https://github.com/palhinhax/Athlifyr/commit/edc852af43704b8c41904be2a14131c61d518f7f))
+- **i18n:** add modular translations and event seeds with multi-language SEO ([49ab81f](https://github.com/palhinhax/Athlifyr/commit/49ab81f4475c932282ee5c67000c98f6d651e224))
+- **mobile:** add initial React Native Expo setup with i18n and auth ([4493cc7](https://github.com/palhinhax/Athlifyr/commit/4493cc7e53fff7ca0f93998e9b21732ae8f9639a))
+- **seeds:** add Douro Montemuro Ultra Trilhos 2026 idempotent seed ([bf9ad10](https://github.com/palhinhax/Athlifyr/commit/bf9ad10f4e9a8675a49af98fbf9d3fde3e500ddb))
+- **seeds:** add IV Trail Praia Mag8 2026 idempotent seed ([c9636a0](https://github.com/palhinhax/Athlifyr/commit/c9636a032043ebd4c2ef32cdd6998d79ee2d26ae))
+- **seeds:** add Lisbon Eco Marathon 2026 seed file ([91d2eea](https://github.com/palhinhax/Athlifyr/commit/91d2eea0f2023407f3033519754d9b802c53d11c))
+- **seeds:** enhance Lisbon Eco Marathon description with rich markdown ([968c75e](https://github.com/palhinhax/Athlifyr/commit/968c75e60df20d30b48cb60caa4efb5fe3c68641))
+- **ui:** improve venue profile header and add hero backgrounds ([b762482](https://github.com/palhinhax/Athlifyr/commit/b7624821d3f195be860d8f1367af7b788dc2c1a3))
+- **ui:** integrate navigation buttons into event header image ([aca6141](https://github.com/palhinhax/Athlifyr/commit/aca61417d24230be91730dbed1437b4f50ead158))
+- **venues:** add manual subscription management system with pagination ([26601e8](https://github.com/palhinhax/Athlifyr/commit/26601e8829c34229db91cb521af086540f6b911f))
+- **venues:** add plan management UI for venue owners and admins ([e293fb3](https://github.com/palhinhax/Athlifyr/commit/e293fb369205be112d5a9de3e3ee9e215cde5fd5))
+- **venues:** add plan policy system and subscription history ([2814c91](https://github.com/palhinhax/Athlifyr/commit/2814c919f9d2bfc6c9292fee22e22e418ff0e6d3))
+- **venues:** implement stripe payment integration for subscriptions ([171de6d](https://github.com/palhinhax/Athlifyr/commit/171de6d457d825d0724c000fb4e1f51f8f3541a2))
+
+### BREAKING CHANGES
+
+- **seeds:** Seed files moved from prisma/ to prisma/seeds/ directory.
+  Update execution commands to use prisma/seeds/<file>.ts path.
+
 # [9.9.0](https://github.com/palhinhax/Athlifyr/compare/v9.8.3...v9.9.0) (2026-01-19)
 
 ### Features

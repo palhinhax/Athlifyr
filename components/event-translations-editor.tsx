@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Globe, Loader2 } from "lucide-react";
 import { Language } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 export interface EventTranslation {
   language: Language;
@@ -43,18 +44,19 @@ export function EventTranslationsEditor({
   onTranslationChange,
   onTabChange,
 }: EventTranslationsEditorProps) {
+  const t = useTranslations("admin.events");
+
   return (
     <div className="grid gap-4 rounded-lg border p-4">
       <div className="flex items-center gap-2">
         <Globe className="h-5 w-5 text-primary" />
-        <h4 className="font-medium">Traduções</h4>
+        <h4 className="font-medium">{t("translationsTitle")}</h4>
         {isLoading && (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
         )}
       </div>
       <p className="text-sm text-muted-foreground">
-        Adiciona traduções para o evento aparecer corretamente em diferentes
-        idiomas. O conteúdo original (PT) é usado como fallback.
+        {t("translationsDescription")}
       </p>
 
       <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as Language)}>

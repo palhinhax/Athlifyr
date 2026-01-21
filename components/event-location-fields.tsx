@@ -2,6 +2,7 @@
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 
 interface EventLocationFieldsProps {
   latitude: string;
@@ -20,12 +21,14 @@ export function EventLocationFields({
   onLongitudeChange,
   onGoogleMapsUrlChange,
 }: EventLocationFieldsProps) {
+  const t = useTranslations("admin.events");
+
   return (
     <div className="grid gap-4 rounded-lg border p-4">
-      <h4 className="font-medium">Localização no Mapa</h4>
+      <h4 className="font-medium">{t("locationTitle")}</h4>
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
-          <Label htmlFor="latitude">Latitude</Label>
+          <Label htmlFor="latitude">{t("latitudeLabel")}</Label>
           <Input
             id="latitude"
             name="latitude"
@@ -37,7 +40,7 @@ export function EventLocationFields({
           />
         </div>
         <div className="grid gap-2">
-          <Label htmlFor="longitude">Longitude</Label>
+          <Label htmlFor="longitude">{t("longitudeLabel")}</Label>
           <Input
             id="longitude"
             name="longitude"
@@ -50,7 +53,7 @@ export function EventLocationFields({
         </div>
       </div>
       <div className="grid gap-2">
-        <Label htmlFor="googleMapsUrl">URL do Google Maps (opcional)</Label>
+        <Label htmlFor="googleMapsUrl">{t("googleMapsUrlLabel")}</Label>
         <Input
           id="googleMapsUrl"
           name="googleMapsUrl"
@@ -59,10 +62,7 @@ export function EventLocationFields({
           placeholder="https://maps.google.com/..."
         />
       </div>
-      <p className="text-xs text-muted-foreground">
-        Dica: Pesquisa o local no Google Maps, clica com o botão direito e copia
-        as coordenadas.
-      </p>
+      <p className="text-xs text-muted-foreground">{t("locationTip")}</p>
     </div>
   );
 }

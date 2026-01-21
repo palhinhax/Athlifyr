@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, X, Globe } from "lucide-react";
 import { Language } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 export interface VariantTranslation {
   language: Language;
@@ -54,10 +55,12 @@ export function EventVariantsManager({
   onRemoveVariant,
   onVariantTranslationChange,
 }: EventVariantsManagerProps) {
+  const t = useTranslations("admin.events");
+
   return (
     <div className="grid gap-2">
       <div className="flex items-center justify-between">
-        <Label>Variantes / Distâncias</Label>
+        <Label>{t("variantsTitle")}</Label>
         <Button
           type="button"
           variant="outline"
@@ -65,7 +68,7 @@ export function EventVariantsManager({
           onClick={onAddVariant}
         >
           <Plus className="mr-1 h-3 w-3" />
-          Adicionar
+          {t("addButton")}
         </Button>
       </div>
       <div className="space-y-3">
@@ -73,13 +76,13 @@ export function EventVariantsManager({
           <div key={index} className="rounded-lg border p-3">
             <div className="flex items-center gap-2">
               <Input
-                placeholder="Nome (ex: 21km, Singles Pro)"
+                placeholder={t("variantNamePlaceholder")}
                 value={variant.name}
                 onChange={(e) => onVariantChange(index, "name", e.target.value)}
                 className="flex-1"
               />
               <Input
-                placeholder="km"
+                placeholder={t("distancePlaceholder")}
                 value={variant.distanceKm}
                 onChange={(e) =>
                   onVariantChange(index, "distanceKm", e.target.value)
@@ -99,7 +102,7 @@ export function EventVariantsManager({
             <div className="mt-2 flex items-center gap-2">
               <div className="flex-1">
                 <Label className="text-xs text-muted-foreground">
-                  Data (opcional)
+                  {t("dateOptional")}
                 </Label>
                 <Input
                   type="date"
@@ -111,7 +114,7 @@ export function EventVariantsManager({
               </div>
               <div className="w-24">
                 <Label className="text-xs text-muted-foreground">
-                  Hora (opcional)
+                  {t("timeOptional")}
                 </Label>
                 <Input
                   type="time"
@@ -127,7 +130,7 @@ export function EventVariantsManager({
             <details className="mt-3">
               <summary className="cursor-pointer text-sm font-medium text-muted-foreground hover:text-foreground">
                 <Globe className="mr-1 inline h-3 w-3" />
-                Traduções desta variante
+                {t("variantTranslations")}
               </summary>
               <div className="mt-2 space-y-2 rounded-md bg-muted/50 p-2">
                 {SUPPORTED_LANGUAGES.map((lang) => (

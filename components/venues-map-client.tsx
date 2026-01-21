@@ -109,7 +109,7 @@ export default function VenuesMapClient({
   const [filters, setFilters] = useState<{ types: string[] } | undefined>(
     initialFilters
   );
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
 
   useEffect(() => {

@@ -3,16 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import {
-  MapPin,
-  Phone,
-  Mail,
-  Globe,
-  Instagram,
-  Users,
-  Calendar,
-  Edit,
-} from "lucide-react";
+import { MapPin, Users, Calendar, Edit } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { VenueEditModal } from "@/components/venue-edit-modal";
 import { ShareButton } from "@/components/share-button";
@@ -46,6 +37,7 @@ interface VenueProfileHeaderProps {
     _count: {
       sessions: number;
       bookings: number;
+      subscriptions: number;
     };
   };
   userId?: string;
@@ -63,7 +55,6 @@ export function VenueProfileHeader({
 }: VenueProfileHeaderProps) {
   const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
-  const tInfo = useTranslations("venues.info");
   const [editModalOpen, setEditModalOpen] = useState(false);
 
   // Create share URL and description
@@ -72,7 +63,7 @@ export function VenueProfileHeader({
     `${venue.description || ""} ${venue.address ? `${venue.address}, ` : ""}${venue.city}, ${venue.country}`.trim();
 
   return (
-    <div className="mb-6 w-full">
+    <div className="w-full">
       {/* Cover Image */}
       <div className="relative h-48 w-full overflow-hidden rounded-t-lg bg-gradient-to-r from-primary/20 to-primary/10 md:h-64 lg:h-80">
         {venue.coverImage ? (
@@ -156,22 +147,11 @@ export function VenueProfileHeader({
               )}
             </div>
 
-            {/* Info below cover - Location and Stats */}
+            {/* Info below cover - Stats */}
             <div className="flex-1 pt-6 sm:pt-16 md:pt-20">
-              {/* Location */}
-              {venue.city && (
-                <div className="mb-3 mt-3 flex items-center gap-2 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span className="text-sm">
-                    {venue.address && `${venue.address}, `}
-                    {venue.city}, {venue.country}
-                  </span>
-                </div>
-              )}
-
               {/* Stats */}
               <div className="flex flex-wrap gap-6">
-                {/* Members count - only visible to owners/admins */}
+                {/* Team Members count - only visible to owners/admins */}
                 {isOwnerOrAdmin && (
                   <>
                     <div className="flex items-center gap-2">
@@ -181,14 +161,25 @@ export function VenueProfileHeader({
                           {venue.members.length}
                         </p>
                         <p className="flex text-xs text-muted-foreground">
-                          {t("membership.members")}
+                          {t("membership.teamMembers")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Users className="h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="flex justify-center text-lg font-semibold">
+                          {venue._count.subscriptions}
+                        </p>
+                        <p className="flex text-xs text-muted-foreground">
+                          {t("membership.subscribers")}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="h-5 w-5 text-muted-foreground" />
                       <div>
-                        <p className="flex text-lg font-semibold">
+                        <p className="flex justify-center text-lg font-semibold">
                           {venue._count.sessions}
                         </p>
                         <p className="flex justify-center text-xs text-muted-foreground">
@@ -211,50 +202,6 @@ export function VenueProfileHeader({
               </div>
             )}
           </div>
-        </div>
-
-        {/* Contact Links */}
-        <div className="mt-6 flex flex-wrap gap-4 border-b pb-6 text-sm">
-          {venue.phone && (
-            <a
-              href={`tel:${venue.phone}`}
-              className="flex items-center gap-2 transition-colors hover:text-primary"
-            >
-              <Phone className="h-4 w-4" />
-              {venue.phone}
-            </a>
-          )}
-          {venue.email && (
-            <a
-              href={`mailto:${venue.email}`}
-              className="flex items-center gap-2 transition-colors hover:text-primary"
-            >
-              <Mail className="h-4 w-4" />
-              {venue.email}
-            </a>
-          )}
-          {venue.website && (
-            <a
-              href={venue.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 transition-colors hover:text-primary"
-            >
-              <Globe className="h-4 w-4" />
-              {tInfo("website")}
-            </a>
-          )}
-          {venue.instagram && (
-            <a
-              href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 transition-colors hover:text-primary"
-            >
-              <Instagram className="h-4 w-4" />@
-              {venue.instagram.replace("@", "")}
-            </a>
-          )}
         </div>
       </div>
 

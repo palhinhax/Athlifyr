@@ -15,7 +15,10 @@
     "filter": "Filtrer",
     "close": "Fermer",
     "showMore": "Voir plus",
-    "showLess": "Voir moins"
+    "showLess": "Voir moins",
+    "create": "Créer",
+    "change": "Changer",
+    "searching": "Recherche en cours"
   },
   "upload": {
     "uploadImage": "Télécharger une Image",

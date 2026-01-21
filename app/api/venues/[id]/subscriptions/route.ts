@@ -3,6 +3,82 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PaymentProvider } from "@prisma/client";
 
+// GET - Fetch all subscriptions for a venue (owner/admin only)
+export async function GET(
+  request: Request,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: venueId } = params;
+
+    // Check if user is owner or admin of this venue
+    const member = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    // Also check if user is app admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+
+    const isOwnerOrAdmin =
+      member && (member.role === "OWNER" || member.role === "ADMIN");
+    const isAppAdmin = user?.role === "ADMIN";
+
+    if (!isOwnerOrAdmin && !isAppAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Fetch all subscriptions for this venue
+    const subscriptions = await prisma.venueSubscription.findMany({
+      where: {
+        venueId,
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+        plan: {
+          select: {
+            id: true,
+            name: true,
+            price: true,
+            currency: true,
+          },
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return NextResponse.json({ subscriptions });
+  } catch (error) {
+    console.error("Error fetching subscriptions:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch subscriptions" },
+      { status: 500 }
+    );
+  }
+}
+
 // POST - Subscribe to a plan
 export async function POST(
   request: Request,
@@ -17,8 +93,116 @@ export async function POST(
 
     const { id: venueId } = params;
     const body = await request.json();
-    const { planId } = body;
+    const {
+      planId,
+      userId: targetUserId,
+      startsAt,
+      endsAt,
+      paymentStatus: manualPaymentStatus,
+      manual,
+    } = body;
 
+    // Manual subscription creation (for venue owners/admins)
+    if (manual) {
+      // Check if user is owner or admin
+      const member = await prisma.venueMember.findUnique({
+        where: {
+          venueId_userId: {
+            venueId,
+            userId: session.user.id,
+          },
+        },
+      });
+
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      });
+
+      const isOwnerOrAdmin =
+        member && (member.role === "OWNER" || member.role === "ADMIN");
+      const isAppAdmin = user?.role === "ADMIN";
+
+      if (!isOwnerOrAdmin && !isAppAdmin) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+
+      if (!planId || !targetUserId) {
+        return NextResponse.json(
+          { error: "Plan ID and User ID are required" },
+          { status: 400 }
+        );
+      }
+
+      // Check if plan exists
+      const plan = await prisma.venuePlan.findUnique({
+        where: { id: planId },
+      });
+
+      if (!plan || plan.venueId !== venueId) {
+        return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+      }
+
+      // Ensure target user is a member (create if not)
+      let targetMember = await prisma.venueMember.findUnique({
+        where: {
+          venueId_userId: {
+            venueId,
+            userId: targetUserId,
+          },
+        },
+      });
+
+      if (!targetMember) {
+        targetMember = await prisma.venueMember.create({
+          data: {
+            venueId,
+            userId: targetUserId,
+            role: "CLIENT",
+            status: "ACTIVE",
+            joinedAt: new Date(),
+          },
+        });
+      }
+
+      // Create manual subscription
+      const subscription = await prisma.venueSubscription.create({
+        data: {
+          venueId,
+          userId: targetUserId,
+          planId,
+          status: "ACTIVE",
+          paymentStatus: manualPaymentStatus || "PAID",
+          paymentMethod: "Manual", // Use paymentMethod instead of paymentProvider
+          activatedByUserId: session.user.id, // Track who activated it
+          activatedAt: new Date(),
+          startsAt: startsAt ? new Date(startsAt) : new Date(),
+          endsAt: endsAt ? new Date(endsAt) : null,
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              image: true,
+            },
+          },
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              price: true,
+              currency: true,
+            },
+          },
+        },
+      });
+
+      return NextResponse.json(subscription, { status: 201 });
+    }
+
+    // Regular subscription flow (existing code)
     if (!planId) {
       return NextResponse.json(
         { error: "Plan ID is required" },

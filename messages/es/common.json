@@ -8,14 +8,17 @@
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "edit": "Editar",
-    "back": "Volver",
+    "back": "Atrás",
     "next": "Siguiente",
     "submit": "Enviar",
     "search": "Buscar",
     "filter": "Filtrar",
     "close": "Cerrar",
     "showMore": "Ver más",
-    "showLess": "Ver menos"
+    "showLess": "Ver menos",
+    "create": "Crear",
+    "change": "Cambiar",
+    "searching": "Buscando"
   },
   "upload": {
     "uploadImage": "Subir Imagen",

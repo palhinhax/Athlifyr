@@ -15,7 +15,10 @@
     "filter": "Filter",
     "close": "Close",
     "showMore": "Show more",
-    "showLess": "Show less"
+    "showLess": "Show less",
+    "create": "Create",
+    "change": "Change",
+    "searching": "Searching"
   },
   "upload": {
     "uploadImage": "Upload Image",

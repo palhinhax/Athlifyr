@@ -205,17 +205,17 @@ export function SubscriptionsHistory() {
                             ).toLocaleDateString()}
                           </span>
                         </div>
-                        {subscription.endsAt && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {t("endDate")}:{" "}
-                              {new Date(
-                                subscription.endsAt
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {t("endDate")}:{" "}
+                            {subscription.endsAt
+                              ? new Date(
+                                  subscription.endsAt
+                                ).toLocaleDateString()
+                              : t("noEndDate")}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -276,17 +276,17 @@ export function SubscriptionsHistory() {
                             ).toLocaleDateString()}
                           </span>
                         </div>
-                        {subscription.endsAt && (
-                          <div className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {t("endDate")}:{" "}
-                              {new Date(
-                                subscription.endsAt
-                              ).toLocaleDateString()}
-                            </span>
-                          </div>
-                        )}
+                        <div className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          <span>
+                            {t("endDate")}:{" "}
+                            {subscription.endsAt
+                              ? new Date(
+                                  subscription.endsAt
+                                ).toLocaleDateString()
+                              : t("noEndDate")}
+                          </span>
+                        </div>
                         {subscription.paymentConfirmedAt && (
                           <div className="flex items-center gap-1">
                             <CreditCard className="h-3 w-3" />

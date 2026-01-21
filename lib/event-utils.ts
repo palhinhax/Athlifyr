@@ -3,6 +3,7 @@ import { SportType } from "@prisma/client";
 export const sportTypeLabels: Record<SportType, string> = {
   RUNNING: "Corrida",
   TRAIL: "Trail",
+  WALKING: "Caminhada",
   HYROX: "HYROX",
   CROSSFIT: "Cross Training",
   OCR: "OCR",
@@ -17,6 +18,7 @@ export const sportTypeLabels: Record<SportType, string> = {
 export const sportTypeIcons: Record<SportType, string> = {
   RUNNING: "🏃",
   TRAIL: "⛰️",
+  WALKING: "🚶",
   HYROX: "💪",
   CROSSFIT: "🏋️",
   OCR: "🧗",

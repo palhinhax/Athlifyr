@@ -13,6 +13,7 @@ datasource db {
 enum SportType {
   RUNNING
   TRAIL
+  WALKING
   HYROX
   CROSSFIT
   OCR

@@ -37,6 +37,7 @@ export interface EventsFilters {
 const SPORT_TYPES: SportType[] = [
   "RUNNING",
   "TRAIL",
+  "WALKING",
   "HYROX",
   "CROSSFIT",
   "OCR",

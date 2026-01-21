@@ -693,4 +693,78 @@ This agent specification contains:
    - ✅ Consistent format across all languages
    - ✅ Localized dates and formatting per language (e.g., "1 February" vs "1 Fevereiro")
 
-**GitHub Copilot must NEVER create event seeds without complete SEO metadata.**
+## **GitHub Copilot must NEVER create event seeds without complete SEO metadata.**
+
+## Pricing Phases Structure (CRITICAL)
+
+**MANDATORY**: Pricing phases in event seeds MUST be linked to the **eventId**, NOT the variantId.
+
+### ✅ CORRECT Structure:
+
+```typescript
+// Delete existing pricing phases for this event to avoid duplicates
+await prisma.pricingPhase.deleteMany({
+  where: { eventId: event.id },
+});
+
+console.log("💰 Creating variants and pricing phases...");
+
+for (const variantData of variants) {
+  const { pricingPhases, ...variantInfo } = variantData;
+
+  const variant = await prisma.eventVariant.create({
+    data: {
+      ...variantInfo,
+      eventId: event.id,
+    },
+  });
+
+  console.log(`✅ Created variant: ${variant.name}`);
+
+  // Create pricing phases for this variant
+  for (const phase of pricingPhases) {
+    await prisma.pricingPhase.create({
+      data: {
+        eventId: event.id, // ✅ CORRECT: linked to eventId
+        name: `${variant.name} - ${phase.name}`,
+        startDate: phase.startDate,
+        endDate: phase.endDate,
+        price: phase.price,
+        currency: phase.currency,
+        note: phase.note,
+      },
+    });
+  }
+
+  console.log(`   - Created ${pricingPhases.length} pricing phases`);
+}
+```
+
+### ❌ WRONG Structure (DO NOT USE):
+
+```typescript
+// ❌ WRONG: Do NOT link pricing phases to variantId
+await prisma.pricingPhase.create({
+  data: {
+    ...phase,
+    variantId: variant.id, // ❌ WRONG
+  },
+});
+```
+
+### Why This Matters:
+
+- Pricing phases are displayed at the **event level**, not variant level
+- The frontend expects pricing phases to be linked to `eventId`
+- Linking to `variantId` will cause pricing phases to not appear in the UI
+- Follow the pattern used in `trail-capitao-2026.ts` seed
+
+### Pricing Phase Naming Convention:
+
+```typescript
+name: `${variant.name} - ${phase.name}`;
+// Example: "LT100 – K100 (Solo) - Fase 1"
+// Example: "Trail 20km - 1ª Fase"
+```
+
+**GitHub Copilot must ALWAYS follow this pricing phase structure in ALL event seeds.**

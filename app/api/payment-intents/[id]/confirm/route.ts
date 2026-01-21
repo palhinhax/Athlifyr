@@ -121,14 +121,18 @@ export async function POST(
     }
 
     // Track successful purchase
-    await trackServerEvent(ANALYTICS_EVENTS.PURCHASE_COMPLETED, {
-      userId: intent.userId,
-      venueId: intent.venueId,
-      planId: intent.planId,
-      planName: intent.plan?.name || "Unknown",
-      amount: intent.amount,
-      subscriptionId: subscription.id,
-    });
+    await trackServerEvent(
+      ANALYTICS_EVENTS.PURCHASE_COMPLETED,
+      {
+        userId: intent.userId,
+        venueId: intent.venueId,
+        planId: intent.planId,
+        planName: intent.plan?.name || "Unknown",
+        amount: intent.amount,
+        subscriptionId: subscription.id,
+      },
+      session.user.email
+    );
 
     return NextResponse.json({
       paymentIntent: updatedIntent,

@@ -46,10 +46,14 @@ export async function POST(req: Request) {
     });
 
     // Track successful registration on server
-    await trackServerEvent(ANALYTICS_EVENTS.SIGNUP_COMPLETED, {
-      method: "email",
-      userId: user.id,
-    });
+    await trackServerEvent(
+      ANALYTICS_EVENTS.SIGNUP_COMPLETED,
+      {
+        method: "email",
+        userId: user.id,
+      },
+      user.email
+    );
 
     return NextResponse.json(
       { message: "Conta criada com sucesso", user },

@@ -1,3 +1,9 @@
+# [10.1.0](https://github.com/palhinhax/Athlifyr/compare/v10.0.0...v10.1.0) (2026-01-21)
+
+### Features
+
+- **analytics:** implement vercel web analytics custom events ([b9c8263](https://github.com/palhinhax/Athlifyr/commit/b9c8263c529d059c323bfc7a4ddd1ba2c57ee224))
+
 # [10.0.0](https://github.com/palhinhax/Athlifyr/compare/v9.9.0...v10.0.0) (2026-01-21)
 
 ### Bug Fixes

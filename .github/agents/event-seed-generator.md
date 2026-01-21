@@ -689,6 +689,7 @@ When a user provides event information, you should:
 - ❌ NEVER use `npx tsx` or `npm run` (use `pnpm tsx` for consistency)
 - ❌ NEVER use invalid SportType values
 - ❌ NEVER assume automatic seed execution (seeds are manual-only)
+- ❌ NEVER link pricing phases to `variantId` (use `eventId` instead)
 - ✅ ALWAYS use upsert for idempotency
 - ✅ ALWAYS use European Portuguese for Portuguese translations
 - ✅ ALWAYS set imageUrl to empty string or null
@@ -698,6 +699,83 @@ When a user provides event information, you should:
 - ✅ ALWAYS use composite unique keys correctly
 - ✅ ALWAYS use `pnpm tsx prisma/seeds/<event-slug>.ts` command
 - ✅ ALWAYS inform users about manual workflow execution
+- ✅ ALWAYS link pricing phases to `eventId`, NOT `variantId`
+
+## Pricing Phases Structure (CRITICAL)
+
+**MANDATORY**: Pricing phases in event seeds MUST be linked to the **eventId**, NOT the variantId.
+
+### ✅ CORRECT Structure:
+
+```typescript
+// Delete existing pricing phases for this event to avoid duplicates
+await prisma.pricingPhase.deleteMany({
+  where: { eventId: event.id },
+});
+
+console.log("💰 Creating variants and pricing phases...");
+
+for (const variantData of variants) {
+  const { pricingPhases, ...variantInfo } = variantData;
+
+  const variant = await prisma.eventVariant.create({
+    data: {
+      ...variantInfo,
+      eventId: event.id,
+    },
+  });
+
+  console.log(`✅ Created variant: ${variant.name}`);
+
+  // Create pricing phases for this variant
+  for (const phase of pricingPhases) {
+    await prisma.pricingPhase.create({
+      data: {
+        eventId: event.id, // ✅ CORRECT: linked to eventId
+        name: `${variant.name} - ${phase.name}`,
+        startDate: phase.startDate,
+        endDate: phase.endDate,
+        price: phase.price,
+        currency: phase.currency,
+        note: phase.note,
+      },
+    });
+  }
+
+  console.log(`   - Created ${pricingPhases.length} pricing phases`);
+}
+```
+
+### ❌ WRONG Structure (DO NOT USE):
+
+```typescript
+// ❌ WRONG: Do NOT link pricing phases to variantId
+await prisma.pricingPhase.create({
+  data: {
+    ...phase,
+    variantId: variant.id, // ❌ WRONG - this will NOT display in the UI
+  },
+});
+```
+
+### Why This Matters:
+
+- Pricing phases are displayed at the **event level**, not variant level
+- The frontend expects pricing phases to be linked to `eventId`
+- Linking to `variantId` will cause pricing phases to **NOT appear in the UI**
+- Follow the pattern used in `trail-capitao-2026.ts` and `linhas-torres-100-2026.ts` seeds
+
+### Pricing Phase Naming Convention:
+
+```typescript
+name: `${variant.name} - ${phase.name}`;
+// Examples:
+// "LT100 – K100 (Solo) - Fase 1"
+// "Trail 20km - 1ª Fase"
+// "Marathon 42km - Early Bird"
+```
+
+**This is NON-NEGOTIABLE. ALL seeds must follow this pricing phase structure.**
 
 ## TypeScript and Code Quality
 

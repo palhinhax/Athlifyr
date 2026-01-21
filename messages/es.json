@@ -1,0 +1,857 @@
+{
+  "common": {
+    "appName": "Athlifyr",
+    "loading": "Cargando...",
+    "error": "Error",
+    "success": "Éxito",
+    "save": "Guardar",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "back": "Volver",
+    "next": "Siguiente",
+    "submit": "Enviar",
+    "search": "Buscar",
+    "filter": "Filtrar",
+    "close": "Cerrar",
+    "showMore": "Ver más",
+    "showLess": "Ver menos"
+  },
+  "upload": {
+    "uploadImage": "Subir Imagen",
+    "chooseImage": "Elegir Imagen",
+    "uploading": "Subiendo...",
+    "noImageSelected": "Ninguna imagen seleccionada",
+    "invalidFileType": "Tipo de archivo inválido",
+    "invalidFileTypeDesc": "Solo se permiten archivos {formats}",
+    "fileTooLarge": "Archivo demasiado grande",
+    "fileTooLargeDesc": "El tamaño del archivo debe ser menor de {size}MB",
+    "noFileSelected": "Ningún archivo seleccionado",
+    "noFileSelectedDesc": "Por favor selecciona una imagen para subir",
+    "uploadFailed": "Error al subir",
+    "uploadFailedDesc": "Error al subir la imagen",
+    "uploadSuccess": "¡Imagen subida con éxito!",
+    "maxFileSize": "Tamaño máximo: {size}MB",
+    "adminLimit": "(Límite admin)",
+    "supportedFormats": "Formatos soportados: {formats}"
+  },
+  "home": {
+    "heroTitle": "Todos los eventos deportivos.",
+    "heroTitleHighlight": "En un solo lugar.",
+    "heroDescription": "Encuentra carreras, competiciones y desafíos cerca de ti.",
+    "heroDescriptionCountry": "Descubre los mejores eventos deportivos en {country}.",
+    "upcomingEventsTitle": "Próximos Eventos en {country}",
+    "seeAll": "Ver Todos →",
+    "noUpcomingEventsTitle": "Sin eventos próximos en {country}",
+    "noUpcomingEventsDescription": "No encontramos eventos futuros en tu región. ¡Intenta explorar otros países!",
+    "exploreAllEvents": "Explorar Todos los Eventos",
+    "ctaTitle": "¿Listo para encontrar tu próximo desafío?",
+    "ctaDescription": "Explora todos los eventos disponibles y encuentra la carrera o competición perfecta para ti."
+  },
+  "nav": {
+    "events": "Eventos",
+    "venues": "Venues",
+    "map": "Mapa",
+    "feed": "Feed",
+    "profile": "Perfil",
+    "settings": "Ajustes",
+    "admin": "Admin",
+    "signIn": "Iniciar Sesión",
+    "signOut": "Cerrar Sesión",
+    "contact": "Contacto",
+    "contacts": "Contactos",
+    "instagram": "Instagram",
+    "tiktok": "TikTok",
+    "socialMedia": "Redes Sociales",
+    "filterBySport": "Filtrar por deporte:",
+    "accountSettings": "Ajustes de Cuenta",
+    "manageEvents": "Gestionar Eventos",
+    "instagramGenerator": "Generador Instagram & TikTok",
+    "adminContacts": "Contactos Admin",
+    "openMenu": "Abrir menú",
+    "closeMenu": "Cerrar menú",
+    "all": "Todos"
+  },
+  "settings": {
+    "title": "Ajustes de Cuenta",
+    "accountInfo": "Información de la Cuenta",
+    "profile": "Perfil",
+    "name": "Nombre",
+    "email": "Correo Electrónico",
+    "role": "Rol",
+    "administrator": "Administrador",
+    "accountCreated": "Cuenta creada el",
+    "notDefined": "No definido",
+    "language": "Idioma",
+    "languageDescription": "Elige tu idioma preferido",
+    "portuguese": "Português",
+    "english": "English",
+    "spanish": "Español",
+    "french": "Français",
+    "german": "Deutsch",
+    "italian": "Italiano",
+    "favoriteSports": "Deportes Favoritos",
+    "favoriteSportsDescription": "Selecciona los deportes que te interesan. Verás eventos de estos deportes destacados en tu página de inicio.",
+    "selectSports": "Selecciona los deportes que te interesan para personalizar tu feed",
+    "notifications": "Notificaciones",
+    "notificationsComingSoon": "Las preferencias de notificaciones estarán disponibles pronto.",
+    "privacy": "Privacidad y Seguridad",
+    "privacyComingSoon": "Los ajustes de privacidad y seguridad estarán disponibles pronto.",
+    "privacyDescription": "Gestiona tus datos personales y la configuración de seguridad de la cuenta.",
+    "account": "Cuenta",
+    "downloadData": "Descargar Mis Datos",
+    "downloadDataDescription": "Descarga una copia de todos tus datos personales en formato JSON (conforme al RGPD).",
+    "download": "Descargar",
+    "downloading": "Descargando...",
+    "downloadDataError": "Error al descargar los datos. Por favor, inténtalo de nuevo.",
+    "deleteAccount": "Eliminar Cuenta",
+    "deleteAccountDescription": "Elimina permanentemente tu cuenta y todos los datos asociados. Esta acción no se puede deshacer.",
+    "delete": "Eliminar",
+    "deleting": "Eliminando...",
+    "deleteAccountError": "Error al eliminar la cuenta. Por favor, inténtalo de nuevo.",
+    "deleteAccountConfirmTitle": "¿Eliminar Cuenta Permanentemente?",
+    "deleteAccountWarning": "Esta acción es irreversible. Todos tus datos serán eliminados permanentemente:",
+    "deleteWarning1": "Todas tus publicaciones, comentarios y me gusta",
+    "deleteWarning2": "Todas las inscripciones y participaciones en eventos",
+    "deleteWarning3": "Todas las fotos e información del perfil",
+    "deleteWarning4": "Todas las amistades y conexiones",
+    "deleteConfirmationLabel": "Escribe DELETE para confirmar:",
+    "deleteConfirmationError": "Debes escribir DELETE para confirmar.",
+    "cancel": "Cancelar",
+    "deleteAccountPermanent": "Eliminar Cuenta Permanentemente"
+  },
+  "sports": {
+    "RUNNING": "Running",
+    "TRAIL": "Trail",
+    "WALKING": "Caminata",
+    "HYROX": "HYROX",
+    "CROSSFIT": "Cross Training",
+    "OCR": "OCR",
+    "BTT": "Mountain Bike",
+    "CYCLING": "Ciclismo",
+    "SURF": "Surf",
+    "TRIATHLON": "Triatlón",
+    "SWIMMING": "Natación",
+    "OTHER": "Otro"
+  },
+  "events": {
+    "title": "Todos los Eventos",
+    "description": "Descubre los mejores eventos deportivos cerca de ti",
+    "metaTitle": "Todos los Eventos - Athlifyr",
+    "metaDescription": "Explora todos los eventos deportivos. Encuentra carreras, competiciones y desafíos cerca de ti.",
+    "viewMap": "Ver Mapa",
+    "viewList": "Ver Lista",
+    "upcoming": "Próximos Eventos",
+    "featured": "Destacados",
+    "allEvents": "Todos los Eventos",
+    "noEvents": "No se encontraron eventos",
+    "noEventsDescription": "Intenta ajustar los filtros o vuelve más tarde.",
+    "loadingMore": "Cargando más eventos...",
+    "allEventsLoaded": "Todos los eventos cargados",
+    "details": "Detalles del Evento",
+    "date": "Fecha",
+    "location": "Ubicación",
+    "distance": "Distancia",
+    "participants": "Participantes",
+    "register": "Registrarse",
+    "moreInfo": "Más Información",
+    "backToEvents": "Volver a Eventos",
+    "aboutEvent": "Sobre el Evento",
+    "readyToParticipate": "¿Listo para participar?",
+    "moreInfoDescription": "Para más información e inscripción, visita el sitio web oficial del evento.",
+    "goToWebsite": "Ir al Sitio Web Oficial",
+    "community": "Comunidad",
+    "locationTitle": "Ubicación",
+    "openInGoogleMaps": "Abrir en Google Maps",
+    "sharePost": "Comparte algo sobre el evento...",
+    "sharePostFeed": "¿En qué estás pensando? Comparte entrenamientos, logros o consejos...",
+    "willYouGo": "¿Vas a ir?",
+    "participantsCount": "{count} participantes",
+    "selectVariant": "Selecciona una variante",
+    "noPosts": "Aún no hay publicaciones. ¡Sé el primero en compartir algo!",
+    "addPhoto": "Agregar Foto",
+    "publish": "Publicar",
+    "share": {
+      "button": "Compartir",
+      "shareMenu": "Compartir...",
+      "copyLink": "Copiar Enlace",
+      "linkCopied": "¡Enlace copiado!",
+      "linkCopiedDesc": "El enlace ha sido copiado al portapapeles.",
+      "error": "Error",
+      "copyError": "No se pudo copiar el enlace."
+    },
+    "pricing": {
+      "title": "Precios de Inscripción",
+      "titleWithVariant": "Precios - {variant}",
+      "current": "Actual",
+      "until": "Hasta",
+      "showAll": "Ver todas",
+      "showLess": "Ver menos"
+    },
+    "registration": {
+      "willYouGo": "¿Vas a participar?",
+      "participants": "participantes",
+      "loginToParticipate": "Inicia sesión para marcar tu participación",
+      "signIn": "Iniciar Sesión",
+      "chooseVariant": "Elige la distancia/variante:",
+      "selectVariantPlaceholder": "Selecciona una variante",
+      "markAsGoing": "Marcar como Voy",
+      "registered": "Estás registrado en este evento",
+      "variant": "Variante",
+      "cancelParticipation": "Cancelar Participación",
+      "authRequired": "Autenticación requerida",
+      "authRequiredDesc": "Inicia sesión para marcar tu participación",
+      "selectVariantRequired": "Selecciona una variante",
+      "selectVariantRequiredDesc": "Elige la distancia en la que participarás",
+      "markedAsParticipant": "✅ ¡Marcado como participante!",
+      "willParticipateIn": "Vas a participar en",
+      "participationRegistered": "Participación registrada",
+      "error": "Error",
+      "registrationError": "No se pudo registrar la participación",
+      "participationCancelled": "Participación cancelada",
+      "participationCancelledDesc": "Ya no estás marcado en este evento",
+      "cancellationError": "No se pudo cancelar la participación"
+    },
+    "variants": {
+      "title": "Variantes / Distancias",
+      "distances": "Distancias",
+      "distance": "Distancia",
+      "elevationGain": "D+",
+      "elevationLoss": "D-",
+      "cutoffTime": "Tiempo Límite",
+      "time": "Hora",
+      "prices": "Precios",
+      "currentPhase": "(Actual)",
+      "triathlon": {
+        "segments": "Segmentos de Triatlón",
+        "swim": "Natación",
+        "bike": "Ciclismo",
+        "run": "Carrera",
+        "terrain": "Terreno",
+        "addSegment": "Añadir Segmento",
+        "removeSegment": "Eliminar Segmento",
+        "segmentType": "Tipo de Segmento",
+        "terrainType": "Tipo de Terreno",
+        "terrainTypes": {
+          "POOL": "Piscina",
+          "OPEN_WATER": "Aguas Abiertas",
+          "ROAD": "Carretera",
+          "TRAIL": "Trail",
+          "MIXED": "Mixto"
+        }
+      }
+    },
+    "filters": {
+      "title": "Filtros",
+      "locationFilter": "Filtro de Ubicación",
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "No se encontraron eventos con los filtros actuales",
+      "searchPlaceholder": "Buscar eventos...",
+      "searchingGlobally": "Buscando en todos los eventos..."
+    }
+  },
+  "eventsPage": {
+    "filters": {
+      "title": "Filtros",
+      "search": "Buscar",
+      "searchPlaceholder": "Buscar eventos...",
+      "location": "Ubicación",
+      "enableLocation": "Activar Ubicación",
+      "disableLocation": "Desactivar Ubicación",
+      "locationActive": "Activa",
+      "radius": "Radio",
+      "sports": "Deportes",
+      "dateRange": "Rango de Fechas",
+      "allDates": "Todas las Fechas",
+      "next7Days": "Próximos 7 Días",
+      "next30Days": "Próximos 30 Días",
+      "next3Months": "Próximos 3 Meses",
+      "next6Months": "Próximos 6 Meses",
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpiar",
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "No se encontraron eventos con los filtros actuales",
+      "locationNotSupported": "La geolocalización no es compatible con tu navegador",
+      "locationError": "No se pudo obtener tu ubicación",
+      "locationDenied": "Acceso a la ubicación denegado",
+      "locationUnavailable": "Ubicación no disponible",
+      "locationTimeout": "Solicitud de ubicación caducada"
+    }
+  },
+  "feed": {
+    "title": "Feed de Actividad",
+    "emptyTitle": "Feed vacío",
+    "emptyDescription": "¡Sé el primero en publicar algo! Comparte tus entrenamientos, logros o regístrate en eventos.",
+    "exploreEvents": "Explorar Eventos",
+    "noPosts": "Aún no hay publicaciones",
+    "beFirstToPost": "¡Sé el primero en compartir algo!",
+    "commentedOn": "comentó en",
+    "willParticipateIn": "participará en",
+    "reply": "respuesta",
+    "replies": "respuestas",
+    "loadingMore": "Cargando más publicaciones...",
+    "allPostsLoaded": "Todas las publicaciones cargadas"
+  },
+  "map": {
+    "title": "Mapa de Eventos",
+    "description": "Explora eventos deportivos por ubicación",
+    "filters": {
+      "title": "Filtros",
+      "sports": "Deportes",
+      "allSports": "Todos los Deportes",
+      "selectSports": "Selecciona deportes para filtrar",
+      "dateRange": "Rango de Fechas",
+      "allDates": "Todas las Fechas",
+      "next7Days": "Próximos 7 Días",
+      "next30Days": "Próximos 30 Días",
+      "next3Months": "Próximos 3 Meses",
+      "next6Months": "Próximos 6 Meses",
+      "distance": "Distancia",
+      "radius": "Radio",
+      "allDistances": "Todas las Distancias",
+      "within25km": "Hasta 25 km",
+      "within50km": "Hasta 50 km",
+      "within100km": "Hasta 100 km",
+      "within200km": "Hasta 200 km",
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpiar Filtros",
+      "resultsCount": "{count} eventos encontrados",
+      "noResults": "No se encontraron eventos con los filtros actuales"
+    }
+  },
+  "admin": {
+    "contacts": {
+      "title": "Mensajes de Contacto",
+      "description": "Gestión de sugerencias, errores y preguntas de usuarios",
+      "stats": {
+        "total": "Total",
+        "pending": "Pendientes",
+        "inProgress": "En Progreso",
+        "resolved": "Resueltos"
+      },
+      "noMessages": "Sin mensajes",
+      "noMessagesDescription": "Aún no has recibido mensajes de contacto.",
+      "types": {
+        "suggestion": "Sugerencia",
+        "bug": "Error",
+        "question": "Pregunta",
+        "feedback": "Comentario",
+        "other": "Otro"
+      },
+      "status": {
+        "pending": "PENDIENTE",
+        "in_progress": "EN PROGRESO",
+        "resolved": "RESUELTO",
+        "closed": "CERRADO"
+      },
+      "statusLabels": {
+        "pending": "Pendiente",
+        "in_progress": "En Progreso",
+        "resolved": "Resuelto",
+        "closed": "Cerrado"
+      },
+      "actions": {
+        "reply": "Responder",
+        "delete": "Eliminar",
+        "cancel": "Cancelar",
+        "send": "Enviar",
+        "sending": "Enviando...",
+        "deleting": "Eliminando..."
+      },
+      "toast": {
+        "statusUpdated": "Estado actualizado",
+        "statusUpdatedDesc": "El estado del contacto ha sido actualizado correctamente.",
+        "error": "Error",
+        "updateError": "Error al actualizar",
+        "updateErrorOccurred": "No se pudo actualizar el estado del contacto.",
+        "emptyMessage": "El mensaje no puede estar vacío.",
+        "emailSent": "Email enviado",
+        "emailSentDesc": "La respuesta ha sido enviada correctamente.",
+        "sendError": "Error al enviar",
+        "sendErrorDesc": "No se pudo enviar el email de respuesta.",
+        "sendErrorOccurred": "Ocurrió un error al enviar el email.",
+        "contactDeleted": "Contacto eliminado",
+        "contactDeletedDesc": "El contacto ha sido eliminado correctamente.",
+        "deleteError": "Error al eliminar",
+        "deleteErrorDesc": "No se pudo eliminar el contacto.",
+        "deleteErrorOccurred": "Ocurrió un error al eliminar el contacto."
+      },
+      "replyDialog": {
+        "title": "Responder a contacto",
+        "description": "Enviar respuesta por email al usuario",
+        "adminName": "Su nombre (admin)",
+        "adminNameHelp": "Nombre que aparecerá en el email",
+        "adminNamePlaceholder": "Ej: Equipo Athlifyr",
+        "message": "Mensaje de respuesta",
+        "required": "*",
+        "messagePlaceholder": "Escriba su respuesta aquí...",
+        "messageHelp": "Este mensaje será enviado por email al usuario",
+        "originalMessage": "Mensaje original"
+      },
+      "deleteDialog": {
+        "title": "Eliminar contacto",
+        "description": "¿Está seguro que desea eliminar este contacto?",
+        "subject": "Asunto",
+        "email": "Email",
+        "warning": "Atención",
+        "warningDesc": "Esta acción es irreversible. El contacto será eliminado permanentemente.",
+        "confirmButton": "Sí, eliminar"
+      }
+    },
+    "events": {
+      "toast": {
+        "invalidFile": "Archivo inválido",
+        "invalidFileDesc": "Solo se permiten archivos de imagen.",
+        "fileTooLarge": "Archivo muy grande",
+        "fileTooLargeDesc": "El archivo debe tener como máximo 10MB.",
+        "imageUploaded": "Imagen subida",
+        "imageUploadedDesc": "La imagen ha sido subida correctamente.",
+        "uploadError": "Error al subir",
+        "uploadErrorDesc": "No se pudo subir la imagen.",
+        "eventUpdated": "Evento actualizado",
+        "eventUpdatedDesc": "El evento ha sido actualizado correctamente.",
+        "updateError": "Error al actualizar",
+        "updateErrorDesc": "No se pudo actualizar el evento.",
+        "eventDeleted": "Evento eliminado",
+        "eventDeletedDesc": "El evento ha sido eliminado correctamente.",
+        "deleteError": "Error al eliminar",
+        "deleteErrorDesc": "No se pudo eliminar el evento."
+      },
+      "actions": {
+        "changeImage": "Cambiar Imagen",
+        "uploadImage": "Subir Imagen",
+        "saving": "Guardando...",
+        "saveChanges": "Guardar Cambios"
+      }
+    },
+    "posts": {
+      "toast": {
+        "invalidFileType": "Tipo de archivo inválido",
+        "invalidFileTypeDesc": "Solo se permiten archivos de imagen.",
+        "fileTooLarge": "Archivo muy grande",
+        "fileTooLargeDesc": "El archivo debe tener como máximo 5MB.",
+        "uploadError": "Error al subir",
+        "uploadErrorDesc": "No se pudo subir la imagen.",
+        "emptyContent": "Contenido vacío",
+        "emptyContentDesc": "Por favor escriba algo antes de publicar.",
+        "postPublished": "Publicación creada",
+        "postPublishedDesc": "Tu publicación ha sido compartida con éxito.",
+        "publishError": "Error al publicar",
+        "publishErrorDesc": "No se pudo crear la publicación."
+      }
+    }
+  },
+  "promo": {
+    "intro": "Athlifyr",
+    "message": "Todos los eventos deportivos en un solo lugar.",
+    "featuresTitle": "Características",
+    "features": {
+      "nearYou": "Eventos cerca de ti",
+      "filters": "Filtrar por deporte y fecha",
+      "details": "Detalles y enlaces directos de inscripción",
+      "favorites": "Guardar favoritos",
+      "share": "Compartir con amigos"
+    },
+    "ctaTitle": "Encuentra tu próximo desafío",
+    "ctaSubtitle": "Explora • filtra • guarda • comparte",
+    "slogan": "one place. all sports.",
+    "playVideo": "Reproducir vídeo",
+    "videoLoadError": "No se pudo cargar el vídeo"
+  },
+  "notFound": {
+    "title": "Página No Encontrada",
+    "code": "404",
+    "description": "¡Ups! La página que buscas no existe.",
+    "suggestion": "Es posible que se haya movido o eliminado. Vamos a llevarte de vuelta al camino.",
+    "backHome": "Volver al Inicio",
+    "browseEvents": "Ver Eventos"
+  },
+  "profile": {
+    "upcomingEvents": "Próximos Eventos",
+    "upcomingEventsCount": "Próximos Eventos ({count})",
+    "pastEvents": "Eventos Pasados",
+    "pastEventsCount": "Eventos Pasados ({count})",
+    "noEventsTitle": "Aún no estás registrado en ningún evento",
+    "noEventsDescription": "¡Explora los eventos disponibles y marca que participarás!",
+    "exploreEvents": "Explorar Eventos",
+    "at": "a las",
+    "friends": "Amigos",
+    "myFriends": "Mis Amigos",
+    "comments": "Comentarios",
+    "myEventCalendar": "Mi Calendario de Eventos",
+    "calendar": "Calendario",
+    "goToToday": "Ir a hoy",
+    "eventsInMonth": "Eventos en {month}:",
+    "noEventsInMonth": "Sin eventos marcados en {month}",
+    "going": "Voy",
+    "went": "Fui",
+    "months": {
+      "january": "Enero",
+      "february": "Febrero",
+      "march": "Marzo",
+      "april": "Abril",
+      "may": "Mayo",
+      "june": "Junio",
+      "july": "Julio",
+      "august": "Agosto",
+      "september": "Septiembre",
+      "october": "Octubre",
+      "november": "Noviembre",
+      "december": "Diciembre"
+    },
+    "weekdays": {
+      "sun": "Dom",
+      "mon": "Lun",
+      "tue": "Mar",
+      "wed": "Mié",
+      "thu": "Jue",
+      "fri": "Vie",
+      "sat": "Sáb"
+    },
+    "gallery": "Galería",
+    "publishPhoto": "Publicar Foto",
+    "shareTrainingMoments": "¡Comparte momentos de tus entrenamientos y competiciones!",
+    "publishFirstPhoto": "Publicar Primera Foto",
+    "addPhoto": "Añadir Foto",
+    "photoCaption": "Añade una descripción...",
+    "invalidFile": "Archivo inválido",
+    "pleaseSelectImage": "Por favor selecciona una imagen.",
+    "fileTooLarge": "Archivo muy grande",
+    "maxFileSize": "La imagen debe tener como máximo 5MB.",
+    "photoPublished": "¡Foto publicada!",
+    "photoPublishedDesc": "Tu foto fue compartida con éxito.",
+    "publishError": "Error al publicar",
+    "publishErrorDesc": "No se pudo publicar la foto.",
+    "deleteError": "Error al eliminar",
+    "deleteErrorDesc": "No se pudo eliminar la foto.",
+    "photoDeleted": "Foto eliminada",
+    "photoDeletedDesc": "Tu foto fue eliminada.",
+    "noPhotosYet": "Aún no hay fotos",
+    "beFirstToShare": "¡Sé el primero en compartir una foto!",
+    "confirmDelete": "¿Eliminar foto?",
+    "confirmDeleteDesc": "Esta acción no se puede deshacer.",
+    "deletePhoto": "Eliminar Foto",
+    "close": "Cerrar",
+    "cancel": "Cancelar",
+    "confirm": "Confirmar",
+    "publish": "Publicar"
+  },
+  "legal": {
+    "cookieConsent": {
+      "title": "Usamos Cookies 🍪",
+      "description": "Utilizamos cookies esenciales para el funcionamiento del sitio y cookies analíticas para mejorar tu experiencia.",
+      "acceptAll": "Aceptar Todo",
+      "acceptEssential": "Solo Esenciales",
+      "customize": "Personalizar",
+      "learnMore": "Saber Más"
+    },
+    "privacy": {
+      "title": "Política de Privacidad",
+      "lastUpdated": "Última actualización: {date}",
+      "intro": "Tu privacidad es importante para nosotros. Esta política explica cómo recopilamos, usamos y protegemos tus datos personales.",
+      "sections": {
+        "dataCollection": {
+          "title": "1. Datos que Recopilamos",
+          "content": "Recopilamos información cuando te registras, incluyendo nombre, email, foto de perfil (vía Google OAuth), ubicación (si autorizas), y datos de uso del sitio."
+        },
+        "dataUsage": {
+          "title": "2. Cómo Usamos tus Datos",
+          "content": "Utilizamos tus datos para: proporcionar y mejorar nuestros servicios, personalizar tu experiencia, enviar notificaciones sobre eventos, analizar el uso del sitio (Google Analytics), y cumplir obligaciones legales."
+        },
+        "dataSharing": {
+          "title": "3. Compartir Datos",
+          "content": "No vendemos tus datos. Compartimos información solo con: Google (autenticación y analytics), Backblaze B2 (almacenamiento de imágenes), y cuando lo exija la ley."
+        },
+        "dataRetention": {
+          "title": "4. Retención de Datos",
+          "content": "Mantenemos tus datos mientras tu cuenta esté activa. Puedes solicitar la eliminación de tu cuenta en cualquier momento."
+        },
+        "rights": {
+          "title": "5. Tus Derechos (RGPD)",
+          "content": "Tienes derecho a: acceder a tus datos, rectificar información incorrecta, eliminar tu cuenta, exportar tus datos, y retirar consentimientos dados anteriormente."
+        },
+        "cookies": {
+          "title": "6. Cookies",
+          "content": "Utilizamos cookies esenciales (autenticación, preferencias) y analíticas (Google Analytics). Puedes gestionar tus preferencias de cookies en la configuración."
+        },
+        "security": {
+          "title": "7. Seguridad",
+          "content": "Implementamos medidas técnicas y organizativas para proteger tus datos contra acceso no autorizado, pérdida o destrucción."
+        },
+        "children": {
+          "title": "8. Menores de Edad",
+          "content": "Nuestros servicios no están destinados a menores de 16 años. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos inmediatamente."
+        },
+        "changes": {
+          "title": "9. Cambios en la Política",
+          "content": "Podemos actualizar esta política ocasionalmente. Te notificaremos de cambios significativos."
+        },
+        "contact": {
+          "title": "10. Contacto",
+          "content": "Para cuestiones sobre privacidad, contáctanos a través de la página de contacto."
+        }
+      }
+    },
+    "terms": {
+      "title": "Términos de Servicio",
+      "lastUpdated": "Última actualización: {date}",
+      "intro": "Al usar Athlifyr, aceptas estos términos. Léelos atentamente.",
+      "sections": {
+        "acceptance": {
+          "title": "1. Aceptación de los Términos",
+          "content": "Al acceder y usar Athlifyr, aceptas estar vinculado a estos Términos de Servicio y a nuestra Política de Privacidad."
+        },
+        "description": {
+          "title": "2. Descripción del Servicio",
+          "content": "Athlifyr es una plataforma que agrega información sobre eventos deportivos. Proporcionamos enlaces a páginas oficiales de eventos, pero no organizamos ni somos responsables de los eventos listados."
+        },
+        "account": {
+          "title": "3. Cuenta de Usuario",
+          "content": "Debes tener al menos 16 años para crear una cuenta. Eres responsable de mantener la seguridad de tu cuenta y de todas las actividades realizadas con ella."
+        },
+        "userContent": {
+          "title": "4. Contenido del Usuario",
+          "content": "Al publicar contenido (fotos, comentarios), garantizas que tienes los derechos necesarios. Nos concedes una licencia para usar, mostrar y distribuir ese contenido en la plataforma."
+        },
+        "prohibited": {
+          "title": "5. Uso Prohibido",
+          "content": "Está prohibido: publicar contenido ofensivo, ilegal o que viole derechos de terceros; usar el servicio para spam o actividades maliciosas; intentar acceder a áreas restringidas del sistema."
+        },
+        "intellectual": {
+          "title": "6. Propiedad Intelectual",
+          "content": "Todo el contenido de Athlifyr (diseño, código, marca) es propiedad nuestra o de nuestros licenciadores. No puedes copiar o reproducir sin autorización."
+        },
+        "disclaimer": {
+          "title": "7. Exención de Responsabilidad",
+          "content": "El servicio se proporciona 'tal cual'. No garantizamos la precisión de la información sobre eventos. No somos responsables de cancelaciones, cambios o problemas con eventos listados."
+        },
+        "limitation": {
+          "title": "8. Limitación de Responsabilidad",
+          "content": "No seremos responsables de daños indirectos, incidentales o consecuenciales resultantes del uso del servicio."
+        },
+        "termination": {
+          "title": "9. Suspensión y Eliminación",
+          "content": "Nos reservamos el derecho de suspender o eliminar cuentas que violen estos términos, sin previo aviso."
+        },
+        "changes": {
+          "title": "10. Cambios en los Términos",
+          "content": "Podemos modificar estos términos en cualquier momento. El uso continuado después de los cambios constituye aceptación de los nuevos términos."
+        },
+        "law": {
+          "title": "11. Ley Aplicable",
+          "content": "Estos términos se rigen por las leyes de Portugal. Cualquier disputa se resolverá en los tribunales portugueses."
+        },
+        "contact": {
+          "title": "12. Contacto",
+          "content": "Para cuestiones sobre estos términos, contáctanos a través de la página de contacto."
+        }
+      }
+    },
+    "cookies": {
+      "title": "Política de Cookies",
+      "lastUpdated": "Última actualización: {date}",
+      "intro": "Utilizamos cookies para mejorar tu experiencia en Athlifyr. Esta página explica qué son las cookies y cómo las usamos.",
+      "sections": {
+        "whatAre": {
+          "title": "¿Qué son las Cookies?",
+          "content": "Las cookies son pequeños archivos de texto almacenados en tu dispositivo cuando visitas un sitio web. Permiten que el sitio te reconozca y recuerde tus preferencias."
+        },
+        "types": {
+          "title": "Tipos de Cookies que Usamos",
+          "essential": {
+            "title": "Cookies Esenciales (Obligatorias)",
+            "description": "Necesarias para el funcionamiento básico del sitio. Sin estas, el sitio no funciona correctamente.",
+            "examples": "Autenticación (sesión de login), preferencias de idioma, consentimiento de cookies."
+          },
+          "analytics": {
+            "title": "Cookies Analíticas (Opcionales)",
+            "description": "Nos ayudan a entender cómo los visitantes usan el sitio, para mejorar la experiencia.",
+            "examples": "Google Analytics: páginas visitadas, tiempo en el sitio, origen del tráfico."
+          },
+          "functional": {
+            "title": "Cookies Funcionales (Opcionales)",
+            "description": "Permiten funcionalidades mejoradas y personalización.",
+            "examples": "Preferencias de filtros de eventos, ubicación guardada, deportes favoritos."
+          }
+        },
+        "thirdParty": {
+          "title": "Cookies de Terceros",
+          "content": "Usamos Google Analytics, que coloca cookies en tu dispositivo. Puedes saber más en la política de privacidad de Google."
+        },
+        "manage": {
+          "title": "Cómo Gestionar Cookies",
+          "content": "Puedes aceptar o rechazar cookies no esenciales a través de nuestro banner de cookies. También puedes configurar tu navegador para bloquear cookies, pero esto puede afectar la funcionalidad del sitio."
+        },
+        "duration": {
+          "title": "Duración de las Cookies",
+          "session": "Cookies de Sesión: expiran cuando cierras el navegador",
+          "persistent": "Cookies Persistentes: permanecen en tu dispositivo por un período definido (hasta 365 días)"
+        },
+        "updates": {
+          "title": "Actualizaciones",
+          "content": "Podemos actualizar esta política periódicamente. Verifica esta página regularmente para mantenerte informado."
+        }
+      }
+    }
+  },
+  "venues": {
+    "title": "Locales",
+    "description": "Encuentra gimnasios, boxes y centros de entrenamiento",
+    "list": "Todos los Locales",
+    "myVenues": "Mis Locales",
+    "viewAll": "Ver Todos",
+    "viewVenue": "Ver Local",
+    "joinVenue": "Unirse al Local",
+    "createVenue": "Crear Local",
+    "editVenue": "Editar Local",
+    "venueDetails": "Detalles del Local",
+    "noVenues": "No se encontraron locales",
+    "noResults": "No se encontraron resultados con los filtros actuales",
+    "noVenuesDescription": "Aún no hay locales disponibles",
+    "searchPlaceholder": "Buscar por nombre o ubicación...",
+    "searchingGlobally": "Buscando todos los locales",
+    "viewList": "Lista",
+    "viewMap": "Mapa",
+    "resultsCount": "{count, plural, =0 {No se encontraron locales} =1 {1 local encontrado} other {# locales encontrados}}",
+    "loadingMore": "Cargando más...",
+    "allVenuesLoaded": "Todos los locales cargados",
+    "filters": {
+      "types": "Tipos de Locales"
+    },
+    "types": {
+      "GYM": "Gimnasio",
+      "STUDIO": "Estudio",
+      "CROSSFIT_BOX": "Box de CrossFit",
+      "RUNNING_CLUB": "Club de Running",
+      "CYCLING_CLUB": "Club de Ciclismo",
+      "MARTIAL_ARTS": "Artes Marciales",
+      "YOGA_STUDIO": "Estudio de Yoga",
+      "CLIMBING_GYM": "Rocódromo",
+      "SWIMMING_POOL": "Piscina",
+      "PT_STUDIO": "Estudio de Entrenamiento Personal",
+      "MASSAGE": "Masaje",
+      "PHYSIO": "Fisioterapia",
+      "NUTRITION": "Nutrición",
+      "OTHER": "Otro"
+    },
+    "roles": {
+      "OWNER": "Propietario",
+      "ADMIN": "Administrador",
+      "COACH": "Entrenador",
+      "CLIENT": "Cliente"
+    },
+    "status": {
+      "PENDING": "Pendiente",
+      "ACTIVE": "Activo",
+      "SUSPENDED": "Suspendido",
+      "LEFT": "Abandonado"
+    },
+    "bookingStatus": {
+      "BOOKED": "Reservado",
+      "CANCELLED": "Cancelado",
+      "NO_SHOW": "No Asistió",
+      "ATTENDED": "Asistió"
+    },
+    "info": {
+      "name": "Nombre",
+      "description": "Descripción",
+      "type": "Tipo",
+      "phone": "Teléfono",
+      "email": "Email",
+      "website": "Sitio Web",
+      "instagram": "Instagram",
+      "address": "Dirección",
+      "city": "Ciudad",
+      "country": "País",
+      "location": "Ubicación",
+      "latitude": "Latitud",
+      "longitude": "Longitud"
+    },
+    "membership": {
+      "title": "Membresía",
+      "members": "Miembros",
+      "team": "Equipo",
+      "join": "Unirse",
+      "requestToJoin": "Solicitar Unirse",
+      "inviteMember": "Invitar Miembro",
+      "manageMembers": "Gestionar Miembros",
+      "yourRole": "Tu Rol",
+      "status": "Estado"
+    },
+    "plans": {
+      "title": "Planes",
+      "subscribe": "Suscribirse",
+      "viewPlans": "Ver Planes",
+      "managePlans": "Gestionar Planes",
+      "createPlan": "Crear Plan",
+      "editPlan": "Editar Plan",
+      "planDetails": "Detalles del Plan",
+      "price": "Precio",
+      "perMonth": "por mes",
+      "unlimited": "Acceso Ilimitado",
+      "limited": "Acceso Limitado"
+    },
+    "sessions": {
+      "title": "Sesiones",
+      "class": "Clase",
+      "appointment": "Cita",
+      "bookSession": "Reservar Sesión",
+      "cancelBooking": "Cancelar Reserva",
+      "myBookings": "Mis Reservas",
+      "createSession": "Crear Sesión",
+      "manageSessions": "Gestionar Sesiones",
+      "capacity": "Capacidad",
+      "available": "Disponible",
+      "full": "Completo",
+      "startsAt": "Comienza a las",
+      "endsAt": "Termina a las",
+      "duration": "Duración",
+      "coach": "Entrenador"
+    },
+    "booking": {
+      "success": "¡Reserva exitosa!",
+      "cancelled": "Reserva cancelada",
+      "error": "Fallo en la reserva",
+      "limitReached": "Límite de reservas alcanzado",
+      "sessionFull": "Sesión completa",
+      "alreadyBooked": "Ya reservado",
+      "notAllowed": "No permitido reservar",
+      "noSubscription": "Sin suscripción activa",
+      "outsideTimeWindow": "Fuera del período permitido"
+    },
+    "loading": "Cargando...",
+    "loadMore": "Cargar Más",
+    "venueNotFound": "Venue no encontrado",
+    "venueNotFoundDesc": "El venue que buscas no existe o ha sido eliminado.",
+    "signInToJoin": "Inicia sesión para unirte a este venue o reservar sesiones",
+    "signIn": "Iniciar Sesión",
+    "noPlansAvailable": "Aún no hay planes disponibles.",
+    "sessionsComingSoon": "Calendario de sesiones próximamente",
+    "noTeamMembers": "Todavía no hay miembros del equipo.",
+    "noDescription": "Sin descripción disponible.",
+    "tabs": {
+      "about": "Acerca de",
+      "feed": "Feed",
+      "sessions": "Sesiones",
+      "team": "Equipo"
+    },
+    "edit": {
+      "description": "Actualiza información del local, fotos y contactos",
+      "logo": "Logo",
+      "coverImage": "Imagen de Portada",
+      "uploadLogo": "Subir Logo",
+      "uploadCover": "Subir Imagen de Portada",
+      "imageUploadSuccess": "Imagen subida con éxito",
+      "imageUploadError": "Error al subir imagen",
+      "updateSuccess": "Local actualizado con éxito",
+      "updateError": "Error al actualizar local"
+    }
+  },
+  "footer": {
+    "privacy": "Privacidad",
+    "terms": "Términos",
+    "cookies": "Cookies",
+    "contact": "Contacto",
+    "allRightsReserved": "© {year} Athlifyr. Todos los derechos reservados."
+  }
+}

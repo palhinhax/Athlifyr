@@ -361,7 +361,7 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
       data: {
         description:
           "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
-        distanceKm: 113, // Total distance: 1.9 + 90 + 21 = 112.9km
+        distanceKm: 112.9, // Total distance: 1.9 + 90 + 21 = 112.9km
         elevationGainM: null,
         elevationLossM: null,
         startDate: new Date("2026-04-26T08:00:00Z"),
@@ -381,7 +381,7 @@ I posti sono **limitati**. Assicurati il tuo posto ora e approfitta dello sconto
         name: "Média Distância",
         description:
           "Triatlo de média distância: 1,9 km natação + 90 km ciclismo + 21 km corrida",
-        distanceKm: 113,
+        distanceKm: 112.9,
         elevationGainM: null,
         elevationLossM: null,
         startDate: new Date("2026-04-26T08:00:00Z"),

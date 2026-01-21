@@ -24,12 +24,16 @@ export async function POST(
 
     if (!validation.allowed) {
       // Track booking failure
-      await trackServerEvent(ANALYTICS_EVENTS.BOOKING_FAILED, {
-        venueId,
-        sessionId,
-        userId,
-        reason: validation.reason || "validation_failed",
-      });
+      await trackServerEvent(
+        ANALYTICS_EVENTS.BOOKING_FAILED,
+        {
+          venueId,
+          sessionId,
+          userId,
+          reason: validation.reason || "validation_failed",
+        },
+        session.user.email
+      );
 
       return NextResponse.json(
         {
@@ -63,12 +67,16 @@ export async function POST(
     });
 
     // Track successful booking
-    await trackServerEvent(ANALYTICS_EVENTS.BOOKING_COMPLETED, {
-      venueId,
-      sessionId,
-      userId,
-      venueName: booking.session.venue.name,
-    });
+    await trackServerEvent(
+      ANALYTICS_EVENTS.BOOKING_COMPLETED,
+      {
+        venueId,
+        sessionId,
+        userId,
+        venueName: booking.session.venue.name,
+      },
+      session.user.email
+    );
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {

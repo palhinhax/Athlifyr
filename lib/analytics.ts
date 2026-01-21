@@ -22,6 +22,35 @@ import { track as trackClient } from "@vercel/analytics";
 import { track as trackServer } from "@vercel/analytics/server";
 
 /**
+ * List of emails to exclude from analytics tracking
+ * Add internal/developer emails here to avoid skewing data
+ */
+const EXCLUDED_EMAILS = [
+  "joao.mduart@gmail.com", // Developer account
+];
+
+/**
+ * Check if the current user should be excluded from analytics
+ * Returns true if user should be excluded
+ */
+function isExcludedFromAnalytics(): boolean {
+  // Client-side: check localStorage for user email
+  if (typeof window !== "undefined") {
+    try {
+      // Check if user email is stored (e.g., from session)
+      const userEmail = localStorage.getItem("userEmail");
+      if (userEmail && EXCLUDED_EMAILS.includes(userEmail.toLowerCase())) {
+        return true;
+      }
+    } catch {
+      // localStorage might not be available
+    }
+  }
+
+  return false;
+}
+
+/**
  * Supported event data types
  */
 export type EventData = Record<string, string | number | boolean | null>;
@@ -66,6 +95,11 @@ export function analyticsEvent(eventName: string, data?: EventData): void {
     return;
   }
 
+  // Skip tracking for excluded users
+  if (isExcludedFromAnalytics()) {
+    return;
+  }
+
   try {
     // Validate data constraints
     if (data) {
@@ -83,24 +117,32 @@ export function analyticsEvent(eventName: string, data?: EventData): void {
  *
  * @param eventName - Name of the event following naming convention
  * @param data - Optional event data (primitives only, max 255 chars)
+ * @param userEmail - Optional user email to check exclusion list (server-side)
  *
  * @example
  * ```tsx
  * import { trackServerEvent } from '@/lib/analytics';
  *
  * export async function POST(request: Request) {
+ *   const session = await auth();
  *   // ... signup logic
  *   await trackServerEvent('Signup_Completed', {
  *     method: 'email',
  *     referrer: 'homepage'
- *   });
+ *   }, session?.user?.email);
  * }
  * ```
  */
 export async function trackServerEvent(
   eventName: string,
-  data?: EventData
+  data?: EventData,
+  userEmail?: string | null
 ): Promise<void> {
+  // Skip tracking for excluded users
+  if (userEmail && EXCLUDED_EMAILS.includes(userEmail.toLowerCase())) {
+    return;
+  }
+
   try {
     // Validate data constraints
     if (data) {

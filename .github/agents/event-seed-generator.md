@@ -155,19 +155,69 @@ Seeds MUST be idempotent (safe to run multiple times on a shared database):
    - **EventTranslation**: `@@unique([eventId, language])` → use `eventId_language` in where clause
    - **EventVariant**: `@@unique([eventId, slug])` → use `eventId_slug` in where clause (PREFERRED)
    - **EventVariantTranslation**: `@@unique([variantId, language])` → use `variantId_language` in where clause
-   - **PricingPhase**: `@@unique([eventId, name])` → use `eventId_name` in where clause
+   - **PricingPhase**: NO unique constraint - use `findFirst` pattern (see Section 5 below)
 
    **If variant slug field does not exist in schema:**
    - Fall back to `@@unique([eventId, name])` → use `eventId_name` in where clause
    - **WARN the user** that using `name` is less stable than `slug`
    - Recommend adding a `slug` field to EventVariant schema
 
-5. **Execution command**
+5. **PricingPhase Pattern (CRITICAL)**
+
+   **Schema Information:**
+   - PricingPhase model supports BOTH `eventId` and `variantId` fields (both nullable)
+   - The schema has NO unique constraint on PricingPhase
+   - Frontend queries pricing phases by `eventId` (NOT by `variantId`)
+
+   **REQUIRED PATTERN: Always use `eventId` for pricing phases**
+
+   ```typescript
+   // Helper function for idempotent pricing phase creation
+   const findOrCreatePricingPhase = async (name: string, data: any) => {
+     const existing = await prisma.pricingPhase.findFirst({
+       where: { eventId: event.id, name },
+     });
+
+     if (existing) {
+       return await prisma.pricingPhase.update({
+         where: { id: existing.id },
+         data,
+       });
+     } else {
+       return await prisma.pricingPhase.create({
+         data: {
+           eventId: event.id, // ALWAYS use eventId, NEVER variantId
+           name,
+           ...data,
+         },
+       });
+     }
+   };
+
+   // Usage example for variant-specific pricing
+   await findOrCreatePricingPhase("Ultra Trail 45km - Early Bird", {
+     startDate: new Date("2025-11-30T00:00:00Z"),
+     endDate: new Date("2025-12-31T23:59:59Z"),
+     price: 25.0,
+     currency: Currency.EUR,
+     discountPercent: null,
+     note: "Inscrição antecipada para Ultra Trail 45km",
+   });
+   ```
+
+   **Key Points:**
+   - **ALWAYS** associate pricing phases with `eventId`, even if phases are variant-specific
+   - Include variant information in the `name` field (e.g., "Ultra Trail 45km - Early Bird")
+   - Include variant clarification in the `note` field
+   - **NEVER** use `variantId` in pricing phase creation
+   - This pattern ensures phases are visible on the frontend
+
+6. **Execution command**
    - Seeds MUST be executed using: `pnpm tsx prisma/seeds/<event-slug>.ts`
    - NOT `npx tsx` - use `pnpm tsx` for consistency
    - NOT `npm run` - use `pnpm` as the package manager
 
-6. **Workflow Integration (OPTIONAL BUT RECOMMENDED)**
+7. **Workflow Integration (OPTIONAL BUT RECOMMENDED)**
 
    After creating the seed file, inform the user that they CAN (but are not required to) update the default value in `.github/workflows/manual-seed.yml`:
 
@@ -195,7 +245,29 @@ Seeds MUST be idempotent (safe to run multiple times on a shared database):
 
 The seed is ready to run either way - updating the default is optional but convenient."
 
-### 5. Required Data Structure
+### 6. Required Imports
+
+**CRITICAL:** Always import required enums from `@prisma/client`:
+
+```typescript
+import { PrismaClient, SportType, Language, Currency } from "@prisma/client";
+```
+
+**Required imports:**
+
+- `PrismaClient` - Database client
+- `SportType` - Sport type enum (RUNNING, TRAIL, TRIATHLON, etc.)
+- `Language` - Language enum (pt, en, es, fr, de, it) - NEVER use string literals
+- `Currency` - Currency enum (EUR, USD, GBP, etc.) - REQUIRED for pricing phases
+
+**Common mistakes to avoid:**
+
+- ❌ Using string literals: `language: "pt"` - WRONG
+- ✅ Using enum values: `language: Language.pt` - CORRECT
+- ❌ Omitting Currency import when creating pricing phases
+- ✅ Always include Currency in imports if pricing phases exist
+
+### 7. Required Data Structure
 
 Every seed file MUST include:
 

@@ -46,6 +46,7 @@ export async function GET(
             price: true,
             currency: true,
             paymentProvider: true,
+            policy: true, // Include policy for editing
             isActive: true,
             createdAt: true,
             updatedAt: true,
@@ -82,7 +83,28 @@ export async function GET(
       return NextResponse.json({ error: "Venue not found" }, { status: 404 });
     }
 
-    return NextResponse.json(venue);
+    // Count unique active subscribers (users with at least one active subscription)
+    const uniqueSubscribers = await prisma.venueSubscription.findMany({
+      where: {
+        venueId: venue.id,
+        status: "ACTIVE",
+      },
+      select: {
+        userId: true,
+      },
+      distinct: ["userId"],
+    });
+
+    // Add unique subscriber count to venue response
+    const venueWithUniqueCount = {
+      ...venue,
+      _count: {
+        ...venue._count,
+        subscriptions: uniqueSubscribers.length,
+      },
+    };
+
+    return NextResponse.json(venueWithUniqueCount);
   } catch (error) {
     console.error("Error fetching venue:", error);
     return NextResponse.json(

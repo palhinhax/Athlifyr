@@ -15,7 +15,10 @@
     "filter": "Filtern",
     "close": "Schließen",
     "showMore": "Mehr anzeigen",
-    "showLess": "Weniger anzeigen"
+    "showLess": "Weniger anzeigen",
+    "create": "Erstellen",
+    "change": "Ändern",
+    "searching": "Suche läuft"
   },
   "upload": {
     "uploadImage": "Bild Hochladen",

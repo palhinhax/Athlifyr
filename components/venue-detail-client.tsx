@@ -27,7 +27,16 @@ import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
 import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal";
-import { Trash2, CheckCircle, Calendar } from "lucide-react";
+import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
+import {
+  Trash2,
+  CheckCircle,
+  Calendar,
+  Phone,
+  Mail,
+  Globe,
+  Instagram,
+} from "lucide-react";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
 
 interface Venue {
@@ -76,6 +85,7 @@ interface Venue {
   _count: {
     sessions: number;
     bookings: number;
+    subscriptions: number;
   };
 }
 
@@ -119,6 +129,7 @@ export function VenueDetailClient({
     description: string | null;
     price: number | null;
     currency: string;
+    policy?: VenuePlanPolicy | null;
   } | null>(null);
   const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -133,15 +144,6 @@ export function VenueDetailClient({
           m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
       ))
   );
-
-  // Debug log
-  console.log("Debug venue edit access:", {
-    userId,
-    userRole,
-    venueMembers: venue?.members,
-    isOwnerOrAdmin,
-    userMember: venue?.members.find((m) => m.user.id === userId),
-  });
 
   // Check if user is a member (any role)
   const isMember = Boolean(
@@ -284,23 +286,33 @@ export function VenueDetailClient({
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
         <Tabs defaultValue="feed" className="w-full">
-          <TabsList className="w-full">
-            <TabsTrigger value="feed" className="flex-1">
-              {t("tabs.feed")}
-            </TabsTrigger>
-            <TabsTrigger value="about" className="flex-1">
-              {t("tabs.about")}
-            </TabsTrigger>
-            <TabsTrigger value="plans" className="flex-1">
-              {tPlans("title")}
-            </TabsTrigger>
-            <TabsTrigger value="sessions" className="flex-1">
-              {t("tabs.sessions")}
-            </TabsTrigger>
-            <TabsTrigger value="team" className="flex-1">
-              {t("tabs.team")}
-            </TabsTrigger>
-          </TabsList>
+          <div className="overflow-x-auto">
+            <TabsList className="w-full min-w-max md:min-w-0">
+              <TabsTrigger value="feed" className="flex-1 md:flex-initial">
+                {t("tabs.feed")}
+              </TabsTrigger>
+              <TabsTrigger value="about" className="flex-1 md:flex-initial">
+                {t("tabs.about")}
+              </TabsTrigger>
+              <TabsTrigger value="plans" className="flex-1 md:flex-initial">
+                {tPlans("title")}
+              </TabsTrigger>
+              <TabsTrigger value="sessions" className="flex-1 md:flex-initial">
+                {t("tabs.sessions")}
+              </TabsTrigger>
+              <TabsTrigger value="team" className="flex-1 md:flex-initial">
+                {t("tabs.team")}
+              </TabsTrigger>
+              {isOwnerOrAdmin && (
+                <TabsTrigger
+                  value="subscribers"
+                  className="flex-1 md:flex-initial"
+                >
+                  {t("tabs.subscribers")}
+                </TabsTrigger>
+              )}
+            </TabsList>
+          </div>
 
           {/* Feed Tab */}
           <TabsContent value="feed">
@@ -323,6 +335,77 @@ export function VenueDetailClient({
                 {venue.description || t("noDescription")}
               </p>
             </div>
+
+            {/* Contact Information */}
+            {(venue.phone ||
+              venue.email ||
+              venue.website ||
+              venue.instagram) && (
+              <div className="rounded-lg border bg-card p-6">
+                <h2 className="mb-4 text-2xl font-semibold">
+                  {tInfo("contactInformation")}
+                </h2>
+                <div className="flex flex-wrap gap-4 text-sm">
+                  {venue.phone && (
+                    <a
+                      href={`tel:${venue.phone}`}
+                      className="flex items-center gap-2 transition-colors hover:text-primary"
+                    >
+                      <Phone className="h-4 w-4" />
+                      {venue.phone}
+                    </a>
+                  )}
+                  {venue.email && (
+                    <a
+                      href={`mailto:${venue.email}`}
+                      className="flex items-center gap-2 transition-colors hover:text-primary"
+                    >
+                      <Mail className="h-4 w-4" />
+                      {venue.email}
+                    </a>
+                  )}
+                  {venue.website && (
+                    <a
+                      href={venue.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 transition-colors hover:text-primary"
+                    >
+                      <Globe className="h-4 w-4" />
+                      {tInfo("website")}
+                    </a>
+                  )}
+                  {venue.instagram && (
+                    <a
+                      href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 transition-colors hover:text-primary"
+                    >
+                      <Instagram className="h-4 w-4" />@
+                      {venue.instagram.replace("@", "")}
+                    </a>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Location Information */}
+            {(venue.address || venue.city) && (
+              <div className="rounded-lg border bg-card p-6">
+                <h2 className="mb-4 text-2xl font-semibold">
+                  {tInfo("location")}
+                </h2>
+                <div className="space-y-2 text-muted-foreground">
+                  {venue.address && <p>{venue.address}</p>}
+                  {venue.city && (
+                    <p>
+                      {venue.city}, {venue.country}
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {!userId && (
               <div className="rounded-lg bg-muted p-6">
@@ -404,52 +487,55 @@ export function VenueDetailClient({
                               )}
                           </span>
                         </div>
-                        {(plan.policy.maxBookingsPerDay ||
-                          plan.policy.maxBookingsPerWeek ||
-                          plan.policy.maxBookingsPerMonth) && (
-                          <div className="text-xs text-muted-foreground">
-                            {plan.policy.maxBookingsPerDay && (
-                              <div>
-                                • Max {plan.policy.maxBookingsPerDay}{" "}
-                                {tPolicy("maxBookingsPerDay")
-                                  .toLowerCase()
-                                  .split(" ")
-                                  .slice(1)
-                                  .join(" ")}
-                              </div>
-                            )}
-                            {plan.policy.maxBookingsPerWeek && (
-                              <div>
-                                • Max {plan.policy.maxBookingsPerWeek}{" "}
-                                {tPolicy("maxBookingsPerWeek")
-                                  .toLowerCase()
-                                  .split(" ")
-                                  .slice(1)
-                                  .join(" ")}
-                              </div>
-                            )}
-                            {plan.policy.maxBookingsPerMonth && (
-                              <div>
-                                • Max {plan.policy.maxBookingsPerMonth}{" "}
-                                {tPolicy("maxBookingsPerMonth")
-                                  .toLowerCase()
-                                  .split(" ")
-                                  .slice(1)
-                                  .join(" ")}
-                              </div>
-                            )}
-                          </div>
-                        )}
+                        {plan.policy.duration !== "ONE_TIME" &&
+                          (plan.policy.maxBookingsPerDay ||
+                            plan.policy.maxBookingsPerWeek ||
+                            plan.policy.maxBookingsPerMonth) && (
+                            <div className="text-xs text-muted-foreground">
+                              {plan.policy.maxBookingsPerDay && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerDay}{" "}
+                                  {tPolicy("maxBookingsPerDay")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                              {plan.policy.maxBookingsPerWeek && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerWeek}{" "}
+                                  {tPolicy("maxBookingsPerWeek")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                              {plan.policy.maxBookingsPerMonth && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerMonth}{" "}
+                                  {tPolicy("maxBookingsPerMonth")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                            </div>
+                          )}
                       </div>
                     )}
 
                     {plan.price && (
                       <p className="mb-4 text-2xl font-bold">
                         {plan.price} {plan.currency}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {" "}
-                          / {tPlans("perMonth")}
-                        </span>
+                        {plan.policy?.duration !== "ONE_TIME" && (
+                          <span className="text-sm font-normal text-muted-foreground">
+                            {" "}
+                            / {tPlans("perMonth")}
+                          </span>
+                        )}
                       </p>
                     )}
 
@@ -539,6 +625,17 @@ export function VenueDetailClient({
               </div>
             )}
           </TabsContent>
+
+          {/* Subscribers Tab (Only for Owners/Admins) */}
+          {isOwnerOrAdmin && (
+            <TabsContent value="subscribers" className="space-y-6">
+              <VenueSubscribersManager
+                venueId={venue.id}
+                locale={locale}
+                plans={venue.plans}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

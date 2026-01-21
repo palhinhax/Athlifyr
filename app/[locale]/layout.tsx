@@ -8,6 +8,7 @@ import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
 import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
 import { NavigationProgress } from "@/components/navigation-progress";
+import { ActiveVenuesBar } from "@/components/active-venues-bar";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -177,6 +178,10 @@ export default async function RootLayout({
                 <MobileNavWrapper />
               </div>
             </header>
+
+            {/* Active Venues Quick Access Bar */}
+            <ActiveVenuesBar />
+
             <main className="flex-1">{children}</main>
             <footer className="border-t py-6">
               <div className="container mx-auto px-4">

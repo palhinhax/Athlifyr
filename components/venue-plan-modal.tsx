@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
@@ -68,6 +68,20 @@ export function VenuePlanModal({
   const [policy, setPolicy] = useState<VenuePlanPolicy>(
     plan?.policy || DEFAULT_PLAN_POLICY
   );
+
+  // Update form data when plan changes (for editing different plans)
+  useEffect(() => {
+    if (open) {
+      setFormData({
+        name: plan?.name || "",
+        description: plan?.description || "",
+        price: plan?.price?.toString() || "",
+        currency: plan?.currency || "EUR",
+        paymentProvider: "IN_APP",
+      });
+      setPolicy(plan?.policy || DEFAULT_PLAN_POLICY);
+    }
+  }, [plan, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

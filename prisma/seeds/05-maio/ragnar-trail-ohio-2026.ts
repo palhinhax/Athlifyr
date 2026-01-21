@@ -177,8 +177,10 @@ O percurso está situado numa **densa floresta** com a maioria dos trilhos total
 - 🎉 Ambiente festivo na aldeia
 - 🏖️ Acesso à praia de areia branca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Maio",
-      metaDescription: "Festival de trail running no Dillon State Park, Ohio. Corridas individuais: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Floresta densa, praia e campismo. 29-30 maio 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Maio",
+      metaDescription:
+        "Festival de trail running no Dillon State Park, Ohio. Corridas individuais: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Floresta densa, praia e campismo. 29-30 maio 2026.",
     },
     create: {
       eventId: event.id,
@@ -223,8 +225,10 @@ O percurso está situado numa **densa floresta** com a maioria dos trilhos total
 - 🎉 Ambiente festivo na aldeia
 - 🏖️ Acesso à praia de areia branca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Maio",
-      metaDescription: "Festival de trail running no Dillon State Park, Ohio. Corridas individuais: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Floresta densa, praia e campismo. 29-30 maio 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Maio",
+      metaDescription:
+        "Festival de trail running no Dillon State Park, Ohio. Corridas individuais: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Floresta densa, praia e campismo. 29-30 maio 2026.",
     },
   });
 
@@ -278,7 +282,8 @@ The course is situated in a **dense forest** with the majority of trails fully s
 - 🏖️ White sand beach access`,
       city: "Nashport",
       metaTitle: "Ragnar Trail Ohio 2026 - Trail Running Festival | May 29-30",
-      metaDescription: "Trail running festival at Dillon State Park, Ohio. Individual races: Yellow Loop 5.3mi, 6H Ultra, and 24H Ultra. Dense forest, beach, and camping. May 29-30, 2026.",
+      metaDescription:
+        "Trail running festival at Dillon State Park, Ohio. Individual races: Yellow Loop 5.3mi, 6H Ultra, and 24H Ultra. Dense forest, beach, and camping. May 29-30, 2026.",
     },
     create: {
       eventId: event.id,
@@ -324,7 +329,8 @@ The course is situated in a **dense forest** with the majority of trails fully s
 - 🏖️ White sand beach access`,
       city: "Nashport",
       metaTitle: "Ragnar Trail Ohio 2026 - Trail Running Festival | May 29-30",
-      metaDescription: "Trail running festival at Dillon State Park, Ohio. Individual races: Yellow Loop 5.3mi, 6H Ultra, and 24H Ultra. Dense forest, beach, and camping. May 29-30, 2026.",
+      metaDescription:
+        "Trail running festival at Dillon State Park, Ohio. Individual races: Yellow Loop 5.3mi, 6H Ultra, and 24H Ultra. Dense forest, beach, and camping. May 29-30, 2026.",
     },
   });
 
@@ -377,8 +383,10 @@ El recorrido está situado en un **denso bosque** con la mayoría de los sendero
 - 🎉 Ambiente festivo en el pueblo
 - 🏖️ Acceso a playa de arena blanca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mayo",
-      metaDescription: "Festival de trail running en Dillon State Park, Ohio. Carreras individuales: Yellow Loop 8.5km, Ultra 6H y Ultra 24H. Bosque denso, playa y camping. 29-30 mayo 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mayo",
+      metaDescription:
+        "Festival de trail running en Dillon State Park, Ohio. Carreras individuales: Yellow Loop 8.5km, Ultra 6H y Ultra 24H. Bosque denso, playa y camping. 29-30 mayo 2026.",
     },
     create: {
       eventId: event.id,
@@ -423,8 +431,10 @@ El recorrido está situado en un **denso bosque** con la mayoría de los sendero
 - 🎉 Ambiente festivo en el pueblo
 - 🏖️ Acceso a playa de arena blanca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mayo",
-      metaDescription: "Festival de trail running en Dillon State Park, Ohio. Carreras individuales: Yellow Loop 8.5km, Ultra 6H y Ultra 24H. Bosque denso, playa y camping. 29-30 mayo 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mayo",
+      metaDescription:
+        "Festival de trail running en Dillon State Park, Ohio. Carreras individuales: Yellow Loop 8.5km, Ultra 6H y Ultra 24H. Bosque denso, playa y camping. 29-30 mayo 2026.",
     },
   });
 
@@ -477,8 +487,10 @@ Le parcours est situé dans une **forêt dense** avec la majorité des sentiers 
 - 🎉 Ambiance festive au village
 - 🏖️ Accès à la plage de sable blanc`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mai",
-      metaDescription: "Festival de trail running à Dillon State Park, Ohio. Courses individuelles : Yellow Loop 8.5km, Ultra 6H et Ultra 24H. Forêt dense, plage et camping. 29-30 mai 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mai",
+      metaDescription:
+        "Festival de trail running à Dillon State Park, Ohio. Courses individuelles : Yellow Loop 8.5km, Ultra 6H et Ultra 24H. Forêt dense, plage et camping. 29-30 mai 2026.",
     },
     create: {
       eventId: event.id,
@@ -523,8 +535,10 @@ Le parcours est situé dans une **forêt dense** avec la majorité des sentiers 
 - 🎉 Ambiance festive au village
 - 🏖️ Accès à la plage de sable blanc`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mai",
-      metaDescription: "Festival de trail running à Dillon State Park, Ohio. Courses individuelles : Yellow Loop 8.5km, Ultra 6H et Ultra 24H. Forêt dense, plage et camping. 29-30 mai 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival de Trail Running | 29-30 Mai",
+      metaDescription:
+        "Festival de trail running à Dillon State Park, Ohio. Courses individuelles : Yellow Loop 8.5km, Ultra 6H et Ultra 24H. Forêt dense, plage et camping. 29-30 mai 2026.",
     },
   });
 
@@ -577,8 +591,10 @@ Die Strecke befindet sich in einem **dichten Wald** mit der Mehrheit der Wege vo
 - 🎉 Festliche Dorfatmosphäre
 - 🏖️ Zugang zum weißen Sandstrand`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Trail Running Festival | 29.-30. Mai",
-      metaDescription: "Trail Running Festival im Dillon State Park, Ohio. Einzelrennen: Yellow Loop 8.5km, 6H Ultra und 24H Ultra. Dichter Wald, Strand und Camping. 29.-30. Mai 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Trail Running Festival | 29.-30. Mai",
+      metaDescription:
+        "Trail Running Festival im Dillon State Park, Ohio. Einzelrennen: Yellow Loop 8.5km, 6H Ultra und 24H Ultra. Dichter Wald, Strand und Camping. 29.-30. Mai 2026.",
     },
     create: {
       eventId: event.id,
@@ -623,8 +639,10 @@ Die Strecke befindet sich in einem **dichten Wald** mit der Mehrheit der Wege vo
 - 🎉 Festliche Dorfatmosphäre
 - 🏖️ Zugang zum weißen Sandstrand`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Trail Running Festival | 29.-30. Mai",
-      metaDescription: "Trail Running Festival im Dillon State Park, Ohio. Einzelrennen: Yellow Loop 8.5km, 6H Ultra und 24H Ultra. Dichter Wald, Strand und Camping. 29.-30. Mai 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Trail Running Festival | 29.-30. Mai",
+      metaDescription:
+        "Trail Running Festival im Dillon State Park, Ohio. Einzelrennen: Yellow Loop 8.5km, 6H Ultra und 24H Ultra. Dichter Wald, Strand und Camping. 29.-30. Mai 2026.",
     },
   });
 
@@ -677,8 +695,10 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
 - 🎉 Atmosfera festosa al villaggio
 - 🏖️ Accesso alla spiaggia di sabbia bianca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival di Trail Running | 29-30 Maggio",
-      metaDescription: "Festival di trail running al Dillon State Park, Ohio. Gare individuali: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Foresta fitta, spiaggia e campeggio. 29-30 maggio 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival di Trail Running | 29-30 Maggio",
+      metaDescription:
+        "Festival di trail running al Dillon State Park, Ohio. Gare individuali: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Foresta fitta, spiaggia e campeggio. 29-30 maggio 2026.",
     },
     create: {
       eventId: event.id,
@@ -723,8 +743,10 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
 - 🎉 Atmosfera festosa al villaggio
 - 🏖️ Accesso alla spiaggia di sabbia bianca`,
       city: "Nashport",
-      metaTitle: "Ragnar Trail Ohio 2026 - Festival di Trail Running | 29-30 Maggio",
-      metaDescription: "Festival di trail running al Dillon State Park, Ohio. Gare individuali: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Foresta fitta, spiaggia e campeggio. 29-30 maggio 2026.",
+      metaTitle:
+        "Ragnar Trail Ohio 2026 - Festival di Trail Running | 29-30 Maggio",
+      metaDescription:
+        "Festival di trail running al Dillon State Park, Ohio. Gare individuali: Yellow Loop 8.5km, Ultra 6H e Ultra 24H. Foresta fitta, spiaggia e campeggio. 29-30 maggio 2026.",
     },
   });
 
@@ -733,18 +755,12 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
   // Step 3: Upsert variants separately
   console.log("🏃 Upserting variants...");
 
-  // Variant 1: Single Loop - Yellow Course
-  const variant1 = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "single-loop-yellow",
-      },
-    },
-    update: {
+  const variantData = [
+    {
       name: "Single Loop - Yellow Course",
-      description: "Situated in a beautiful dense forest, run the stunning Yellow Loop. Wind through dense forest with towering trees as the trail climbs and dips. Catch glimpses of Dillon Lake and Licking River through the canopy. After thrilling climbs, emerge from trees and arrive back at the village.",
-      distanceKm: 8.5,
+      description:
+        "Situated in a beautiful dense forest, run the stunning Yellow Loop. Wind through dense forest with towering trees as the trail climbs and dips. Catch glimpses of Dillon Lake and Licking River through the canopy. After thrilling climbs, emerge from trees and arrive back at the village.",
+      distanceKm: 8,
       elevationGainM: 264,
       elevationLossM: 264,
       startDate: new Date("2026-05-30T12:00:00Z"), // 8:00 AM EDT
@@ -755,36 +771,11 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
       atrpGrade: null,
       mountainLevel: null,
     },
-    create: {
-      eventId: event.id,
-      slug: "single-loop-yellow",
-      name: "Single Loop - Yellow Course",
-      description: "Situated in a beautiful dense forest, run the stunning Yellow Loop. Wind through dense forest with towering trees as the trail climbs and dips. Catch glimpses of Dillon Lake and Licking River through the canopy. After thrilling climbs, emerge from trees and arrive back at the village.",
-      distanceKm: 8.5,
-      elevationGainM: 264,
-      elevationLossM: 264,
-      startDate: new Date("2026-05-30T12:00:00Z"),
-      startTime: "08:00",
-      maxParticipants: 500,
-      cutoffTimeHours: 3,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: null,
-    },
-  });
-
-  // Variant 2: 6-Hour Ultra
-  const variant2 = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "6h-ultra",
-      },
-    },
-    update: {
+    {
       name: "6-Hour Ultra",
-      description: "Run all the same loops as relay teams, as many times as you can in 6 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir.",
-      distanceKm: 24.6,
+      description:
+        "Run all the same loops as relay teams, as many times as you can in 6 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir.",
+      distanceKm: 25,
       elevationGainM: 682,
       elevationLossM: 682,
       startDate: new Date("2026-05-30T12:00:00Z"), // 8:00 AM EDT
@@ -795,36 +786,11 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
       atrpGrade: null,
       mountainLevel: null,
     },
-    create: {
-      eventId: event.id,
-      slug: "6h-ultra",
-      name: "6-Hour Ultra",
-      description: "Run all the same loops as relay teams, as many times as you can in 6 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir.",
-      distanceKm: 24.6,
-      elevationGainM: 682,
-      elevationLossM: 682,
-      startDate: new Date("2026-05-30T12:00:00Z"),
-      startTime: "08:00",
-      maxParticipants: 300,
-      cutoffTimeHours: 6,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: null,
-    },
-  });
-
-  // Variant 3: 24-Hour Ultra
-  const variant3 = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "24h-ultra",
-      },
-    },
-    update: {
+    {
       name: "24-Hour Ultra",
-      description: "Run all the same loops as relay teams, as many times as you can in 24 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir. Includes camping and village activities.",
-      distanceKm: 24.6,
+      description:
+        "Run all the same loops as relay teams, as many times as you can in 24 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir. Includes camping and village activities.",
+      distanceKm: 25,
       elevationGainM: 682,
       elevationLossM: 682,
       startDate: new Date("2026-05-29T16:00:00Z"), // Friday 12:00 PM EDT
@@ -835,23 +801,40 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
       atrpGrade: null,
       mountainLevel: null,
     },
-    create: {
-      eventId: event.id,
-      slug: "24h-ultra",
-      name: "24-Hour Ultra",
-      description: "Run all the same loops as relay teams, as many times as you can in 24 hours! Majority of trails fully shaded in dense forest. Variety of trail types from flat grass-lined birding trails to technical single-track mountain bike trails. Routes include significant elevation gain navigating slopes into Dillon Reservoir. Includes camping and village activities.",
-      distanceKm: 24.6,
-      elevationGainM: 682,
-      elevationLossM: 682,
-      startDate: new Date("2026-05-29T16:00:00Z"),
-      startTime: "12:00",
-      maxParticipants: 200,
-      cutoffTimeHours: 24,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: null,
-    },
-  });
+  ];
+
+  const variants = [];
+  for (const data of variantData) {
+    // Find existing variant by eventId + name
+    const existing = await prisma.eventVariant.findFirst({
+      where: {
+        eventId: event.id,
+        name: data.name,
+      },
+    });
+
+    let variant;
+    if (existing) {
+      // Update existing variant
+      variant = await prisma.eventVariant.update({
+        where: { id: existing.id },
+        data: data,
+      });
+    } else {
+      // Create new variant
+      variant = await prisma.eventVariant.create({
+        data: {
+          eventId: event.id,
+          ...data,
+        },
+      });
+    }
+    variants.push(variant);
+  }
+
+  const variant1 = variants[0];
+  const variant2 = variants[1];
+  const variant3 = variants[2];
 
   console.log("✅ Variants upserted");
 
@@ -1047,7 +1030,17 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
   console.log("💰 Upserting pricing phases...");
 
   // Helper function for idempotent pricing phase creation
-  const findOrCreatePricingPhase = async (name: string, data: any) => {
+  const findOrCreatePricingPhase = async (
+    name: string,
+    data: {
+      startDate: Date;
+      endDate: Date;
+      price: number;
+      currency: Currency;
+      discountPercent: number | null;
+      note: string;
+    }
+  ) => {
     const existing = await prisma.pricingPhase.findFirst({
       where: { eventId: event.id, name },
     });
@@ -1100,7 +1093,9 @@ Il percorso è situato in una **foresta fitta** con la maggior parte dei sentier
 
   console.log("✅ Pricing phases upserted (linked to eventId)");
 
-  console.log("\n🎉 Ragnar Trail Ohio Individual Races 2026 seeded successfully!");
+  console.log(
+    "\n🎉 Ragnar Trail Ohio Individual Races 2026 seeded successfully!"
+  );
   console.log("📍 Event ID:", event.id);
   console.log("📝 6 language translations created");
   console.log("🏃 3 variants created with translations");

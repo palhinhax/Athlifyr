@@ -1,3 +1,14 @@
+# [10.2.0](https://github.com/palhinhax/Athlifyr/compare/v10.1.0...v10.2.0) (2026-01-21)
+
+### Bug Fixes
+
+- **seeds:** correct distance calculation in triatlo-moura variant ([78c436f](https://github.com/palhinhax/Athlifyr/commit/78c436fa6e642fe148266b708c6a75b421278b64))
+- **seeds:** correct TypeScript types in triatlo-moura-2026 ([e781515](https://github.com/palhinhax/Athlifyr/commit/e7815155a38f67822a54ea6fd9f87159c4878b82))
+
+### Features
+
+- **seeds:** add Triatlo Média Distância Moura 2026 seed ([ada0370](https://github.com/palhinhax/Athlifyr/commit/ada037015aa696c628071001536ac2df6e507373))
+
 # [10.1.0](https://github.com/palhinhax/Athlifyr/compare/v10.0.0...v10.1.0) (2026-01-21)
 
 ### Features

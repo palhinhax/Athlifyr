@@ -1,3 +1,15 @@
+# [11.0.0](https://github.com/palhinhax/Athlifyr/compare/v10.3.0...v11.0.0) (2026-01-21)
+
+### Features
+
+- **seeds:** add Trail do Capitão 2026 seed and improve Trail Manuelino SEO ([523fe86](https://github.com/palhinhax/Athlifyr/commit/523fe86f9dd32a761819f5b71c30f9ea1635d561))
+- **seeds:** add Trail Manuelino 2026 event seed ([ef402f6](https://github.com/palhinhax/Athlifyr/commit/ef402f6adff7acf5e6334280c07128660adfd996))
+- **sports:** add WALKING category with full i18n support ([1ecec3a](https://github.com/palhinhax/Athlifyr/commit/1ecec3a60b144eb0e351743698002ba7cdb56c06)), closes [#14B8A6](https://github.com/palhinhax/Athlifyr/issues/14B8A6)
+
+### BREAKING CHANGES
+
+- **sports:** Events with walking variants should now use WALKING category instead of RUNNING
+
 # [10.3.0](https://github.com/palhinhax/Athlifyr/compare/v10.2.0...v10.3.0) (2026-01-21)
 
 ### Features

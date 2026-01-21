@@ -49,7 +49,9 @@
       "title": "Registration Prices",
       "titleWithVariant": "Prices - {variant}",
       "current": "Current",
-      "until": "Until"
+      "until": "Until",
+      "showAll": "Show all",
+      "showLess": "Show less"
     },
     "registration": {
       "willYouGo": "Will you go?",

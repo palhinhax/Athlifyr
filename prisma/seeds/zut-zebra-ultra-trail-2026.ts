@@ -4,7 +4,7 @@
  * First edition trail running event in Cordinhã, Cantanhede, Portugal
  */
 
-import { PrismaClient, SportType } from "@prisma/client";
+import { PrismaClient, SportType, Language } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -61,7 +61,8 @@ Sob organização da Secção de Atletismo do C. F. "Os Marialvas", com o apoio 
       latitude: 40.32556595067263,
       longitude: -8.521936459302795,
       googleMapsUrl: "https://maps.app.goo.gl/4yuF1hFDTEHvpvhs9",
-      externalUrl: "https://www.runmanager.net/Eventos/zut-zebra-ultra-trail/992",
+      externalUrl:
+        "https://www.runmanager.net/Eventos/zut-zebra-ultra-trail/992",
       imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-02-12T23:59:59Z"),
@@ -114,7 +115,8 @@ Sob organização da Secção de Atletismo do C. F. "Os Marialvas", com o apoio 
       latitude: 40.32556595067263,
       longitude: -8.521936459302795,
       googleMapsUrl: "https://maps.app.goo.gl/4yuF1hFDTEHvpvhs9",
-      externalUrl: "https://www.runmanager.net/Eventos/zut-zebra-ultra-trail/992",
+      externalUrl:
+        "https://www.runmanager.net/Eventos/zut-zebra-ultra-trail/992",
       imageUrl: "",
       isFeatured: true,
       registrationDeadline: new Date("2026-02-12T23:59:59Z"),
@@ -126,7 +128,7 @@ Sob organização da Secção de Atletismo do C. F. "Os Marialvas", com o apoio 
   // Step 2: Upsert translations separately (ALL 6 LANGUAGES)
   const translations = [
     {
-      language: "pt",
+      language: Language.pt,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -171,7 +173,7 @@ Sob organização da Secção de Atletismo do C. F. "Os Marialvas", com o apoio 
         "Primeira edição do ZUT – Zebra Ultra Trail em Cordinhã, Cantanhede. 4 provas: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km e Caminhada 10km. 15 de Fevereiro de 2026.",
     },
     {
-      language: "en",
+      language: Language.en,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -216,7 +218,7 @@ Organized by the Athletics Section of C. F. "Os Marialvas", with institutional s
         "First edition of ZUT – Zebra Ultra Trail in Cordinhã, Cantanhede. 4 races: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km and Caminhada 10km. February 15, 2026.",
     },
     {
-      language: "es",
+      language: Language.es,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -261,7 +263,7 @@ Organizado por la Sección de Atletismo del C. F. "Os Marialvas", con el apoyo i
         "Primera edición del ZUT – Zebra Ultra Trail en Cordinhã, Cantanhede. 4 carreras: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km y Caminhada 10km. 15 de Febrero de 2026.",
     },
     {
-      language: "fr",
+      language: Language.fr,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -306,7 +308,7 @@ Organisé par la Section d'Athlétisme du C. F. "Os Marialvas", avec le soutien 
         "Première édition du ZUT – Zebra Ultra Trail à Cordinhã, Cantanhede. 4 courses : Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km et Caminhada 10km. 15 Février 2026.",
     },
     {
-      language: "de",
+      language: Language.de,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -351,7 +353,7 @@ Organisiert von der Leichtathletik-Sektion des C. F. "Os Marialvas", mit institu
         "Erste Ausgabe des ZUT – Zebra Ultra Trail in Cordinhã, Cantanhede. 4 Rennen: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km und Caminhada 10km. 15. Februar 2026.",
     },
     {
-      language: "it",
+      language: Language.it,
       title: "ZUT – Zebra Ultra Trail 2026",
       description: `## 🦓 ZUT – Zebra Ultra Trail 2026
 
@@ -428,33 +430,15 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
     "📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)"
   );
 
-  // Step 3: Upsert variants separately
+  // Step 3: Delete existing variants and create new ones
+  await prisma.eventVariant.deleteMany({
+    where: { eventId: event.id },
+  });
+
   // Variant 1: Ultra Trail 45km
-  const ultraTrail = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "ultra-trail-45km",
-      },
-    },
-    update: {
-      name: "Ultra Trail 45km",
-      description:
-        "Prova competitiva de 45km com cronometragem eletrónica. Idade mínima: 20 anos. Tempo limite: 8 horas.",
-      distanceKm: 45,
-      elevationGainM: null,
-      elevationLossM: null,
-      startDate: new Date("2026-02-15T08:00:00Z"),
-      startTime: "08:00",
-      maxParticipants: null,
-      cutoffTimeHours: 8.0,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: 3,
-    },
-    create: {
+  const ultraTrail = await prisma.eventVariant.create({
+    data: {
       eventId: event.id,
-      slug: "ultra-trail-45km",
       name: "Ultra Trail 45km",
       description:
         "Prova competitiva de 45km com cronometragem eletrónica. Idade mínima: 20 anos. Tempo limite: 8 horas.",
@@ -472,31 +456,9 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
   });
 
   // Variant 2: Trail Longo 25km
-  const trailLongo = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "trail-longo-25km",
-      },
-    },
-    update: {
-      name: "Trail Longo 25km",
-      description:
-        "Prova competitiva de 25km com cronometragem eletrónica. Idade mínima: 18 anos. Tempo limite: 6 horas.",
-      distanceKm: 25,
-      elevationGainM: null,
-      elevationLossM: null,
-      startDate: new Date("2026-02-15T09:00:00Z"),
-      startTime: "09:00",
-      maxParticipants: null,
-      cutoffTimeHours: 6.0,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: 2,
-    },
-    create: {
+  const trailLongo = await prisma.eventVariant.create({
+    data: {
       eventId: event.id,
-      slug: "trail-longo-25km",
       name: "Trail Longo 25km",
       description:
         "Prova competitiva de 25km com cronometragem eletrónica. Idade mínima: 18 anos. Tempo limite: 6 horas.",
@@ -514,31 +476,9 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
   });
 
   // Variant 3: Mini Trail 15km
-  const miniTrail = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "mini-trail-15km",
-      },
-    },
-    update: {
-      name: "Mini Trail 15km",
-      description:
-        "Prova competitiva de 15km com cronometragem eletrónica. Válida para Circuito Distrital Trail Running Coimbra (CDTRC). Idade mínima: 16 anos. Tempo limite: 3 horas.",
-      distanceKm: 15,
-      elevationGainM: null,
-      elevationLossM: null,
-      startDate: new Date("2026-02-15T09:30:00Z"),
-      startTime: "09:30",
-      maxParticipants: null,
-      cutoffTimeHours: 3.0,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: 1,
-    },
-    create: {
+  const miniTrail = await prisma.eventVariant.create({
+    data: {
       eventId: event.id,
-      slug: "mini-trail-15km",
       name: "Mini Trail 15km",
       description:
         "Prova competitiva de 15km com cronometragem eletrónica. Válida para Circuito Distrital Trail Running Coimbra (CDTRC). Idade mínima: 16 anos. Tempo limite: 3 horas.",
@@ -556,31 +496,9 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
   });
 
   // Variant 4: Caminhada 10km
-  const caminhada = await prisma.eventVariant.upsert({
-    where: {
-      eventId_slug: {
-        eventId: event.id,
-        slug: "caminhada-10km",
-      },
-    },
-    update: {
-      name: "Caminhada 10km",
-      description:
-        "Caminhada lúdica não competitiva de 10km. Todas as idades bem-vindas (menores de 16 anos devem ser acompanhados por adulto). Tempo limite: 4 horas.",
-      distanceKm: 10,
-      elevationGainM: null,
-      elevationLossM: null,
-      startDate: new Date("2026-02-15T09:45:00Z"),
-      startTime: "09:45",
-      maxParticipants: null,
-      cutoffTimeHours: 4.0,
-      itraPoints: null,
-      atrpGrade: null,
-      mountainLevel: 1,
-    },
-    create: {
+  const caminhada = await prisma.eventVariant.create({
+    data: {
       eventId: event.id,
-      slug: "caminhada-10km",
       name: "Caminhada 10km",
       description:
         "Caminhada lúdica não competitiva de 10km. Todas as idades bem-vindas (menores de 16 anos devem ser acompanhados por adulto). Tempo limite: 4 horas.",
@@ -597,7 +515,7 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
     },
   });
 
-  console.log("🏃 Variants upserted (4 variants)");
+  console.log("🏃 Variants created (4 variants)");
 
   // Step 4: Upsert variant translations separately (ALL 6 languages for each variant)
   const variantTranslations = [
@@ -606,37 +524,37 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
       variantId: ultraTrail.id,
       translations: [
         {
-          language: "pt",
+          language: Language.pt,
           name: "Ultra Trail 45km",
           description:
             "Prova competitiva de 45km com cronometragem eletrónica. Idade mínima: 20 anos. Tempo limite: 8 horas.",
         },
         {
-          language: "en",
+          language: Language.en,
           name: "Ultra Trail 45km",
           description:
             "Competitive 45km race with electronic chip timing. Minimum age: 20 years. Time limit: 8 hours.",
         },
         {
-          language: "es",
+          language: Language.es,
           name: "Ultra Trail 45km",
           description:
             "Carrera competitiva de 45km con cronometraje electrónico. Edad mínima: 20 años. Tiempo límite: 8 horas.",
         },
         {
-          language: "fr",
+          language: Language.fr,
           name: "Ultra Trail 45km",
           description:
             "Course compétitive de 45km avec chronométrage électronique. Âge minimum : 20 ans. Temps limite : 8 heures.",
         },
         {
-          language: "de",
+          language: Language.de,
           name: "Ultra Trail 45km",
           description:
             "Wettkampfrennen über 45km mit elektronischer Chip-Zeitmessung. Mindestalter: 20 Jahre. Zeitlimit: 8 Stunden.",
         },
         {
-          language: "it",
+          language: Language.it,
           name: "Ultra Trail 45km",
           description:
             "Gara competitiva di 45km con cronometraggio elettronico. Età minima: 20 anni. Tempo limite: 8 ore.",
@@ -648,37 +566,37 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
       variantId: trailLongo.id,
       translations: [
         {
-          language: "pt",
+          language: Language.pt,
           name: "Trail Longo 25km",
           description:
             "Prova competitiva de 25km com cronometragem eletrónica. Idade mínima: 18 anos. Tempo limite: 6 horas.",
         },
         {
-          language: "en",
+          language: Language.en,
           name: "Trail Longo 25km",
           description:
             "Competitive 25km race with electronic chip timing. Minimum age: 18 years. Time limit: 6 hours.",
         },
         {
-          language: "es",
+          language: Language.es,
           name: "Trail Longo 25km",
           description:
             "Carrera competitiva de 25km con cronometraje electrónico. Edad mínima: 18 años. Tiempo límite: 6 horas.",
         },
         {
-          language: "fr",
+          language: Language.fr,
           name: "Trail Longo 25km",
           description:
             "Course compétitive de 25km avec chronométrage électronique. Âge minimum : 18 ans. Temps limite : 6 heures.",
         },
         {
-          language: "de",
+          language: Language.de,
           name: "Trail Longo 25km",
           description:
             "Wettkampfrennen über 25km mit elektronischer Chip-Zeitmessung. Mindestalter: 18 Jahre. Zeitlimit: 6 Stunden.",
         },
         {
-          language: "it",
+          language: Language.it,
           name: "Trail Longo 25km",
           description:
             "Gara competitiva di 25km con cronometraggio elettronico. Età minima: 18 anni. Tempo limite: 6 ore.",
@@ -690,37 +608,37 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
       variantId: miniTrail.id,
       translations: [
         {
-          language: "pt",
+          language: Language.pt,
           name: "Mini Trail 15km",
           description:
             "Prova competitiva de 15km com cronometragem eletrónica. Válida para Circuito Distrital Trail Running Coimbra (CDTRC). Idade mínima: 16 anos. Tempo limite: 3 horas.",
         },
         {
-          language: "en",
+          language: Language.en,
           name: "Mini Trail 15km",
           description:
             "Competitive 15km race with electronic chip timing. Counts for Circuito Distrital Trail Running Coimbra (CDTRC). Minimum age: 16 years. Time limit: 3 hours.",
         },
         {
-          language: "es",
+          language: Language.es,
           name: "Mini Trail 15km",
           description:
             "Carrera competitiva de 15km con cronometraje electrónico. Válida para Circuito Distrital Trail Running Coimbra (CDTRC). Edad mínima: 16 años. Tiempo límite: 3 horas.",
         },
         {
-          language: "fr",
+          language: Language.fr,
           name: "Mini Trail 15km",
           description:
             "Course compétitive de 15km avec chronométrage électronique. Valable pour Circuito Distrital Trail Running Coimbra (CDTRC). Âge minimum : 16 ans. Temps limite : 3 heures.",
         },
         {
-          language: "de",
+          language: Language.de,
           name: "Mini Trail 15km",
           description:
             "Wettkampfrennen über 15km mit elektronischer Chip-Zeitmessung. Zählt für Circuito Distrital Trail Running Coimbra (CDTRC). Mindestalter: 16 Jahre. Zeitlimit: 3 Stunden.",
         },
         {
-          language: "it",
+          language: Language.it,
           name: "Mini Trail 15km",
           description:
             "Gara competitiva di 15km con cronometraggio elettronico. Valida per Circuito Distrital Trail Running Coimbra (CDTRC). Età minima: 16 anni. Tempo limite: 3 ore.",
@@ -732,37 +650,37 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
       variantId: caminhada.id,
       translations: [
         {
-          language: "pt",
+          language: Language.pt,
           name: "Caminhada 10km",
           description:
             "Caminhada lúdica não competitiva de 10km. Todas as idades bem-vindas (menores de 16 anos devem ser acompanhados por adulto). Tempo limite: 4 horas.",
         },
         {
-          language: "en",
+          language: Language.en,
           name: "Caminhada 10km",
           description:
             "Non-competitive recreational walk of 10km. All ages welcome (under 16 must be accompanied by an adult). Time limit: 4 hours.",
         },
         {
-          language: "es",
+          language: Language.es,
           name: "Caminhada 10km",
           description:
             "Caminata recreativa no competitiva de 10km. Todas las edades bienvenidas (menores de 16 años deben ir acompañados por un adulto). Tiempo límite: 4 horas.",
         },
         {
-          language: "fr",
+          language: Language.fr,
           name: "Caminhada 10km",
           description:
             "Marche récréative non compétitive de 10km. Tous les âges bienvenus (moins de 16 ans doivent être accompagnés d'un adulte). Temps limite : 4 heures.",
         },
         {
-          language: "de",
+          language: Language.de,
           name: "Caminhada 10km",
           description:
             "Nicht-Wettkampf-Freizeitwanderung über 10km. Alle Altersgruppen willkommen (unter 16 Jahren muss von einem Erwachsenen begleitet werden). Zeitlimit: 4 Stunden.",
         },
         {
-          language: "it",
+          language: Language.it,
           name: "Caminhada 10km",
           description:
             "Camminata ricreativa non competitiva di 10km. Tutte le età benvenute (sotto i 16 anni deve essere accompagnato da un adulto). Tempo limite: 4 ore.",
@@ -796,123 +714,107 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
 
   console.log("📝 Variant translations upserted for all 4 variants");
 
-  // Step 5: Upsert pricing phases separately
-  // Phase 1: Early bird (Until December 31, 2025)
+  // Step 5: Delete existing pricing phases and create new ones
+  await prisma.pricingPhase.deleteMany({
+    where: { eventId: event.id },
+  });
+
+  // Pricing phases by variant
   const pricingPhases = [
     // Ultra Trail 45km - Phase 1
     {
-      eventId: event.id,
-      name: "Ultra Trail 45km - Early Bird",
+      variantId: ultraTrail.id,
+      name: "Early Bird",
       startDate: new Date("2025-11-30T00:00:00Z"),
       endDate: new Date("2025-12-31T23:59:59Z"),
       price: 25.0,
-      discountPercent: null,
       note: "Inscrição antecipada",
     },
     // Ultra Trail 45km - Phase 2
     {
-      eventId: event.id,
-      name: "Ultra Trail 45km - Standard",
+      variantId: ultraTrail.id,
+      name: "Standard",
       startDate: new Date("2026-01-01T00:00:00Z"),
       endDate: new Date("2026-02-12T23:59:59Z"),
       price: 28.0,
-      discountPercent: null,
       note: "Inscrição normal",
     },
     // Trail Longo 25km - Phase 1
     {
-      eventId: event.id,
-      name: "Trail Longo 25km - Early Bird",
+      variantId: trailLongo.id,
+      name: "Early Bird",
       startDate: new Date("2025-11-30T00:00:00Z"),
       endDate: new Date("2025-12-31T23:59:59Z"),
       price: 16.5,
-      discountPercent: null,
       note: "Inscrição antecipada",
     },
     // Trail Longo 25km - Phase 2
     {
-      eventId: event.id,
-      name: "Trail Longo 25km - Standard",
+      variantId: trailLongo.id,
+      name: "Standard",
       startDate: new Date("2026-01-01T00:00:00Z"),
       endDate: new Date("2026-02-12T23:59:59Z"),
       price: 18.5,
-      discountPercent: null,
       note: "Inscrição normal",
     },
     // Mini Trail 15km - Phase 1
     {
-      eventId: event.id,
-      name: "Mini Trail 15km - Early Bird",
+      variantId: miniTrail.id,
+      name: "Early Bird",
       startDate: new Date("2025-11-30T00:00:00Z"),
       endDate: new Date("2025-12-31T23:59:59Z"),
       price: 15.0,
-      discountPercent: null,
       note: "Inscrição antecipada (Desconto de €1.50 para sócios ADAC)",
     },
     // Mini Trail 15km - Phase 2
     {
-      eventId: event.id,
-      name: "Mini Trail 15km - Standard",
+      variantId: miniTrail.id,
+      name: "Standard",
       startDate: new Date("2026-01-01T00:00:00Z"),
       endDate: new Date("2026-02-12T23:59:59Z"),
       price: 17.0,
-      discountPercent: null,
       note: "Inscrição normal (Desconto de €1.50 para sócios ADAC)",
     },
     // Caminhada 10km - Phase 1
     {
-      eventId: event.id,
-      name: "Caminhada 10km - Early Bird",
+      variantId: caminhada.id,
+      name: "Early Bird",
       startDate: new Date("2025-11-30T00:00:00Z"),
       endDate: new Date("2025-12-31T23:59:59Z"),
       price: 10.0,
-      discountPercent: null,
       note: "Inscrição antecipada",
     },
     // Caminhada 10km - Phase 2
     {
-      eventId: event.id,
-      name: "Caminhada 10km - Standard",
+      variantId: caminhada.id,
+      name: "Standard",
       startDate: new Date("2026-01-01T00:00:00Z"),
       endDate: new Date("2026-02-12T23:59:59Z"),
       price: 12.0,
-      discountPercent: null,
       note: "Inscrição normal",
     },
   ];
 
   for (const phase of pricingPhases) {
-    await prisma.pricingPhase.upsert({
-      where: {
-        eventId_name: {
-          eventId: phase.eventId,
-          name: phase.name,
-        },
-      },
-      update: {
-        startDate: phase.startDate,
-        endDate: phase.endDate,
-        price: phase.price,
-        discountPercent: phase.discountPercent,
-        note: phase.note,
-      },
-      create: {
-        eventId: phase.eventId,
+    await prisma.pricingPhase.create({
+      data: {
+        variantId: phase.variantId,
         name: phase.name,
         startDate: phase.startDate,
         endDate: phase.endDate,
         price: phase.price,
-        discountPercent: phase.discountPercent,
         note: phase.note,
       },
     });
   }
 
-  console.log("💰 Pricing phases upserted (8 phases for 4 variants)");
+  console.log("💰 Pricing phases created (8 phases for 4 variants)");
   console.log("\n🎉 ZUT – Zebra Ultra Trail 2026 seed completed successfully!");
   console.log("📍 Location: Cordinhã, Cantanhede, Portugal");
   console.log("📅 Date: February 15, 2026");
-  console.log("🏃 4 variants: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km, Caminhada 10km");
+  console.log(
+    "🏃 4 variants: Ultra Trail 45km, Trail Longo 25km, Mini Trail 15km, Caminhada 10km"
+  );
 }
 
 main()

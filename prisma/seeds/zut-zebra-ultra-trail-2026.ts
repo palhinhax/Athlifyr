@@ -4,7 +4,7 @@
  * First edition trail running event in Cordinhã, Cantanhede, Portugal
  */
 
-import { PrismaClient, SportType, Language } from "@prisma/client";
+import { PrismaClient, SportType, Language, Currency } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -714,99 +714,108 @@ Organizzato dalla Sezione di Atletica del C. F. "Os Marialvas", con il sostegno 
 
   console.log("📝 Variant translations upserted for all 4 variants");
 
-  // Step 5: Delete existing pricing phases and create new ones
-  await prisma.pricingPhase.deleteMany({
-    where: { eventId: event.id },
+  // Step 5: Create pricing phases (using eventId pattern like other seeds)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const findOrCreatePricingPhase = async (name: string, data: any) => {
+    const existing = await prisma.pricingPhase.findFirst({
+      where: { eventId: event.id, name },
+    });
+
+    if (existing) {
+      return await prisma.pricingPhase.update({
+        where: { id: existing.id },
+        data,
+      });
+    } else {
+      return await prisma.pricingPhase.create({
+        data: {
+          eventId: event.id,
+          name,
+          ...data,
+        },
+      });
+    }
+  };
+
+  // Ultra Trail 45km - Early Bird
+  await findOrCreatePricingPhase("Ultra Trail 45km - Early Bird", {
+    startDate: new Date("2025-11-30T00:00:00Z"),
+    endDate: new Date("2025-12-31T23:59:59Z"),
+    price: 25.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição antecipada para Ultra Trail 45km",
   });
 
-  // Pricing phases by variant
-  const pricingPhases = [
-    // Ultra Trail 45km - Phase 1
-    {
-      variantId: ultraTrail.id,
-      name: "Early Bird",
-      startDate: new Date("2025-11-30T00:00:00Z"),
-      endDate: new Date("2025-12-31T23:59:59Z"),
-      price: 25.0,
-      note: "Inscrição antecipada",
-    },
-    // Ultra Trail 45km - Phase 2
-    {
-      variantId: ultraTrail.id,
-      name: "Standard",
-      startDate: new Date("2026-01-01T00:00:00Z"),
-      endDate: new Date("2026-02-12T23:59:59Z"),
-      price: 28.0,
-      note: "Inscrição normal",
-    },
-    // Trail Longo 25km - Phase 1
-    {
-      variantId: trailLongo.id,
-      name: "Early Bird",
-      startDate: new Date("2025-11-30T00:00:00Z"),
-      endDate: new Date("2025-12-31T23:59:59Z"),
-      price: 16.5,
-      note: "Inscrição antecipada",
-    },
-    // Trail Longo 25km - Phase 2
-    {
-      variantId: trailLongo.id,
-      name: "Standard",
-      startDate: new Date("2026-01-01T00:00:00Z"),
-      endDate: new Date("2026-02-12T23:59:59Z"),
-      price: 18.5,
-      note: "Inscrição normal",
-    },
-    // Mini Trail 15km - Phase 1
-    {
-      variantId: miniTrail.id,
-      name: "Early Bird",
-      startDate: new Date("2025-11-30T00:00:00Z"),
-      endDate: new Date("2025-12-31T23:59:59Z"),
-      price: 15.0,
-      note: "Inscrição antecipada (Desconto de €1.50 para sócios ADAC)",
-    },
-    // Mini Trail 15km - Phase 2
-    {
-      variantId: miniTrail.id,
-      name: "Standard",
-      startDate: new Date("2026-01-01T00:00:00Z"),
-      endDate: new Date("2026-02-12T23:59:59Z"),
-      price: 17.0,
-      note: "Inscrição normal (Desconto de €1.50 para sócios ADAC)",
-    },
-    // Caminhada 10km - Phase 1
-    {
-      variantId: caminhada.id,
-      name: "Early Bird",
-      startDate: new Date("2025-11-30T00:00:00Z"),
-      endDate: new Date("2025-12-31T23:59:59Z"),
-      price: 10.0,
-      note: "Inscrição antecipada",
-    },
-    // Caminhada 10km - Phase 2
-    {
-      variantId: caminhada.id,
-      name: "Standard",
-      startDate: new Date("2026-01-01T00:00:00Z"),
-      endDate: new Date("2026-02-12T23:59:59Z"),
-      price: 12.0,
-      note: "Inscrição normal",
-    },
-  ];
+  // Ultra Trail 45km - Standard
+  await findOrCreatePricingPhase("Ultra Trail 45km - Standard", {
+    startDate: new Date("2026-01-01T00:00:00Z"),
+    endDate: new Date("2026-02-12T23:59:59Z"),
+    price: 28.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição normal para Ultra Trail 45km",
+  });
 
-  for (const phase of pricingPhases) {
-    await prisma.pricingPhase.create({
-      data: {
-        variantId: phase.variantId,
-        name: phase.name,
-        startDate: phase.startDate,
-        endDate: phase.endDate,
-        price: phase.price,
-        note: phase.note,
-      },
-    });
-  }
+  // Trail Longo 25km - Early Bird
+  await findOrCreatePricingPhase("Trail Longo 25km - Early Bird", {
+    startDate: new Date("2025-11-30T00:00:00Z"),
+    endDate: new Date("2025-12-31T23:59:59Z"),
+    price: 16.5,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição antecipada para Trail Longo 25km",
+  });
+
+  // Trail Longo 25km - Standard
+  await findOrCreatePricingPhase("Trail Longo 25km - Standard", {
+    startDate: new Date("2026-01-01T00:00:00Z"),
+    endDate: new Date("2026-02-12T23:59:59Z"),
+    price: 18.5,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição normal para Trail Longo 25km",
+  });
+
+  // Mini Trail 15km - Early Bird
+  await findOrCreatePricingPhase("Mini Trail 15km - Early Bird", {
+    startDate: new Date("2025-11-30T00:00:00Z"),
+    endDate: new Date("2025-12-31T23:59:59Z"),
+    price: 15.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição antecipada para Mini Trail 15km (Desconto de €1.50 para sócios ADAC)",
+  });
+
+  // Mini Trail 15km - Standard
+  await findOrCreatePricingPhase("Mini Trail 15km - Standard", {
+    startDate: new Date("2026-01-01T00:00:00Z"),
+    endDate: new Date("2026-02-12T23:59:59Z"),
+    price: 17.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição normal para Mini Trail 15km (Desconto de €1.50 para sócios ADAC)",
+  });
+
+  // Caminhada 10km - Early Bird
+  await findOrCreatePricingPhase("Caminhada 10km - Early Bird", {
+    startDate: new Date("2025-11-30T00:00:00Z"),
+    endDate: new Date("2025-12-31T23:59:59Z"),
+    price: 10.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição antecipada para Caminhada 10km",
+  });
+
+  // Caminhada 10km - Standard
+  await findOrCreatePricingPhase("Caminhada 10km - Standard", {
+    startDate: new Date("2026-01-01T00:00:00Z"),
+    endDate: new Date("2026-02-12T23:59:59Z"),
+    price: 12.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Inscrição normal para Caminhada 10km",
+  });
 
   console.log("💰 Pricing phases created (8 phases for 4 variants)");
   console.log("\n🎉 ZUT – Zebra Ultra Trail 2026 seed completed successfully!");

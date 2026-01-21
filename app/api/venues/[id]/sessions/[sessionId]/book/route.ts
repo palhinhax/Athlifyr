@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { validateBooking } from "@/lib/venues/booking-validation";
+import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 // POST - Book a session
 export async function POST(
@@ -22,6 +23,14 @@ export async function POST(
     const validation = await validateBooking(userId, venueId, sessionId);
 
     if (!validation.allowed) {
+      // Track booking failure
+      await trackServerEvent(ANALYTICS_EVENTS.BOOKING_FAILED, {
+        venueId,
+        sessionId,
+        userId,
+        reason: validation.reason || "validation_failed",
+      });
+
       return NextResponse.json(
         {
           error: "Booking not allowed",
@@ -51,6 +60,14 @@ export async function POST(
           },
         },
       },
+    });
+
+    // Track successful booking
+    await trackServerEvent(ANALYTICS_EVENTS.BOOKING_COMPLETED, {
+      venueId,
+      sessionId,
+      userId,
+      venueName: booking.session.venue.name,
     });
 
     return NextResponse.json(booking, { status: 201 });

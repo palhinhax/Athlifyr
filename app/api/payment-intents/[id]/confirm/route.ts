@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculatePlanEndDate, type VenuePlanPolicy } from "@/types/venue-plan";
+import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 // POST - Confirm payment intent (MVP - simulated)
 export async function POST(
@@ -118,6 +119,16 @@ export async function POST(
         },
       });
     }
+
+    // Track successful purchase
+    await trackServerEvent(ANALYTICS_EVENTS.PURCHASE_COMPLETED, {
+      userId: intent.userId,
+      venueId: intent.venueId,
+      planId: intent.planId,
+      planName: intent.plan?.name || "Unknown",
+      amount: intent.amount,
+      subscriptionId: subscription.id,
+    });
 
     return NextResponse.json({
       paymentIntent: updatedIntent,

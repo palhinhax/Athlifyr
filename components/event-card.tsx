@@ -8,19 +8,42 @@ import { formatDateRange } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
 import { useLocale } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
+import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 interface EventCardProps {
   event: Event & {
     variants?: EventVariant[];
   };
   isParticipating?: boolean;
+  trackingContext?: string; // Where the card is being displayed (e.g., "homepage", "events_page", "profile")
 }
 
-export function EventCard({ event, isParticipating = false }: EventCardProps) {
+export function EventCard({
+  event,
+  isParticipating = false,
+  trackingContext = "unknown",
+}: EventCardProps) {
   const locale = useLocale();
 
+  const handleCardClick = () => {
+    analyticsEvent(ANALYTICS_EVENTS.EVENT_VIEW, {
+      eventId: event.id,
+      eventTitle: event.title.substring(0, 255),
+      location: trackingContext,
+      sportTypes: Array.isArray(event.sportTypes)
+        ? event.sportTypes.join(",").substring(0, 255)
+        : "",
+      city: event.city,
+      country: event.country,
+    });
+  };
+
   return (
-    <Link href={`/events/${event.slug}`} className="block">
+    <Link
+      href={`/events/${event.slug}`}
+      onClick={handleCardClick}
+      className="block"
+    >
       <Card
         className={`overflow-hidden transition-shadow hover:shadow-lg ${
           isParticipating ? "ring-2 ring-green-500" : ""

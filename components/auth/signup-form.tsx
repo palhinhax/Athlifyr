@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
+import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 // Password strength calculator
 const calculatePasswordStrength = (password: string): number => {
@@ -58,6 +59,11 @@ export function SignUpForm() {
     e.preventDefault();
     setIsLoading(true);
 
+    // Track signup start
+    analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, {
+      method: "email",
+    });
+
     try {
       const response = await fetch("/api/auth/register", {
         method: "POST",
@@ -68,8 +74,18 @@ export function SignUpForm() {
       const data = await response.json();
 
       if (!response.ok) {
+        // Track signup failure
+        analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
+          method: "email",
+          error: data.error || "unknown",
+        });
         throw new Error(data.error || "Erro ao criar conta");
       }
+
+      // Track successful signup
+      analyticsEvent(ANALYTICS_EVENTS.SIGNUP_COMPLETED, {
+        method: "email",
+      });
 
       toast({
         title: "Conta criada com sucesso!",
@@ -90,9 +106,21 @@ export function SignUpForm() {
 
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
+
+    // Track Google signup start
+    analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, {
+      method: "google",
+    });
+
     try {
       await signIn("google", { callbackUrl: "/" });
     } catch {
+      // Track Google signup failure
+      analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
+        method: "google",
+        error: "google_signin_error",
+      });
+
       toast({
         title: "Erro",
         description: "Erro ao fazer login com Google",

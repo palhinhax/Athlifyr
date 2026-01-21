@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
 // Schema for creating/updating participation
 const participationSchema = z.object({
@@ -70,6 +71,16 @@ export async function POST(request: NextRequest) {
         variant: true,
       },
     });
+
+    // Track event registration
+    if (validatedData.status === "going") {
+      await trackServerEvent(ANALYTICS_EVENTS.EVENT_REGISTER, {
+        eventId: validatedData.eventId,
+        userId: session.user.id,
+        variantId: validatedData.variantId || null,
+        eventTitle: event.title,
+      });
+    }
 
     // Create auto-post when user registers as "going" for the first time
     if (validatedData.status === "going") {

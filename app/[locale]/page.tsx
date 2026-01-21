@@ -1,10 +1,13 @@
-import { Link } from "@/i18n/routing";
-import { Button } from "@/components/ui/button";
 import { EventCard } from "@/components/event-card";
 import { prisma } from "@/lib/prisma";
 import { getUserCountry } from "@/lib/event-utils";
 import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  HomeCtaSection,
+  HomeSeeAllButton,
+  HomeNoEventsCta,
+} from "@/components/home-client-tracking";
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -66,9 +69,7 @@ export default async function Home({
           <h2 className="text-3xl font-bold">
             {t("upcomingEventsTitle", { country: userCountry })}
           </h2>
-          <Link href="/events">
-            <Button variant="ghost">{t("seeAll")}</Button>
-          </Link>
+          <HomeSeeAllButton seeAll={t("seeAll")} />
         </div>
 
         {upcomingEvents.length === 0 ? (
@@ -79,31 +80,31 @@ export default async function Home({
             <p className="mb-6 text-muted-foreground">
               {t("noUpcomingEventsDescription")}
             </p>
-            <Link href="/events">
-              <Button>{t("exploreAllEvents")}</Button>
-            </Link>
+            <HomeNoEventsCta
+              locale={locale}
+              exploreAllEvents={t("exploreAllEvents")}
+            />
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {upcomingEvents.map((event) => (
-              <EventCard key={event.id} event={event} />
+              <EventCard
+                key={event.id}
+                event={event}
+                trackingContext="homepage"
+              />
             ))}
           </div>
         )}
       </section>
 
       {/* CTA Section */}
-      <section className="mt-12 bg-muted/50 py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="mb-4 text-3xl font-bold">{t("ctaTitle")}</h2>
-          <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
-            {t("ctaDescription")}
-          </p>
-          <Link href="/events">
-            <Button size="lg">{t("exploreAllEvents")}</Button>
-          </Link>
-        </div>
-      </section>
+      <HomeCtaSection
+        locale={locale}
+        ctaTitle={t("ctaTitle")}
+        ctaDescription={t("ctaDescription")}
+        exploreAllEvents={t("exploreAllEvents")}
+      />
     </div>
   );
 }

@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/event-utils";
 import { EventLocationMap } from "./event-location-map";
 import { StravaRouteEmbed } from "./strava-route-embed";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
+import { EventWeather } from "@/components/event-weather";
 import { useTranslations, useLocale } from "next-intl";
 
 interface EventSidebarProps {
@@ -22,9 +23,17 @@ interface EventSidebarProps {
     stravaRouteEmbed: string | null;
     sportTypes: string[];
   };
+  weather?: Array<{
+    date: Date;
+    temperature: number;
+    condition: string;
+    humidity: number | null;
+    windSpeed: number | null;
+    icon: string | null;
+  }>;
 }
 
-export function EventSidebar({ event }: EventSidebarProps) {
+export function EventSidebar({ event, weather }: EventSidebarProps) {
   const t = useTranslations("events");
   const locale = useLocale();
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -66,6 +75,13 @@ export function EventSidebar({ event }: EventSidebarProps) {
               </div>
             </div>
           </div>
+
+          {/* Weather Forecast Card */}
+          {weather && weather.length > 0 && (
+            <div className="rounded-lg border bg-card shadow-sm">
+              <EventWeather weather={weather} />
+            </div>
+          )}
 
           {/* Location Map Card */}
           {event.latitude && event.longitude && (

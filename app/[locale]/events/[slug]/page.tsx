@@ -16,6 +16,7 @@ import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
 import { EventMainContent } from "@/components/event-main-content";
+import { EventWeather } from "@/components/event-weather";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -100,6 +101,11 @@ async function getEvent(
           createdAt: "desc",
         },
         take: 20,
+      },
+      weather: {
+        orderBy: {
+          date: "asc",
+        },
       },
     },
   });
@@ -265,6 +271,13 @@ export default async function EventPage({ params }: PageProps) {
               friendsGoingCount={friendsGoingCount}
             />
 
+            {/* Weather Forecast */}
+            {event.weather && event.weather.length > 0 && (
+              <div className="mb-8">
+                <EventWeather weather={event.weather} />
+              </div>
+            )}
+
             {/* Location Map - Mobile Only */}
             {event.latitude && event.longitude && (
               <EventLocationMobile
@@ -340,6 +353,7 @@ export default async function EventPage({ params }: PageProps) {
               stravaRouteEmbed: event.stravaRouteEmbed,
               sportTypes: event.sportTypes,
             }}
+            weather={event.weather}
           />
         </div>
       </div>

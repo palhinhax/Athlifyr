@@ -43,13 +43,27 @@ export async function POST(request: NextRequest) {
     const session = await auth();
 
     if (!session?.user || session.user.role !== "ADMIN") {
+      console.error("❌ Unauthorized: No session or not admin");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
     const { templateKey, format, payload } = body;
 
+    console.log("📥 Received draft save request:", {
+      userId: session.user.id,
+      templateKey,
+      format,
+      payloadKeys: Object.keys(payload || {}),
+      hasEvents: payload && "events" in payload,
+    });
+
     if (!templateKey || !format || !payload) {
+      console.error("❌ Missing required fields:", {
+        templateKey,
+        format,
+        hasPayload: !!payload,
+      });
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -65,9 +79,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    console.log("✅ Draft saved successfully:", {
+      draftId: draft.id,
+      templateKey: draft.templateKey,
+    });
+
     return NextResponse.json(draft);
   } catch (error) {
-    console.error("Error creating draft:", error);
+    console.error("❌ Error creating draft:", error);
+    if (error instanceof Error) {
+      console.error("Error details:", error.message);
+      console.error("Error stack:", error.stack);
+    }
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -46,6 +46,11 @@ interface EventItem {
   date: string;
   location: string;
   selected: boolean;
+  weather?: {
+    temperature: number;
+    condition: string;
+    icon: string | null;
+  } | null;
 }
 
 export default function InstagramGeneratorPage() {
@@ -364,18 +369,30 @@ export default function InstagramGeneratorPage() {
         } as CategoryCardPayload;
 
       case "T3":
+        const selectedT3Events = t3AllEvents.filter((e) => e.selected);
         const t3EventItems =
-          t3AllEvents.length > 0
-            ? t3AllEvents
-                .filter((e) => e.selected)
-                .map((e) => `${e.title} • ${e.date} • ${e.location}`)
+          selectedT3Events.length > 0
+            ? selectedT3Events.map(
+                (e) => `${e.title} • ${e.date} • ${e.location}`
+              )
             : t3Items.split("\n").filter(Boolean);
+
+        const structuredT3Events =
+          selectedT3Events.length > 0
+            ? selectedT3Events.map((e) => ({
+                title: e.title,
+                date: e.date,
+                location: e.location,
+                weather: e.weather || null,
+              }))
+            : undefined;
 
         return {
           header: t3Header,
           items: t3EventItems,
           footer: t3Footer,
           background,
+          events: structuredT3Events,
         } as WeeklyPicksPayload;
 
       case "T4":
@@ -496,6 +513,14 @@ export default function InstagramGeneratorPage() {
     setIsSavingDraft(true);
     try {
       const payload = getPayload();
+
+      console.log("💾 Saving draft with payload:", {
+        templateKey,
+        format,
+        payloadKeys: Object.keys(payload),
+        hasEvents: "events" in payload,
+      });
+
       const res = await fetch("/api/instagram/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -507,7 +532,14 @@ export default function InstagramGeneratorPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save draft");
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("❌ Save draft failed:", errorData);
+        throw new Error(errorData.error || "Failed to save draft");
+      }
+
+      const savedDraft = await res.json();
+      console.log("✅ Draft saved successfully:", savedDraft);
 
       toast({
         title: "Draft saved",

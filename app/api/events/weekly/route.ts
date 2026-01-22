@@ -57,6 +57,18 @@ export async function GET(req: NextRequest) {
         startDate: true,
         city: true,
         country: true,
+        weather: {
+          where: {
+            date: {
+              gte: weekStart,
+              lte: weekEnd,
+            },
+          },
+          orderBy: {
+            date: "asc",
+          },
+          take: 1, // Get only the first day's weather
+        },
       },
       orderBy: {
         startDate: "asc",
@@ -65,16 +77,35 @@ export async function GET(req: NextRequest) {
     });
 
     // Format events for Instagram template
-    const formattedEvents = events.map((event) => ({
-      id: event.id,
-      title: event.title,
-      slug: event.slug,
-      date: new Date(event.startDate).toLocaleDateString("pt-PT", {
-        day: "numeric",
-        month: "short",
-      }),
-      location: event.city,
-    }));
+    const formattedEvents = events.map((event) => {
+      const eventStartDate = new Date(event.startDate);
+      eventStartDate.setHours(0, 0, 0, 0);
+
+      // Find weather for the event date
+      const eventWeather = event.weather.find((w) => {
+        const weatherDate = new Date(w.date);
+        weatherDate.setHours(0, 0, 0, 0);
+        return weatherDate.getTime() === eventStartDate.getTime();
+      });
+
+      return {
+        id: event.id,
+        title: event.title,
+        slug: event.slug,
+        date: eventStartDate.toLocaleDateString("pt-PT", {
+          day: "numeric",
+          month: "short",
+        }),
+        location: event.city,
+        weather: eventWeather
+          ? {
+              temperature: Math.round(eventWeather.temperature),
+              condition: eventWeather.condition,
+              icon: eventWeather.icon,
+            }
+          : null,
+      };
+    });
 
     return NextResponse.json({
       events: formattedEvents,

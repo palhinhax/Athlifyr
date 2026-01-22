@@ -45,6 +45,8 @@
       "error": "Error",
       "copyError": "Could not copy the link."
     },
+    "currentlyPrivate": "event only",
+    "makePublic": "Make public",
     "pricing": {
       "title": "Registration Prices",
       "titleWithVariant": "Prices - {variant}",

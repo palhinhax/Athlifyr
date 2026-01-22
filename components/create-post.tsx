@@ -276,8 +276,8 @@ export function CreatePost({
         )}
 
         {/* Actions */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             {/* Image Upload */}
             <label htmlFor="post-image">
               <input

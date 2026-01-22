@@ -158,7 +158,7 @@ export function EventVariantsList({
         <h2 className="mb-3 text-xl font-bold sm:mb-4 sm:text-2xl">
           {labels.title}
         </h2>
-        <div className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
           {variants
             .filter(
               (v) => !v.triathlonSegments || v.triathlonSegments.length === 0

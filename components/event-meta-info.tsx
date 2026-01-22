@@ -1,7 +1,7 @@
 import { Calendar, MapPin } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { FriendsGoing } from "@/components/friends-going";
-import { useTranslations, useLocale } from "next-intl";
+import { useLocale } from "next-intl";
 
 interface EventMetaInfoProps {
   startDate: Date;
@@ -24,33 +24,24 @@ export function EventMetaInfo({
   friendsGoing,
   friendsGoingCount,
 }: EventMetaInfoProps) {
-  const t = useTranslations("events");
   const locale = useLocale();
   return (
-    <div className="mb-8 grid gap-6 rounded-lg bg-muted/50 p-6 md:grid-cols-2">
-      <div className="flex items-start gap-3">
-        <Calendar className="mt-1 h-5 w-5 text-primary" />
-        <div>
-          <div className="font-medium">{t("date")}</div>
-          <div className="text-muted-foreground">
-            {formatDate(startDate, locale)}
-            {endDate && ` - ${formatDate(endDate, locale)}`}
-          </div>
-        </div>
+    <div className="mb-6 flex flex-wrap items-center gap-6">
+      <div className="flex items-center gap-2.5">
+        <Calendar className="h-5 w-5 text-muted-foreground" />
+        <span className="text-muted-foreground">
+          {formatDate(startDate, locale)}
+          {endDate && ` - ${formatDate(endDate, locale)}`}
+        </span>
       </div>
-      <div className="flex items-start gap-3">
-        <MapPin className="mt-1 h-5 w-5 text-primary" />
-        <div>
-          <div className="font-medium">{t("location")}</div>
-          <div className="text-muted-foreground">
-            {city}, {country}
-          </div>
-        </div>
+      <div className="flex items-center gap-2.5">
+        <MapPin className="h-5 w-5 text-muted-foreground" />
+        <span className="text-muted-foreground">
+          {city}, {country}
+        </span>
       </div>
       {friendsGoingCount > 0 && (
-        <div className="md:col-span-2">
-          <FriendsGoing friends={friendsGoing} totalCount={friendsGoingCount} />
-        </div>
+        <FriendsGoing friends={friendsGoing} totalCount={friendsGoingCount} />
       )}
     </div>
   );

@@ -28,7 +28,7 @@ export function EventMainContent({
   return (
     <>
       {/* Description */}
-      <div className="prose prose-lg mb-8 max-w-none">
+      <div className="prose prose-lg mb-8 max-w-none overflow-x-hidden break-words">
         <h2 className="mb-4 text-2xl font-bold">{t.aboutEvent}</h2>
         <CollapsibleDescription description={description} />
       </div>
@@ -56,7 +56,7 @@ export function EventMainContent({
             href={externalUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-block"
+            className="inline-block flex justify-center"
           >
             <Button size="lg" className="gap-2">
               {t.goToWebsite}

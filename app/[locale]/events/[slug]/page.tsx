@@ -16,7 +16,6 @@ import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
 import { EventMainContent } from "@/components/event-main-content";
-import { EventWeather } from "@/components/event-weather";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -254,14 +253,8 @@ export default async function EventPage({ params }: PageProps) {
       <div className="container mx-auto px-4 py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
           {/* Main Content - Left Column */}
-          <div className="max-w-4xl">
-            {/* Variants List with Distances */}
-            <EventVariantsList
-              variants={event.variants}
-              labels={variantLabels}
-            />
-
-            {/* Meta Info */}
+          <div className="min-w-0 overflow-hidden">
+            {/* Meta Info - Date and Location */}
             <EventMetaInfo
               startDate={event.startDate}
               endDate={event.endDate}
@@ -271,12 +264,11 @@ export default async function EventPage({ params }: PageProps) {
               friendsGoingCount={friendsGoingCount}
             />
 
-            {/* Weather Forecast */}
-            {event.weather && event.weather.length > 0 && (
-              <div className="mb-8">
-                <EventWeather weather={event.weather} />
-              </div>
-            )}
+            {/* Variants List with Distances */}
+            <EventVariantsList
+              variants={event.variants}
+              labels={variantLabels}
+            />
 
             {/* Location Map - Mobile Only */}
             {event.latitude && event.longitude && (

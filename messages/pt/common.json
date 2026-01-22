@@ -41,6 +41,7 @@
   "sports": {
     "RUNNING": "Corrida",
     "TRAIL": "Trail",
+    "WALKING": "Caminhada",
     "HYROX": "HYROX",
     "CROSSFIT": "Cross Training",
     "OCR": "OCR",

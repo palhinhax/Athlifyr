@@ -1,4 +1,4 @@
-# Vercel Web Analytics - Custom Events
+npx tsx prisma/seeds/portugal/hell160-2026.ts# Vercel Web Analytics - Custom Events
 
 ## 📊 Eventos Implementados
 

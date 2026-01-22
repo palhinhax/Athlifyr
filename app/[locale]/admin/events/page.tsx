@@ -29,7 +29,8 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType } from "@prisma/client";
-import { sportTypeLabels, formatDateShort } from "@/lib/event-utils";
+import { formatDateShort } from "@/lib/event-utils";
+import { useTranslations } from "next-intl";
 
 interface Event {
   id: string;
@@ -71,6 +72,7 @@ export default function AdminEventsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const tCommon = useTranslations("common");
 
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -503,7 +505,9 @@ export default function AdminEventsPage() {
                           onChange={() => toggleSportType(type)}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        <span className="text-sm">{sportTypeLabels[type]}</span>
+                        <span className="text-sm">
+                          {tCommon(`sports.${type}`)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -888,7 +892,7 @@ export default function AdminEventsPage() {
                             key={sport}
                             className="rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
                           >
-                            {sportTypeLabels[sport]}
+                            {tCommon(`sports.${sport}`)}
                           </span>
                         ))}
                       </div>

@@ -3,8 +3,7 @@
 import { useEffect, useMemo } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { getTranslations } from "@/lib/translations";
-import { locales } from "@/i18n";
+import { useTranslations } from "next-intl";
 import { getSportIcon } from "@/lib/sport-config";
 
 interface SportFilterProps {
@@ -18,19 +17,16 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const t = useTranslations();
+  const tSports = useTranslations("sports");
 
   // Extract locale from pathname
   const locale = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
     const pathLocale = segments[0];
     // Check if first segment is a valid locale, otherwise default to 'pt'
-    return pathLocale &&
-      locales.includes(pathLocale as (typeof locales)[number])
-      ? pathLocale
-      : "pt";
+    return pathLocale ? pathLocale : "pt";
   }, [pathname]);
-
-  const t = getTranslations(locale);
 
   // On mount, check if we should restore a saved filter
   useEffect(() => {
@@ -74,9 +70,7 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
               </span>
             )}
             <span>
-              {sport.value === "ALL"
-                ? t("nav.all")
-                : t(`sports.${sport.value}`)}
+              {sport.value === "ALL" ? t("nav.all") : tSports(sport.value)}
             </span>
           </Button>
         ))}

@@ -1,5 +1,22 @@
 import { SportType } from "@prisma/client";
 
+/**
+ * ⚠️ DEPRECATED: Do not use sportTypeLabels directly
+ *
+ * Sport type labels should ALWAYS use the i18n translation system.
+ *
+ * ✅ Client Components:
+ *   const t = useTranslations("common");
+ *   const label = t(`sports.${sportType}`);
+ *
+ * ✅ Server Components:
+ *   const t = await getTranslations({ locale, namespace: "common" });
+ *   const label = t(`sports.${sportType}`);
+ *
+ * See: docs/SPORT_TYPE_TRANSLATIONS.md
+ *
+ * @deprecated Use i18n translations instead: t(`sports.${sportType}`)
+ */
 export const sportTypeLabels: Record<SportType, string> = {
   RUNNING: "Corrida",
   TRAIL: "Trail",
@@ -14,6 +31,11 @@ export const sportTypeLabels: Record<SportType, string> = {
   SWIMMING: "Natação",
   OTHER: "Outros",
 };
+
+/**
+ * Sport type icons (emoji) - safe to use directly
+ * Icons are universal and don't require translation
+ */
 
 export const sportTypeIcons: Record<SportType, string> = {
   RUNNING: "🏃",

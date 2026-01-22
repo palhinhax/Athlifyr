@@ -1,3 +1,16 @@
+# [12.1.0](https://github.com/palhinhax/Athlifyr/compare/v12.0.0...v12.1.0) (2026-01-22)
+
+### Bug Fixes
+
+- **feed:** make general posts public by default to ensure feed visibility ([52d6aa0](https://github.com/palhinhax/Athlifyr/commit/52d6aa0dd2181279e561ff5afb38e6b04ec5f48e))
+- **seeds:** correct field names in HELL160 seed (distanceKm and elevationGainM) ([d8589db](https://github.com/palhinhax/Athlifyr/commit/d8589dbf2e20fa0e5e6318032eb5d2c2340e19bc))
+- **ui:** improve event page responsiveness and add missing translations ([90537a2](https://github.com/palhinhax/Athlifyr/commit/90537a2b1fd54c13d1a6961d7042d1c82fd2b258))
+
+### Features
+
+- **seeds:** add HELL160 Shadows and Dust 2026 event with all variants and translations ([b02d446](https://github.com/palhinhax/Athlifyr/commit/b02d446a46c335105c7fedf262d6b86baea20bf3))
+- **seeds:** add Meia Maratona do Douro Vinhateiro 2026 with 3 variants ([0f7581b](https://github.com/palhinhax/Athlifyr/commit/0f7581ba5df48a51030570e678ae7c3330ed74ed))
+
 # [12.0.0](https://github.com/palhinhax/Athlifyr/compare/v11.5.0...v12.0.0) (2026-01-22)
 
 ### Features

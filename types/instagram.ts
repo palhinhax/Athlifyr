@@ -59,9 +59,19 @@ export interface CategoryCardPayload {
 // Template T3: Weekly Picks
 export interface WeeklyPicksPayload {
   header: string; // default: "EVENTOS DA SEMANA", max 30 chars
-  items: string[]; // 3-5 items, each max 40 chars
+  items: string[]; // 3-5 items, each max 40 chars (legacy format support)
   footer: string; // default: "athlifyr.com", max 30 chars
   background: Background;
+  events?: Array<{
+    // New: structured event data with weather
+    title: string;
+    date: string;
+    location: string;
+    weather?: {
+      temperature: number;
+      condition: string;
+    } | null;
+  }>;
 }
 
 // Template T4: Minimal Quote

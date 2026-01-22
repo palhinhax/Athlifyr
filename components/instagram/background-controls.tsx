@@ -96,12 +96,12 @@ export function BackgroundControls({
       {backgroundType === "gradient" && (
         <div>
           <Label>Gradient</Label>
-          <div className="grid grid-cols-2 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             {BRAND_GRADIENTS.map((gradient, idx) => (
               <button
                 key={idx}
                 onClick={() => onGradientChange(gradient)}
-                className={`h-16 rounded-md border-2 transition-all ${
+                className={`h-8 rounded-md border-2 transition-all ${
                   selectedGradient === gradient
                     ? "border-white ring-2 ring-offset-2"
                     : "border-transparent"

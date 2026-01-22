@@ -17,6 +17,11 @@ interface EventItem {
   date: string;
   location: string;
   selected: boolean;
+  weather?: {
+    temperature: number;
+    condition: string;
+    icon: string | null;
+  } | null;
 }
 
 interface WeeklyPicksFormProps {
@@ -84,6 +89,11 @@ export function WeeklyPicksForm({
               title: string;
               date: string;
               location: string;
+              weather?: {
+                temperature: number;
+                condition: string;
+                icon: string | null;
+              } | null;
             }) => ({
               ...event,
               selected: true,
@@ -216,8 +226,15 @@ export function WeeklyPicksForm({
                   />
                   <div className="flex-1">
                     <div className="text-sm font-medium">{event.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {event.date} • {event.location}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>
+                        {event.date} • {event.location}
+                      </span>
+                      {event.weather && (
+                        <span className="ml-auto flex items-center gap-1 rounded bg-blue-100 px-2 py-0.5 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+                          ☀️ {event.weather.temperature}°C
+                        </span>
+                      )}
                     </div>
                   </div>
                 </label>

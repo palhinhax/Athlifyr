@@ -6,7 +6,15 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
-import { Loader2, Download, Save, Eye, EyeOff } from "lucide-react";
+import {
+  Loader2,
+  Download,
+  Save,
+  Eye,
+  EyeOff,
+  FolderOpen,
+  Trash2,
+} from "lucide-react";
 import { CanvasPreview } from "@/components/instagram/canvas-preview";
 import { exportToImage } from "@/lib/instagram-export";
 import { EventSearch } from "@/components/instagram/event-search";
@@ -82,6 +90,20 @@ interface EventItem {
   date: string;
   location: string;
   selected: boolean;
+  weather?: {
+    temperature: number;
+    condition: string;
+    icon: string | null;
+  } | null;
+}
+
+interface SavedDraft {
+  id: string;
+  templateKey: string;
+  format: string;
+  createdAt: string;
+  updatedAt: string;
+  payload: Record<string, unknown>;
 }
 
 export default function InstagramGeneratorPage() {
@@ -184,6 +206,9 @@ export default function InstagramGeneratorPage() {
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showDraftsModal, setShowDraftsModal] = useState(false);
+  const [drafts, setDrafts] = useState<SavedDraft[]>([]);
+  const [isLoadingDrafts, setIsLoadingDrafts] = useState(false);
 
   // Check if user is admin
   useEffect(() => {
@@ -414,8 +439,6 @@ export default function InstagramGeneratorPage() {
         value: selectedColor,
       };
     })();
-
-    console.log("Background:", bg);
     return bg;
   };
 
@@ -444,18 +467,30 @@ export default function InstagramGeneratorPage() {
         } as CategoryCardPayload;
 
       case "T3":
+        const selectedT3Events = t3AllEvents.filter((e) => e.selected);
         const t3EventItems =
-          t3AllEvents.length > 0
-            ? t3AllEvents
-                .filter((e) => e.selected)
-                .map((e) => `${e.title} • ${e.date} • ${e.location}`)
+          selectedT3Events.length > 0
+            ? selectedT3Events.map(
+                (e) => `${e.title} • ${e.date} • ${e.location}`
+              )
             : t3Items.split("\n").filter(Boolean);
+
+        const structuredT3Events =
+          selectedT3Events.length > 0
+            ? selectedT3Events.map((e) => ({
+                title: e.title,
+                date: e.date,
+                location: e.location,
+                weather: e.weather || null,
+              }))
+            : undefined;
 
         return {
           header: t3Header,
           items: t3EventItems,
           footer: t3Footer,
           background,
+          events: structuredT3Events,
         } as WeeklyPicksPayload;
 
       case "T4":
@@ -621,6 +656,14 @@ export default function InstagramGeneratorPage() {
     setIsSavingDraft(true);
     try {
       const payload = getPayload();
+
+      console.log("💾 Saving draft with payload:", {
+        templateKey,
+        format,
+        payloadKeys: Object.keys(payload),
+        hasEvents: "events" in payload,
+      });
+
       const res = await fetch("/api/instagram/drafts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -632,7 +675,14 @@ export default function InstagramGeneratorPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to save draft");
+      if (!res.ok) {
+        const errorData = await res.json();
+        console.error("❌ Save draft failed:", errorData);
+        throw new Error(errorData.error || "Failed to save draft");
+      }
+
+      const savedDraft = await res.json();
+      console.log("✅ Draft saved successfully:", savedDraft);
 
       toast({
         title: "Draft saved",
@@ -647,6 +697,80 @@ export default function InstagramGeneratorPage() {
       });
     } finally {
       setIsSavingDraft(false);
+    }
+  };
+
+  const fetchDrafts = async () => {
+    setIsLoadingDrafts(true);
+    try {
+      const res = await fetch("/api/instagram/drafts");
+      if (!res.ok) throw new Error("Failed to fetch drafts");
+
+      const data = await res.json();
+      setDrafts(data);
+    } catch (error) {
+      console.error("Fetch drafts error:", error);
+      toast({
+        variant: "destructive",
+        title: "Load failed",
+        description: "Failed to load drafts.",
+      });
+    } finally {
+      setIsLoadingDrafts(false);
+    }
+  };
+
+  const loadDraft = async (draftId: string) => {
+    try {
+      const res = await fetch(`/api/instagram/drafts/${draftId}`);
+      if (!res.ok) throw new Error("Failed to load draft");
+
+      const draft = await res.json();
+
+      // Apply draft data to current state
+      setTemplateKey(draft.templateKey as TemplateKey);
+      setFormat(draft.format as InstagramFormat);
+
+      // TODO: Apply payload data based on template type
+      // This would need to set all the form fields based on draft.payload
+
+      setShowDraftsModal(false);
+
+      toast({
+        title: "Draft loaded",
+        description: "Your saved design has been loaded.",
+      });
+    } catch (error) {
+      console.error("Load draft error:", error);
+      toast({
+        variant: "destructive",
+        title: "Load failed",
+        description: "Failed to load draft.",
+      });
+    }
+  };
+
+  const deleteDraft = async (draftId: string) => {
+    try {
+      const res = await fetch(`/api/instagram/drafts/${draftId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete draft");
+
+      // Remove from list
+      setDrafts((prev) => prev.filter((d) => d.id !== draftId));
+
+      toast({
+        title: "Draft deleted",
+        description: "Your draft has been removed.",
+      });
+    } catch (error) {
+      console.error("Delete draft error:", error);
+      toast({
+        variant: "destructive",
+        title: "Delete failed",
+        description: "Failed to delete draft.",
+      });
     }
   };
 
@@ -883,6 +1007,18 @@ export default function InstagramGeneratorPage() {
               </Button>
 
               <Button
+                onClick={() => {
+                  setShowDraftsModal(true);
+                  fetchDrafts();
+                }}
+                variant="outline"
+                className="w-full"
+              >
+                <FolderOpen className="mr-2 h-4 w-4" />
+                Load Draft
+              </Button>
+
+              <Button
                 onClick={handleExport}
                 className="w-full"
                 disabled={isExporting}
@@ -920,6 +1056,75 @@ export default function InstagramGeneratorPage() {
           </div>
         </div>
       </div>
+
+      {/* Drafts Modal */}
+      {showDraftsModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50"
+          onClick={() => setShowDraftsModal(false)}
+        >
+          <Card
+            className="max-h-[80vh] w-full max-w-2xl overflow-auto p-6"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-2xl font-bold">Saved Drafts</h2>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowDraftsModal(false)}
+              >
+                ✕
+              </Button>
+            </div>
+
+            {isLoadingDrafts ? (
+              <div className="flex justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+              </div>
+            ) : drafts.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">
+                No saved drafts yet. Create a design and click &quot;Save
+                Draft&quot; to save it for later.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {drafts.map((draft) => (
+                  <div
+                    key={draft.id}
+                    className="flex items-center justify-between rounded-lg border p-4"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {draft.templateKey} - {draft.format}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Saved: {new Date(draft.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => loadDraft(draft.id)}
+                      >
+                        Load
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteDraft(draft.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </Card>
+        </div>
+      )}
     </div>
   );
 }

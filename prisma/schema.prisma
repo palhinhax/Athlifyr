@@ -250,6 +250,7 @@ model Event {
   comments       Comment[]
   posts          Post[]
   results        Result[]
+  weather        EventWeather[]
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
 
@@ -881,4 +882,23 @@ model PaymentIntent {
   @@index([status])
   @@index([createdAt])
   @@index([stripePaymentIntentId])
+}
+
+// Weather forecast for events
+model EventWeather {
+  id          String   @id @default(cuid())
+  eventId     String
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  date        DateTime // Date of the forecast
+  temperature Float    // Temperature in Celsius
+  condition   String   // Weather condition (e.g., "Clear", "Rain", "Clouds")
+  humidity    Int?     // Humidity percentage
+  windSpeed   Float?   // Wind speed in m/s
+  icon        String?  // Weather icon code
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([eventId, date])
+  @@index([eventId])
+  @@index([date])
 }

@@ -681,9 +681,6 @@ export default function InstagramGeneratorPage() {
         throw new Error(errorData.error || "Failed to save draft");
       }
 
-      const savedDraft = await res.json();
-      console.log("✅ Draft saved successfully:", savedDraft);
-
       toast({
         title: "Draft saved",
         description: "Your design has been saved as a draft.",

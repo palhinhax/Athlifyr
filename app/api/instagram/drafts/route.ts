@@ -79,11 +79,6 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    console.log("✅ Draft saved successfully:", {
-      draftId: draft.id,
-      templateKey: draft.templateKey,
-    });
-
     return NextResponse.json(draft);
   } catch (error) {
     console.error("❌ Error creating draft:", error);

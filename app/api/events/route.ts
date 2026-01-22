@@ -25,13 +25,70 @@ export async function GET(request: NextRequest) {
       where.country = { equals: country, mode: "insensitive" };
     }
 
-    // Search filter
     if (search) {
-      where.OR = [
-        { title: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-        { country: { contains: search, mode: "insensitive" } },
-      ];
+      const normalizedSearch = search
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      const fuzzyEvents = await prisma.$queryRaw<{ id: string }[]>`
+        SELECT DISTINCT e.id
+        FROM "Event" e
+        LEFT JOIN "EventTranslation" et ON e.id = et."eventId"
+        WHERE
+          similarity(
+            LOWER(
+              translate(
+                e.title,
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(
+              translate(
+                e.city,
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(e.slug),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(
+              translate(
+                COALESCE(et.title, ''),
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(
+              translate(
+                COALESCE(et.city, ''),
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+      `;
+
+      const fuzzyEventIds = fuzzyEvents.map((e) => e.id);
+
+      if (fuzzyEventIds.length > 0) {
+        where.id = { in: fuzzyEventIds };
+      } else {
+        where.id = { in: [] };
+      }
     }
 
     // Sport type filter

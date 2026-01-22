@@ -1,5 +1,17 @@
 {
   "admin": {
+    "dashboard": {
+      "title": "Tableau de Bord Admin",
+      "description": "Gestion centralisée des événements, contacts et contenu",
+      "tabs": {
+        "events": "Événements",
+        "venues": "Venues",
+        "users": "Utilisateurs",
+        "contacts": "Contacts",
+        "media": "Média",
+        "instagram": "Instagram"
+      }
+    },
     "contacts": {
       "title": "Messages de Contact",
       "description": "Gestion des suggestions, bugs et questions des utilisateurs",

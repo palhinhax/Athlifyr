@@ -13,6 +13,7 @@ import {
   Building2,
   Users,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 // Lazy load admin components
 const AdminEventsContent = lazy(() => import("./events/page"));
@@ -27,6 +28,7 @@ function AdminContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "events";
+  const t = useTranslations("admin.dashboard");
 
   useEffect(() => {
     if (status === "loading") return;
@@ -62,10 +64,8 @@ function AdminContent() {
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6">
       <div className="mb-8">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-muted-foreground">
-          Gestão centralizada de eventos, contactos e conteúdo
-        </p>
+        <h1 className="text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       <Tabs
@@ -77,27 +77,27 @@ function AdminContent() {
           <TabsList className="h-auto w-full">
             <TabsTrigger value="events" className="flex-1 gap-2">
               <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Eventos</span>
+              <span className="hidden sm:inline">{t("tabs.events")}</span>
             </TabsTrigger>
             <TabsTrigger value="venues" className="flex-1 gap-2">
               <Building2 className="h-4 w-4" />
-              <span className="hidden sm:inline">Venues</span>
+              <span className="hidden sm:inline">{t("tabs.venues")}</span>
             </TabsTrigger>
             <TabsTrigger value="users" className="flex-1 gap-2">
               <Users className="h-4 w-4" />
-              <span className="hidden sm:inline">Users</span>
+              <span className="hidden sm:inline">{t("tabs.users")}</span>
             </TabsTrigger>
             <TabsTrigger value="contacts" className="flex-1 gap-2">
               <Mail className="h-4 w-4" />
-              <span className="hidden sm:inline">Contactos</span>
+              <span className="hidden sm:inline">{t("tabs.contacts")}</span>
             </TabsTrigger>
             <TabsTrigger value="media" className="flex-1 gap-2">
               <Database className="h-4 w-4" />
-              <span className="hidden sm:inline">Media</span>
+              <span className="hidden sm:inline">{t("tabs.media")}</span>
             </TabsTrigger>
             <TabsTrigger value="instagram" className="flex-1 gap-2">
               <Instagram className="h-4 w-4" />
-              <span className="hidden sm:inline">Instagram</span>
+              <span className="hidden sm:inline">{t("tabs.instagram")}</span>
             </TabsTrigger>
           </TabsList>
         </div>

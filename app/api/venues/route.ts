@@ -14,18 +14,102 @@ export async function GET(request: NextRequest) {
     const sports = searchParams.getAll("sports");
     const city = searchParams.get("city");
 
-    // Build where clause
     const where: Prisma.VenueWhereInput = {
       isActive: true,
     };
 
-    // Search filter
+    let fuzzyVenueIds: string[] = [];
+
     if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { description: { contains: search, mode: "insensitive" } },
-        { city: { contains: search, mode: "insensitive" } },
-      ];
+      const normalizedSearch = search
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "");
+
+      const fuzzyVenues = await prisma.$queryRaw<{ id: string }[]>`
+        SELECT DISTINCT v.id,
+          GREATEST(
+            similarity(
+              LOWER(
+                translate(
+                  v.name,
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(
+                translate(
+                  COALESCE(v.description, ''),
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(
+                translate(
+                  v.city,
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(v.slug),
+              ${normalizedSearch}
+            )
+          ) AS max_similarity
+        FROM "Venue" v
+        WHERE
+          similarity(
+            LOWER(
+              translate(
+                v.name,
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(
+              translate(
+                COALESCE(v.description, ''),
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(
+              translate(
+                v.city,
+                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+              )
+            ),
+            ${normalizedSearch}
+          ) > 0.2
+          OR similarity(
+            LOWER(v.slug),
+            ${normalizedSearch}
+          ) > 0.2
+        ORDER BY max_similarity DESC
+      `;
+
+      fuzzyVenueIds = fuzzyVenues.map((v) => v.id);
+
+      if (fuzzyVenueIds.length > 0) {
+        where.id = { in: fuzzyVenueIds };
+      } else {
+        where.id = { in: [] };
+      }
     }
 
     // Types filter
@@ -45,13 +129,10 @@ export async function GET(request: NextRequest) {
       where.city = { equals: city, mode: "insensitive" };
     }
 
-    // Calculate skip for pagination
     const skip = (page - 1) * pageSize;
 
-    // Get total count for pagination metadata
     const totalCount = await prisma.venue.count({ where });
 
-    // Fetch paginated venues
     const venues = await prisma.venue.findMany({
       where,
       include: {
@@ -62,16 +143,26 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: search
+        ? undefined
+        : {
+            createdAt: "desc",
+          },
       skip,
       take: pageSize,
     });
 
-    // Return paginated response with metadata
+    let sortedVenues = venues;
+    if (search && fuzzyVenueIds.length > 0) {
+      const orderMap = new Map(fuzzyVenueIds.map((id, index) => [id, index]));
+      sortedVenues = venues.sort(
+        (a, b) =>
+          (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity)
+      );
+    }
+
     return NextResponse.json({
-      venues,
+      venues: sortedVenues,
       pagination: {
         page,
         pageSize,

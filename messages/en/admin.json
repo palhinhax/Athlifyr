@@ -1,5 +1,17 @@
 {
   "admin": {
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "description": "Centralized management of events, contacts and content",
+      "tabs": {
+        "events": "Events",
+        "venues": "Venues",
+        "users": "Users",
+        "contacts": "Contacts",
+        "media": "Media",
+        "instagram": "Instagram"
+      }
+    },
     "contacts": {
       "title": "Contact Messages",
       "description": "Management of user suggestions, bugs, and questions",

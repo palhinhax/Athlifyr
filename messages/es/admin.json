@@ -1,5 +1,17 @@
 {
   "admin": {
+    "dashboard": {
+      "title": "Panel de Administración",
+      "description": "Gestión centralizada de eventos, contactos y contenido",
+      "tabs": {
+        "events": "Eventos",
+        "venues": "Venues",
+        "users": "Usuarios",
+        "contacts": "Contactos",
+        "media": "Media",
+        "instagram": "Instagram"
+      }
+    },
     "contacts": {
       "title": "Mensajes de Contacto",
       "description": "Gestión de sugerencias, errores y preguntas de usuarios",

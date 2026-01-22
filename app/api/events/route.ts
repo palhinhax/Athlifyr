@@ -20,10 +20,11 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Country filter - default to user's country if not using location
     if (country) {
       where.country = { equals: country, mode: "insensitive" };
     }
+
+    let fuzzyEventIds: string[] = [];
 
     if (search) {
       const normalizedSearch = search
@@ -32,7 +33,53 @@ export async function GET(request: NextRequest) {
         .replace(/[\u0300-\u036f]/g, "");
 
       const fuzzyEvents = await prisma.$queryRaw<{ id: string }[]>`
-        SELECT DISTINCT e.id
+        SELECT DISTINCT e.id,
+          GREATEST(
+            similarity(
+              LOWER(
+                translate(
+                  e.title,
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(
+                translate(
+                  e.city,
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(e.slug),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(
+                translate(
+                  COALESCE(et.title, ''),
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            ),
+            similarity(
+              LOWER(
+                translate(
+                  COALESCE(et.city, ''),
+                  'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                  'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                )
+              ),
+              ${normalizedSearch}
+            )
+          ) AS max_similarity
         FROM "Event" e
         LEFT JOIN "EventTranslation" et ON e.id = et."eventId"
         WHERE
@@ -80,9 +127,10 @@ export async function GET(request: NextRequest) {
             ),
             ${normalizedSearch}
           ) > 0.2
+        ORDER BY max_similarity DESC
       `;
 
-      const fuzzyEventIds = fuzzyEvents.map((e) => e.id);
+      fuzzyEventIds = fuzzyEvents.map((e) => e.id);
 
       if (fuzzyEventIds.length > 0) {
         where.id = { in: fuzzyEventIds };
@@ -91,20 +139,16 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Sport type filter
     if (sports.length > 0) {
       where.sportTypes = {
         hasSome: sports as SportType[],
       };
     }
 
-    // Calculate skip for pagination
     const skip = (page - 1) * pageSize;
 
-    // Get total count for pagination metadata
     const totalCount = await prisma.event.count({ where });
 
-    // Fetch paginated events
     const events = await prisma.event.findMany({
       where,
       include: {
@@ -119,16 +163,26 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        startDate: "asc",
-      },
+      orderBy: search
+        ? undefined
+        : {
+            startDate: "asc",
+          },
       skip,
       take: pageSize,
     });
 
-    // Return paginated response with metadata
+    let sortedEvents = events;
+    if (search && fuzzyEventIds.length > 0) {
+      const orderMap = new Map(fuzzyEventIds.map((id, index) => [id, index]));
+      sortedEvents = events.sort(
+        (a, b) =>
+          (orderMap.get(a.id) ?? Infinity) - (orderMap.get(b.id) ?? Infinity)
+      );
+    }
+
     return NextResponse.json({
-      events,
+      events: sortedEvents,
       pagination: {
         page,
         pageSize,

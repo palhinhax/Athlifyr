@@ -1,3 +1,23 @@
+# [12.0.0](https://github.com/palhinhax/Athlifyr/compare/v11.5.0...v12.0.0) (2026-01-22)
+
+### Features
+
+- **instagram:** add weather display to weekly picks posts and draft management UI ([cd5a38e](https://github.com/palhinhax/Athlifyr/commit/cd5a38ec903bb6fbba4dd85eaa0829d64a93e0d5))
+- **instagram:** remove console log for saved draft in POST and UI functions ([d9a8058](https://github.com/palhinhax/Athlifyr/commit/d9a8058c16dd38d5a8435b7aad0b04406e2f3349))
+- **search:** add relevance-based sorting with similarity scores ([7e2c2dc](https://github.com/palhinhax/Athlifyr/commit/7e2c2dcb9650276cea6cf4888cde2e23d0a7b62d))
+- **search:** use similarity() with 0.2 threshold instead of % operator ([92acb2d](https://github.com/palhinhax/Athlifyr/commit/92acb2d33213a711067ac31c4910da198abc1302))
+- **venues:** add plan deactivation and venue post visibility features ([5817d10](https://github.com/palhinhax/Athlifyr/commit/5817d10d92fef7fe89549f54779385f6aa93b2cc))
+- **venues:** implement fuzzy search with pg_trgm similarity ([f5e6c66](https://github.com/palhinhax/Athlifyr/commit/f5e6c665dc2933dd82d75ddedec724f0f3b18bb0))
+
+### BREAKING CHANGES
+
+- **instagram:** Weather system requires new environment variables:
+
+* OPENWEATHER_API_KEY: API key from openweathermap.org (free tier supported)
+* WEATHER_UPDATE_SECRET: Security token for automated updates (generate with openssl rand -hex 32)
+
+Migration required: pnpm prisma migrate dev --name add-event-weather
+
 # [11.5.0](https://github.com/palhinhax/Athlifyr/compare/v11.4.0...v11.5.0) (2026-01-21)
 
 ### Features

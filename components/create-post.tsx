@@ -48,7 +48,8 @@ export function CreatePost({
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isPublic, setIsPublic] = useState(false); // false = private (default for safety)
+  // General posts (no venue/event) are public by default, venue/event posts are private by default
+  const [isPublic, setIsPublic] = useState(!eventId && !venueId);
 
   // Use props if provided, otherwise fall back to session
   const displayImage = userImage ?? session?.user?.image;
@@ -196,7 +197,7 @@ export function CreatePost({
       setImageFile(null);
       setImagePreview("");
       setImageUrl("");
-      setIsPublic(false); // Reset to private (default)
+      setIsPublic(!eventId && !venueId); // Reset: public for general posts, private for venue/event posts
 
       toast({
         title: tAdmin("postPublished"),

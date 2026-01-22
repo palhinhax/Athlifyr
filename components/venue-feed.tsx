@@ -3,13 +3,15 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PostCard } from "@/components/post-card";
 import { CreatePost } from "@/components/create-post";
-import { Loader2 } from "lucide-react";
+import { Loader2, Globe } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Post, User, Event } from "@prisma/client";
+import { Badge } from "@/components/ui/badge";
+import type { Post, User, Event, Venue } from "@prisma/client";
 
 type PostWithDetails = Post & {
   user: Pick<User, "id" | "name" | "image">;
   event: Pick<Event, "title" | "slug"> | null;
+  venue: Pick<Venue, "id" | "name" | "slug"> | null;
   _count: {
     likes: number;
     comments: number;
@@ -43,6 +45,7 @@ export function VenueFeed({
   isMember,
 }: VenueFeedProps) {
   const t = useTranslations("feed");
+  const tVenue = useTranslations("venues.posts");
   const [posts, setPosts] = useState<PostWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -134,6 +137,16 @@ export function VenueFeed({
     fetchPosts(1);
   };
 
+  const handlePostDeleted = (postId: string) => {
+    // Remove post from list immediately
+    setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+    // Update pagination count
+    setPagination((prev) => ({
+      ...prev,
+      totalCount: Math.max(0, prev.totalCount - 1),
+    }));
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -170,22 +183,40 @@ export function VenueFeed({
       ) : (
         <>
           {posts.map((post) => (
-            <PostCard
-              key={post.id}
-              post={{
-                id: post.id,
-                content: post.content,
-                imageUrl: post.imageUrl,
-                createdAt: post.createdAt,
-                userId: post.userId,
-                user: post.user,
-                event: post.event,
-                likesCount: post._count.likes,
-                isLikedByUser: post.likes.some((like) => like.id === userId),
-                commentsCount: post._count.comments,
-              }}
-              currentUserId={userId}
-            />
+            <div key={post.id} className="relative">
+              {post.isPublic && (
+                <div className="mb-2 flex items-center gap-2">
+                  <Badge variant="secondary" className="gap-1">
+                    <Globe className="h-3 w-3" />
+                    <span className="text-xs">{tVenue("publicBadge")}</span>
+                  </Badge>
+                  <span className="text-xs text-muted-foreground">
+                    {tVenue("publicBadgeDesc")}
+                  </span>
+                </div>
+              )}
+              <PostCard
+                post={{
+                  id: post.id,
+                  content: post.content,
+                  imageUrl: post.imageUrl,
+                  createdAt: post.createdAt,
+                  userId: post.userId,
+                  user: post.user,
+                  event: post.event,
+                  venue: post.venue,
+                  isPublic: post.isPublic,
+                  likesCount: post._count?.likes || 0,
+                  isLikedByUser: Array.isArray(post.likes)
+                    ? post.likes.some((like) => like.id === userId)
+                    : false,
+                  commentsCount: post._count?.comments || 0,
+                }}
+                currentUserId={userId}
+                onPostDeleted={handlePostDeleted}
+                hideVenueBadge={true} // Hide venue badge in venue feed
+              />
+            </div>
           ))}
 
           {/* Infinite scroll trigger */}

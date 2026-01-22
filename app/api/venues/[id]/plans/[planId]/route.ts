@@ -68,6 +68,7 @@ export async function PUT(
         ...(currency && { currency }),
         ...(paymentProvider && { paymentProvider }),
         ...(policy !== undefined && { policy }),
+        ...(body.isActive !== undefined && { isActive: body.isActive }),
       },
     });
 
@@ -107,35 +108,13 @@ export async function DELETE(
         id: planId,
         venueId,
       },
-      include: {
-        _count: {
-          select: {
-            subscriptions: {
-              where: {
-                status: "ACTIVE",
-              },
-            },
-          },
-        },
-      },
     });
 
     if (!existingPlan) {
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    // Check if there are active subscriptions
-    if (existingPlan._count.subscriptions > 0) {
-      return NextResponse.json(
-        {
-          error:
-            "Cannot delete plan with active subscriptions. Deactivate it instead.",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Soft delete - set isActive to false
+    // Soft delete - set isActive to false (even if there are active subscriptions)
     const plan = await prisma.venuePlan.update({
       where: {
         id: planId,
@@ -145,11 +124,14 @@ export async function DELETE(
       },
     });
 
-    return NextResponse.json({ message: "Plan deleted successfully", plan });
+    return NextResponse.json({
+      message: "Plan deactivated successfully",
+      plan,
+    });
   } catch (error) {
-    console.error("Error deleting plan:", error);
+    console.error("Error deactivating plan:", error);
     return NextResponse.json(
-      { error: "Failed to delete plan" },
+      { error: "Failed to deactivate plan" },
       { status: 500 }
     );
   }

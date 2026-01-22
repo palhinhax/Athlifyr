@@ -165,6 +165,10 @@
     "openInGoogleMaps": "Ouvrir dans Google Maps",
     "sharePost": "Partagez quelque chose sur l'événement...",
     "sharePostFeed": "À quoi pensez-vous? Partagez des entraînements, des réalisations ou des conseils...",
+    "publicPost": "Public (apparaît dans le fil principal)",
+    "privatePost": "Privé (uniquement dans le lieu/événement)",
+    "publicBadge": "Public",
+    "publicBadgeDesc": "Cette publication apparaît dans le fil principal",
     "willYouGo": "Allez-vous y aller?",
     "participantsCount": "{count} participants",
     "selectVariant": "Sélectionnez une variante",
@@ -290,7 +294,9 @@
     "reply": "réponse",
     "replies": "réponses",
     "loadingMore": "Chargement de plus de publications...",
-    "allPostsLoaded": "Toutes les publications chargées"
+    "allPostsLoaded": "Toutes les publications chargées",
+    "publicPost": "Public (apparaît dans le fil principal)",
+    "privatePost": "Privé (uniquement dans le lieu/événement)"
   },
   "map": {
     "title": "Carte des Événements",
@@ -825,7 +831,21 @@
       "price": "Prix",
       "perMonth": "par mois",
       "unlimited": "Accès Illimité",
-      "limited": "Accès Limité"
+      "limited": "Accès Limité",
+      "edit": "Modifier",
+      "cancel": "Annuler",
+      "delete": "Supprimer",
+      "deleting": "Suppression...",
+      "processing": "Traitement...",
+      "deactivate": "Désactiver",
+      "reactivate": "Réactiver",
+      "deleteConfirmTitle": "Supprimer le Forfait",
+      "deleteConfirmDescription": "Êtes-vous sûr de vouloir supprimer ce forfait ? Cette action est irréversible.",
+      "deactivateConfirmTitle": "Désactiver le Forfait",
+      "deactivateConfirmDescription": "Êtes-vous sûr de vouloir désactiver ce forfait ? Les abonnements actifs continueront, mais les nouveaux abonnements ne seront pas autorisés.",
+      "reactivateConfirmTitle": "Réactiver le Forfait",
+      "reactivateConfirmDescription": "Êtes-vous sûr de vouloir réactiver ce forfait ? Il sera disponible pour de nouveaux abonnements.",
+      "createFirstPlan": "Créez votre premier forfait pour commencer à accepter des abonnements."
     },
     "sessions": {
       "title": "Séances",

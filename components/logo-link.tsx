@@ -3,11 +3,7 @@
 import { Link } from "@/i18n/routing";
 import { analyticsEvent } from "@/lib/analytics";
 
-interface LogoLinkProps {
-  locale: string;
-}
-
-export function LogoLink({ locale }: LogoLinkProps) {
+export function LogoLink() {
   const handleLogoClick = () => {
     analyticsEvent("Logo_Click", {
       location: "header",
@@ -17,7 +13,7 @@ export function LogoLink({ locale }: LogoLinkProps) {
 
   return (
     <Link
-      href={`/${locale}`}
+      href="/"
       className="text-2xl font-bold transition-opacity hover:opacity-80"
       onClick={handleLogoClick}
     >

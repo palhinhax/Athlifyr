@@ -4,9 +4,11 @@ import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { ImagePlus, X, Send } from "lucide-react";
+import { ImagePlus, X, Send, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 
 interface PostWithDetails {
   id: string;
@@ -37,7 +39,8 @@ export function CreatePost({
 }: CreatePostProps) {
   const { data: session } = useSession();
   const { toast } = useToast();
-  const t = useTranslations("events");
+  // Use correct namespace based on context
+  const t = useTranslations(venueId ? "venues.posts" : "events");
   const tAdmin = useTranslations("admin.posts.toast");
   const [content, setContent] = useState("");
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -45,6 +48,7 @@ export function CreatePost({
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPublic, setIsPublic] = useState(false); // false = private (default for safety)
 
   // Use props if provided, otherwise fall back to session
   const displayImage = userImage ?? session?.user?.image;
@@ -177,6 +181,7 @@ export function CreatePost({
           imageUrl: finalImageUrl || undefined,
           eventId: eventId || undefined,
           venueId: venueId || undefined,
+          isPublic: isPublic,
         }),
       });
 
@@ -191,6 +196,7 @@ export function CreatePost({
       setImageFile(null);
       setImagePreview("");
       setImageUrl("");
+      setIsPublic(false); // Reset to private (default)
 
       toast({
         title: tAdmin("postPublished"),
@@ -239,7 +245,7 @@ export function CreatePost({
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={eventId ? t("sharePost") : t("sharePostFeed")}
+            placeholder={t("sharePost")}
             className="min-h-[80px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={isSubmitting || isUploading}
           />
@@ -270,7 +276,8 @@ export function CreatePost({
 
         {/* Actions */}
         <div className="flex items-center justify-between">
-          <div>
+          <div className="flex items-center gap-4">
+            {/* Image Upload */}
             <label htmlFor="post-image">
               <input
                 id="post-image"
@@ -291,7 +298,34 @@ export function CreatePost({
                 {t("addPhoto")}
               </Button>
             </label>
+
+            {/* Public/Private Toggle - Only show if post is for venue or event */}
+            {(venueId || eventId) && (
+              <div className="flex items-center gap-2">
+                <Checkbox
+                  id="isPublic"
+                  checked={isPublic}
+                  onCheckedChange={(checked) => setIsPublic(checked as boolean)}
+                  disabled={isSubmitting || isUploading}
+                />
+                <Label
+                  htmlFor="isPublic"
+                  className="flex cursor-pointer items-center gap-1.5 text-sm font-normal"
+                >
+                  <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                  <span className="text-muted-foreground">
+                    {t("makePublic")}
+                  </span>
+                  {!isPublic && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      ({t("currentlyPrivate")})
+                    </span>
+                  )}
+                </Label>
+              </div>
+            )}
           </div>
+
           <Button
             type="submit"
             size="sm"

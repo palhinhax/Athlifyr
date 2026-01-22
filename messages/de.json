@@ -196,6 +196,10 @@
     },
     "sharePost": "Teilen Sie etwas über die Veranstaltung...",
     "sharePostFeed": "Was denkst du? Teile Trainings, Erfolge oder Tipps...",
+    "publicPost": "Öffentlich (erscheint im Haupt-Feed)",
+    "privatePost": "Privat (nur im Ort/Event)",
+    "publicBadge": "Öffentlich",
+    "publicBadgeDesc": "Dieser Beitrag erscheint im Haupt-Feed",
     "willYouGo": "Wirst du gehen?",
     "participantsCount": "{count} Teilnehmer",
     "selectVariant": "Wählen Sie eine Variante",
@@ -321,7 +325,9 @@
     "reply": "Antwort",
     "replies": "Antworten",
     "loadingMore": "Weitere Beiträge werden geladen...",
-    "allPostsLoaded": "Alle Beiträge geladen"
+    "allPostsLoaded": "Alle Beiträge geladen",
+    "publicPost": "Öffentlich (erscheint im Haupt-Feed)",
+    "privatePost": "Privat (nur im Ort/Event)"
   },
   "map": {
     "title": "Event-Karte",
@@ -856,7 +862,21 @@
       "price": "Preis",
       "perMonth": "pro Monat",
       "unlimited": "Unbegrenzter Zugang",
-      "limited": "Begrenzter Zugang"
+      "limited": "Begrenzter Zugang",
+      "edit": "Bearbeiten",
+      "cancel": "Abbrechen",
+      "delete": "Löschen",
+      "deleting": "Löschen...",
+      "processing": "Verarbeitung...",
+      "deactivate": "Deaktivieren",
+      "reactivate": "Reaktivieren",
+      "deleteConfirmTitle": "Plan Löschen",
+      "deleteConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deactivateConfirmTitle": "Plan Deaktivieren",
+      "deactivateConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan deaktivieren möchten? Aktive Abonnements bleiben bestehen, aber neue Abonnements sind nicht mehr möglich.",
+      "reactivateConfirmTitle": "Plan Reaktivieren",
+      "reactivateConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan reaktivieren möchten? Er wird für neue Abonnements verfügbar sein.",
+      "createFirstPlan": "Erstellen Sie Ihren ersten Plan, um Abonnements anzunehmen."
     },
     "sessions": {
       "title": "Sitzungen",

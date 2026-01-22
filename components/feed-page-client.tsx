@@ -5,11 +5,12 @@ import { PostCard } from "@/components/post-card";
 import { CreatePost } from "@/components/create-post";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Post, User, Event } from "@prisma/client";
+import type { Post, User, Event, Venue } from "@prisma/client";
 
 type PostWithDetails = Post & {
   user: Pick<User, "id" | "name" | "image">;
   event: Pick<Event, "title" | "slug"> | null;
+  venue: Pick<Venue, "id" | "name" | "slug"> | null;
   _count: {
     likes: number;
     comments: number;
@@ -124,6 +125,16 @@ export function FeedPageClient({
     fetchPosts(1, false);
   };
 
+  const handlePostDeleted = (postId: string) => {
+    // Remove post from list immediately
+    setPosts((prevPosts) => prevPosts.filter((p) => p.id !== postId));
+    // Update pagination count
+    setPagination((prev) => ({
+      ...prev,
+      totalCount: Math.max(0, prev.totalCount - 1),
+    }));
+  };
+
   if (loading && posts.length === 0) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
@@ -163,6 +174,7 @@ export function FeedPageClient({
                   key={post.id}
                   post={postForCard}
                   currentUserId={userId}
+                  onPostDeleted={handlePostDeleted}
                 />
               );
             })}

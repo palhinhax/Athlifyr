@@ -328,6 +328,17 @@
         "SATURDAY": "Samedi",
         "SUNDAY": "Dimanche"
       }
+    },
+    "posts": {
+      "sharePost": "Partagez quelque chose sur le lieu...",
+      "publicPost": "Public (apparaît dans le fil principal)",
+      "privatePost": "Privé (uniquement dans le lieu)",
+      "publicBadge": "Public",
+      "publicBadgeDesc": "Cette publication apparaît dans le fil principal",
+      "addPhoto": "Ajouter une photo",
+      "publish": "Publier",
+      "makePublic": "Rendre public",
+      "currentlyPrivate": "lieu uniquement"
     }
   }
 }

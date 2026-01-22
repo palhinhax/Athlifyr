@@ -50,7 +50,7 @@ export default async function Home({
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="container mx-auto px-4 py-16 text-center md:py-24">
+      <section className="container mx-auto px-4 py-16 text-center md:py-20">
         <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
           {t("heroTitle")}
           <br />

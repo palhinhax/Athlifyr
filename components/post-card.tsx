@@ -61,15 +61,29 @@ interface PostCardProps {
       title: string;
       slug: string;
     } | null;
+    venue?: {
+      id: string;
+      name: string;
+      slug: string;
+    } | null;
+    isPublic?: boolean;
     likesCount: number;
     isLikedByUser: boolean;
     commentsCount?: number;
   };
   currentUserId?: string;
   isAdmin?: boolean;
+  onPostDeleted?: (postId: string) => void;
+  hideVenueBadge?: boolean; // Hide venue badge when inside venue feed
 }
 
-export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
+export function PostCard({
+  post,
+  currentUserId,
+  isAdmin,
+  onPostDeleted,
+  hideVenueBadge = false, // Default to showing badge
+}: PostCardProps) {
   const router = useRouter();
   const [isLiked, setIsLiked] = useState(post.isLikedByUser);
   const [likesCount, setLikesCount] = useState(post.likesCount);
@@ -134,7 +148,13 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
 
       if (response.ok) {
         setShowDeleteDialog(false);
-        router.refresh();
+        // Notify parent component to remove post from list
+        if (onPostDeleted) {
+          onPostDeleted(post.id);
+        } else {
+          // Fallback to refresh if no callback provided
+          router.refresh();
+        }
       }
     } catch (error) {
       console.error("Error deleting post:", error);
@@ -151,11 +171,15 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
       const response = await fetch(`/api/posts/${post.id}/comments`);
       if (response.ok) {
         const data = await response.json();
-        setComments(data.comments);
-        setCommentsCount(data.comments.length);
+        // API returns comments array directly
+        const commentsList = Array.isArray(data) ? data : [];
+        setComments(commentsList);
+        setCommentsCount(commentsList.length);
       }
     } catch (error) {
       console.error("Error loading comments:", error);
+      // Set empty array on error
+      setComments([]);
     } finally {
       setIsLoadingComments(false);
     }
@@ -181,10 +205,19 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setComments((prev) => [...prev, data.comment]);
-        setCommentsCount((prev) => prev + 1);
-        setNewComment("");
+        const comment = await response.json();
+        // Validate that comment has required structure
+        if (comment && comment.user) {
+          setComments((prev) => {
+            // Ensure prev is always an array
+            const currentComments = Array.isArray(prev) ? prev : [];
+            return [...currentComments, comment];
+          });
+          setCommentsCount((prev) => prev + 1);
+          setNewComment("");
+        } else {
+          console.error("Invalid comment structure:", comment);
+        }
       }
     } catch (error) {
       console.error("Error submitting comment:", error);
@@ -202,7 +235,11 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
       });
 
       if (response.ok) {
-        setComments((prev) => prev.filter((c) => c.id !== commentId));
+        setComments((prev) => {
+          // Ensure prev is always an array
+          const currentComments = Array.isArray(prev) ? prev : [];
+          return currentComments.filter((c) => c.id !== commentId);
+        });
         setCommentsCount((prev) => prev - 1);
       }
     } catch (error) {
@@ -260,7 +297,7 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate font-semibold">{post.user.name}</p>
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span className="whitespace-nowrap">
                 {formatDistanceToNow(createdAt, {
                   addSuffix: true,
@@ -275,6 +312,17 @@ export function PostCard({ post, currentUserId, isAdmin }: PostCardProps) {
                     className="truncate hover:text-primary hover:underline"
                   >
                     {post.event.title}
+                  </Link>
+                </>
+              )}
+              {post.venue && !hideVenueBadge && (
+                <>
+                  <span>•</span>
+                  <Link
+                    href={`/venues/${post.venue.slug}`}
+                    className="inline-flex items-center justify-center gap-1.5 rounded-md border border-white/20 bg-black/20 px-2.5 py-1 text-xs font-medium text-foreground backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-black/30"
+                  >
+                    <span>{post.venue.name}</span>
                   </Link>
                 </>
               )}

@@ -1,7 +1,9 @@
+"use client";
+
 import { getSportIcon } from "@/lib/sport-config";
-import { sportTypeLabels } from "@/lib/event-utils";
 import { cn } from "@/lib/utils";
 import { SportType } from "@prisma/client";
+import { useTranslations } from "next-intl";
 
 interface SportBadgeProps {
   sportType: SportType | string;
@@ -16,6 +18,8 @@ export function SportBadge({
   size = "md",
   showIcon = true,
 }: SportBadgeProps) {
+  const t = useTranslations("sports");
+
   const sizeClasses = {
     sm: "px-2 py-0.5 text-xs gap-1",
     md: "px-3 py-1 text-sm gap-1.5",
@@ -35,7 +39,7 @@ export function SportBadge({
           {getSportIcon(sportType)}
         </span>
       )}
-      <span>{sportTypeLabels[sportType as SportType]}</span>
+      <span>{t(sportType)}</span>
     </div>
   );
 }

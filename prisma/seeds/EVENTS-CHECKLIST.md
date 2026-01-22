@@ -9,8 +9,8 @@
 ## 📊 OVERVIEW
 
 - **Total Events**: ~100 major global events
-- **Seeded**: ✅ **7 events** (Boston, Berlin, London, Seville, Leadville 100, Canyons, Ragnar Zion)
-- **Pending**: 🟡 **~93 events** remaining
+- **Seeded**: ✅ **9 events** (Boston, NYC, Chicago, Berlin, London, Seville, Leadville 100, Canyons, Ragnar Zion)
+- **Pending**: 🟡 **~91 events** remaining
 - **Additional**: 📦 **61 regional events** (mostly Portugal) not on this TOP 100 list
 
 ---
@@ -20,8 +20,8 @@
 ### Marathons & Half Marathons (USA)
 
 - [x] **Boston Marathon** (USA) — oldest, most prestigious ✅ `boston-marathon-2026.ts`
-- [ ] **NYC Marathon** (USA) — world major, 50K+ runners
-- [ ] **Chicago Marathon** (USA) — world major, fast course
+- [x] **NYC Marathon** (USA) — world major, 50K+ runners ✅ `tcs-nyc-marathon-2026.ts`
+- [x] **Chicago Marathon** (USA) — world major, fast course ✅ `chicago-marathon-2026.ts`
 - [ ] **LA Marathon** (USA) — Stadium to the Sea
 - [ ] **Houston Marathon & Half** (USA) — Chevron Houston
 - [ ] **Big Sur Marathon** (USA) — coastal scenic
@@ -63,8 +63,8 @@
 - [x] **London Marathon** (UK) — world major, royal parks ✅ `tcs-london-marathon-2026.ts`
 - [ ] **Tokyo Marathon** (JPN) — world major, high-tech
 - [x] **Boston Marathon** (USA) — oldest marathon ✅ `boston-marathon-2026.ts`
-- [ ] **Chicago Marathon** (USA) — world major (listed above)
-- [ ] **NYC Marathon** (USA) — world major (listed above)
+- [x] **Chicago Marathon** (USA) — world major ✅ `chicago-marathon-2026.ts`
+- [x] **NYC Marathon** (USA) — world major ✅ `tcs-nyc-marathon-2026.ts`
 
 ### European Marathons
 

@@ -2,7 +2,6 @@
 
 import { Label } from "@/components/ui/label";
 import { SportType } from "@prisma/client";
-import { sportTypeLabels } from "@/lib/event-utils";
 import { useTranslations } from "next-intl";
 
 interface SportTypeSelectorProps {
@@ -15,6 +14,7 @@ export function SportTypeSelector({
   onToggleSportType,
 }: SportTypeSelectorProps) {
   const t = useTranslations("admin.events");
+  const tSports = useTranslations("sports");
 
   return (
     <div className="grid gap-2">
@@ -32,7 +32,7 @@ export function SportTypeSelector({
               onChange={() => onToggleSportType(type)}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <span className="text-sm">{sportTypeLabels[type]}</span>
+            <span className="text-sm">{tSports(type)}</span>
           </label>
         ))}
       </div>

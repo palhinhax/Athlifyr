@@ -45,6 +45,8 @@
       "error": "Error",
       "copyError": "No se pudo copiar el enlace."
     },
+    "currentlyPrivate": "solo en el evento",
+    "makePublic": "Hacer público",
     "pricing": {
       "title": "Precios de Inscripción",
       "titleWithVariant": "Precios - {variant}",

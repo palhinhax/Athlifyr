@@ -60,6 +60,8 @@
       "error": "Errore",
       "copyError": "Impossibile copiare il link."
     },
+    "currentlyPrivate": "solo nell'evento",
+    "makePublic": "Rendi pubblico",
     "pricing": {
       "title": "Prezzi di Iscrizione",
       "titleWithVariant": "Prezzi - {variant}",

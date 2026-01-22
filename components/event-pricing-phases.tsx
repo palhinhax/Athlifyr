@@ -36,12 +36,13 @@ export function EventPricingPhases({
     return null;
   }
 
-  // Find current active phase
+  // Find all current active phases (can be multiple if different variants)
   const now = new Date();
-  const currentPhase = phases.find(
+  const currentPhases = phases.filter(
     (phase) =>
       new Date(phase.startDate) <= now && new Date(phase.endDate) >= now
   );
+  const currentPhaseIds = new Set(currentPhases.map((p) => p.id));
 
   // If there are 3 or fewer phases, show them all without collapse
   const shouldCollapse = phases.length > 3;
@@ -79,31 +80,33 @@ export function EventPricingPhases({
       {shouldCollapse ? (
         <Collapsible open={isOpen} onOpenChange={setIsOpen}>
           <div className="space-y-2">
-            {/* Always show current phase if it exists */}
-            {currentPhase && (
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-primary bg-primary/5 p-3 text-sm transition-all">
+            {/* Always show all current phases if they exist */}
+            {currentPhases.map((phase) => (
+              <div
+                key={phase.id}
+                className="flex items-center justify-between gap-3 rounded-lg border border-primary bg-primary/5 p-3 text-sm transition-all"
+              >
                 <div className="flex items-center gap-2">
-                  <span className="font-medium">{currentPhase.name}</span>
+                  <span className="font-medium">{phase.name}</span>
                   <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
                     {t("current")}
                   </span>
-                  {currentPhase.discountPercent &&
-                    currentPhase.discountPercent > 0 && (
-                      <span className="rounded bg-green-500/10 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
-                        -{currentPhase.discountPercent}%
-                      </span>
-                    )}
+                  {phase.discountPercent && phase.discountPercent > 0 && (
+                    <span className="rounded bg-green-500/10 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
+                      -{phase.discountPercent}%
+                    </span>
+                  )}
                 </div>
 
                 <span className="text-lg font-bold">
-                  {formatPrice(currentPhase.price, currentPhase.currency)}
+                  {formatPrice(phase.price, phase.currency)}
                 </span>
               </div>
-            )}
+            ))}
 
             {/* Show first 2 upcoming phases or past phases if no current */}
             {phases
-              .filter((phase) => phase.id !== currentPhase?.id)
+              .filter((phase) => !currentPhaseIds.has(phase.id))
               .slice(0, 2)
               .map((phase) => {
                 const isPast = new Date(phase.endDate) < now;
@@ -134,7 +137,7 @@ export function EventPricingPhases({
 
           <CollapsibleContent className="space-y-2 pt-2">
             {phases
-              .filter((phase) => phase.id !== currentPhase?.id)
+              .filter((phase) => !currentPhaseIds.has(phase.id))
               .slice(2)
               .map((phase) => {
                 const isPast = new Date(phase.endDate) < now;
@@ -166,7 +169,7 @@ export function EventPricingPhases({
       ) : (
         <div className="space-y-2">
           {phases.map((phase) => {
-            const isActive = currentPhase?.id === phase.id;
+            const isActive = currentPhaseIds.has(phase.id);
             const isPast = new Date(phase.endDate) < now;
 
             return (
@@ -203,12 +206,20 @@ export function EventPricingPhases({
         </div>
       )}
 
-      {/* Show current phase dates */}
-      {currentPhase && (
+      {/* Show current phases dates */}
+      {currentPhases.length > 0 && (
         <div className="mt-3 flex items-center gap-2 border-t pt-3 text-xs text-muted-foreground">
           <Calendar className="h-3 w-3" />
           <span>
-            {t("until")} {formatDate(new Date(currentPhase.endDate), locale)}
+            {t("until")}{" "}
+            {formatDate(
+              new Date(
+                Math.max(
+                  ...currentPhases.map((p) => new Date(p.endDate).getTime())
+                )
+              ),
+              locale
+            )}
           </span>
         </div>
       )}

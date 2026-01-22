@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
 
@@ -14,23 +15,31 @@ export async function GET(request: Request) {
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q");
+    const includeSelf = searchParams.get("includeSelf") === "true";
 
     if (!query || query.length < 2) {
       return NextResponse.json([]);
     }
 
+    // Build where clause conditions
+    const conditions: Prisma.UserWhereInput[] = [
+      {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { email: { contains: query, mode: "insensitive" } },
+        ],
+      },
+    ];
+
+    // Only exclude self if includeSelf is false
+    if (!includeSelf) {
+      conditions.push({ id: { not: session.user.id } });
+    }
+
     // Search users by name or email
     const users = await prisma.user.findMany({
       where: {
-        AND: [
-          { id: { not: session.user.id } }, // Exclude self
-          {
-            OR: [
-              { name: { contains: query, mode: "insensitive" } },
-              { email: { contains: query, mode: "insensitive" } },
-            ],
-          },
-        ],
+        AND: conditions,
       },
       select: {
         id: true,

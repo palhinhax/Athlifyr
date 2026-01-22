@@ -73,6 +73,7 @@ interface Venue {
     currency: string;
     paymentProvider: string;
     policy?: VenuePlanPolicy | null;
+    isActive: boolean;
     subscriptions?: Array<{
       id: string;
       status: string;
@@ -109,6 +110,7 @@ export function VenueDetailClient({
   const tInfo = useTranslations("venues.info");
   const tPlans = useTranslations("venues.plans");
   const tPolicy = useTranslations("venues.plan");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
 
   const [venue, setVenue] = useState<Venue | null>(null);
@@ -134,6 +136,8 @@ export function VenueDetailClient({
   const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [errorDialogOpen, setErrorDialogOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
@@ -188,27 +192,50 @@ export function VenueDetailClient({
     setSelectedPlan(null);
   };
 
-  const handleDeletePlanClick = (planId: string) => {
+  const handleTogglePlanActiveClick = (planId: string) => {
     setDeletePlanId(planId);
     setDeleteAlertOpen(true);
   };
 
-  const handleDeletePlanConfirm = async () => {
+  const handleTogglePlanActiveConfirm = async () => {
     if (!deletePlanId || !venue) return;
+
+    const plan = venue.plans.find((p) => p.id === deletePlanId);
+    if (!plan) return;
 
     try {
       setIsDeleting(true);
 
-      const response = await fetch(
-        `/api/venues/${venue.id}/plans/${deletePlanId}`,
-        {
-          method: "DELETE",
-        }
-      );
+      if (plan.isActive) {
+        // Deactivate plan
+        const response = await fetch(
+          `/api/venues/${venue.id}/plans/${deletePlanId}`,
+          {
+            method: "DELETE",
+          }
+        );
 
-      if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Failed to delete plan");
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to deactivate plan");
+        }
+      } else {
+        // Reactivate plan
+        const response = await fetch(
+          `/api/venues/${venue.id}/plans/${deletePlanId}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ isActive: true }),
+          }
+        );
+
+        if (!response.ok) {
+          const data = await response.json();
+          throw new Error(data.error || "Failed to reactivate plan");
+        }
       }
 
       // Refresh venue data
@@ -218,12 +245,15 @@ export function VenueDetailClient({
       setDeleteAlertOpen(false);
       setDeletePlanId(null);
     } catch (err) {
-      console.error("Error deleting plan:", err);
-      alert(
+      console.error("Error toggling plan status:", err);
+      const errorMsg =
         err instanceof Error
           ? err.message
-          : "Failed to delete plan. Please try again."
-      );
+          : "Failed to update plan status. Please try again.";
+
+      setErrorMessage(errorMsg);
+      setErrorDialogOpen(true);
+      setDeleteAlertOpen(false);
     } finally {
       setIsDeleting(false);
     }
@@ -442,9 +472,21 @@ export function VenueDetailClient({
             ) : (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {venue.plans.map((plan) => (
-                  <div key={plan.id} className="rounded-lg border bg-card p-6">
+                  <div
+                    key={plan.id}
+                    className={`rounded-lg border bg-card p-6 ${
+                      !plan.isActive ? "opacity-60" : ""
+                    }`}
+                  >
                     <div className="mb-2 flex items-start justify-between">
-                      <h3 className="text-xl font-semibold">{plan.name}</h3>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-xl font-semibold">{plan.name}</h3>
+                        {!plan.isActive && (
+                          <span className="inline-flex w-fit rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                            Inactive
+                          </span>
+                        )}
+                      </div>
                       {isOwnerOrAdmin && (
                         <div className="flex gap-1">
                           <Button
@@ -460,10 +502,18 @@ export function VenueDetailClient({
                           <Button
                             variant="ghost"
                             size="sm"
-                            onClick={() => handleDeletePlanClick(plan.id)}
-                            className="text-destructive hover:text-destructive"
+                            onClick={() => handleTogglePlanActiveClick(plan.id)}
+                            className={
+                              plan.isActive
+                                ? "text-destructive hover:text-destructive"
+                                : "text-green-600 hover:text-green-700"
+                            }
                           >
-                            <Trash2 className="h-4 w-4" />
+                            {plan.isActive ? (
+                              <Trash2 className="h-4 w-4" />
+                            ) : (
+                              <span className="text-xs">Reactivate</span>
+                            )}
                           </Button>
                         </div>
                       )}
@@ -799,13 +849,19 @@ export function VenueDetailClient({
         }}
       />
 
-      {/* Delete Plan Confirmation Dialog */}
+      {/* Toggle Plan Active Status Dialog */}
       <AlertDialog open={deleteAlertOpen} onOpenChange={setDeleteAlertOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{tPlans("deleteConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {venue?.plans.find((p) => p.id === deletePlanId)?.isActive
+                ? tPlans("deactivateConfirmTitle")
+                : tPlans("reactivateConfirmTitle")}
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              {tPlans("deleteConfirmDescription")}
+              {venue?.plans.find((p) => p.id === deletePlanId)?.isActive
+                ? tPlans("deactivateConfirmDescription")
+                : tPlans("reactivateConfirmDescription")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -813,11 +869,34 @@ export function VenueDetailClient({
               {tPlans("cancel")}
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleDeletePlanConfirm}
+              onClick={handleTogglePlanActiveConfirm}
               disabled={isDeleting}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className={
+                venue?.plans.find((p) => p.id === deletePlanId)?.isActive
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }
             >
-              {isDeleting ? tPlans("deleting") : tPlans("delete")}
+              {isDeleting
+                ? tPlans("processing")
+                : venue?.plans.find((p) => p.id === deletePlanId)?.isActive
+                  ? tPlans("deactivate")
+                  : tPlans("reactivate")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Error Dialog */}
+      <AlertDialog open={errorDialogOpen} onOpenChange={setErrorDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tCommon("error")}</AlertDialogTitle>
+            <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogAction onClick={() => setErrorDialogOpen(false)}>
+              {tCommon("close")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

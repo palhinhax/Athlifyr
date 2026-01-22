@@ -328,6 +328,17 @@
         "SATURDAY": "Saturday",
         "SUNDAY": "Sunday"
       }
+    },
+    "posts": {
+      "sharePost": "Share something about the venue...",
+      "publicPost": "Public (appears in main feed)",
+      "privatePost": "Private (only in venue)",
+      "publicBadge": "Public",
+      "publicBadgeDesc": "This post appears in the main feed",
+      "addPhoto": "Add Photo",
+      "publish": "Publish",
+      "makePublic": "Make public",
+      "currentlyPrivate": "venue only"
     }
   }
 }

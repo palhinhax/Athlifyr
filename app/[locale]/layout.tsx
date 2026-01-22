@@ -165,7 +165,7 @@ export default async function RootLayout({
           <SessionProvider>
             <header className="sticky top-0 z-50 border-b bg-background">
               <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                <LogoLink locale={locale} />
+                <LogoLink />
                 {/* Desktop Navigation */}
                 <DesktopNav />
 

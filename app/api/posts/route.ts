@@ -9,6 +9,7 @@ const createPostSchema = z.object({
   imageUrl: z.string().url().optional(),
   eventId: z.string().cuid().optional(),
   venueId: z.string().cuid().optional(),
+  isPublic: z.boolean().default(false), // Public posts appear in main feed, private posts only in venue/event
 });
 
 // POST /api/posts - Create a new post
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
         imageUrl: validatedData.imageUrl || null,
         eventId: validatedData.eventId,
         venueId: validatedData.venueId,
+        isPublic: validatedData.isPublic, // Allow public/private control
       },
       include: {
         user: {
@@ -70,6 +72,13 @@ export async function POST(request: NextRequest) {
           select: {
             id: true,
             title: true,
+            slug: true,
+          },
+        },
+        venue: {
+          select: {
+            id: true,
+            name: true,
             slug: true,
           },
         },
@@ -114,6 +123,10 @@ export async function GET(request: NextRequest) {
     // Get total count for pagination metadata
     const totalCount = await prisma.post.count({ where });
 
+    // Get session to check likes
+    const session = await auth();
+    const currentUserId = session?.user?.id;
+
     const posts = await prisma.post.findMany({
       where,
       include: {
@@ -131,6 +144,29 @@ export async function GET(request: NextRequest) {
             slug: true,
           },
         },
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
+          },
+        },
+        likes: currentUserId
+          ? {
+              where: {
+                userId: currentUserId,
+              },
+              select: {
+                id: true,
+              },
+            }
+          : false,
       },
       orderBy: {
         createdAt: "desc",

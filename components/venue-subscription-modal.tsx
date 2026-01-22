@@ -163,7 +163,7 @@ export function VenueSubscriptionModal({
     try {
       setSearchLoading(true);
       const response = await fetch(
-        `/api/users/search?q=${encodeURIComponent(query)}`
+        `/api/users/search?q=${encodeURIComponent(query)}&includeSelf=true`
       );
 
       if (!response.ok) {

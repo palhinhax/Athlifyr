@@ -196,6 +196,10 @@
     },
     "sharePost": "Condividi qualcosa sull'evento...",
     "sharePostFeed": "A cosa stai pensando? Condividi allenamenti, risultati o consigli...",
+    "publicPost": "Pubblico (appare nel feed principale)",
+    "privatePost": "Privato (solo nel luogo/evento)",
+    "publicBadge": "Pubblico",
+    "publicBadgeDesc": "Questo post appare nel feed principale",
     "willYouGo": "Parteciperai?",
     "participantsCount": "{count} partecipanti",
     "selectVariant": "Seleziona una variante",
@@ -321,7 +325,9 @@
     "reply": "risposta",
     "replies": "risposte",
     "loadingMore": "Caricamento altre pubblicazioni...",
-    "allPostsLoaded": "Tutte le pubblicazioni caricate"
+    "allPostsLoaded": "Tutte le pubblicazioni caricate",
+    "publicPost": "Pubblico (appare nel feed principale)",
+    "privatePost": "Privato (solo nel luogo/evento)"
   },
   "map": {
     "title": "Mappa degli Eventi",
@@ -856,7 +862,21 @@
       "price": "Prezzo",
       "perMonth": "al mese",
       "unlimited": "Accesso Illimitato",
-      "limited": "Accesso Limitato"
+      "limited": "Accesso Limitato",
+      "edit": "Modifica",
+      "cancel": "Annulla",
+      "delete": "Elimina",
+      "deleting": "Eliminazione...",
+      "processing": "Elaborazione...",
+      "deactivate": "Disattiva",
+      "reactivate": "Riattiva",
+      "deleteConfirmTitle": "Elimina Piano",
+      "deleteConfirmDescription": "Sei sicuro di voler eliminare questo piano? Questa azione non può essere annullata.",
+      "deactivateConfirmTitle": "Disattiva Piano",
+      "deactivateConfirmDescription": "Sei sicuro di voler disattivare questo piano? Le iscrizioni attive continueranno, ma non saranno consentite nuove iscrizioni.",
+      "reactivateConfirmTitle": "Riattiva Piano",
+      "reactivateConfirmDescription": "Sei sicuro di voler riattivare questo piano? Sarà disponibile per nuove iscrizioni.",
+      "createFirstPlan": "Crea il tuo primo piano per iniziare ad accettare iscrizioni."
     },
     "sessions": {
       "title": "Sessioni",

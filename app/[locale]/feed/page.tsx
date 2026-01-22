@@ -86,20 +86,19 @@ export default async function FeedPage({
 
   const eventIds = userParticipations.map((p) => p.eventId);
 
-  // Get all recent posts (general feed + user's events + own posts)
+  // Get all recent posts (public posts + user's participating events)
   const recentPosts = await prisma.post.findMany({
     where: {
       OR: [
         {
-          eventId: null, // General posts (not associated with any event)
+          // Public posts only (from any venue/event or general)
+          isPublic: true,
         },
         {
+          // Posts from user's participating events (public or private)
           eventId: {
             in: eventIds.length > 0 ? eventIds : undefined,
           },
-        },
-        {
-          userId: session.user.id, // User's own posts always visible
         },
       ],
     },
@@ -114,6 +113,13 @@ export default async function FeedPage({
       event: {
         select: {
           title: true,
+          slug: true,
+        },
+      },
+      venue: {
+        select: {
+          id: true,
+          name: true,
           slug: true,
         },
       },
@@ -289,6 +295,7 @@ export default async function FeedPage({
                         userId: postData.userId,
                         user: postData.user,
                         event: postData.event,
+                        venue: postData.venue, // ✅ ADDED - venue data
                         likesCount: postData._count.likes,
                         isLikedByUser: postData.likes.length > 0,
                         commentsCount: postData._count.comments,

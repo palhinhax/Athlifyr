@@ -3,6 +3,18 @@
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { analyticsEvent } from "@/lib/analytics";
+import { HeroBackground } from "@/components/hero-background";
+
+// Hero images for CTA section
+const CTA_HERO_IMAGES = [
+  "/images/challenges/challenge-1.jpg",
+  "/images/challenges/challenge-2.jpg",
+  "/images/challenges/challenge-3.jpg",
+  "/images/challenges/challenge-4.jpg",
+  "/images/challenges/challenge-5.jpg",
+  "/images/challenges/challenge-6.jpg",
+  "/images/challenges/challenge-7.jpg",
+];
 
 interface HomeCtaSectionProps {
   locale: string;
@@ -23,18 +35,26 @@ export function HomeCtaSection({
     });
   };
 
+  // Random hero image
+  const heroImage =
+    CTA_HERO_IMAGES[Math.floor(Math.random() * CTA_HERO_IMAGES.length)];
+
   return (
-    <section className="mt-12 bg-muted/50 py-16">
-      <div className="container mx-auto px-4 text-center">
-        <h2 className="mb-4 text-3xl font-bold">{ctaTitle}</h2>
-        <p className="mx-auto mb-8 max-w-2xl text-muted-foreground">
+    <HeroBackground image={heroImage} className="mt-12" overlayOpacity="dark">
+      <div className="flex flex-1 flex-col items-center justify-center text-center">
+        <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
+          {ctaTitle}
+        </h2>
+        <p className="mx-auto mb-8 max-w-2xl text-lg text-white/90">
           {ctaDescription}
         </p>
         <Link href="/events" onClick={handleExploreClick}>
-          <Button size="lg">{exploreAllEvents}</Button>
+          <Button size="lg" className="px-8 shadow-lg">
+            {exploreAllEvents}
+          </Button>
         </Link>
       </div>
-    </section>
+    </HeroBackground>
   );
 }
 

@@ -441,6 +441,7 @@ model Post {
   venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
   content    String        @db.Text
   imageUrl   String?
+  isPublic   Boolean       @default(false) // Public posts appear in main feed, private posts only in venue/event
   isAutoPost Boolean       @default(false) // Auto-generated posts (participation announcements)
   likes      PostLike[]
   comments   PostComment[]
@@ -451,6 +452,7 @@ model Post {
   @@index([eventId])
   @@index([venueId])
   @@index([createdAt])
+  @@index([isPublic])
 }
 
 model PostComment {

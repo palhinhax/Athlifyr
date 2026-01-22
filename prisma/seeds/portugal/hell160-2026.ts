@@ -1088,8 +1088,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
   const variants = [
     {
       name: "HELL160 – Solo",
-      distance: 164.6,
-      elevationGain: 2648,
+      distanceKm: 164.6,
+      elevationGainM: 2648,
       maxParticipants: 100,
       pricingPhases: [
         {
@@ -1120,8 +1120,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Solo",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 100,
       pricingPhases: [
         {
@@ -1152,8 +1152,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Duplas",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 50,
       pricingPhases: [
         {
@@ -1184,8 +1184,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Equipas (5 elementos)",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 50,
       pricingPhases: [
         {
@@ -1216,8 +1216,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Estafetas (2 elementos)",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 20,
       pricingPhases: [
         {
@@ -1248,8 +1248,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Estafetas (4 elementos)",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 80,
       pricingPhases: [
         {
@@ -1280,8 +1280,8 @@ Lo **Scarico di Responsabilità** e il **Certificato Medico** devono essere:
     },
     {
       name: "HELL100 – Bike",
-      distance: 134.0,
-      elevationGain: 1340,
+      distanceKm: 134.0,
+      elevationGainM: 1340,
       maxParticipants: 100,
       pricingPhases: [
         {

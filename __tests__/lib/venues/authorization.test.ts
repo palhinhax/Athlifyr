@@ -346,7 +346,9 @@ describe("authorization", () => {
       const result = await canManageSessions(userId, venueId);
 
       expect(result.authorized).toBe(false);
-      expect(result.reason).toBe("INSUFFICIENT_PERMISSIONS");
+      expect(result.reason).toBe(
+        "INSUFFICIENT_PERMISSIONS (role: CLIENT, status: ACTIVE)"
+      );
     });
   });
 

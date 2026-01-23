@@ -7,6 +7,7 @@ import { auth } from "@/lib/auth";
 import {
   generateSportsEventSchema,
   generateBreadcrumbSchema,
+  generateEventFAQSchema,
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
 import { EventHeader } from "@/components/event-header";
@@ -16,6 +17,7 @@ import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
 import { EventMainContent } from "@/components/event-main-content";
+import { RelatedEvents } from "@/components/related-events";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -179,6 +181,7 @@ export default async function EventPage({ params }: PageProps) {
 
   // Generate structured data schemas
   const sportsEventSchema = generateSportsEventSchema(event);
+  const faqSchema = generateEventFAQSchema(event, locale);
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: `/${locale}` },
     { name: "Eventos", url: `/${locale}/events` },
@@ -190,6 +193,59 @@ export default async function EventPage({ params }: PageProps) {
     event.id,
     session?.user?.id
   );
+
+  // Get related events for internal linking (same sport type, same region, or upcoming)
+  const relatedEvents = await prisma.event.findMany({
+    where: {
+      AND: [
+        { id: { not: event.id } }, // Exclude current event
+        { startDate: { gte: new Date() } }, // Only future events
+        {
+          OR: [
+            { sportTypes: { hasSome: event.sportTypes } }, // Same sport
+            { country: event.country }, // Same country
+            { city: event.city }, // Same city
+          ],
+        },
+      ],
+    },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      city: true,
+      country: true,
+      startDate: true,
+      imageUrl: true,
+      sportTypes: true,
+      translations: {
+        where: {
+          language: locale,
+        },
+        select: {
+          title: true,
+          city: true,
+        },
+      },
+    },
+    orderBy: [{ startDate: "asc" }],
+    take: 6,
+  });
+
+  // Apply translations to related events
+  const translatedRelatedEvents = relatedEvents.map((e) => {
+    const translation = e.translations[0];
+    return {
+      id: e.id,
+      slug: e.slug,
+      title: translation?.title || e.title,
+      city: translation?.city || e.city,
+      country: e.country,
+      startDate: e.startDate,
+      imageUrl: e.imageUrl,
+      sportTypes: e.sportTypes,
+    };
+  });
 
   // Prepare event data for header component
   const eventForHeader = {
@@ -236,6 +292,7 @@ export default async function EventPage({ params }: PageProps) {
     <div className="min-h-screen">
       {/* Structured Data for SEO */}
       <StructuredData data={sportsEventSchema} />
+      <StructuredData data={faqSchema} />
       <StructuredData data={breadcrumbSchema} />
 
       {/* Event Header with Navigation and Title */}
@@ -328,6 +385,13 @@ export default async function EventPage({ params }: PageProps) {
               }))}
               currentUserId={session?.user?.id}
               isAdmin={isAdmin}
+            />
+
+            {/* Related Events for Internal Linking */}
+            <RelatedEvents
+              events={translatedRelatedEvents}
+              title={t("relatedEvents")}
+              locale={locale}
             />
           </div>
 

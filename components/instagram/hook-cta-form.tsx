@@ -46,7 +46,7 @@ export function HookCtaForm({
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
             onBodyChange(e.target.value)
           }
-          placeholder="Discover 1000+ sports events in Portugal. All in one place."
+          placeholder="Discover 1000+ sports events near you. All in one place."
           maxLength={120}
           rows={3}
           className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"

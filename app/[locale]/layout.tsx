@@ -43,7 +43,7 @@ export const metadata: Metadata = {
     template: "%s | Athlifyr",
   },
   description:
-    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal. Find races, competitions and challenges near you.",
+    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you. Find races, competitions and challenges near you.",
   keywords: [
     "sports events",
     "running",
@@ -82,7 +82,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Athlifyr - one place. all sports.",
     description:
-      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
+      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you.",
     url: "https://athlifyr.com",
     siteName: "Athlifyr",
     images: [
@@ -100,7 +100,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Athlifyr - one place. all sports.",
     description:
-      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events in Portugal.",
+      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you.",
     images: ["/logo.png"],
     creator: "@athlifyr",
   },

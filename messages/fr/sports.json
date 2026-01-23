@@ -1,0 +1,15 @@
+{
+  "sports": {
+    "title": "Sports",
+    "backToEvents": "Retour aux événements",
+    "pageTitle": "Événements de {sport}",
+    "pageDescription": "Découvrez tous les événements de {sport} disponibles. Trouvez des courses, compétitions et défis dans votre sport préféré.",
+    "metaTitle": "Événements de {sport} - Athlifyr",
+    "metaDescription": "Explorez tous les événements de {sport}. Trouvez des courses, compétitions et inscriptions dans votre région.",
+    "eventsCount": "{count} événements disponibles",
+    "locationsCount": "{cities} villes dans {countries} pays",
+    "upcomingEvents": "Prochains événements de {sport}",
+    "noEvents": "Aucun événement de {sport} disponible pour le moment.",
+    "viewAllEvents": "Voir tous les événements"
+  }
+}

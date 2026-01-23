@@ -24,6 +24,9 @@ interface EventMetadataProps {
     imageUrl: string | null;
     createdAt: Date;
     updatedAt: Date;
+    // SEO fields from translations
+    metaTitle?: string | null;
+    metaDescription?: string | null;
   };
   locale?: string;
 }
@@ -43,19 +46,29 @@ export async function generateEventMetadata({
     eventImage = `${baseUrl}${event.imageUrl.startsWith("/") ? "" : "/"}${event.imageUrl}`;
   }
 
-  // Create rich description with event details (max 160 chars for SEO)
-  const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
-  const maxDescLength = 160 - suffix.length - 4; // 4 for "... " ellipsis
+  // Use custom metaTitle from translations if available, otherwise generate
+  const title = event.metaTitle
+    ? event.metaTitle
+    : `${event.title} - ${sportTypeLabels[event.sportTypes[0]]} | Athlifyr`;
 
+  // Use custom metaDescription from translations if available, otherwise generate
   let metaDescription: string;
-  if (event.description.length + suffix.length <= 160) {
-    // Description is short enough to fit with suffix
-    metaDescription = event.description + suffix;
+  if (event.metaDescription) {
+    metaDescription = event.metaDescription;
   } else {
-    // Need to truncate description
-    const truncatedDesc =
-      event.description.slice(0, maxDescLength).trim() + "...";
-    metaDescription = truncatedDesc + suffix;
+    // Create rich description with event details (max 160 chars for SEO)
+    const suffix = ` | ${formatDate(event.startDate)} | ${event.city}, ${event.country}`;
+    const maxDescLength = 160 - suffix.length - 4; // 4 for "... " ellipsis
+
+    if (event.description.length + suffix.length <= 160) {
+      // Description is short enough to fit with suffix
+      metaDescription = event.description + suffix;
+    } else {
+      // Need to truncate description
+      const truncatedDesc =
+        event.description.slice(0, maxDescLength).trim() + "...";
+      metaDescription = truncatedDesc + suffix;
+    }
   }
 
   // Keywords based on event type and location
@@ -70,7 +83,7 @@ export async function generateEventMetadata({
   ];
 
   return {
-    title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]} | Athlifyr`,
+    title,
     description: metaDescription,
     keywords: keywords.join(", "),
     alternates: {

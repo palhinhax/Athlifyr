@@ -244,6 +244,7 @@ model Event {
 
   // Relations
   translations   EventTranslation[]
+  faqs           EventFAQ[]
   variants       EventVariant[]
   pricingPhases  PricingPhase[]
   participations Participation[]
@@ -283,6 +284,45 @@ model EventTranslation {
   @@index([eventId])
   @@index([language])
   @@index([title]) // Index para pesquisa por título
+}
+
+// FAQ items for events - SEO-friendly with rich snippets support
+model EventFAQ {
+  id       String   @id @default(cuid())
+  eventId  String
+  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  order    Int      @default(0) // Order of display
+  
+  // Default content (pt) - fallback
+  question String
+  answer   String   @db.Text
+  
+  // Relations
+  translations EventFAQTranslation[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([eventId])
+  @@index([order])
+}
+
+// Translations for FAQ items
+model EventFAQTranslation {
+  id        String   @id @default(cuid())
+  faqId     String
+  faq       EventFAQ @relation(fields: [faqId], references: [id], onDelete: Cascade)
+  language  Language
+  
+  question  String
+  answer    String   @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([faqId, language]) // Um FAQ só pode ter uma tradução por idioma
+  @@index([faqId])
+  @@index([language])
 }
 
 model EventVariant {

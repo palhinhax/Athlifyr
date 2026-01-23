@@ -282,6 +282,17 @@
       "goBack": "Retour",
       "confirmOnSite": "J'ai Compris"
     },
+    "recommendations": {
+      "recommendations": "Recommandations",
+      "loginRequired": "Connexion requise",
+      "loginRequiredDescription": "Vous devez vous connecter pour recommander ce lieu",
+      "recommended": "Lieu recommandé !",
+      "recommendedDescription": "Merci pour votre recommandation",
+      "unrecommended": "Recommandation retirée",
+      "unrecommendedDescription": "Votre recommandation a été retirée",
+      "error": "Erreur",
+      "errorDescription": "Impossible de traiter votre recommandation. Veuillez réessayer."
+    },
     "tabs": {
       "about": "À Propos",
       "feed": "Fil d'actualité",

@@ -162,6 +162,7 @@ model User {
   venueSubscriptions  VenueSubscription[]
   venueBookings       VenueBooking[]
   paymentIntents      PaymentIntent[]
+  venueRecommendations VenueRecommendation[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -732,6 +733,7 @@ model Venue {
   bookings          VenueBooking[]
   paymentIntents    PaymentIntent[]
   posts             Post[]
+  recommendations   VenueRecommendation[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -999,3 +1001,19 @@ model EventWeather {
   @@index([eventId])
   @@index([date])
 }
+
+// Recommendations for venues (positive engagement only)
+model VenueRecommendation {
+  id        String   @id @default(cuid())
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([venueId, userId]) // One recommendation per user per venue
+  @@index([venueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+

@@ -282,6 +282,17 @@
       "goBack": "Go Back",
       "confirmOnSite": "I Understand"
     },
+    "recommendations": {
+      "recommendations": "Recommendations",
+      "loginRequired": "Login Required",
+      "loginRequiredDescription": "You need to log in to recommend this venue",
+      "recommended": "Venue recommended!",
+      "recommendedDescription": "Thank you for your recommendation",
+      "unrecommended": "Recommendation removed",
+      "unrecommendedDescription": "Your recommendation has been removed",
+      "error": "Error",
+      "errorDescription": "Could not process your recommendation. Please try again."
+    },
     "tabs": {
       "about": "About",
       "feed": "Feed",

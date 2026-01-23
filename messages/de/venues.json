@@ -282,6 +282,17 @@
       "goBack": "Zurück",
       "confirmOnSite": "Verstanden"
     },
+    "recommendations": {
+      "recommendations": "Empfehlungen",
+      "loginRequired": "Anmeldung erforderlich",
+      "loginRequiredDescription": "Du musst dich anmelden, um diesen Ort zu empfehlen",
+      "recommended": "Ort empfohlen!",
+      "recommendedDescription": "Vielen Dank für deine Empfehlung",
+      "unrecommended": "Empfehlung entfernt",
+      "unrecommendedDescription": "Deine Empfehlung wurde entfernt",
+      "error": "Fehler",
+      "errorDescription": "Deine Empfehlung konnte nicht verarbeitet werden. Bitte versuche es erneut."
+    },
     "tabs": {
       "about": "Über",
       "feed": "Feed",

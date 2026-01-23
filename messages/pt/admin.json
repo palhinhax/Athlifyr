@@ -13,16 +13,16 @@
       }
     },
     "contacts": {
-      "title": "Mensagens de Contacto",
-      "description": "Gestão de sugestões, bugs e perguntas dos utilizadores",
+      "title": "Contactos",
+      "description": "Gere todas as mensagens de contacto recebidas",
       "stats": {
         "total": "Total",
         "pending": "Pendentes",
         "inProgress": "Em Progresso",
         "resolved": "Resolvidos"
       },
-      "noMessages": "Sem mensagens",
-      "noMessagesDescription": "Ainda não recebeste nenhuma mensagem de contacto.",
+      "noMessages": "Nenhuma mensagem",
+      "noMessagesDescription": "Quando receber mensagens, elas aparecerão aqui",
       "types": {
         "suggestion": "Sugestão",
         "bug": "Bug",

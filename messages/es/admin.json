@@ -13,16 +13,16 @@
       }
     },
     "contacts": {
-      "title": "Mensajes de Contacto",
-      "description": "Gestión de sugerencias, errores y preguntas de usuarios",
+      "title": "Contactos",
+      "description": "Gestiona todos los mensajes de contacto recibidos",
       "stats": {
         "total": "Total",
         "pending": "Pendientes",
         "inProgress": "En Progreso",
         "resolved": "Resueltos"
       },
-      "noMessages": "Sin mensajes",
-      "noMessagesDescription": "Aún no has recibido mensajes de contacto.",
+      "noMessages": "Ningún mensaje",
+      "noMessagesDescription": "Cuando recibas mensajes, aparecerán aquí",
       "types": {
         "suggestion": "Sugerencia",
         "bug": "Error",

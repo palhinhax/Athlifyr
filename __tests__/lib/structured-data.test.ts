@@ -57,11 +57,12 @@ describe("structured-data", () => {
       const schema = generateSportsEventSchema(event);
 
       expect(schema.performer).toBeDefined();
-      expect(schema.performer).toEqual({
+      expect(schema.performer).toMatchObject({
         "@type": "Organization",
         name: "Athlifyr",
         url: expect.any(String),
       });
+      expect(schema.performer.logo).toBeDefined();
     });
 
     it("should include validFrom in offers when variant has pricing phases", () => {
@@ -192,7 +193,7 @@ describe("structured-data", () => {
       const schema = generateSportsEventSchema(event);
 
       if (schema.offers) {
-        expect(schema.offers[0]).toEqual({
+        expect(schema.offers[0]).toMatchObject({
           "@type": "Offer",
           name: "10K",
           price: "25",
@@ -201,6 +202,10 @@ describe("structured-data", () => {
           url: expect.any(String),
           validFrom: expect.any(String),
         });
+
+        // Check new fields exist
+        expect(schema.offers[0].description).toBeDefined();
+        expect(schema.offers[0].validThrough).toBeDefined();
       }
     });
   });

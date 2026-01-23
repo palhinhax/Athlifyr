@@ -1,3 +1,9 @@
+# [12.7.0](https://github.com/palhinhax/Athlifyr/compare/v12.6.0...v12.7.0) (2026-01-23)
+
+### Features
+
+- **venues:** add icons to tabs for mobile view ([c3313d9](https://github.com/palhinhax/Athlifyr/commit/c3313d9685332f1f408b948a5d026f50764ace14))
+
 # [12.6.0](https://github.com/palhinhax/Athlifyr/compare/v12.5.1...v12.6.0) (2026-01-23)
 
 ### Features

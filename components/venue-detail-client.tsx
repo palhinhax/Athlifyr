@@ -37,6 +37,10 @@ import {
   Mail,
   Globe,
   Instagram,
+  Home,
+  Info,
+  CreditCard,
+  Users,
 } from "lucide-react";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
 
@@ -322,27 +326,50 @@ export function VenueDetailClient({
         <Tabs defaultValue="feed" className="w-full">
           <div className="overflow-x-auto">
             <TabsList className="w-full min-w-max md:min-w-0">
-              <TabsTrigger value="feed" className="flex-1 md:flex-initial">
-                {t("tabs.feed")}
+              <TabsTrigger
+                value="feed"
+                className="flex-1 gap-2 md:flex-initial"
+              >
+                <Home className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("tabs.feed")}</span>
               </TabsTrigger>
-              <TabsTrigger value="about" className="flex-1 md:flex-initial">
-                {t("tabs.about")}
+              <TabsTrigger
+                value="about"
+                className="flex-1 gap-2 md:flex-initial"
+              >
+                <Info className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("tabs.about")}</span>
               </TabsTrigger>
-              <TabsTrigger value="plans" className="flex-1 md:flex-initial">
-                {tPlans("title")}
+              <TabsTrigger
+                value="plans"
+                className="flex-1 gap-2 md:flex-initial"
+              >
+                <CreditCard className="h-4 w-4" />
+                <span className="hidden sm:inline">{tPlans("title")}</span>
               </TabsTrigger>
-              <TabsTrigger value="sessions" className="flex-1 md:flex-initial">
-                {t("tabs.sessions")}
+              <TabsTrigger
+                value="sessions"
+                className="flex-1 gap-2 md:flex-initial"
+              >
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("tabs.sessions")}</span>
               </TabsTrigger>
-              <TabsTrigger value="team" className="flex-1 md:flex-initial">
-                {t("tabs.team")}
+              <TabsTrigger
+                value="team"
+                className="flex-1 gap-2 md:flex-initial"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("tabs.team")}</span>
               </TabsTrigger>
               {isOwnerOrAdmin && (
                 <TabsTrigger
                   value="subscribers"
-                  className="flex-1 md:flex-initial"
+                  className="flex-1 gap-2 md:flex-initial"
                 >
-                  {t("tabs.subscribers")}
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">
+                    {t("tabs.subscribers")}
+                  </span>
                 </TabsTrigger>
               )}
             </TabsList>

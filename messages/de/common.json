@@ -39,6 +39,52 @@
     "adminLimit": "(Admin-Limit)",
     "supportedFormats": "Unterstützte Formate: {formats}"
   },
+  "contact": {
+    "title": "Kontaktieren Sie uns",
+    "description": "Senden Sie uns Vorschläge, melden Sie Probleme oder stellen Sie Fragen",
+    "cards": {
+      "suggestions": "Vorschläge",
+      "suggestionsDesc": "Teilen Sie Ideen zur Verbesserung der Plattform",
+      "reportProblem": "Problem melden",
+      "reportProblemDesc": "Haben Sie einen Fehler gefunden? Lassen Sie es uns wissen!",
+      "questions": "Fragen",
+      "questionsDesc": "Haben Sie eine Frage? Wir sind hier um zu helfen"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Ihr Name",
+      "email": "E-Mail",
+      "emailPlaceholder": "ihre@email.com",
+      "type": "Kontakttyp",
+      "types": {
+        "suggestion": "💡 Vorschlag",
+        "bug": "🐛 Fehler melden",
+        "question": "❓ Frage",
+        "feedback": "💬 Feedback",
+        "other": "📧 Andere"
+      },
+      "subject": "Betreff",
+      "subjectPlaceholder": "Zusammenfassung Ihres Kontakts",
+      "message": "Nachricht",
+      "messagePlaceholder": "Im Detail beschreiben...",
+      "messageHelper": "Seien Sie so spezifisch wie möglich, damit wir besser helfen können",
+      "submit": "Nachricht senden",
+      "submitting": "Wird gesendet..."
+    },
+    "toast": {
+      "requiredFields": "Pflichtfelder",
+      "requiredFieldsDesc": "Bitte füllen Sie Betreff und Nachricht aus.",
+      "success": "Nachricht gesendet!",
+      "successDesc": "Vielen Dank für Ihre Kontaktaufnahme. Wir antworten bald per E-Mail.",
+      "error": "Fehler beim Senden",
+      "errorDesc": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+    },
+    "footer": {
+      "directContact": "📧 Sie können uns auch direkt kontaktieren unter:",
+      "responseTime": "Wir antworten normalerweise innerhalb von",
+      "hours": "24-48 Stunden"
+    }
+  },
   "sports": {
     "RUNNING": "Laufen",
     "TRAIL": "Trail",

@@ -39,6 +39,52 @@
     "adminLimit": "(Admin limit)",
     "supportedFormats": "Supported formats: {formats}"
   },
+  "contact": {
+    "title": "Contact Us",
+    "description": "Send us suggestions, report issues or ask questions",
+    "cards": {
+      "suggestions": "Suggestions",
+      "suggestionsDesc": "Share ideas to improve the platform",
+      "reportProblem": "Report Problem",
+      "reportProblemDesc": "Found a bug? Let us know!",
+      "questions": "Questions",
+      "questionsDesc": "Have a question? We're here to help"
+    },
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "type": "Contact Type",
+      "types": {
+        "suggestion": "💡 Suggestion",
+        "bug": "🐛 Report Bug",
+        "question": "❓ Question",
+        "feedback": "💬 Feedback",
+        "other": "📧 Other"
+      },
+      "subject": "Subject",
+      "subjectPlaceholder": "Summary of your contact",
+      "message": "Message",
+      "messagePlaceholder": "Describe in detail...",
+      "messageHelper": "Be as specific as possible so we can help better",
+      "submit": "Send Message",
+      "submitting": "Sending..."
+    },
+    "toast": {
+      "requiredFields": "Required fields",
+      "requiredFieldsDesc": "Please fill in the subject and message.",
+      "success": "Message sent!",
+      "successDesc": "Thank you for your contact. We will respond via email soon.",
+      "error": "Error sending",
+      "errorDesc": "Unable to send message. Please try again."
+    },
+    "footer": {
+      "directContact": "📧 You can also contact us directly at:",
+      "responseTime": "We usually respond within",
+      "hours": "24-48 hours"
+    }
+  },
   "sports": {
     "RUNNING": "Running",
     "TRAIL": "Trail",

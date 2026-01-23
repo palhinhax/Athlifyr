@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,6 +12,7 @@ import { Loader2, Send, Mail, MessageSquare, AlertCircle } from "lucide-react";
 
 export default function ContactPage() {
   const { data: session } = useSession();
+  const t = useTranslations("common.contact");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: session?.user?.name || "",
@@ -26,8 +28,8 @@ export default function ContactPage() {
     if (!formData.subject || !formData.message) {
       toast({
         variant: "destructive",
-        title: "Campos obrigatórios",
-        description: "Por favor preenche o assunto e a mensagem.",
+        title: t("toast.requiredFields"),
+        description: t("toast.requiredFieldsDesc"),
       });
       return;
     }
@@ -44,9 +46,8 @@ export default function ContactPage() {
       if (!res.ok) throw new Error("Failed to send message");
 
       toast({
-        title: "Mensagem enviada!",
-        description:
-          "Obrigado pelo teu contacto. Responderemos em breve por email.",
+        title: t("toast.success"),
+        description: t("toast.successDesc"),
       });
 
       // Reset form
@@ -60,8 +61,8 @@ export default function ContactPage() {
     } catch {
       toast({
         variant: "destructive",
-        title: "Erro ao enviar",
-        description: "Não foi possível enviar a mensagem. Tenta novamente.",
+        title: t("toast.error"),
+        description: t("toast.errorDesc"),
       });
     } finally {
       setIsSubmitting(false);
@@ -72,35 +73,33 @@ export default function ContactPage() {
     <div className="container mx-auto max-w-3xl px-4 py-8">
       {/* Header */}
       <div className="mb-8 text-center">
-        <h1 className="mb-2 text-3xl font-bold">Contacta-nos</h1>
-        <p className="text-muted-foreground">
-          Envia-nos sugestões, reporta problemas ou faz perguntas
-        </p>
+        <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       {/* Contact Cards */}
       <div className="mb-8 grid gap-4 md:grid-cols-3">
         <Card className="flex flex-col items-center p-6 text-center">
           <MessageSquare className="mb-3 h-8 w-8 text-primary" />
-          <h3 className="mb-1 font-semibold">Sugestões</h3>
+          <h3 className="mb-1 font-semibold">{t("cards.suggestions")}</h3>
           <p className="text-sm text-muted-foreground">
-            Partilha ideias para melhorar a plataforma
+            {t("cards.suggestionsDesc")}
           </p>
         </Card>
 
         <Card className="flex flex-col items-center p-6 text-center">
           <AlertCircle className="mb-3 h-8 w-8 text-orange-500" />
-          <h3 className="mb-1 font-semibold">Reportar Problema</h3>
+          <h3 className="mb-1 font-semibold">{t("cards.reportProblem")}</h3>
           <p className="text-sm text-muted-foreground">
-            Encontraste um bug? Avisa-nos!
+            {t("cards.reportProblemDesc")}
           </p>
         </Card>
 
         <Card className="flex flex-col items-center p-6 text-center">
           <Mail className="mb-3 h-8 w-8 text-blue-500" />
-          <h3 className="mb-1 font-semibold">Perguntas</h3>
+          <h3 className="mb-1 font-semibold">{t("cards.questions")}</h3>
           <p className="text-sm text-muted-foreground">
-            Tens alguma dúvida? Estamos aqui para ajudar
+            {t("cards.questionsDesc")}
           </p>
         </Card>
       </div>
@@ -110,21 +109,21 @@ export default function ContactPage() {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Name */}
           <div>
-            <Label htmlFor="name">Nome *</Label>
+            <Label htmlFor="name">{t("form.name")} *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) =>
                 setFormData({ ...formData, name: e.target.value })
               }
-              placeholder="O teu nome"
+              placeholder={t("form.namePlaceholder")}
               required
             />
           </div>
 
           {/* Email */}
           <div>
-            <Label htmlFor="email">Email *</Label>
+            <Label htmlFor="email">{t("form.email")} *</Label>
             <Input
               id="email"
               type="email"
@@ -132,14 +131,14 @@ export default function ContactPage() {
               onChange={(e) =>
                 setFormData({ ...formData, email: e.target.value })
               }
-              placeholder="teu@email.com"
+              placeholder={t("form.emailPlaceholder")}
               required
             />
           </div>
 
           {/* Type */}
           <div>
-            <Label htmlFor="type">Tipo de Contacto *</Label>
+            <Label htmlFor="type">{t("form.type")} *</Label>
             <select
               id="type"
               value={formData.type}
@@ -149,43 +148,43 @@ export default function ContactPage() {
               className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               required
             >
-              <option value="suggestion">💡 Sugestão</option>
-              <option value="bug">🐛 Reportar Bug</option>
-              <option value="question">❓ Pergunta</option>
-              <option value="feedback">💬 Feedback</option>
-              <option value="other">📧 Outro</option>
+              <option value="suggestion">{t("form.types.suggestion")}</option>
+              <option value="bug">{t("form.types.bug")}</option>
+              <option value="question">{t("form.types.question")}</option>
+              <option value="feedback">{t("form.types.feedback")}</option>
+              <option value="other">{t("form.types.other")}</option>
             </select>
           </div>
 
           {/* Subject */}
           <div>
-            <Label htmlFor="subject">Assunto *</Label>
+            <Label htmlFor="subject">{t("form.subject")} *</Label>
             <Input
               id="subject"
               value={formData.subject}
               onChange={(e) =>
                 setFormData({ ...formData, subject: e.target.value })
               }
-              placeholder="Resumo do teu contacto"
+              placeholder={t("form.subjectPlaceholder")}
               required
             />
           </div>
 
           {/* Message */}
           <div>
-            <Label htmlFor="message">Mensagem *</Label>
+            <Label htmlFor="message">{t("form.message")} *</Label>
             <textarea
               id="message"
               value={formData.message}
               onChange={(e) =>
                 setFormData({ ...formData, message: e.target.value })
               }
-              placeholder="Descreve em detalhe..."
+              placeholder={t("form.messagePlaceholder")}
               className="min-h-[150px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               required
             />
             <p className="mt-1 text-xs text-muted-foreground">
-              Sê o mais específico possível para podermos ajudar melhor
+              {t("form.messageHelper")}
             </p>
           </div>
 
@@ -193,12 +192,13 @@ export default function ContactPage() {
           <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />A enviar...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("form.submitting")}
               </>
             ) : (
               <>
                 <Send className="mr-2 h-4 w-4" />
-                Enviar Mensagem
+                {t("form.submit")}
               </>
             )}
           </Button>
@@ -208,7 +208,7 @@ export default function ContactPage() {
       {/* Additional Info */}
       <div className="mt-8 text-center text-sm text-muted-foreground">
         <p>
-          📧 Também podes contactar-nos diretamente em:{" "}
+          {t("footer.directContact")}{" "}
           <a
             href="mailto:info@athlifyr.com"
             className="text-primary hover:underline"
@@ -217,7 +217,7 @@ export default function ContactPage() {
           </a>
         </p>
         <p className="mt-2">
-          Normalmente respondemos em <strong>24-48 horas</strong>
+          {t("footer.responseTime")} <strong>{t("footer.hours")}</strong>
         </p>
       </div>
     </div>

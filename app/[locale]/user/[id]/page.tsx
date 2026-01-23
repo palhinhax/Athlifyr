@@ -38,7 +38,8 @@ export async function generateMetadata({
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
   const userName = user.name || "Atleta";
   const userImage = user.image || `${baseUrl}/logo.png`;
 

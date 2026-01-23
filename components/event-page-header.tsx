@@ -48,7 +48,8 @@ export function EventPageHeader({
   const tCommon = useTranslations("common");
 
   // Construct the full event URL for sharing
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
   const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
 
   return (

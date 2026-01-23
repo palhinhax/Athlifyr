@@ -6,6 +6,7 @@ const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
+  const hostname = request.headers.get("host") || "";
 
   // Skip middleware for sitemap.xml and robots.txt (SEO files at root)
   if (pathname === "/sitemap.xml" || pathname === "/robots.txt") {
@@ -44,6 +45,43 @@ export default function middleware(request: NextRequest) {
   // Skip intl middleware for maintenance and promo pages
   if (isMaintenancePage || isPromoPage) {
     return NextResponse.next();
+  }
+
+  // ============================================================
+  // SEO: Force www subdomain + locale prefix in ONE 301 redirect
+  // ============================================================
+  const supportedLocales = ["pt", "en", "es", "fr", "de", "it"];
+  const defaultLocale = "pt";
+
+  // Check if hostname is missing www (e.g., athlifyr.com)
+  const needsWww =
+    hostname &&
+    !hostname.startsWith("www.") &&
+    !hostname.startsWith("localhost") &&
+    !hostname.match(/^\d+\.\d+\.\d+\.\d+/); // Not IP address
+
+  // Check if path is missing locale prefix
+  const hasLocalePrefix = supportedLocales.some((locale) =>
+    pathname.startsWith(`/${locale}`)
+  );
+  const needsLocale = !hasLocalePrefix && pathname !== "/";
+
+  // If we need to fix hostname OR locale, do it in ONE redirect
+  if (needsWww || needsLocale) {
+    const url = request.nextUrl.clone();
+
+    // Fix hostname first
+    if (needsWww) {
+      url.hostname = `www.${hostname}`;
+    }
+
+    // Fix locale prefix
+    if (needsLocale) {
+      url.pathname = `/${defaultLocale}${pathname}`;
+    }
+
+    // Return 301 permanent redirect
+    return NextResponse.redirect(url, 301);
   }
 
   // Continue with internationalization middleware

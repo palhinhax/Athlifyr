@@ -20,7 +20,8 @@ interface EventWithVariants extends Event {
  * Enhanced for better Google indexing with rich structured data
  */
 export function generateSportsEventSchema(event: EventWithVariants) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
   const eventUrl = `${baseUrl}/events/${event.slug}`;
   const eventImage = event.imageUrl || `${baseUrl}/logo.png`;
 
@@ -192,7 +193,8 @@ export function generateSportsEventSchema(event: EventWithVariants) {
  * - URL must be publicly accessible (no login required)
  */
 export function generateOrganizationSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
   return {
     "@context": "https://schema.org",
@@ -236,7 +238,8 @@ export function generateOrganizationSchema() {
  * https://schema.org/WebSite
  */
 export function generateWebSiteSchema() {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
   return {
     "@context": "https://schema.org",
@@ -537,7 +540,8 @@ export function generateEventFAQSchemaFromDB(faqs: FAQItem[]) {
 export function generateBreadcrumbSchema(
   items: { name: string; url: string }[]
 ) {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
   return {
     "@context": "https://schema.org",

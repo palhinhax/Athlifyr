@@ -6,7 +6,7 @@ import { Language, SportType } from "@prisma/client";
 import { EventCard } from "@/components/event-card";
 import { StructuredData } from "@/components/structured-data";
 import { generateBreadcrumbSchema } from "@/lib/structured-data";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ArrowLeft, Calendar, MapPin } from "lucide-react";
 import { sportTypeLabels } from "@/lib/event-utils";
 
@@ -139,7 +139,7 @@ export default async function SportPage({ params }: PageProps) {
         <div className="container mx-auto px-4 py-12">
           {/* Back button */}
           <Link
-            href={`/${locale}/events`}
+            href="/events"
             className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -198,7 +198,7 @@ export default async function SportPage({ params }: PageProps) {
               {t("noEvents", { sport: sportName })}
             </p>
             <Link
-              href={`/${locale}/events`}
+              href="/events"
               className="mt-4 inline-flex items-center gap-2 text-primary hover:underline"
             >
               {t("viewAllEvents")}

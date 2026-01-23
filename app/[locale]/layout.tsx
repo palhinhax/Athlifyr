@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "../globals.css";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionProvider } from "@/components/session-provider";
 import { DesktopNav, MobileNavWrapper } from "@/components/client-nav";
@@ -186,25 +186,25 @@ export default async function RootLayout({
                   </p>
                   <div className="flex flex-wrap items-center justify-center gap-4">
                     <Link
-                      href={`/${locale}/contact`}
+                      href="/contact"
                       className="transition-colors hover:text-foreground"
                     >
                       Contact
                     </Link>
                     <Link
-                      href={`/${locale}/privacy`}
+                      href="/privacy"
                       className="transition-colors hover:text-foreground"
                     >
                       Privacy
                     </Link>
                     <Link
-                      href={`/${locale}/terms`}
+                      href="/terms"
                       className="transition-colors hover:text-foreground"
                     >
                       Terms
                     </Link>
                     <Link
-                      href={`/${locale}/cookies`}
+                      href="/cookies"
                       className="transition-colors hover:text-foreground"
                     >
                       Cookies

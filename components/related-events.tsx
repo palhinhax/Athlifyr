@@ -1,9 +1,10 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { Calendar, MapPin } from "lucide-react";
 import { SportBadge } from "./sport-badge";
 import { SportType } from "@prisma/client";
+import { useLocale } from "next-intl";
 
 interface RelatedEvent {
   id: string;
@@ -19,14 +20,14 @@ interface RelatedEvent {
 interface RelatedEventsProps {
   events: RelatedEvent[];
   title?: string;
-  locale: string;
 }
 
 export function RelatedEvents({
   events,
   title = "Eventos Relacionados",
-  locale,
 }: RelatedEventsProps) {
+  const locale = useLocale();
+
   if (events.length === 0) return null;
 
   return (
@@ -36,7 +37,7 @@ export function RelatedEvents({
         {events.map((event) => (
           <Link
             key={event.id}
-            href={`/${locale}/events/${event.slug}`}
+            href={`/events/${event.slug}`}
             className="group relative overflow-hidden rounded-lg border bg-card transition-all hover:shadow-lg"
           >
             {/* Event Image */}

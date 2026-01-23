@@ -3,8 +3,7 @@
 import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { useLocale } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,7 +19,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Eye, EyeOff } from "lucide-react";
 
 export function SignInForm() {
-  const locale = useLocale();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -145,7 +143,7 @@ export function SignInForm() {
             <div className="flex items-center justify-between">
               <Label htmlFor="password">Password</Label>
               <Link
-                href={`/${locale}/auth/forgot-password`}
+                href="/auth/forgot-password"
                 className="text-sm text-primary hover:underline"
               >
                 Esqueceste a password?
@@ -188,10 +186,7 @@ export function SignInForm() {
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
           Não tens conta?{" "}
-          <Link
-            href={`/${locale}/auth/signup`}
-            className="text-primary hover:underline"
-          >
+          <Link href="/auth/signup" className="text-primary hover:underline">
             Criar conta
           </Link>
         </p>

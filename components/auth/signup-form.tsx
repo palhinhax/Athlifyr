@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -269,10 +269,7 @@ export function SignUpForm() {
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
           Já tens conta?{" "}
-          <Link
-            href={`/${locale}/auth/signin`}
-            className="text-primary hover:underline"
-          >
+          <Link href="/auth/signin" className="text-primary hover:underline">
             Fazer login
           </Link>
         </p>

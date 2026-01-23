@@ -236,7 +236,7 @@ export default function NotFound() {
                 size="lg"
                 className="min-w-[160px] border-white/30 bg-white text-black backdrop-blur-sm hover:bg-white/90"
               >
-                <Link href={`/${locale}`}>
+                <Link href={`/${locale}/`}>
                   <Home className="mr-2 h-4 w-4" />
                   {t.backHome}
                 </Link>

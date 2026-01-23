@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-4xl">
         <Button asChild variant="ghost" className="mb-6">
-          <Link href={`/${locale}`}>
+          <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Voltar
           </Link>
@@ -123,7 +123,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
           </ul>
           <p>
             Para exercer estes direitos, contacta-nos através da{" "}
-            <Link href={`/${locale}/contact`}>página de contacto</Link>.
+            <Link href="/contact">página de contacto</Link>.
           </p>
 
           <h2>6. Cookies</h2>
@@ -134,8 +134,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
           </p>
           <p>
             Podes gerir as tuas preferências de cookies a qualquer momento. Vê
-            mais na nossa{" "}
-            <Link href={`/${locale}/cookies`}>Política de Cookies</Link>.
+            mais na nossa <Link href="/cookies">Política de Cookies</Link>.
           </p>
 
           <h2>7. Segurança</h2>
@@ -177,7 +176,7 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
           <p>
             Para questões sobre privacidade ou para exercer os teus direitos,
             contacta-nos através da{" "}
-            <Link href={`/${locale}/contact`}>página de contacto</Link>.
+            <Link href="/contact">página de contacto</Link>.
           </p>
 
           <div className="mt-12 rounded-lg border bg-muted/50 p-6">

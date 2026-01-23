@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-4xl">
         <Button asChild variant="ghost" className="mb-6">
-          <Link href={`/${locale}`}>
+          <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Voltar
           </Link>
@@ -35,7 +35,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
           <p>
             Ao aceder e usar o Athlifyr, aceitas estar vinculado a estes Termos
             de Serviço e à nossa{" "}
-            <Link href={`/${locale}/privacy`}>Política de Privacidade</Link>.
+            <Link href="/privacy">Política de Privacidade</Link>.
           </p>
 
           <h2>2. Descrição do Serviço</h2>
@@ -141,7 +141,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
           <h2>12. Contacto</h2>
           <p>
             Para questões sobre estes termos, contacta-nos através da{" "}
-            <Link href={`/${locale}/contact`}>página de contacto</Link>.
+            <Link href="/contact">página de contacto</Link>.
           </p>
 
           <div className="mt-12 rounded-lg border bg-muted/50 p-6">

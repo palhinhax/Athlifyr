@@ -5,6 +5,13 @@ import { NextRequest, NextResponse } from "next/server";
 const intlMiddleware = createMiddleware(routing);
 
 export default function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+
+  // Skip middleware for sitemap.xml and robots.txt (SEO files at root)
+  if (pathname === "/sitemap.xml" || pathname === "/robots.txt") {
+    return NextResponse.next();
+  }
+
   // Check if maintenance mode is enabled
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
 

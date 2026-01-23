@@ -499,6 +499,38 @@ export function generateEventFAQSchema(
 }
 
 /**
+ * FAQ item interface for database FAQs
+ */
+interface FAQItem {
+  question: string;
+  answer: string;
+}
+
+/**
+ * Generate FAQ schema from database FAQs
+ * https://schema.org/FAQPage
+ * Uses custom FAQs stored in the database per event
+ */
+export function generateEventFAQSchemaFromDB(faqs: FAQItem[]) {
+  if (!faqs || faqs.length === 0) {
+    return null;
+  }
+
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((faq) => ({
+      "@type": "Question",
+      name: faq.question,
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: faq.answer,
+      },
+    })),
+  };
+}
+
+/**
  * Generate BreadcrumbList schema for navigation
  * https://schema.org/BreadcrumbList
  */

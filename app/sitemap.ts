@@ -84,5 +84,35 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   }));
 
-  return [...staticPages, ...eventPages];
+  // Sport category pages
+  const sportSlugs = [
+    "running",
+    "trail",
+    "walking",
+    "hyrox",
+    "crossfit",
+    "ocr",
+    "btt",
+    "cycling",
+    "surf",
+    "triathlon",
+    "swimming",
+  ];
+
+  const sportPages: MetadataRoute.Sitemap = sportSlugs.map((sport) => ({
+    url: `${baseUrl}/sports/${sport}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+    alternates: {
+      languages: Object.fromEntries(
+        SUPPORTED_LOCALES.map((locale) => [
+          locale,
+          `${baseUrl}/${locale}/sports/${sport}`,
+        ])
+      ),
+    },
+  }));
+
+  return [...staticPages, ...sportPages, ...eventPages];
 }

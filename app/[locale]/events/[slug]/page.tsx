@@ -7,7 +7,7 @@ import { auth } from "@/lib/auth";
 import {
   generateSportsEventSchema,
   generateBreadcrumbSchema,
-  generateEventFAQSchema,
+  generateEventFAQSchemaFromDB,
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
 import { EventHeader } from "@/components/event-header";
@@ -17,6 +17,7 @@ import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
 import { EventMainContent } from "@/components/event-main-content";
+import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
@@ -70,6 +71,18 @@ async function getEvent(
       pricingPhases: {
         orderBy: {
           startDate: "asc",
+        },
+      },
+      faqs: {
+        include: {
+          translations: {
+            where: {
+              language: locale,
+            },
+          },
+        },
+        orderBy: {
+          order: "asc",
         },
       },
       posts: {
@@ -126,6 +139,19 @@ async function getEvent(
     return variant;
   });
 
+  // Apply FAQ translations
+  const translatedFaqs = event.faqs.map((faq) => {
+    const faqTranslation = faq.translations[0];
+    if (faqTranslation) {
+      return {
+        ...faq,
+        question: faqTranslation.question || faq.question,
+        answer: faqTranslation.answer || faq.answer,
+      };
+    }
+    return faq;
+  });
+
   // Use translated content if available, with fallbacks
   const translation = event.translations[0];
   if (translation) {
@@ -134,13 +160,19 @@ async function getEvent(
       title: translation.title || event.title,
       description: translation.description || event.description,
       city: translation.city || event.city,
+      metaTitle: translation.metaTitle || null,
+      metaDescription: translation.metaDescription || null,
       variants: translatedVariants,
+      faqs: translatedFaqs,
     };
   }
 
   return {
     ...event,
+    metaTitle: null,
+    metaDescription: null,
     variants: translatedVariants,
+    faqs: translatedFaqs,
   };
 }
 
@@ -181,7 +213,9 @@ export default async function EventPage({ params }: PageProps) {
 
   // Generate structured data schemas
   const sportsEventSchema = generateSportsEventSchema(event);
-  const faqSchema = generateEventFAQSchema(event, locale);
+  const faqSchema = generateEventFAQSchemaFromDB(
+    event.faqs.map((f) => ({ question: f.question, answer: f.answer }))
+  );
   const breadcrumbSchema = generateBreadcrumbSchema([
     { name: "Home", url: `/${locale}` },
     { name: "Eventos", url: `/${locale}/events` },
@@ -292,7 +326,7 @@ export default async function EventPage({ params }: PageProps) {
     <div className="min-h-screen">
       {/* Structured Data for SEO */}
       <StructuredData data={sportsEventSchema} />
-      <StructuredData data={faqSchema} />
+      {faqSchema && <StructuredData data={faqSchema} />}
       <StructuredData data={breadcrumbSchema} />
 
       {/* Event Header with Navigation and Title */}
@@ -365,6 +399,21 @@ export default async function EventPage({ params }: PageProps) {
                 }))}
               />
             </div>
+
+            {/* FAQ Section */}
+            {event.faqs.length > 0 && (
+              <EventFAQ
+                items={event.faqs.map((f) => ({
+                  question: f.question,
+                  answer: f.answer,
+                }))}
+                translations={{
+                  title: t("faqTitle"),
+                  showAll: t("faqShowAll"),
+                  showLess: t("faqShowLess"),
+                }}
+              />
+            )}
 
             {/* Community Section */}
             <EventCommunity

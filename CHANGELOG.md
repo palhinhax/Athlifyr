@@ -1,3 +1,9 @@
+# [12.9.0](https://github.com/palhinhax/Athlifyr/compare/v12.8.0...v12.9.0) (2026-01-23)
+
+### Features
+
+- **venues:** restrict team tab to admin/owner only ([aec3c5d](https://github.com/palhinhax/Athlifyr/commit/aec3c5dbf7d1e9273a3b037c30a70566c31f114f))
+
 # [12.8.0](https://github.com/palhinhax/Athlifyr/compare/v12.7.0...v12.8.0) (2026-01-23)
 
 ### Features

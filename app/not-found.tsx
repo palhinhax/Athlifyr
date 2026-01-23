@@ -1,6 +1,6 @@
 "use client";
 
-import { Link } from "@/i18n/routing";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -236,7 +236,7 @@ export default function NotFound() {
                 size="lg"
                 className="min-w-[160px] border-white/30 bg-white text-black backdrop-blur-sm hover:bg-white/90"
               >
-                <Link href="/">
+                <Link href={`/${locale}/`}>
                   <Home className="mr-2 h-4 w-4" />
                   {t.backHome}
                 </Link>
@@ -247,7 +247,7 @@ export default function NotFound() {
                 size="lg"
                 className="min-w-[160px] border-white/30 bg-white/10 text-white backdrop-blur-sm hover:bg-white/20 hover:text-white"
               >
-                <Link href="/events">
+                <Link href={`/${locale}/events`}>
                   <Search className="mr-2 h-4 w-4" />
                   {t.browseEvents}
                 </Link>

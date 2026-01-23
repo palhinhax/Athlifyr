@@ -7,6 +7,7 @@ import { MapPin, Users, Calendar, Edit } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { VenueEditModal } from "@/components/venue-edit-modal";
 import { ShareButton } from "@/components/share-button";
+import { VenueRecommendations } from "@/components/venue-recommendations";
 
 interface VenueProfileHeaderProps {
   venue: {
@@ -152,6 +153,11 @@ export function VenueProfileHeader({
 
             {/* Info below cover - Stats */}
             <div className="flex-1 pt-6 sm:pt-16 md:pt-20">
+              {/* Recommendations */}
+              <div className="mb-4">
+                <VenueRecommendations venueId={venue.id} userId={userId} />
+              </div>
+
               {/* Stats */}
               <div className="flex flex-wrap gap-6">
                 {/* Team Members count - only visible to owners/admins */}

@@ -282,6 +282,17 @@
       "goBack": "Volver",
       "confirmOnSite": "Entiendo"
     },
+    "recommendations": {
+      "recommendations": "Recomendaciones",
+      "loginRequired": "Inicio de sesión requerido",
+      "loginRequiredDescription": "Debes iniciar sesión para recomendar este lugar",
+      "recommended": "¡Lugar recomendado!",
+      "recommendedDescription": "Gracias por tu recomendación",
+      "unrecommended": "Recomendación eliminada",
+      "unrecommendedDescription": "Tu recomendación ha sido eliminada",
+      "error": "Error",
+      "errorDescription": "No se pudo procesar tu recomendación. Inténtalo de nuevo."
+    },
     "tabs": {
       "about": "Acerca de",
       "feed": "Feed",

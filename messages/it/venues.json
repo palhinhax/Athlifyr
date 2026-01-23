@@ -282,6 +282,17 @@
       "goBack": "Indietro",
       "confirmOnSite": "Ho Capito"
     },
+    "recommendations": {
+      "recommendations": "Raccomandazioni",
+      "loginRequired": "Accesso richiesto",
+      "loginRequiredDescription": "Devi effettuare l'accesso per raccomandare questa sede",
+      "recommended": "Sede raccomandata!",
+      "recommendedDescription": "Grazie per la tua raccomandazione",
+      "unrecommended": "Raccomandazione rimossa",
+      "unrecommendedDescription": "La tua raccomandazione è stata rimossa",
+      "error": "Errore",
+      "errorDescription": "Impossibile elaborare la tua raccomandazione. Riprova."
+    },
     "tabs": {
       "about": "Informazioni",
       "feed": "Feed",

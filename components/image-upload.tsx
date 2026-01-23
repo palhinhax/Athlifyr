@@ -17,6 +17,7 @@ interface ImageUploadProps {
   acceptedFormats?: string[];
   buttonText?: string;
   className?: string;
+  id?: string; // Unique identifier for this upload component
 }
 
 export function ImageUpload({
@@ -27,6 +28,7 @@ export function ImageUpload({
   acceptedFormats = ["image/jpeg", "image/png", "image/webp", "image/gif"],
   buttonText,
   className = "",
+  id,
 }: ImageUploadProps) {
   const t = useTranslations("upload");
   const { toast } = useToast();
@@ -176,9 +178,9 @@ export function ImageUpload({
 
       {/* Upload Controls */}
       <div className="flex gap-2">
-        <label htmlFor="file-upload" className="flex-1">
+        <label htmlFor={id || "file-upload"} className="flex-1">
           <input
-            id="file-upload"
+            id={id || "file-upload"}
             type="file"
             accept={acceptedFormats.join(",")}
             onChange={handleFileSelect}
@@ -189,7 +191,9 @@ export function ImageUpload({
             type="button"
             variant="outline"
             className="w-full"
-            onClick={() => document.getElementById("file-upload")?.click()}
+            onClick={() =>
+              document.getElementById(id || "file-upload")?.click()
+            }
             disabled={isUploading}
           >
             <Upload className="mr-2 h-4 w-4" />

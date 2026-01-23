@@ -91,18 +91,38 @@ export function VenueEditModal({
     fileName: string,
     type: "logo" | "cover"
   ) => {
-    console.log(`${type} upload completed:`, { url, fileId, fileName });
-
-    setFormData((prev) => ({
-      ...prev,
-      [type === "logo" ? "logo" : "coverImage"]: url,
-    }));
+    console.log("=== handleImageUpload called ===");
+    console.log(`Type: ${type}`);
+    console.log(`URL: ${url}`);
+    console.log("Current formData BEFORE update:", formData);
 
     if (type === "logo") {
+      console.log("➡️ UPDATING LOGO");
+      setFormData((prev) => {
+        console.log("Previous formData:", prev);
+        const newData = {
+          ...prev,
+          logo: url,
+        };
+        console.log("New formData after logo update:", newData);
+        return newData;
+      });
       setUploadingLogo(false);
     } else {
+      console.log("➡️ UPDATING COVER IMAGE");
+      setFormData((prev) => {
+        console.log("Previous formData:", prev);
+        const newData = {
+          ...prev,
+          coverImage: url,
+        };
+        console.log("New formData after coverImage update:", newData);
+        return newData;
+      });
       setUploadingCover(false);
     }
+
+    console.log("=== handleImageUpload completed ===");
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -202,6 +222,7 @@ export function VenueEditModal({
                 </div>
               )}
               <ImageUpload
+                id="logo-upload"
                 folder="events"
                 onUploadComplete={(url, fileId, fileName) => {
                   console.log("Logo uploaded:", { url, fileId, fileName });
@@ -244,6 +265,7 @@ export function VenueEditModal({
                 </div>
               )}
               <ImageUpload
+                id="cover-upload"
                 folder="events"
                 onUploadComplete={(url, fileId, fileName) => {
                   console.log("Cover uploaded:", { url, fileId, fileName });

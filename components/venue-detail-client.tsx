@@ -354,13 +354,15 @@ export function VenueDetailClient({
                 <Calendar className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("tabs.sessions")}</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="team"
-                className="flex-1 gap-2 md:flex-initial"
-              >
-                <Users className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("tabs.team")}</span>
-              </TabsTrigger>
+              {isOwnerOrAdmin && (
+                <TabsTrigger
+                  value="team"
+                  className="flex-1 gap-2 md:flex-initial"
+                >
+                  <Users className="h-4 w-4" />
+                  <span className="hidden sm:inline">{t("tabs.team")}</span>
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -670,56 +672,58 @@ export function VenueDetailClient({
             />
           </TabsContent>
 
-          {/* Team Tab */}
-          <TabsContent value="team" className="space-y-4">
-            {venue.members.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-12 text-center">
-                <p className="text-muted-foreground">{t("noTeamMembers")}</p>
-              </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {venue.members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="rounded-lg border bg-card p-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      {member.user.image ? (
-                        <Image
-                          src={member.user.image}
-                          alt={member.user.name || "User"}
-                          width={48}
-                          height={48}
-                          className="h-12 w-12 rounded-full object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                          {member.user.name?.[0] || "?"}
+          {/* Team Tab (Only for Owners/Admins) */}
+          {isOwnerOrAdmin && (
+            <TabsContent value="team" className="space-y-4">
+              {venue.members.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-12 text-center">
+                  <p className="text-muted-foreground">{t("noTeamMembers")}</p>
+                </div>
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {venue.members.map((member) => (
+                    <div
+                      key={member.id}
+                      className="rounded-lg border bg-card p-4"
+                    >
+                      <div className="flex items-center gap-3">
+                        {member.user.image ? (
+                          <Image
+                            src={member.user.image}
+                            alt={member.user.name || "User"}
+                            width={48}
+                            height={48}
+                            className="h-12 w-12 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                            {member.user.name?.[0] || "?"}
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{member.user.name}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {tRoles(member.role)}
+                          </p>
                         </div>
-                      )}
-                      <div>
-                        <p className="font-medium">{member.user.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {tRoles(member.role)}
-                        </p>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  ))}
+                </div>
+              )}
 
-            {/* Subscribers Section (Only for Owners/Admins) */}
-            {isOwnerOrAdmin && (
-              <div className="mt-8 space-y-4">
-                <VenueSubscribersManager
-                  venueId={venue.id}
-                  locale={locale}
-                  plans={venue.plans}
-                />
-              </div>
-            )}
-          </TabsContent>
+              {/* Subscribers Section (Only for Owners/Admins) */}
+              {isOwnerOrAdmin && (
+                <div className="mt-8 space-y-4">
+                  <VenueSubscribersManager
+                    venueId={venue.id}
+                    locale={locale}
+                    plans={venue.plans}
+                  />
+                </div>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 

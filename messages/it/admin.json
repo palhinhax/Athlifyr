@@ -13,8 +13,8 @@
       }
     },
     "contacts": {
-      "title": "Messaggi di Contatto",
-      "description": "Gestione di suggerimenti, bug e domande degli utenti",
+      "title": "Contatti",
+      "description": "Gestisci tutti i messaggi di contatto ricevuti",
       "stats": {
         "total": "Totale",
         "pending": "In Attesa",
@@ -22,7 +22,7 @@
         "resolved": "Risolti"
       },
       "noMessages": "Nessun messaggio",
-      "noMessagesDescription": "Non hai ancora ricevuto messaggi di contatto.",
+      "noMessagesDescription": "Quando riceverai messaggi, appariranno qui",
       "types": {
         "suggestion": "Suggerimento",
         "bug": "Bug",

@@ -13,8 +13,8 @@
       }
     },
     "contacts": {
-      "title": "Kontaktnachrichten",
-      "description": "Verwaltung von Vorschlägen, Bugs und Benutzerfragen",
+      "title": "Kontakte",
+      "description": "Verwalten Sie alle empfangenen Kontaktnachrichten",
       "stats": {
         "total": "Gesamt",
         "pending": "Ausstehend",
@@ -22,7 +22,7 @@
         "resolved": "Gelöst"
       },
       "noMessages": "Keine Nachrichten",
-      "noMessagesDescription": "Du hast noch keine Kontaktnachricht erhalten.",
+      "noMessagesDescription": "Wenn Sie Nachrichten erhalten, werden sie hier angezeigt",
       "types": {
         "suggestion": "Vorschlag",
         "bug": "Bug",

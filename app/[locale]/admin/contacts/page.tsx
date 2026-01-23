@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { MessageSquare, Loader2 } from "lucide-react";
 import { AdminContactCard } from "@/components/admin-contact-card";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 interface Contact {
   id: string;
@@ -30,6 +30,7 @@ export default function ContactsAdminPage() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [stats, setStats] = useState<ContactStats | null>(null);
   const locale = useLocale();
+  const t = useTranslations("admin.contacts");
 
   useEffect(() => {
     fetchContacts();
@@ -61,35 +62,41 @@ export default function ContactsAdminPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-bold">Contactos</h2>
-        <p className="text-muted-foreground">
-          Gere todas as mensagens de contacto recebidas
-        </p>
+        <h2 className="text-2xl font-bold">{t("title")}</h2>
+        <p className="text-muted-foreground">{t("description")}</p>
       </div>
 
       {stats && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <Card className="p-4">
             <div className="text-2xl font-bold">{stats.total}</div>
-            <div className="text-sm text-muted-foreground">Total</div>
+            <div className="text-sm text-muted-foreground">
+              {t("stats.total")}
+            </div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold text-red-500">
               {stats.pending}
             </div>
-            <div className="text-sm text-muted-foreground">Pendentes</div>
+            <div className="text-sm text-muted-foreground">
+              {t("stats.pending")}
+            </div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold text-orange-500">
               {stats.inProgress}
             </div>
-            <div className="text-sm text-muted-foreground">Em Progresso</div>
+            <div className="text-sm text-muted-foreground">
+              {t("stats.inProgress")}
+            </div>
           </Card>
           <Card className="p-4">
             <div className="text-2xl font-bold text-green-500">
               {stats.resolved}
             </div>
-            <div className="text-sm text-muted-foreground">Resolvidos</div>
+            <div className="text-sm text-muted-foreground">
+              {t("stats.resolved")}
+            </div>
           </Card>
         </div>
       )}
@@ -98,9 +105,9 @@ export default function ContactsAdminPage() {
         {contacts.length === 0 ? (
           <Card className="p-12 text-center">
             <MessageSquare className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">Nenhuma mensagem</h3>
+            <h3 className="mb-2 text-lg font-semibold">{t("noMessages")}</h3>
             <p className="text-muted-foreground">
-              Quando receber mensagens, elas aparecerão aqui
+              {t("noMessagesDescription")}
             </p>
           </Card>
         ) : (

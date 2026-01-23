@@ -1,3 +1,9 @@
+# [12.6.0](https://github.com/palhinhax/Athlifyr/compare/v12.5.1...v12.6.0) (2026-01-23)
+
+### Features
+
+- **venues:** add public reviews with admin reply functionality ([793b0ff](https://github.com/palhinhax/Athlifyr/commit/793b0ff2147b30df6b95d7079f16de972a9bbbba))
+
 ## [12.5.1](https://github.com/palhinhax/Athlifyr/compare/v12.5.0...v12.5.1) (2026-01-23)
 
 ### Bug Fixes

@@ -1,3 +1,13 @@
+# [12.5.0](https://github.com/palhinhax/Athlifyr/compare/v12.4.0...v12.5.0) (2026-01-23)
+
+### Bug Fixes
+
+- **prisma:** add connection pooling for serverless ([12aec60](https://github.com/palhinhax/Athlifyr/commit/12aec602c876702ec4bc3f43a79502bf260ad2e9))
+
+### Features
+
+- **venues:** redesign header with reviews modal ([a3d0482](https://github.com/palhinhax/Athlifyr/commit/a3d0482ed698099546deef154891ff1b2a2d5986))
+
 # [12.4.0](https://github.com/palhinhax/Athlifyr/compare/v12.3.0...v12.4.0) (2026-01-23)
 
 ### Features

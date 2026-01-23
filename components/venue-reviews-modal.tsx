@@ -8,6 +8,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, Loader2 } from "lucide-react";
@@ -90,12 +91,14 @@ export function VenueReviewsModal({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      {trigger || (
-        <Button variant="outline" size="sm">
-          <MessageSquare className="mr-2 h-4 w-4" />
-          {t("title")}
-        </Button>
-      )}
+      <DialogTrigger asChild>
+        {trigger || (
+          <Button variant="outline" size="sm">
+            <MessageSquare className="mr-2 h-4 w-4" />
+            {t("title")}
+          </Button>
+        )}
+      </DialogTrigger>
       <DialogContent className="max-h-[80vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">

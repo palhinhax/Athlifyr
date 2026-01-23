@@ -6,7 +6,9 @@ export const dynamic = "force-dynamic";
 const SUPPORTED_LOCALES = ["pt", "en", "es", "fr", "de", "it"];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  // Always use canonical www domain for SEO
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
   // Get all events for the sitemap
   const events = await prisma.event.findMany({
@@ -26,63 +28,40 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   // Static pages with language variants
-  const staticPages: MetadataRoute.Sitemap = [
-    {
-      url: baseUrl,
-      lastModified: new Date(),
-      changeFrequency: "daily",
-      priority: 1.0,
-      alternates: {
-        languages: Object.fromEntries(
-          SUPPORTED_LOCALES.map((locale) => [locale, `${baseUrl}/${locale}`])
-        ),
+  // Generate one entry per locale (no redirecting URLs in sitemap)
+  const staticPages: MetadataRoute.Sitemap = SUPPORTED_LOCALES.flatMap(
+    (locale) => [
+      {
+        url: `${baseUrl}/${locale}`,
+        lastModified: new Date(),
+        changeFrequency: "daily" as const,
+        priority: 1.0,
       },
-    },
-    {
-      url: `${baseUrl}/events`,
-      lastModified: new Date(),
-      changeFrequency: "hourly",
-      priority: 0.9,
-      alternates: {
-        languages: Object.fromEntries(
-          SUPPORTED_LOCALES.map((locale) => [
-            locale,
-            `${baseUrl}/${locale}/events`,
-          ])
-        ),
+      {
+        url: `${baseUrl}/${locale}/events`,
+        lastModified: new Date(),
+        changeFrequency: "hourly" as const,
+        priority: 0.9,
       },
-    },
-    {
-      url: `${baseUrl}/feed`,
-      lastModified: new Date(),
-      changeFrequency: "hourly",
-      priority: 0.7,
-      alternates: {
-        languages: Object.fromEntries(
-          SUPPORTED_LOCALES.map((locale) => [
-            locale,
-            `${baseUrl}/${locale}/feed`,
-          ])
-        ),
+      {
+        url: `${baseUrl}/${locale}/feed`,
+        lastModified: new Date(),
+        changeFrequency: "hourly" as const,
+        priority: 0.7,
       },
-    },
-  ];
+    ]
+  );
 
   // Dynamic event pages with language variants
-  const eventPages: MetadataRoute.Sitemap = events.map((event) => ({
-    url: `${baseUrl}/events/${event.slug}`,
-    lastModified: event.updatedAt,
-    changeFrequency: "weekly" as const,
-    priority: event.startDate > new Date() ? 0.9 : 0.6, // Higher priority for upcoming events
-    alternates: {
-      languages: Object.fromEntries(
-        SUPPORTED_LOCALES.map((locale) => [
-          locale,
-          `${baseUrl}/${locale}/events/${event.slug}`,
-        ])
-      ),
-    },
-  }));
+  // Generate one entry per locale for each event
+  const eventPages: MetadataRoute.Sitemap = events.flatMap((event) =>
+    SUPPORTED_LOCALES.map((locale) => ({
+      url: `${baseUrl}/${locale}/events/${event.slug}`,
+      lastModified: event.updatedAt,
+      changeFrequency: "weekly" as const,
+      priority: event.startDate > new Date() ? 0.9 : 0.6, // Higher priority for upcoming events
+    }))
+  );
 
   // Sport category pages
   const sportSlugs = [
@@ -99,20 +78,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "swimming",
   ];
 
-  const sportPages: MetadataRoute.Sitemap = sportSlugs.map((sport) => ({
-    url: `${baseUrl}/sports/${sport}`,
-    lastModified: new Date(),
-    changeFrequency: "weekly" as const,
-    priority: 0.8,
-    alternates: {
-      languages: Object.fromEntries(
-        SUPPORTED_LOCALES.map((locale) => [
-          locale,
-          `${baseUrl}/${locale}/sports/${sport}`,
-        ])
-      ),
-    },
-  }));
+  // Sport category pages - one entry per locale
+  const sportPages: MetadataRoute.Sitemap = sportSlugs.flatMap((sport) =>
+    SUPPORTED_LOCALES.map((locale) => ({
+      url: `${baseUrl}/${locale}/sports/${sport}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    }))
+  );
 
   return [...staticPages, ...sportPages, ...eventPages];
 }

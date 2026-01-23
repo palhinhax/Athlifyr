@@ -83,7 +83,7 @@ export const metadata: Metadata = {
     title: "Athlifyr - one place. all sports.",
     description:
       "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you.",
-    url: "https://athlifyr.com",
+    url: "https://www.athlifyr.com",
     siteName: "Athlifyr",
     images: [
       {
@@ -116,7 +116,7 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://athlifyr.com",
+    canonical: "https://www.athlifyr.com",
   },
   verification: {
     // Add Google Search Console verification here when available

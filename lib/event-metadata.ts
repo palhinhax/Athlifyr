@@ -35,7 +35,8 @@ export async function generateEventMetadata({
   event,
   locale = "pt",
 }: EventMetadataProps): Promise<Metadata> {
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
   const eventUrl = `${baseUrl}/${locale}/events/${event.slug}`;
 
   // Ensure image URL is absolute

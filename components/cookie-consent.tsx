@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { X, Cookie } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 
 const COOKIE_CONSENT_KEY = "athlifyr_cookie_consent";
 

@@ -5,16 +5,16 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 
 /**
- * GET /api/venues/[venueId]/likes
+ * GET /api/venues/[id]/likes
  * Get recommendation count and user's recommendation status for a venue
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: { venueId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
-    const { venueId } = await Promise.resolve(params);
+    const { id: venueId } = await Promise.resolve(params);
 
     // Get total recommendation count
     const recommendationCount = await prisma.venueRecommendation.count({
@@ -49,12 +49,12 @@ export async function GET(
 }
 
 /**
- * POST /api/venues/[venueId]/likes
+ * POST /api/venues/[id]/likes
  * Toggle recommendation for a venue (add if not exists, remove if exists)
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: { venueId: string } }
+  { params }: { params: { id: string } }
 ) {
   try {
     const session = await auth();
@@ -63,7 +63,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { venueId } = await Promise.resolve(params);
+    const { id: venueId } = await Promise.resolve(params);
 
     // Check if venue exists
     const venue = await prisma.venue.findUnique({

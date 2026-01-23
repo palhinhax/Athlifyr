@@ -157,6 +157,9 @@ export async function PATCH(
       isActive,
       logo,
       coverImage,
+      defaultSessionCapacity,
+      defaultBookingAdvanceDays,
+      defaultCancellationDeadlineMinutes,
     } = body;
 
     // Validate sport types if provided
@@ -194,6 +197,16 @@ export async function PATCH(
         ...(logo !== undefined && { logo: logo || null }),
         ...(coverImage !== undefined && {
           coverImage: coverImage || null,
+        }),
+        // Session defaults
+        ...(defaultSessionCapacity !== undefined && {
+          defaultSessionCapacity,
+        }),
+        ...(defaultBookingAdvanceDays !== undefined && {
+          defaultBookingAdvanceDays,
+        }),
+        ...(defaultCancellationDeadlineMinutes !== undefined && {
+          defaultCancellationDeadlineMinutes,
         }),
       },
     });

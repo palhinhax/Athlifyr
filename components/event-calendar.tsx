@@ -34,11 +34,35 @@ interface EventParticipation {
   } | null;
 }
 
-interface EventCalendarProps {
-  participations: EventParticipation[];
+interface VenueSessionBooking {
+  id: string;
+  session: {
+    id: string;
+    title: string;
+    startsAt: Date | string;
+    endsAt: Date | string;
+    venue: {
+      id: string;
+      name: string;
+      slug: string;
+      city: string | null;
+    };
+  };
 }
 
-export function EventCalendar({ participations }: EventCalendarProps) {
+type CalendarItem =
+  | { type: "event"; data: EventParticipation }
+  | { type: "session"; data: VenueSessionBooking };
+
+interface EventCalendarProps {
+  participations: EventParticipation[];
+  sessionBookings?: VenueSessionBooking[];
+}
+
+export function EventCalendar({
+  participations,
+  sessionBookings = [],
+}: EventCalendarProps) {
   const t = useTranslations("profile");
   const [isOpen, setIsOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -92,8 +116,19 @@ export function EventCalendar({ participations }: EventCalendarProps) {
     );
   });
 
-  // Create a map of dates to events
-  const eventsByDate = new Map<number, EventParticipation[]>();
+  // Get session bookings for current month
+  const sessionsInMonth = sessionBookings.filter((b) => {
+    const sessionDate = new Date(b.session.startsAt);
+    return (
+      sessionDate.getMonth() === currentMonth &&
+      sessionDate.getFullYear() === currentYear
+    );
+  });
+
+  // Create a map of dates to items (events + sessions)
+  const itemsByDate = new Map<number, CalendarItem[]>();
+
+  // Add events
   eventsInMonth.forEach((p) => {
     // Use variant date if variant exists and has a valid startDate
     const eventDate =
@@ -101,10 +136,20 @@ export function EventCalendar({ participations }: EventCalendarProps) {
         ? new Date(p.variant.startDate)
         : new Date(p.event.startDate);
     const day = eventDate.getDate();
-    if (!eventsByDate.has(day)) {
-      eventsByDate.set(day, []);
+    if (!itemsByDate.has(day)) {
+      itemsByDate.set(day, []);
     }
-    eventsByDate.get(day)!.push(p);
+    itemsByDate.get(day)!.push({ type: "event", data: p });
+  });
+
+  // Add session bookings
+  sessionsInMonth.forEach((b) => {
+    const sessionDate = new Date(b.session.startsAt);
+    const day = sessionDate.getDate();
+    if (!itemsByDate.has(day)) {
+      itemsByDate.set(day, []);
+    }
+    itemsByDate.get(day)!.push({ type: "session", data: b });
   });
 
   const goToPreviousMonth = () => {
@@ -195,8 +240,8 @@ export function EventCalendar({ participations }: EventCalendarProps) {
         {/* Calendar Grid */}
         <div className="grid grid-cols-7 gap-1">
           {calendarDays.map((day, index) => {
-            const dayEvents = day ? eventsByDate.get(day) : null;
-            const hasEvents = dayEvents && dayEvents.length > 0;
+            const dayItems = day ? itemsByDate.get(day) : null;
+            const hasItems = dayItems && dayItems.length > 0;
 
             return (
               <div
@@ -205,7 +250,7 @@ export function EventCalendar({ participations }: EventCalendarProps) {
                   "relative flex min-h-[48px] flex-col items-center justify-start rounded-md p-1",
                   day && "hover:bg-muted/50",
                   isToday(day!) && "bg-primary/10 font-bold",
-                  day && isPast(day) && !hasEvents && "text-muted-foreground/50"
+                  day && isPast(day) && !hasItems && "text-muted-foreground/50"
                 )}
               >
                 {day && (
@@ -219,17 +264,23 @@ export function EventCalendar({ participations }: EventCalendarProps) {
                     >
                       {day}
                     </span>
-                    {hasEvents && (
+                    {hasItems && (
                       <div className="mt-1 flex flex-wrap justify-center gap-0.5">
-                        {dayEvents.slice(0, 3).map((_, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              "h-1.5 w-1.5 rounded-full",
-                              isPast(day) ? "bg-green-500" : "bg-primary"
-                            )}
-                          />
-                        ))}
+                        {dayItems
+                          .slice(0, 3)
+                          .map((item: CalendarItem, i: number) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                item.type === "session"
+                                  ? "bg-blue-500"
+                                  : isPast(day)
+                                    ? "bg-green-500"
+                                    : "bg-primary"
+                              )}
+                            />
+                          ))}
                       </div>
                     )}
                   </>
@@ -239,74 +290,123 @@ export function EventCalendar({ participations }: EventCalendarProps) {
           })}
         </div>
 
-        {/* Events List for Current Month */}
-        {eventsInMonth.length > 0 ? (
+        {/* Events and Sessions List for Current Month */}
+        {eventsInMonth.length > 0 || sessionsInMonth.length > 0 ? (
           <div className="mt-4 max-h-[200px] space-y-2 overflow-y-auto border-t pt-4">
             <h4 className="text-sm font-medium text-muted-foreground">
               {t("eventsInMonth", { month: MONTHS[currentMonth] })}
             </h4>
-            {eventsInMonth
-              .sort((a, b) => {
-                const dateA =
-                  a.variant?.startDate && a.variant.startDate !== null
-                    ? new Date(a.variant.startDate)
-                    : new Date(a.event.startDate);
-                const dateB =
-                  b.variant?.startDate && b.variant.startDate !== null
-                    ? new Date(b.variant.startDate)
-                    : new Date(b.event.startDate);
-                return dateA.getTime() - dateB.getTime();
-              })
-              .map((p) => {
-                const eventDate =
+            {/* Combine and sort all items */}
+            {[
+              ...eventsInMonth.map((p) => ({
+                type: "event" as const,
+                data: p,
+                date:
                   p.variant?.startDate && p.variant.startDate !== null
                     ? new Date(p.variant.startDate)
-                    : new Date(p.event.startDate);
-                const isPastEvent = eventDate < today;
-                return (
-                  <Link
-                    key={p.id}
-                    href={`/events/${p.event.slug}`}
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <div
-                      className={cn(
-                        "rounded-md border p-2 transition-colors hover:bg-muted",
-                        isPastEvent && "border-green-500/30 bg-green-500/5"
-                      )}
+                    : new Date(p.event.startDate),
+              })),
+              ...sessionsInMonth.map((b) => ({
+                type: "session" as const,
+                data: b,
+                date: new Date(b.session.startsAt),
+              })),
+            ]
+              .sort((a, b) => a.date.getTime() - b.date.getTime())
+              .map((item) => {
+                const isPastEvent = item.date < today;
+
+                if (item.type === "event") {
+                  const p = item.data;
+                  return (
+                    <Link
+                      key={`event-${p.id}`}
+                      href={`/events/${p.event.slug}`}
+                      onClick={() => setIsOpen(false)}
                     >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium">
-                            {p.event.title}
-                            {p.variant && (
+                      <div
+                        className={cn(
+                          "rounded-md border p-2 transition-colors hover:bg-muted",
+                          isPastEvent && "border-green-500/30 bg-green-500/5"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {p.event.title}
+                              {p.variant && (
+                                <span className="font-normal text-muted-foreground">
+                                  {" "}
+                                  • {p.variant.name}
+                                </span>
+                              )}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.date.getDate()}{" "}
+                              {MONTHS[item.date.getMonth()]}
+                              {p.variant?.startTime &&
+                                ` ${t("at")} ${p.variant.startTime}`}{" "}
+                              • {p.event.city}
+                            </p>
+                          </div>
+                          <span
+                            className={cn(
+                              "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
+                              isPastEvent
+                                ? "bg-green-500/10 text-green-600"
+                                : "bg-primary/10 text-primary"
+                            )}
+                          >
+                            {isPastEvent ? t("went") : t("going")}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                  );
+                } else {
+                  // Session booking
+                  const b = item.data;
+                  const sessionTime = item.date.toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  });
+                  return (
+                    <Link
+                      key={`session-${b.id}`}
+                      href={`/venues/${b.session.venue.slug}`}
+                      onClick={() => setIsOpen(false)}
+                    >
+                      <div
+                        className={cn(
+                          "rounded-md border p-2 transition-colors hover:bg-muted",
+                          "border-blue-500/30 bg-blue-500/5"
+                        )}
+                      >
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {b.session.title}
                               <span className="font-normal text-muted-foreground">
                                 {" "}
-                                • {p.variant.name}
+                                • {b.session.venue.name}
                               </span>
-                            )}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {eventDate.getDate()} {MONTHS[eventDate.getMonth()]}
-                            {p.variant?.startTime &&
-                              ` ${t("at")} ${p.variant.startTime}`}{" "}
-                            • {p.event.city}
-                          </p>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {item.date.getDate()}{" "}
+                              {MONTHS[item.date.getMonth()]}
+                              {` ${t("at")} ${sessionTime}`}
+                              {b.session.venue.city &&
+                                ` • ${b.session.venue.city}`}
+                            </p>
+                          </div>
+                          <span className="shrink-0 rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-600">
+                            {t("booked")}
+                          </span>
                         </div>
-                        <span
-                          className={cn(
-                            "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
-                            isPastEvent
-                              ? "bg-green-500/10 text-green-600"
-                              : "bg-primary/10 text-primary"
-                          )}
-                        >
-                          {isPastEvent ? t("went") : t("going")}
-                        </span>
                       </div>
-                    </div>
-                  </Link>
-                );
+                    </Link>
+                  );
+                }
               })}
           </div>
         ) : (
@@ -324,6 +424,10 @@ export function EventCalendar({ participations }: EventCalendarProps) {
           <div className="flex items-center gap-1">
             <div className="h-2 w-2 rounded-full bg-green-500" />
             <span>{t("went")}</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <span>{t("booked")}</span>
           </div>
         </div>
       </DialogContent>

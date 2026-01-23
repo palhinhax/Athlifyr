@@ -672,20 +672,26 @@ model Venue {
   paymentMode                 PaymentMode @default(MIXED)
   externalPaymentInstructions String?     @db.Text
 
+  // Session defaults (used as pre-filled values when creating sessions)
+  defaultSessionCapacity             Int? // Default capacity for new sessions
+  defaultBookingAdvanceDays          Int  @default(4) // Default booking advance window in days
+  defaultCancellationDeadlineMinutes Int  @default(30) // Default cancellation deadline in minutes
+
   // Metadata
   createdByUserId String
   isVerified      Boolean @default(false)
   isActive        Boolean @default(true)
 
   // Relations
-  members        VenueMember[]
-  invites        VenueInvite[]
-  plans          VenuePlan[]
-  sessions       VenueSession[]
-  subscriptions  VenueSubscription[]
-  bookings       VenueBooking[]
-  paymentIntents PaymentIntent[]
-  posts          Post[]
+  members           VenueMember[]
+  invites           VenueInvite[]
+  plans             VenuePlan[]
+  sessions          VenueSession[]
+  recurringSessions VenueRecurringSession[]
+  subscriptions     VenueSubscription[]
+  bookings          VenueBooking[]
+  paymentIntents    PaymentIntent[]
+  posts             Post[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -800,10 +806,56 @@ model VenueSubscription {
   @@index([paymentStatus])
 }
 
+// Recurring session template - defines a recurring pattern (e.g., "Mondays at 8am")
+model VenueRecurringSession {
+  id      String @id @default(cuid())
+  venueId String
+  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  type        SessionType
+  title       String
+  description String?     @db.Text
+
+  // Recurrence pattern
+  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
+  startTime String // Time in HH:mm format (e.g., "08:00")
+  endTime   String // Time in HH:mm format (e.g., "09:00")
+
+  capacity Int? // null for appointments (1:1)
+
+  coachId   String? // Optional coach/provider
+  serviceId String? // Optional service reference
+  tags      String[] // e.g., ["CrossFit", "Open Gym", "Hyrox"]
+
+  // Booking rules
+  bookingAdvanceDays         Int @default(4) // How many days in advance users can book
+  cancellationDeadlineMinutes Int @default(30) // How many minutes before start users can cancel
+
+  // Status
+  isActive Boolean @default(true) // Can be paused without deleting
+
+  // Generated sessions
+  sessions VenueSession[]
+
+  // Track how far we've generated sessions
+  generatedUntil DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([venueId])
+  @@index([dayOfWeek])
+  @@index([isActive])
+}
+
 model VenueSession {
   id      String @id @default(cuid())
   venueId String
   venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  // Link to recurring template (if generated from one)
+  recurringSessionId String?
+  recurringSession   VenueRecurringSession? @relation(fields: [recurringSessionId], references: [id], onDelete: SetNull)
 
   type        SessionType
   title       String
@@ -817,6 +869,10 @@ model VenueSession {
   serviceId String? // Optional service reference
   tags      String[] // e.g., ["CrossFit", "Open Gym", "Hyrox"]
 
+  // Booking rules
+  bookingAdvanceDays         Int @default(4) // How many days in advance users can book
+  cancellationDeadlineMinutes Int @default(30) // How many minutes before start users can cancel
+
   // Relations
   bookings VenueBooking[]
 
@@ -827,6 +883,7 @@ model VenueSession {
   @@index([type])
   @@index([startsAt])
   @@index([coachId])
+  @@index([recurringSessionId])
 }
 
 model VenueBooking {

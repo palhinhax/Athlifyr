@@ -151,17 +151,43 @@ export async function canManageVenue(
 
 /**
  * Check if user can manage sessions (owner, admin, or coach)
+ * Also allows app-level admins to manage sessions in any venue
  */
 export async function canManageSessions(
   userId: string,
   venueId: string
 ): Promise<AuthorizationResult> {
+  // First, check if user is an app-level admin
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+
+  // App admins can manage sessions in any venue
+  if (user?.role === UserRole.ADMIN) {
+    return {
+      authorized: true,
+    };
+  }
+
+  // Check venue membership
+  const member = await prisma.venueMember.findUnique({
+    where: {
+      venueId_userId: {
+        venueId,
+        userId,
+      },
+    },
+  });
+
   const isCoach = await isVenueCoach(userId, venueId);
 
   if (!isCoach) {
     return {
       authorized: false,
-      reason: "INSUFFICIENT_PERMISSIONS",
+      reason: member
+        ? `INSUFFICIENT_PERMISSIONS (role: ${member.role}, status: ${member.status})`
+        : "NOT_A_MEMBER",
     };
   }
 

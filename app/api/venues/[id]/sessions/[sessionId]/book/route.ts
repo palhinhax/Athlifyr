@@ -44,9 +44,18 @@ export async function POST(
       );
     }
 
-    // Create booking
-    const booking = await prisma.venueBooking.create({
-      data: {
+    // Create or reactivate booking (handles case where booking was previously cancelled)
+    const booking = await prisma.venueBooking.upsert({
+      where: {
+        sessionId_userId: {
+          sessionId,
+          userId,
+        },
+      },
+      update: {
+        status: "BOOKED",
+      },
+      create: {
         venueId,
         sessionId,
         userId,
@@ -82,24 +91,78 @@ export async function POST(
   } catch (error) {
     console.error("Error creating booking:", error);
 
-    // Handle unique constraint violation (already booked)
-    if (
-      error &&
-      typeof error === "object" &&
-      "code" in error &&
-      error.code === "P2002"
-    ) {
-      return NextResponse.json(
-        {
-          error: "Booking already exists",
-          reason: "ALREADY_BOOKED",
+    return NextResponse.json(
+      { error: "Failed to create booking" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Cancel booking for a session
+export async function DELETE(
+  request: Request,
+  { params }: { params: { id: string; sessionId: string } }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: venueId, sessionId } = params;
+    const userId = session.user.id;
+
+    // Find the booking
+    const booking = await prisma.venueBooking.findFirst({
+      where: {
+        venueId,
+        sessionId,
+        userId,
+        status: {
+          in: ["BOOKED"],
         },
+      },
+      include: {
+        session: true,
+      },
+    });
+
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
+
+    // Check if session has already started
+    if (booking.session.startsAt < new Date()) {
+      return NextResponse.json(
+        { error: "Cannot cancel session that has already started" },
         { status: 400 }
       );
     }
 
+    // Cancel the booking
+    await prisma.venueBooking.update({
+      where: { id: booking.id },
+      data: { status: "CANCELLED" },
+    });
+
+    // Track cancellation
+    await trackServerEvent(
+      ANALYTICS_EVENTS.BOOKING_CANCELLED,
+      {
+        venueId,
+        sessionId,
+        userId,
+        bookingId: booking.id,
+      },
+      session.user.email
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error cancelling booking:", error);
     return NextResponse.json(
-      { error: "Failed to create booking" },
+      { error: "Failed to cancel booking" },
       { status: 500 }
     );
   }

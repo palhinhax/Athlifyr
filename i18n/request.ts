@@ -1,4 +1,5 @@
 import { getRequestConfig } from "next-intl/server";
+import { IntlErrorCode } from "next-intl";
 import { routing } from "./routing";
 
 /**
@@ -62,5 +63,22 @@ export default getRequestConfig(async ({ requestLocale }) => {
   return {
     locale,
     messages,
+    // Error handling to prevent infinite re-render loops when a translation key is missing
+    onError(error) {
+      // In development, log errors to console (but only once per error)
+      if (process.env.NODE_ENV === "development") {
+        // Only log MISSING_MESSAGE errors once to avoid spam
+        if (error.code === IntlErrorCode.MISSING_MESSAGE) {
+          console.warn(`[next-intl] Missing translation: ${error.message}`);
+        } else {
+          console.error("[next-intl] Error:", error);
+        }
+      }
+      // In production, silently handle errors (could send to Sentry if needed)
+    },
+    // Return the key as fallback when a translation is missing
+    getMessageFallback({ namespace, key }) {
+      return namespace ? `${namespace}.${key}` : key;
+    },
   };
 });

@@ -490,7 +490,17 @@
       "noReviews": "Noch keine Bewertungen",
       "beFirst": "Seien Sie der Erste, der seine Erfahrung teilt!",
       "anonymous": "Benutzer",
-      "edited": "bearbeitet"
+      "edited": "bearbeitet",
+      "reply": "Antworten",
+      "replies": "Antworten",
+      "writeReply": "Antwort schreiben",
+      "replyPlaceholder": "Schreibe deine Antwort...",
+      "replySubmit": "Antworten",
+      "replyCancel": "Abbrechen",
+      "replyDeleted": "Antwort gelöscht",
+      "replyError": "Fehler beim Verarbeiten der Antwort",
+      "venueResponse": "Antwort des Standorts",
+      "adminOnly": "Nur Standort-Administratoren können antworten"
     }
   }
 }

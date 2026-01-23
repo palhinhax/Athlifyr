@@ -160,6 +160,7 @@ export function VenueProfileHeader({
                   venueId={venue.id}
                   userId={userId}
                   locale={locale}
+                  isOwnerOrAdmin={isOwnerOrAdmin}
                 />
               </div>
 

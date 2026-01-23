@@ -490,7 +490,17 @@
       "noReviews": "No reviews yet",
       "beFirst": "Be the first to share your experience!",
       "anonymous": "User",
-      "edited": "edited"
+      "edited": "edited",
+      "reply": "Reply",
+      "replies": "Replies",
+      "writeReply": "Write reply",
+      "replyPlaceholder": "Write your reply...",
+      "replySubmit": "Reply",
+      "replyCancel": "Cancel",
+      "replyDeleted": "Reply deleted",
+      "replyError": "Error processing reply",
+      "venueResponse": "Venue Response",
+      "adminOnly": "Only venue admins can reply"
     }
   }
 }

@@ -489,7 +489,17 @@
       "noReviews": "Aucun avis pour le moment",
       "beFirst": "Soyez le premier à partager votre expérience !",
       "anonymous": "Utilisateur",
-      "edited": "modifié"
+      "edited": "modifié",
+      "reply": "Répondre",
+      "replies": "Réponses",
+      "writeReply": "Écrire une réponse",
+      "replyPlaceholder": "Écrivez votre réponse...",
+      "replySubmit": "Répondre",
+      "replyCancel": "Annuler",
+      "replyDeleted": "Réponse supprimée",
+      "replyError": "Erreur lors du traitement de la réponse",
+      "venueResponse": "Réponse du Lieu",
+      "adminOnly": "Seuls les administrateurs du lieu peuvent répondre"
     }
   }
 }

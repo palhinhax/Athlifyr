@@ -1,3 +1,16 @@
+# [12.2.0](https://github.com/palhinhax/Athlifyr/compare/v12.1.0...v12.2.0) (2026-01-23)
+
+### Bug Fixes
+
+- **venues:** resolve image upload conflicts by adding unique component IDs ([338452d](https://github.com/palhinhax/Athlifyr/commit/338452d7d6c67b455cc0c87a0e190660814e6c15))
+
+### Features
+
+- add seed script for TCS New York City Marathon 2026 with multilingual support and event details ([e6452e7](https://github.com/palhinhax/Athlifyr/commit/e6452e75bc8605678126abe0758cb28b6147ad95))
+- add venue sessions calendar component with session management features ([356e853](https://github.com/palhinhax/Athlifyr/commit/356e85397512f159e5b8ac17fbb5404081c5c270))
+- **seo:** enhance Organization schema for Google Search logo visibility ([42f989a](https://github.com/palhinhax/Athlifyr/commit/42f989a7933f11a201175bbd73b9aa5d6eb76e49))
+- **seo:** improve event pages for Google indexing ([ef39e09](https://github.com/palhinhax/Athlifyr/commit/ef39e09777a6401a7b18a84d8762c1d062cfd9bd))
+
 # [12.1.0](https://github.com/palhinhax/Athlifyr/compare/v12.0.0...v12.1.0) (2026-01-22)
 
 ### Bug Fixes

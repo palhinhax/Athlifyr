@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { SportType, Language } from "@prisma/client";
+import { Language } from "@prisma/client";
 
 interface RouteParams {
   params: {
@@ -119,7 +119,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     const {
       title,
       description,
-      sportType,
+      sportTypes,
       startDate,
       endDate,
       city,
@@ -174,7 +174,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         ...(title && { title }),
         ...(title && { slug }),
         ...(description !== undefined && { description }),
-        ...(sportType && { sportType: sportType as SportType }),
+        ...(sportTypes && Array.isArray(sportTypes) && { sportTypes }),
         ...(startDate && { startDate: new Date(startDate) }),
         ...(endDate !== undefined && {
           endDate: endDate ? new Date(endDate) : null,

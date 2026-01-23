@@ -298,6 +298,7 @@
       "feed": "Feed",
       "sessions": "Sitzungen",
       "team": "Team",
+      "reviews": "Bewertungen",
       "subscribers": "Abonnenten"
     },
     "subscribers": {
@@ -459,6 +460,37 @@
       "updateError": "Fehler beim Aktualisieren der wiederkehrenden Sitzung",
       "deleteError": "Fehler beim Löschen der wiederkehrenden Sitzung",
       "generateError": "Fehler beim Generieren der Sitzungen"
+    },
+    "reviews": {
+      "title": "Bewertungen",
+      "allReviews": "Alle Bewertungen",
+      "reviewsCount": "Bewertungen",
+      "writeReview": "Bewertung schreiben",
+      "editReview": "Bewertung bearbeiten",
+      "description": "Teilen Sie Ihre positive Erfahrung an diesem Ort",
+      "placeholder": "Schreiben Sie hier Ihre Bewertung...",
+      "characters": "Zeichen",
+      "minCharacters": "Mindestens 10 Zeichen",
+      "submit": "Veröffentlichen",
+      "update": "Aktualisieren",
+      "delete": "Löschen",
+      "cancel": "Abbrechen",
+      "loginRequired": "Anmeldung erforderlich",
+      "loginRequiredDescription": "Sie müssen sich anmelden, um eine Bewertung zu schreiben",
+      "submitted": "Bewertung veröffentlicht",
+      "submittedDescription": "Ihre Bewertung wurde erfolgreich veröffentlicht",
+      "updated": "Bewertung aktualisiert",
+      "updatedDescription": "Ihre Bewertung wurde erfolgreich aktualisiert",
+      "deleted": "Bewertung gelöscht",
+      "deletedDescription": "Ihre Bewertung wurde erfolgreich gelöscht",
+      "error": "Fehler",
+      "errorDescription": "Beim Verarbeiten Ihrer Bewertung ist ein Fehler aufgetreten",
+      "tooShort": "Bewertung zu kurz",
+      "tooShortDescription": "Die Bewertung muss mindestens 10 Zeichen enthalten",
+      "noReviews": "Noch keine Bewertungen",
+      "beFirst": "Seien Sie der Erste, der seine Erfahrung teilt!",
+      "anonymous": "Benutzer",
+      "edited": "bearbeitet"
     }
   }
 }

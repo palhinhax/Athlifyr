@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { ThumbsUp } from "lucide-react";
+import { Star } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { cn } from "@/lib/utils";
 
@@ -106,13 +106,9 @@ export function VenueRecommendations({
         size="sm"
         onClick={handleToggleRecommendation}
         disabled={isSubmitting}
-        className={cn(
-          "gap-1.5 transition-all",
-          userHasRecommended &&
-            "border-blue-500 bg-blue-500 text-white hover:bg-blue-600"
-        )}
+        className="gap-1.5"
       >
-        <ThumbsUp
+        <Star
           className={cn(
             "h-4 w-4 transition-all",
             userHasRecommended && "fill-current"

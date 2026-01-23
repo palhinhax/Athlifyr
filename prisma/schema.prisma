@@ -163,6 +163,7 @@ model User {
   venueBookings       VenueBooking[]
   paymentIntents      PaymentIntent[]
   venueRecommendations VenueRecommendation[]
+  venueReviews        VenueReview[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -734,6 +735,7 @@ model Venue {
   paymentIntents    PaymentIntent[]
   posts             Post[]
   recommendations   VenueRecommendation[]
+  reviews           VenueReview[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1012,6 +1014,23 @@ model VenueRecommendation {
   createdAt DateTime @default(now())
 
   @@unique([venueId, userId]) // One recommendation per user per venue
+  @@index([venueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// Reviews for venues (positive only, no numeric rating)
+model VenueReview {
+  id        String   @id @default(cuid())
+  venueId   String
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([venueId, userId]) // One review per user per venue
   @@index([venueId])
   @@index([userId])
   @@index([createdAt])

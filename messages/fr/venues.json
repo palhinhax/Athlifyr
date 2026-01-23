@@ -459,6 +459,37 @@
       "updateError": "Erreur lors de la mise à jour de la séance récurrente",
       "deleteError": "Erreur lors de la suppression de la séance récurrente",
       "generateError": "Erreur lors de la génération des séances"
+    },
+    "reviews": {
+      "title": "Avis",
+      "allReviews": "Tous les Avis",
+      "reviewsCount": "avis",
+      "writeReview": "Écrire un Avis",
+      "editReview": "Modifier l'Avis",
+      "description": "Partagez votre expérience positive dans ce lieu",
+      "placeholder": "Écrivez votre avis ici...",
+      "characters": "caractères",
+      "minCharacters": "Minimum 10 caractères",
+      "submit": "Publier",
+      "update": "Mettre à jour",
+      "delete": "Supprimer",
+      "cancel": "Annuler",
+      "loginRequired": "Connexion requise",
+      "loginRequiredDescription": "Vous devez vous connecter pour écrire un avis",
+      "submitted": "Avis publié",
+      "submittedDescription": "Votre avis a été publié avec succès",
+      "updated": "Avis mis à jour",
+      "updatedDescription": "Votre avis a été mis à jour avec succès",
+      "deleted": "Avis supprimé",
+      "deletedDescription": "Votre avis a été supprimé avec succès",
+      "error": "Erreur",
+      "errorDescription": "Une erreur s'est produite lors du traitement de votre avis",
+      "tooShort": "Avis trop court",
+      "tooShortDescription": "L'avis doit contenir au moins 10 caractères",
+      "noReviews": "Aucun avis pour le moment",
+      "beFirst": "Soyez le premier à partager votre expérience !",
+      "anonymous": "Utilisateur",
+      "edited": "modifié"
     }
   }
 }

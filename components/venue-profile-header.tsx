@@ -153,11 +153,6 @@ export function VenueProfileHeader({
 
             {/* Info below cover - Stats */}
             <div className="flex-1 pt-6 sm:pt-16 md:pt-20">
-              {/* Recommendations */}
-              <div className="mb-4">
-                <VenueRecommendations venueId={venue.id} userId={userId} />
-              </div>
-
               {/* Stats */}
               <div className="flex flex-wrap gap-6">
                 {/* Team Members count - only visible to owners/admins */}
@@ -201,15 +196,21 @@ export function VenueProfileHeader({
               </div>
             </div>
 
-            {/* Action Buttons - only show if there are buttons to display */}
-            {(!userId || (userId && !isOwnerOrAdmin)) && (
-              <div className="flex gap-2 pt-2 sm:pt-16 md:pt-20">
-                {!userId && <Button>{t("signIn")}</Button>}
-                {userId && !isOwnerOrAdmin && (
-                  <Button>{t("membership.join")}</Button>
-                )}
-              </div>
-            )}
+            {/* Recommendations and Action Buttons */}
+            <div className="flex flex-col gap-3 pt-2 sm:pt-16 md:pt-20">
+              {/* Recommendations */}
+              <VenueRecommendations venueId={venue.id} userId={userId} />
+
+              {/* Action Buttons - only show if there are buttons to display */}
+              {(!userId || (userId && !isOwnerOrAdmin)) && (
+                <div className="flex gap-2">
+                  {!userId && <Button>{t("signIn")}</Button>}
+                  {userId && !isOwnerOrAdmin && (
+                    <Button>{t("membership.join")}</Button>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

@@ -298,6 +298,7 @@
       "feed": "Feed",
       "sessions": "Sessioni",
       "team": "Team",
+      "reviews": "Recensioni",
       "subscribers": "Abbonati"
     },
     "subscribers": {
@@ -459,6 +460,37 @@
       "updateError": "Errore nell'aggiornamento della sessione ricorrente",
       "deleteError": "Errore nell'eliminazione della sessione ricorrente",
       "generateError": "Errore nella generazione delle sessioni"
+    },
+    "reviews": {
+      "title": "Recensioni",
+      "allReviews": "Tutte le Recensioni",
+      "reviewsCount": "recensioni",
+      "writeReview": "Scrivi Recensione",
+      "editReview": "Modifica Recensione",
+      "description": "Condividi la tua esperienza positiva in questo luogo",
+      "placeholder": "Scrivi qui la tua recensione...",
+      "characters": "caratteri",
+      "minCharacters": "Minimo 10 caratteri",
+      "submit": "Pubblica",
+      "update": "Aggiorna",
+      "delete": "Elimina",
+      "cancel": "Annulla",
+      "loginRequired": "Accesso richiesto",
+      "loginRequiredDescription": "Devi effettuare l'accesso per scrivere una recensione",
+      "submitted": "Recensione pubblicata",
+      "submittedDescription": "La tua recensione è stata pubblicata con successo",
+      "updated": "Recensione aggiornata",
+      "updatedDescription": "La tua recensione è stata aggiornata con successo",
+      "deleted": "Recensione eliminata",
+      "deletedDescription": "La tua recensione è stata eliminata con successo",
+      "error": "Errore",
+      "errorDescription": "Si è verificato un errore durante l'elaborazione della tua recensione",
+      "tooShort": "Recensione troppo breve",
+      "tooShortDescription": "La recensione deve contenere almeno 10 caratteri",
+      "noReviews": "Ancora nessuna recensione",
+      "beFirst": "Sii il primo a condividere la tua esperienza!",
+      "anonymous": "Utente",
+      "edited": "modificato"
     }
   }
 }

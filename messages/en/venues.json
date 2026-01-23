@@ -298,6 +298,7 @@
       "feed": "Feed",
       "sessions": "Sessions",
       "team": "Team",
+      "reviews": "Reviews",
       "subscribers": "Subscribers"
     },
     "subscribers": {
@@ -459,6 +460,37 @@
       "updateError": "Error updating recurring session",
       "deleteError": "Error deleting recurring session",
       "generateError": "Error generating sessions"
+    },
+    "reviews": {
+      "title": "Reviews",
+      "allReviews": "All Reviews",
+      "reviewsCount": "reviews",
+      "writeReview": "Write Review",
+      "editReview": "Edit Review",
+      "description": "Share your positive experience at this venue",
+      "placeholder": "Write your review here...",
+      "characters": "characters",
+      "minCharacters": "Minimum 10 characters",
+      "submit": "Publish",
+      "update": "Update",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "loginRequired": "Login required",
+      "loginRequiredDescription": "You need to log in to write a review",
+      "submitted": "Review published",
+      "submittedDescription": "Your review has been published successfully",
+      "updated": "Review updated",
+      "updatedDescription": "Your review has been updated successfully",
+      "deleted": "Review deleted",
+      "deletedDescription": "Your review has been deleted successfully",
+      "error": "Error",
+      "errorDescription": "An error occurred while processing your review",
+      "tooShort": "Review too short",
+      "tooShortDescription": "Review must be at least 10 characters",
+      "noReviews": "No reviews yet",
+      "beFirst": "Be the first to share your experience!",
+      "anonymous": "User",
+      "edited": "edited"
     }
   }
 }

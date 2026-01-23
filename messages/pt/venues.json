@@ -298,6 +298,7 @@
       "feed": "Feed",
       "sessions": "Sessões",
       "team": "Equipa",
+      "reviews": "Avaliações",
       "subscribers": "Subscritores"
     },
     "subscribers": {
@@ -459,6 +460,37 @@
       "updateError": "Erro ao atualizar sessão recorrente",
       "deleteError": "Erro ao eliminar sessão recorrente",
       "generateError": "Erro ao gerar sessões"
+    },
+    "reviews": {
+      "title": "Avaliações",
+      "allReviews": "Todas as Avaliações",
+      "reviewsCount": "avaliações",
+      "writeReview": "Escrever Avaliação",
+      "editReview": "Editar Avaliação",
+      "description": "Partilha a tua experiência positiva neste local",
+      "placeholder": "Escreve aqui a tua avaliação...",
+      "characters": "caracteres",
+      "minCharacters": "Mínimo 10 caracteres",
+      "submit": "Publicar",
+      "update": "Atualizar",
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "loginRequired": "Autenticação necessária",
+      "loginRequiredDescription": "Precisas de iniciar sessão para escrever uma avaliação",
+      "submitted": "Avaliação publicada",
+      "submittedDescription": "A tua avaliação foi publicada com sucesso",
+      "updated": "Avaliação atualizada",
+      "updatedDescription": "A tua avaliação foi atualizada com sucesso",
+      "deleted": "Avaliação eliminada",
+      "deletedDescription": "A tua avaliação foi eliminada com sucesso",
+      "error": "Erro",
+      "errorDescription": "Ocorreu um erro ao processar a tua avaliação",
+      "tooShort": "Avaliação muito curta",
+      "tooShortDescription": "A avaliação deve ter pelo menos 10 caracteres",
+      "noReviews": "Ainda não há avaliações",
+      "beFirst": "Sê o primeiro a partilhar a tua experiência!",
+      "anonymous": "Utilizador",
+      "edited": "editado"
     }
   }
 }

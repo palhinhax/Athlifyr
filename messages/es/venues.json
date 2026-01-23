@@ -298,6 +298,7 @@
       "feed": "Feed",
       "sessions": "Sesiones",
       "team": "Equipo",
+      "reviews": "Reseñas",
       "subscribers": "Suscriptores"
     },
     "subscribers": {
@@ -459,6 +460,37 @@
       "updateError": "Error al actualizar sesión recurrente",
       "deleteError": "Error al eliminar sesión recurrente",
       "generateError": "Error al generar sesiones"
+    },
+    "reviews": {
+      "title": "Reseñas",
+      "allReviews": "Todas las Reseñas",
+      "reviewsCount": "reseñas",
+      "writeReview": "Escribir Reseña",
+      "editReview": "Editar Reseña",
+      "description": "Comparte tu experiencia positiva en este lugar",
+      "placeholder": "Escribe tu reseña aquí...",
+      "characters": "caracteres",
+      "minCharacters": "Mínimo 10 caracteres",
+      "submit": "Publicar",
+      "update": "Actualizar",
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "loginRequired": "Autenticación necesaria",
+      "loginRequiredDescription": "Necesitas iniciar sesión para escribir una reseña",
+      "submitted": "Reseña publicada",
+      "submittedDescription": "Tu reseña ha sido publicada con éxito",
+      "updated": "Reseña actualizada",
+      "updatedDescription": "Tu reseña ha sido actualizada con éxito",
+      "deleted": "Reseña eliminada",
+      "deletedDescription": "Tu reseña ha sido eliminada con éxito",
+      "error": "Error",
+      "errorDescription": "Ocurrió un error al procesar tu reseña",
+      "tooShort": "Reseña muy corta",
+      "tooShortDescription": "La reseña debe tener al menos 10 caracteres",
+      "noReviews": "Aún no hay reseñas",
+      "beFirst": "¡Sé el primero en compartir tu experiencia!",
+      "anonymous": "Usuario",
+      "edited": "editado"
     }
   }
 }

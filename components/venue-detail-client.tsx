@@ -25,6 +25,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
+import { VenueReviews } from "@/components/venue-reviews";
 import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
@@ -336,6 +337,9 @@ export function VenueDetailClient({
               </TabsTrigger>
               <TabsTrigger value="team" className="flex-1 md:flex-initial">
                 {t("tabs.team")}
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="flex-1 md:flex-initial">
+                {t("tabs.reviews")}
               </TabsTrigger>
               {isOwnerOrAdmin && (
                 <TabsTrigger
@@ -692,6 +696,11 @@ export function VenueDetailClient({
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Reviews Tab */}
+          <TabsContent value="reviews" className="space-y-6">
+            <VenueReviews venueId={venue.id} userId={userId} locale={locale} />
           </TabsContent>
 
           {/* Subscribers Tab (Only for Owners/Admins) */}

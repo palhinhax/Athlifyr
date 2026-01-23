@@ -100,6 +100,15 @@ export function generateSportsEventSchema(event: EventWithVariants) {
 /**
  * Generate Organization schema for the website
  * https://schema.org/Organization
+ *
+ * Follows Google's guidelines for Organization structured data:
+ * https://developers.google.com/search/docs/appearance/structured-data/logo
+ *
+ * Logo requirements for Google Search:
+ * - Minimum: 112x112px (current: 307x303px ✓)
+ * - Recommended: Square or wide logo, minimum 112x112px
+ * - Format: PNG, JPG, or SVG (current: PNG ✓)
+ * - URL must be publicly accessible (no login required)
  */
 export function generateOrganizationSchema() {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com";
@@ -108,16 +117,35 @@ export function generateOrganizationSchema() {
     "@context": "https://schema.org",
     "@type": "Organization",
     name: "Athlifyr",
+    alternateName: "Athlifyr Platform",
     description: "All Sports Events. One Place.",
     url: baseUrl,
-    logo: `${baseUrl}/logo.png`,
+    logo: {
+      "@type": "ImageObject",
+      url: `${baseUrl}/logo.png`,
+      width: 307,
+      height: 303,
+      caption: "Athlifyr Logo",
+    },
+    image: `${baseUrl}/logo.png`,
     sameAs: [
-      // Add social media links here when available
+      // Social media links - add when available
+      // "https://www.instagram.com/athlifyr",
+      // "https://www.facebook.com/athlifyr",
+      // "https://twitter.com/athlifyr",
     ],
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
       email: "support@athlifyr.com",
+      availableLanguage: [
+        "Portuguese",
+        "English",
+        "Spanish",
+        "French",
+        "German",
+        "Italian",
+      ],
     },
   };
 }

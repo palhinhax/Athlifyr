@@ -1,5 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -15,7 +15,7 @@ export default async function CookiesPage({ params }: CookiesPageProps) {
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-4xl">
         <Button asChild variant="ghost" className="mb-6">
-          <Link href={`/${locale}`}>
+          <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" />
             Voltar
           </Link>
@@ -192,7 +192,7 @@ export default async function CookiesPage({ params }: CookiesPageProps) {
           <h2>Perguntas?</h2>
           <p>
             Se tiveres questões sobre cookies, contacta-nos através da{" "}
-            <Link href={`/${locale}/contact`}>página de contacto</Link>.
+            <Link href="/contact">página de contacto</Link>.
           </p>
 
           <div className="mt-12 rounded-lg border bg-muted/50 p-6">

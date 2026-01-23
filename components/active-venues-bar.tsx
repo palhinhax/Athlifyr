@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import Image from "next/image";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Building2, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -22,7 +22,6 @@ interface ActiveVenue {
  */
 export function ActiveVenuesBar() {
   const t = useTranslations("venues");
-  const locale = useLocale();
   const [activeVenues, setActiveVenues] = useState<ActiveVenue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -64,7 +63,7 @@ export function ActiveVenuesBar() {
             {activeVenues.map((venue) => (
               <Link
                 key={venue.id}
-                href={`/${locale}/venues/${venue.slug}`}
+                href={`/venues/${venue.slug}`}
                 className={cn(
                   "group flex items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-all hover:border-primary hover:bg-primary/5",
                   "whitespace-nowrap"

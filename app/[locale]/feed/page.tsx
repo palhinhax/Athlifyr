@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { formatDistanceToNow, type Locale } from "date-fns";
 import { pt, enUS, es, fr, de, it } from "date-fns/locale";
 import { MessageSquare, Calendar, Trophy } from "lucide-react";

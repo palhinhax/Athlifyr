@@ -210,10 +210,10 @@ export default function ContactPage() {
         <p>
           {t("footer.directContact")}{" "}
           <a
-            href="mailto:info@athlifyr.com"
+            href="mailto:hello@athlifyr.com"
             className="text-primary hover:underline"
           >
-            info@athlifyr.com
+            hello@athlifyr.com
           </a>
         </p>
         <p className="mt-2">

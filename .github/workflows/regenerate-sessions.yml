@@ -1,0 +1,21 @@
+name: Regenerate Recurring Sessions
+
+on:
+  schedule:
+    # Run every Monday at 3:00 AM UTC
+    - cron: "0 3 * * 1"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  regenerate-sessions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Session Regeneration
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            "${{ secrets.APP_URL }}/api/cron/regenerate-sessions"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

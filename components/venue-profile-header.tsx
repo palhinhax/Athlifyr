@@ -25,6 +25,9 @@ interface VenueProfileHeaderProps {
     instagram: string | null;
     latitude: number | null;
     longitude: number | null;
+    defaultSessionCapacity: number | null;
+    defaultBookingAdvanceDays: number;
+    defaultCancellationDeadlineMinutes: number;
     members: Array<{
       id: string;
       role: string;

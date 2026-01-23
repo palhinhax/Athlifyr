@@ -28,6 +28,7 @@ import { VenueFeed } from "@/components/venue-feed";
 import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
+import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import {
   Trash2,
   CheckCircle,
@@ -56,6 +57,9 @@ interface Venue {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  defaultSessionCapacity: number | null;
+  defaultBookingAdvanceDays: number;
+  defaultCancellationDeadlineMinutes: number;
   members: Array<{
     id: string;
     role: string;
@@ -630,10 +634,24 @@ export function VenueDetailClient({
           </TabsContent>
 
           {/* Sessions Tab */}
-          <TabsContent value="sessions">
-            <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">{t("sessionsComingSoon")}</p>
-            </div>
+          <TabsContent value="sessions" className="space-y-6">
+            <VenueSessionsCalendar
+              venueId={venue.id}
+              locale={locale}
+              userId={userId}
+              hasActiveSubscription={venue.plans.some(
+                (plan) =>
+                  plan.subscriptions &&
+                  plan.subscriptions.some((sub) => sub.status === "ACTIVE")
+              )}
+              isOwnerOrAdmin={isOwnerOrAdmin}
+              venueDefaults={{
+                defaultSessionCapacity: venue.defaultSessionCapacity,
+                defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays,
+                defaultCancellationDeadlineMinutes:
+                  venue.defaultCancellationDeadlineMinutes,
+              }}
+            />
           </TabsContent>
 
           {/* Team Tab */}

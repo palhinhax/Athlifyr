@@ -64,11 +64,25 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async signIn({ user, account, profile }) {
+      // Sync Google profile image on every sign-in
+      if (account?.provider === "google" && profile?.picture && user?.id) {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { image: profile.picture },
+        });
+      }
+      return true;
+    },
+    async jwt({ token, user, trigger, session, account, profile }) {
       if (user) {
         token.role = user.role as UserRole;
         token.id = user.id;
-        token.picture = user.image;
+        // Use Google profile picture if available, otherwise use stored image
+        token.picture =
+          account?.provider === "google" && profile?.picture
+            ? (profile.picture as string)
+            : user.image;
       }
 
       // Update token when session is updated (e.g., profile image changed)

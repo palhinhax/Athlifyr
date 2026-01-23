@@ -22,6 +22,22 @@ interface EventParticipation {
   } | null;
 }
 
+interface VenueSessionBooking {
+  id: string;
+  session: {
+    id: string;
+    title: string;
+    startsAt: Date;
+    endsAt: Date;
+    venue: {
+      id: string;
+      name: string;
+      slug: string;
+      city: string | null;
+    };
+  };
+}
+
 interface ProfileHeaderClientProps {
   user: {
     name: string | null;
@@ -35,12 +51,14 @@ interface ProfileHeaderClientProps {
     commentsCount: number;
   };
   participations: EventParticipation[];
+  sessionBookings?: VenueSessionBooking[];
 }
 
 export function ProfileHeaderClient({
   user,
   stats,
   participations,
+  sessionBookings = [],
 }: ProfileHeaderClientProps) {
   const t = useTranslations("profile");
 
@@ -54,7 +72,10 @@ export function ProfileHeaderClient({
             <h1 className="text-4xl font-bold">{user.name}</h1>
             <p className="text-muted-foreground">{user.email}</p>
           </div>
-          <EventCalendar participations={participations} />
+          <EventCalendar
+            participations={participations}
+            sessionBookings={sessionBookings}
+          />
         </div>
 
         {/* Stats */}

@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";
 import { PhotoGallery } from "@/components/photo-gallery";
+import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -81,6 +82,40 @@ export default async function ProfilePage({ params }: PageProps) {
     redirect("/auth/signin");
   }
 
+  // Fetch future session bookings
+  const upcomingBookings = await prisma.venueBooking.findMany({
+    where: {
+      userId: session.user.id,
+      status: { in: ["BOOKED", "ATTENDED"] },
+      session: {
+        startsAt: { gte: new Date() },
+      },
+    },
+    include: {
+      session: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          endsAt: true,
+          venue: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              city: true,
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      session: {
+        startsAt: "asc",
+      },
+    },
+  });
+
   const upcomingEvents = user.participations.filter(
     (p) => p.event.startDate > new Date() && p.status === "going"
   );
@@ -126,6 +161,21 @@ export default async function ProfilePage({ params }: PageProps) {
                   startTime: p.variant.startTime,
                 }
               : null,
+          }))}
+          sessionBookings={upcomingBookings.map((b) => ({
+            id: b.id,
+            session: {
+              id: b.session.id,
+              title: b.session.title,
+              startsAt: b.session.startsAt,
+              endsAt: b.session.endsAt,
+              venue: {
+                id: b.session.venue.id,
+                name: b.session.venue.name,
+                slug: b.session.venue.slug,
+                city: b.session.venue.city,
+              },
+            },
           }))}
         />
 
@@ -186,9 +236,12 @@ export default async function ProfilePage({ params }: PageProps) {
           </div>
         )}
 
+        {/* Upcoming Session Bookings */}
+        <ProfileUpcomingSessions bookings={upcomingBookings} locale={locale} />
+
         {/* Past Events */}
         {pastEvents.length > 0 && (
-          <div>
+          <div className="mb-12">
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
               <Trophy className="h-6 w-6 text-primary" />
               {t("pastEventsCount", { count: pastEvents.length })}

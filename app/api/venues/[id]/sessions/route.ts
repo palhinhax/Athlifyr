@@ -3,6 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 import { SessionType } from "@prisma/client";
+import { format, addWeeks } from "date-fns";
+
+// How many weeks to generate sessions in advance for recurring templates
+const RECURRING_GENERATION_WEEKS = 12; // 3 months ahead
 
 // GET - List sessions for a venue
 export async function GET(
@@ -51,6 +55,30 @@ export async function GET(
     const sessions = await prisma.venueSession.findMany({
       where,
       include: {
+        recurringSession: {
+          select: {
+            id: true,
+            isActive: true,
+          },
+        },
+        bookings: {
+          where: {
+            status: {
+              in: ["BOOKED", "ATTENDED"],
+            },
+          },
+          select: {
+            id: true,
+            status: true,
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+              },
+            },
+          },
+        },
         _count: {
           select: {
             bookings: {
@@ -95,7 +123,14 @@ export async function POST(
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);
     if (!authResult.authorized) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      console.log(
+        `[Sessions API] Authorization failed for user ${session.user.id} on venue ${venueId}:`,
+        authResult.reason
+      );
+      return NextResponse.json(
+        { error: "Forbidden", reason: authResult.reason },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -109,6 +144,9 @@ export async function POST(
       coachId,
       serviceId,
       tags,
+      isRecurring,
+      bookingAdvanceDays,
+      cancellationDeadlineMinutes,
     } = body;
 
     // Validate required fields
@@ -127,7 +165,93 @@ export async function POST(
       );
     }
 
-    // Create session
+    // Handle recurring sessions - create a template that lasts "forever"
+    if (isRecurring) {
+      const baseStartDate = new Date(startsAt);
+      const baseEndDate = new Date(endsAt);
+      const dayOfWeek = baseStartDate.getDay(); // 0=Sunday, 1=Monday, ..., 6=Saturday
+      const startTime = format(baseStartDate, "HH:mm");
+      const endTime = format(baseEndDate, "HH:mm");
+
+      // Create the recurring template
+      const recurringSession = await prisma.venueRecurringSession.create({
+        data: {
+          venueId,
+          type,
+          title,
+          description: description || null,
+          dayOfWeek,
+          startTime,
+          endTime,
+          capacity: capacity || null,
+          coachId: coachId || null,
+          serviceId: serviceId || null,
+          tags: tags || [],
+          isActive: true,
+          bookingAdvanceDays: bookingAdvanceDays ?? 4,
+          cancellationDeadlineMinutes: cancellationDeadlineMinutes ?? 30,
+        },
+      });
+
+      // Generate sessions for the next N weeks
+      const sessionsToCreate = [];
+      const generationLimit = addWeeks(new Date(), RECURRING_GENERATION_WEEKS);
+
+      // Start from the first occurrence
+      let currentDate = new Date(baseStartDate);
+
+      while (currentDate <= generationLimit) {
+        const [startHour, startMinute] = startTime.split(":").map(Number);
+        const [endHour, endMinute] = endTime.split(":").map(Number);
+
+        const sessionStart = new Date(currentDate);
+        sessionStart.setHours(startHour, startMinute, 0, 0);
+
+        const sessionEnd = new Date(currentDate);
+        sessionEnd.setHours(endHour, endMinute, 0, 0);
+
+        sessionsToCreate.push({
+          venueId,
+          recurringSessionId: recurringSession.id,
+          type,
+          title,
+          description: description || null,
+          startsAt: sessionStart,
+          endsAt: sessionEnd,
+          capacity: capacity || null,
+          coachId: coachId || null,
+          serviceId: serviceId || null,
+          tags: tags || [],
+          bookingAdvanceDays: bookingAdvanceDays ?? 4,
+          cancellationDeadlineMinutes: cancellationDeadlineMinutes ?? 30,
+        });
+
+        // Move to next week
+        currentDate = addWeeks(currentDate, 1);
+      }
+
+      // Batch create all sessions
+      const result = await prisma.venueSession.createMany({
+        data: sessionsToCreate,
+      });
+
+      // Update the template with how far we've generated
+      await prisma.venueRecurringSession.update({
+        where: { id: recurringSession.id },
+        data: { generatedUntil: generationLimit },
+      });
+
+      return NextResponse.json(
+        {
+          message: "Recurring session created",
+          count: result.count,
+          recurringSessionId: recurringSession.id,
+        },
+        { status: 201 }
+      );
+    }
+
+    // Create single session
     const venueSession = await prisma.venueSession.create({
       data: {
         venueId,
@@ -140,10 +264,12 @@ export async function POST(
         coachId: coachId || null,
         serviceId: serviceId || null,
         tags: tags || [],
+        bookingAdvanceDays: bookingAdvanceDays ?? 4,
+        cancellationDeadlineMinutes: cancellationDeadlineMinutes ?? 30,
       },
     });
 
-    return NextResponse.json(venueSession, { status: 201 });
+    return NextResponse.json({ ...venueSession, count: 1 }, { status: 201 });
   } catch (error) {
     console.error("Error creating session:", error);
     return NextResponse.json(

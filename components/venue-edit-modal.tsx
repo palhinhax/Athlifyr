@@ -35,6 +35,9 @@ interface VenueEditModalProps {
     country: string;
     latitude: number | null;
     longitude: number | null;
+    defaultSessionCapacity: number | null;
+    defaultBookingAdvanceDays: number;
+    defaultCancellationDeadlineMinutes: number;
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -69,6 +72,10 @@ export function VenueEditModal({
     coverImage: venue.coverImage || "",
     latitude: venue.latitude?.toString() || "",
     longitude: venue.longitude?.toString() || "",
+    defaultSessionCapacity: venue.defaultSessionCapacity?.toString() || "",
+    defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
+    defaultCancellationDeadlineMinutes:
+      venue.defaultCancellationDeadlineMinutes.toString(),
   });
 
   const handleInputChange = (
@@ -108,6 +115,17 @@ export function VenueEditModal({
         ...formData,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        defaultSessionCapacity: formData.defaultSessionCapacity
+          ? parseInt(formData.defaultSessionCapacity, 10)
+          : null,
+        defaultBookingAdvanceDays: parseInt(
+          formData.defaultBookingAdvanceDays,
+          10
+        ),
+        defaultCancellationDeadlineMinutes: parseInt(
+          formData.defaultCancellationDeadlineMinutes,
+          10
+        ),
       };
 
       console.log("Submitting venue data:", submitData);
@@ -404,6 +422,80 @@ export function VenueEditModal({
                 placeholder="-9.1393"
                 disabled={loading}
               />
+            </div>
+          </div>
+
+          {/* Session Defaults Section */}
+          <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+            <div className="space-y-1">
+              <h3 className="text-sm font-semibold">
+                {tInfo("sessionDefaults")}
+              </h3>
+              <p className="text-xs text-muted-foreground">
+                {tInfo("sessionDefaultsDescription")}
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              {/* Default Capacity */}
+              <div className="space-y-2">
+                <Label htmlFor="defaultSessionCapacity">
+                  {tInfo("defaultCapacity")}
+                </Label>
+                <Input
+                  id="defaultSessionCapacity"
+                  name="defaultSessionCapacity"
+                  type="number"
+                  min="1"
+                  value={formData.defaultSessionCapacity}
+                  onChange={handleInputChange}
+                  placeholder="20"
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {tInfo("defaultCapacityHint")}
+                </p>
+              </div>
+
+              {/* Default Booking Advance Days */}
+              <div className="space-y-2">
+                <Label htmlFor="defaultBookingAdvanceDays">
+                  {tInfo("defaultBookingAdvance")}
+                </Label>
+                <Input
+                  id="defaultBookingAdvanceDays"
+                  name="defaultBookingAdvanceDays"
+                  type="number"
+                  min="0"
+                  value={formData.defaultBookingAdvanceDays}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {tInfo("defaultBookingAdvanceHint")}
+                </p>
+              </div>
+
+              {/* Default Cancellation Deadline Minutes */}
+              <div className="space-y-2">
+                <Label htmlFor="defaultCancellationDeadlineMinutes">
+                  {tInfo("defaultCancellationDeadline")}
+                </Label>
+                <Input
+                  id="defaultCancellationDeadlineMinutes"
+                  name="defaultCancellationDeadlineMinutes"
+                  type="number"
+                  min="0"
+                  value={formData.defaultCancellationDeadlineMinutes}
+                  onChange={handleInputChange}
+                  required
+                  disabled={loading}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {tInfo("defaultCancellationDeadlineHint")}
+                </p>
+              </div>
             </div>
           </div>
 

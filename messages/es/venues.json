@@ -490,7 +490,17 @@
       "noReviews": "Aún no hay reseñas",
       "beFirst": "¡Sé el primero en compartir tu experiencia!",
       "anonymous": "Usuario",
-      "edited": "editado"
+      "edited": "editado",
+      "reply": "Responder",
+      "replies": "Respuestas",
+      "writeReply": "Escribir respuesta",
+      "replyPlaceholder": "Escribe tu respuesta...",
+      "replySubmit": "Responder",
+      "replyCancel": "Cancelar",
+      "replyDeleted": "Respuesta eliminada",
+      "replyError": "Error al procesar respuesta",
+      "venueResponse": "Respuesta del Local",
+      "adminOnly": "Solo los administradores del local pueden responder"
     }
   }
 }

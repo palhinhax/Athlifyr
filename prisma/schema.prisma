@@ -165,6 +165,7 @@ model User {
   paymentIntents      PaymentIntent[]
   venueRecommendations VenueRecommendation[]
   venueReviews        VenueReview[]
+  venueReviewReplies  VenueReviewReply[]
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
 
@@ -1022,17 +1023,33 @@ model VenueRecommendation {
 
 // Reviews for venues (positive only, no numeric rating)
 model VenueReview {
-  id        String   @id @default(cuid())
+  id        String                @id @default(cuid())
   venueId   String
-  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  venue     Venue                 @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String                @db.Text
+  createdAt DateTime              @default(now())
+  updatedAt DateTime              @updatedAt
+  replies   VenueReviewReply[]
+
+  @@unique([venueId, userId]) // One review per user per venue
+  @@index([venueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model VenueReviewReply {
+  id        String   @id @default(cuid())
+  reviewId  String
+  review    VenueReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
   userId    String
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String   @db.Text
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([venueId, userId]) // One review per user per venue
-  @@index([venueId])
+  @@index([reviewId])
   @@index([userId])
   @@index([createdAt])
 }

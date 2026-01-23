@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { MapPin, Users, Calendar, Edit } from "lucide-react";
+import { MapPin, Edit } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { VenueEditModal } from "@/components/venue-edit-modal";
 import { ShareButton } from "@/components/share-button";
 import { VenueRecommendations } from "@/components/venue-recommendations";
+import { VenueReviewsModal } from "@/components/venue-reviews-modal";
 
 interface VenueProfileHeaderProps {
   venue: {
@@ -151,55 +152,16 @@ export function VenueProfileHeader({
               )}
             </div>
 
-            {/* Info below cover - Stats */}
-            <div className="flex-1 pt-6 sm:pt-16 md:pt-20">
-              {/* Stats */}
-              <div className="flex flex-wrap gap-6">
-                {/* Team Members count - only visible to owners/admins */}
-                {isOwnerOrAdmin && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="flex justify-center text-lg font-semibold">
-                          {venue.members.length}
-                        </p>
-                        <p className="flex text-xs text-muted-foreground">
-                          {t("membership.teamMembers")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Users className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="flex justify-center text-lg font-semibold">
-                          {venue._count.subscriptions}
-                        </p>
-                        <p className="flex text-xs text-muted-foreground">
-                          {t("membership.subscribers")}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="flex justify-center text-lg font-semibold">
-                          {venue._count.sessions}
-                        </p>
-                        <p className="flex justify-center text-xs text-muted-foreground">
-                          {t("sessions.title")}
-                        </p>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-
-            {/* Recommendations and Action Buttons */}
+            {/* Recommendations and Reviews - Right side */}
             <div className="flex flex-col gap-3 pt-2 sm:pt-16 md:pt-20">
-              {/* Recommendations */}
-              <VenueRecommendations venueId={venue.id} userId={userId} />
+              <div className="flex gap-2">
+                <VenueRecommendations venueId={venue.id} userId={userId} />
+                <VenueReviewsModal
+                  venueId={venue.id}
+                  userId={userId}
+                  locale={locale}
+                />
+              </div>
 
               {/* Action Buttons - only show if there are buttons to display */}
               {(!userId || (userId && !isOwnerOrAdmin)) && (

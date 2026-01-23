@@ -4,6 +4,9 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // SEO: Disable trailing slashes for consistent URL structure
+  // This prevents duplicate URLs like /events/ vs /events
+  trailingSlash: false,
   images: {
     remotePatterns: [
       {

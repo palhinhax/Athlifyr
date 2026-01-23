@@ -12,6 +12,9 @@ const localeToOgLocale: Record<string, string> = {
   it: "it_IT",
 };
 
+// Supported locales for hreflang generation
+const SUPPORTED_LOCALES = ["pt", "en", "es", "fr", "de", "it"] as const;
+
 interface EventMetadataProps {
   event: {
     slug: string;
@@ -83,12 +86,22 @@ export async function generateEventMetadata({
     formatDate(event.startDate),
   ];
 
+  // Generate hreflang alternates for all supported locales
+  // This helps Google understand that the same content exists in multiple languages
+  const languageAlternates: Record<string, string> = {};
+  for (const loc of SUPPORTED_LOCALES) {
+    languageAlternates[loc] = `${baseUrl}/${loc}/events/${event.slug}`;
+  }
+  // x-default points to the default locale (pt)
+  languageAlternates["x-default"] = `${baseUrl}/pt/events/${event.slug}`;
+
   return {
     title,
     description: metaDescription,
     keywords: keywords.join(", "),
     alternates: {
       canonical: eventUrl,
+      languages: languageAlternates,
     },
     openGraph: {
       title: `${event.title} - ${sportTypeLabels[event.sportTypes[0]]}`,

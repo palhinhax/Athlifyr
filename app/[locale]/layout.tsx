@@ -35,8 +35,9 @@ const geistMono = localFont({
 });
 
 export const metadata: Metadata = {
+  // CRITICAL: Always use www subdomain for canonical URLs and SEO consistency
   metadataBase: new URL(
-    process.env.NEXT_PUBLIC_BASE_URL || "https://athlifyr.com"
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com"
   ),
   title: {
     default: "Athlifyr - one place. all sports.",
@@ -117,6 +118,15 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://www.athlifyr.com",
+    languages: {
+      pt: "https://www.athlifyr.com/pt",
+      en: "https://www.athlifyr.com/en",
+      es: "https://www.athlifyr.com/es",
+      fr: "https://www.athlifyr.com/fr",
+      de: "https://www.athlifyr.com/de",
+      it: "https://www.athlifyr.com/it",
+      "x-default": "https://www.athlifyr.com/pt",
+    },
   },
   verification: {
     // Add Google Search Console verification here when available

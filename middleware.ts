@@ -4,9 +4,44 @@ import { NextRequest, NextResponse } from "next/server";
 
 const intlMiddleware = createMiddleware(routing);
 
+// Common bot user agents that should NOT receive locale redirects
+const BOT_USER_AGENTS = [
+  "googlebot",
+  "bingbot",
+  "slurp",
+  "duckduckbot",
+  "baiduspider",
+  "yandexbot",
+  "facebookexternalhit",
+  "twitterbot",
+  "linkedinbot",
+  "whatsapp",
+  "telegrambot",
+  "applebot",
+  "petalbot",
+  "semrushbot",
+  "ahrefsbot",
+  "mj12bot",
+  "dotbot",
+  "rogerbot",
+  "screaming frog",
+  "lighthouse",
+  "chrome-lighthouse",
+];
+
+/**
+ * Check if the request is from a known bot/crawler
+ */
+function isBot(userAgent: string | null): boolean {
+  if (!userAgent) return false;
+  const ua = userAgent.toLowerCase();
+  return BOT_USER_AGENTS.some((bot) => ua.includes(bot));
+}
+
 export default function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const hostname = request.headers.get("host") || "";
+  const userAgent = request.headers.get("user-agent");
 
   // Skip middleware for sitemap.xml and robots.txt (SEO files at root)
   if (pathname === "/sitemap.xml" || pathname === "/robots.txt") {
@@ -33,13 +68,13 @@ export default function middleware(request: NextRequest) {
     !isPromoPage &&
     !isStaticAsset
   ) {
-    // Use redirect instead of rewrite to navigate to standalone maintenance page
-    return NextResponse.redirect(new URL("/maintenance", request.url));
+    // Use 302 temporary redirect for maintenance (NOT 301/308)
+    return NextResponse.redirect(new URL("/maintenance", request.url), 302);
   }
 
   // If not in maintenance mode and trying to access maintenance page, redirect to home
   if (!isMaintenanceMode && isMaintenancePage) {
-    return NextResponse.redirect(new URL("/pt", request.url));
+    return NextResponse.redirect(new URL("/pt", request.url), 302);
   }
 
   // Skip intl middleware for maintenance and promo pages
@@ -49,42 +84,64 @@ export default function middleware(request: NextRequest) {
 
   // ============================================================
   // SEO: Force www subdomain + locale prefix in ONE 301 redirect
+  // Goal: Minimize redirect hops for better crawlability
   // ============================================================
   const supportedLocales = ["pt", "en", "es", "fr", "de", "it"];
   const defaultLocale = "pt";
+  const isBotRequest = isBot(userAgent);
 
   // Check if hostname is missing www (e.g., athlifyr.com)
   const needsWww =
     hostname &&
     !hostname.startsWith("www.") &&
     !hostname.startsWith("localhost") &&
+    !hostname.includes(":") && // Skip port numbers (dev server)
     !hostname.match(/^\d+\.\d+\.\d+\.\d+/); // Not IP address
 
   // Check if path is missing locale prefix
-  const hasLocalePrefix = supportedLocales.some((locale) =>
-    pathname.startsWith(`/${locale}`)
+  const hasLocalePrefix = supportedLocales.some(
+    (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)
   );
-  const needsLocale = !hasLocalePrefix && pathname !== "/";
 
-  // If we need to fix hostname OR locale, do it in ONE redirect
+  // For root path "/", we need to add locale
+  // For paths without locale prefix, we need to add it
+  const needsLocale = !hasLocalePrefix;
+
+  // If we need to fix hostname OR locale, do it in ONE 301 redirect
   if (needsWww || needsLocale) {
     const url = request.nextUrl.clone();
 
-    // Fix hostname first
+    // Fix hostname first (www subdomain)
     if (needsWww) {
       url.hostname = `www.${hostname}`;
     }
 
     // Fix locale prefix
+    // For bots: Always use default locale to avoid unnecessary redirects
+    // For users: Use default locale (next-intl will handle locale detection)
     if (needsLocale) {
-      url.pathname = `/${defaultLocale}${pathname}`;
+      // If it's the root path, redirect to default locale
+      if (pathname === "/") {
+        url.pathname = `/${defaultLocale}`;
+      } else {
+        // Add default locale prefix to the path
+        url.pathname = `/${defaultLocale}${pathname}`;
+      }
     }
 
-    // Return 301 permanent redirect
+    // CRITICAL: Use 301 Permanent Redirect (NOT 308)
+    // 308 causes "Not crawled" issues in Google Search Console
+    // 301 is better understood by all crawlers
     return NextResponse.redirect(url, 301);
   }
 
-  // Continue with internationalization middleware
+  // For bots with valid locale in URL, serve content directly without additional redirects
+  if (isBotRequest && hasLocalePrefix) {
+    // Let next-intl handle it but the URL is already correct
+    return intlMiddleware(request);
+  }
+
+  // Continue with internationalization middleware for regular users
   return intlMiddleware(request);
 }
 

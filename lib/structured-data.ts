@@ -218,7 +218,7 @@ export function generateOrganizationSchema() {
     contactPoint: {
       "@type": "ContactPoint",
       contactType: "customer support",
-      email: "support@athlifyr.com",
+      email: "hello@athlifyr.com",
       availableLanguage: [
         "Portuguese",
         "English",

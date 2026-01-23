@@ -183,7 +183,7 @@ If issues persist after 4 weeks:
 
 - Check `/docs/SEO-LOGO-SETUP.md` for detailed troubleshooting
 - Review Google's documentation: https://developers.google.com/search/docs/appearance/structured-data/logo
-- Contact support: support@athlifyr.com
+- Contact support: hello@athlifyr.com
 
 ## Notes
 

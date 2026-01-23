@@ -48,7 +48,7 @@ The Organization schema includes:
   "contactPoint": {
     "@type": "ContactPoint",
     "contactType": "customer support",
-    "email": "support@athlifyr.com",
+    "email": "hello@athlifyr.com",
     "availableLanguage": [
       "Portuguese",
       "English",
@@ -198,5 +198,5 @@ Disallow: /settings
 
 For questions or issues:
 
-- **Email:** support@athlifyr.com
+- **Email:** hello@athlifyr.com
 - **Issue Tracker:** GitHub repository issues

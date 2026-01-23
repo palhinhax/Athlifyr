@@ -39,6 +39,52 @@
     "adminLimit": "(Limite admin)",
     "supportedFormats": "Formats supportés : {formats}"
   },
+  "contact": {
+    "title": "Contactez-nous",
+    "description": "Envoyez-nous des suggestions, signalez des problèmes ou posez des questions",
+    "cards": {
+      "suggestions": "Suggestions",
+      "suggestionsDesc": "Partagez des idées pour améliorer la plateforme",
+      "reportProblem": "Signaler un Problème",
+      "reportProblemDesc": "Vous avez trouvé un bug ? Faites-le nous savoir !",
+      "questions": "Questions",
+      "questionsDesc": "Vous avez une question ? Nous sommes là pour vous aider"
+    },
+    "form": {
+      "name": "Nom",
+      "namePlaceholder": "Votre nom",
+      "email": "Email",
+      "emailPlaceholder": "votre@email.com",
+      "type": "Type de Contact",
+      "types": {
+        "suggestion": "💡 Suggestion",
+        "bug": "🐛 Signaler un Bug",
+        "question": "❓ Question",
+        "feedback": "💬 Retour",
+        "other": "📧 Autre"
+      },
+      "subject": "Sujet",
+      "subjectPlaceholder": "Résumé de votre contact",
+      "message": "Message",
+      "messagePlaceholder": "Décrivez en détail...",
+      "messageHelper": "Soyez aussi précis que possible pour que nous puissions mieux vous aider",
+      "submit": "Envoyer le Message",
+      "submitting": "Envoi en cours..."
+    },
+    "toast": {
+      "requiredFields": "Champs obligatoires",
+      "requiredFieldsDesc": "Veuillez remplir le sujet et le message.",
+      "success": "Message envoyé !",
+      "successDesc": "Merci pour votre contact. Nous répondrons bientôt par email.",
+      "error": "Erreur d'envoi",
+      "errorDesc": "Impossible d'envoyer le message. Veuillez réessayer."
+    },
+    "footer": {
+      "directContact": "📧 Vous pouvez également nous contacter directement à :",
+      "responseTime": "Nous répondons généralement sous",
+      "hours": "24-48 heures"
+    }
+  },
   "sports": {
     "RUNNING": "Course",
     "TRAIL": "Trail",

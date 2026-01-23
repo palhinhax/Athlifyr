@@ -39,6 +39,52 @@
     "adminLimit": "(Limite admin)",
     "supportedFormats": "Formati supportati: {formats}"
   },
+  "contact": {
+    "title": "Contattaci",
+    "description": "Inviaci suggerimenti, segnala problemi o fai domande",
+    "cards": {
+      "suggestions": "Suggerimenti",
+      "suggestionsDesc": "Condividi idee per migliorare la piattaforma",
+      "reportProblem": "Segnala Problema",
+      "reportProblemDesc": "Hai trovato un bug? Faccelo sapere!",
+      "questions": "Domande",
+      "questionsDesc": "Hai una domanda? Siamo qui per aiutarti"
+    },
+    "form": {
+      "name": "Nome",
+      "namePlaceholder": "Il tuo nome",
+      "email": "Email",
+      "emailPlaceholder": "tua@email.com",
+      "type": "Tipo di Contatto",
+      "types": {
+        "suggestion": "💡 Suggerimento",
+        "bug": "🐛 Segnala Bug",
+        "question": "❓ Domanda",
+        "feedback": "💬 Feedback",
+        "other": "📧 Altro"
+      },
+      "subject": "Oggetto",
+      "subjectPlaceholder": "Riepilogo del tuo contatto",
+      "message": "Messaggio",
+      "messagePlaceholder": "Descrivi in dettaglio...",
+      "messageHelper": "Sii il più specifico possibile per aiutarci meglio",
+      "submit": "Invia Messaggio",
+      "submitting": "Invio in corso..."
+    },
+    "toast": {
+      "requiredFields": "Campi obbligatori",
+      "requiredFieldsDesc": "Per favore compila l'oggetto e il messaggio.",
+      "success": "Messaggio inviato!",
+      "successDesc": "Grazie per il tuo contatto. Risponderemo presto via email.",
+      "error": "Errore nell'invio",
+      "errorDesc": "Impossibile inviare il messaggio. Riprova."
+    },
+    "footer": {
+      "directContact": "📧 Puoi anche contattarci direttamente a:",
+      "responseTime": "Normalmente rispondiamo entro",
+      "hours": "24-48 ore"
+    }
+  },
   "sports": {
     "RUNNING": "Corsa",
     "TRAIL": "Trail",

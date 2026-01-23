@@ -1,3 +1,9 @@
+# [12.4.0](https://github.com/palhinhax/Athlifyr/compare/v12.3.0...v12.4.0) (2026-01-23)
+
+### Features
+
+- **venues:** add reviews system ([a7b94f6](https://github.com/palhinhax/Athlifyr/commit/a7b94f6c098db8fa200b28041ed1b08d2a978734))
+
 # [12.3.0](https://github.com/palhinhax/Athlifyr/compare/v12.2.0...v12.3.0) (2026-01-23)
 
 ### Bug Fixes

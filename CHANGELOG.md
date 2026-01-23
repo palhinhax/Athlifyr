@@ -1,3 +1,18 @@
+# [12.10.0](https://github.com/palhinhax/Athlifyr/compare/v12.9.0...v12.10.0) (2026-01-23)
+
+### Bug Fixes
+
+- correct contact email to hello@athlifyr.com across all files ([5dfefa7](https://github.com/palhinhax/Athlifyr/commit/5dfefa7265f4151f309e86ab267e5b6ba3af84bb))
+- **i18n:** add translations for contact page ([78ba78d](https://github.com/palhinhax/Athlifyr/commit/78ba78d422e791083632b7d4b88202693c109742))
+- **i18n:** add translations for contacts admin page ([3075647](https://github.com/palhinhax/Athlifyr/commit/3075647ec6b8349284ecef3c47fe9d21f2ecd3e1))
+- **seo:** normalize URLs with www subdomain and locale prefix ([53a5a30](https://github.com/palhinhax/Athlifyr/commit/53a5a3099c8c8ff267a0da8fc67c2b87b4f5fb50))
+- **seo:** replace all next/link with next-intl Link for proper locale prefix ([8d8d249](https://github.com/palhinhax/Athlifyr/commit/8d8d249b6aef83584ebadd420090c3723eaa8552))
+- **seo:** update locale links in NotFound component for proper routing ([c0e3301](https://github.com/palhinhax/Athlifyr/commit/c0e3301c9cf9547f01696847864edda9e19fdf63))
+
+### Features
+
+- **testing:** add comprehensive test users system with E2E automation ([955b232](https://github.com/palhinhax/Athlifyr/commit/955b232a1af5cf2c08e489dceb4ed2ea34505b8f))
+
 # [12.9.0](https://github.com/palhinhax/Athlifyr/compare/v12.8.0...v12.9.0) (2026-01-23)
 
 ### Features

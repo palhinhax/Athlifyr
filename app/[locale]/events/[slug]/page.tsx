@@ -440,7 +440,6 @@ export default async function EventPage({ params }: PageProps) {
             <RelatedEvents
               events={translatedRelatedEvents}
               title={t("relatedEvents")}
-              locale={locale}
             />
           </div>
 

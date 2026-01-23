@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -214,7 +214,7 @@ export function ResetPasswordForm() {
           >
             {isLoading ? "A alterar..." : "Alterar Password"}
           </Button>
-          <Link href={`/${locale}/auth/signin`} className="w-full">
+          <Link href="/auth/signin" className="w-full">
             <Button variant="ghost" className="w-full">
               Voltar ao login
             </Button>

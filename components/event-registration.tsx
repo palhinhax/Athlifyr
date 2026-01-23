@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Check, X, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 
@@ -205,7 +206,7 @@ export function EventRegistration({
             {t("loginToParticipate")}
           </p>
           <Button asChild size="sm">
-            <a href="/auth/signin">{t("signIn")}</a>
+            <Link href="/auth/signin">{t("signIn")}</Link>
           </Button>
         </div>
       ) : (

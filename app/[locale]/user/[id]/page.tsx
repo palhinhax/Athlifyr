@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { Calendar, MapPin, Trophy, Users } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
-import Link from "next/link";
+import { Link } from "@/i18n/routing";
 import { PublicProfileHeader } from "@/components/public-profile-header";
 import { PublicPhotoGallery } from "@/components/public-photo-gallery";
 import type { Metadata } from "next";

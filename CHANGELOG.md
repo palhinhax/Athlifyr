@@ -1,3 +1,13 @@
+# [13.0.0](https://github.com/palhinhax/Athlifyr/compare/v12.10.0...v13.0.0) (2026-01-23)
+
+### Bug Fixes
+
+- **seo:** replace 308 with 301 redirects and add complete hreflang support ([a329d6d](https://github.com/palhinhax/Athlifyr/commit/a329d6d515df796bb78f02fcb967d01aa2677d2b))
+
+### BREAKING CHANGES
+
+- **seo:** None - improves SEO without breaking existing functionality
+
 # [12.10.0](https://github.com/palhinhax/Athlifyr/compare/v12.9.0...v12.10.0) (2026-01-23)
 
 ### Bug Fixes

@@ -1,3 +1,9 @@
+## [12.5.1](https://github.com/palhinhax/Athlifyr/compare/v12.5.0...v12.5.1) (2026-01-23)
+
+### Bug Fixes
+
+- **venues:** fix reviews modal trigger and remove reviews tab ([acdda47](https://github.com/palhinhax/Athlifyr/commit/acdda47116fa96a827f74b90bacd46a781705c0d))
+
 # [12.5.0](https://github.com/palhinhax/Athlifyr/compare/v12.4.0...v12.5.0) (2026-01-23)
 
 ### Bug Fixes

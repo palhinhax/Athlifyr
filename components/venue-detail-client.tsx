@@ -361,17 +361,6 @@ export function VenueDetailClient({
                 <Users className="h-4 w-4" />
                 <span className="hidden sm:inline">{t("tabs.team")}</span>
               </TabsTrigger>
-              {isOwnerOrAdmin && (
-                <TabsTrigger
-                  value="subscribers"
-                  className="flex-1 gap-2 md:flex-initial"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">
-                    {t("tabs.subscribers")}
-                  </span>
-                </TabsTrigger>
-              )}
             </TabsList>
           </div>
 
@@ -719,18 +708,18 @@ export function VenueDetailClient({
                 ))}
               </div>
             )}
-          </TabsContent>
 
-          {/* Subscribers Tab (Only for Owners/Admins) */}
-          {isOwnerOrAdmin && (
-            <TabsContent value="subscribers" className="space-y-6">
-              <VenueSubscribersManager
-                venueId={venue.id}
-                locale={locale}
-                plans={venue.plans}
-              />
-            </TabsContent>
-          )}
+            {/* Subscribers Section (Only for Owners/Admins) */}
+            {isOwnerOrAdmin && (
+              <div className="mt-8 space-y-4">
+                <VenueSubscribersManager
+                  venueId={venue.id}
+                  locale={locale}
+                  plans={venue.plans}
+                />
+              </div>
+            )}
+          </TabsContent>
         </Tabs>
       </div>
 

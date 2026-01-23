@@ -1,3 +1,9 @@
+# [12.8.0](https://github.com/palhinhax/Athlifyr/compare/v12.7.0...v12.8.0) (2026-01-23)
+
+### Features
+
+- **venues:** integrate subscribers into team tab ([7bb1824](https://github.com/palhinhax/Athlifyr/commit/7bb1824d9a7b94d9add8e4d5d9515d28a70fbb47))
+
 # [12.7.0](https://github.com/palhinhax/Athlifyr/compare/v12.6.0...v12.7.0) (2026-01-23)
 
 ### Features

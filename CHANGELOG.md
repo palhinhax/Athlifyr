@@ -1,3 +1,14 @@
+# [12.3.0](https://github.com/palhinhax/Athlifyr/compare/v12.2.0...v12.3.0) (2026-01-23)
+
+### Bug Fixes
+
+- **events:** correct sportTypes field in event update API ([6c421bd](https://github.com/palhinhax/Athlifyr/commit/6c421bd7e73a4f153c63c810844fc379d6087ed0))
+- **venues:** rename venueId parameter to id in likes API route ([1c91e89](https://github.com/palhinhax/Athlifyr/commit/1c91e897d18000c09d11c9a19588b03dd50c64b7))
+
+### Features
+
+- **venues:** add recommendation system ([3df6b98](https://github.com/palhinhax/Athlifyr/commit/3df6b9868c943d402bccb35f3ee8638f72990d39))
+
 # [12.2.0](https://github.com/palhinhax/Athlifyr/compare/v12.1.0...v12.2.0) (2026-01-23)
 
 ### Bug Fixes

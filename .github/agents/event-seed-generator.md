@@ -408,6 +408,155 @@ pricingPhases: {
 }
 ```
 
+#### E. Event FAQs (Optional but Recommended for SEO)
+
+Event FAQs improve SEO and provide structured data for search engines. **FAQs are multilingual** and MUST have translations in ALL 6 languages.
+
+**Schema Structure:**
+
+```typescript
+// EventFAQ Model
+{
+  id: string, // Auto-generated
+  eventId: string, // Foreign key to Event
+  order: number, // Display order (0, 1, 2, ...)
+  question: string, // Default question (Portuguese - fallback)
+  answer: string, // Default answer (Portuguese - fallback)
+  translations: EventFAQTranslation[], // Translations for all 6 languages
+}
+
+// EventFAQTranslation Model
+{
+  id: string, // Auto-generated
+  faqId: string, // Foreign key to EventFAQ
+  language: Language, // pt | en | es | fr | de | it
+  question: string, // Translated question
+  answer: string, // Translated answer
+}
+```
+
+**Idempotent Pattern for FAQs:**
+
+Since EventFAQ has no unique constraint other than `id`, use the **findFirst + update OR create** pattern:
+
+```typescript
+// Helper function for idempotent FAQ creation
+const findOrCreateFAQ = async (
+  eventId: string,
+  order: number,
+  defaultQuestion: string,
+  defaultAnswer: string
+) => {
+  const existing = await prisma.eventFAQ.findFirst({
+    where: { eventId, order },
+  });
+
+  if (existing) {
+    return await prisma.eventFAQ.update({
+      where: { id: existing.id },
+      data: {
+        question: defaultQuestion,
+        answer: defaultAnswer,
+      },
+    });
+  } else {
+    return await prisma.eventFAQ.create({
+      data: {
+        eventId,
+        order,
+        question: defaultQuestion,
+        answer: defaultAnswer,
+      },
+    });
+  }
+};
+
+// Step 1: Create or update FAQ
+const faq1 = await findOrCreateFAQ(
+  event.id,
+  0, // order
+  "Qual é a hora de início da prova?", // Portuguese (fallback)
+  "A prova inicia às 09:00 horas." // Portuguese (fallback)
+);
+
+// Step 2: Upsert translations for ALL 6 languages
+const faqTranslations = {
+  pt: {
+    question: "Qual é a hora de início da prova?",
+    answer: "A prova inicia às 09:00 horas.",
+  },
+  en: {
+    question: "What time does the race start?",
+    answer: "The race starts at 09:00.",
+  },
+  es: {
+    question: "¿A qué hora comienza la carrera?",
+    answer: "La carrera comienza a las 09:00.",
+  },
+  fr: {
+    question: "À quelle heure commence la course?",
+    answer: "La course commence à 09:00.",
+  },
+  de: {
+    question: "Um wie viel Uhr beginnt das Rennen?",
+    answer: "Das Rennen beginnt um 09:00 Uhr.",
+  },
+  it: {
+    question: "A che ora inizia la gara?",
+    answer: "La gara inizia alle 09:00.",
+  },
+};
+
+for (const lang of ["pt", "en", "es", "fr", "de", "it"] as const) {
+  await prisma.eventFAQTranslation.upsert({
+    where: {
+      faqId_language: {
+        faqId: faq1.id,
+        language: lang,
+      },
+    },
+    update: faqTranslations[lang],
+    create: {
+      faqId: faq1.id,
+      language: lang,
+      ...faqTranslations[lang],
+    },
+  });
+}
+```
+
+**Common FAQ Topics:**
+
+- Race start times
+- Mandatory equipment
+- Registration deadlines
+- Refund policies
+- Parking information
+- Baggage storage
+- Weather contingencies
+- Medical support
+- Aid stations
+- Race day schedule
+- Bib collection
+- Results and timing
+
+**SEO Benefits:**
+
+- FAQs generate structured data (FAQPage schema) for search engines
+- Improves visibility in Google's FAQ rich snippets
+- Provides helpful information to athletes
+- Increases page relevance and authority
+
+**Important Notes:**
+
+- ✅ ALWAYS provide ALL 6 language translations for FAQs
+- ✅ Use the `order` field to control display sequence (0, 1, 2, ...)
+- ✅ Include both Portuguese fallback AND translations
+- ✅ Keep answers concise and helpful
+- ✅ Use the `findOrCreateFAQ` helper for idempotency
+- ❌ NEVER skip languages in FAQ translations
+- ❌ NEVER use hardcoded IDs for FAQs
+
 ## File Structure Template
 
 ```typescript
@@ -570,6 +719,143 @@ async function main() {
     },
   });
 
+  // Step 6: Create FAQs with translations (OPTIONAL but recommended for SEO)
+
+  // Helper function for idempotent FAQ creation
+  const findOrCreateFAQ = async (
+    eventId: string,
+    order: number,
+    defaultQuestion: string,
+    defaultAnswer: string
+  ) => {
+    const existing = await prisma.eventFAQ.findFirst({
+      where: { eventId, order },
+    });
+
+    if (existing) {
+      return await prisma.eventFAQ.update({
+        where: { id: existing.id },
+        data: {
+          question: defaultQuestion,
+          answer: defaultAnswer,
+        },
+      });
+    } else {
+      return await prisma.eventFAQ.create({
+        data: {
+          eventId,
+          order,
+          question: defaultQuestion,
+          answer: defaultAnswer,
+        },
+      });
+    }
+  };
+
+  // FAQ 1: Race start time
+  const faq1 = await findOrCreateFAQ(
+    event.id,
+    0,
+    "Qual é a hora de início da prova?",
+    "A prova inicia às 09:00 horas."
+  );
+
+  const faq1Translations = {
+    pt: {
+      question: "Qual é a hora de início da prova?",
+      answer: "A prova inicia às 09:00 horas.",
+    },
+    en: {
+      question: "What time does the race start?",
+      answer: "The race starts at 09:00.",
+    },
+    es: {
+      question: "¿A qué hora comienza la carrera?",
+      answer: "La carrera comienza a las 09:00.",
+    },
+    fr: {
+      question: "À quelle heure commence la course?",
+      answer: "La course commence à 09:00.",
+    },
+    de: {
+      question: "Um wie viel Uhr beginnt das Rennen?",
+      answer: "Das Rennen beginnt um 09:00 Uhr.",
+    },
+    it: {
+      question: "A che ora inizia la gara?",
+      answer: "La gara inizia alle 09:00.",
+    },
+  };
+
+  for (const lang of ["pt", "en", "es", "fr", "de", "it"] as const) {
+    await prisma.eventFAQTranslation.upsert({
+      where: {
+        faqId_language: {
+          faqId: faq1.id,
+          language: lang,
+        },
+      },
+      update: faq1Translations[lang],
+      create: {
+        faqId: faq1.id,
+        language: lang,
+        ...faq1Translations[lang],
+      },
+    });
+  }
+
+  // FAQ 2: Registration deadline (example)
+  const faq2 = await findOrCreateFAQ(
+    event.id,
+    1,
+    "Qual é o prazo de inscrição?",
+    "As inscrições encerram 48 horas antes do evento."
+  );
+
+  const faq2Translations = {
+    pt: {
+      question: "Qual é o prazo de inscrição?",
+      answer: "As inscrições encerram 48 horas antes do evento.",
+    },
+    en: {
+      question: "What is the registration deadline?",
+      answer: "Registration closes 48 hours before the event.",
+    },
+    es: {
+      question: "¿Cuál es la fecha límite de inscripción?",
+      answer: "Las inscripciones cierran 48 horas antes del evento.",
+    },
+    fr: {
+      question: "Quelle est la date limite d'inscription?",
+      answer: "Les inscriptions ferment 48 heures avant l'événement.",
+    },
+    de: {
+      question: "Was ist die Anmeldefrist?",
+      answer: "Die Anmeldung schließt 48 Stunden vor der Veranstaltung.",
+    },
+    it: {
+      question: "Qual è la scadenza per l'iscrizione?",
+      answer: "Le iscrizioni chiudono 48 ore prima dell'evento.",
+    },
+  };
+
+  for (const lang of ["pt", "en", "es", "fr", "de", "it"] as const) {
+    await prisma.eventFAQTranslation.upsert({
+      where: {
+        faqId_language: {
+          faqId: faq2.id,
+          language: lang,
+        },
+      },
+      update: faq2Translations[lang],
+      create: {
+        faqId: faq2.id,
+        language: lang,
+        ...faq2Translations[lang],
+      },
+    });
+  }
+
   // Prisma upsert() returns the complete object including all auto-generated fields (id, createdAt, updatedAt)
   console.log("✅ Event upserted with ID:", event.id);
   console.log(
@@ -577,6 +863,7 @@ async function main() {
   );
   console.log("🏃 Variants upserted");
   console.log("💰 Pricing phases upserted");
+  console.log("❓ FAQs created with translations for all 6 languages");
 }
 
 main()
@@ -602,6 +889,7 @@ When a user provides event information, you should:
    - External website URL
    - Whether the event has variants (different distances/categories)
    - Pricing information (if available)
+   - Common FAQs (optional but recommended for SEO)
 
 2. **Generate complete translations** for all 6 languages:
    - Use the user's provided information as the base
@@ -618,6 +906,7 @@ When a user provides event information, you should:
    - Upsert variants separately with stable slug field
    - Upsert variant translations separately
    - Upsert pricing phases separately
+   - Create FAQs with translations if applicable (optional but recommended)
    - Include console.log statements for feedback
    - Proper error handling with disconnect
 
@@ -636,6 +925,7 @@ When a user provides event information, you should:
    - ✅ Markdown formatting in descriptions
    - ✅ Valid SportType enum values
    - ✅ Proper TypeScript syntax
+   - ✅ FAQs have translations in all 6 languages (if FAQs are included)
 
 ## Example User Interaction
 
@@ -690,6 +980,7 @@ When a user provides event information, you should:
 - ❌ NEVER use invalid SportType values
 - ❌ NEVER assume automatic seed execution (seeds are manual-only)
 - ❌ NEVER link pricing phases to `variantId` (use `eventId` instead)
+- ❌ NEVER skip FAQ translations (all 6 languages required if FAQs are included)
 - ✅ ALWAYS use upsert for idempotency
 - ✅ ALWAYS use European Portuguese for Portuguese translations
 - ✅ ALWAYS set imageUrl to empty string or null
@@ -700,6 +991,7 @@ When a user provides event information, you should:
 - ✅ ALWAYS use `pnpm tsx prisma/seeds/<event-slug>.ts` command
 - ✅ ALWAYS inform users about manual workflow execution
 - ✅ ALWAYS link pricing phases to `eventId`, NOT `variantId`
+- ✅ ALWAYS provide FAQ translations in all 6 languages if FAQs are included
 
 ## Pricing Phases Structure (CRITICAL)
 

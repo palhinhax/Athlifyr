@@ -5,10 +5,10 @@ import { prisma } from "@/lib/prisma";
 // GET /api/posts/[id]/comments - Get comments for a post
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const postId = params.id;
+    const postId = (await params).id;
 
     const comments = await prisma.postComment.findMany({
       where: { postId },
@@ -39,7 +39,7 @@ export async function GET(
 // POST /api/posts/[id]/comments - Add a comment to a post
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -48,7 +48,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const postId = params.id;
+    const postId = (await params).id;
     const { content } = await request.json();
 
     if (!content || content.trim().length === 0) {
@@ -97,7 +97,7 @@ export async function POST(
 // DELETE /api/posts/[id]/comments?commentId=xxx - Delete a comment
 export async function DELETE(
   request: NextRequest,
-  { params: _params }: { params: { id: string } }
+  { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();

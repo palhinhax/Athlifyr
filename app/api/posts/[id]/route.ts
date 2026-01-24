@@ -11,7 +11,7 @@ const updatePostSchema = z.object({
 // PATCH a post (only author)
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -20,7 +20,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const postId = params.id;
+    const postId = (await params).id;
 
     // Get the post
     const post = await prisma.post.findUnique({
@@ -86,7 +86,7 @@ export async function PATCH(
 // Delete a post (only author or admin)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -95,7 +95,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const postId = params.id;
+    const postId = (await params).id;
 
     // Get the post
     const post = await prisma.post.findUnique({
@@ -136,11 +136,11 @@ export async function DELETE(
 // Get a single post with like info
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
-    const postId = params.id;
+    const postId = (await params).id;
 
     const post = await prisma.post.findUnique({
       where: { id: postId },

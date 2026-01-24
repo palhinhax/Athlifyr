@@ -5,10 +5,10 @@ import { canManageVenue } from "@/lib/venues/authorization";
 import { VenueRole } from "@prisma/client";
 import crypto from "crypto";
 
-// POST - Create invite
-export async function POST(
+// GET - List pending invites (owner only)
+export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -17,7 +17,76 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
+
+    // Check if user is owner
+    const member = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!member || member.role !== VenueRole.OWNER) {
+      return NextResponse.json(
+        { error: "Only owner can view invites" },
+        { status: 403 }
+      );
+    }
+
+    // Get pending invites
+    const invites = await prisma.venueInvite.findMany({
+      where: {
+        venueId,
+        status: "PENDING",
+        expiresAt: {
+          gt: new Date(),
+        },
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    // Get inviter names separately
+    const invitesWithInviter = await Promise.all(
+      invites.map(async (invite) => {
+        const inviter = await prisma.user.findUnique({
+          where: { id: invite.invitedByUserId },
+          select: { name: true },
+        });
+        return {
+          ...invite,
+          invitedBy: inviter,
+        };
+      })
+    );
+
+    return NextResponse.json(invitesWithInviter);
+  } catch (error) {
+    console.error("Error fetching invites:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch invites" },
+      { status: 500 }
+    );
+  }
+}
+
+// POST - Create invite
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: venueId } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, venueId);

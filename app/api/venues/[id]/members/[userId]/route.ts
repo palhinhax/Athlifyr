@@ -7,7 +7,7 @@ import { VenueRole, MemberStatus } from "@prisma/client";
 // PATCH - Update member role or status
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; userId: string } }
+  { params }: { params: Promise<{ id: string; userId: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, userId } = params;
+    const { id: venueId, userId } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, venueId);
@@ -85,6 +85,79 @@ export async function PATCH(
     console.error("Error updating member:", error);
     return NextResponse.json(
       { error: "Failed to update member" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Remove member from venue
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string; userId: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: venueId, userId } = await params;
+
+    // Check if user is owner
+    const currentMember = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    if (!currentMember || currentMember.role !== VenueRole.OWNER) {
+      return NextResponse.json(
+        { error: "Only owner can remove members" },
+        { status: 403 }
+      );
+    }
+
+    // Get member to remove
+    const memberToRemove = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId,
+        },
+      },
+    });
+
+    if (!memberToRemove) {
+      return NextResponse.json({ error: "Member not found" }, { status: 404 });
+    }
+
+    // Cannot remove owner
+    if (memberToRemove.role === VenueRole.OWNER) {
+      return NextResponse.json(
+        { error: "Cannot remove owner" },
+        { status: 400 }
+      );
+    }
+
+    // Remove member
+    await prisma.venueMember.delete({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId,
+        },
+      },
+    });
+
+    return NextResponse.json({ message: "Member removed successfully" });
+  } catch (error) {
+    console.error("Error removing member:", error);
+    return NextResponse.json(
+      { error: "Failed to remove member" },
       { status: 500 }
     );
   }

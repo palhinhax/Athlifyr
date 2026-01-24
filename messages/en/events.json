@@ -126,6 +126,25 @@
       "apply": "Apply",
       "locationNotSupported": "Geolocation is not supported by your browser",
       "locationError": "Unable to retrieve your location"
+    },
+    "weather": {
+      "title": "Weather Forecast",
+      "clear": "Clear Sky",
+      "fewClouds": "Few Clouds",
+      "scatteredClouds": "Scattered Clouds",
+      "brokenClouds": "Broken Clouds",
+      "overcast": "Overcast",
+      "clouds": "Cloudy",
+      "drizzle": "Drizzle",
+      "lightRain": "Light Rain",
+      "moderateRain": "Moderate Rain",
+      "heavyRain": "Heavy Rain",
+      "rain": "Rain",
+      "snow": "Snow",
+      "mist": "Mist",
+      "fog": "Fog",
+      "haze": "Haze",
+      "thunderstorm": "Thunderstorm"
     }
   },
   "eventsPage": {

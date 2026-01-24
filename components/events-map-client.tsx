@@ -1,16 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-} from "react-leaflet";
-import L, { DivIcon } from "leaflet";
+import { usePathname } from "next/navigation";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import type { LatLngBounds } from "leaflet";
 import type { MapEvent } from "./events-map";
 import type { MapFilters } from "./map-filters";
@@ -20,78 +14,24 @@ import {
   getPrimarySport,
 } from "@/lib/sport-config";
 
-// Create custom icon based on sport type
-const createCustomIcon = (sportTypes: string[]): DivIcon => {
-  const primarySport = getPrimarySport(sportTypes);
-  const icon = getSportIcon(primarySport);
-  const colors = getSportColors(primarySport);
-
-  return L.divIcon({
-    html: `
-      <div style="
-        width: 40px;
-        height: 40px;
-        background: ${colors.solid};
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border: 3px solid white;
-      ">
-        <span style="
-          font-size: 20px;
-          transform: rotate(45deg);
-          display: block;
-          filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
-        ">${icon}</span>
-      </div>
-    `,
-    className: "custom-marker",
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
-  });
-};
-
 interface EventsMapClientProps {
   initialCenter?: [number, number];
   initialZoom?: number;
   filters?: MapFilters;
 }
 
-// Component to handle map events
-function MapEventsHandler({
-  onBoundsChange,
-}: {
-  onBoundsChange: (bounds: LatLngBounds) => void;
-}) {
-  const map = useMapEvents({
-    moveend: () => {
-      onBoundsChange(map.getBounds());
-    },
-    zoomend: () => {
-      onBoundsChange(map.getBounds());
-    },
-    load: () => {
-      onBoundsChange(map.getBounds());
-    },
-  });
-
-  // Initial bounds fetch
-  useEffect(() => {
-    onBoundsChange(map.getBounds());
-  }, [map, onBoundsChange]);
-
-  return null;
-}
-
 export default function EventsMapClient({
-  initialCenter = [39.5, -8.0], // Default fallback (will be overridden by server-detected center)
+  initialCenter = [39.5, -8.0],
   initialZoom = 7,
   filters: initialFilters,
 }: EventsMapClientProps) {
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const mapInitializedRef = useRef(false);
+
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +40,17 @@ export default function EventsMapClient({
   );
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
+  const filtersRef = useRef(filters);
+
+  // Keep filtersRef in sync
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  // Mount gate to avoid double initialization
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Listen for filter changes from MapFilters component
   useEffect(() => {
@@ -121,41 +72,25 @@ export default function EventsMapClient({
     };
   }, []);
 
-  // Refetch events when filters change
-  useEffect(() => {
-    if (mapBoundsRef.current) {
-      fetchEvents(mapBoundsRef.current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters]);
-
-  // Fetch events for the current bounds
+  // Fetch events for the current bounds (stable function using ref for filters)
   const fetchEvents = useCallback(
     async (bounds: LatLngBounds) => {
       try {
-        // Store current bounds for filter changes
         mapBoundsRef.current = bounds;
-
-        const north = bounds.getNorth();
-        const south = bounds.getSouth();
-        const east = bounds.getEast();
-        const west = bounds.getWest();
+        const currentFilters = filtersRef.current;
 
         const params = new URLSearchParams({
-          north: north.toString(),
-          south: south.toString(),
-          east: east.toString(),
-          west: west.toString(),
+          north: bounds.getNorth().toString(),
+          south: bounds.getSouth().toString(),
+          east: bounds.getEast().toString(),
+          west: bounds.getWest().toString(),
         });
 
-        // Add filters to params
-        if (filters) {
-          if (filters.sports && filters.sports.length > 0) {
-            params.append("sportTypes", filters.sports.join(","));
-          }
-          if (filters.dateRange) {
-            params.append("dateRange", filters.dateRange);
-          }
+        if (currentFilters?.sports?.length) {
+          params.append("sportTypes", currentFilters.sports.join(","));
+        }
+        if (currentFilters?.dateRange) {
+          params.append("dateRange", currentFilters.dateRange);
         }
 
         const response = await fetch(`/api/events/map?${params}`);
@@ -175,18 +110,22 @@ export default function EventsMapClient({
         setLoading(false);
       }
     },
-    [filters]
+    [] // No dependencies - uses refs
   );
 
-  // Handle bounds change with debounce
+  // Refetch events when filters change
+  useEffect(() => {
+    if (mapBoundsRef.current) {
+      fetchEvents(mapBoundsRef.current);
+    }
+  }, [filters, fetchEvents]);
+
+  // Handle bounds change with debounce (stable function)
   const handleBoundsChange = useCallback(
     (bounds: LatLngBounds) => {
-      // Clear previous timer
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-
-      // Set new timer (debounce of 300ms)
       debounceTimerRef.current = setTimeout(() => {
         fetchEvents(bounds);
       }, 300);
@@ -203,8 +142,132 @@ export default function EventsMapClient({
     };
   }, []);
 
+  // Initialize map ONCE (following event-location-map-client.tsx pattern)
+  useEffect(() => {
+    if (!mounted || !mapContainerRef.current || mapInitializedRef.current) {
+      return;
+    }
+
+    // Mark as initialized to prevent re-initialization
+    mapInitializedRef.current = true;
+
+    // Clean up any existing map instance first
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const map = L.map(mapContainerRef.current, {
+      center: initialCenter,
+      zoom: initialZoom,
+    });
+
+    mapInstanceRef.current = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Create a layer group for markers
+    markersLayerRef.current = L.layerGroup().addTo(map);
+
+    // Set up event handlers for bounds changes
+    const onMoveEnd = () => handleBoundsChange(map.getBounds());
+    map.on("moveend", onMoveEnd);
+    map.on("zoomend", onMoveEnd);
+
+    // Initial fetch
+    handleBoundsChange(map.getBounds());
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+      markersLayerRef.current = null;
+      mapInitializedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]); // Only depend on mounted - map should initialize once
+
+  // Update markers when events change
+  useEffect(() => {
+    if (!markersLayerRef.current) return;
+
+    // Clear existing markers
+    markersLayerRef.current.clearLayers();
+
+    // Add new markers
+    events.forEach((event) => {
+      const primarySport = getPrimarySport(event.sportTypes);
+      const icon = getSportIcon(primarySport);
+      const colors = getSportColors(primarySport);
+
+      const customIcon = L.divIcon({
+        html: `
+          <div style="
+            width: 40px;
+            height: 40px;
+            background: ${colors.solid};
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            border: 3px solid white;
+          ">
+            <span style="
+              font-size: 20px;
+              transform: rotate(45deg);
+              display: block;
+              filter: drop-shadow(0 1px 2px rgba(0,0,0,0.3));
+            ">${icon}</span>
+          </div>
+        `,
+        className: "custom-marker",
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+      });
+
+      // Get locale from pathname
+      const locale = pathname.split("/")[1] || "pt";
+
+      const marker = L.marker([event.latitude, event.longitude], {
+        icon: customIcon,
+      });
+
+      marker.bindPopup(`
+        <div style="min-width: 200px; padding: 8px;">
+          <h3 style="font-weight: 600; margin-bottom: 8px;">${event.title}</h3>
+          <p style="color: #666; font-size: 14px; margin-bottom: 4px;">
+            ${new Date(event.startDate).toLocaleDateString("pt-PT", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+          <p style="color: #666; font-size: 14px; margin-bottom: 8px;">${event.city}</p>
+          <a href="/${locale}/events/${event.slug}" 
+             style="display: inline-block; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; text-align: center; width: 100%;">
+            Ver Evento
+          </a>
+        </div>
+      `);
+
+      marker.addTo(markersLayerRef.current!);
+    });
+  }, [events, pathname]);
+
+  // Prevent rendering until mounted
+  if (!mounted) {
+    return null;
+  }
+
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full overflow-hidden rounded-lg">
       {loading && (
         <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -217,59 +280,11 @@ export default function EventsMapClient({
         </div>
       )}
 
-      <MapContainer
-        center={initialCenter}
-        zoom={initialZoom}
+      <div
+        ref={mapContainerRef}
         style={{ height: "100%", width: "100%" }}
         className="z-0"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-
-        <MapEventsHandler onBoundsChange={handleBoundsChange} />
-
-        {events.map((event) => (
-          <Marker
-            key={event.id}
-            position={[event.latitude, event.longitude]}
-            icon={createCustomIcon(event.sportTypes)}
-          >
-            <Popup>
-              <div className="min-w-[200px] space-y-2">
-                <h3 className="font-semibold">{event.title}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {new Date(event.startDate).toLocaleDateString("pt-PT", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </p>
-                <p className="text-sm text-muted-foreground">{event.city}</p>
-                <div className="flex flex-wrap gap-1">
-                  {event.sportTypes.map((sport) => (
-                    <span
-                      key={sport}
-                      className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
-                    >
-                      {sport}
-                    </span>
-                  ))}
-                </div>
-                <Button
-                  asChild
-                  variant="link"
-                  className="mt-2 w-full"
-                  size="sm"
-                >
-                  <a href={`/events/${event.slug}`}>Ver Evento</a>
-                </Button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
-      </MapContainer>
+      />
 
       {/* Event count badge */}
       <div className="absolute bottom-4 left-4 z-[1000] rounded-lg bg-background/90 px-3 py-1.5 text-sm font-medium shadow-lg backdrop-blur-sm">

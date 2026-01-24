@@ -11,7 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, Users, User, Tag, CheckCircle, Repeat } from "lucide-react";
+import { Clock, Users, User, Tag, CheckCircle } from "lucide-react";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { useTranslations } from "next-intl";
@@ -118,7 +118,7 @@ export function SessionDetailsDialog({
                 {format(sessionStart, "PPP", { locale: dateLocale })}
               </DialogDescription>
             </div>
-            <div className="flex flex-col gap-1">
+            <div className="me-5 flex flex-col gap-1">
               {session.type === "CLASS" ? (
                 <Badge variant="secondary">{t("class")}</Badge>
               ) : (
@@ -131,12 +131,6 @@ export function SessionDetailsDialog({
                 <Badge variant="default">
                   <CheckCircle className="mr-1 h-3 w-3" />
                   {t("booked")}
-                </Badge>
-              )}
-              {session.recurringSessionId && (
-                <Badge variant="outline">
-                  <Repeat className="mr-1 h-3 w-3" />
-                  {t("recurring")}
                 </Badge>
               )}
             </div>

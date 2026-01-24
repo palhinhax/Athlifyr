@@ -6,7 +6,7 @@ import { canManageVenue } from "@/lib/venues/authorization";
 // POST - Mark subscription as paid (EXTERNAL payments - owner/admin only)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; subscriptionId: string } }
+  { params }: { params: Promise<{ id: string; subscriptionId: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, subscriptionId } = params;
+    const { id: venueId, subscriptionId } = await params;
 
     // Check authorization - must be owner or admin
     const authResult = await canManageVenue(session.user.id, venueId);
@@ -23,14 +23,22 @@ export async function POST(
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get subscription
+    // Get subscription and venue
     const subscription = await prisma.venueSubscription.findFirst({
       where: {
         id: subscriptionId,
         venueId: venueId,
       },
       include: {
-        plan: true,
+        plan: {
+          include: {
+            venue: {
+              select: {
+                paymentMode: true,
+              },
+            },
+          },
+        },
       },
     });
 
@@ -41,10 +49,14 @@ export async function POST(
       );
     }
 
-    // Check if plan is EXTERNAL
-    if (subscription.plan.paymentProvider !== "EXTERNAL") {
+    // Check if venue accepts EXTERNAL payments
+    const venuePaymentMode = subscription.plan.venue.paymentMode;
+    if (venuePaymentMode !== "EXTERNAL" && venuePaymentMode !== "MIXED") {
       return NextResponse.json(
-        { error: "This subscription does not use external payment" },
+        {
+          error:
+            "This venue does not accept external payments - payment mode must be EXTERNAL or MIXED",
+        },
         { status: 400 }
       );
     }

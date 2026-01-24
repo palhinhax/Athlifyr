@@ -3,23 +3,25 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // GET - Get translations for an event (including variant translations)
 export async function GET(request: Request, { params }: RouteParams) {
   try {
+    const { id } = await params;
+
     // Get event translations
     const translations = await prisma.eventTranslation.findMany({
-      where: { eventId: params.id },
+      where: { eventId: id },
       orderBy: { language: "asc" },
     });
 
     // Get all variants for this event with their translations
     const variants = await prisma.eventVariant.findMany({
-      where: { eventId: params.id },
+      where: { eventId: id },
       include: {
         translations: true,
       },
@@ -57,6 +59,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const { translations } = body;
 
@@ -69,7 +72,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
 
     // Check if event exists
     const existingEvent = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingEvent) {
@@ -92,7 +95,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
             // Delete if exists but now empty
             await prisma.eventTranslation.deleteMany({
               where: {
-                eventId: params.id,
+                eventId: id,
                 language: t.language as "pt" | "en" | "es" | "fr" | "de" | "it",
               },
             });
@@ -102,7 +105,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
           return prisma.eventTranslation.upsert({
             where: {
               eventId_language: {
-                eventId: params.id,
+                eventId: id,
                 language: t.language as "pt" | "en" | "es" | "fr" | "de" | "it",
               },
             },
@@ -114,7 +117,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
               metaDescription: t.metaDescription || null,
             },
             create: {
-              eventId: params.id,
+              eventId: id,
               language: t.language as "pt" | "en" | "es" | "fr" | "de" | "it",
               title: t.title || "",
               description: t.description || "",

@@ -5,12 +5,12 @@ import { prisma } from "@/lib/prisma";
 // GET /api/venues/[id]/reviews/[reviewId]/replies - Get all replies for a review
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string; reviewId: string } }
+  { params }: { params: Promise<{ id: string; reviewId: string }> }
 ) {
   try {
     const replies = await prisma.venueReviewReply.findMany({
       where: {
-        reviewId: params.reviewId,
+        reviewId: (await params).reviewId,
       },
       include: {
         user: {
@@ -39,7 +39,7 @@ export async function GET(
 // POST /api/venues/[id]/reviews/[reviewId]/replies - Add a reply (admin/owner only)
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string; reviewId: string } }
+  { params }: { params: Promise<{ id: string; reviewId: string }> }
 ) {
   try {
     const session = await auth();
@@ -51,7 +51,7 @@ export async function POST(
     // Check if user is admin/owner of the venue
     const venueMember = await prisma.venueMember.findFirst({
       where: {
-        venueId: params.id,
+        venueId: (await params).id,
         userId: session.user.id,
         role: {
           in: ["OWNER", "ADMIN"],
@@ -86,8 +86,8 @@ export async function POST(
     // Verify review exists and belongs to this venue
     const review = await prisma.venueReview.findFirst({
       where: {
-        id: params.reviewId,
-        venueId: params.id,
+        id: (await params).reviewId,
+        venueId: (await params).id,
       },
     });
 
@@ -97,7 +97,7 @@ export async function POST(
 
     const reply = await prisma.venueReviewReply.create({
       data: {
-        reviewId: params.reviewId,
+        reviewId: (await params).reviewId,
         userId: session.user.id,
         content: trimmedContent,
       },
@@ -125,7 +125,7 @@ export async function POST(
 // DELETE /api/venues/[id]/reviews/[reviewId]/replies - Delete a reply
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string; reviewId: string } }
+  { params }: { params: Promise<{ id: string; reviewId: string }> }
 ) {
   try {
     const session = await auth();
@@ -160,7 +160,7 @@ export async function DELETE(
     const isAuthor = reply.userId === session.user.id;
     const venueMember = await prisma.venueMember.findFirst({
       where: {
-        venueId: params.id,
+        venueId: (await params).id,
         userId: session.user.id,
         role: {
           in: ["OWNER", "ADMIN"],

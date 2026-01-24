@@ -4,13 +4,6 @@ import { useTranslations } from "next-intl";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 interface BasicInfoFormProps {
   formData: {
@@ -18,7 +11,6 @@ interface BasicInfoFormProps {
     description: string;
     price: string;
     currency: string;
-    paymentProvider: string;
   };
   onFormDataChange: (data: BasicInfoFormProps["formData"]) => void;
 }
@@ -90,24 +82,7 @@ export function BasicInfoForm({
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="paymentProvider">{t("paymentMethod")}</Label>
-        <Select
-          value={formData.paymentProvider}
-          onValueChange={(value) =>
-            onFormDataChange({ ...formData, paymentProvider: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder={t("selectPaymentMethod")} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="IN_APP">{t("paymentInApp")} (Stripe)</SelectItem>
-            <SelectItem value="EXTERNAL">{t("paymentExternal")}</SelectItem>
-            <SelectItem value="BOTH">{t("paymentBoth")}</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+      {/* Payment provider removed - now managed at venue level */}
     </div>
   );
 }

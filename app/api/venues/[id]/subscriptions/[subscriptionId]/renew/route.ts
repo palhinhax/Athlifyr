@@ -6,7 +6,7 @@ import { addDays, addMonths, addYears } from "date-fns";
 // POST - Renew subscription (owner/admin only)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; subscriptionId: string } }
+  { params }: { params: Promise<{ id: string; subscriptionId: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, subscriptionId } = params;
+    const { id: venueId, subscriptionId } = await params;
 
     // Check if user is owner or admin of this venue
     const member = await prisma.venueMember.findUnique({

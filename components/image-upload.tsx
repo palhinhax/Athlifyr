@@ -13,7 +13,7 @@ interface ImageUploadProps {
   folder?: "profiles" | "posts" | "events";
   onUploadComplete: (url: string, fileId: string, fileName: string) => void;
   currentImageUrl?: string;
-  maxSizeMB?: number;
+  maxSizeMB?: number; // eslint-disable-line @typescript-eslint/no-unused-vars
   acceptedFormats?: string[];
   buttonText?: string;
   className?: string;
@@ -24,7 +24,7 @@ export function ImageUpload({
   folder = "posts",
   onUploadComplete,
   currentImageUrl,
-  maxSizeMB,
+  maxSizeMB: _maxSizeMB,
   acceptedFormats = ["image/jpeg", "image/png", "image/webp", "image/gif"],
   buttonText,
   className = "",
@@ -46,9 +46,8 @@ export function ImageUpload({
   }, [currentImageUrl]);
 
   // Determine max file size based on user role
-  // Admins can upload up to 20MB, regular users up to 5MB
-  const effectiveMaxSizeMB =
-    maxSizeMB ?? (session?.user?.role === "ADMIN" ? 20 : 5);
+  // Admins can upload up to 5MB, regular users up to 5MB
+  const effectiveMaxSizeMB = 5;
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

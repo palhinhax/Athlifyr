@@ -7,7 +7,7 @@ import { Currency } from "@prisma/client";
 // PUT - Update plan
 export async function PUT(
   request: Request,
-  { params }: { params: { id: string; planId: string } }
+  { params }: { params: Promise<{ id: string; planId: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function PUT(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, planId } = params;
+    const { id: venueId, planId } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, venueId);
@@ -85,7 +85,7 @@ export async function PUT(
 // DELETE - Delete plan (soft delete by setting isActive to false)
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; planId: string } }
+  { params }: { params: Promise<{ id: string; planId: string }> }
 ) {
   try {
     const session = await auth();
@@ -94,7 +94,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, planId } = params;
+    const { id: venueId, planId } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, venueId);

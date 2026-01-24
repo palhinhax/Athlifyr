@@ -126,6 +126,25 @@
       "apply": "Appliquer",
       "locationNotSupported": "La géolocalisation n'est pas prise en charge par votre navigateur",
       "locationError": "Impossible d'obtenir votre position"
+    },
+    "weather": {
+      "title": "Prévisions Météo",
+      "clear": "Ciel Dégagé",
+      "fewClouds": "Peu Nuageux",
+      "scatteredClouds": "Nuages Épars",
+      "brokenClouds": "Nuages Fragmentés",
+      "overcast": "Couvert",
+      "clouds": "Nuageux",
+      "drizzle": "Bruine",
+      "lightRain": "Pluie Légère",
+      "moderateRain": "Pluie Modérée",
+      "heavyRain": "Pluie Forte",
+      "rain": "Pluie",
+      "snow": "Neige",
+      "mist": "Brume",
+      "fog": "Brouillard",
+      "haze": "Brume Légère",
+      "thunderstorm": "Orage"
     }
   },
   "eventsPage": {

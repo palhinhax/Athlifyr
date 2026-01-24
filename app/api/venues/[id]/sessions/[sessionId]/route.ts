@@ -5,16 +5,16 @@ import { canManageSessions } from "@/lib/venues/authorization";
 import { SessionType } from "@prisma/client";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
     sessionId: string;
-  };
+  }>;
 }
 
 // GET - Get a single session
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { id: venueId, sessionId } = params;
+    const { id: venueId, sessionId } = await params;
 
     const session = await prisma.venueSession.findFirst({
       where: {
@@ -78,7 +78,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, sessionId } = params;
+    const { id: venueId, sessionId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(authSession.user.id, venueId);
@@ -168,7 +168,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, sessionId } = params;
+    const { id: venueId, sessionId } = await params;
 
     // Check for query params
     const searchParams = request.nextUrl.searchParams;

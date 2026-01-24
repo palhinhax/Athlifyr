@@ -64,12 +64,16 @@ interface Venue {
   defaultSessionCapacity: number | null;
   defaultBookingAdvanceDays: number;
   defaultCancellationDeadlineMinutes: number;
+  paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
+  externalPaymentInstructions: string | null;
   members: Array<{
     id: string;
     role: string;
+    userId: string;
     user: {
       id: string;
       name: string;
+      email: string;
       image: string | null;
     };
   }>;
@@ -79,7 +83,7 @@ interface Venue {
     description: string | null;
     price: number | null;
     currency: string;
-    paymentProvider: string;
+    // paymentProvider removed - now managed at venue level via venue.paymentMode
     policy?: VenuePlanPolicy | null;
     isActive: boolean;
     subscriptions?: Array<{
@@ -129,9 +133,12 @@ export function VenueDetailClient({
     name: string;
     price: number;
     currency: string;
-    paymentProvider: string;
+    // paymentProvider removed - will use venue.paymentMode instead
   } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "IN_APP" | "EXTERNAL" | null
+  >(null); // For MIXED mode: temporary choice until user selects
   const [planModalOpen, setPlanModalOpen] = useState(false);
   const [editingPlan, setEditingPlan] = useState<{
     id: string;
@@ -167,7 +174,7 @@ export function VenueDetailClient({
     name: string;
     price: number | null;
     currency: string;
-    paymentProvider: string;
+    // paymentProvider removed - will use venue.paymentMode instead
   }) => {
     if (!plan.price) return;
     setSelectedPlan({
@@ -175,7 +182,7 @@ export function VenueDetailClient({
       name: plan.name,
       price: plan.price,
       currency: plan.currency,
-      paymentProvider: plan.paymentProvider,
+      // paymentProvider removed - checkout will use venue.paymentMode
     });
     setCheckoutOpen(true);
   };
@@ -183,6 +190,7 @@ export function VenueDetailClient({
   const handleCheckoutSuccess = () => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
+    setSelectedPaymentMethod(null); // Reset payment method selection for MIXED mode
 
     // Show success toast
     toast({
@@ -198,6 +206,7 @@ export function VenueDetailClient({
   const handleCheckoutCancel = () => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
+    setSelectedPaymentMethod(null); // Reset payment method selection for MIXED mode
   };
 
   const handleTogglePlanActiveClick = (planId: string) => {
@@ -315,6 +324,7 @@ export function VenueDetailClient({
       <VenueProfileHeader
         venue={venue}
         userId={userId}
+        userRole={userRole}
         isOwnerOrAdmin={isOwnerOrAdmin}
         slug={slug}
         locale={locale}
@@ -758,7 +768,7 @@ export function VenueDetailClient({
           {selectedPlan && venue && (
             <>
               {/* EXTERNAL: On-site payment only */}
-              {selectedPlan.paymentProvider === "EXTERNAL" && (
+              {venue.paymentMode === "EXTERNAL" && (
                 <div className="space-y-4">
                   <div className="rounded-lg border border-muted bg-muted/50 p-6">
                     <h3 className="mb-3 text-lg font-semibold">
@@ -793,7 +803,7 @@ export function VenueDetailClient({
               )}
 
               {/* IN_APP: Stripe checkout only */}
-              {selectedPlan.paymentProvider === "IN_APP" && (
+              {venue.paymentMode === "IN_APP" && (
                 <StripeCheckout
                   venueId={venue.id}
                   venueName={venue.name}
@@ -806,80 +816,127 @@ export function VenueDetailClient({
                 />
               )}
 
-              {/* BOTH: Choice between in-app and on-site */}
-              {selectedPlan.paymentProvider === "BOTH" && (
+              {/* MIXED: Choice between in-app and on-site */}
+              {venue.paymentMode === "MIXED" && (
                 <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">
-                    {t("payment.chooseMethod")}
-                  </p>
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {/* In-App Payment Option */}
-                    <button
-                      onClick={() => {
-                        setSelectedPlan({
-                          ...selectedPlan,
-                          paymentProvider: "IN_APP",
-                        });
-                      }}
-                      className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
-                    >
-                      <svg
-                        className="mb-3 h-12 w-12 text-primary"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                        />
-                      </svg>
-                      <h3 className="mb-2 font-semibold">
-                        {t("payment.inApp")}
-                      </h3>
-                      <p className="text-center text-xs text-muted-foreground">
-                        {t("payment.inAppDescription")}
+                  {!selectedPaymentMethod ? (
+                    <>
+                      <p className="text-sm text-muted-foreground">
+                        {t("payment.chooseMethod")}
                       </p>
-                    </button>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        {/* In-App Payment Option */}
+                        <button
+                          onClick={() => {
+                            setSelectedPaymentMethod("IN_APP");
+                          }}
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
+                        >
+                          <svg
+                            className="mb-3 h-12 w-12 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                            />
+                          </svg>
+                          <h3 className="mb-2 font-semibold">
+                            {t("payment.inApp")}
+                          </h3>
+                          <p className="text-center text-xs text-muted-foreground">
+                            {t("payment.inAppDescription")}
+                          </p>
+                        </button>
 
-                    {/* On-Site Payment Option */}
-                    <button
-                      onClick={() => {
-                        setSelectedPlan({
-                          ...selectedPlan,
-                          paymentProvider: "EXTERNAL",
-                        });
+                        {/* On-Site Payment Option */}
+                        <button
+                          onClick={() => {
+                            setSelectedPaymentMethod("EXTERNAL");
+                          }}
+                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
+                        >
+                          <svg
+                            className="mb-3 h-12 w-12 text-primary"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
+                            />
+                          </svg>
+                          <h3 className="mb-2 font-semibold">
+                            {t("payment.external")}
+                          </h3>
+                          <p className="text-center text-xs text-muted-foreground">
+                            {t("payment.externalDescription")}
+                          </p>
+                        </button>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button
+                          variant="outline"
+                          onClick={handleCheckoutCancel}
+                        >
+                          {t("payment.cancel")}
+                        </Button>
+                      </div>
+                    </>
+                  ) : selectedPaymentMethod === "IN_APP" ? (
+                    <StripeCheckout
+                      venueId={venue.id}
+                      venueName={venue.name}
+                      planId={selectedPlan.id}
+                      planName={selectedPlan.name}
+                      price={selectedPlan.price}
+                      currency={selectedPlan.currency}
+                      onSuccess={handleCheckoutSuccess}
+                      onCancel={() => {
+                        setSelectedPaymentMethod(null);
+                        handleCheckoutCancel();
                       }}
-                      className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
-                    >
-                      <svg
-                        className="mb-3 h-12 w-12 text-primary"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                        />
-                      </svg>
-                      <h3 className="mb-2 font-semibold">
-                        {t("payment.external")}
-                      </h3>
-                      <p className="text-center text-xs text-muted-foreground">
-                        {t("payment.externalDescription")}
-                      </p>
-                    </button>
-                  </div>
-                  <div className="flex justify-end">
-                    <Button variant="outline" onClick={handleCheckoutCancel}>
-                      {t("payment.cancel")}
-                    </Button>
-                  </div>
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      <div className="rounded-lg border border-muted bg-muted/50 p-6">
+                        <h3 className="mb-3 text-lg font-semibold">
+                          {t("payment.onSiteTitle")}
+                        </h3>
+                        <p className="mb-4 text-sm text-muted-foreground">
+                          {t("payment.onSiteInstructions")}
+                        </p>
+                        <div className="space-y-3">
+                          <p className="text-sm font-medium">
+                            {t("payment.onSiteSteps")}
+                          </p>
+                          <ol className="ml-4 list-decimal space-y-2 text-sm text-muted-foreground">
+                            <li>{t("payment.onSiteStep1")}</li>
+                            <li>{t("payment.onSiteStep2")}</li>
+                            <li>{t("payment.onSiteStep3")}</li>
+                          </ol>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <Button
+                          variant="outline"
+                          onClick={() => setSelectedPaymentMethod(null)}
+                        >
+                          {t("payment.back")}
+                        </Button>
+                        <Button onClick={handleCheckoutSuccess}>
+                          {t("payment.confirmBooking")}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
             </>

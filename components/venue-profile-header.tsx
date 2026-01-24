@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { MapPin, Edit } from "lucide-react";
+import { MapPin, Settings } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { VenueEditModal } from "@/components/venue-edit-modal";
+import { VenueSettingsModal } from "@/components/venue-settings-modal";
 import { ShareButton } from "@/components/share-button";
 import { VenueRecommendations } from "@/components/venue-recommendations";
 import { VenueReviewsModal } from "@/components/venue-reviews-modal";
@@ -30,12 +30,16 @@ interface VenueProfileHeaderProps {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
+    paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
+    externalPaymentInstructions: string | null;
     members: Array<{
       id: string;
       role: string;
+      userId: string;
       user: {
         id: string;
         name: string;
+        email: string;
         image: string | null;
       };
     }>;
@@ -46,6 +50,7 @@ interface VenueProfileHeaderProps {
     };
   };
   userId?: string;
+  userRole?: string;
   isOwnerOrAdmin?: boolean;
   slug: string;
   locale: string;
@@ -54,6 +59,7 @@ interface VenueProfileHeaderProps {
 export function VenueProfileHeader({
   venue,
   userId,
+  userRole,
   isOwnerOrAdmin,
   slug,
   locale,
@@ -61,6 +67,10 @@ export function VenueProfileHeader({
   const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Determine if user is owner
+  const isOwner =
+    venue.members.find((m) => m.user.id === userId)?.role === "OWNER";
 
   // Create share URL and description
   const venueUrl = `${process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com"}/${locale}/venues/${slug}`;
@@ -117,7 +127,7 @@ export function VenueProfileHeader({
                 className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"
                 onClick={() => setEditModalOpen(true)}
               >
-                <Edit className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 h-4 w-4" />
                 {t("editVenue")}
               </Button>
             )}
@@ -179,11 +189,14 @@ export function VenueProfileHeader({
       </div>
 
       {/* Edit Modal */}
-      {isOwnerOrAdmin && (
-        <VenueEditModal
+      {isOwnerOrAdmin && userId && (
+        <VenueSettingsModal
           venue={venue}
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
+          userId={userId}
+          isOwner={isOwner}
+          userRole={userRole}
         />
       )}
     </div>

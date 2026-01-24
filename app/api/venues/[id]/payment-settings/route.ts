@@ -7,7 +7,7 @@ import { PaymentMode } from "@prisma/client";
 // PATCH - Update venue payment settings (owner/admin only)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, id);
@@ -36,6 +36,33 @@ export async function PATCH(
         { error: "Invalid payment mode" },
         { status: 400 }
       );
+    }
+
+    // If trying to set IN_APP or MIXED, verify Stripe is complete
+    if (paymentMode === "IN_APP" || paymentMode === "MIXED") {
+      const venue = await prisma.venue.findUnique({
+        where: { id },
+        select: {
+          stripeOnboardingStatus: true,
+          stripeChargesEnabled: true,
+          stripePayoutsEnabled: true,
+        },
+      });
+
+      if (
+        !venue ||
+        venue.stripeOnboardingStatus !== "COMPLETE" ||
+        !venue.stripeChargesEnabled ||
+        !venue.stripePayoutsEnabled
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              "Stripe Connect onboarding must be complete before using in-app payments",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Update venue payment settings

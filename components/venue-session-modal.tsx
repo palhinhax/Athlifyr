@@ -233,7 +233,7 @@ export function VenueSessionModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[500px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>
             {session ? t("editSession") : t("createSession")}
@@ -350,7 +350,7 @@ export function VenueSessionModal({
           <div className="space-y-4 rounded-lg border p-4">
             <h4 className="text-sm font-medium">{t("bookingRules")}</h4>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="bookingAdvanceDays">
                   {t("bookingAdvanceDays")}

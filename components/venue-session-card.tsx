@@ -2,15 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Clock,
-  Users,
-  User,
-  CheckCircle,
-  Pencil,
-  Trash2,
-  Repeat,
-} from "lucide-react";
+import { Clock, Users, User, CheckCircle, Pencil, Trash2 } from "lucide-react";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -122,16 +114,14 @@ export function VenueSessionCard({
           >
             {session.title}
           </h4>
-          <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3" />
+          <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground">
+            <Clock className="h-3 w-3 flex-shrink-0" />
             <span>
               {format(sessionStart, "HH:mm", { locale: dateLocale })} -{" "}
               {format(sessionEnd, "HH:mm", { locale: dateLocale })}
             </span>
-            <span className="mx-1">•</span>
-            <span>
-              {duration} {t("minutes")}
-            </span>
+            <span className="mx-0.5">•</span>
+            <span>{t("minute", { count: duration })}</span>
           </div>
         </div>
 
@@ -152,13 +142,6 @@ export function VenueSessionCard({
             <Badge variant="default" className="text-xs">
               <CheckCircle className="mr-1 h-3 w-3" />
               {t("booked")}
-            </Badge>
-          )}
-
-          {session.recurringSessionId && (
-            <Badge variant="outline" className="text-xs">
-              <Repeat className="mr-1 h-3 w-3" />
-              {t("recurring")}
             </Badge>
           )}
         </div>

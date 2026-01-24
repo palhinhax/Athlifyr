@@ -29,5 +29,19 @@
     "cookies": "Cookies",
     "contact": "Contacto",
     "allRightsReserved": "© {year} Athlifyr. Todos os direitos reservados."
+  },
+  "search": {
+    "placeholder": "Pesquisar...",
+    "hint": "Começa a escrever para pesquisar",
+    "searchDescription": "Pesquisa em eventos, venues e pessoas",
+    "noResults": "Sem resultados",
+    "tryDifferent": "Tenta um termo de pesquisa diferente",
+    "searching": "A pesquisar...",
+    "event": "Evento",
+    "venue": "Venue",
+    "person": "Pessoa",
+    "toNavigate": "para navegar",
+    "toOpen": "para abrir",
+    "toClose": "para fechar"
   }
 }

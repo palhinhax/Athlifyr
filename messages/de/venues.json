@@ -171,6 +171,7 @@
       "noSessions": "Keine Sitzungen geplant",
       "noSessionsDescription": "Für diesen Zeitraum sind keine Sitzungen geplant.",
       "noSessionsThisWeek": "Keine Sitzungen diese Woche",
+      "noSessionsThisDay": "Keine Sitzungen an diesem Tag",
       "noUpcomingSessions": "Keine kommenden Sitzungen",
       "loadError": "Fehler beim Laden der Sitzungen",
       "today": "Heute",
@@ -297,9 +298,9 @@
       "about": "Über",
       "feed": "Feed",
       "sessions": "Sitzungen",
-      "team": "Team",
-      "reviews": "Bewertungen",
-      "subscribers": "Abonnenten"
+      "clients": "Kunden",
+      "subscriptions": "Abonnements",
+      "reviews": "Bewertungen"
     },
     "subscribers": {
       "title": "Abonnenten Verwalten",

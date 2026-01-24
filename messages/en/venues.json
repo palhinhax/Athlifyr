@@ -171,6 +171,7 @@
       "noSessions": "No sessions scheduled",
       "noSessionsDescription": "There are no sessions scheduled for this period.",
       "noSessionsThisWeek": "No sessions this week",
+      "noSessionsThisDay": "No sessions this day",
       "noUpcomingSessions": "No upcoming sessions",
       "loadError": "Failed to load sessions",
       "today": "Today",
@@ -297,9 +298,9 @@
       "about": "About",
       "feed": "Feed",
       "sessions": "Sessions",
-      "team": "Team",
-      "reviews": "Reviews",
-      "subscribers": "Subscribers"
+      "clients": "Clients",
+      "subscriptions": "Subscriptions",
+      "reviews": "Reviews"
     },
     "subscribers": {
       "title": "Manage Subscribers",

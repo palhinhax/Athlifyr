@@ -171,6 +171,7 @@
       "noSessions": "Sin sesiones programadas",
       "noSessionsDescription": "No hay sesiones programadas para este período.",
       "noSessionsThisWeek": "Sin sesiones esta semana",
+      "noSessionsThisDay": "Sin sesiones este día",
       "noUpcomingSessions": "Sin próximas sesiones",
       "loadError": "Error al cargar sesiones",
       "today": "Hoy",
@@ -297,9 +298,9 @@
       "about": "Acerca de",
       "feed": "Feed",
       "sessions": "Sesiones",
-      "team": "Equipo",
-      "reviews": "Reseñas",
-      "subscribers": "Suscriptores"
+      "clients": "Clientes",
+      "subscriptions": "Suscripciones",
+      "reviews": "Reseñas"
     },
     "subscribers": {
       "title": "Gestionar Suscriptores",

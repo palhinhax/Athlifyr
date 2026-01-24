@@ -355,13 +355,26 @@ export function VenueDetailClient({
                 <span className="hidden sm:inline">{t("tabs.sessions")}</span>
               </TabsTrigger>
               {isOwnerOrAdmin && (
-                <TabsTrigger
-                  value="team"
-                  className="flex-1 gap-2 md:flex-initial"
-                >
-                  <Users className="h-4 w-4" />
-                  <span className="hidden sm:inline">{t("tabs.team")}</span>
-                </TabsTrigger>
+                <>
+                  <TabsTrigger
+                    value="clients"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {t("tabs.clients")}
+                    </span>
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="subscriptions"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {t("tabs.subscriptions")}
+                    </span>
+                  </TabsTrigger>
+                </>
               )}
             </TabsList>
           </div>
@@ -672,9 +685,9 @@ export function VenueDetailClient({
             />
           </TabsContent>
 
-          {/* Team Tab (Only for Owners/Admins) */}
+          {/* Clients Tab (Only for Owners/Admins) */}
           {isOwnerOrAdmin && (
-            <TabsContent value="team" className="space-y-4">
+            <TabsContent value="clients" className="space-y-4">
               {venue.members.length === 0 ? (
                 <div className="rounded-lg border border-dashed p-12 text-center">
                   <p className="text-muted-foreground">{t("noTeamMembers")}</p>
@@ -711,17 +724,17 @@ export function VenueDetailClient({
                   ))}
                 </div>
               )}
+            </TabsContent>
+          )}
 
-              {/* Subscribers Section (Only for Owners/Admins) */}
-              {isOwnerOrAdmin && (
-                <div className="mt-8 space-y-4">
-                  <VenueSubscribersManager
-                    venueId={venue.id}
-                    locale={locale}
-                    plans={venue.plans}
-                  />
-                </div>
-              )}
+          {/* Subscriptions Tab (Only for Owners/Admins) */}
+          {isOwnerOrAdmin && (
+            <TabsContent value="subscriptions" className="space-y-4">
+              <VenueSubscribersManager
+                venueId={venue.id}
+                locale={locale}
+                plans={venue.plans}
+              />
             </TabsContent>
           )}
         </Tabs>

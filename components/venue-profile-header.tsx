@@ -133,7 +133,7 @@ export function VenueProfileHeader({
       {/* Profile Info Container */}
       <div className="container mx-auto px-4">
         <div className="relative -mt-16 md:-mt-20">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+          <div className="flex flex-row items-end gap-4 sm:gap-6">
             {/* Logo - positioned half on cover, half below */}
             <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border-4 border-background bg-background shadow-xl md:h-40 md:w-40">
               {venue.logo ? (
@@ -153,7 +153,7 @@ export function VenueProfileHeader({
             </div>
 
             {/* Recommendations and Reviews - Right side */}
-            <div className="flex flex-col gap-3 pt-2 sm:pt-16 md:pt-20">
+            <div className="flex flex-col gap-3 pb-2 md:pb-4 lg:pb-6">
               <div className="flex gap-2">
                 <VenueRecommendations venueId={venue.id} userId={userId} />
                 <VenueReviewsModal

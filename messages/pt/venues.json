@@ -171,6 +171,7 @@
       "noSessions": "Sem sessões agendadas",
       "noSessionsDescription": "Não há sessões agendadas para este período.",
       "noSessionsThisWeek": "Sem sessões esta semana",
+      "noSessionsThisDay": "Sem sessões neste dia",
       "noUpcomingSessions": "Sem sessões futuras",
       "loadError": "Erro ao carregar sessões",
       "today": "Hoje",
@@ -297,9 +298,9 @@
       "about": "Sobre",
       "feed": "Feed",
       "sessions": "Sessões",
-      "team": "Equipa",
-      "reviews": "Avaliações",
-      "subscribers": "Subscritores"
+      "clients": "Clientes",
+      "subscriptions": "Subscrições",
+      "reviews": "Avaliações"
     },
     "subscribers": {
       "title": "Gerir Subscritores",

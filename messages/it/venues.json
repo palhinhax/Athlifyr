@@ -171,6 +171,7 @@
       "noSessions": "Nessuna sessione programmata",
       "noSessionsDescription": "Non ci sono sessioni programmate per questo periodo.",
       "noSessionsThisWeek": "Nessuna sessione questa settimana",
+      "noSessionsThisDay": "Nessuna sessione questo giorno",
       "noUpcomingSessions": "Nessuna prossima sessione",
       "loadError": "Errore nel caricamento delle sessioni",
       "today": "Oggi",
@@ -297,9 +298,9 @@
       "about": "Informazioni",
       "feed": "Feed",
       "sessions": "Sessioni",
-      "team": "Team",
-      "reviews": "Recensioni",
-      "subscribers": "Abbonati"
+      "clients": "Clienti",
+      "subscriptions": "Abbonamenti",
+      "reviews": "Recensioni"
     },
     "subscribers": {
       "title": "Gestisci Abbonati",

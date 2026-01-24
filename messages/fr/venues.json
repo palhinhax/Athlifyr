@@ -171,6 +171,7 @@
       "noSessions": "Aucune séance prévue",
       "noSessionsDescription": "Il n'y a pas de séances prévues pour cette période.",
       "noSessionsThisWeek": "Pas de séances cette semaine",
+      "noSessionsThisDay": "Pas de séances ce jour",
       "noUpcomingSessions": "Pas de prochaines séances",
       "loadError": "Échec du chargement des séances",
       "today": "Aujourd'hui",
@@ -297,8 +298,9 @@
       "about": "À Propos",
       "feed": "Fil d'actualité",
       "sessions": "Sessions",
-      "team": "Équipe",
-      "subscribers": "Abonnés"
+      "clients": "Clients",
+      "subscriptions": "Abonnements",
+      "reviews": "Avis"
     },
     "subscribers": {
       "title": "Gérer les Abonnés",

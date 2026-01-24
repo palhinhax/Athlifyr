@@ -240,7 +240,7 @@ async function main() {
         description: "Unlimited classes per month",
         price: 50.0,
         currency: "EUR",
-        paymentProvider: "IN_APP",
+        // paymentProvider removed - now managed at venue level
         isActive: true,
       },
     });

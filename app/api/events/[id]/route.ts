@@ -4,9 +4,9 @@ import { prisma } from "@/lib/prisma";
 import { Language } from "@prisma/client";
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 // Helper function to handle translations
@@ -82,8 +82,10 @@ async function handleTranslations(
 // GET - Get event by ID
 export async function GET(request: Request, { params }: RouteParams) {
   try {
+    const { id } = await params;
+
     const event = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         variants: true,
       },
@@ -115,6 +117,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const { id } = await params;
     const body = await request.json();
     const {
       title,
@@ -136,7 +139,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Check if event exists
     const existingEvent = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: { variants: true },
     });
 
@@ -158,7 +161,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       const existingSlug = await prisma.event.findFirst({
         where: {
           slug,
-          id: { not: params.id },
+          id: { not: id },
         },
       });
 
@@ -169,7 +172,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Update event
     const updatedEvent = await prisma.event.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(title && { title }),
         ...(title && { slug }),
@@ -201,7 +204,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     if (variants && Array.isArray(variants)) {
       // Delete existing variants (this also deletes variant translations due to cascade)
       await prisma.eventVariant.deleteMany({
-        where: { eventId: params.id },
+        where: { eventId: id },
       });
 
       // Create new variants with their translations
@@ -209,7 +212,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         for (const v of variants as VariantInput[]) {
           const createdVariant = await prisma.eventVariant.create({
             data: {
-              eventId: params.id,
+              eventId: id,
               name: v.name,
               distanceKm: v.distanceKm || null,
               price: v.price || null,
@@ -238,13 +241,13 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
       // Fetch updated event with new variants
       const eventWithVariants = await prisma.event.findUnique({
-        where: { id: params.id },
+        where: { id },
         include: { variants: true },
       });
 
       // Handle translations if provided
       if (translations && Array.isArray(translations)) {
-        await handleTranslations(params.id, translations);
+        await handleTranslations(id, translations);
       }
 
       return NextResponse.json(eventWithVariants);
@@ -252,7 +255,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Handle translations if provided (even without variants)
     if (translations && Array.isArray(translations)) {
-      await handleTranslations(params.id, translations);
+      await handleTranslations(id, translations);
     }
 
     return NextResponse.json(updatedEvent);
@@ -278,9 +281,11 @@ export async function DELETE(request: Request, { params }: RouteParams) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
+    const { id } = await params;
+
     // Check if event exists
     const existingEvent = await prisma.event.findUnique({
-      where: { id: params.id },
+      where: { id },
     });
 
     if (!existingEvent) {
@@ -289,7 +294,7 @@ export async function DELETE(request: Request, { params }: RouteParams) {
 
     // Delete event (cascades to variants, comments, etc.)
     await prisma.event.delete({
-      where: { id: params.id },
+      where: { id },
     });
 
     return NextResponse.json({ success: true });

@@ -7,10 +7,10 @@ import { Currency } from "@prisma/client";
 // GET - List plans for a venue
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
 
     const plans = await prisma.venuePlan.findMany({
       where: {
@@ -46,7 +46,7 @@ export async function GET(
 // POST - Create new plan (owner/admin only)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -55,7 +55,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, venueId);
@@ -97,29 +97,7 @@ export async function POST(
       return NextResponse.json({ error: "Venue not found" }, { status: 404 });
     }
 
-    // If venue is MIXED mode, paymentProvider is required
-    if (venue.paymentMode === "MIXED" && !paymentProvider) {
-      return NextResponse.json(
-        {
-          error:
-            "Payment provider is required for venues with MIXED payment mode",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Determine payment provider based on venue mode if not explicitly provided
-    let finalPaymentProvider = paymentProvider;
-    if (!finalPaymentProvider) {
-      if (venue.paymentMode === "IN_APP") {
-        finalPaymentProvider = "IN_APP";
-      } else if (venue.paymentMode === "EXTERNAL") {
-        finalPaymentProvider = "EXTERNAL";
-      } else {
-        // MIXED - default to IN_APP if not specified
-        finalPaymentProvider = "IN_APP";
-      }
-    }
+    // Payment mode is now managed at venue level - no need for plan-level validation
 
     // Create plan
     const plan = await prisma.venuePlan.create({
@@ -129,7 +107,7 @@ export async function POST(
         description: description || null,
         price: price || null,
         currency: currency || Currency.EUR,
-        paymentProvider: finalPaymentProvider,
+        // paymentProvider removed - now managed at venue level
         policy: policy || null,
       },
     });

@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PaymentProvider } from "@prisma/client";
+// PaymentProvider removed - now using PaymentsProvider at venue level
 
 // GET - Fetch all subscriptions for a venue (owner/admin only)
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
 
     // Check if user is owner or admin of this venue
     const member = await prisma.venueMember.findUnique({
@@ -82,7 +82,7 @@ export async function GET(
 // POST - Subscribe to a plan
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -91,7 +91,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
     const body = await request.json();
     const {
       planId,
@@ -280,17 +280,20 @@ export async function POST(
       );
     }
 
-    // Determine payment status and subscription status based on payment provider
+    // Determine payment status and subscription status based on venue's payment mode
     let subscriptionStatus = "PENDING";
     let paymentStatus: "PENDING_PAYMENT" | "PAID" | "NOT_REQUIRED" =
       "PENDING_PAYMENT";
 
-    if (plan.paymentProvider === PaymentProvider.EXTERNAL) {
+    // Payment mode is now at venue level
+    const venuePaymentMode = plan.venue.paymentMode;
+
+    if (venuePaymentMode === "EXTERNAL") {
       // EXTERNAL payment - subscription stays pending until staff confirms
       subscriptionStatus = "PENDING";
       paymentStatus = "PENDING_PAYMENT";
-    } else if (plan.paymentProvider === PaymentProvider.IN_APP) {
-      // IN_APP payment - subscription stays pending until payment is confirmed
+    } else if (venuePaymentMode === "IN_APP" || venuePaymentMode === "MIXED") {
+      // IN_APP or MIXED payment - subscription stays pending until payment is confirmed
       // User needs to create a payment intent and confirm it
       subscriptionStatus = "PENDING";
       paymentStatus = "PENDING_PAYMENT";

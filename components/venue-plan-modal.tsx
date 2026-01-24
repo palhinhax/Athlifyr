@@ -62,7 +62,6 @@ export function VenuePlanModal({
     description: plan?.description || "",
     price: plan?.price?.toString() || "",
     currency: plan?.currency || "EUR",
-    paymentProvider: "IN_APP",
   });
 
   const [policy, setPolicy] = useState<VenuePlanPolicy>(
@@ -77,7 +76,6 @@ export function VenuePlanModal({
         description: plan?.description || "",
         price: plan?.price?.toString() || "",
         currency: plan?.currency || "EUR",
-        paymentProvider: "IN_APP",
       });
       setPolicy(plan?.policy || DEFAULT_PLAN_POLICY);
     }
@@ -104,7 +102,7 @@ export function VenuePlanModal({
           description: formData.description || null,
           price: formData.price ? parseFloat(formData.price) : null,
           currency: formData.currency,
-          paymentProvider: formData.paymentProvider,
+          // paymentProvider removed - now managed at venue level
           policy: policy,
         }),
       });
@@ -234,28 +232,7 @@ export function VenuePlanModal({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="paymentProvider">{t("paymentMethod")}</Label>
-                <Select
-                  value={formData.paymentProvider}
-                  onValueChange={(value) =>
-                    setFormData({ ...formData, paymentProvider: value })
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("selectPaymentMethod")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IN_APP">
-                      {t("paymentInApp")} (Stripe)
-                    </SelectItem>
-                    <SelectItem value="EXTERNAL">
-                      {t("paymentExternal")}
-                    </SelectItem>
-                    <SelectItem value="BOTH">{t("paymentBoth")}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              {/* Payment provider removed - now managed at venue level */}
             </TabsContent>
 
             <TabsContent value="policy" className="space-y-6">

@@ -1,21 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from "react";
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-  useMapEvents,
-} from "react-leaflet";
-import L, { DivIcon } from "leaflet";
-import { Loader2, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { usePathname } from "next/navigation";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
-import { Link } from "@/i18n/routing";
 
 // Create custom icon for venues
-const createVenueIcon = (): DivIcon => {
+const createVenueIcon = (): L.DivIcon => {
   return L.divIcon({
     html: `
       <div style="
@@ -73,36 +66,18 @@ interface VenuesMapClientProps {
   };
 }
 
-// Component to handle map events
-function MapEventsHandler({
-  onBoundsChange,
-}: {
-  onBoundsChange: (bounds: LatLngBounds) => void;
-}) {
-  const map = useMapEvents({
-    moveend: () => {
-      onBoundsChange(map.getBounds());
-    },
-    zoomend: () => {
-      onBoundsChange(map.getBounds());
-    },
-    load: () => {
-      onBoundsChange(map.getBounds());
-    },
-  });
-
-  useEffect(() => {
-    onBoundsChange(map.getBounds());
-  }, [map, onBoundsChange]);
-
-  return null;
-}
-
 export default function VenuesMapClient({
   initialCenter = [39.5, -8.0],
   initialZoom = 7,
   filters: initialFilters,
 }: VenuesMapClientProps) {
+  const pathname = usePathname();
+  const [mounted, setMounted] = useState(false);
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const mapInitializedRef = useRef(false);
+
   const [venues, setVenues] = useState<MapVenue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +86,19 @@ export default function VenuesMapClient({
   );
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
+  const filtersRef = useRef(filters);
 
+  // Keep filtersRef in sync
+  useEffect(() => {
+    filtersRef.current = filters;
+  }, [filters]);
+
+  // Mount gate to avoid double initialization
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Listen for filter changes
   useEffect(() => {
     const handleFiltersChange = (event: Event) => {
       const customEvent = event as CustomEvent<{ types: string[] }>;
@@ -131,25 +118,22 @@ export default function VenuesMapClient({
     };
   }, []);
 
+  // Fetch venues for the current bounds (stable function using ref for filters)
   const fetchVenues = useCallback(
     async (bounds: LatLngBounds) => {
       try {
         mapBoundsRef.current = bounds;
-
-        const north = bounds.getNorth();
-        const south = bounds.getSouth();
-        const east = bounds.getEast();
-        const west = bounds.getWest();
+        const currentFilters = filtersRef.current;
 
         const params = new URLSearchParams({
-          north: north.toString(),
-          south: south.toString(),
-          east: east.toString(),
-          west: west.toString(),
+          north: bounds.getNorth().toString(),
+          south: bounds.getSouth().toString(),
+          east: bounds.getEast().toString(),
+          west: bounds.getWest().toString(),
         });
 
-        if (filters?.types && filters.types.length > 0) {
-          filters.types.forEach((type) => params.append("types", type));
+        if (currentFilters?.types?.length) {
+          currentFilters.types.forEach((type) => params.append("types", type));
         }
 
         const response = await fetch(`/api/venues/map?${params.toString()}`);
@@ -167,77 +151,127 @@ export default function VenuesMapClient({
         setLoading(false);
       }
     },
-    [filters]
+    [] // No dependencies - uses refs
   );
 
+  // Refetch when filters change
   useEffect(() => {
     if (mapBoundsRef.current) {
       fetchVenues(mapBoundsRef.current);
     }
   }, [filters, fetchVenues]);
 
+  // Handle bounds change with debounce (stable function)
   const handleBoundsChange = useCallback(
     (bounds: LatLngBounds) => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
       }
-
       debounceTimerRef.current = setTimeout(() => {
         fetchVenues(bounds);
-      }, 500);
+      }, 300);
     },
     [fetchVenues]
   );
 
-  if (typeof window === "undefined") {
-    return (
-      <div className="flex h-full items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
+  // Initialize map ONCE
+  useEffect(() => {
+    if (!mounted || !mapContainerRef.current || mapInitializedRef.current) {
+      return;
+    }
+
+    // Mark as initialized to prevent re-initialization
+    mapInitializedRef.current = true;
+
+    // Clean up any existing map instance first
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.remove();
+      mapInstanceRef.current = null;
+    }
+
+    const map = L.map(mapContainerRef.current, {
+      center: initialCenter,
+      zoom: initialZoom,
+    });
+
+    mapInstanceRef.current = map;
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution:
+        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(map);
+
+    // Create a layer group for markers
+    markersLayerRef.current = L.layerGroup().addTo(map);
+
+    // Set up event handlers for bounds changes
+    const onMoveEnd = () => handleBoundsChange(map.getBounds());
+    map.on("moveend", onMoveEnd);
+    map.on("zoomend", onMoveEnd);
+
+    // Initial fetch
+    handleBoundsChange(map.getBounds());
+
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+      markersLayerRef.current = null;
+      mapInitializedRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mounted]); // Only depend on mounted - map should initialize once
+
+  // Update markers when venues change
+  useEffect(() => {
+    if (!markersLayerRef.current) return;
+
+    // Clear existing markers
+    markersLayerRef.current.clearLayers();
+
+    // Get locale from pathname
+    const locale = pathname.split("/")[1] || "pt";
+
+    // Add new markers
+    venues.forEach((venue) => {
+      const marker = L.marker([venue.latitude, venue.longitude], {
+        icon: createVenueIcon(),
+      });
+
+      marker.bindPopup(`
+        <div style="min-width: 200px; padding: 8px;">
+          <h3 style="font-weight: 600; margin-bottom: 8px;">${venue.name}</h3>
+          ${venue.city ? `<p style="color: #666; font-size: 14px; margin-bottom: 8px;">📍 ${venue.city}, ${venue.country}</p>` : ""}
+          <a href="/${locale}/venues/${venue.slug}" 
+             style="display: inline-block; padding: 8px 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 6px; font-size: 14px; text-align: center; width: 100%;">
+            View Details
+          </a>
+        </div>
+      `);
+
+      marker.addTo(markersLayerRef.current!);
+    });
+  }, [venues, pathname]);
+
+  // Prevent rendering until mounted
+  if (!mounted) {
+    return null;
   }
 
   return (
-    <div className="relative h-full w-full">
-      <MapContainer
-        center={initialCenter}
-        zoom={initialZoom}
-        style={{ height: "100%", width: "100%" }}
-        className="z-0"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
-        <MapEventsHandler onBoundsChange={handleBoundsChange} />
-
-        {venues.map((venue) => {
-          const position: [number, number] = [venue.latitude, venue.longitude];
-          return (
-            <Marker key={venue.id} position={position} icon={createVenueIcon()}>
-              <Popup>
-                <div className="min-w-[200px] p-2">
-                  <h3 className="mb-2 font-semibold">{venue.name}</h3>
-                  {venue.city && (
-                    <p className="mb-2 text-sm text-muted-foreground">
-                      <MapPin className="mr-1 inline h-3 w-3" />
-                      {venue.city}, {venue.country}
-                    </p>
-                  )}
-                  <Link href={`/venues/${venue.slug}`}>
-                    <Button size="sm" className="w-full">
-                      View Details
-                    </Button>
-                  </Link>
-                </div>
-              </Popup>
-            </Marker>
-          );
-        })}
-      </MapContainer>
-
+    <div className="relative h-full w-full overflow-hidden rounded-lg">
       {loading && (
-        <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/80">
+        <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50">
           <div className="flex items-center gap-2">
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
             <span className="text-sm">Loading venues...</span>
@@ -246,12 +280,19 @@ export default function VenuesMapClient({
       )}
 
       {error && (
-        <div className="absolute bottom-4 left-4 right-4 z-10 rounded-lg bg-destructive/90 p-4 text-sm text-destructive-foreground">
+        <div className="absolute bottom-4 left-4 right-4 z-[1000] rounded-lg bg-destructive/90 p-4 text-sm text-destructive-foreground">
           {error}
         </div>
       )}
 
-      <div className="absolute bottom-4 right-4 z-10 rounded-lg bg-background/90 p-2 text-xs text-muted-foreground shadow-md">
+      <div
+        ref={mapContainerRef}
+        style={{ height: "100%", width: "100%" }}
+        className="z-0"
+      />
+
+      {/* Venue count badge */}
+      <div className="absolute bottom-4 left-4 z-[1000] rounded-lg bg-background/90 px-3 py-1.5 text-sm font-medium shadow-lg backdrop-blur-sm">
         {venues.length} venue{venues.length !== 1 ? "s" : ""} found
       </div>
     </div>

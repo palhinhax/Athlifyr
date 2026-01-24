@@ -115,7 +115,9 @@ export function VenueRecommendations({
           )}
         />
         <span className="font-medium">{recommendationCount}</span>
-        <span className="hidden sm:inline">{t("recommendations")}</span>
+        <span className="hidden sm:inline">
+          {t("recommendationCount", { count: recommendationCount })}
+        </span>
       </Button>
     </div>
   );

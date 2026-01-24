@@ -6,7 +6,7 @@ import { canManageSessions } from "@/lib/venues/authorization";
 // GET - List recurring session templates for a venue
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);

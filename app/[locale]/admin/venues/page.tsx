@@ -32,6 +32,7 @@ import {
   Building2,
   UserPlus,
   Search,
+  DollarSign,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -56,6 +57,8 @@ interface Venue {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  commissionType: "PERCENT" | "FIXED";
+  commissionValue: number;
   createdAt: string;
 }
 
@@ -84,10 +87,20 @@ export default function AdminVenuesPage() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false);
+  const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
   const [userSearch, setUserSearch] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
+
+  // Fee form state
+  const [feeFormData, setFeeFormData] = useState<{
+    commissionType: "PERCENT" | "FIXED";
+    commissionValue: string;
+  }>({
+    commissionType: "PERCENT",
+    commissionValue: "",
+  });
 
   // Form state
   const [formData, setFormData] = useState<{
@@ -314,6 +327,54 @@ export default function AdminVenuesPage() {
     setIsOwnerDialogOpen(true);
     setUserSearch("");
     setSearchedUsers([]);
+  };
+
+  const openFeeDialog = (venue: Venue) => {
+    setSelectedVenue(venue);
+    setFeeFormData({
+      commissionType: venue.commissionType,
+      commissionValue: venue.commissionValue.toString(),
+    });
+    setIsFeeDialogOpen(true);
+  };
+
+  const handleFeeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedVenue) return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `/api/admin/venues/${selectedVenue.id}/fees`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            commissionType: feeFormData.commissionType,
+            commissionValue: parseInt(feeFormData.commissionValue),
+          }),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update fees");
+
+      toast({
+        title: "Sucesso",
+        description: "Comissões atualizadas com sucesso",
+      });
+
+      setIsFeeDialogOpen(false);
+      fetchVenues();
+    } catch (error) {
+      console.error("Error updating fees:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao atualizar comissões",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (status === "loading" || loading) {
@@ -620,6 +681,90 @@ export default function AdminVenuesPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+
+        {/* Fee Management Dialog */}
+        <Dialog open={isFeeDialogOpen} onOpenChange={setIsFeeDialogOpen}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Gerir Comissões</DialogTitle>
+              <DialogDescription>
+                Definir as comissões para {selectedVenue?.name}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={handleFeeSubmit} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="commissionType">Tipo de Comissão</Label>
+                <Select
+                  value={feeFormData.commissionType}
+                  onValueChange={(value: "PERCENT" | "FIXED") =>
+                    setFeeFormData({ ...feeFormData, commissionType: value })
+                  }
+                >
+                  <SelectTrigger id="commissionType">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PERCENT">Percentagem (%)</SelectItem>
+                    <SelectItem value="FIXED">Valor Fixo (€)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="commissionValue">
+                  Valor da Comissão
+                  {feeFormData.commissionType === "PERCENT"
+                    ? " (%)"
+                    : " (cêntimos)"}
+                </Label>
+                <Input
+                  id="commissionValue"
+                  type="number"
+                  min="0"
+                  step={feeFormData.commissionType === "PERCENT" ? "0.01" : "1"}
+                  value={feeFormData.commissionValue}
+                  onChange={(e) =>
+                    setFeeFormData({
+                      ...feeFormData,
+                      commissionValue: e.target.value,
+                    })
+                  }
+                  placeholder={
+                    feeFormData.commissionType === "PERCENT" ? "10.00" : "1000"
+                  }
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  {feeFormData.commissionType === "PERCENT"
+                    ? "Percentagem sobre o valor da transação (ex: 10.00 = 10%)"
+                    : "Valor fixo em cêntimos (ex: 1000 = 10.00€)"}
+                </p>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setIsFeeDialogOpen(false)}
+                  disabled={isSubmitting}
+                >
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={isSubmitting}>
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />A
+                      guardar...
+                    </>
+                  ) : (
+                    "Guardar"
+                  )}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
 
       {venues.length === 0 ? (
@@ -653,6 +798,14 @@ export default function AdminVenuesPage() {
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => openFeeDialog(venue)}
+                      title="Gerir Comissões"
+                    >
+                      <DollarSign className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"
@@ -702,6 +855,22 @@ export default function AdminVenuesPage() {
                       </span>
                     </div>
                   )}
+                  <div className="mt-3 flex items-center gap-2 rounded-md border bg-muted/50 p-2">
+                    <DollarSign className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 text-xs">
+                      <p className="font-medium">
+                        Comissão:{" "}
+                        {venue.commissionType === "PERCENT"
+                          ? `${(venue.commissionValue / 100).toFixed(2)}%`
+                          : `${(venue.commissionValue / 100).toFixed(2)}€`}
+                      </p>
+                      <p className="text-muted-foreground">
+                        {venue.commissionType === "PERCENT"
+                          ? "Percentagem"
+                          : "Valor fixo"}
+                      </p>
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>

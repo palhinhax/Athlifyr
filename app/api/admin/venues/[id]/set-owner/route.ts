@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // POST - Set or update venue owner (admin only)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
     }
 
     const { userId } = await request.json();
-    const venueId = params.id;
+    const venueId = (await params).id;
 
     if (!userId) {
       return NextResponse.json(

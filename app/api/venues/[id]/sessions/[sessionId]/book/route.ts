@@ -7,7 +7,7 @@ import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 // POST - Book a session
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, sessionId } = params;
+    const { id: venueId, sessionId } = await params;
     const userId = session.user.id;
 
     // Validate booking
@@ -44,36 +44,60 @@ export async function POST(
       );
     }
 
-    // Create or reactivate booking (handles case where booking was previously cancelled)
-    const booking = await prisma.venueBooking.upsert({
+    // Check if user already has a booking for this session
+    const existingBooking = await prisma.venueBooking.findFirst({
       where: {
-        sessionId_userId: {
-          sessionId,
-          userId,
-        },
-      },
-      update: {
-        status: "BOOKED",
-      },
-      create: {
-        venueId,
         sessionId,
         userId,
-        status: "BOOKED",
       },
-      include: {
-        session: {
-          include: {
-            venue: {
-              select: {
-                name: true,
-                slug: true,
+    });
+
+    let booking;
+    if (existingBooking) {
+      // Reactivate existing booking
+      booking = await prisma.venueBooking.update({
+        where: {
+          id: existingBooking.id,
+        },
+        data: {
+          status: "BOOKED",
+        },
+        include: {
+          session: {
+            include: {
+              venue: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
               },
             },
           },
         },
-      },
-    });
+      });
+    } else {
+      // Create new booking
+      booking = await prisma.venueBooking.create({
+        data: {
+          venueId,
+          sessionId,
+          userId,
+          status: "BOOKED",
+        },
+        include: {
+          session: {
+            include: {
+              venue: {
+                select: {
+                  name: true,
+                  slug: true,
+                },
+              },
+            },
+          },
+        },
+      });
+    }
 
     // Track successful booking
     await trackServerEvent(
@@ -101,7 +125,7 @@ export async function POST(
 // DELETE - Cancel booking for a session
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; sessionId: string } }
+  { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
     const session = await auth();
@@ -110,7 +134,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, sessionId } = params;
+    const { id: venueId, sessionId } = await params;
     const userId = session.user.id;
 
     // Find the booking

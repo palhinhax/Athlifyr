@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // PATCH - Update subscription (owner/admin only)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; subscriptionId: string } }
+  { params }: { params: Promise<{ id: string; subscriptionId: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, subscriptionId } = params;
+    const { id: venueId, subscriptionId } = await params;
 
     // Check if user is owner or admin of this venue
     const member = await prisma.venueMember.findUnique({

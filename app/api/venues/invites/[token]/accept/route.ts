@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // POST - Accept invite
 export async function POST(
   request: Request,
-  { params }: { params: { token: string } }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { token } = params;
+    const { token } = await params;
 
     // Find invite
     const invite = await prisma.venueInvite.findUnique({

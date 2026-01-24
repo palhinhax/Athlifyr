@@ -7,10 +7,10 @@ import { SportType } from "@prisma/client";
 // GET - Get venue by ID or slug
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = params;
+    const { id } = await params;
     const session = await auth();
     const currentUserId = session?.user?.id;
 
@@ -30,6 +30,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
+                email: true,
                 image: true,
               },
             },
@@ -45,7 +46,7 @@ export async function GET(
             description: true,
             price: true,
             currency: true,
-            paymentProvider: true,
+            // paymentProvider removed - now at venue level
             policy: true, // Include policy for editing
             isActive: true,
             createdAt: true,
@@ -99,7 +100,8 @@ export async function GET(
     const venueWithUniqueCount = {
       ...venue,
       _count: {
-        ...venue._count,
+        ...(venue as { _count?: { sessions: number; bookings: number } })
+          ._count,
         subscriptions: uniqueSubscribers.length,
       },
     };
@@ -117,7 +119,7 @@ export async function GET(
 // PATCH - Update venue (owner/admin only)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -126,7 +128,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check authorization
     const authResult = await canManageVenue(session.user.id, id);
@@ -224,7 +226,7 @@ export async function PATCH(
 // DELETE - Delete venue (owner only)
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -233,7 +235,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if user is owner
     const member = await prisma.venueMember.findUnique({

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
@@ -77,11 +77,14 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
   });
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Random hero image (stable per session)
-  const heroImage = useMemo(() => {
-    return EVENT_HERO_IMAGES[
-      Math.floor(Math.random() * EVENT_HERO_IMAGES.length)
-    ];
+  // Random hero image (client-side only to avoid hydration mismatch)
+  const [heroImage, setHeroImage] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Set random image only on client side
+    setHeroImage(
+      EVENT_HERO_IMAGES[Math.floor(Math.random() * EVENT_HERO_IMAGES.length)]
+    );
   }, []);
 
   // Debounce search query
@@ -229,7 +232,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
   return (
     <div className="min-h-screen">
       <HeroBackground
-        image={heroImage}
+        image={heroImage || undefined}
         title={t("title")}
         description={t("description")}
       />

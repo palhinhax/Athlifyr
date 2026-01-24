@@ -16,6 +16,7 @@ import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
+import { EventWeather } from "@/components/event-weather";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
@@ -374,6 +375,11 @@ export default async function EventPage({ params }: PageProps) {
               />
             )}
 
+            {/* Weather Forecast - Responsive */}
+            {event.weather && event.weather.length > 0 && (
+              <EventWeather weather={event.weather} />
+            )}
+
             {/* Description, Pricing, and CTA */}
             <EventMainContent
               description={event.description}
@@ -409,7 +415,7 @@ export default async function EventPage({ params }: PageProps) {
                 }))}
                 translations={{
                   title: t("faqTitle"),
-                  showAll: t("faqShowAll"),
+                  showAll: t("faqShowAll", { count: event.faqs.length }),
                   showLess: t("faqShowLess"),
                 }}
               />

@@ -77,8 +77,7 @@ export function EventFAQ({ items, translations }: EventFAQProps) {
             </>
           ) : (
             <>
-              {translations.showAll.replace("{count}", items.length.toString())}{" "}
-              <ChevronDown className="h-4 w-4" />
+              {translations.showAll} <ChevronDown className="h-4 w-4" />
             </>
           )}
         </button>

@@ -6,7 +6,7 @@ import { stripe, toStripeAmount } from "@/lib/stripe";
 // POST - Create payment intent for IN_APP payment with Stripe
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const venueId = params.id;
+    const venueId = (await params).id;
     const body = await request.json();
     const { planId } = body;
 
@@ -60,32 +60,23 @@ export async function POST(
       );
     }
 
-    // Debug log to help diagnose paymentProvider issues
+    // Debug log to help diagnose payment mode
     console.log("Payment Intent Debug:", {
       planId,
       planName: plan.name,
-      paymentProvider: plan.paymentProvider,
-      paymentProviderType: typeof plan.paymentProvider,
       venuePaymentMode: venue.paymentMode,
+      venueId: venue.id,
     });
 
-    // Check if plan supports IN_APP payments (IN_APP or BOTH)
-    if (plan.paymentProvider !== "IN_APP" && plan.paymentProvider !== "BOTH") {
-      console.error("Payment provider validation failed:", {
+    // Check if venue supports IN_APP payments (payment mode at venue level)
+    if (venue.paymentMode !== "IN_APP" && venue.paymentMode !== "MIXED") {
+      console.error("Payment mode validation failed:", {
         planId,
-        paymentProvider: plan.paymentProvider,
-        expected: "IN_APP or BOTH",
+        venuePaymentMode: venue.paymentMode,
+        expected: "IN_APP or MIXED",
       });
       return NextResponse.json(
-        { error: "Plan does not support IN_APP payments" },
-        { status: 400 }
-      );
-    }
-
-    // Check if venue allows IN_APP (if not EXTERNAL only)
-    if (venue.paymentMode === "EXTERNAL") {
-      return NextResponse.json(
-        { error: "Venue only accepts external payments" },
+        { error: "Venue does not support IN_APP payments" },
         { status: 400 }
       );
     }

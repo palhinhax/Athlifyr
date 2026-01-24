@@ -8,6 +8,7 @@ const nextConfig = {
   // This prevents duplicate URLs like /events/ vs /events
   trailingSlash: false,
   images: {
+    qualities: [75, 90],
     remotePatterns: [
       {
         protocol: "https",

@@ -126,6 +126,25 @@
       "apply": "Aplicar",
       "locationNotSupported": "La geolocalización no es compatible con tu navegador",
       "locationError": "No se pudo obtener tu ubicación"
+    },
+    "weather": {
+      "title": "Previsión del Tiempo",
+      "clear": "Cielo Despejado",
+      "fewClouds": "Pocas Nubes",
+      "scatteredClouds": "Nubes Dispersas",
+      "brokenClouds": "Nubes Fragmentadas",
+      "overcast": "Nublado",
+      "clouds": "Nublado",
+      "drizzle": "Llovizna",
+      "lightRain": "Lluvia Ligera",
+      "moderateRain": "Lluvia Moderada",
+      "heavyRain": "Lluvia Fuerte",
+      "rain": "Lluvia",
+      "snow": "Nieve",
+      "mist": "Neblina",
+      "fog": "Niebla",
+      "haze": "Bruma",
+      "thunderstorm": "Tormenta"
     }
   },
   "eventsPage": {

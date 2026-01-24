@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET - List user's bookings for a venue
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
     const userId = session.user.id;
 
     // Fetch user's bookings for this venue (only active bookings)

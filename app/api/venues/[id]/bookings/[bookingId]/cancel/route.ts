@@ -6,7 +6,7 @@ import { BookingStatus } from "@prisma/client";
 // POST - Cancel booking
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; bookingId: string } }
+  { params }: { params: Promise<{ id: string; bookingId: string }> }
 ) {
   try {
     const session = await auth();
@@ -15,7 +15,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, bookingId } = params;
+    const { id: venueId, bookingId } = await params;
 
     // Find booking
     const booking = await prisma.venueBooking.findUnique({

@@ -7,7 +7,7 @@ import { addWeeks, format } from "date-fns";
 // PATCH - Update recurring session (pause/resume, edit details)
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string; recurringId: string } }
+  { params }: { params: Promise<{ id: string; recurringId: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, recurringId } = params;
+    const { id: venueId, recurringId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);
@@ -70,7 +70,7 @@ export async function PATCH(
 // DELETE - Cancel recurring session and optionally future sessions
 export async function DELETE(
   request: Request,
-  { params }: { params: { id: string; recurringId: string } }
+  { params }: { params: Promise<{ id: string; recurringId: string }> }
 ) {
   try {
     const session = await auth();
@@ -79,7 +79,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, recurringId } = params;
+    const { id: venueId, recurringId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);
@@ -159,7 +159,7 @@ export async function DELETE(
 // POST - Manually generate more sessions for a recurring template
 export async function POST(
   request: Request,
-  { params }: { params: { id: string; recurringId: string } }
+  { params }: { params: Promise<{ id: string; recurringId: string }> }
 ) {
   try {
     const session = await auth();
@@ -168,7 +168,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId, recurringId } = params;
+    const { id: venueId, recurringId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);

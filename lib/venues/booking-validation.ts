@@ -92,12 +92,10 @@ export async function validateBooking(
   }
 
   // 4. Check if already booked
-  const existingBooking = await prisma.venueBooking.findUnique({
+  const existingBooking = await prisma.venueBooking.findFirst({
     where: {
-      sessionId_userId: {
-        sessionId,
-        userId,
-      },
+      sessionId,
+      userId,
     },
   });
 

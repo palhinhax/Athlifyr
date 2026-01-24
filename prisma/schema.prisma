@@ -1,20 +1,826 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                @id @default(cuid())
+  name                 String?
+  email                String                @unique
+  emailVerified        DateTime?
+  image                String?
+  password             String?
+  role                 UserRole              @default(USER)
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  favoriteSports       SportType[]
+  locale               String                @default("pt")
+  isBanned             Boolean               @default(false)
+  accounts             Account[]
+  comments             Comment[]
+  eventsPreferences    EventsPreferences?
+  receivedFriendships  Friendship[]          @relation("FriendshipReceiver")
+  sentFriendships      Friendship[]          @relation("FriendshipSender")
+  instagramDrafts      InstagramPostDraft[]
+  mapPreferences       MapPreferences?
+  participations       Participation[]
+  paymentIntents       PaymentIntent[]
+  posts                Post[]
+  postComments         PostComment[]
+  postLikes            PostLike[]
+  photos               ProfilePhoto[]
+  results              Result[]
+  sessions             Session[]
+  venueBookings        VenueBooking[]
+  venueMembers         VenueMember[]
+  venueRecommendations VenueRecommendation[]
+  venueReviews         VenueReview[]
+  venueReviewReplies   VenueReviewReply[]
+  venueSubscriptions   VenueSubscription[]
+
+  @@index([email])
+  @@index([name])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  token     String   @unique
+  expires   DateTime
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([token])
+}
+
+model Event {
+  id                   String             @id @default(cuid())
+  title                String
+  slug                 String             @unique
+  description          String
+  startDate            DateTime
+  endDate              DateTime?
+  city                 String
+  country              String             @default("Portugal")
+  imageUrl             String?
+  externalUrl          String?
+  isFeatured           Boolean            @default(false)
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  sportTypes           SportType[]
+  registrationDeadline DateTime?
+  googleMapsUrl        String?
+  latitude             Float?
+  longitude            Float?
+  stravaRouteEmbed     String?
+  comments             Comment[]
+  faqs                 EventFAQ[]
+  translations         EventTranslation[]
+  variants             EventVariant[]
+  weather              EventWeather[]
+  participations       Participation[]
+  posts                Post[]
+  pricingPhases        PricingPhase[]
+  results              Result[]
+
+  @@index([sportTypes])
+  @@index([startDate])
+  @@index([city])
+  @@index([isFeatured])
+  @@index([slug])
+}
+
+model EventTranslation {
+  id              String   @id @default(cuid())
+  eventId         String
+  language        Language
+  title           String
+  description     String
+  city            String?
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  event           Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, language])
+  @@index([eventId])
+  @@index([language])
+  @@index([title])
+}
+
+model EventFAQ {
+  id           String                @id @default(cuid())
+  eventId      String
+  order        Int                   @default(0)
+  question     String
+  answer       String
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
+  event        Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  translations EventFAQTranslation[]
+
+  @@index([eventId])
+  @@index([order])
+}
+
+model EventFAQTranslation {
+  id        String   @id @default(cuid())
+  faqId     String
+  language  Language
+  question  String
+  answer    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  faq       EventFAQ @relation(fields: [faqId], references: [id], onDelete: Cascade)
+
+  @@unique([faqId, language])
+  @@index([faqId])
+  @@index([language])
+}
+
+model EventVariant {
+  id                String                    @id @default(cuid())
+  eventId           String
+  name              String
+  price             Float?
+  maxParticipants   Int?
+  description       String?
+  createdAt         DateTime                  @default(now())
+  updatedAt         DateTime                  @updatedAt
+  distanceKm        Int?
+  startDate         DateTime?
+  startTime         String?
+  atrpGrade         Int?
+  cutoffTimeHours   Float?
+  elevationGainM    Int?
+  elevationLossM    Int?
+  itraPoints        Int?
+  mountainLevel     Int?
+  currency          Currency                  @default(EUR)
+  event             Event                     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  translations      EventVariantTranslation[]
+  participations    Participation[]
+  pricingPhases     PricingPhase[]
+  results           Result[]
+  triathlonSegments TriathlonSegment[]
+
+  @@index([eventId])
+  @@index([startDate])
+}
+
+model EventVariantTranslation {
+  id          String       @id @default(cuid())
+  variantId   String
+  language    Language
+  name        String
+  description String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  variant     EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, language])
+  @@index([variantId])
+  @@index([language])
+}
+
+model TriathlonSegment {
+  id          String               @id @default(cuid())
+  variantId   String
+  segmentType TriathlonSegmentType
+  distanceKm  Float
+  terrainType TriathlonTerrainType
+  order       Int
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+  variant     EventVariant         @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([variantId])
+  @@index([order])
+}
+
+model PricingPhase {
+  id              String        @id @default(cuid())
+  eventId         String?
+  variantId       String?
+  name            String
+  startDate       DateTime
+  endDate         DateTime
+  price           Float
+  discountPercent Int?
+  note            String?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  currency        Currency      @default(EUR)
+  event           Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  variant         EventVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([variantId])
+  @@index([startDate])
+}
+
+model Participation {
+  id        String        @id @default(cuid())
+  userId    String
+  eventId   String
+  variantId String?
+  status    String        @default("going")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant   EventVariant? @relation(fields: [variantId], references: [id])
+
+  @@unique([userId, eventId])
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Result {
+  id        String        @id @default(cuid())
+  userId    String
+  eventId   String
+  variantId String?
+  time      String
+  position  Int?
+  notes     String?
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant   EventVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([userId])
+  @@index([eventId])
+}
+
+model Comment {
+  id        String    @id @default(cuid())
+  userId    String
+  eventId   String
+  parentId  String?
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies   Comment[] @relation("CommentReplies")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([parentId])
+}
+
+model Post {
+  id         String        @id @default(cuid())
+  userId     String
+  eventId    String?
+  content    String
+  imageUrl   String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  isAutoPost Boolean       @default(false)
+  venueId    String?
+  isPublic   Boolean       @default(false)
+  event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  comments   PostComment[]
+  likes      PostLike[]
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([venueId])
+  @@index([createdAt])
+  @@index([isPublic])
+}
+
+model PostComment {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model PostLike {
+  id        String   @id @default(cuid())
+  postId    String
+  userId    String
+  createdAt DateTime @default(now())
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@index([postId])
+  @@index([userId])
+}
+
+model ProfilePhoto {
+  id        String   @id @default(cuid())
+  userId    String
+  imageUrl  String
+  caption   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Friendship {
+  id         String           @id @default(cuid())
+  senderId   String
+  receiverId String
+  status     FriendshipStatus @default(PENDING)
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+  receiver   User             @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  sender     User             @relation("FriendshipSender", fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@unique([senderId, receiverId])
+  @@index([senderId])
+  @@index([receiverId])
+  @@index([status])
+}
+
+model InstagramPostDraft {
+  id          String          @id @default(cuid())
+  userId      String
+  templateKey String
+  format      InstagramFormat @default(SQUARE)
+  payload     Json
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Contact {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  type      String   @default("other")
+  subject   String
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([email])
+}
+
+model MapPreferences {
+  id             String      @id @default(cuid())
+  userId         String      @unique
+  sports         SportType[]
+  distanceRadius Int?
+  dateRange      String?
+  centerLat      Float?
+  centerLng      Float?
+  zoom           Int?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AnonymousMapPreferences {
+  id             String      @id @default(cuid())
+  anonymousId    String      @unique
+  sports         SportType[]
+  distanceRadius Int?
+  dateRange      String?
+  centerLat      Float?
+  centerLng      Float?
+  zoom           Int?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  lastAccessedAt DateTime    @default(now())
+
+  @@index([anonymousId])
+  @@index([lastAccessedAt])
+}
+
+model EventsPreferences {
+  id              String      @id @default(cuid())
+  userId          String      @unique
+  sports          SportType[]
+  distanceRadius  Int?
+  dateRange       String?
+  searchQuery     String?
+  userLat         Float?
+  userLng         Float?
+  locationEnabled Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AnonymousEventsPreferences {
+  id              String      @id @default(cuid())
+  anonymousId     String      @unique
+  sports          SportType[]
+  distanceRadius  Int?
+  dateRange       String?
+  searchQuery     String?
+  userLat         Float?
+  userLng         Float?
+  locationEnabled Boolean     @default(false)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  lastAccessedAt  DateTime    @default(now())
+
+  @@index([anonymousId])
+  @@index([lastAccessedAt])
+}
+
+model Venue {
+  id                                 String                  @id @default(cuid())
+  slug                               String                  @unique
+  name                               String
+  type                               VenueType
+  sportTypes                         SportType[]
+  description                        String?
+  phone                              String?
+  email                              String?
+  website                            String?
+  instagram                          String?
+  address                            String?
+  city                               String?
+  country                            String                  @default("Portugal")
+  latitude                           Float?
+  longitude                          Float?
+  paymentMode                        PaymentMode             @default(MIXED)
+  externalPaymentInstructions        String?
+  createdByUserId                    String
+  isVerified                         Boolean                 @default(false)
+  isActive                           Boolean                 @default(true)
+  createdAt                          DateTime                @default(now())
+  updatedAt                          DateTime                @updatedAt
+  coverImage                         String?
+  logo                               String?
+  defaultBookingAdvanceDays          Int                     @default(4)
+  defaultCancellationDeadlineMinutes Int                     @default(30)
+  defaultSessionCapacity             Int?
+  commissionType                     CommissionType          @default(PERCENT)
+  commissionValue                    Int                     @default(1000)
+  paymentsProvider                   PaymentsProvider        @default(NONE)
+  stripeAccountId                    String?                 @unique
+  stripeChargesEnabled               Boolean                 @default(false)
+  stripeDetailsSubmitted             Boolean                 @default(false)
+  stripeLastWebhookAt                DateTime?
+  stripeOnboardingStatus             StripeOnboardingStatus  @default(NOT_STARTED)
+  stripePayoutsEnabled               Boolean                 @default(false)
+  paymentIntents                     PaymentIntent[]
+  posts                              Post[]
+  bookings                           VenueBooking[]
+  invites                            VenueInvite[]
+  members                            VenueMember[]
+  plans                              VenuePlan[]
+  recommendations                    VenueRecommendation[]
+  recurringSessions                  VenueRecurringSession[]
+  reviews                            VenueReview[]
+  sessions                           VenueSession[]
+  subscriptions                      VenueSubscription[]
+
+  @@index([slug])
+  @@index([type])
+  @@index([city])
+  @@index([isActive])
+  @@index([createdByUserId])
+  @@index([sportTypes])
+}
+
+model VenueMember {
+  id        String       @id @default(cuid())
+  venueId   String
+  userId    String
+  role      VenueRole
+  status    MemberStatus @default(PENDING)
+  joinedAt  DateTime?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue     Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, userId])
+  @@index([venueId])
+  @@index([userId])
+  @@index([status])
+}
+
+model VenueInvite {
+  id              String       @id @default(cuid())
+  venueId         String
+  invitedUserId   String?
+  invitedEmail    String?
+  invitedByUserId String
+  role            VenueRole
+  token           String       @unique
+  status          InviteStatus @default(PENDING)
+  expiresAt       DateTime
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  venue           Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([invitedUserId])
+  @@index([invitedEmail])
+  @@index([token])
+  @@index([status])
+}
+
+model VenuePlan {
+  id             String              @id @default(cuid())
+  venueId        String
+  name           String
+  description    String?
+  price          Float?
+  currency       Currency            @default(EUR)
+  // paymentProvider removed - now managed at venue level via Venue.paymentMode
+  isActive       Boolean             @default(true)
+  policy         Json?
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  paymentIntents PaymentIntent[]
+  venue          Venue               @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  subscriptions  VenueSubscription[]
+
+  @@index([venueId])
+  @@index([isActive])
+}
+
+model VenueSubscription {
+  id                 String        @id @default(cuid())
+  venueId            String
+  userId             String
+  planId             String
+  status             String        @default("PENDING")
+  paymentStatus      PaymentStatus @default(PENDING_PAYMENT)
+  activatedByUserId  String?
+  activatedAt        DateTime?
+  paymentMethod      String?
+  paymentAmount      Float?
+  paymentNote        String?
+  paymentConfirmedAt DateTime?
+  startsAt           DateTime      @default(now())
+  endsAt             DateTime?
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
+  plan               VenuePlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue              Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@index([paymentStatus])
+}
+
+model VenueRecurringSession {
+  id                          String         @id @default(cuid())
+  venueId                     String
+  type                        SessionType
+  title                       String
+  description                 String?
+  dayOfWeek                   Int
+  startTime                   String
+  endTime                     String
+  capacity                    Int?
+  coachId                     String?
+  serviceId                   String?
+  tags                        String[]
+  isActive                    Boolean        @default(true)
+  generatedUntil              DateTime?
+  createdAt                   DateTime       @default(now())
+  updatedAt                   DateTime       @updatedAt
+  bookingAdvanceDays          Int            @default(4)
+  cancellationDeadlineMinutes Int            @default(30)
+  venue                       Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  sessions                    VenueSession[]
+
+  @@index([venueId])
+  @@index([dayOfWeek])
+  @@index([isActive])
+}
+
+model VenueSession {
+  id                          String                 @id @default(cuid())
+  venueId                     String
+  type                        SessionType
+  title                       String
+  description                 String?
+  startsAt                    DateTime
+  endsAt                      DateTime
+  capacity                    Int?
+  coachId                     String?
+  serviceId                   String?
+  tags                        String[]
+  createdAt                   DateTime               @default(now())
+  updatedAt                   DateTime               @updatedAt
+  recurringSessionId          String?
+  bookingAdvanceDays          Int                    @default(4)
+  cancellationDeadlineMinutes Int                    @default(30)
+  bookings                    VenueBooking[]
+  recurringSession            VenueRecurringSession? @relation(fields: [recurringSessionId], references: [id])
+  venue                       Venue                  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([type])
+  @@index([startsAt])
+  @@index([coachId])
+  @@index([recurringSessionId])
+}
+
+model VenueBooking {
+  id         String        @id @default(cuid())
+  venueId    String
+  sessionId  String
+  userId     String?
+  status     BookingStatus @default(BOOKED)
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+  guestEmail String?
+  guestName  String?
+  session    VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue      Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([sessionId])
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model PaymentIntent {
+  id                    String              @id @default(cuid())
+  venueId               String
+  userId                String
+  planId                String
+  amount                Float
+  currency              Currency            @default(EUR)
+  status                PaymentIntentStatus @default(CREATED)
+  provider              String              @default("INTERNAL_MVP")
+  metadata              Json?
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  confirmedAt           DateTime?
+  stripePaymentIntentId String?             @unique
+  plan                  VenuePlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue                 Venue               @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([stripePaymentIntentId])
+}
+
+model EventWeather {
+  id          String   @id @default(cuid())
+  eventId     String
+  date        DateTime
+  temperature Float
+  condition   String
+  humidity    Int?
+  windSpeed   Float?
+  icon        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, date])
+  @@index([eventId])
+  @@index([date])
+}
+
+model VenueRecommendation {
+  id        String   @id @default(cuid())
+  venueId   String
+  userId    String
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, userId])
+  @@index([venueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model VenueReview {
+  id        String             @id @default(cuid())
+  venueId   String
+  userId    String
+  content   String
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue     Venue              @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  replies   VenueReviewReply[]
+
+  @@unique([venueId, userId])
+  @@index([venueId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model VenueReviewReply {
+  id        String      @id @default(cuid())
+  reviewId  String
+  userId    String
+  content   String
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  review    VenueReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([reviewId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model StripeWebhookEvent {
+  id            String   @id @default(cuid())
+  stripeEventId String   @unique
+  type          String
+  accountId     String?
+  processed     Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([stripeEventId])
+  @@index([accountId])
+  @@index([type])
 }
 
 enum SportType {
   RUNNING
   TRAIL
-  WALKING
   HYROX
   CROSSFIT
   OCR
@@ -24,6 +830,7 @@ enum SportType {
   TRIATHLON
   SWIMMING
   OTHER
+  WALKING
 }
 
 enum UserRole {
@@ -41,10 +848,10 @@ enum Language {
 }
 
 enum Currency {
-  EUR // Euro (€)
-  GBP // British Pound (£)
-  USD // US Dollar ($)
-  CHF // Swiss Franc (CHF)
+  EUR
+  GBP
+  USD
+  CHF
 }
 
 enum TriathlonSegmentType {
@@ -54,11 +861,11 @@ enum TriathlonSegmentType {
 }
 
 enum TriathlonTerrainType {
-  POOL // Swimming pool
-  OPEN_WATER // Open water swimming
-  ROAD // Road cycling/running
-  TRAIL // Trail cycling/running
-  MIXED // Mixed terrain
+  POOL
+  OPEN_WATER
+  ROAD
+  TRAIL
+  MIXED
 }
 
 enum VenueType {
@@ -111,12 +918,6 @@ enum PaymentMode {
   MIXED
 }
 
-enum PaymentProvider {
-  IN_APP
-  EXTERNAL
-  BOTH
-}
-
 enum PaymentStatus {
   PENDING_PAYMENT
   PAID
@@ -130,415 +931,21 @@ enum PaymentIntentStatus {
   CANCELLED
 }
 
-model User {
-  id                  String               @id @default(cuid())
-  name                String?
-  email               String               @unique
-  emailVerified       DateTime?
-  image               String?
-  password            String?
-  role                UserRole             @default(USER)
-  isBanned            Boolean              @default(false)
-  locale              String               @default("pt") // User's preferred language (pt, en)
-  accounts            Account[]
-  sessions            Session[]
-  participations      Participation[]
-  comments            Comment[]
-  posts               Post[]
-  postLikes           PostLike[]
-  postComments        PostComment[]
-  results             Result[]
-  photos              ProfilePhoto[]
-  // Friendships where user sent the request
-  // Friendships where user sent the request
-  sentFriendships     Friendship[]         @relation("FriendshipSender")
-  // Friendships where user received the request
-  receivedFriendships Friendship[]         @relation("FriendshipReceiver")
-  instagramDrafts     InstagramPostDraft[]
-  favoriteSports      SportType[]
-  mapPreferences      MapPreferences?
-  eventsPreferences   EventsPreferences?
-  // Venues relations
-  venueMembers        VenueMember[]
-  venueSubscriptions  VenueSubscription[]
-  venueBookings       VenueBooking[]
-  paymentIntents      PaymentIntent[]
-  venueRecommendations VenueRecommendation[]
-  venueReviews        VenueReview[]
-  venueReviewReplies  VenueReviewReply[]
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
-
-  @@index([email])
-  @@index([name])
+enum PaymentsProvider {
+  NONE
+  STRIPE
 }
 
-model Account {
-  id                String  @id @default(cuid())
-  userId            String
-  type              String
-  provider          String
-  providerAccountId String
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
-  expires_at        Int?
-  token_type        String?
-  scope             String?
-  id_token          String? @db.Text
-  session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([provider, providerAccountId])
-  @@index([userId])
+enum StripeOnboardingStatus {
+  NOT_STARTED
+  PENDING
+  COMPLETE
+  RESTRICTED
 }
 
-model Session {
-  id           String   @id @default(cuid())
-  sessionToken String   @unique
-  userId       String
-  expires      DateTime
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@index([userId])
-}
-
-model VerificationToken {
-  identifier String
-  token      String   @unique
-  expires    DateTime
-
-  @@unique([identifier, token])
-}
-
-model PasswordResetToken {
-  id        String   @id @default(cuid())
-  email     String
-  token     String   @unique
-  expires   DateTime
-  createdAt DateTime @default(now())
-
-  @@index([email])
-  @@index([token])
-}
-
-model Event {
-  id          String @id @default(cuid())
-  title       String // Título principal (pt) - fallback
-  slug        String @unique
-  description String @db.Text // Descrição principal (pt) - fallback
-
-  sportTypes  SportType[]
-  startDate   DateTime
-  endDate     DateTime?
-  city        String
-  country     String      @default("Portugal")
-  imageUrl    String?
-  externalUrl String?
-  isFeatured  Boolean     @default(false)
-
-  // Geolocation
-  latitude         Float?
-  longitude        Float?
-  googleMapsUrl    String?
-  stravaRouteEmbed String? @db.Text // Strava route embed code
-
-  // Registration
-  registrationDeadline DateTime?
-
-  // Relations
-  translations   EventTranslation[]
-  faqs           EventFAQ[]
-  variants       EventVariant[]
-  pricingPhases  PricingPhase[]
-  participations Participation[]
-  comments       Comment[]
-  posts          Post[]
-  results        Result[]
-  weather        EventWeather[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
-
-  @@index([sportTypes])
-  @@index([startDate])
-  @@index([city])
-  @@index([isFeatured])
-  @@index([slug])
-}
-
-// Tabela de traduções para eventos - SEO-friendly
-model EventTranslation {
-  id       String   @id @default(cuid())
-  eventId  String
-  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  language Language
-
-  title       String // Título traduzido
-  description String  @db.Text // Descrição traduzida
-  city        String? // Nome da cidade traduzido (ex: Lisboa -> Lisbon)
-
-  // SEO fields
-  metaTitle       String? // Meta title específico para SEO
-  metaDescription String? // Meta description para SEO
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([eventId, language]) // Um evento só pode ter uma tradução por idioma
-  @@index([eventId])
-  @@index([language])
-  @@index([title]) // Index para pesquisa por título
-}
-
-// FAQ items for events - SEO-friendly with rich snippets support
-model EventFAQ {
-  id       String   @id @default(cuid())
-  eventId  String
-  event    Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  order    Int      @default(0) // Order of display
-  
-  // Default content (pt) - fallback
-  question String
-  answer   String   @db.Text
-  
-  // Relations
-  translations EventFAQTranslation[]
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([eventId])
-  @@index([order])
-}
-
-// Translations for FAQ items
-model EventFAQTranslation {
-  id        String   @id @default(cuid())
-  faqId     String
-  faq       EventFAQ @relation(fields: [faqId], references: [id], onDelete: Cascade)
-  language  Language
-  
-  question  String
-  answer    String   @db.Text
-  
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([faqId, language]) // Um FAQ só pode ter uma tradução por idioma
-  @@index([faqId])
-  @@index([language])
-}
-
-model EventVariant {
-  id          String  @id @default(cuid())
-  eventId     String
-  event       Event   @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  name        String // Nome principal (pt) - fallback
-  description String? // Descrição principal (pt) - fallback
-
-  distanceKm      Int?
-  price           Float? // Preço fixo (se não tiver fases)
-  currency        Currency  @default(EUR) // Moeda do preço
-  maxParticipants Int?
-  startDate       DateTime? // Data específica desta variante (se diferente do evento)
-  startTime       String? // Hora de início (ex: "09:00")
-
-  // Technical data (especially for trail/endurance events)
-  elevationGainM  Int? // Desnível positivo em metros (D+)
-  elevationLossM  Int? // Desnível negativo em metros (D-)
-  cutoffTimeHours Float? // Tempo limite em horas
-  itraPoints      Int? // Pontos ITRA
-  atrpGrade       Int? // Grau ATRP (1-5)
-  mountainLevel   Int? // Mountain Level (1-3)
-
-  // Relations
-  translations      EventVariantTranslation[]
-  triathlonSegments TriathlonSegment[]
-  pricingPhases     PricingPhase[]
-  participations    Participation[]
-  results           Result[]
-  createdAt         DateTime                  @default(now())
-  updatedAt         DateTime                  @updatedAt
-
-  @@index([eventId])
-  @@index([startDate])
-}
-
-// Tabela de traduções para variantes de eventos
-model EventVariantTranslation {
-  id        String       @id @default(cuid())
-  variantId String
-  variant   EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-  language  Language
-
-  name        String // Nome traduzido da variante
-  description String? // Descrição traduzida
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([variantId, language])
-  @@index([variantId])
-  @@index([language])
-}
-
-// Triathlon segments for events (swim, bike, run)
-model TriathlonSegment {
-  id        String       @id @default(cuid())
-  variantId String
-  variant   EventVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  segmentType TriathlonSegmentType // SWIM, BIKE, or RUN
-  distanceKm  Float // Distance in kilometers
-  terrainType TriathlonTerrainType // POOL, OPEN_WATER, ROAD, TRAIL, MIXED
-  order       Int // Order of the segment (1 = first, 2 = second, 3 = third)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([variantId])
-  @@index([order])
-}
-
-model PricingPhase {
-  id        String        @id @default(cuid())
-  eventId   String? // Se for ao nível do evento (todas as variantes)
-  event     Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  variantId String? // Se for específico de uma variante
-  variant   EventVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
-
-  name            String // Ex: "1ª Fase", "Early Bird", "Fase Normal"
-  startDate       DateTime
-  endDate         DateTime
-  price           Float
-  currency        Currency @default(EUR) // Moeda do preço
-  discountPercent Int? // Percentagem de desconto (opcional)
-  note            String? // Nota adicional (ex: "Desconto de 10% sobre o valor de 600€")
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([eventId])
-  @@index([variantId])
-  @@index([startDate])
-}
-
-model Participation {
-  id        String        @id @default(cuid())
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String
-  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  variantId String?
-  variant   EventVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  status    String        @default("going") // going, interested, not_going
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  @@unique([userId, eventId])
-  @@index([userId])
-  @@index([eventId])
-}
-
-model Result {
-  id        String        @id @default(cuid())
-  userId    String
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String
-  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  variantId String?
-  variant   EventVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-  time      String // formato: "HH:MM:SS"
-  position  Int?
-  notes     String?       @db.Text
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-
-  @@index([userId])
-  @@index([eventId])
-}
-
-model Comment {
-  id        String    @id @default(cuid())
-  userId    String
-  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId   String
-  event     Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  parentId  String?
-  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies   Comment[] @relation("CommentReplies")
-  content   String    @db.Text
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([userId])
-  @@index([eventId])
-  @@index([parentId])
-}
-
-model Post {
-  id         String        @id @default(cuid())
-  userId     String
-  user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  eventId    String?
-  event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  venueId    String?
-  venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  content    String        @db.Text
-  imageUrl   String?
-  isPublic   Boolean       @default(false) // Public posts appear in main feed, private posts only in venue/event
-  isAutoPost Boolean       @default(false) // Auto-generated posts (participation announcements)
-  likes      PostLike[]
-  comments   PostComment[]
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-
-  @@index([userId])
-  @@index([eventId])
-  @@index([venueId])
-  @@index([createdAt])
-  @@index([isPublic])
-}
-
-model PostComment {
-  id        String   @id @default(cuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([postId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model PostLike {
-  id        String   @id @default(cuid())
-  postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([postId, userId])
-  @@index([postId])
-  @@index([userId])
-}
-
-model ProfilePhoto {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  imageUrl  String
-  caption   String?  @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([userId])
-  @@index([createdAt])
+enum CommissionType {
+  PERCENT
+  FIXED
 }
 
 enum FriendshipStatus {
@@ -547,40 +954,10 @@ enum FriendshipStatus {
   REJECTED
 }
 
-model Friendship {
-  id         String           @id @default(cuid())
-  senderId   String
-  sender     User             @relation("FriendshipSender", fields: [senderId], references: [id], onDelete: Cascade)
-  receiverId String
-  receiver   User             @relation("FriendshipReceiver", fields: [receiverId], references: [id], onDelete: Cascade)
-  status     FriendshipStatus @default(PENDING)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  @@unique([senderId, receiverId])
-  @@index([senderId])
-  @@index([receiverId])
-  @@index([status])
-}
-
 enum InstagramFormat {
-  SQUARE // 1:1 (1080x1080)
-  PORTRAIT // 4:5 (1080x1350)
-  STORY // 9:16 (1080x1920)
-}
-
-model InstagramPostDraft {
-  id          String          @id @default(cuid())
-  userId      String
-  user        User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  templateKey String // T1, T2, T3, T4
-  format      InstagramFormat @default(SQUARE)
-  payload     Json // All template fields, colors, overlay, backgroundUrl
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-
-  @@index([userId])
-  @@index([createdAt])
+  SQUARE
+  PORTRAIT
+  STORY
 }
 
 enum ContactType {
@@ -598,459 +975,5 @@ enum ContactStatus {
   CLOSED
 }
 
-model Contact {
-  id        String   @id @default(cuid())
-  name      String
-  email     String
-  type      String   @default("other")
-  subject   String
-  message   String   @db.Text
-  status    String   @default("pending")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([status])
-  @@index([createdAt])
-  @@index([email])
-}
-
-// Map filters preferences for authenticated users
-model MapPreferences {
-  id             String      @id @default(cuid())
-  userId         String      @unique
-  user           User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sports         SportType[] // Filtered sports
-  distanceRadius Int? // Distance radius in km (null = all)
-  dateRange      String? // "7d", "30d", "3m", "6m", "all"
-  centerLat      Float? // Last map center latitude
-  centerLng      Float? // Last map center longitude
-  zoom           Int? // Last zoom level
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-
-  @@index([userId])
-}
-
-// Map filters preferences for anonymous users
-model AnonymousMapPreferences {
-  id             String      @id @default(cuid())
-  anonymousId    String      @unique // UUID stored in localStorage
-  sports         SportType[] // Filtered sports
-  distanceRadius Int? // Distance radius in km (null = all)
-  dateRange      String? // "7d", "30d", "3m", "6m", "all"
-  centerLat      Float? // Last map center latitude
-  centerLng      Float? // Last map center longitude
-  zoom           Int? // Last zoom level
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  lastAccessedAt DateTime    @default(now())
-
-  @@index([anonymousId])
-  @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
-}
-
-// Events page filters preferences for authenticated users
-model EventsPreferences {
-  id              String      @id @default(cuid())
-  userId          String      @unique
-  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  sports          SportType[] // Filtered sports
-  distanceRadius  Int? // Distance radius in km (null = all/global)
-  dateRange       String? // "7d", "30d", "3m", "6m", "all"
-  searchQuery     String? // Text search query
-  userLat         Float? // User's last known latitude
-  userLng         Float? // User's last known longitude
-  locationEnabled Boolean     @default(false) // Whether location filter is enabled
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-
-  @@index([userId])
-}
-
-// Events page filters preferences for anonymous users
-model AnonymousEventsPreferences {
-  id              String      @id @default(cuid())
-  anonymousId     String      @unique // UUID stored in localStorage
-  sports          SportType[] // Filtered sports
-  distanceRadius  Int? // Distance radius in km (null = all/global)
-  dateRange       String? // "7d", "30d", "3m", "6m", "all"
-  searchQuery     String? // Text search query
-  userLat         Float? // User's last known latitude
-  userLng         Float? // User's last known longitude
-  locationEnabled Boolean     @default(false) // Whether location filter is enabled
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
-  lastAccessedAt  DateTime    @default(now())
-
-  @@index([anonymousId])
-  @@index([lastAccessedAt]) // For cleanup of old anonymous preferences
-}
-
-// Venues System
-model Venue {
-  id          String      @id @default(cuid())
-  slug        String      @unique
-  name        String
-  type        VenueType
-  sportTypes  SportType[] // Sports offered at this venue (e.g., [CROSSFIT, HYROX])
-  description String?     @db.Text
-
-  // Profile images
-  logo      String? // Profile logo/avatar image
-  coverImage String? // Hero/banner image
-
-  // Contact information
-  phone     String?
-  email     String?
-  website   String?
-  instagram String?
-
-  // Location
-  address   String?
-  city      String?
-  country   String  @default("Portugal")
-  latitude  Float?
-  longitude Float?
-
-  // Payment configuration
-  paymentMode                 PaymentMode @default(MIXED)
-  externalPaymentInstructions String?     @db.Text
-
-  // Session defaults (used as pre-filled values when creating sessions)
-  defaultSessionCapacity             Int? // Default capacity for new sessions
-  defaultBookingAdvanceDays          Int  @default(4) // Default booking advance window in days
-  defaultCancellationDeadlineMinutes Int  @default(30) // Default cancellation deadline in minutes
-
-  // Metadata
-  createdByUserId String
-  isVerified      Boolean @default(false)
-  isActive        Boolean @default(true)
-
-  // Relations
-  members           VenueMember[]
-  invites           VenueInvite[]
-  plans             VenuePlan[]
-  sessions          VenueSession[]
-  recurringSessions VenueRecurringSession[]
-  subscriptions     VenueSubscription[]
-  bookings          VenueBooking[]
-  paymentIntents    PaymentIntent[]
-  posts             Post[]
-  recommendations   VenueRecommendation[]
-  reviews           VenueReview[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([slug])
-  @@index([type])
-  @@index([city])
-  @@index([isActive])
-  @@index([createdByUserId])
-  @@index([sportTypes])
-}
-
-model VenueMember {
-  id      String @id @default(cuid())
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  role     VenueRole
-  status   MemberStatus @default(PENDING)
-  joinedAt DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([venueId, userId])
-  @@index([venueId])
-  @@index([userId])
-  @@index([status])
-}
-
-model VenueInvite {
-  id              String  @id @default(cuid())
-  venueId         String
-  venue           Venue   @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  invitedUserId   String? // If inviting existing user
-  invitedEmail    String? // If inviting by email
-  invitedByUserId String
-
-  role      VenueRole
-  token     String       @unique
-  status    InviteStatus @default(PENDING)
-  expiresAt DateTime
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([invitedUserId])
-  @@index([invitedEmail])
-  @@index([token])
-  @@index([status])
-}
-
-model VenuePlan {
-  id      String @id @default(cuid())
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
-  name            String
-  description     String?         @db.Text
-  price           Float?
-  currency        Currency        @default(EUR)
-  paymentProvider PaymentProvider @default(IN_APP)
-  isActive        Boolean         @default(true)
-
-  // Policy stored as JSON for flexibility
-  policy Json? // { maxBookingsPerDay, maxBookingsPerWeek, allowedStartTimeFrom, etc. }
-
-  // Relations
-  subscriptions  VenueSubscription[]
-  paymentIntents PaymentIntent[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([isActive])
-}
-
-model VenueSubscription {
-  id      String    @id @default(cuid())
-  venueId String
-  venue   Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  userId  String
-  user    User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId  String
-  plan    VenuePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  status        String        @default("PENDING") // PENDING, ACTIVE, PAUSED, CANCELLED
-  paymentStatus PaymentStatus @default(PENDING_PAYMENT)
-
-  // Payment details (for EXTERNAL payments)
-  activatedByUserId String?
-  activatedAt       DateTime?
-  paymentMethod     String? // MBWay, Dinheiro, Transferência, Outro
-  paymentAmount     Float?
-  paymentNote       String?   @db.Text
-  paymentConfirmedAt DateTime?
-
-  startsAt DateTime  @default(now())
-  endsAt   DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([userId])
-  @@index([planId])
-  @@index([status])
-  @@index([paymentStatus])
-}
-
-// Recurring session template - defines a recurring pattern (e.g., "Mondays at 8am")
-model VenueRecurringSession {
-  id      String @id @default(cuid())
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
-  type        SessionType
-  title       String
-  description String?     @db.Text
-
-  // Recurrence pattern
-  dayOfWeek Int // 0=Sunday, 1=Monday, ..., 6=Saturday
-  startTime String // Time in HH:mm format (e.g., "08:00")
-  endTime   String // Time in HH:mm format (e.g., "09:00")
-
-  capacity Int? // null for appointments (1:1)
-
-  coachId   String? // Optional coach/provider
-  serviceId String? // Optional service reference
-  tags      String[] // e.g., ["CrossFit", "Open Gym", "Hyrox"]
-
-  // Booking rules
-  bookingAdvanceDays         Int @default(4) // How many days in advance users can book
-  cancellationDeadlineMinutes Int @default(30) // How many minutes before start users can cancel
-
-  // Status
-  isActive Boolean @default(true) // Can be paused without deleting
-
-  // Generated sessions
-  sessions VenueSession[]
-
-  // Track how far we've generated sessions
-  generatedUntil DateTime?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([dayOfWeek])
-  @@index([isActive])
-}
-
-model VenueSession {
-  id      String @id @default(cuid())
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-
-  // Link to recurring template (if generated from one)
-  recurringSessionId String?
-  recurringSession   VenueRecurringSession? @relation(fields: [recurringSessionId], references: [id], onDelete: SetNull)
-
-  type        SessionType
-  title       String
-  description String?     @db.Text
-
-  startsAt DateTime
-  endsAt   DateTime
-  capacity Int? // null for appointments (1:1)
-
-  coachId   String? // Optional coach/provider
-  serviceId String? // Optional service reference
-  tags      String[] // e.g., ["CrossFit", "Open Gym", "Hyrox"]
-
-  // Booking rules
-  bookingAdvanceDays         Int @default(4) // How many days in advance users can book
-  cancellationDeadlineMinutes Int @default(30) // How many minutes before start users can cancel
-
-  // Relations
-  bookings VenueBooking[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([type])
-  @@index([startsAt])
-  @@index([coachId])
-  @@index([recurringSessionId])
-}
-
-model VenueBooking {
-  id        String       @id @default(cuid())
-  venueId   String
-  venue     Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  sessionId String
-  session   VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  status BookingStatus @default(BOOKED)
-  notes  String?       @db.Text
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([sessionId, userId])
-  @@index([venueId])
-  @@index([sessionId])
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
-}
-
-model PaymentIntent {
-  id      String @id @default(cuid())
-  venueId String
-  venue   Venue  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  userId  String
-  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  planId  String
-  plan    VenuePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
-
-  amount   Float
-  currency Currency              @default(EUR)
-  status   PaymentIntentStatus   @default(CREATED)
-  provider String                @default("INTERNAL_MVP") // INTERNAL_MVP, STRIPE
-
-  // Stripe integration
-  stripePaymentIntentId String? @unique
-  confirmedAt           DateTime?
-
-  // Metadata
-  metadata Json? // For future extensibility
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([venueId])
-  @@index([userId])
-  @@index([planId])
-  @@index([status])
-  @@index([createdAt])
-  @@index([stripePaymentIntentId])
-}
-
-// Weather forecast for events
-model EventWeather {
-  id          String   @id @default(cuid())
-  eventId     String
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  date        DateTime // Date of the forecast
-  temperature Float    // Temperature in Celsius
-  condition   String   // Weather condition (e.g., "Clear", "Rain", "Clouds")
-  humidity    Int?     // Humidity percentage
-  windSpeed   Float?   // Wind speed in m/s
-  icon        String?  // Weather icon code
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@unique([eventId, date])
-  @@index([eventId])
-  @@index([date])
-}
-
-// Recommendations for venues (positive engagement only)
-model VenueRecommendation {
-  id        String   @id @default(cuid())
-  venueId   String
-  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-
-  @@unique([venueId, userId]) // One recommendation per user per venue
-  @@index([venueId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-// Reviews for venues (positive only, no numeric rating)
-model VenueReview {
-  id        String                @id @default(cuid())
-  venueId   String
-  venue     Venue                 @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String                @db.Text
-  createdAt DateTime              @default(now())
-  updatedAt DateTime              @updatedAt
-  replies   VenueReviewReply[]
-
-  @@unique([venueId, userId]) // One review per user per venue
-  @@index([venueId])
-  @@index([userId])
-  @@index([createdAt])
-}
-
-model VenueReviewReply {
-  id        String   @id @default(cuid())
-  reviewId  String
-  review    VenueReview @relation(fields: [reviewId], references: [id], onDelete: Cascade)
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  content   String   @db.Text
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([reviewId])
-  @@index([userId])
-  @@index([createdAt])
-}
+// PaymentProvider enum removed - replaced by PaymentsProvider (IN_APP, EXTERNAL, MIXED) at venue level
 

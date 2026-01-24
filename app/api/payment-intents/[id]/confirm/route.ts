@@ -7,7 +7,7 @@ import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 // POST - Confirm payment intent (MVP - simulated)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -16,7 +16,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const intentId = params.id;
+    const intentId = (await params).id;
 
     // Get payment intent with plan policy
     const intent = await prisma.paymentIntent.findUnique({

@@ -51,7 +51,7 @@ export function VenuePlanModal({
     description: plan?.description || "",
     price: plan?.price?.toString() || "",
     currency: plan?.currency || "EUR",
-    paymentProvider: "IN_APP",
+    // paymentProvider removed - now managed at venue level
   });
 
   const [policy, setPolicy] = useState<VenuePlanPolicy>(
@@ -66,7 +66,7 @@ export function VenuePlanModal({
         description: plan?.description || "",
         price: plan?.price?.toString() || "",
         currency: plan?.currency || "EUR",
-        paymentProvider: "IN_APP",
+        // paymentProvider removed - now managed at venue level
       });
       setPolicy(plan?.policy || DEFAULT_PLAN_POLICY);
     }
@@ -93,7 +93,7 @@ export function VenuePlanModal({
           description: formData.description || null,
           price: formData.price ? parseFloat(formData.price) : null,
           currency: formData.currency,
-          paymentProvider: formData.paymentProvider,
+          // paymentProvider removed - now managed at venue level
           policy: policy,
         }),
       });

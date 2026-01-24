@@ -11,10 +11,10 @@ const RECURRING_GENERATION_WEEKS = 12; // 3 months ahead
 // GET - List sessions for a venue
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
     const searchParams = request.nextUrl.searchParams;
 
     const from = searchParams.get("from");
@@ -109,7 +109,7 @@ export async function GET(
 // POST - Create new session (owner/admin/coach only)
 export async function POST(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -118,7 +118,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { id: venueId } = params;
+    const { id: venueId } = await params;
 
     // Check authorization
     const authResult = await canManageSessions(session.user.id, venueId);

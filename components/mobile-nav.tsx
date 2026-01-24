@@ -15,6 +15,7 @@ import {
   Building2,
 } from "lucide-react";
 import { useUserVenues } from "@/hooks/use-user-venues";
+import { GlobalSearch } from "./global-search";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,14 +29,17 @@ export function MobileNav() {
 
   if (status === "loading") {
     return (
-      <Button variant="ghost" size="icon" className="md:hidden">
-        <Menu className="h-6 w-6" />
-      </Button>
+      <div className="flex items-center gap-2 md:hidden">
+        <Button variant="ghost" size="icon">
+          <Menu className="h-6 w-6" />
+        </Button>
+      </div>
     );
   }
 
   return (
-    <div className="md:hidden">
+    <div className="flex items-center gap-2 md:hidden">
+      <GlobalSearch />
       <Button
         variant="ghost"
         size="icon"

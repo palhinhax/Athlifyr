@@ -20,6 +20,7 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
     const legal = (await import(`@/messages/${locale}/legal.json`)).default;
     const navigation = (await import(`@/messages/${locale}/navigation.json`))
       .default;
+    const sports = (await import(`@/messages/${locale}/sports.json`)).default;
     const venues = (await import(`@/messages/${locale}/venues.json`)).default;
 
     // Merge all messages
@@ -33,6 +34,7 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       home,
       legal,
       navigation,
+      sports,
       venues
     );
   } catch (error) {

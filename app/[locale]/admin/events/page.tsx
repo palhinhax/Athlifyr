@@ -72,7 +72,7 @@ export default function AdminEventsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const Tsports = useTranslations("sports");
+  const Tsports = useTranslations("common");
 
   const [events, setEvents] = useState<Event[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -505,7 +505,9 @@ export default function AdminEventsPage() {
                           onChange={() => toggleSportType(type)}
                           className="h-4 w-4 rounded border-gray-300"
                         />
-                        <span className="text-sm">{Tsports(`${type}`)}</span>
+                        <span className="text-sm">
+                          {Tsports(`sports.${type}`)}
+                        </span>
                       </label>
                     ))}
                   </div>
@@ -890,7 +892,7 @@ export default function AdminEventsPage() {
                             key={sport}
                             className="rounded-full bg-primary px-2 py-1 text-xs font-medium text-primary-foreground"
                           >
-                            {Tsports(`${sport}`)}
+                            {Tsports(`sports.${sport}`)}
                           </span>
                         ))}
                       </div>

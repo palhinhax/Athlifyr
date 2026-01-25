@@ -323,7 +323,7 @@ export function GlobalSearch() {
                                 sportColors[sport] || sportColors.OTHER
                               )}
                             >
-                              {tSports(sport)}
+                              {tSports(`sports.${sport}`)}
                             </Badge>
                           ))}
                           {result.sportTypes.length > 3 && (

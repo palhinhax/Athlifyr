@@ -19,7 +19,7 @@ export function FavoriteSportsSelector({
 }: FavoriteSportsSelectorProps) {
   const allSports = Object.keys(SportType) as SportType[];
   const t = useTranslations();
-  const tSports = useTranslations("sports");
+  const tSports = useTranslations("common");
 
   // If no favorites are set, default to all sports
   const [selectedSports, setSelectedSports] = useState<SportType[]>(
@@ -96,7 +96,7 @@ export function FavoriteSportsSelector({
           >
             <span className="text-2xl">{sportTypeIcons[sport]}</span>
             <span className="text-center text-sm font-medium">
-              {tSports(sport)}
+              {tSports(`sports.${sport}`)}
             </span>
             {selectedSports.includes(sport) && (
               <span className="text-xs text-primary">

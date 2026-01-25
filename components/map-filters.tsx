@@ -43,7 +43,7 @@ const SPORT_TYPES: SportType[] = [
 
 export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
   const t = useTranslations();
-  const tSports = useTranslations("sports");
+  const tSports = useTranslations("common");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -275,7 +275,7 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
                     <span className="text-base leading-none">
                       {getSportIcon(sport)}
                     </span>
-                    <span>{tSports(sport)}</span>
+                    <span>{tSports(`sports.${sport}`)}</span>
                   </label>
                 </div>
               ))}

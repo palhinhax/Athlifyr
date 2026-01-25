@@ -14,7 +14,7 @@ export function SportTypeSelector({
   onToggleSportType,
 }: SportTypeSelectorProps) {
   const t = useTranslations("admin.events");
-  const tSports = useTranslations("sports");
+  const tSports = useTranslations("common");
 
   return (
     <div className="grid gap-2">
@@ -32,7 +32,7 @@ export function SportTypeSelector({
               onChange={() => onToggleSportType(type)}
               className="h-4 w-4 rounded border-gray-300"
             />
-            <span className="text-sm">{tSports(type)}</span>
+            <span className="text-sm">{tSports(`sports.${type}`)}</span>
           </label>
         ))}
       </div>

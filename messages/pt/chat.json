@@ -1,0 +1,18 @@
+{
+  "chat": {
+    "title": "Mensagens",
+    "noConversations": "Ainda não há conversas",
+    "selectConversation": "Seleciona uma conversa para começar a conversar",
+    "noMessages": "Ainda não há mensagens. Inicia a conversa!",
+    "typeMessage": "Escreve uma mensagem...",
+    "send": "Enviar",
+    "online": "Online",
+    "connecting": "A ligar...",
+    "loadingConversation": "A carregar conversa...",
+    "connectionError": "A ligar ao servidor de chat...",
+    "notAuthenticated": "Não Autenticado",
+    "signInRequired": "Por favor, inicia sessão para acederes ao chat.",
+    "you": "Tu: ",
+    "justNow": "agora mesmo"
+  }
+}

@@ -5,6 +5,7 @@ This document describes the implementation of the real-time 1:1 chat system usin
 ## Architecture Overview
 
 The chat system consists of:
+
 - **Database Models**: Conversation, ConversationParticipant, Message
 - **WebSocket Server**: Socket.IO server integrated with Next.js custom server
 - **REST API**: Endpoints for conversation management and message history
@@ -13,18 +14,21 @@ The chat system consists of:
 ## Database Schema
 
 ### Conversation
+
 - `id`: Unique identifier (cuid)
 - `createdAt`: Creation timestamp
 - `updatedAt`: Last update timestamp
 - Relations: `participants`, `messages`
 
 ### ConversationParticipant
+
 - `id`: Unique identifier (cuid)
 - `conversationId`: Foreign key to Conversation
 - `userId`: Foreign key to User
 - Unique constraint on `(conversationId, userId)` to prevent duplicates
 
 ### Message
+
 - `id`: Unique identifier (cuid)
 - `conversationId`: Foreign key to Conversation
 - `senderId`: Foreign key to User
@@ -34,7 +38,9 @@ The chat system consists of:
 ## REST API Endpoints
 
 ### GET /api/chat/conversations
+
 Lists all conversations for the authenticated user with:
+
 - Last message preview
 - Participant information
 - Sorted by most recent activity
@@ -43,6 +49,7 @@ Lists all conversations for the authenticated user with:
 **Response**: Array of conversations with nested participants and messages
 
 ### POST /api/chat/conversations
+
 Creates a new 1:1 conversation or returns an existing one.
 
 **Authentication**: Required  
@@ -50,16 +57,19 @@ Creates a new 1:1 conversation or returns an existing one.
 **Response**: Conversation object with participants
 
 ### GET /api/chat/conversations/[id]/messages
+
 Retrieves message history for a specific conversation with pagination support.
 
 **Authentication**: Required  
 **Query Parameters**:
+
 - `cursor`: Message ID for pagination (optional)
 - `limit`: Number of messages to return (default: 50, max: 100)
 
 **Response**: Array of messages with sender information and next cursor
 
 ### GET /api/auth/socket-token
+
 Generates a JWT token for Socket.IO authentication.
 
 **Authentication**: Required  
@@ -68,6 +78,7 @@ Generates a JWT token for Socket.IO authentication.
 ## WebSocket Server
 
 ### Connection Setup
+
 The Socket.IO server is initialized in `server.ts` and runs alongside the Next.js server.
 
 **Path**: `/api/socket`  
@@ -78,55 +89,68 @@ The Socket.IO server is initialized in `server.ts` and runs alongside the Next.j
 #### Client → Server
 
 **join_conversation**
+
 ```typescript
 socket.emit("join_conversation", conversationId: string);
 ```
+
 Joins a conversation room. Only participants can join.
 
 **send_message**
+
 ```typescript
 socket.emit("send_message", {
   conversationId: string,
-  content: string
+  content: string,
 });
 ```
+
 Sends a message to a conversation. Message is validated and stored in database.
 
 **leave_conversation**
+
 ```typescript
 socket.emit("leave_conversation", conversationId: string);
 ```
+
 Leaves a conversation room.
 
 #### Server → Client
 
 **message_received**
+
 ```typescript
 socket.on("message_received", (message: Message) => {
   // Handle new message
 });
 ```
+
 Broadcast to all participants when a new message is sent.
 
 **error**
+
 ```typescript
 socket.on("error", (error: { message: string }) => {
   // Handle error
 });
 ```
+
 Sent when an error occurs (e.g., unauthorized access).
 
 ## Frontend Components
 
 ### useChatSocket Hook
+
 `hooks/chat/use-chat-socket.ts`
 
 Custom React hook that manages WebSocket connection and provides:
+
 - `isConnected`: Boolean indicating connection status
 - `error`: Error message if connection fails
 - `sendMessage(content)`: Function to send a message
 
 **Usage**:
+
 ```typescript
 const { isConnected, sendMessage } = useChatSocket({
   conversationId: "conv_123",
@@ -138,18 +162,22 @@ const { isConnected, sendMessage } = useChatSocket({
 ```
 
 ### ChatSidebar Component
+
 `components/chat/chat-sidebar.tsx`
 
 Displays list of conversations with:
+
 - User avatar and name
 - Last message preview
 - Time since last message
 - Selection highlighting
 
 ### ChatWindow Component
+
 `components/chat/chat-window.tsx`
 
 Main chat interface with:
+
 - Message history display
 - Real-time message updates
 - Message input field
@@ -158,9 +186,11 @@ Main chat interface with:
 - Auto-scroll to latest message
 
 ### Chat Page
+
 `app/[locale]/chat/page.tsx`
 
 Main chat application page that:
+
 - Fetches conversations and messages
 - Manages Socket.IO connection
 - Handles conversation selection
@@ -169,11 +199,13 @@ Main chat application page that:
 ## Security
 
 ### Authentication
+
 - All REST API endpoints require valid NextAuth session
 - WebSocket connections require valid JWT token
 - JWT tokens expire after 24 hours
 
 ### Authorization
+
 - Users can only view conversations they participate in
 - Message sending is validated on server side
 - Participant verification before joining rooms
@@ -182,24 +214,31 @@ Main chat application page that:
 ## Deployment Notes
 
 ### Environment Variables Required
+
 - `NEXTAUTH_SECRET`: Secret key for JWT signing
 - `DATABASE_URL`: PostgreSQL connection string
 - `NEXT_PUBLIC_BASE_URL`: Application base URL
 
 ### Database Migration
+
 Run the migration before deploying:
+
 ```bash
 npx prisma migrate deploy
 ```
 
 ### Custom Server
+
 The application uses a custom server (`server.ts`) to integrate Socket.IO with Next.js. Update deployment configuration to use:
+
 ```bash
 npm start  # Runs: NODE_ENV=production tsx server.ts
 ```
 
 ### CORS Configuration
+
 Update Socket.IO CORS settings in `lib/socket-server.ts` for production domain:
+
 ```typescript
 cors: {
   origin: process.env.NEXT_PUBLIC_BASE_URL,
@@ -226,18 +265,21 @@ Possible improvements for the chat system:
 ## Troubleshooting
 
 ### Socket Connection Issues
+
 - Verify JWT token is valid and not expired
 - Check CORS configuration matches client origin
 - Ensure WebSocket connections are allowed by firewall
 - Check browser console for connection errors
 
 ### Message Not Appearing
+
 - Verify user is participant in conversation
 - Check Socket.IO room membership
 - Validate message is saved to database
 - Ensure `message_received` event is properly emitted
 
 ### Performance Issues
+
 - Implement message pagination to limit initial load
 - Add database indexes on frequently queried fields
 - Consider caching frequently accessed conversations
@@ -258,12 +300,14 @@ To test the chat system:
 ## Code Quality
 
 All code follows:
+
 - TypeScript strict mode
 - ESLint configuration
 - Prettier formatting
 - Conventional commit messages
 
 Run checks:
+
 ```bash
 npm run format      # Format code
 npm run lint        # Run linter

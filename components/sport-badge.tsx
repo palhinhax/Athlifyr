@@ -18,7 +18,7 @@ export function SportBadge({
   size = "md",
   showIcon = true,
 }: SportBadgeProps) {
-  const t = useTranslations("common");
+  const t = useTranslations("sports");
 
   const sizeClasses = {
     sm: "px-2 py-0.5 text-xs gap-1",
@@ -39,7 +39,7 @@ export function SportBadge({
           {getSportIcon(sportType)}
         </span>
       )}
-      <span>{t(`sports.${sportType}`)}</span>
+      <span>{t(sportType as string)}</span>
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 // GET - Get message history for a conversation
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,7 +14,7 @@ export async function GET(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const conversationId = params.id;
+    const { id: conversationId } = await params;
 
     // Verify user is participant
     const participant = await prisma.conversationParticipant.findFirst({

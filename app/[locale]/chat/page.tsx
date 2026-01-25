@@ -53,9 +53,25 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [socketToken, setSocketToken] = useState<string | null>(null);
 
-  // Get JWT token from session
-  const token = session?.user ? (session as { token?: string }).token : null;
+  // Fetch socket token
+  useEffect(() => {
+    if (status !== "authenticated") return;
+
+    const fetchToken = async () => {
+      try {
+        const response = await fetch("/api/auth/socket-token");
+        if (!response.ok) throw new Error("Failed to fetch socket token");
+        const data = await response.json();
+        setSocketToken(data.token);
+      } catch (error) {
+        console.error("Error fetching socket token:", error);
+      }
+    };
+
+    fetchToken();
+  }, [status]);
 
   // Handle new messages from socket
   const handleNewMessage = useCallback((message: Message) => {
@@ -65,7 +81,7 @@ export default function ChatPage() {
   // Initialize socket
   const { isConnected, sendMessage } = useChatSocket({
     conversationId: selectedConversationId,
-    token: token || null,
+    token: socketToken,
     onNewMessage: handleNewMessage,
   });
 

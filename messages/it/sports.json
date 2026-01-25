@@ -10,6 +10,18 @@
     "locationsCount": "{cities} città in {countries} paesi",
     "upcomingEvents": "Prossimi eventi di {sport}",
     "noEvents": "Nessun evento di {sport} disponibile al momento.",
-    "viewAllEvents": "Visualizza tutti gli eventi"
+    "viewAllEvents": "Visualizza tutti gli eventi",
+    "RUNNING": "Corsa",
+    "TRAIL": "Trail",
+    "WALKING": "Camminata",
+    "HYROX": "HYROX",
+    "CROSSFIT": "CrossFit",
+    "OCR": "OCR",
+    "BTT": "MTB",
+    "CYCLING": "Ciclismo",
+    "SURF": "Surf",
+    "TRIATHLON": "Triathlon",
+    "SWIMMING": "Nuoto",
+    "OTHER": "Altro"
   }
 }

@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { getUserCountry } from "@/lib/event-utils";
 import { headers } from "next/headers";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import {
   HomeCtaSection,
   HomeSeeAllButton,
@@ -34,6 +36,12 @@ export default async function Home({
 }) {
   const { locale } = await params;
 
+  // Check if user is authenticated - redirect to feed
+  const session = await auth();
+  if (session?.user) {
+    redirect(`/${locale}/feed`);
+  }
+
   // Enable static rendering
   setRequestLocale(locale);
 
@@ -50,13 +58,13 @@ export default async function Home({
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="container mx-auto px-4 py-16 text-center md:py-20">
-        <h1 className="text-4xl font-bold tracking-tight md:text-6xl">
+      <section className="container mx-auto px-4 py-8 text-center md:py-20">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-4xl md:text-6xl">
           {t("heroTitle")}
           <br />
           <span className="text-primary">{t("heroTitleHighlight")}</span>
         </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
+        <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-lg md:mt-6 md:text-xl">
           {t("heroDescription")}
           <br />
           {t("heroDescriptionCountry", { country: userCountry })}
@@ -64,9 +72,9 @@ export default async function Home({
       </section>
 
       {/* Upcoming Events */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <h2 className="text-3xl font-bold">
+      <section className="container mx-auto px-4 py-6 md:py-12">
+        <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="text-xl font-bold sm:text-2xl md:text-3xl">
             {t("upcomingEventsTitle", { country: userCountry })}
           </h2>
           <HomeSeeAllButton seeAll={t("seeAll")} />

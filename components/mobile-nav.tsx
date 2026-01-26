@@ -63,25 +63,7 @@ export function MobileNav() {
           <div className="fixed inset-x-0 top-16 z-50 border-b bg-background p-4 shadow-lg">
             <nav className="flex flex-col gap-1">
               {/* Main Navigation - All with icons */}
-              <Link
-                href="/"
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-              >
-                <HomeIcon className="h-4 w-4" />
-                {t("home")}
-              </Link>
-
-              <Link
-                href="/events"
-                onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                {t("events")}
-              </Link>
-
-              {session && (
+              {session ? (
                 <>
                   <Link
                     href="/feed"
@@ -108,7 +90,25 @@ export function MobileNav() {
                     )}
                   </Link>
                 </>
+              ) : (
+                <Link
+                  href="/"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                >
+                  <HomeIcon className="h-4 w-4" />
+                  {t("home")}
+                </Link>
               )}
+
+              <Link
+                href="/events"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                <CalendarIcon className="h-4 w-4" />
+                {t("events")}
+              </Link>
 
               {session?.user?.role === "ADMIN" && (
                 <Link

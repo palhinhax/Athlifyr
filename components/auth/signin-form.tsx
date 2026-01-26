@@ -16,7 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
 
 export function SignInForm() {
   const [email, setEmail] = useState("");
@@ -179,7 +179,16 @@ export function SignInForm() {
             </div>
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "A entrar..." : "Entrar"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />A entrar...
+              </>
+            ) : (
+              <>
+                <LogIn className="mr-2 h-4 w-4" />
+                Entrar
+              </>
+            )}
           </Button>
         </form>
       </CardContent>

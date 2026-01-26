@@ -1,204 +1,110 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
-import { useSession } from "next-auth/react";
-import { io, Socket } from "socket.io-client";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useCallback } from "react";
 
-interface Message {
+interface ChatNotification {
   id: string;
   conversationId: string;
   senderId: string;
+  senderName: string | null;
+  senderImage: string | null;
   content: string;
   createdAt: Date;
-  sender: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  };
+  read: boolean;
 }
 
-interface Notification {
-  id: string;
-  message: Message;
-  read: boolean;
-  createdAt: Date;
+interface NotificationsResponse {
+  notifications: ChatNotification[];
+  unreadCount: number;
+}
+
+// Fetch notifications from API
+async function fetchNotifications(): Promise<NotificationsResponse> {
+  const response = await fetch("/api/chat/notifications");
+  if (!response.ok) {
+    // Return empty if not found or error
+    return { notifications: [], unreadCount: 0 };
+  }
+  return response.json();
+}
+
+// Mark notification as read
+async function markNotificationAsRead(notificationId: string): Promise<void> {
+  const response = await fetch(
+    `/api/chat/notifications/${notificationId}/read`,
+    {
+      method: "POST",
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to mark notification as read");
+  }
+}
+
+// Mark all notifications as read
+async function markAllNotificationsAsRead(): Promise<void> {
+  const response = await fetch("/api/chat/notifications/read-all", {
+    method: "POST",
+  });
+  if (!response.ok) {
+    throw new Error("Failed to mark all notifications as read");
+  }
 }
 
 interface UseChatNotificationsOptions {
   enabled?: boolean;
-  onNewMessage?: (message: Message) => void;
 }
 
-export function useChatNotifications({
-  enabled = true,
-  onNewMessage,
-}: UseChatNotificationsOptions = {}) {
-  const { data: session, status } = useSession();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [isConnected, setIsConnected] = useState(false);
-  const socketRef = useRef<Socket | null>(null);
-  const tokenRef = useRef<string | null>(null);
+export function useChatNotifications(
+  options: UseChatNotificationsOptions = {}
+) {
+  const { enabled = true } = options;
+  const queryClient = useQueryClient();
 
-  // Request browser notification permission
-  useEffect(() => {
-    if (typeof window !== "undefined" && "Notification" in window) {
-      if (Notification.permission === "default") {
-        Notification.requestPermission();
-      }
-    }
-  }, []);
+  // Query for notifications with polling
+  const { data, isLoading, error } = useQuery({
+    queryKey: ["chat-notifications"],
+    queryFn: fetchNotifications,
+    enabled,
+    refetchInterval: 10000, // Poll every 10 seconds for notifications
+    refetchIntervalInBackground: false,
+    staleTime: 5000,
+  });
 
-  // Fetch socket token
-  useEffect(() => {
-    if (status !== "authenticated" || !enabled) return;
+  // Mark as read mutation
+  const markAsReadMutation = useMutation({
+    mutationFn: markNotificationAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-notifications"] });
+    },
+  });
 
-    const fetchToken = async () => {
-      try {
-        const response = await fetch("/api/auth/socket-token");
-        if (response.ok) {
-          const data = await response.json();
-          tokenRef.current = data.token;
-        }
-      } catch (error) {
-        console.error("Error fetching socket token:", error);
-      }
-    };
+  // Mark all as read mutation
+  const markAllAsReadMutation = useMutation({
+    mutationFn: markAllNotificationsAsRead,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["chat-notifications"] });
+    },
+  });
 
-    fetchToken();
-  }, [status, enabled]);
+  const markAsRead = useCallback(
+    (notificationId: string) => {
+      markAsReadMutation.mutate(notificationId);
+    },
+    [markAsReadMutation]
+  );
 
-  // Play notification sound
-  const playNotificationSound = useCallback(() => {
-    try {
-      const audio = new Audio("/sounds/notification.mp3");
-      audio.volume = 0.5;
-      audio.play().catch(() => {
-        // Ignore autoplay restrictions
-      });
-    } catch {
-      // Ignore errors
-    }
-  }, []);
-
-  // Initialize global socket connection for notifications
-  useEffect(() => {
-    if (!enabled || status !== "authenticated") return;
-
-    // Wait for token
-    const initSocket = () => {
-      if (!tokenRef.current) {
-        setTimeout(initSocket, 500);
-        return;
-      }
-
-      const socket = io({
-        path: "/api/socket",
-        auth: {
-          token: tokenRef.current,
-        },
-        autoConnect: true,
-        reconnection: true,
-        reconnectionDelay: 1000,
-        reconnectionDelayMax: 5000,
-        reconnectionAttempts: 5,
-      });
-
-      socketRef.current = socket;
-
-      socket.on("connect", () => {
-        console.log("Notification socket connected");
-        setIsConnected(true);
-
-        // Join all user's conversations for notifications
-        socket.emit("join_user_notifications");
-      });
-
-      socket.on("disconnect", () => {
-        console.log("Notification socket disconnected");
-        setIsConnected(false);
-      });
-
-      // Listen for new messages globally
-      socket.on("new_message_notification", (message: Message) => {
-        // Don't notify for own messages
-        if (message.senderId === session?.user?.id) return;
-
-        console.log("New message notification:", message);
-
-        // Add to notifications
-        const notification: Notification = {
-          id: `notif-${message.id}`,
-          message,
-          read: false,
-          createdAt: new Date(),
-        };
-
-        setNotifications((prev) => [notification, ...prev].slice(0, 50));
-        setUnreadCount((prev) => prev + 1);
-
-        // Callback
-        onNewMessage?.(message);
-
-        // Show browser notification if page is not focused
-        if (document.hidden && "Notification" in window) {
-          if (Notification.permission === "granted") {
-            const senderName = message.sender.name || "Someone";
-            const notif = new window.Notification(`${senderName}`, {
-              body: message.content.slice(0, 100),
-              icon: message.sender.image || "/icon-192x192.png",
-              tag: message.conversationId,
-            });
-
-            notif.onclick = () => {
-              window.focus();
-              window.location.href = `/chat?conversation=${message.conversationId}`;
-              notif.close();
-            };
-
-            // Auto close after 5 seconds
-            setTimeout(() => notif.close(), 5000);
-          }
-        }
-
-        // Play notification sound
-        playNotificationSound();
-      });
-    };
-
-    initSocket();
-
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, [enabled, status, session?.user?.id, onNewMessage, playNotificationSound]);
-
-  // Mark notification as read
-  const markAsRead = useCallback((notificationId: string) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notificationId ? { ...n, read: true } : n))
-    );
-    setUnreadCount((prev) => Math.max(0, prev - 1));
-  }, []);
-
-  // Mark all as read
   const markAllAsRead = useCallback(() => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setUnreadCount(0);
-  }, []);
-
-  // Clear notifications
-  const clearNotifications = useCallback(() => {
-    setNotifications([]);
-    setUnreadCount(0);
-  }, []);
+    markAllAsReadMutation.mutate();
+  }, [markAllAsReadMutation]);
 
   return {
-    notifications,
-    unreadCount,
-    isConnected,
+    notifications: data?.notifications || [],
+    unreadCount: data?.unreadCount || 0,
+    isLoading,
+    error: error?.message || null,
     markAsRead,
     markAllAsRead,
-    clearNotifications,
   };
 }

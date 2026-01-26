@@ -2,7 +2,8 @@
 
 import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
 import { useSession } from "next-auth/react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 function SessionSync() {
   const { data: session } = useSession();
@@ -20,10 +21,24 @@ function SessionSync() {
 }
 
 export function SessionProvider({ children }: { children: React.ReactNode }) {
+  const [queryClient] = useState(
+    () =>
+      new QueryClient({
+        defaultOptions: {
+          queries: {
+            staleTime: 1000 * 60, // 1 minute
+            refetchOnWindowFocus: false,
+          },
+        },
+      })
+  );
+
   return (
-    <NextAuthSessionProvider>
-      <SessionSync />
-      {children}
-    </NextAuthSessionProvider>
+    <QueryClientProvider client={queryClient}>
+      <NextAuthSessionProvider>
+        <SessionSync />
+        {children}
+      </NextAuthSessionProvider>
+    </QueryClientProvider>
   );
 }

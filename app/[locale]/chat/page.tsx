@@ -1,65 +1,49 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatWindow } from "@/components/chat/chat-window";
-import { useChatSocket } from "@/hooks/chat/use-chat-socket";
+import {
+  useConversations,
+  useChatMessages,
+  useCreateConversation,
+  Message,
+} from "@/hooks/chat/use-chat";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
-
-interface Conversation {
-  id: string;
-  participants: Array<{
-    user: {
-      id: string;
-      name: string | null;
-      image: string | null;
-      email: string;
-    };
-  }>;
-  messages: Array<{
-    id: string;
-    content: string;
-    createdAt: Date;
-    senderId: string;
-    sender: {
-      id: string;
-      name: string | null;
-      image: string | null;
-    };
-  }>;
-  updatedAt: Date;
-}
-
-interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  createdAt: Date;
-  sender: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  };
-}
 
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const t = useTranslations("chat");
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
   >(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoadingConversations, setIsLoadingConversations] = useState(true);
-  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
-  const [socketToken, setSocketToken] = useState<string | null>(null);
   const [showMobileSidebar, setShowMobileSidebar] = useState(true);
   const [startWithProcessed, setStartWithProcessed] = useState(false);
+
+  // React Query hooks
+  const { data: conversations = [], isLoading: isLoadingConversations } =
+    useConversations(status === "authenticated");
+
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    isConnected,
+    sendMessage,
+    addOptimisticMessage,
+    removeOptimisticMessage,
+  } = useChatMessages(selectedConversationId, {
+    pollingInterval: 2000,
+    enabled: status === "authenticated",
+  });
+
+  const createConversation = useCreateConversation();
 
   // Get conversation from URL if present
   useEffect(() => {
@@ -79,24 +63,9 @@ export default function ChatPage() {
 
     const startConversation = async () => {
       try {
-        const response = await fetch("/api/chat/conversations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ otherUserId: startWithUserId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          setSelectedConversationId(data.conversation.id);
-          setShowMobileSidebar(false);
-
-          // Add conversation to list if not already there
-          setConversations((prev) => {
-            const exists = prev.some((c) => c.id === data.conversation.id);
-            if (exists) return prev;
-            return [data.conversation, ...prev];
-          });
-        }
+        const result = await createConversation.mutateAsync(startWithUserId);
+        setSelectedConversationId(result.conversation.id);
+        setShowMobileSidebar(false);
       } catch (error) {
         console.error("Error starting conversation:", error);
       } finally {
@@ -105,106 +74,10 @@ export default function ChatPage() {
     };
 
     startConversation();
-  }, [status, searchParams, startWithProcessed]);
-
-  // Fetch socket token
-  useEffect(() => {
-    if (status !== "authenticated") return;
-
-    const fetchToken = async () => {
-      try {
-        const response = await fetch("/api/auth/socket-token");
-        if (!response.ok) throw new Error("Failed to fetch socket token");
-        const data = await response.json();
-        setSocketToken(data.token);
-      } catch (error) {
-        console.error("Error fetching socket token:", error);
-      }
-    };
-
-    fetchToken();
-  }, [status]);
-
-  // Handle new messages from socket
-  const handleNewMessage = useCallback((message: Message) => {
-    // Avoid duplicates (message might already be added optimistically)
-    setMessages((prev) => {
-      const exists = prev.some(
-        (m) =>
-          m.id === message.id ||
-          (m.id.startsWith("temp-") &&
-            m.content === message.content &&
-            m.senderId === message.senderId)
-      );
-      if (exists) {
-        // Replace temp message with real one
-        return prev.map((m) =>
-          m.id.startsWith("temp-") &&
-          m.content === message.content &&
-          m.senderId === message.senderId
-            ? message
-            : m
-        );
-      }
-      return [...prev, message];
-    });
-  }, []);
-
-  // Initialize socket
-  const { isConnected, sendMessage } = useChatSocket({
-    conversationId: selectedConversationId,
-    token: socketToken,
-    onNewMessage: handleNewMessage,
-  });
-
-  // Load conversations
-  useEffect(() => {
-    if (status !== "authenticated") return;
-
-    const loadConversations = async () => {
-      try {
-        const response = await fetch("/api/chat/conversations");
-        if (!response.ok) throw new Error("Failed to fetch conversations");
-        const data = await response.json();
-        setConversations(data.conversations || []);
-      } catch (error) {
-        console.error("Error loading conversations:", error);
-      } finally {
-        setIsLoadingConversations(false);
-      }
-    };
-
-    loadConversations();
-  }, [status]);
-
-  // Load messages when conversation is selected
-  useEffect(() => {
-    if (!selectedConversationId) {
-      setMessages([]);
-      return;
-    }
-
-    const loadMessages = async () => {
-      setIsLoadingMessages(true);
-      try {
-        const response = await fetch(
-          `/api/chat/conversations/${selectedConversationId}/messages`
-        );
-        if (!response.ok) throw new Error("Failed to fetch messages");
-        const data = await response.json();
-        setMessages(data.messages || []);
-      } catch (error) {
-        console.error("Error loading messages:", error);
-      } finally {
-        setIsLoadingMessages(false);
-      }
-    };
-
-    loadMessages();
-  }, [selectedConversationId]);
+  }, [status, searchParams, startWithProcessed, createConversation]);
 
   const handleSendMessage = useCallback(
-    (content: string) => {
+    async (content: string) => {
       if (!selectedConversationId || !session?.user) return;
 
       // Add message optimistically (immediately show in UI)
@@ -221,67 +94,57 @@ export default function ChatPage() {
         },
       };
 
-      setMessages((prev) => [...prev, optimisticMessage]);
+      addOptimisticMessage(optimisticMessage);
 
-      // Send via socket
-      const sent = sendMessage(content);
-
-      if (!sent) {
-        console.error("Failed to send message");
-        // Optionally remove optimistic message on failure
-        setMessages((prev) =>
-          prev.filter((m) => m.id !== optimisticMessage.id)
-        );
+      try {
+        await sendMessage({ content });
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        removeOptimisticMessage(optimisticMessage.id);
       }
     },
-    [selectedConversationId, sendMessage, session?.user]
+    [
+      selectedConversationId,
+      session?.user,
+      sendMessage,
+      addOptimisticMessage,
+      removeOptimisticMessage,
+    ]
   );
 
   // Start a new conversation with a friend
   const handleStartConversation = useCallback(
     async (friendId: string): Promise<string | null> => {
       try {
-        const response = await fetch("/api/chat/conversations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ otherUserId: friendId }),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to create conversation");
-        }
-
-        const data = await response.json();
-        const newConversation = data.conversation;
-
-        // Add the new conversation to the list
-        setConversations((prev) => {
-          // Check if conversation already exists
-          const exists = prev.some((c) => c.id === newConversation.id);
-          if (exists) return prev;
-          return [newConversation, ...prev];
-        });
-
-        return newConversation.id;
+        const result = await createConversation.mutateAsync(friendId);
+        return result.conversation.id;
       } catch (error) {
         console.error("Error starting conversation:", error);
         return null;
       }
     },
-    []
+    [createConversation]
   );
 
   // Hide a conversation from the list
   const handleHideConversation = useCallback(
     (conversationId: string) => {
-      setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+      // Update the cache to remove the conversation
+      queryClient.setQueryData(
+        ["conversations"],
+        (old: typeof conversations | undefined) => {
+          if (!old) return [];
+          return old.filter((c) => c.id !== conversationId);
+        }
+      );
+
       // If the hidden conversation was selected, deselect it
       if (selectedConversationId === conversationId) {
         setSelectedConversationId(null);
         setShowMobileSidebar(true);
       }
     },
-    [selectedConversationId]
+    [queryClient, selectedConversationId]
   );
 
   const selectedConversation = conversations.find(

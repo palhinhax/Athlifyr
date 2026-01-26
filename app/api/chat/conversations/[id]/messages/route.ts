@@ -80,3 +80,78 @@ export async function GET(
     );
   }
 }
+
+// POST - Send a message to a conversation
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: conversationId } = await params;
+    const { content } = await request.json();
+
+    if (
+      !content ||
+      typeof content !== "string" ||
+      content.trim().length === 0
+    ) {
+      return NextResponse.json(
+        { error: "Message content is required" },
+        { status: 400 }
+      );
+    }
+
+    // Verify user is participant
+    const participant = await prisma.conversationParticipant.findFirst({
+      where: {
+        conversationId,
+        userId: session.user.id,
+      },
+    });
+
+    if (!participant) {
+      return NextResponse.json(
+        { error: "Not authorized to send messages to this conversation" },
+        { status: 403 }
+      );
+    }
+
+    // Create the message
+    const message = await prisma.message.create({
+      data: {
+        conversationId,
+        senderId: session.user.id,
+        content: content.trim(),
+      },
+      include: {
+        sender: {
+          select: {
+            id: true,
+            name: true,
+            image: true,
+          },
+        },
+      },
+    });
+
+    // Update conversation's updatedAt
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    return NextResponse.json({ message });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    return NextResponse.json(
+      { error: "Failed to send message" },
+      { status: 500 }
+    );
+  }
+}

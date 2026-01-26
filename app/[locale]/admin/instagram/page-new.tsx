@@ -233,8 +233,9 @@ export default function InstagramGeneratorPage() {
     title: string;
     startDate: string;
     endDate: string | null;
-    location: string;
-    sport: { name: string };
+    city: string;
+    country: string;
+    sportTypes: string[];
     variants: Array<{ name: string }>;
   }) => {
     const startDate = new Date(event.startDate);
@@ -282,10 +283,12 @@ export default function InstagramGeneratorPage() {
         .join(" • ");
       setT1Subtitle(variantNames);
     } else {
-      setT1Subtitle(event.sport.name);
+      const sportName =
+        event.sportTypes.length > 0 ? event.sportTypes[0] : "Event";
+      setT1Subtitle(sportName);
     }
 
-    setT1MetaLine(`${formattedDate} • ${event.location}`);
+    setT1MetaLine(`${formattedDate} • ${event.city}, ${event.country}`);
     setT1Cta("Descobre na Athlifyr");
 
     toast({

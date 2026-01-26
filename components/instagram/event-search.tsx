@@ -10,8 +10,9 @@ interface EventSearchResult {
   slug: string;
   startDate: string;
   endDate: string | null;
-  location: string;
-  sport: { name: string };
+  city: string;
+  country: string;
+  sportTypes: string[];
   variants: Array<{ name: string }>;
 }
 
@@ -102,13 +103,16 @@ export function EventSearch({ onEventSelect }: EventSearchProps) {
                 >
                   <div className="font-medium">{event.title}</div>
                   <div className="mt-1 text-sm text-muted-foreground">
-                    {event.sport.name} •{" "}
+                    {event.sportTypes.length > 0
+                      ? event.sportTypes.join(", ")
+                      : "Event"}{" "}
+                    •{" "}
                     {new Date(event.startDate).toLocaleDateString("pt-PT", {
                       day: "numeric",
                       month: "short",
                       year: "numeric",
                     })}{" "}
-                    • {event.location}
+                    • {event.city}, {event.country}
                   </div>
                 </button>
               ))}

@@ -4,8 +4,10 @@ import { useState, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { SendIcon, Loader2Icon } from "lucide-react";
+import { SendIcon, Loader2Icon, ArrowLeftIcon, CircleIcon } from "lucide-react";
 import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { Link } from "@/i18n/routing";
 
 interface Message {
   id: string;
@@ -32,6 +34,7 @@ interface ChatWindowProps {
   onSendMessage: (content: string) => void;
   isConnected: boolean;
   isLoading?: boolean;
+  onBack?: () => void;
 }
 
 export function ChatWindow({
@@ -42,9 +45,11 @@ export function ChatWindow({
   onSendMessage,
   isConnected,
   isLoading = false,
+  onBack,
 }: ChatWindowProps) {
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -77,43 +82,86 @@ export function ChatWindow({
   };
 
   return (
-    <div className="flex h-full flex-col bg-white">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b p-4">
-        <Avatar>
-          <AvatarImage src={otherUser.image || undefined} />
-          <AvatarFallback>{getInitials(otherUser.name)}</AvatarFallback>
-        </Avatar>
-        <div className="flex-1">
-          <h3 className="font-semibold">{otherUser.name || "Unknown User"}</h3>
-          <p className="text-sm text-gray-500">
-            {isConnected ? "Online" : "Connecting..."}
-          </p>
-        </div>
-      </div>
+    <div className="flex h-full w-full flex-col bg-background">
+      {/* Header - Sticky */}
+      <header className="sticky top-0 z-10 flex shrink-0 items-center gap-2 border-b bg-background px-3 py-3 shadow-sm sm:gap-3 sm:px-4 sm:py-4">
+        {/* Back button - Mobile only */}
+        {onBack && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            className="h-9 w-9 shrink-0 md:hidden"
+            aria-label="Back to conversations"
+          >
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Button>
+        )}
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
+        {/* User avatar and info - clickable to go to profile */}
+        <Link
+          href={`/user/${otherUser.id}`}
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-md transition-colors hover:bg-muted/50 sm:gap-3"
+        >
+          <Avatar className="h-9 w-9 shrink-0 sm:h-10 sm:w-10">
+            <AvatarImage src={otherUser.image || undefined} />
+            <AvatarFallback className="text-sm">
+              {getInitials(otherUser.name)}
+            </AvatarFallback>
+          </Avatar>
+          <div className="min-w-0 flex-1">
+            <h3 className="truncate text-sm font-semibold sm:text-base">
+              {otherUser.name || "Unknown User"}
+            </h3>
+            {/* Connection status - shows YOUR connection to chat server, not other user's online status */}
+            {!isConnected && (
+              <div className="flex items-center gap-1.5">
+                <CircleIcon className="h-2 w-2 fill-current text-amber-500" />
+                <p className="text-xs text-muted-foreground">Connecting...</p>
+              </div>
+            )}
+          </div>
+        </Link>
+      </header>
+
+      {/* Messages Area */}
+      <div
+        ref={messagesContainerRef}
+        className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
+      >
         {isLoading ? (
           <div className="flex h-full items-center justify-center">
-            <Loader2Icon className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : messages.length === 0 ? (
-          <div className="flex h-full items-center justify-center text-gray-500">
-            No messages yet. Start the conversation!
+          <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
+            <div className="rounded-full bg-muted p-4">
+              <SendIcon className="h-6 w-6" />
+            </div>
+            <p className="text-sm sm:text-base">No messages yet</p>
+            <p className="text-xs text-muted-foreground/70 sm:text-sm">
+              Start the conversation!
+            </p>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {messages.map((message) => {
               const isOwnMessage = message.senderId === currentUserId;
               return (
                 <div
                   key={message.id}
-                  className={`flex items-start gap-2 ${
-                    isOwnMessage ? "flex-row-reverse" : ""
-                  }`}
+                  className={cn(
+                    "flex items-end gap-2",
+                    isOwnMessage ? "flex-row-reverse" : "flex-row"
+                  )}
                 >
-                  <Avatar className="h-8 w-8">
+                  {/* Avatar - Hidden for own messages on mobile to save space */}
+                  <Avatar
+                    className={cn(
+                      "h-7 w-7 shrink-0 sm:h-8 sm:w-8",
+                      isOwnMessage && "hidden sm:flex"
+                    )}
+                  >
                     <AvatarImage
                       src={message.sender.image || undefined}
                       alt={message.sender.name || "User"}
@@ -123,20 +171,24 @@ export function ChatWindow({
                     </AvatarFallback>
                   </Avatar>
                   <div
-                    className={`flex max-w-[70%] flex-col ${
+                    className={cn(
+                      "flex max-w-[85%] flex-col sm:max-w-[70%]",
                       isOwnMessage ? "items-end" : "items-start"
-                    }`}
+                    )}
                   >
                     <div
-                      className={`rounded-lg px-4 py-2 ${
+                      className={cn(
+                        "rounded-2xl px-3 py-2 sm:px-4 sm:py-2.5",
                         isOwnMessage
-                          ? "bg-blue-500 text-white"
-                          : "bg-gray-100 text-gray-900"
-                      }`}
+                          ? "rounded-br-md bg-primary text-primary-foreground"
+                          : "rounded-bl-md bg-muted text-foreground"
+                      )}
                     >
-                      <p className="break-words text-sm">{message.content}</p>
+                      <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                        {message.content}
+                      </p>
                     </div>
-                    <span className="mt-1 text-xs text-gray-500">
+                    <span className="mt-1 px-1 text-[10px] text-muted-foreground sm:text-xs">
                       {formatMessageTime(message.createdAt)}
                     </span>
                   </div>
@@ -148,30 +200,35 @@ export function ChatWindow({
         )}
       </div>
 
-      {/* Input */}
-      <form onSubmit={handleSubmit} className="border-t p-4">
-        <div className="flex gap-2">
-          <Input
-            value={messageText}
-            onChange={(e) => setMessageText(e.target.value)}
-            placeholder="Type a message..."
-            disabled={!isConnected}
-            className="flex-1"
-          />
-          <Button
-            type="submit"
-            disabled={!messageText.trim() || !isConnected}
-            size="icon"
-          >
-            <SendIcon className="h-4 w-4" />
-          </Button>
-        </div>
-        {!isConnected && (
-          <p className="mt-2 text-sm text-red-500">
-            Connecting to chat server...
-          </p>
-        )}
-      </form>
+      {/* Input Area - Sticky bottom */}
+      <footer className="sticky bottom-0 shrink-0 border-t bg-background p-3 sm:p-4">
+        <form onSubmit={handleSubmit}>
+          <div className="flex items-center gap-2">
+            <Input
+              value={messageText}
+              onChange={(e) => setMessageText(e.target.value)}
+              placeholder="Type a message..."
+              disabled={!isConnected}
+              className="flex-1 rounded-full bg-muted/50 px-4 text-sm focus-visible:ring-1 sm:text-base"
+              autoComplete="off"
+            />
+            <Button
+              type="submit"
+              disabled={!messageText.trim() || !isConnected}
+              size="icon"
+              className="h-10 w-10 shrink-0 rounded-full"
+            >
+              <SendIcon className="h-4 w-4" />
+              <span className="sr-only">Send message</span>
+            </Button>
+          </div>
+          {!isConnected && (
+            <p className="mt-2 text-center text-xs text-destructive sm:text-sm">
+              Connecting to chat server...
+            </p>
+          )}
+        </form>
+      </footer>
     </div>
   );
 }

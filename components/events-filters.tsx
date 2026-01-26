@@ -58,7 +58,7 @@ export function EventsFilters({
   viewMode = "list",
 }: EventsFiltersProps) {
   const t = useTranslations();
-  const tSports = useTranslations("common");
+  const tSports = useTranslations("sports");
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -410,7 +410,7 @@ export function EventsFilters({
                     <span className="text-base leading-none">
                       {getSportIcon(sport)}
                     </span>
-                    <span>{tSports(`sports.${sport}`)}</span>
+                    <span>{tSports(sport)}</span>
                   </label>
                 </div>
               ))}

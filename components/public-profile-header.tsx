@@ -2,10 +2,19 @@
 
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { UserPlus, Check, Clock, UserMinus, X } from "lucide-react";
+import {
+  UserPlus,
+  Check,
+  Clock,
+  UserMinus,
+  X,
+  MessageCircleIcon,
+} from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import { ChatWidget } from "@/components/chat/chat-widget";
+import { Link } from "@/i18n/routing";
 
 interface PublicProfileHeaderProps {
   user: {
@@ -39,6 +48,7 @@ export function PublicProfileHeader({
   );
   const [friendshipId, setFriendshipId] = useState(initialFriendshipId);
   const [isLoading, setIsLoading] = useState(false);
+  const [showChatWidget, setShowChatWidget] = useState(false);
 
   const sendFriendRequest = async () => {
     if (!isLoggedIn) {
@@ -189,9 +199,34 @@ export function PublicProfileHeader({
             <h1 className="text-4xl font-bold">{user.name}</h1>
             <p className="text-muted-foreground">{user.email}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
             {isLoggedIn && (
               <>
+                {/* Message button - only show if they are friends */}
+                {friendshipStatus === "friends" && (
+                  <>
+                    {/* Desktop: Open chat widget */}
+                    <Button
+                      variant="outline"
+                      onClick={() => setShowChatWidget(true)}
+                      className="hidden gap-2 md:inline-flex"
+                    >
+                      <MessageCircleIcon className="h-4 w-4" />
+                      Mensagem
+                    </Button>
+                    {/* Mobile: Navigate to chat page */}
+                    <Link
+                      href={`/chat?startWith=${user.id}`}
+                      className="md:hidden"
+                    >
+                      <Button variant="outline" className="gap-2">
+                        <MessageCircleIcon className="h-4 w-4" />
+                        Mensagem
+                      </Button>
+                    </Link>
+                  </>
+                )}
+
                 {friendshipStatus === "friends" ? (
                   <Button
                     variant="outline"
@@ -274,6 +309,16 @@ export function PublicProfileHeader({
           </div>
         </div>
       </div>
+
+      {/* Chat Widget - Desktop only */}
+      {showChatWidget && friendshipStatus === "friends" && (
+        <ChatWidget
+          recipientId={user.id}
+          recipientName={user.name}
+          recipientImage={user.image}
+          onClose={() => setShowChatWidget(false)}
+        />
+      )}
     </div>
   );
 }

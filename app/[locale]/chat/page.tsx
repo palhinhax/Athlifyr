@@ -7,6 +7,7 @@ import { ChatSidebar } from "@/components/chat/chat-sidebar";
 import { ChatWindow } from "@/components/chat/chat-window";
 import { useChatSocket } from "@/hooks/chat/use-chat-socket";
 import { Loader2Icon } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface Conversation {
   id: string;
@@ -48,6 +49,7 @@ interface Message {
 export default function ChatPage() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
+  const t = useTranslations("chat");
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversationId, setSelectedConversationId] = useState<
     string | null
@@ -269,6 +271,19 @@ export default function ChatPage() {
     []
   );
 
+  // Hide a conversation from the list
+  const handleHideConversation = useCallback(
+    (conversationId: string) => {
+      setConversations((prev) => prev.filter((c) => c.id !== conversationId));
+      // If the hidden conversation was selected, deselect it
+      if (selectedConversationId === conversationId) {
+        setSelectedConversationId(null);
+        setShowMobileSidebar(true);
+      }
+    },
+    [selectedConversationId]
+  );
+
   const selectedConversation = conversations.find(
     (c) => c.id === selectedConversationId
   );
@@ -288,10 +303,8 @@ export default function ChatPage() {
     return (
       <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold">Not Authenticated</h1>
-          <p className="mt-2 text-gray-600">
-            Please sign in to access the chat.
-          </p>
+          <h1 className="text-2xl font-bold">{t("notAuthenticated")}</h1>
+          <p className="mt-2 text-gray-600">{t("signInRequired")}</p>
         </div>
       </div>
     );
@@ -319,6 +332,7 @@ export default function ChatPage() {
               setShowMobileSidebar(false);
             }}
             onStartConversation={handleStartConversation}
+            onHideConversation={handleHideConversation}
           />
         )}
       </div>
@@ -348,10 +362,10 @@ export default function ChatPage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold text-foreground">
-                Select a conversation
+                {t("selectConversation")}
               </h3>
               <p className="mt-1 text-sm text-muted-foreground">
-                Choose a conversation from the sidebar to start chatting
+                {t("noConversationsDescription")}
               </p>
             </div>
           </div>
@@ -369,7 +383,7 @@ export default function ChatPage() {
         ) : (
           <div className="flex h-full w-full items-center justify-center text-muted-foreground">
             <Loader2Icon className="mr-2 h-5 w-5 animate-spin" />
-            Loading conversation...
+            {t("loadingConversation")}
           </div>
         )}
       </div>

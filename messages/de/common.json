@@ -98,5 +98,21 @@
     "TRIATHLON": "Triathlon",
     "SWIMMING": "Schwimmen",
     "OTHER": "Andere"
+  },
+  "block": {
+    "blockUser": "Benutzer blockieren",
+    "unblockUser": "Benutzer freigeben",
+    "blockSuccess": "Benutzer blockiert",
+    "blockSuccessDesc": "Du wirst keine Nachrichten mehr von diesem Benutzer erhalten.",
+    "unblockSuccess": "Benutzer freigegeben",
+    "unblockSuccessDesc": "Du kannst jetzt wieder Nachrichten von diesem Benutzer erhalten.",
+    "blockError": "Benutzer konnte nicht blockiert werden",
+    "unblockError": "Benutzer konnte nicht freigegeben werden",
+    "blockDialog": {
+      "title": "Benutzer blockieren",
+      "description": "Bist du sicher, dass du {name} blockieren möchtest? Diese Person kann dir keine Nachrichten mehr senden.",
+      "confirm": "Blockieren",
+      "cancel": "Abbrechen"
+    }
   }
 }

@@ -9,7 +9,8 @@
         "users": "Benutzer",
         "contacts": "Kontakte",
         "media": "Medien",
-        "instagram": "Instagram"
+        "instagram": "Instagram",
+        "reports": "Meldungen"
       }
     },
     "contacts": {
@@ -166,6 +167,77 @@
         "postPublishedDesc": "Ihr Beitrag wurde erfolgreich geteilt.",
         "publishError": "Veröffentlichungsfehler",
         "publishErrorDesc": "Der Beitrag konnte nicht erstellt werden."
+      }
+    },
+    "reports": {
+      "title": "Meldungen",
+      "description": "Verwaltung von Benutzermeldungen",
+      "noReports": "Keine Meldungen",
+      "noReportsDescription": "Es gibt keine Meldungen anzuzeigen",
+      "stats": {
+        "total": "Gesamt",
+        "pending": "Ausstehend",
+        "reviewing": "In Prüfung",
+        "resolved": "Gelöst",
+        "dismissed": "Abgelehnt"
+      },
+      "filters": {
+        "all": "Alle",
+        "pending": "Ausstehend",
+        "reviewing": "In Prüfung",
+        "resolved": "Gelöst",
+        "dismissed": "Abgelehnt"
+      },
+      "reasons": {
+        "spam": "Spam",
+        "harassment": "Belästigung",
+        "inappropriate": "Unangemessener Inhalt",
+        "fake": "Falsches Profil",
+        "scam": "Betrug",
+        "other": "Sonstiges"
+      },
+      "status": {
+        "pending": "Ausstehend",
+        "reviewing": "In Prüfung",
+        "resolved": "Gelöst",
+        "dismissed": "Abgelehnt"
+      },
+      "table": {
+        "reporter": "Melder",
+        "reported": "Gemeldeter",
+        "reason": "Grund",
+        "status": "Status",
+        "date": "Datum",
+        "actions": "Aktionen"
+      },
+      "actions": {
+        "viewConversation": "Unterhaltung Anzeigen",
+        "updateStatus": "Status Aktualisieren",
+        "banUser": "Benutzer Sperren",
+        "unbanUser": "Benutzer Entsperren",
+        "dismiss": "Ablehnen",
+        "resolve": "Lösen"
+      },
+      "conversationDialog": {
+        "title": "Unterhaltung zwischen {reporter} und {reported}",
+        "noMessages": "Keine Nachrichten",
+        "noMessagesDescription": "Es gibt keine Nachrichten zwischen diesen Benutzern"
+      },
+      "banDialog": {
+        "title": "Benutzer Sperren",
+        "description": "Bist du sicher, dass du {name} sperren möchtest? Der Benutzer kann nicht mehr auf die Plattform zugreifen.",
+        "confirm": "Ja, sperren",
+        "cancel": "Abbrechen"
+      },
+      "toast": {
+        "statusUpdated": "Status aktualisiert",
+        "statusUpdatedDesc": "Die Meldung wurde auf {status} aktualisiert",
+        "userBanned": "Benutzer gesperrt",
+        "userBannedDesc": "{name} wurde von der Plattform gesperrt",
+        "userUnbanned": "Benutzer entsperrt",
+        "userUnbannedDesc": "{name} wurde von der Plattform entsperrt",
+        "error": "Fehler",
+        "errorDesc": "Bei der Verarbeitung der Anfrage ist ein Fehler aufgetreten"
       }
     }
   }

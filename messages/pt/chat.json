@@ -1,7 +1,16 @@
 {
   "chat": {
     "title": "Mensagens",
+    "header": "Mensagens",
+    "newConversation": "Nova conversa",
+    "newConversationButton": "Novo chat",
+    "searchFriends": "Procurar amigos...",
+    "noFriendsAvailable": "Sem amigos disponíveis para conversar",
+    "noFriendsFound": "Nenhum amigo encontrado",
+    "unknown": "Desconhecido",
+    "unknownUser": "Utilizador Desconhecido",
     "noConversations": "Ainda não há conversas",
+    "noConversationsDescription": "Inicia uma nova conversa com um amigo",
     "selectConversation": "Seleciona uma conversa para começar a conversar",
     "noMessages": "Ainda não há mensagens. Inicia a conversa!",
     "typeMessage": "Escreve uma mensagem...",
@@ -13,6 +22,45 @@
     "notAuthenticated": "Não Autenticado",
     "signInRequired": "Por favor, inicia sessão para acederes ao chat.",
     "you": "Tu: ",
-    "justNow": "agora mesmo"
+    "justNow": "agora mesmo",
+    "hideConversation": "Ocultar conversa",
+    "reportUser": "Reportar utilizador",
+    "hideSuccess": "Conversa ocultada",
+    "hideError": "Erro ao ocultar conversa",
+    "reportSuccess": "Utilizador reportado com sucesso",
+    "reportError": "Erro ao reportar utilizador",
+    "reportTitle": "Reportar Utilizador",
+    "reportDescription": "Porque estás a reportar este utilizador?",
+    "reportReason": "Motivo",
+    "reportDetails": "Detalhes adicionais (opcional)",
+    "reportDetailsPlaceholder": "Descreve o que aconteceu...",
+    "reportSubmit": "Enviar Report",
+    "reportCancel": "Cancelar",
+    "reportReasons": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Assédio",
+      "INAPPROPRIATE_CONTENT": "Conteúdo inapropriado",
+      "FAKE_ACCOUNT": "Conta falsa",
+      "SCAM": "Burla/Fraude",
+      "OTHER": "Outro"
+    },
+    "alreadyReported": "Já reportaste este utilizador",
+    "blockUser": "Bloquear utilizador",
+    "unblockUser": "Desbloquear utilizador",
+    "blockSuccess": "Utilizador bloqueado",
+    "blockSuccessDesc": "Deixarás de receber mensagens deste utilizador",
+    "unblockSuccess": "Utilizador desbloqueado",
+    "unblockSuccessDesc": "Podes agora receber mensagens deste utilizador",
+    "blockError": "Erro ao bloquear utilizador",
+    "unblockError": "Erro ao desbloquear utilizador",
+    "alreadyBlocked": "Utilizador já bloqueado",
+    "blockDialog": {
+      "title": "Bloquear Utilizador",
+      "description": "Tens a certeza que queres bloquear {name}? Deixarás de receber mensagens deste utilizador.",
+      "confirm": "Sim, bloquear",
+      "cancel": "Cancelar"
+    },
+    "userBlocked": "Este utilizador está bloqueado",
+    "userBlockedYou": "Não podes enviar mensagens a este utilizador"
   }
 }

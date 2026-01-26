@@ -98,5 +98,21 @@
     "TRIATHLON": "Triatlón",
     "SWIMMING": "Natación",
     "OTHER": "Otro"
+  },
+  "block": {
+    "blockUser": "Bloquear Usuario",
+    "unblockUser": "Desbloquear Usuario",
+    "blockSuccess": "Usuario bloqueado",
+    "blockSuccessDesc": "Ya no recibirás mensajes de este usuario.",
+    "unblockSuccess": "Usuario desbloqueado",
+    "unblockSuccessDesc": "Ahora puedes volver a recibir mensajes de este usuario.",
+    "blockError": "Error al bloquear usuario",
+    "unblockError": "Error al desbloquear usuario",
+    "blockDialog": {
+      "title": "Bloquear Usuario",
+      "description": "¿Estás seguro de que quieres bloquear a {name}? Ya no podrá enviarte mensajes.",
+      "confirm": "Bloquear",
+      "cancel": "Cancelar"
+    }
   }
 }

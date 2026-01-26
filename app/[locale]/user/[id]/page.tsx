@@ -7,12 +7,14 @@ import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";
 import { PublicProfileHeader } from "@/components/public-profile-header";
 import { PublicPhotoGallery } from "@/components/public-photo-gallery";
+import { OfficialProfilePage } from "@/components/official-profile-page";
+import { isOfficialAthlifyrAccount } from "@/lib/constants";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ id: string; locale: string }>;
 }
 
 export async function generateMetadata({
@@ -25,6 +27,7 @@ export async function generateMetadata({
     select: {
       name: true,
       image: true,
+      email: true,
     },
   });
 
@@ -40,6 +43,36 @@ export async function generateMetadata({
 
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+
+  // Special metadata for official Athlifyr account
+  if (isOfficialAthlifyrAccount(user.email)) {
+    return {
+      title: "Athlifyr - A tua comunidade desportiva",
+      description:
+        "Athlifyr é uma plataforma que conecta atletas, ajuda a descobrir eventos desportivos e constrói comunidades em torno de desportos ao ar livre.",
+      openGraph: {
+        title: "Athlifyr - A tua comunidade desportiva",
+        description:
+          "Plataforma que conecta atletas e ajuda a descobrir eventos desportivos",
+        url: `${baseUrl}/user/${id}`,
+        siteName: "Athlifyr",
+        images: [
+          {
+            url: `${baseUrl}/logo.png`,
+            width: 512,
+            height: 512,
+            alt: "Athlifyr",
+          },
+        ],
+        type: "website",
+      },
+      robots: {
+        index: true,
+        follow: true,
+      },
+    };
+  }
+
   const userName = user.name || "Atleta";
   const userImage = user.image || `${baseUrl}/logo.png`;
 
@@ -70,7 +103,7 @@ export async function generateMetadata({
 
 export default async function UserProfilePage({ params }: PageProps) {
   const session = await auth();
-  const { id } = await params;
+  const { id, locale } = await params;
 
   // If viewing own profile, redirect to /profile
   if (session?.user?.id === id) {
@@ -134,6 +167,20 @@ export default async function UserProfilePage({ params }: PageProps) {
 
   if (!user) {
     notFound();
+  }
+
+  // Check if this is the official Athlifyr account
+  if (isOfficialAthlifyrAccount(user.email)) {
+    return (
+      <OfficialProfilePage
+        locale={locale}
+        user={{
+          id: user.id,
+          name: user.name,
+          image: user.image,
+        }}
+      />
+    );
   }
 
   const upcomingEvents = user.participations.filter(

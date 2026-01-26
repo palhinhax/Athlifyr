@@ -12,6 +12,7 @@ import {
   Database,
   Building2,
   Users,
+  Flag,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -22,6 +23,7 @@ const AdminMediaContent = lazy(() => import("./media/page"));
 const AdminInstagramContent = lazy(() => import("./instagram/page"));
 const AdminVenuesContent = lazy(() => import("./venues/page"));
 const AdminUsersContent = lazy(() => import("./users/page"));
+const AdminReportsContent = lazy(() => import("./reports/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -99,6 +101,10 @@ function AdminContent() {
               <Instagram className="h-4 w-4" />
               <span className="hidden sm:inline">{t("tabs.instagram")}</span>
             </TabsTrigger>
+            <TabsTrigger value="reports" className="flex-1 gap-2">
+              <Flag className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("tabs.reports")}</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -171,6 +177,18 @@ function AdminContent() {
             }
           >
             <AdminInstagramContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminReportsContent />
           </Suspense>
         </TabsContent>
       </Tabs>

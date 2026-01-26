@@ -98,5 +98,21 @@
     "TRIATHLON": "Triathlon",
     "SWIMMING": "Swimming",
     "OTHER": "Other"
+  },
+  "block": {
+    "blockUser": "Block User",
+    "unblockUser": "Unblock User",
+    "blockSuccess": "User blocked",
+    "blockSuccessDesc": "You will no longer receive messages from this user.",
+    "unblockSuccess": "User unblocked",
+    "unblockSuccessDesc": "You can now receive messages from this user again.",
+    "blockError": "Failed to block user",
+    "unblockError": "Failed to unblock user",
+    "blockDialog": {
+      "title": "Block User",
+      "description": "Are you sure you want to block {name}? They will no longer be able to send you messages.",
+      "confirm": "Block",
+      "cancel": "Cancel"
+    }
   }
 }

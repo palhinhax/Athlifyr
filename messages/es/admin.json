@@ -9,7 +9,8 @@
         "users": "Usuarios",
         "contacts": "Contactos",
         "media": "Media",
-        "instagram": "Instagram"
+        "instagram": "Instagram",
+        "reports": "Denuncias"
       }
     },
     "contacts": {
@@ -166,6 +167,77 @@
         "postPublishedDesc": "Tu publicación ha sido compartida con éxito.",
         "publishError": "Error al publicar",
         "publishErrorDesc": "No se pudo crear la publicación."
+      }
+    },
+    "reports": {
+      "title": "Denuncias",
+      "description": "Gestión de denuncias de usuarios",
+      "noReports": "Sin denuncias",
+      "noReportsDescription": "No hay denuncias para mostrar",
+      "stats": {
+        "total": "Total",
+        "pending": "Pendientes",
+        "reviewing": "En Revisión",
+        "resolved": "Resueltas",
+        "dismissed": "Rechazadas"
+      },
+      "filters": {
+        "all": "Todas",
+        "pending": "Pendientes",
+        "reviewing": "En Revisión",
+        "resolved": "Resueltas",
+        "dismissed": "Rechazadas"
+      },
+      "reasons": {
+        "spam": "Spam",
+        "harassment": "Acoso",
+        "inappropriate": "Contenido Inapropiado",
+        "fake": "Perfil Falso",
+        "scam": "Estafa",
+        "other": "Otro"
+      },
+      "status": {
+        "pending": "Pendiente",
+        "reviewing": "En Revisión",
+        "resolved": "Resuelta",
+        "dismissed": "Rechazada"
+      },
+      "table": {
+        "reporter": "Denunciante",
+        "reported": "Denunciado",
+        "reason": "Motivo",
+        "status": "Estado",
+        "date": "Fecha",
+        "actions": "Acciones"
+      },
+      "actions": {
+        "viewConversation": "Ver Conversación",
+        "updateStatus": "Actualizar Estado",
+        "banUser": "Banear Usuario",
+        "unbanUser": "Desbanear Usuario",
+        "dismiss": "Rechazar",
+        "resolve": "Resolver"
+      },
+      "conversationDialog": {
+        "title": "Conversación entre {reporter} y {reported}",
+        "noMessages": "Sin mensajes",
+        "noMessagesDescription": "No hay mensajes entre estos usuarios"
+      },
+      "banDialog": {
+        "title": "Banear Usuario",
+        "description": "¿Estás seguro de que quieres banear a {name}? El usuario no podrá acceder a la plataforma.",
+        "confirm": "Sí, banear",
+        "cancel": "Cancelar"
+      },
+      "toast": {
+        "statusUpdated": "Estado actualizado",
+        "statusUpdatedDesc": "La denuncia fue actualizada a {status}",
+        "userBanned": "Usuario baneado",
+        "userBannedDesc": "{name} fue baneado de la plataforma",
+        "userUnbanned": "Usuario desbaneado",
+        "userUnbannedDesc": "{name} fue desbaneado de la plataforma",
+        "error": "Error",
+        "errorDesc": "Ocurrió un error al procesar la solicitud"
       }
     }
   }

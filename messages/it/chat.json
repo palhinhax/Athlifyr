@@ -1,7 +1,16 @@
 {
   "chat": {
     "title": "Messaggi",
+    "header": "Messaggi",
+    "newConversation": "Nuova conversazione",
+    "newConversationButton": "Nuova chat",
+    "searchFriends": "Cerca amici...",
+    "noFriendsAvailable": "Nessun amico disponibile per chattare",
+    "noFriendsFound": "Nessun amico trovato",
+    "unknown": "Sconosciuto",
+    "unknownUser": "Utente Sconosciuto",
     "noConversations": "Ancora nessuna conversazione",
+    "noConversationsDescription": "Inizia una nuova conversazione con un amico",
     "selectConversation": "Seleziona una conversazione per iniziare a chattare",
     "noMessages": "Ancora nessun messaggio. Inizia la conversazione!",
     "typeMessage": "Scrivi un messaggio...",
@@ -13,6 +22,45 @@
     "notAuthenticated": "Non Autenticato",
     "signInRequired": "Per favore, accedi per accedere alla chat.",
     "you": "Tu: ",
-    "justNow": "proprio ora"
+    "justNow": "proprio ora",
+    "hideConversation": "Nascondi conversazione",
+    "reportUser": "Segnala utente",
+    "hideSuccess": "Conversazione nascosta",
+    "hideError": "Errore nel nascondere la conversazione",
+    "reportSuccess": "Utente segnalato con successo",
+    "reportError": "Errore nella segnalazione dell'utente",
+    "reportTitle": "Segnala Utente",
+    "reportDescription": "Perché stai segnalando questo utente?",
+    "reportReason": "Motivo",
+    "reportDetails": "Dettagli aggiuntivi (opzionale)",
+    "reportDetailsPlaceholder": "Descrivi cosa è successo...",
+    "reportSubmit": "Invia Segnalazione",
+    "reportCancel": "Annulla",
+    "reportReasons": {
+      "SPAM": "Spam",
+      "HARASSMENT": "Molestie",
+      "INAPPROPRIATE_CONTENT": "Contenuto inappropriato",
+      "FAKE_ACCOUNT": "Account falso",
+      "SCAM": "Truffa/Frode",
+      "OTHER": "Altro"
+    },
+    "alreadyReported": "Hai già segnalato questo utente",
+    "blockUser": "Blocca utente",
+    "unblockUser": "Sblocca utente",
+    "blockSuccess": "Utente bloccato",
+    "blockSuccessDesc": "Non riceverai più messaggi da questo utente",
+    "unblockSuccess": "Utente sbloccato",
+    "unblockSuccessDesc": "Ora puoi ricevere messaggi da questo utente",
+    "blockError": "Errore nel bloccare l'utente",
+    "unblockError": "Errore nello sbloccare l'utente",
+    "alreadyBlocked": "Utente già bloccato",
+    "blockDialog": {
+      "title": "Blocca Utente",
+      "description": "Sei sicuro di voler bloccare {name}? Non riceverai più messaggi da questo utente.",
+      "confirm": "Sì, blocca",
+      "cancel": "Annulla"
+    },
+    "userBlocked": "Questo utente è bloccato",
+    "userBlockedYou": "Non puoi inviare messaggi a questo utente"
   }
 }

@@ -23,6 +23,7 @@ interface EventWeatherMobileProps {
     windSpeed: number | null;
     icon: string | null;
   }>;
+  isPastEvent?: boolean;
 }
 
 type WeatherTranslationKey =
@@ -151,14 +152,19 @@ function getWeatherIcon(condition: string): React.ReactNode {
  * Mobile-optimized weather forecast component
  * Full-width cards with horizontal layout matching desktop design
  */
-export function EventWeatherMobile({ weather }: EventWeatherMobileProps) {
+export function EventWeatherMobile({
+  weather,
+  isPastEvent = false,
+}: EventWeatherMobileProps) {
   const t = useTranslations("events");
 
   if (!weather || weather.length === 0) return null;
 
   return (
     <div className="rounded-lg border bg-card p-4 lg:hidden">
-      <h3 className="mb-3 text-sm font-medium">Previsão do Tempo</h3>
+      <h3 className="mb-3 text-sm font-medium">
+        {isPastEvent ? t("weather.titlePast") : t("weather.title")}
+      </h3>
 
       <div className="space-y-3">
         {weather.map((w, index) => {

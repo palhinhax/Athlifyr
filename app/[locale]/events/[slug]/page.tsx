@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { formatDate } from "@/lib/event-utils";
 import type { Metadata } from "next";
 import { EventRegistration } from "@/components/event-registration";
+import { EventPastParticipation } from "@/components/event-past-participation";
 import { auth } from "@/lib/auth";
 import {
   generateSportsEventSchema,
@@ -16,7 +17,7 @@ import { EventVariantsList } from "@/components/event-variants-list";
 import { EventSidebar } from "@/components/event-sidebar";
 import { EventCommunity } from "@/components/event-community";
 import { EventLocationMobile } from "@/components/event-location-mobile";
-import { EventWeather } from "@/components/event-weather";
+import { EventWeatherMobile } from "@/components/event-weather-mobile";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
@@ -375,9 +376,14 @@ export default async function EventPage({ params }: PageProps) {
               />
             )}
 
-            {/* Weather Forecast - Responsive */}
+            {/* Weather Forecast - Mobile Only */}
             {event.weather && event.weather.length > 0 && (
-              <EventWeather weather={event.weather} />
+              <EventWeatherMobile
+                weather={event.weather}
+                isPastEvent={
+                  new Date(event.endDate || event.startDate) < new Date()
+                }
+              />
             )}
 
             {/* Description, Pricing, and CTA */}
@@ -396,14 +402,28 @@ export default async function EventPage({ params }: PageProps) {
 
             {/* Event Registration */}
             <div className="mt-12">
-              <EventRegistration
-                eventId={event.id}
-                variants={event.variants.map((v) => ({
-                  id: v.id,
-                  name: v.name,
-                  distanceKm: v.distanceKm,
-                }))}
-              />
+              {/* Check if event has already happened */}
+              {new Date(event.endDate || event.startDate) < new Date() ? (
+                <EventPastParticipation
+                  eventId={event.id}
+                  variants={event.variants.map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    distanceKm: v.distanceKm,
+                    startDate: v.startDate,
+                    startTime: v.startTime,
+                  }))}
+                />
+              ) : (
+                <EventRegistration
+                  eventId={event.id}
+                  variants={event.variants.map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    distanceKm: v.distanceKm,
+                  }))}
+                />
+              )}
             </div>
 
             {/* FAQ Section */}

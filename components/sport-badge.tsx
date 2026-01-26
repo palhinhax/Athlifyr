@@ -39,7 +39,7 @@ export function SportBadge({
           {getSportIcon(sportType)}
         </span>
       )}
-      <span>{t(sportType)}</span>
+      <span>{t(sportType as string)}</span>
     </div>
   );
 }

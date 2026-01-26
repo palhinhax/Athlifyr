@@ -40,6 +40,9 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
   const hasImage =
     event.imageUrl && event.imageUrl !== "/placeholder-event.jpg";
 
+  // Check if event has already happened
+  const isPastEvent = new Date(event.startDate) < new Date();
+
   return (
     <>
       <aside className="hidden lg:block">
@@ -79,7 +82,7 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
           {/* Weather Forecast Card */}
           {weather && weather.length > 0 && (
             <div className="rounded-lg border bg-card shadow-sm">
-              <EventWeather weather={weather} />
+              <EventWeather weather={weather} isPastEvent={isPastEvent} />
             </div>
           )}
 

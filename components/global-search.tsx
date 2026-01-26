@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { SportType } from "@prisma/client";
+import { SportBadge } from "./sport-badge";
 
 interface SearchResult {
   type: "event" | "venue" | "user";
@@ -40,22 +41,6 @@ interface SearchResponse {
   };
 }
 
-// Sport type colors for badges
-const sportColors: Record<string, string> = {
-  RUNNING: "bg-blue-500/10 text-blue-500",
-  TRAIL: "bg-green-500/10 text-green-500",
-  WALKING: "bg-emerald-500/10 text-emerald-500",
-  HYROX: "bg-orange-500/10 text-orange-500",
-  CROSSFIT: "bg-red-500/10 text-red-500",
-  OCR: "bg-purple-500/10 text-purple-500",
-  BTT: "bg-amber-500/10 text-amber-500",
-  CYCLING: "bg-cyan-500/10 text-cyan-500",
-  SURF: "bg-sky-500/10 text-sky-500",
-  TRIATHLON: "bg-indigo-500/10 text-indigo-500",
-  SWIMMING: "bg-teal-500/10 text-teal-500",
-  OTHER: "bg-gray-500/10 text-gray-500",
-};
-
 export function GlobalSearch() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -66,7 +51,6 @@ export function GlobalSearch() {
   const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("search");
-  const tSports = useTranslations("sports");
 
   // Handle keyboard shortcut to open search
   useEffect(() => {
@@ -208,6 +192,7 @@ export function GlobalSearch() {
       {/* Search Dialog */}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="gap-0 overflow-hidden p-0 sm:max-w-xl">
+          <DialogTitle className="sr-only">{t("placeholder")}</DialogTitle>
           <div className="flex items-center border-b px-4">
             <Search className="h-4 w-4 shrink-0 text-muted-foreground" />
             <Input
@@ -314,17 +299,8 @@ export function GlobalSearch() {
                       {/* Sport badges for events/venues */}
                       {result.sportTypes && result.sportTypes.length > 0 && (
                         <div className="mt-1.5 flex flex-wrap gap-1">
-                          {result.sportTypes.slice(0, 3).map((sport) => (
-                            <Badge
-                              key={sport}
-                              variant="secondary"
-                              className={cn(
-                                "h-5 text-[10px]",
-                                sportColors[sport] || sportColors.OTHER
-                              )}
-                            >
-                              {tSports(sport)}
-                            </Badge>
+                          {result.sportTypes.slice(0, 3).map((sport, idx) => (
+                            <SportBadge key={idx} sportType={sport} size="sm" />
                           ))}
                           {result.sportTypes.length > 3 && (
                             <Badge

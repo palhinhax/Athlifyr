@@ -53,6 +53,15 @@ export function NavLinks() {
           {t("feed")}
         </Link>
       )}
+      {session && (
+        <Link
+          href="/chat"
+          className="text-sm font-medium hover:underline"
+          onClick={() => handleNavClick("messages")}
+        >
+          {t("messages")}
+        </Link>
+      )}
       {session?.user?.role === "ADMIN" && (
         <Link
           href="/admin"

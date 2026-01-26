@@ -38,9 +38,11 @@ model User {
   venueBookings        VenueBooking[]
   venueMembers         VenueMember[]
   venueRecommendations VenueRecommendation[]
-  venueReviews         VenueReview[]
-  venueReviewReplies   VenueReviewReply[]
-  venueSubscriptions   VenueSubscription[]
+  venueReviews              VenueReview[]
+  venueReviewReplies        VenueReviewReply[]
+  venueSubscriptions        VenueSubscription[]
+  conversationParticipants  ConversationParticipant[]
+  messages                  Message[]
 
   @@index([email])
   @@index([name])
@@ -817,6 +819,42 @@ model StripeWebhookEvent {
   @@index([stripeEventId])
   @@index([accountId])
   @@index([type])
+}
+
+model Conversation {
+  id           String                    @id @default(cuid())
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+  participants ConversationParticipant[]
+  messages     Message[]
+
+  @@index([createdAt])
+}
+
+model ConversationParticipant {
+  id             String       @id @default(cuid())
+  conversationId String
+  userId         String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+  @@index([conversationId])
+  @@index([userId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  senderId       String
+  content        String
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([senderId])
+  @@index([createdAt])
 }
 
 enum SportType {

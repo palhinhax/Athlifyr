@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import {
@@ -13,6 +14,7 @@ import {
   Clock,
   UserMinus,
   Loader2,
+  MessageCircle,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,7 @@ type Tab = "friends" | "pending" | "search";
 export function FriendsSection() {
   const { data: session } = useSession();
   const { toast } = useToast();
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
@@ -276,6 +279,36 @@ export function FriendsSection() {
     }
   };
 
+  const startChat = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const res = await fetch("/api/chat/conversations", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otherUserId: userId }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        router.push(`/chat?conversation=${data.conversation.id}`);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível iniciar a conversa.",
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Algo correu mal. Tenta novamente.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!session?.user) return null;
 
   return (
@@ -390,9 +423,20 @@ export function FriendsSection() {
                   <Button
                     variant="ghost"
                     size="icon"
+                    onClick={() => startChat(friend.id)}
+                    disabled={isLoading}
+                    className="flex-shrink-0 text-muted-foreground hover:text-primary"
+                    title="Enviar mensagem"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
                     onClick={() => removeFriend(friend.friendshipId)}
                     disabled={isLoading}
                     className="flex-shrink-0 text-muted-foreground hover:text-destructive"
+                    title="Remover amigo"
                   >
                     <UserMinus className="h-4 w-4" />
                   </Button>

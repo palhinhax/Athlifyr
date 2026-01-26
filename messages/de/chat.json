@@ -1,0 +1,18 @@
+{
+  "chat": {
+    "title": "Nachrichten",
+    "noConversations": "Noch keine Unterhaltungen",
+    "selectConversation": "Wähle eine Unterhaltung aus, um zu chatten",
+    "noMessages": "Noch keine Nachrichten. Beginne die Unterhaltung!",
+    "typeMessage": "Schreibe eine Nachricht...",
+    "send": "Senden",
+    "online": "Online",
+    "connecting": "Verbinde...",
+    "loadingConversation": "Lade Unterhaltung...",
+    "connectionError": "Verbinde zum Chat-Server...",
+    "notAuthenticated": "Nicht Authentifiziert",
+    "signInRequired": "Bitte melde dich an, um auf den Chat zuzugreifen.",
+    "you": "Du: ",
+    "justNow": "gerade eben"
+  }
+}

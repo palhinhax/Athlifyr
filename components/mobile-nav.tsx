@@ -12,18 +12,20 @@ import {
   LogOut,
   Settings,
   Shield,
-  Building2,
+  MessageCircleIcon,
+  CalendarIcon,
+  NewspaperIcon,
+  HomeIcon,
 } from "lucide-react";
-import { useUserVenues } from "@/hooks/use-user-venues";
 import { GlobalSearch } from "./global-search";
+import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
   const { data: session, status } = useSession();
   const locale = useLocale();
   const t = useTranslations("nav");
-  const tVenues = useTranslations("venues");
-  const { venues } = useUserVenues();
+  const { unreadCount } = useChatNotifications({ enabled: !!session });
 
   const closeMenu = () => setIsOpen(false);
 
@@ -59,119 +61,113 @@ export function MobileNav() {
 
           {/* Menu */}
           <div className="fixed inset-x-0 top-16 z-50 border-b bg-background p-4 shadow-lg">
-            <nav className="flex flex-col gap-2">
-              {session && (
-                <Link
-                  href="/profile"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                >
-                  <User className="h-4 w-4" />
-                  {t("profile")}
-                </Link>
-              )}
+            <nav className="flex flex-col gap-1">
+              {/* Main Navigation - All with icons */}
+              <Link
+                href="/"
+                onClick={closeMenu}
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+              >
+                <HomeIcon className="h-4 w-4" />
+                {t("home")}
+              </Link>
+
               <Link
                 href="/events"
                 onClick={closeMenu}
-                className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
               >
+                <CalendarIcon className="h-4 w-4" />
                 {t("events")}
               </Link>
-              {session?.user?.role === "ADMIN" && (
-                <Link
-                  href="/venues"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                >
-                  {t("venues")}
-                </Link>
-              )}
+
               {session && (
-                <Link
-                  href="/feed"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                >
-                  {t("feed")}
-                </Link>
+                <>
+                  <Link
+                    href="/feed"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <NewspaperIcon className="h-4 w-4" />
+                    {t("feed")}
+                  </Link>
+
+                  <Link
+                    href="/chat"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <div className="flex items-center gap-3">
+                      <MessageCircleIcon className="h-4 w-4" />
+                      {t("messages")}
+                    </div>
+                    {unreadCount > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+                </>
               )}
 
-              {/* User Venues Section */}
-              {session && venues.length > 0 && (
-                <>
-                  <div className="my-2 border-t" />
-                  <div className="px-3 py-2 text-xs font-semibold text-muted-foreground">
-                    {tVenues("myVenues")}
-                  </div>
-                  {venues.slice(0, 5).map((venue) => (
-                    <Link
-                      key={venue.id}
-                      href={`/venues/${venue.slug}`}
-                      onClick={closeMenu}
-                      className="flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                    >
-                      <div className="flex items-center gap-3">
-                        <Building2 className="h-4 w-4" />
-                        <span className="truncate">{venue.name}</span>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {venue.role}
-                      </span>
-                    </Link>
-                  ))}
-                  {venues.length > 5 && (
-                    <Link
-                      href="/venues"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-primary hover:bg-accent"
-                    >
-                      <Building2 className="h-4 w-4" />
-                      {tVenues("viewAll")} ({venues.length})
-                    </Link>
-                  )}
-                </>
+              {session?.user?.role === "ADMIN" && (
+                <Link
+                  href="/admin"
+                  onClick={closeMenu}
+                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                >
+                  <Shield className="h-4 w-4" />
+                  {t("admin")}
+                </Link>
               )}
 
               <div className="my-2 border-t" />
 
               {session ? (
                 <>
-                  <div className="px-3 py-2">
-                    <p className="text-sm font-medium">{session.user.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {session.user.email}
-                    </p>
+                  {/* User Info */}
+                  <div className="flex items-center gap-3 px-3 py-2">
+                    <User className="h-4 w-4 text-muted-foreground" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">
+                        {session.user.name}
+                      </p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {session.user.email}
+                      </p>
+                    </div>
                     {session.user.role === "ADMIN" && (
-                      <span className="mt-1 inline-flex items-center gap-1 text-xs text-primary">
+                      <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary">
                         <Shield className="h-3 w-3" />
                         Admin
                       </span>
                     )}
                   </div>
+
+                  <Link
+                    href="/profile"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <User className="h-4 w-4" />
+                    {t("profile")}
+                  </Link>
+
                   <Link
                     href="/settings"
                     onClick={closeMenu}
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <Settings className="h-4 w-4" />
                     {t("accountSettings")}
                   </Link>
-                  {session.user.role === "ADMIN" && (
-                    <Link
-                      href="/admin"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-accent"
-                    >
-                      <Shield className="h-4 w-4" />
-                      {t("admin")}
-                    </Link>
-                  )}
+
                   <button
                     onClick={() => {
                       closeMenu();
                       signOut({ callbackUrl: `/${locale}` });
                     }}
-                    className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-destructive hover:bg-accent"
+                    className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium text-destructive hover:bg-accent"
                   >
                     <LogOut className="h-4 w-4" />
                     {t("signOut")}
@@ -180,7 +176,7 @@ export function MobileNav() {
               ) : (
                 <div className="px-3">
                   <Link href="/auth/signin" onClick={closeMenu}>
-                    <Button variant="outline" className="w-full">
+                    <Button variant="default" className="w-full">
                       {t("signIn")}
                     </Button>
                   </Link>

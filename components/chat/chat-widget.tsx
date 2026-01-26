@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -12,22 +12,13 @@ import {
   ExternalLinkIcon,
 } from "lucide-react";
 import { ChatWindow } from "./chat-window";
-import { useChatSocket } from "@/hooks/chat/use-chat-socket";
+import {
+  useChatMessages,
+  useCreateConversation,
+  Message,
+} from "@/hooks/chat/use-chat";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
-
-interface Message {
-  id: string;
-  conversationId: string;
-  senderId: string;
-  content: string;
-  createdAt: Date;
-  sender: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  };
-}
 
 interface ChatWidgetProps {
   recipientId: string;
@@ -45,109 +36,46 @@ export function ChatWidget({
   const { data: session, status } = useSession();
   const [isMinimized, setIsMinimized] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [socketToken, setSocketToken] = useState<string | null>(null);
+  const [isInitializing, setIsInitializing] = useState(true);
 
-  // Fetch or create conversation - wait for session to be ready
+  const createConversation = useCreateConversation();
+
+  // Initialize conversation
   useEffect(() => {
     if (status !== "authenticated" || !session?.user) return;
 
     const initConversation = async () => {
       try {
-        console.log("Initializing conversation with:", recipientId);
-        // Try to create or get existing conversation
-        const response = await fetch("/api/chat/conversations", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ otherUserId: recipientId }),
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Conversation data:", data);
-          setConversationId(data.conversation.id);
-
-          // Load messages
-          const messagesResponse = await fetch(
-            `/api/chat/conversations/${data.conversation.id}/messages`
-          );
-          if (messagesResponse.ok) {
-            const messagesData = await messagesResponse.json();
-            console.log("Messages loaded:", messagesData.messages?.length || 0);
-            setMessages(messagesData.messages || []);
-          } else {
-            console.error("Failed to load messages:", messagesResponse.status);
-          }
-        } else {
-          console.error("Failed to create/get conversation:", response.status);
-        }
+        const result = await createConversation.mutateAsync(recipientId);
+        setConversationId(result.conversation.id);
       } catch (error) {
         console.error("Error initializing conversation:", error);
       } finally {
-        setIsLoading(false);
+        setIsInitializing(false);
       }
     };
 
     initConversation();
-  }, [recipientId, status, session?.user]);
+  }, [recipientId, status, session?.user, createConversation]);
 
-  // Fetch socket token - wait for session
-  useEffect(() => {
-    if (status !== "authenticated") return;
-
-    const fetchToken = async () => {
-      try {
-        const response = await fetch("/api/auth/socket-token");
-        if (response.ok) {
-          const data = await response.json();
-          setSocketToken(data.token);
-        }
-      } catch (error) {
-        console.error("Error fetching socket token:", error);
-      }
-    };
-
-    fetchToken();
-  }, [status]);
-
-  // Handle new messages from socket
-  const handleNewMessage = useCallback((message: Message) => {
-    // Avoid duplicates (message might already be added optimistically)
-    setMessages((prev) => {
-      const exists = prev.some(
-        (m) =>
-          m.id === message.id ||
-          (m.id.startsWith("temp-") &&
-            m.content === message.content &&
-            m.senderId === message.senderId)
-      );
-      if (exists) {
-        // Replace temp message with real one
-        return prev.map((m) =>
-          m.id.startsWith("temp-") &&
-          m.content === message.content &&
-          m.senderId === message.senderId
-            ? message
-            : m
-        );
-      }
-      return [...prev, message];
-    });
-  }, []);
-
-  // Initialize socket
-  const { isConnected, sendMessage } = useChatSocket({
-    conversationId,
-    token: socketToken,
-    onNewMessage: handleNewMessage,
+  // Use React Query for messages
+  const {
+    messages,
+    isLoading: isLoadingMessages,
+    isConnected,
+    sendMessage,
+    addOptimisticMessage,
+    removeOptimisticMessage,
+  } = useChatMessages(conversationId, {
+    pollingInterval: 2000,
+    enabled: status === "authenticated" && !isMinimized && !!conversationId,
   });
 
   const handleSendMessage = useCallback(
-    (content: string) => {
+    async (content: string) => {
       if (!conversationId || !session?.user) return;
 
-      // Add message optimistically (immediately show in UI)
+      // Add message optimistically
       const optimisticMessage: Message = {
         id: `temp-${Date.now()}`,
         conversationId,
@@ -161,15 +89,27 @@ export function ChatWidget({
         },
       };
 
-      setMessages((prev) => [...prev, optimisticMessage]);
+      addOptimisticMessage(optimisticMessage);
 
-      // Send via socket
-      sendMessage(content);
+      try {
+        await sendMessage({ content });
+      } catch (error) {
+        console.error("Failed to send message:", error);
+        removeOptimisticMessage(optimisticMessage.id);
+      }
     },
-    [conversationId, sendMessage, session?.user]
+    [
+      conversationId,
+      session?.user,
+      sendMessage,
+      addOptimisticMessage,
+      removeOptimisticMessage,
+    ]
   );
 
   if (!session?.user?.id) return null;
+
+  const isLoading = isInitializing || isLoadingMessages;
 
   return (
     <div

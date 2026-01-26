@@ -100,38 +100,33 @@ export function ChatNotificationBell() {
                 onClick={() =>
                   handleNotificationClick(
                     notification.id,
-                    notification.message.conversationId
+                    notification.conversationId
                   )
                 }
               >
                 <Avatar className="h-9 w-9 shrink-0">
-                  <AvatarImage
-                    src={notification.message.sender.image || undefined}
-                  />
+                  <AvatarImage src={notification.senderImage || undefined} />
                   <AvatarFallback className="text-xs">
-                    {getInitials(notification.message.sender.name)}
+                    {getInitials(notification.senderName)}
                   </AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex items-center gap-2">
                     <p className="min-w-0 flex-1 truncate text-sm font-medium">
-                      {notification.message.sender.name || "Unknown"}
+                      {notification.senderName || "Unknown"}
                     </p>
                     {!notification.read && (
                       <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
                     )}
                   </div>
                   <p className="truncate text-xs text-muted-foreground">
-                    {notification.message.content}
+                    {notification.content}
                   </p>
                   <span className="block text-xs text-muted-foreground/70">
-                    {formatDistanceToNow(
-                      new Date(notification.message.createdAt),
-                      {
-                        addSuffix: true,
-                        locale: dateLocale,
-                      }
-                    )}
+                    {formatDistanceToNow(new Date(notification.createdAt), {
+                      addSuffix: true,
+                      locale: dateLocale,
+                    })}
                   </span>
                 </div>
               </DropdownMenuItem>

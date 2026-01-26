@@ -18,7 +18,7 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const t = useTranslations();
-  const tSports = useTranslations("common");
+  const tSports = useTranslations("sports");
 
   // Extract locale from pathname
   const locale = useMemo(() => {
@@ -70,9 +70,7 @@ export function SportFilter({ sportTypes, currentFilter }: SportFilterProps) {
               </span>
             )}
             <span>
-              {sport.value === "ALL"
-                ? t("nav.all")
-                : tSports(`sports.${sport.value}`)}
+              {sport.value === "ALL" ? t("nav.all") : tSports(sport.value)}
             </span>
           </Button>
         ))}

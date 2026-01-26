@@ -8,7 +8,8 @@ import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 const participationSchema = z.object({
   eventId: z.string().cuid(),
   variantId: z.string().cuid().optional(),
-  status: z.enum(["going", "interested", "not_going"]).default("going"),
+  status: z.enum(["going", "interested", "not_going", "went"]).default("going"),
+  completionTime: z.number().int().positive().optional().nullable(),
 });
 
 // POST /api/participations - Create or update participation
@@ -62,10 +63,12 @@ export async function POST(request: NextRequest) {
         eventId: validatedData.eventId,
         variantId: validatedData.variantId,
         status: validatedData.status,
+        completionTime: validatedData.completionTime,
       },
       update: {
         variantId: validatedData.variantId,
         status: validatedData.status,
+        completionTime: validatedData.completionTime,
       },
       include: {
         variant: true,
@@ -230,6 +233,51 @@ export async function DELETE(request: NextRequest) {
     );
   } catch (error) {
     console.error("Error deleting participation:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
+  }
+}
+
+// PATCH /api/participations - Update participation details (e.g., completion time)
+export async function PATCH(request: NextRequest) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await request.json();
+    const { eventId, completionTime } = body;
+
+    if (!eventId) {
+      return NextResponse.json(
+        { error: "eventId is required" },
+        { status: 400 }
+      );
+    }
+
+    // Update participation with new completion time
+    const participation = await prisma.participation.update({
+      where: {
+        userId_eventId: {
+          userId: session.user.id,
+          eventId: eventId,
+        },
+      },
+      data: {
+        completionTime: completionTime || null,
+      },
+      include: {
+        variant: true,
+      },
+    });
+
+    return NextResponse.json(participation, { status: 200 });
+  } catch (error) {
+    console.error("Error updating participation:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }

@@ -8,6 +8,7 @@ import { SendIcon, Loader2Icon, ArrowLeftIcon, CircleIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 interface Message {
   id: string;
@@ -47,6 +48,7 @@ export function ChatWindow({
   isLoading = false,
   onBack,
 }: ChatWindowProps) {
+  const t = useTranslations("chat");
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
@@ -111,13 +113,15 @@ export function ChatWindow({
           </Avatar>
           <div className="min-w-0 flex-1">
             <h3 className="truncate text-sm font-semibold sm:text-base">
-              {otherUser.name || "Unknown User"}
+              {otherUser.name || t("unknownUser")}
             </h3>
             {/* Connection status - shows YOUR connection to chat server, not other user's online status */}
             {!isConnected && (
               <div className="flex items-center gap-1.5">
                 <CircleIcon className="h-2 w-2 fill-current text-amber-500" />
-                <p className="text-xs text-muted-foreground">Connecting...</p>
+                <p className="text-xs text-muted-foreground">
+                  {t("connecting")}
+                </p>
               </div>
             )}
           </div>
@@ -138,10 +142,7 @@ export function ChatWindow({
             <div className="rounded-full bg-muted p-4">
               <SendIcon className="h-6 w-6" />
             </div>
-            <p className="text-sm sm:text-base">No messages yet</p>
-            <p className="text-xs text-muted-foreground/70 sm:text-sm">
-              Start the conversation!
-            </p>
+            <p className="text-sm sm:text-base">{t("noMessages")}</p>
           </div>
         ) : (
           <div className="space-y-3 sm:space-y-4">
@@ -207,7 +208,7 @@ export function ChatWindow({
             <Input
               value={messageText}
               onChange={(e) => setMessageText(e.target.value)}
-              placeholder="Type a message..."
+              placeholder={t("typeMessage")}
               disabled={!isConnected}
               className="flex-1 rounded-full bg-muted/50 px-4 text-sm focus-visible:ring-1 sm:text-base"
               autoComplete="off"
@@ -219,12 +220,12 @@ export function ChatWindow({
               className="h-10 w-10 shrink-0 rounded-full"
             >
               <SendIcon className="h-4 w-4" />
-              <span className="sr-only">Send message</span>
+              <span className="sr-only">{t("send")}</span>
             </Button>
           </div>
           {!isConnected && (
             <p className="mt-2 text-center text-xs text-destructive sm:text-sm">
-              Connecting to chat server...
+              {t("connectionError")}
             </p>
           )}
         </form>

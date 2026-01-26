@@ -9,12 +9,31 @@ import {
   UserMinus,
   X,
   MessageCircleIcon,
+  MoreHorizontal,
+  Ban,
 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { ChatWidget } from "@/components/chat/chat-widget";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface PublicProfileHeaderProps {
   user: {
@@ -43,12 +62,15 @@ export function PublicProfileHeader({
 }: PublicProfileHeaderProps) {
   const { toast } = useToast();
   const router = useRouter();
+  const t = useTranslations("block");
   const [friendshipStatus, setFriendshipStatus] = useState(
     initialFriendshipStatus
   );
   const [friendshipId, setFriendshipId] = useState(initialFriendshipId);
   const [isLoading, setIsLoading] = useState(false);
   const [showChatWidget, setShowChatWidget] = useState(false);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   const sendFriendRequest = async () => {
     if (!isLoggedIn) {
@@ -174,6 +196,41 @@ export function PublicProfileHeader({
     }
   };
 
+  const handleBlockUser = async () => {
+    setIsBlocking(true);
+    try {
+      const res = await fetch("/api/users/blocks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ blockedId: user.id }),
+      });
+
+      if (res.ok) {
+        toast({
+          title: t("blockSuccess"),
+          description: t("blockSuccessDesc"),
+        });
+        setBlockDialogOpen(false);
+        router.refresh();
+      } else {
+        const error = await res.json();
+        toast({
+          variant: "destructive",
+          title: t("blockError"),
+          description: error.error || t("blockError"),
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("blockError"),
+        description: t("blockError"),
+      });
+    } finally {
+      setIsBlocking(false);
+    }
+  };
+
   return (
     <div className="mb-12 flex flex-col items-center gap-6 md:flex-row md:items-start">
       {/* Profile Image */}
@@ -272,6 +329,24 @@ export function PublicProfileHeader({
                     Adicionar Amigo
                   </Button>
                 )}
+
+                {/* Block user dropdown */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                      <MoreHorizontal className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={() => setBlockDialogOpen(true)}
+                      className="text-destructive focus:text-destructive"
+                    >
+                      <Ban className="mr-2 h-4 w-4" />
+                      {t("blockUser")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             )}
           </div>
@@ -319,6 +394,30 @@ export function PublicProfileHeader({
           onClose={() => setShowChatWidget(false)}
         />
       )}
+
+      {/* Block User Confirmation Dialog */}
+      <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("blockDialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("blockDialog.description", { name: user.name || "User" })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isBlocking}>
+              {t("blockDialog.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBlockUser}
+              disabled={isBlocking}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isBlocking ? "..." : t("blockDialog.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

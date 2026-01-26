@@ -15,12 +15,25 @@ import { MessageCircleIcon, CheckCheckIcon } from "lucide-react";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
+import { pt, enUS, es, fr, de, it } from "date-fns/locale";
+import { useLocale } from "next-intl";
+
+const localeMap = {
+  pt: pt,
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  it: it,
+};
 
 export function ChatNotificationBell() {
   const router = useRouter();
+  const locale = useLocale();
   const [isOpen, setIsOpen] = useState(false);
   const { notifications, unreadCount, markAsRead, markAllAsRead } =
     useChatNotifications();
+  const dateLocale = localeMap[locale as keyof typeof localeMap] || enUS;
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
@@ -99,27 +112,28 @@ export function ChatNotificationBell() {
                     {getInitials(notification.message.sender.name)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="truncate text-sm font-medium">
+                <div className="min-w-0 flex-1 space-y-1">
+                  <div className="flex items-center gap-2">
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium">
                       {notification.message.sender.name || "Unknown"}
                     </p>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {formatDistanceToNow(
-                        new Date(notification.message.createdAt),
-                        {
-                          addSuffix: false,
-                        }
-                      )}
-                    </span>
+                    {!notification.read && (
+                      <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                    )}
                   </div>
                   <p className="truncate text-xs text-muted-foreground">
                     {notification.message.content}
                   </p>
+                  <span className="block text-xs text-muted-foreground/70">
+                    {formatDistanceToNow(
+                      new Date(notification.message.createdAt),
+                      {
+                        addSuffix: true,
+                        locale: dateLocale,
+                      }
+                    )}
+                  </span>
                 </div>
-                {!notification.read && (
-                  <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                )}
               </DropdownMenuItem>
             ))
           )}

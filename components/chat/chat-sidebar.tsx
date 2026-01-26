@@ -4,21 +4,45 @@ import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { formatDistanceToNow } from "date-fns";
+import { pt, enUS, es, fr, de, it } from "date-fns/locale";
 import {
   PlusIcon,
   SearchIcon,
   MessageCircleIcon,
   Loader2Icon,
+  MoreVerticalIcon,
+  EyeOffIcon,
+  FlagIcon,
+  BanIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale, useTranslations } from "next-intl";
+import { useToast } from "@/components/ui/use-toast";
 
 interface Conversation {
   id: string;
@@ -56,7 +80,25 @@ interface ChatSidebarProps {
   selectedConversationId: string | null;
   onSelectConversation: (conversationId: string) => void;
   onStartConversation?: (friendId: string) => Promise<string | null>;
+  onHideConversation?: (conversationId: string) => void;
 }
+
+type ReportReason =
+  | "SPAM"
+  | "HARASSMENT"
+  | "INAPPROPRIATE_CONTENT"
+  | "FAKE_ACCOUNT"
+  | "SCAM"
+  | "OTHER";
+
+const localeMap = {
+  pt: pt,
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  it: it,
+};
 
 export function ChatSidebar({
   conversations,
@@ -64,12 +106,34 @@ export function ChatSidebar({
   selectedConversationId,
   onSelectConversation,
   onStartConversation,
+  onHideConversation,
 }: ChatSidebarProps) {
+  const locale = useLocale();
+  const t = useTranslations("chat");
+  const { toast } = useToast();
+  const dateLocale = localeMap[locale as keyof typeof localeMap] || enUS;
   const [isNewChatOpen, setIsNewChatOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [isLoadingFriends, setIsLoadingFriends] = useState(false);
   const [isStartingChat, setIsStartingChat] = useState<string | null>(null);
+  const [isHidingChat, setIsHidingChat] = useState<string | null>(null);
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportingUser, setReportingUser] = useState<{
+    id: string;
+    name: string | null;
+    conversationId: string;
+  } | null>(null);
+  const [reportReason, setReportReason] = useState<ReportReason | "">("");
+  const [reportDetails, setReportDetails] = useState("");
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [blockingUser, setBlockingUser] = useState<{
+    id: string;
+    name: string | null;
+    conversationId: string;
+  } | null>(null);
+  const [isBlocking, setIsBlocking] = useState(false);
 
   const getOtherUser = (conversation: Conversation) => {
     return conversation.participants.find((p) => p.user.id !== currentUserId)
@@ -126,6 +190,138 @@ export function ChatSidebar({
       }
     } finally {
       setIsStartingChat(null);
+    }
+  };
+
+  const handleHideConversation = async (conversationId: string) => {
+    setIsHidingChat(conversationId);
+    try {
+      const response = await fetch(
+        `/api/chat/conversations/${conversationId}/hide`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (response.ok) {
+        toast({
+          title: t("hideSuccess"),
+        });
+        onHideConversation?.(conversationId);
+      } else {
+        toast({
+          variant: "destructive",
+          title: t("hideError"),
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("hideError"),
+      });
+    } finally {
+      setIsHidingChat(null);
+    }
+  };
+
+  const handleOpenReportDialog = (
+    userId: string,
+    userName: string | null,
+    conversationId: string
+  ) => {
+    setReportingUser({ id: userId, name: userName, conversationId });
+    setReportReason("");
+    setReportDetails("");
+    setReportDialogOpen(true);
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportingUser || !reportReason) return;
+
+    setIsSubmittingReport(true);
+    try {
+      const response = await fetch("/api/reports", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          reportedId: reportingUser.id,
+          reason: reportReason,
+          details: reportDetails || undefined,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: t("reportSuccess"),
+        });
+        setReportDialogOpen(false);
+      } else {
+        const data = await response.json();
+        toast({
+          variant: "destructive",
+          title:
+            data.error === "You have already reported this user"
+              ? t("alreadyReported")
+              : t("reportError"),
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("reportError"),
+      });
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
+  const handleOpenBlockDialog = (
+    userId: string,
+    userName: string | null,
+    conversationId: string
+  ) => {
+    setBlockingUser({ id: userId, name: userName, conversationId });
+    setBlockDialogOpen(true);
+  };
+
+  const handleBlockUser = async () => {
+    if (!blockingUser) return;
+
+    setIsBlocking(true);
+    try {
+      const response = await fetch("/api/users/blocks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          blockedId: blockingUser.id,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: t("blockSuccess"),
+          description: t("blockSuccessDesc"),
+        });
+        setBlockDialogOpen(false);
+        // Hide the conversation after blocking
+        onHideConversation?.(blockingUser.conversationId);
+      } else {
+        const data = await response.json();
+        toast({
+          variant: "destructive",
+          title:
+            data.error === "User already blocked"
+              ? t("alreadyBlocked")
+              : t("blockError"),
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: t("blockError"),
+      });
+    } finally {
+      setIsBlocking(false);
     }
   };
 
@@ -224,9 +420,9 @@ export function ChatSidebar({
               <MessageCircleIcon className="h-8 w-8 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-medium">No conversations yet</p>
+              <p className="font-medium">{t("noConversations")}</p>
               <p className="text-sm text-muted-foreground">
-                Start a new conversation with a friend
+                {t("noConversationsDescription")}
               </p>
             </div>
             <Button
@@ -236,7 +432,7 @@ export function ChatSidebar({
               className="mt-2"
             >
               <PlusIcon className="mr-2 h-4 w-4" />
-              New chat
+              {t("newConversationButton")}
             </Button>
           </div>
         ) : (
@@ -247,47 +443,218 @@ export function ChatSidebar({
               const isSelected = conversation.id === selectedConversationId;
 
               return (
-                <button
+                <div
                   key={conversation.id}
-                  onClick={() => onSelectConversation(conversation.id)}
                   className={cn(
-                    "flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-muted/50 sm:p-4",
+                    "group relative flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-muted/50 sm:p-4",
                     isSelected && "bg-muted hover:bg-muted"
                   )}
                 >
-                  <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
-                    <AvatarImage src={otherUser?.image || undefined} />
-                    <AvatarFallback>
-                      {getInitials(otherUser?.name || null)}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-baseline justify-between gap-2">
-                      <p className="truncate text-sm font-medium sm:text-base">
-                        {otherUser?.name || "Unknown User"}
-                      </p>
+                  <button
+                    onClick={() => onSelectConversation(conversation.id)}
+                    className="flex flex-1 items-start gap-3"
+                  >
+                    <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
+                      <AvatarImage src={otherUser?.image || undefined} />
+                      <AvatarFallback>
+                        {getInitials(otherUser?.name || null)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-baseline justify-between gap-2">
+                        <p className="truncate text-sm font-medium sm:text-base">
+                          {otherUser?.name || t("unknownUser")}
+                        </p>
+                        {lastMessage && (
+                          <span className="shrink-0 text-[10px] text-muted-foreground sm:text-xs">
+                            {formatDistanceToNow(
+                              new Date(lastMessage.createdAt),
+                              { addSuffix: false, locale: dateLocale }
+                            )}
+                          </span>
+                        )}
+                      </div>
                       {lastMessage && (
-                        <span className="shrink-0 text-[10px] text-muted-foreground sm:text-xs">
-                          {formatDistanceToNow(
-                            new Date(lastMessage.createdAt),
-                            { addSuffix: false }
-                          )}
-                        </span>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
+                          {lastMessage.sender.id === currentUserId
+                            ? "You: "
+                            : ""}
+                          {lastMessage.content}
+                        </p>
                       )}
                     </div>
-                    {lastMessage && (
-                      <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
-                        {lastMessage.sender.id === currentUserId ? "You: " : ""}
-                        {lastMessage.content}
-                      </p>
-                    )}
-                  </div>
-                </button>
+                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
+                        disabled={isHidingChat === conversation.id}
+                      >
+                        {isHidingChat === conversation.id ? (
+                          <Loader2Icon className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <MoreVerticalIcon className="h-4 w-4" />
+                        )}
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleHideConversation(conversation.id);
+                        }}
+                      >
+                        <EyeOffIcon className="mr-2 h-4 w-4" />
+                        {t("hideConversation")}
+                      </DropdownMenuItem>
+                      {otherUser && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenReportDialog(
+                              otherUser.id,
+                              otherUser.name,
+                              conversation.id
+                            );
+                          }}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <FlagIcon className="mr-2 h-4 w-4" />
+                          {t("reportUser")}
+                        </DropdownMenuItem>
+                      )}
+                      {otherUser && (
+                        <DropdownMenuItem
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenBlockDialog(
+                              otherUser.id,
+                              otherUser.name,
+                              conversation.id
+                            );
+                          }}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <BanIcon className="mr-2 h-4 w-4" />
+                          {t("blockUser")}
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               );
             })}
           </div>
         )}
       </div>
+
+      {/* Report Dialog */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("reportTitle")}</DialogTitle>
+            <DialogDescription>{t("reportDescription")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="report-reason">{t("reportReason")}</Label>
+              <Select
+                value={reportReason}
+                onValueChange={(value) =>
+                  setReportReason(value as ReportReason)
+                }
+              >
+                <SelectTrigger id="report-reason">
+                  <SelectValue placeholder={t("reportReason")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="SPAM">
+                    {t("reportReasons.SPAM")}
+                  </SelectItem>
+                  <SelectItem value="HARASSMENT">
+                    {t("reportReasons.HARASSMENT")}
+                  </SelectItem>
+                  <SelectItem value="INAPPROPRIATE_CONTENT">
+                    {t("reportReasons.INAPPROPRIATE_CONTENT")}
+                  </SelectItem>
+                  <SelectItem value="FAKE_ACCOUNT">
+                    {t("reportReasons.FAKE_ACCOUNT")}
+                  </SelectItem>
+                  <SelectItem value="SCAM">
+                    {t("reportReasons.SCAM")}
+                  </SelectItem>
+                  <SelectItem value="OTHER">
+                    {t("reportReasons.OTHER")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="report-details">{t("reportDetails")}</Label>
+              <Textarea
+                id="report-details"
+                placeholder={t("reportDetailsPlaceholder")}
+                value={reportDetails}
+                onChange={(e) => setReportDetails(e.target.value)}
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setReportDialogOpen(false)}
+            >
+              {t("reportCancel")}
+            </Button>
+            <Button
+              onClick={handleSubmitReport}
+              disabled={!reportReason || isSubmittingReport}
+              variant="destructive"
+            >
+              {isSubmittingReport && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {t("reportSubmit")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Block Dialog */}
+      <Dialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("blockDialog.title")}</DialogTitle>
+            <DialogDescription>
+              {t("blockDialog.description", {
+                name: blockingUser?.name || t("unknownUser"),
+              })}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setBlockDialogOpen(false)}
+              disabled={isBlocking}
+            >
+              {t("blockDialog.cancel")}
+            </Button>
+            <Button
+              onClick={handleBlockUser}
+              disabled={isBlocking}
+              variant="destructive"
+            >
+              {isBlocking && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              {t("blockDialog.confirm")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

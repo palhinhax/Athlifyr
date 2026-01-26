@@ -9,7 +9,8 @@
         "users": "Users",
         "contacts": "Contacts",
         "media": "Media",
-        "instagram": "Instagram"
+        "instagram": "Instagram",
+        "reports": "Reports"
       }
     },
     "contacts": {
@@ -166,6 +167,77 @@
         "postPublishedDesc": "Your post was published successfully",
         "publishError": "Error publishing",
         "publishErrorDesc": "Could not publish the post"
+      }
+    },
+    "reports": {
+      "title": "Reports",
+      "description": "User reports management",
+      "noReports": "No reports",
+      "noReportsDescription": "There are no reports to show",
+      "stats": {
+        "total": "Total",
+        "pending": "Pending",
+        "reviewing": "Reviewing",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "reviewing": "Reviewing",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "reasons": {
+        "spam": "Spam",
+        "harassment": "Harassment",
+        "inappropriate": "Inappropriate Content",
+        "fake": "Fake Profile",
+        "scam": "Scam",
+        "other": "Other"
+      },
+      "status": {
+        "pending": "Pending",
+        "reviewing": "Reviewing",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "table": {
+        "reporter": "Reporter",
+        "reported": "Reported",
+        "reason": "Reason",
+        "status": "Status",
+        "date": "Date",
+        "actions": "Actions"
+      },
+      "actions": {
+        "viewConversation": "View Conversation",
+        "updateStatus": "Update Status",
+        "banUser": "Ban User",
+        "unbanUser": "Unban User",
+        "dismiss": "Dismiss",
+        "resolve": "Resolve"
+      },
+      "conversationDialog": {
+        "title": "Conversation between {reporter} and {reported}",
+        "noMessages": "No messages",
+        "noMessagesDescription": "There are no messages between these users"
+      },
+      "banDialog": {
+        "title": "Ban User",
+        "description": "Are you sure you want to ban {name}? The user will not be able to access the platform.",
+        "confirm": "Yes, ban",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "statusUpdated": "Status updated",
+        "statusUpdatedDesc": "The report was updated to {status}",
+        "userBanned": "User banned",
+        "userBannedDesc": "{name} was banned from the platform",
+        "userUnbanned": "User unbanned",
+        "userUnbannedDesc": "{name} was unbanned from the platform",
+        "error": "Error",
+        "errorDesc": "An error occurred while processing the request"
       }
     }
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { isOfficialAthlifyrAccount } from "@/lib/constants";
 
 // GET - List conversations for authenticated user
 export async function GET() {
@@ -16,6 +17,7 @@ export async function GET() {
         participants: {
           some: {
             userId: session.user.id,
+            hidden: false,
           },
         },
       },
@@ -95,6 +97,31 @@ export async function POST(request: Request) {
 
     if (!otherUser) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
+    }
+
+    // Allow messaging the official Athlifyr account without friendship
+    const isMessagingOfficialAccount = isOfficialAthlifyrAccount(
+      otherUser.email
+    );
+
+    // Check if users are friends (skip for official account)
+    if (!isMessagingOfficialAccount) {
+      const friendship = await prisma.friendship.findFirst({
+        where: {
+          status: "ACCEPTED",
+          OR: [
+            { senderId: session.user.id, receiverId: otherUserId },
+            { senderId: otherUserId, receiverId: session.user.id },
+          ],
+        },
+      });
+
+      if (!friendship) {
+        return NextResponse.json(
+          { error: "You can only message friends" },
+          { status: 403 }
+        );
+      }
     }
 
     // Check if conversation already exists between these two users

@@ -1,9 +1,11 @@
 {
   "nav": {
+    "home": "Accueil",
     "events": "Événements",
     "venues": "Venues",
     "map": "Carte",
     "feed": "Fil",
+    "messages": "Messages",
     "profile": "Profil",
     "settings": "Paramètres",
     "admin": "Admin",

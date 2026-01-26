@@ -1,9 +1,11 @@
 {
   "nav": {
+    "home": "Startseite",
     "events": "Veranstaltungen",
     "venues": "Venues",
     "map": "Karte",
     "feed": "Feed",
+    "messages": "Nachrichten",
     "profile": "Profil",
     "settings": "Einstellungen",
     "admin": "Admin",

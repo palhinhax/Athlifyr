@@ -1,9 +1,11 @@
 {
   "nav": {
+    "home": "Home",
     "events": "Events",
     "venues": "Venues",
     "map": "Map",
     "feed": "Feed",
+    "messages": "Messages",
     "profile": "Profile",
     "settings": "Settings",
     "admin": "Admin",

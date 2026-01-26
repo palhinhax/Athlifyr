@@ -12,7 +12,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, Settings, Shield } from "lucide-react";
+import { User, LogOut, Settings, Shield, LogIn } from "lucide-react";
 import Image from "next/image";
 
 export function UserNav() {
@@ -27,7 +27,8 @@ export function UserNav() {
   if (!session) {
     return (
       <Link href="/auth/signin">
-        <Button variant="ghost" size="sm">
+        <Button variant="ghost" size="sm" className="gap-2">
+          <LogIn className="h-4 w-4" />
           {t("signIn")}
         </Button>
       </Link>

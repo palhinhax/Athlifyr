@@ -32,7 +32,8 @@ interface NavItem {
   label: string;
   badge?: number;
   adminOnly?: boolean;
-  authRequired?: boolean;
+  authOnly?: boolean;
+  publicOnly?: boolean;
 }
 
 export function AppSidebar() {
@@ -42,53 +43,61 @@ export function AppSidebar() {
   const [isCollapsed, setIsCollapsed] = useState(true);
   const { unreadCount } = useChatNotifications({ enabled: !!session });
 
-  const navItems: NavItem[] = [
-    {
-      href: "/",
-      icon: HomeIcon,
-      label: t("home"),
-    },
-    {
-      href: "/profile",
-      icon: UserIcon,
-      label: t("profile"),
-      authRequired: true,
-    },
-    {
-      href: "/events",
-      icon: CalendarIcon,
-      label: t("events"),
-    },
-    {
-      href: "/venues",
-      icon: Building2Icon,
-      label: t("venues"),
-      adminOnly: true,
-    },
-    {
-      href: "/feed",
-      icon: NewspaperIcon,
-      label: t("feed"),
-      authRequired: true,
-    },
-    {
-      href: "/chat",
-      icon: MessageCircleIcon,
-      label: t("messages"),
-      badge: unreadCount,
-      authRequired: true,
-    },
-    {
-      href: "/admin",
-      icon: ShieldIcon,
-      label: t("admin"),
-      adminOnly: true,
-    },
-  ];
+  // Navigation items - different based on auth state
+  const navItems: NavItem[] = session
+    ? [
+        // Authenticated user navigation
+        {
+          href: "/feed",
+          icon: NewspaperIcon,
+          label: t("feed"),
+        },
+        {
+          href: "/profile",
+          icon: UserIcon,
+          label: t("profile"),
+        },
+        {
+          href: "/events",
+          icon: CalendarIcon,
+          label: t("events"),
+        },
+        {
+          href: "/venues",
+          icon: Building2Icon,
+          label: t("venues"),
+          adminOnly: true,
+        },
+        {
+          href: "/chat",
+          icon: MessageCircleIcon,
+          label: t("messages"),
+          badge: unreadCount,
+        },
+        {
+          href: "/admin",
+          icon: ShieldIcon,
+          label: t("admin"),
+          adminOnly: true,
+        },
+      ]
+    : [
+        // Public navigation (not logged in)
+        {
+          href: "/",
+          icon: HomeIcon,
+          label: t("home"),
+        },
+        {
+          href: "/events",
+          icon: CalendarIcon,
+          label: t("events"),
+        },
+        // Future: venues for public
+      ];
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.adminOnly && session?.user?.role !== "ADMIN") return false;
-    if (item.authRequired && !session) return false;
     return true;
   });
 

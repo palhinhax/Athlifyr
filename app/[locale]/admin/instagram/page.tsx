@@ -178,6 +178,7 @@ export default function InstagramGeneratorPage() {
     "One place. All sports."
   );
   const [t7VsText, setT7VsText] = useState("VS");
+  const [t7HideVsBadge, setT7HideVsBadge] = useState(false);
 
   // T8: Testimonial/Stats
   const [t8StatNumber, setT8StatNumber] = useState("1000+");
@@ -537,6 +538,7 @@ export default function InstagramGeneratorPage() {
           rightTitle: t7RightTitle,
           rightSubtitle: t7RightSubtitle || undefined,
           vsText: t7VsText || "VS",
+          hideVsBadge: t7HideVsBadge,
           background,
         } as SplitScreenPayload;
 
@@ -908,11 +910,13 @@ export default function InstagramGeneratorPage() {
                 rightTitle={t7RightTitle}
                 rightSubtitle={t7RightSubtitle}
                 vsText={t7VsText}
+                hideVsBadge={t7HideVsBadge}
                 onLeftTitleChange={setT7LeftTitle}
                 onLeftSubtitleChange={setT7LeftSubtitle}
                 onRightTitleChange={setT7RightTitle}
                 onRightSubtitleChange={setT7RightSubtitle}
                 onVsTextChange={setT7VsText}
+                onHideVsBadgeChange={setT7HideVsBadge}
               />
             )}
 

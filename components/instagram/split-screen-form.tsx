@@ -1,5 +1,6 @@
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface SplitScreenFormProps {
   leftTitle: string;
@@ -7,11 +8,13 @@ interface SplitScreenFormProps {
   rightTitle: string;
   rightSubtitle: string;
   vsText: string;
+  hideVsBadge: boolean;
   onLeftTitleChange: (value: string) => void;
   onLeftSubtitleChange: (value: string) => void;
   onRightTitleChange: (value: string) => void;
   onRightSubtitleChange: (value: string) => void;
   onVsTextChange: (value: string) => void;
+  onHideVsBadgeChange: (value: boolean) => void;
 }
 
 export function SplitScreenForm({
@@ -20,11 +23,13 @@ export function SplitScreenForm({
   rightTitle,
   rightSubtitle,
   vsText,
+  hideVsBadge,
   onLeftTitleChange,
   onLeftSubtitleChange,
   onRightTitleChange,
   onRightSubtitleChange,
   onVsTextChange,
+  onHideVsBadgeChange,
 }: SplitScreenFormProps) {
   return (
     <div className="space-y-4">
@@ -63,15 +68,31 @@ export function SplitScreenForm({
         </div>
       </div>
 
-      <div>
-        <Label htmlFor="vsText">VS Text (max 5 chars)</Label>
-        <Input
-          id="vsText"
-          value={vsText}
-          onChange={(e) => onVsTextChange(e.target.value)}
-          placeholder="VS"
-          maxLength={5}
-        />
+      <div className="space-y-3">
+        <div>
+          <Label htmlFor="vsText">VS Text (max 5 chars)</Label>
+          <Input
+            id="vsText"
+            value={vsText}
+            onChange={(e) => onVsTextChange(e.target.value)}
+            placeholder="VS"
+            maxLength={5}
+            disabled={hideVsBadge}
+          />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="hideVsBadge"
+            checked={hideVsBadge}
+            onCheckedChange={onHideVsBadgeChange}
+          />
+          <Label
+            htmlFor="hideVsBadge"
+            className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+          >
+            Esconder círculo &quot;VS&quot;
+          </Label>
+        </div>
       </div>
 
       <div className="rounded-lg border p-4">

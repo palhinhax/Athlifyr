@@ -109,6 +109,7 @@ export interface SplitScreenPayload {
   rightTitle: string; // required, max 30 chars
   rightSubtitle?: string; // optional, max 40 chars
   vsText?: string; // optional, default "VS", max 5 chars
+  hideVsBadge?: boolean; // optional, hide VS circle badge
   background: Background;
 }
 

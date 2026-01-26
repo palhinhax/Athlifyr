@@ -30,6 +30,7 @@ export function TemplateSplitScreen({
     rightTitle,
     rightSubtitle,
     vsText = "VS",
+    hideVsBadge = false,
     background,
   } = payload;
 
@@ -98,18 +99,20 @@ export function TemplateSplitScreen({
         </div>
 
         {/* VS Badge - Centered */}
-        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
-          <div
-            className="flex items-center justify-center rounded-full bg-white font-black text-black shadow-2xl"
-            style={{
-              width: "120px",
-              height: "120px",
-              fontSize: "48px",
-            }}
-          >
-            {vsText}
+        {!hideVsBadge && (
+          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+            <div
+              className="flex items-center justify-center rounded-full bg-white font-black text-black shadow-2xl"
+              style={{
+                width: "120px",
+                height: "120px",
+                fontSize: "48px",
+              }}
+            >
+              {vsText}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </BrandFrame>
   );

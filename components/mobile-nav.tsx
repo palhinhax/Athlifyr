@@ -16,6 +16,7 @@ import {
   CalendarIcon,
   NewspaperIcon,
   HomeIcon,
+  MapPin,
 } from "lucide-react";
 import { GlobalSearch } from "./global-search";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
@@ -111,14 +112,24 @@ export function MobileNav() {
               </Link>
 
               {session?.user?.role === "ADMIN" && (
-                <Link
-                  href="/admin"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                >
-                  <Shield className="h-4 w-4" />
-                  {t("admin")}
-                </Link>
+                <>
+                  <Link
+                    href="/admin"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <Shield className="h-4 w-4" />
+                    {t("admin")}
+                  </Link>
+                  <Link
+                    href="/admin/venues"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <MapPin className="h-4 w-4" />
+                    {t("venues")}
+                  </Link>
+                </>
               )}
 
               <div className="my-2 border-t" />

@@ -51,8 +51,18 @@ export default function ChatPage() {
     if (conversationId && conversationId !== "undefined") {
       setSelectedConversationId(conversationId);
       setShowMobileSidebar(false);
+      // Mark conversation as seen
+      fetch(`/api/chat/conversations/${conversationId}/seen`, {
+        method: "POST",
+      })
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: ["chatNotifications"] });
+        })
+        .catch((error) => {
+          console.error("Error marking conversation as seen:", error);
+        });
     }
-  }, [searchParams]);
+  }, [searchParams, queryClient]);
 
   // Handle startWith parameter - create/open conversation with specific user
   useEffect(() => {
@@ -66,6 +76,11 @@ export default function ChatPage() {
         const result = await createConversation.mutateAsync(startWithUserId);
         setSelectedConversationId(result.conversation.id);
         setShowMobileSidebar(false);
+        // Mark conversation as seen
+        await fetch(`/api/chat/conversations/${result.conversation.id}/seen`, {
+          method: "POST",
+        });
+        queryClient.invalidateQueries({ queryKey: ["chatNotifications"] });
       } catch (error) {
         console.error("Error starting conversation:", error);
       } finally {
@@ -74,7 +89,13 @@ export default function ChatPage() {
     };
 
     startConversation();
-  }, [status, searchParams, startWithProcessed, createConversation]);
+  }, [
+    status,
+    searchParams,
+    startWithProcessed,
+    createConversation,
+    queryClient,
+  ]);
 
   const handleSendMessage = useCallback(
     async (content: string) => {
@@ -190,9 +211,21 @@ export default function ChatPage() {
             conversations={conversations}
             currentUserId={session?.user?.id || ""}
             selectedConversationId={selectedConversationId}
-            onSelectConversation={(id) => {
+            onSelectConversation={async (id) => {
               setSelectedConversationId(id);
               setShowMobileSidebar(false);
+              // Mark conversation as seen to clear unread notifications
+              try {
+                await fetch(`/api/chat/conversations/${id}/seen`, {
+                  method: "POST",
+                });
+                // Invalidate notifications to update the badge
+                queryClient.invalidateQueries({
+                  queryKey: ["chatNotifications"],
+                });
+              } catch (error) {
+                console.error("Error marking conversation as seen:", error);
+              }
             }}
             onStartConversation={handleStartConversation}
             onHideConversation={handleHideConversation}

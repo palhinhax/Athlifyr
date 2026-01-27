@@ -135,7 +135,18 @@ export async function GET(request: NextRequest) {
 
     const venues = await prisma.venue.findMany({
       where,
-      include: {
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        type: true,
+        description: true,
+        city: true,
+        country: true,
+        latitude: true,
+        longitude: true,
+        coverImage: true,
+        logo: true,
         _count: {
           select: {
             members: true,

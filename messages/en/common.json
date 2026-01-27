@@ -113,6 +113,12 @@
       "description": "Are you sure you want to block {name}? They will no longer be able to send you messages.",
       "confirm": "Block",
       "cancel": "Cancel"
+    },
+    "removeFriendDialog": {
+      "title": "Remove Friend",
+      "description": "Are you sure you want to remove {name} from your friends? You will no longer see their activities in your feed.",
+      "confirm": "Remove",
+      "cancel": "Cancel"
     }
   }
 }

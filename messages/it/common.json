@@ -113,6 +113,12 @@
       "description": "Sei sicuro di voler bloccare {name}? Questa persona non potrà più inviarti messaggi.",
       "confirm": "Blocca",
       "cancel": "Annulla"
+    },
+    "removeFriendDialog": {
+      "title": "Rimuovi Amico",
+      "description": "Sei sicuro di voler rimuovere {name} dai tuoi amici? Non vedrai più le sue attività nel tuo feed.",
+      "confirm": "Rimuovi",
+      "cancel": "Annulla"
     }
   }
 }

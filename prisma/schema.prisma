@@ -47,6 +47,8 @@ model User {
   reportsReceived           UserReport[]          @relation("ReportsReceived")
   blocksMade                UserBlock[]           @relation("BlocksMade")
   blocksReceived            UserBlock[]           @relation("BlocksReceived")
+  performanceEntries        UserPerformanceEntry[]
+  strengthExercises         StrengthExercise[]
 
   @@index([email])
   @@index([name])
@@ -1098,3 +1100,108 @@ model UserBlock {
   @@index([blockedId])
 }
 
+// Performance tracking models
+model UserPerformanceEntry {
+  id               String                @id @default(cuid())
+  userId           String
+  type             PerformanceEntryType
+  performedAt      DateTime              @default(now())
+  
+  // Running fields
+  distanceKm       Float?
+  timeSeconds      Int?
+  elevationGainM   Int?
+  
+  // Strength fields
+  exerciseId       String?
+  weightKg         Float?
+  reps             Int?
+  
+  // HYROX fields
+  hyroxCategory    HyroxCategory?
+  eventName        String?
+  location         String?
+  
+  // Computed scores (persisted)
+  qualityScore     Float                 @default(0.5)
+  predictionWeight Float                 @default(0.5)
+  
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise         StrengthExercise?     @relation(fields: [exerciseId], references: [id])
+  
+  @@index([userId, type, performedAt])
+  @@index([userId, exerciseId])
+  @@index([userId, hyroxCategory])
+}
+
+model StrengthExercise {
+  id            String                  @id @default(cuid())
+  name          String
+  aliases       String[]                @default([])
+  category      ExerciseCategory        @default(OTHER)
+  createdById   String?
+  isGlobal      Boolean                 @default(false)
+  createdAt     DateTime                @default(now())
+  updatedAt     DateTime                @updatedAt
+  
+  createdBy     User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  entries       UserPerformanceEntry[]
+  
+  @@index([name])
+  @@index([createdById])
+  @@index([isGlobal])
+}
+
+enum PerformanceEntryType {
+  RUN
+  STRENGTH
+  HYROX
+}
+
+enum HyroxCategory {
+  OPEN_MEN
+  OPEN_WOMEN
+  PRO_MEN
+  PRO_WOMEN
+  ELITE_15_MEN
+  ELITE_15_WOMEN
+  DOUBLES_MEN
+  DOUBLES_WOMEN
+  DOUBLES_MIXED
+  RELAY_MEN
+  RELAY_WOMEN
+  RELAY_MIXED
+  AGE_GROUP_16_29_MEN
+  AGE_GROUP_16_29_WOMEN
+  AGE_GROUP_30_34_MEN
+  AGE_GROUP_30_34_WOMEN
+  AGE_GROUP_35_39_MEN
+  AGE_GROUP_35_39_WOMEN
+  AGE_GROUP_40_44_MEN
+  AGE_GROUP_40_44_WOMEN
+  AGE_GROUP_45_49_MEN
+  AGE_GROUP_45_49_WOMEN
+  AGE_GROUP_50_54_MEN
+  AGE_GROUP_50_54_WOMEN
+  AGE_GROUP_55_59_MEN
+  AGE_GROUP_55_59_WOMEN
+  AGE_GROUP_60_64_MEN
+  AGE_GROUP_60_64_WOMEN
+  AGE_GROUP_65_69_MEN
+  AGE_GROUP_65_69_WOMEN
+  AGE_GROUP_70_PLUS_MEN
+  AGE_GROUP_70_PLUS_WOMEN
+  ADAPTIVE
+}
+
+enum ExerciseCategory {
+  CROSSFIT
+  GYM
+  WEIGHTLIFTING
+  BODYWEIGHT
+  CARDIO
+  OTHER
+}

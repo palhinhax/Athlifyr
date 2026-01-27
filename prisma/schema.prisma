@@ -561,12 +561,29 @@ model Venue {
   sessions                           VenueSession[]
   subscriptions                      VenueSubscription[]
 
+  translations                       VenueTranslation[]
+
   @@index([slug])
   @@index([type])
   @@index([city])
   @@index([isActive])
   @@index([createdByUserId])
   @@index([sportTypes])
+}
+
+model VenueTranslation {
+  id              String   @id @default(cuid())
+  venueId         String
+  language        Language
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  venue           Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, language])
+  @@index([venueId])
+  @@index([language])
 }
 
 model VenueMember {

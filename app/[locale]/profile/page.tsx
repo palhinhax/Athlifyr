@@ -9,6 +9,7 @@ import { ProfileHeaderClient } from "@/components/profile-header-client";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
+import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -309,6 +310,9 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Performance Section */}
         <PerformanceSection />
+
+        {/* Professional Section - Only shows if user has venue invites or memberships */}
+        <ProfileProfessionalSection userId={session.user.id} />
 
         {/* Photo Gallery */}
         <PhotoGallery />

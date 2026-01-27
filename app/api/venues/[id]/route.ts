@@ -24,6 +24,9 @@ export async function GET(
         members: {
           where: {
             status: "ACTIVE",
+            role: {
+              not: "CLIENT",
+            },
           },
           include: {
             user: {

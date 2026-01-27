@@ -7,6 +7,7 @@ import { z } from "zod";
 const createPostSchema = z.object({
   content: z.string().min(1, "Content is required").max(5000),
   imageUrl: z.string().url().optional(),
+  mediaType: z.enum(["image", "video"]).default("image"),
   eventId: z.string().cuid().optional(),
   venueId: z.string().cuid().optional(),
   isPublic: z.boolean().default(false), // Public posts appear in main feed, private posts only in venue/event
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
         userId: session.user.id,
         content: validatedData.content,
         imageUrl: validatedData.imageUrl || null,
+        mediaType: validatedData.imageUrl ? validatedData.mediaType : null,
         eventId: validatedData.eventId,
         venueId: validatedData.venueId,
         isPublic: validatedData.isPublic, // Allow public/private control

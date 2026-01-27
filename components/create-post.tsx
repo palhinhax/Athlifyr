@@ -14,6 +14,7 @@ interface PostWithDetails {
   id: string;
   content: string;
   imageUrl: string | null;
+  mediaType?: string | null;
   createdAt: Date;
   user: {
     id: string;
@@ -43,9 +44,10 @@ export function CreatePost({
   const t = useTranslations(venueId ? "venues.posts" : "events");
   const tAdmin = useTranslations("admin.posts.toast");
   const [content, setContent] = useState("");
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>("");
+  const [mediaUrl, setMediaUrl] = useState<string>("");
+  const [mediaFile, setMediaFile] = useState<File | null>(null);
+  const [mediaPreview, setMediaPreview] = useState<string>("");
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   // General posts (no venue/event) are public by default, venue/event posts are private by default
@@ -55,53 +57,68 @@ export function CreatePost({
   const displayImage = userImage ?? session?.user?.image;
   const displayName = userName ?? session?.user?.name;
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
+
     // Validate file type
-    if (!file.type.startsWith("image/")) {
+    if (!isImage && !isVideo) {
       toast({
         title: tAdmin("invalidFileType"),
-        description: tAdmin("invalidFileTypeDesc"),
+        description: "Apenas imagens e vídeos são permitidos",
         variant: "destructive",
       });
       return;
     }
 
-    // Validate file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
+    // Validate file size (max 5MB for images, 50MB for videos)
+    const maxSize = isVideo ? 50 * 1024 * 1024 : 5 * 1024 * 1024;
+    if (file.size > maxSize) {
       toast({
         title: tAdmin("fileTooLarge"),
-        description: tAdmin("fileTooLargeDesc"),
+        description: isVideo
+          ? "O vídeo não pode exceder 50MB"
+          : tAdmin("fileTooLargeDesc"),
         variant: "destructive",
       });
       return;
     }
 
-    setImageFile(file);
+    setMediaFile(file);
+    setMediaType(isVideo ? "video" : "image");
 
     // Create preview
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result as string);
-    };
-    reader.readAsDataURL(file);
+    if (isVideo) {
+      setMediaPreview(URL.createObjectURL(file));
+    } else {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setMediaPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
-  const handleRemoveImage = () => {
-    setImageFile(null);
-    setImagePreview("");
-    setImageUrl("");
+  const handleRemoveMedia = () => {
+    if (mediaPreview && mediaType === "video") {
+      URL.revokeObjectURL(mediaPreview);
+    }
+    setMediaFile(null);
+    setMediaPreview("");
+    setMediaUrl("");
+    setMediaType("image");
   };
 
-  const handleUploadImage = async () => {
-    if (!imageFile) return;
+  const handleUploadMedia = async () => {
+    if (!mediaFile) return;
 
     setIsUploading(true);
     try {
       const formData = new FormData();
-      formData.append("file", imageFile);
+      formData.append("file", mediaFile);
       formData.append("folder", "posts");
 
       const response = await fetch("/api/upload", {
@@ -111,7 +128,7 @@ export function CreatePost({
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to upload image");
+        throw new Error(error.error || "Failed to upload media");
       }
 
       const data = await response.json();
@@ -121,10 +138,10 @@ export function CreatePost({
         throw new Error("Upload response missing URL");
       }
 
-      setImageUrl(uploadedUrl);
+      setMediaUrl(uploadedUrl);
       return uploadedUrl;
     } catch (error) {
-      console.error("Error uploading image:", error);
+      console.error("Error uploading media:", error);
       toast({
         title: tAdmin("uploadError"),
         description: tAdmin("uploadErrorDesc"),
@@ -151,15 +168,15 @@ export function CreatePost({
     setIsSubmitting(true);
 
     try {
-      // Upload image first if exists
-      let finalImageUrl = imageUrl;
-      if (imageFile && !imageUrl) {
-        console.log("Uploading image file:", imageFile.name);
-        finalImageUrl = (await handleUploadImage()) || "";
-        console.log("Image upload result:", finalImageUrl || "FAILED");
+      // Upload media first if exists
+      let finalMediaUrl = mediaUrl;
+      if (mediaFile && !mediaUrl) {
+        console.log("Uploading media file:", mediaFile.name);
+        finalMediaUrl = (await handleUploadMedia()) || "";
+        console.log("Media upload result:", finalMediaUrl || "FAILED");
 
-        // If image upload failed, don't proceed
-        if (!finalImageUrl && imageFile) {
+        // If media upload failed, don't proceed
+        if (!finalMediaUrl && mediaFile) {
           toast({
             title: tAdmin("uploadError"),
             description: tAdmin("uploadErrorDesc"),
@@ -170,7 +187,7 @@ export function CreatePost({
         }
       }
 
-      console.log("Creating post with imageUrl:", finalImageUrl || "none");
+      console.log("Creating post with mediaUrl:", finalMediaUrl || "none");
 
       const response = await fetch("/api/posts", {
         method: "POST",
@@ -179,7 +196,8 @@ export function CreatePost({
         },
         body: JSON.stringify({
           content: content.trim(),
-          imageUrl: finalImageUrl || undefined,
+          imageUrl: finalMediaUrl || undefined,
+          mediaType: finalMediaUrl ? mediaType : undefined,
           eventId: eventId || undefined,
           venueId: venueId || undefined,
           isPublic: isPublic,
@@ -194,9 +212,10 @@ export function CreatePost({
 
       // Reset form
       setContent("");
-      setImageFile(null);
-      setImagePreview("");
-      setImageUrl("");
+      setMediaFile(null);
+      setMediaPreview("");
+      setMediaUrl("");
+      setMediaType("image");
       setIsPublic(!eventId && !venueId); // Reset: public for general posts, private for venue/event posts
 
       toast({
@@ -246,27 +265,40 @@ export function CreatePost({
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={t("sharePost")}
+            placeholder={
+              eventId
+                ? t("sharePost")
+                : venueId
+                  ? t("sharePost")
+                  : t("sharePostFeed")
+            }
             className="min-h-[80px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={isSubmitting || isUploading}
           />
         </div>
 
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="relative mb-3 overflow-hidden rounded-lg bg-gradient-to-br from-muted/50 to-muted">
-            <div className="relative aspect-square w-full">
-              <Image
-                src={imagePreview}
-                alt="Preview"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                className="object-contain"
+        {/* Media Preview */}
+        {mediaPreview && (
+          <div className="relative mb-3 max-h-[500px] w-full overflow-hidden rounded-lg bg-gradient-to-br from-muted/50 to-muted">
+            {mediaType === "video" ? (
+              <video
+                src={mediaPreview}
+                controls
+                className="h-auto max-h-[500px] w-full object-contain"
               />
-            </div>
+            ) : (
+              <Image
+                src={mediaPreview}
+                alt="Preview"
+                width={600}
+                height={600}
+                className="h-auto max-h-[500px] w-full object-cover"
+                sizes="(max-width: 768px) 100vw, 50vw"
+              />
+            )}
             <button
               type="button"
-              onClick={handleRemoveImage}
+              onClick={handleRemoveMedia}
               className="absolute right-2 top-2 rounded-full bg-black/70 p-1.5 text-white shadow-lg transition-all hover:scale-110 hover:bg-black/90"
               disabled={isSubmitting || isUploading}
             >
@@ -278,25 +310,25 @@ export function CreatePost({
         {/* Actions */}
         <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
           <div className="flex flex-wrap items-center gap-2 sm:gap-4">
-            {/* Image Upload */}
-            <label htmlFor="post-image">
+            {/* Media Upload */}
+            <label htmlFor="post-media">
               <input
-                id="post-image"
+                id="post-media"
                 type="file"
-                accept="image/*"
-                onChange={handleImageSelect}
+                accept="image/*,video/*"
+                onChange={handleMediaSelect}
                 className="hidden"
-                disabled={isSubmitting || isUploading || !!imagePreview}
+                disabled={isSubmitting || isUploading || !!mediaPreview}
               />
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                disabled={isSubmitting || isUploading || !!imagePreview}
-                onClick={() => document.getElementById("post-image")?.click()}
+                disabled={isSubmitting || isUploading || !!mediaPreview}
+                onClick={() => document.getElementById("post-media")?.click()}
               >
                 <ImagePlus className="mr-2 h-4 w-4" />
-                {t("addPhoto")}
+                {t("addMedia")}
               </Button>
             </label>
 
@@ -331,7 +363,7 @@ export function CreatePost({
             type="submit"
             size="sm"
             disabled={
-              isSubmitting || isUploading || (!content.trim() && !imageFile)
+              isSubmitting || isUploading || (!content.trim() && !mediaFile)
             }
           >
             {isSubmitting || isUploading ? (

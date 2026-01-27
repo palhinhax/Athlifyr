@@ -337,6 +337,7 @@ model Post {
   eventId    String?
   content    String
   imageUrl   String?
+  mediaType  String?       @default("image") // "image" or "video"
   createdAt  DateTime      @default(now())
   updatedAt  DateTime      @updatedAt
   isAutoPost Boolean       @default(false)

@@ -79,34 +79,26 @@ export function ProfileHeaderClient({
         </div>
 
         {/* Stats */}
-        <div className="flex flex-wrap justify-center gap-6 md:justify-start">
-          <div className="text-center">
+        <div className="grid grid-cols-3 gap-3 sm:flex sm:gap-6">
+          <div className="rounded-lg bg-primary/10 px-4 py-3 text-center">
             <div className="text-2xl font-bold text-primary">
               {stats.upcomingEvents}
             </div>
-            <div className="text-sm text-muted-foreground">
+            <div className="text-xs text-muted-foreground sm:text-sm">
               {t("upcomingEvents")}
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {stats.pastEvents}
-            </div>
-            <div className="text-sm text-muted-foreground">
+          <div className="rounded-lg bg-muted px-4 py-3 text-center">
+            <div className="text-2xl font-bold">{stats.pastEvents}</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">
               {t("pastEvents")}
             </div>
           </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {stats.friendsCount}
+          <div className="rounded-lg bg-muted px-4 py-3 text-center">
+            <div className="text-2xl font-bold">{stats.friendsCount}</div>
+            <div className="text-xs text-muted-foreground sm:text-sm">
+              {t("friends")}
             </div>
-            <div className="text-sm text-muted-foreground">{t("friends")}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {stats.commentsCount}
-            </div>
-            <div className="text-sm text-muted-foreground">{t("comments")}</div>
           </div>
         </div>
       </div>

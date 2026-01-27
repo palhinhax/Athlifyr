@@ -51,6 +51,7 @@ interface PostCardProps {
     id: string;
     content: string;
     imageUrl?: string | null;
+    mediaType?: string | null;
     createdAt: string | Date;
     userId: string;
     user: {
@@ -391,15 +392,23 @@ export function PostCard({
           )}
         </div>
 
-        {/* Image */}
+        {/* Media (Image or Video) */}
         {post.imageUrl && (
-          <div className="relative aspect-square w-full overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
-            {!imageError ? (
+          <div className="relative max-h-[850px] w-full overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
+            {post.mediaType === "video" ? (
+              <video
+                src={post.imageUrl}
+                controls
+                className="h-auto max-h-[850px] w-full object-contain"
+                preload="metadata"
+              />
+            ) : !imageError ? (
               <Image
                 src={post.imageUrl}
                 alt="Post image"
-                fill
-                className="object-contain"
+                width={800}
+                height={800}
+                className="h-auto max-h-[850px] w-full object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 onError={() => {
                   console.error("Failed to load image:", post.imageUrl);
@@ -407,7 +416,7 @@ export function PostCard({
                 }}
               />
             ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 text-muted-foreground">
+              <div className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
                 <ImageOff className="h-12 w-12" />
                 <p className="text-sm">Imagem não disponível</p>
               </div>

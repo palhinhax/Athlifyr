@@ -35,6 +35,24 @@ interface RunEntryResult {
   performedAt: Date;
   qualityScore: number | null;
   predictionWeight: number | null;
+  result: {
+    id: string;
+    position: number | null;
+    categoryPosition: number | null;
+    event: {
+      id: string;
+      slug: string;
+      startDate: Date;
+      translations: {
+        title: string;
+        city: string | null;
+      }[];
+    };
+    variant: {
+      name: string;
+      distanceKm: number | null;
+    } | null;
+  } | null;
 }
 
 interface StrengthEntryResult {
@@ -75,7 +93,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch all running entries
+    // Fetch all running entries (road running)
     const runEntries: RunEntryResult[] =
       (await prisma.userPerformanceEntry.findMany({
         where: {
@@ -91,6 +109,79 @@ export async function GET() {
           performedAt: true,
           qualityScore: true,
           predictionWeight: true,
+          result: {
+            select: {
+              id: true,
+              position: true,
+              categoryPosition: true,
+              event: {
+                select: {
+                  id: true,
+                  slug: true,
+                  startDate: true,
+                  translations: {
+                    select: {
+                      title: true,
+                      city: true,
+                    },
+                    take: 1,
+                  },
+                },
+              },
+              variant: {
+                select: {
+                  name: true,
+                  distanceKm: true,
+                },
+              },
+            },
+          },
+        },
+      })) as RunEntryResult[];
+
+    // Fetch all trail entries
+    const trailEntries: RunEntryResult[] =
+      (await prisma.userPerformanceEntry.findMany({
+        where: {
+          userId: session.user.id,
+          type: "TRAIL",
+        },
+        orderBy: { performedAt: "asc" },
+        select: {
+          id: true,
+          distanceKm: true,
+          timeSeconds: true,
+          elevationGainM: true,
+          performedAt: true,
+          qualityScore: true,
+          predictionWeight: true,
+          result: {
+            select: {
+              id: true,
+              position: true,
+              categoryPosition: true,
+              event: {
+                select: {
+                  id: true,
+                  slug: true,
+                  startDate: true,
+                  translations: {
+                    select: {
+                      title: true,
+                      city: true,
+                    },
+                    take: 1,
+                  },
+                },
+              },
+              variant: {
+                select: {
+                  name: true,
+                  distanceKm: true,
+                },
+              },
+            },
+          },
         },
       })) as RunEntryResult[];
 
@@ -137,14 +228,23 @@ export async function GET() {
         },
       })) as HyroxEntryResult[];
 
-    // Process running data
+    // Process running data - use variant distance as fallback when entry distance is null
     const runChartPoints: RunChartPoint[] = runEntries
-      .filter((e) => e.distanceKm && e.timeSeconds && e.distanceKm > 0)
-      .map((e) => ({
-        date: e.performedAt.toISOString().split("T")[0],
-        pace: (e.timeSeconds as number) / (e.distanceKm as number),
-        distanceKm: e.distanceKm as number,
-      }));
+      .filter((e) => {
+        // Get distance from entry or from linked result's variant
+        const distance = e.distanceKm ?? e.result?.variant?.distanceKm;
+        return distance && distance > 0 && e.timeSeconds;
+      })
+      .map((e) => {
+        // Get distance from entry or from linked result's variant
+        const distance = (e.distanceKm ??
+          e.result?.variant?.distanceKm) as number;
+        return {
+          date: e.performedAt.toISOString().split("T")[0],
+          pace: (e.timeSeconds as number) / distance,
+          distanceKm: distance,
+        };
+      });
 
     // Apply rolling average (3-point) for smoothing
     const smoothedRunPoints = runChartPoints.map((point, index) => {
@@ -159,18 +259,25 @@ export async function GET() {
       return { ...point, pace: avgPace };
     });
 
-    // Half marathon prediction
+    // Half marathon prediction - use variant distance as fallback
     const halfPrediction = predictHalfMarathon(
       runEntries
-        .filter((e) => e.distanceKm && e.timeSeconds)
-        .map((e) => ({
-          distanceKm: e.distanceKm as number,
-          timeSeconds: e.timeSeconds as number,
-          elevationGainM: e.elevationGainM,
-          performedAt: e.performedAt,
-          qualityScore: e.qualityScore,
-          predictionWeight: e.predictionWeight,
-        }))
+        .filter((e) => {
+          const distance = e.distanceKm ?? e.result?.variant?.distanceKm;
+          return distance && e.timeSeconds;
+        })
+        .map((e) => {
+          const distance = (e.distanceKm ??
+            e.result?.variant?.distanceKm) as number;
+          return {
+            distanceKm: distance,
+            timeSeconds: e.timeSeconds as number,
+            elevationGainM: e.elevationGainM,
+            performedAt: e.performedAt,
+            qualityScore: e.qualityScore,
+            predictionWeight: e.predictionWeight,
+          };
+        })
     );
 
     // Process strength data by exercise
@@ -233,19 +340,90 @@ export async function GET() {
     // Sort exercises by total entries (most used first)
     exerciseSummaries.sort((a, b) => b.totalEntries - a.totalEntries);
 
-    // Format entries for the list view
+    // Process trail data - use variant distance as fallback when entry distance is null
+    const trailChartPoints: RunChartPoint[] = trailEntries
+      .filter((e) => {
+        const distance = e.distanceKm ?? e.result?.variant?.distanceKm;
+        return distance && distance > 0 && e.timeSeconds;
+      })
+      .map((e) => {
+        const distance = (e.distanceKm ??
+          e.result?.variant?.distanceKm) as number;
+        return {
+          date: e.performedAt.toISOString().split("T")[0],
+          pace: (e.timeSeconds as number) / distance,
+          distanceKm: distance,
+        };
+      });
+
+    // Apply rolling average (3-point) for smoothing trail data
+    const smoothedTrailPoints = trailChartPoints.map((point, index) => {
+      if (index === 0 || index === trailChartPoints.length - 1) {
+        return point;
+      }
+      const avgPace =
+        (trailChartPoints[index - 1].pace +
+          point.pace +
+          trailChartPoints[index + 1].pace) /
+        3;
+      return { ...point, pace: avgPace };
+    });
+
+    // Format entries for the list view - use variant distance as fallback
     const allEntries = [
       ...runEntries.map((e) => ({
         id: e.id,
         type: "RUN" as const,
         performedAt: e.performedAt.toISOString(),
-        distanceKm: e.distanceKm,
+        // Use entry distance or fallback to variant distance
+        distanceKm: e.distanceKm ?? e.result?.variant?.distanceKm ?? null,
         timeSeconds: e.timeSeconds,
         elevationGainM: e.elevationGainM,
         exerciseId: null,
         exerciseName: null,
         weightKg: null,
         reps: null,
+        // Event result info
+        eventResult: e.result
+          ? {
+              eventId: e.result.event.id,
+              eventSlug: e.result.event.slug,
+              eventTitle: e.result.event.translations[0]?.title || null,
+              eventCity: e.result.event.translations[0]?.city || null,
+              eventDate: e.result.event.startDate.toISOString(),
+              variantName: e.result.variant?.name || null,
+              variantDistanceKm: e.result.variant?.distanceKm || null,
+              position: e.result.position,
+              categoryPosition: e.result.categoryPosition,
+            }
+          : null,
+      })),
+      ...trailEntries.map((e) => ({
+        id: e.id,
+        type: "TRAIL" as const,
+        performedAt: e.performedAt.toISOString(),
+        // Use entry distance or fallback to variant distance
+        distanceKm: e.distanceKm ?? e.result?.variant?.distanceKm ?? null,
+        timeSeconds: e.timeSeconds,
+        elevationGainM: e.elevationGainM,
+        exerciseId: null,
+        exerciseName: null,
+        weightKg: null,
+        reps: null,
+        // Event result info
+        eventResult: e.result
+          ? {
+              eventId: e.result.event.id,
+              eventSlug: e.result.event.slug,
+              eventTitle: e.result.event.translations[0]?.title || null,
+              eventCity: e.result.event.translations[0]?.city || null,
+              eventDate: e.result.event.startDate.toISOString(),
+              variantName: e.result.variant?.name || null,
+              variantDistanceKm: e.result.variant?.distanceKm || null,
+              position: e.result.position,
+              categoryPosition: e.result.categoryPosition,
+            }
+          : null,
       })),
       ...strengthEntries.map((e) => ({
         id: e.id,
@@ -258,6 +436,7 @@ export async function GET() {
         exerciseName: e.exercise?.name || null,
         weightKg: e.weightKg,
         reps: e.reps,
+        eventResult: null,
       })),
     ];
 
@@ -293,6 +472,10 @@ export async function GET() {
         chartPoints: smoothedRunPoints,
         halfPrediction,
         totalEntries: runEntries.length,
+      },
+      trail: {
+        chartPoints: smoothedTrailPoints,
+        totalEntries: trailEntries.length,
       },
       strength: {
         exercises: exerciseSummaries,

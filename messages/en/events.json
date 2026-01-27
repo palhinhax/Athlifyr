@@ -120,7 +120,14 @@
       "registrationError": "Could not register participation",
       "updateError": "Could not update time",
       "removalError": "Could not remove participation",
-      "invalidTimeFormat": "Invalid time format. Use HH:MM or HH:MM:SS (e.g., 2:30 or 1:23:45)"
+      "invalidTimeFormat": "Invalid time format. Use HH:MM or HH:MM:SS (e.g., 2:30 or 1:23:45)",
+      "moreDetails": "More details",
+      "generalPosition": "General position",
+      "categoryPosition": "Category position",
+      "positionPlaceholder": "e.g., 42",
+      "notes": "Notes",
+      "notesPlaceholder": "How did you feel? Any observations...",
+      "resultAddedToPerformance": "Your result has been added to your Performance area"
     },
     "variants": {
       "title": "Variants / Distances",

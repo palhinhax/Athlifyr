@@ -288,21 +288,29 @@ model Participation {
 }
 
 model Result {
-  id        String        @id @default(cuid())
-  userId    String
-  eventId   String
-  variantId String?
-  time      String
-  position  Int?
-  notes     String?
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
-  event     Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  variant   EventVariant? @relation(fields: [variantId], references: [id])
+  id                   String                @id @default(cuid())
+  userId               String
+  eventId              String
+  variantId            String?
+  time                 String                // Format: "HH:MM:SS" or "MM:SS"
+  timeSeconds          Int?                  // Total time in seconds for calculations
+  position             Int?                  // Overall position
+  categoryPosition     Int?                  // Position in category/age group
+  notes                String?
+  isPublic             Boolean               @default(true) // Show on public profile
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  
+  // Relations
+  event                Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant              EventVariant?         @relation(fields: [variantId], references: [id])
+  performanceEntry     UserPerformanceEntry? @relation("ResultPerformance")
 
+  @@unique([userId, eventId, variantId]) // One result per user per variant
   @@index([userId])
   @@index([eventId])
+  @@index([userId, createdAt])
 }
 
 model Comment {
@@ -1119,8 +1127,11 @@ model UserPerformanceEntry {
   
   // HYROX fields
   hyroxCategory    HyroxCategory?
-  eventName        String?
+  eventName        String?               // For manual entries or linked event name
   location         String?
+  
+  // Event Result link (when entry comes from an official event)
+  resultId         String?               @unique
   
   // Computed scores (persisted)
   qualityScore     Float                 @default(0.5)
@@ -1131,10 +1142,12 @@ model UserPerformanceEntry {
   
   user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   exercise         StrengthExercise?     @relation(fields: [exerciseId], references: [id])
+  result           Result?               @relation("ResultPerformance", fields: [resultId], references: [id], onDelete: Cascade)
   
   @@index([userId, type, performedAt])
   @@index([userId, exerciseId])
   @@index([userId, hyroxCategory])
+  @@index([resultId])
 }
 
 model StrengthExercise {
@@ -1157,6 +1170,7 @@ model StrengthExercise {
 
 enum PerformanceEntryType {
   RUN
+  TRAIL
   STRENGTH
   HYROX
 }

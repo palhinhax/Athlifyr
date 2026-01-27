@@ -1,5 +1,6 @@
 export { PerformanceSection } from "./performance-section";
 export { PerformanceRunTab } from "./performance-run-tab";
+export { PerformanceTrailTab } from "./performance-trail-tab";
 export { PerformanceStrengthTab } from "./performance-strength-tab";
 export { PerformanceHyroxTab } from "./performance-hyrox-tab";
 export { PerformanceRunChart } from "./performance-run-chart";

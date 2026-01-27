@@ -23,17 +23,25 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Pencil,
+  Trash2,
+  ChevronDown,
+  ChevronUp,
+  Medal,
+  ExternalLink,
+} from "lucide-react";
 import { EditRunDialog } from "./edit-run-dialog";
 import { EditStrengthDialog } from "./edit-strength-dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { type PerformanceEntry } from "./types";
+import { Link } from "@/i18n/routing";
 
 export type { PerformanceEntry };
 
 interface PerformanceEntriesListProps {
   entries: PerformanceEntry[];
-  type: "RUN" | "STRENGTH";
+  type: "RUN" | "TRAIL" | "STRENGTH";
   onRefresh: () => void;
 }
 
@@ -108,8 +116,9 @@ export function PerformanceEntriesList({
           <TableHeader>
             <TableRow>
               <TableHead>{t("entries.date")}</TableHead>
-              {type === "RUN" ? (
+              {type === "RUN" || type === "TRAIL" ? (
                 <>
+                  <TableHead>{t("entries.event")}</TableHead>
                   <TableHead>{t("entries.distance")}</TableHead>
                   <TableHead>{t("entries.time")}</TableHead>
                   <TableHead>{t("entries.pace")}</TableHead>
@@ -138,8 +147,29 @@ export function PerformanceEntriesList({
                     year: "numeric",
                   })}
                 </TableCell>
-                {type === "RUN" ? (
+                {type === "RUN" || type === "TRAIL" ? (
                   <>
+                    <TableCell>
+                      {entry.eventResult ? (
+                        <Link
+                          href={`/events/${entry.eventResult.eventSlug}`}
+                          className="group flex items-center gap-1.5 hover:text-primary"
+                        >
+                          <span className="line-clamp-1 font-medium">
+                            {entry.eventResult.eventTitle}
+                          </span>
+                          <ExternalLink className="h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100" />
+                          {entry.eventResult.position && (
+                            <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+                              <Medal className="h-3 w-3" />#
+                              {entry.eventResult.position}
+                            </span>
+                          )}
+                        </Link>
+                      ) : (
+                        <span className="text-muted-foreground">-</span>
+                      )}
+                    </TableCell>
                     <TableCell>{entry.distanceKm?.toFixed(2)} km</TableCell>
                     <TableCell>
                       {entry.timeSeconds ? formatTime(entry.timeSeconds) : "-"}
@@ -237,7 +267,7 @@ export function PerformanceEntriesList({
       </AlertDialog>
 
       {/* Edit dialogs */}
-      {editEntry && type === "RUN" && (
+      {editEntry && (type === "RUN" || type === "TRAIL") && (
         <EditRunDialog
           entry={editEntry}
           open={!!editEntry}

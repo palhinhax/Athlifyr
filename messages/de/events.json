@@ -155,7 +155,14 @@
       "registrationError": "Teilnahme konnte nicht registriert werden",
       "updateError": "Zeit konnte nicht aktualisiert werden",
       "removalError": "Teilnahme konnte nicht entfernt werden",
-      "invalidTimeFormat": "Ungültiges Zeitformat. Verwenden Sie HH:MM oder HH:MM:SS (z.B. 2:30 oder 1:23:45)"
+      "invalidTimeFormat": "Ungültiges Zeitformat. Verwenden Sie HH:MM oder HH:MM:SS (z.B. 2:30 oder 1:23:45)",
+      "moreDetails": "Mehr Details",
+      "generalPosition": "Gesamtplatzierung",
+      "categoryPosition": "Kategorieplatzierung",
+      "positionPlaceholder": "z.B. 42",
+      "notes": "Notizen",
+      "notesPlaceholder": "Wie haben Sie sich gefühlt? Beobachtungen...",
+      "resultAddedToPerformance": "Ihr Ergebnis wurde zu Ihrem Leistungsbereich hinzugefügt"
     },
     "variants": {
       "title": "Varianten / Distanzen",

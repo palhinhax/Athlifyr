@@ -70,6 +70,7 @@ export function PublicProfileHeader({
   const [isLoading, setIsLoading] = useState(false);
   const [showChatWidget, setShowChatWidget] = useState(false);
   const [blockDialogOpen, setBlockDialogOpen] = useState(false);
+  const [removeFriendDialogOpen, setRemoveFriendDialogOpen] = useState(false);
   const [isBlocking, setIsBlocking] = useState(false);
 
   const sendFriendRequest = async () => {
@@ -177,6 +178,7 @@ export function PublicProfileHeader({
         });
         setFriendshipStatus(null);
         setFriendshipId(undefined);
+        setRemoveFriendDialogOpen(false);
         router.refresh();
       } else {
         toast({
@@ -287,7 +289,7 @@ export function PublicProfileHeader({
                 {friendshipStatus === "friends" ? (
                   <Button
                     variant="outline"
-                    onClick={removeFriend}
+                    onClick={() => setRemoveFriendDialogOpen(true)}
                     disabled={isLoading}
                     className="gap-2"
                   >
@@ -394,6 +396,35 @@ export function PublicProfileHeader({
           onClose={() => setShowChatWidget(false)}
         />
       )}
+
+      {/* Remove Friend Confirmation Dialog */}
+      <AlertDialog
+        open={removeFriendDialogOpen}
+        onOpenChange={setRemoveFriendDialogOpen}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("removeFriendDialog.title")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("removeFriendDialog.description", {
+                name: user.name || "User",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isLoading}>
+              {t("removeFriendDialog.cancel")}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={removeFriend}
+              disabled={isLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {isLoading ? "..." : t("removeFriendDialog.confirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Block User Confirmation Dialog */}
       <AlertDialog open={blockDialogOpen} onOpenChange={setBlockDialogOpen}>

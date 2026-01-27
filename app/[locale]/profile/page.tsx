@@ -2,13 +2,13 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Calendar, MapPin, Trophy, Users } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";
 import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
+import { PerformanceSection } from "@/components/performance/performance-section";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -181,7 +181,7 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Upcoming Events */}
         {upcomingEvents.length > 0 && (
-          <div className="mb-12">
+          <div className="mt-12">
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
               <Calendar className="h-6 w-6 text-primary" />
               {t("upcomingEventsCount", { count: upcomingEvents.length })}
@@ -192,7 +192,7 @@ export default async function ProfilePage({ params }: PageProps) {
                   key={participation.id}
                   href={`/events/${participation.event.slug}`}
                 >
-                  <Card className="p-4 transition-colors hover:bg-accent">
+                  <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
                     <h3 className="mb-2 font-semibold">
                       {participation.event.title}
                     </h3>
@@ -229,7 +229,7 @@ export default async function ProfilePage({ params }: PageProps) {
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -241,7 +241,7 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Past Events */}
         {pastEvents.length > 0 && (
-          <div className="mb-12">
+          <div className="mt-12">
             <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
               <Trophy className="h-6 w-6 text-primary" />
               {t("pastEventsCount", { count: pastEvents.length })}
@@ -252,7 +252,7 @@ export default async function ProfilePage({ params }: PageProps) {
                   key={participation.id}
                   href={`/events/${participation.event.slug}`}
                 >
-                  <Card className="p-4 transition-colors hover:bg-accent">
+                  <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
                     <h3 className="mb-2 font-semibold">
                       {participation.event.title}
                     </h3>
@@ -284,7 +284,7 @@ export default async function ProfilePage({ params }: PageProps) {
                         </div>
                       )}
                     </div>
-                  </Card>
+                  </div>
                 </Link>
               ))}
             </div>
@@ -293,7 +293,7 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Empty State for Events */}
         {upcomingEvents.length === 0 && pastEvents.length === 0 && (
-          <Card className="p-12 text-center">
+          <div className="mt-12 rounded-lg border p-12 text-center">
             <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
             <h3 className="mb-2 text-xl font-semibold">{t("noEventsTitle")}</h3>
             <p className="mb-6 text-muted-foreground">
@@ -304,8 +304,11 @@ export default async function ProfilePage({ params }: PageProps) {
                 {t("exploreEvents")}
               </button>
             </Link>
-          </Card>
+          </div>
         )}
+
+        {/* Performance Section */}
+        <PerformanceSection />
 
         {/* Photo Gallery */}
         <PhotoGallery />

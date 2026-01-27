@@ -113,6 +113,12 @@
       "description": "Êtes-vous sûr de vouloir bloquer {name} ? Cette personne ne pourra plus vous envoyer de messages.",
       "confirm": "Bloquer",
       "cancel": "Annuler"
+    },
+    "removeFriendDialog": {
+      "title": "Supprimer l'ami",
+      "description": "Êtes-vous sûr de vouloir supprimer {name} de vos amis ? Vous ne verrez plus ses activités dans votre fil d'actualité.",
+      "confirm": "Supprimer",
+      "cancel": "Annuler"
     }
   }
 }

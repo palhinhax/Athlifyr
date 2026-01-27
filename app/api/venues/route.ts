@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { VenueType, SportType, Prisma } from "@prisma/client";
+import { VenueType, VenueService, SportType, Prisma } from "@prisma/client";
 
 // GET - List all venues with filters and pagination
 export async function GET(request: NextRequest) {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get("search");
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
-    const types = searchParams.getAll("types");
+    const services = searchParams.getAll("services");
     const sports = searchParams.getAll("sports");
     const city = searchParams.get("city");
 
@@ -112,9 +112,11 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Types filter
-    if (types.length > 0) {
-      where.type = { in: types as VenueType[] };
+    // Services filter
+    if (services.length > 0) {
+      where.services = {
+        hasSome: services as VenueService[],
+      };
     }
 
     // Sport type filter
@@ -140,6 +142,7 @@ export async function GET(request: NextRequest) {
         slug: true,
         name: true,
         type: true,
+        services: true,
         description: true,
         city: true,
         country: true,

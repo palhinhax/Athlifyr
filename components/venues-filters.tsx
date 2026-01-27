@@ -23,7 +23,7 @@ interface VenuesFiltersProps {
 }
 
 export interface VenuesFilters {
-  types: VenueType[];
+  services: VenueService[];
   distanceRadius: number | null;
   searchQuery: string;
   userLat: number | null;
@@ -31,20 +31,32 @@ export interface VenuesFilters {
   locationEnabled: boolean;
 }
 
-const VENUE_TYPES = [
-  "GYM",
-  "STUDIO",
-  "CROSSFIT_BOX",
-  "RUNNING_CLUB",
-  "CYCLING_CLUB",
-  "MARTIAL_ARTS",
-  "YOGA_STUDIO",
-  "CLIMBING_GYM",
-  "SWIMMING_POOL",
+const VENUE_SERVICES = [
+  "CROSSFIT",
+  "HYROX",
+  "WEIGHTLIFTING",
+  "POWERLIFTING",
+  "OLYMPIC_LIFTING",
+  "FUNCTIONAL_FITNESS",
+  "PERSONAL_TRAINING",
+  "GROUP_CLASSES",
+  "OPEN_GYM",
+  "MASSAGE",
+  "PHYSIOTHERAPY",
+  "NUTRITION",
+  "YOGA",
+  "PILATES",
+  "BOXING",
+  "KICKBOXING",
+  "MMA",
+  "BJJ",
+  "RECOVERY",
+  "SAUNA",
+  "COLD_PLUNGE",
   "OTHER",
 ] as const;
 
-type VenueType = (typeof VENUE_TYPES)[number];
+type VenueService = (typeof VENUE_SERVICES)[number];
 
 const DEFAULT_RADIUS = 25; // km
 
@@ -61,7 +73,7 @@ export function VenuesFilters({
   const [locationError, setLocationError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  const [selectedTypes, setSelectedTypes] = useState<VenueType[]>([]);
+  const [selectedServices, setSelectedServices] = useState<VenueService[]>([]);
   const [distanceRadius, setDistanceRadius] = useState<number>(DEFAULT_RADIUS);
   const [userLat, setUserLat] = useState<number | null>(null);
   const [userLng, setUserLng] = useState<number | null>(null);
@@ -106,7 +118,7 @@ export function VenuesFilters({
         const storedPrefs = localStorage.getItem("venuesFilters");
         if (storedPrefs) {
           const prefs = JSON.parse(storedPrefs);
-          setSelectedTypes(prefs.types || []);
+          setSelectedServices(prefs.services || []);
           setDistanceRadius(prefs.distanceRadius || DEFAULT_RADIUS);
 
           if (prefs.userLat && prefs.userLng) {
@@ -128,7 +140,7 @@ export function VenuesFilters({
   // Update parent component when filters change
   useEffect(() => {
     stableOnFiltersChange({
-      types: selectedTypes,
+      services: selectedServices,
       distanceRadius: locationEnabled ? distanceRadius : null,
       searchQuery,
       userLat: locationEnabled ? userLat : null,
@@ -136,7 +148,7 @@ export function VenuesFilters({
       locationEnabled,
     });
   }, [
-    selectedTypes,
+    selectedServices,
     distanceRadius,
     searchQuery,
     userLat,
@@ -166,7 +178,7 @@ export function VenuesFilters({
 
         // Save to localStorage
         const prefs = {
-          types: selectedTypes,
+          services: selectedServices,
           distanceRadius,
           userLat: lat,
           userLng: lng,
@@ -198,20 +210,23 @@ export function VenuesFilters({
     }
   };
 
-  const handleToggleType = (type: VenueType) => {
-    setSelectedTypes((prev) =>
-      prev.includes(type) ? prev.filter((s) => s !== type) : [...prev, type]
+  const handleToggleService = (service: VenueService) => {
+    setSelectedServices((prev) =>
+      prev.includes(service)
+        ? prev.filter((s) => s !== service)
+        : [...prev, service]
     );
   };
 
   const handleClearFilters = () => {
-    setSelectedTypes([]);
+    setSelectedServices([]);
     setDistanceRadius(DEFAULT_RADIUS);
     setLocationEnabled(false);
     localStorage.removeItem("venuesFilters");
   };
 
-  const activeFiltersCount = selectedTypes.length + (locationEnabled ? 1 : 0);
+  const activeFiltersCount =
+    selectedServices.length + (locationEnabled ? 1 : 0);
 
   return (
     <div className="relative" ref={panelRef}>
@@ -250,23 +265,23 @@ export function VenuesFilters({
               </div>
             ) : (
               <div className="space-y-6">
-                {/* Venue Types */}
+                {/* Venue Services */}
                 <div>
                   <h4 className="mb-3 text-sm font-medium">
-                    {t("venues.filters.types")}
+                    {t("venues.filters.services")}
                   </h4>
-                  <div className="grid grid-cols-2 gap-2">
-                    {VENUE_TYPES.map((type) => (
+                  <div className="max-h-[300px] space-y-1 overflow-y-auto">
+                    {VENUE_SERVICES.map((service) => (
                       <label
-                        key={type}
+                        key={service}
                         className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors hover:bg-muted"
                       >
                         <Checkbox
-                          checked={selectedTypes.includes(type)}
-                          onCheckedChange={() => handleToggleType(type)}
+                          checked={selectedServices.includes(service)}
+                          onCheckedChange={() => handleToggleService(service)}
                         />
                         <span className="text-sm">
-                          {t(`venues.types.${type}`)}
+                          {t(`venues.services.${service}`)}
                         </span>
                       </label>
                     ))}

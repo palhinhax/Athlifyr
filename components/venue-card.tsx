@@ -11,6 +11,7 @@ interface VenueCardProps {
     slug: string;
     name: string;
     type: string;
+    services: string[];
     description: string | null;
     city: string | null;
     country: string;
@@ -70,12 +71,24 @@ export function VenueCard({ venue }: VenueCardProps) {
           </div>
         </div>
 
-        {/* Venue Type Badge - Top right */}
-        <div className="absolute right-2 top-2">
-          <span className="inline-flex items-center rounded-full bg-background/90 px-2.5 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
-            {t(`types.${venue.type}`)}
-          </span>
-        </div>
+        {/* Services Badges - Top right */}
+        {venue.services && venue.services.length > 0 && (
+          <div className="absolute right-2 top-2 flex flex-wrap justify-end gap-1">
+            {venue.services.slice(0, 2).map((service) => (
+              <span
+                key={service}
+                className="inline-flex items-center rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm"
+              >
+                {t(`services.${service}`)}
+              </span>
+            ))}
+            {venue.services.length > 2 && (
+              <span className="inline-flex items-center rounded-full bg-background/90 px-2 py-0.5 text-xs font-medium text-foreground backdrop-blur-sm">
+                +{venue.services.length - 2}
+              </span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="p-4 pt-10">

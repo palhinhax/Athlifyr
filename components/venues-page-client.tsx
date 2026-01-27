@@ -38,6 +38,7 @@ interface VenueCardData {
   slug: string;
   name: string;
   type: string;
+  services: string[];
   description: string | null;
   city: string | null;
   country: string;
@@ -63,7 +64,7 @@ export function VenuesPageClient() {
   const t = useTranslations("venues");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<VenuesFiltersType>({
-    types: [],
+    services: [],
     distanceRadius: null,
     searchQuery: "",
     userLat: null,
@@ -114,8 +115,10 @@ export function VenuesPageClient() {
         params.append("page", page.toString());
         params.append("pageSize", "12");
 
-        if (filters.types && filters.types.length > 0) {
-          filters.types.forEach((type) => params.append("types", type));
+        if (filters.services && filters.services.length > 0) {
+          filters.services.forEach((service) =>
+            params.append("services", service)
+          );
         }
 
         if (filters.searchQuery) {
@@ -279,7 +282,7 @@ export function VenuesPageClient() {
             <div className="py-12 text-center text-muted-foreground">
               <p className="text-lg">{t("noVenues")}</p>
               <p className="mt-2">
-                {filters.types.length > 0 ||
+                {filters.services.length > 0 ||
                 filters.searchQuery ||
                 filters.locationEnabled
                   ? t("noResults")
@@ -290,7 +293,7 @@ export function VenuesPageClient() {
             <div className="h-[600px] overflow-hidden rounded-lg border">
               <VenuesMapClient
                 filters={{
-                  types: filters.types,
+                  services: filters.services,
                 }}
               />
             </div>

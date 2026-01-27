@@ -1,6 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { VenueType, SportType, Prisma } from "@prisma/client";
+import { VenueService, SportType, Prisma } from "@prisma/client";
 
 // GET - Fetch venues for map view with bounds
 export async function GET(request: NextRequest) {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     const south = parseFloat(searchParams.get("south") || "-90");
     const east = parseFloat(searchParams.get("east") || "180");
     const west = parseFloat(searchParams.get("west") || "-180");
-    const types = searchParams.getAll("types");
+    const services = searchParams.getAll("services");
     const sports = searchParams.getAll("sports");
 
     // Build where clause
@@ -28,9 +28,11 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    // Types filter
-    if (types.length > 0) {
-      where.type = { in: types as VenueType[] };
+    // Services filter
+    if (services.length > 0) {
+      where.services = {
+        hasSome: services as VenueService[],
+      };
     }
 
     // Sport type filter

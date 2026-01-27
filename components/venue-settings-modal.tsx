@@ -10,10 +10,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { VenueStaffManager } from "@/components/venue-staff-manager";
+import { VenueStaffManager } from "@/components/venue/staff";
 import { VenueEditForm } from "@/components/venue-edit-form";
 import { VenuePaymentsSettings } from "@/components/venue-payments-settings";
 import { VenueSessionsSettings } from "@/components/venue-sessions-settings";
+import { VenueSEOSettings } from "@/components/venue-seo-settings";
 
 interface VenueSettingsModalProps {
   venue: {
@@ -90,9 +91,7 @@ export function VenueSettingsModal({
             <TabsTrigger value="payments">
               {t("settingsTabs.payments")}
             </TabsTrigger>
-            <TabsTrigger value="advanced">
-              {t("settingsTabs.advanced")}
-            </TabsTrigger>
+            <TabsTrigger value="seo">{t("settingsTabs.seo")}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="general" className="mt-6">
@@ -116,6 +115,7 @@ export function VenueSettingsModal({
               members={venue.members}
               currentUserId={userId}
               isOwner={isOwner}
+              isAppAdmin={userRole === "ADMIN"}
             />
           </TabsContent>
 
@@ -129,12 +129,14 @@ export function VenueSettingsModal({
             />
           </TabsContent>
 
-          <TabsContent value="advanced" className="mt-6">
-            <div className="rounded-lg border border-dashed p-8 text-center">
-              <p className="text-muted-foreground">
-                Advanced settings coming soon...
-              </p>
-            </div>
+          <TabsContent value="seo" className="mt-6">
+            <VenueSEOSettings
+              venueId={venue.id}
+              venueName={venue.name}
+              venueCity={venue.city}
+              isOwner={isOwner}
+              isAppAdmin={userRole === "ADMIN"}
+            />
           </TabsContent>
         </Tabs>
       </DialogContent>

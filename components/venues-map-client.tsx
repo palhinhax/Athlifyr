@@ -62,7 +62,7 @@ interface VenuesMapClientProps {
   initialCenter?: [number, number];
   initialZoom?: number;
   filters?: {
-    types: string[];
+    services: string[];
   };
 }
 
@@ -81,7 +81,7 @@ export default function VenuesMapClient({
   const [venues, setVenues] = useState<MapVenue[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [filters, setFilters] = useState<{ types: string[] } | undefined>(
+  const [filters, setFilters] = useState<{ services: string[] } | undefined>(
     initialFilters
   );
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -101,7 +101,7 @@ export default function VenuesMapClient({
   // Listen for filter changes
   useEffect(() => {
     const handleFiltersChange = (event: Event) => {
-      const customEvent = event as CustomEvent<{ types: string[] }>;
+      const customEvent = event as CustomEvent<{ services: string[] }>;
       setFilters(customEvent.detail);
     };
 
@@ -132,8 +132,10 @@ export default function VenuesMapClient({
           west: bounds.getWest().toString(),
         });
 
-        if (currentFilters?.types?.length) {
-          currentFilters.types.forEach((type) => params.append("types", type));
+        if (currentFilters?.services?.length) {
+          currentFilters.services.forEach((service) =>
+            params.append("services", service)
+          );
         }
 
         const response = await fetch(`/api/venues/map?${params.toString()}`);

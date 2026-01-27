@@ -1,6 +1,18 @@
+export interface EventResultInfo {
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string | null;
+  eventCity: string | null;
+  eventDate: string;
+  variantName: string | null;
+  variantDistanceKm: number | null;
+  position: number | null;
+  categoryPosition: number | null;
+}
+
 export interface PerformanceEntry {
   id: string;
-  type: "RUN" | "STRENGTH" | "HYROX";
+  type: "RUN" | "TRAIL" | "STRENGTH" | "HYROX";
   performedAt: string;
   distanceKm?: number | null;
   timeSeconds?: number | null;
@@ -10,6 +22,7 @@ export interface PerformanceEntry {
   weightKg?: number | null;
   reps?: number | null;
   hyroxCategory?: HyroxCategory | null;
+  eventResult?: EventResultInfo | null;
 }
 
 // HYROX Categories

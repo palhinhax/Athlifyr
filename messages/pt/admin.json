@@ -118,6 +118,7 @@
       "addButton": "Adicionar",
       "variantNamePlaceholder": "Nome (ex: 21km, Singles Pro)",
       "distancePlaceholder": "km",
+      "elevationPlaceholder": "D+ (m)",
       "dateOptional": "Data (opcional)",
       "timeOptional": "Hora (opcional)",
       "variantTranslations": "Traduções desta variante",

@@ -37,6 +37,7 @@ interface EventHeaderProps {
       id: string;
       name: string;
       distanceKm: number | null;
+      elevationGainM: number | null;
       startDate: Date | null;
       startTime: string | null;
     }[];

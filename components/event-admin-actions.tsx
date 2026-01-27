@@ -45,6 +45,7 @@ interface EventVariant {
   id: string;
   name: string;
   distanceKm: number | null;
+  elevationGainM: number | null;
   startDate: Date | null;
   startTime: string | null;
 }
@@ -117,6 +118,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       id: v.id,
       name: v.name,
       distanceKm: v.distanceKm?.toString() || "",
+      elevationGainM: v.elevationGainM?.toString() || "",
       startDate: v.startDate
         ? new Date(v.startDate).toISOString().split("T")[0]
         : "",
@@ -262,7 +264,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
 
   const handleVariantChange = (
     index: number,
-    field: "name" | "distanceKm" | "startDate" | "startTime",
+    field: "name" | "distanceKm" | "elevationGainM" | "startDate" | "startTime",
     value: string
   ) => {
     setVariants((prev) =>
@@ -276,6 +278,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
       {
         name: "",
         distanceKm: "",
+        elevationGainM: "",
         startDate: "",
         startTime: "",
         translations: createEmptyVariantTranslations(),
@@ -329,6 +332,9 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
             id: v.id,
             name: v.name,
             distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
+            elevationGainM: v.elevationGainM
+              ? parseInt(v.elevationGainM)
+              : null,
             startDate: v.startDate || null,
             startTime: v.startTime || null,
             translations: Object.values(v.translations).filter(

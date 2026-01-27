@@ -29,6 +29,7 @@ interface VariantInput {
   id?: string;
   name: string;
   distanceKm?: number;
+  elevationGainM?: number;
   price?: number;
   startDate?: string;
   startTime?: string;
@@ -215,6 +216,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
               eventId: id,
               name: v.name,
               distanceKm: v.distanceKm || null,
+              elevationGainM: v.elevationGainM || null,
               price: v.price || null,
               startDate: v.startDate ? new Date(v.startDate) : null,
               startTime: v.startTime || null,

@@ -4,8 +4,16 @@ import { useState, useEffect, useCallback } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
-import { Activity, Dumbbell, Plus, Loader2, Flame } from "lucide-react";
+import {
+  Activity,
+  Dumbbell,
+  Plus,
+  Loader2,
+  Flame,
+  Mountain,
+} from "lucide-react";
 import { PerformanceRunTab } from "@/components/performance/performance-run-tab";
+import { PerformanceTrailTab } from "@/components/performance/performance-trail-tab";
 import { PerformanceStrengthTab } from "@/components/performance/performance-strength-tab";
 import { PerformanceHyroxTab } from "@/components/performance/performance-hyrox-tab";
 import { AddRunDialog } from "@/components/performance/add-run-dialog";
@@ -28,6 +36,14 @@ interface PerformanceSummary {
       inputsUsedCount: number;
       averagePace: number;
     } | null;
+    totalEntries: number;
+  };
+  trail: {
+    chartPoints: Array<{
+      date: string;
+      pace: number;
+      distanceKm: number;
+    }>;
     totalEntries: number;
   };
   strength: {
@@ -62,9 +78,9 @@ interface PerformanceSummary {
 
 export function PerformanceSection() {
   const t = useTranslations("performance");
-  const [activeTab, setActiveTab] = useState<"run" | "strength" | "hyrox">(
-    "run"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "run" | "trail" | "strength" | "hyrox"
+  >("run");
   const [isLoading, setIsLoading] = useState(true);
   const [summary, setSummary] = useState<PerformanceSummary | null>(null);
   const [showAddRun, setShowAddRun] = useState(false);
@@ -97,7 +113,7 @@ export function PerformanceSection() {
   };
 
   const handleAddClick = () => {
-    if (activeTab === "run") {
+    if (activeTab === "run" || activeTab === "trail") {
       setShowAddRun(true);
     } else if (activeTab === "strength") {
       setShowAddStrength(true);
@@ -122,12 +138,18 @@ export function PerformanceSection() {
       <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
         <Tabs
           value={activeTab}
-          onValueChange={(v) => setActiveTab(v as "run" | "strength" | "hyrox")}
+          onValueChange={(v) =>
+            setActiveTab(v as "run" | "trail" | "strength" | "hyrox")
+          }
         >
-          <TabsList className="mb-4 grid w-full grid-cols-3">
+          <TabsList className="mb-4 grid w-full grid-cols-4">
             <TabsTrigger value="run" className="gap-2">
               <Activity className="h-4 w-4" />
               {t("tabs.run")}
+            </TabsTrigger>
+            <TabsTrigger value="trail" className="gap-2">
+              <Mountain className="h-4 w-4" />
+              {t("tabs.trail")}
             </TabsTrigger>
             <TabsTrigger value="strength" className="gap-2">
               <Dumbbell className="h-4 w-4" />
@@ -150,6 +172,15 @@ export function PerformanceSection() {
                   chartPoints={summary?.run.chartPoints || []}
                   halfPrediction={summary?.run.halfPrediction || null}
                   totalEntries={summary?.run.totalEntries || 0}
+                  entries={summary?.entries || []}
+                  onRefresh={fetchSummary}
+                />
+              </TabsContent>
+
+              <TabsContent value="trail">
+                <PerformanceTrailTab
+                  chartPoints={summary?.trail?.chartPoints || []}
+                  totalEntries={summary?.trail?.totalEntries || 0}
                   entries={summary?.entries || []}
                   onRefresh={fetchSummary}
                 />

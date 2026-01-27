@@ -17,6 +17,7 @@ export interface VariantFormData {
   id?: string;
   name: string;
   distanceKm: string;
+  elevationGainM: string;
   startDate: string;
   startTime: string;
   translations: Record<Language, VariantTranslation>;
@@ -26,7 +27,7 @@ interface EventVariantsManagerProps {
   variants: VariantFormData[];
   onVariantChange: (
     index: number,
-    field: "name" | "distanceKm" | "startDate" | "startTime",
+    field: "name" | "distanceKm" | "elevationGainM" | "startDate" | "startTime",
     value: string
   ) => void;
   onAddVariant: () => void;
@@ -89,6 +90,17 @@ export function EventVariantsManager({
                 }
                 className="w-20"
                 type="number"
+                title={t("distancePlaceholder")}
+              />
+              <Input
+                placeholder={t("elevationPlaceholder")}
+                value={variant.elevationGainM}
+                onChange={(e) =>
+                  onVariantChange(index, "elevationGainM", e.target.value)
+                }
+                className="w-20"
+                type="number"
+                title={t("elevationPlaceholder")}
               />
               <Button
                 type="button"

@@ -120,7 +120,14 @@
       "registrationError": "No se pudo registrar la participación",
       "updateError": "No se pudo actualizar el tiempo",
       "removalError": "No se pudo eliminar la participación",
-      "invalidTimeFormat": "Formato de tiempo inválido. Usa HH:MM o HH:MM:SS (ej: 2:30 o 1:23:45)"
+      "invalidTimeFormat": "Formato de tiempo inválido. Usa HH:MM o HH:MM:SS (ej: 2:30 o 1:23:45)",
+      "moreDetails": "Más detalles",
+      "generalPosition": "Posición general",
+      "categoryPosition": "Posición en categoría",
+      "positionPlaceholder": "ej: 42",
+      "notes": "Notas",
+      "notesPlaceholder": "¿Cómo te sentiste? Alguna observación...",
+      "resultAddedToPerformance": "Tu resultado ha sido añadido a tu área de Rendimiento"
     },
     "variants": {
       "title": "Variantes / Distancias",

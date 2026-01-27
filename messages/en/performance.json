@@ -9,6 +9,7 @@
     "moreOptions": "More options",
     "tabs": {
       "run": "Running",
+      "trail": "Trail",
       "strength": "Strength",
       "hyrox": "HYROX"
     },
@@ -21,6 +22,7 @@
       "title": "History",
       "count": "entries",
       "date": "Date",
+      "event": "Event",
       "distance": "Distance",
       "time": "Time",
       "pace": "Pace",
@@ -65,6 +67,15 @@
       "totalRuns": "Total Runs",
       "lastPace": "Last Pace",
       "lastDistance": "Last Distance"
+    },
+    "trail": {
+      "noData": "No trail data yet",
+      "noDataDesc": "Add your first trail race to start tracking your performance!",
+      "paceEvolution": "Pace Evolution",
+      "totalTrails": "Total Trails",
+      "totalDistance": "Total Distance",
+      "totalElevation": "Total Elevation",
+      "lastPace": "Last Pace"
     },
     "strength": {
       "addTitle": "Add Set",

@@ -304,6 +304,7 @@ export default async function EventPage({ params }: PageProps) {
       id: v.id,
       name: v.name,
       distanceKm: v.distanceKm,
+      elevationGainM: v.elevationGainM,
       startDate: v.startDate,
       startTime: v.startTime,
     })),

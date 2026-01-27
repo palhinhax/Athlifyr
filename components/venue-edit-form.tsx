@@ -113,8 +113,8 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
 
       if (response.ok) {
         toast({
-          title: t("updateSuccess"),
-          description: t("venueUpdated"),
+          title: tCommon("success"),
+          description: t("edit.updateSuccess"),
         });
         router.refresh();
         onSuccess?.();

@@ -326,6 +326,7 @@ export function VenueDetailClient({
         userId={userId}
         userRole={userRole}
         isOwnerOrAdmin={isOwnerOrAdmin}
+        onRefresh={fetchVenue}
         slug={slug}
         locale={locale}
       />

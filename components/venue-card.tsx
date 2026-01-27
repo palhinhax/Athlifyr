@@ -50,7 +50,7 @@ export function VenueCard({ venue }: VenueCardProps) {
         )}
         {/* Gradient overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        
+
         {/* Logo - Positioned at bottom left, overlapping the content area */}
         <div className="absolute -bottom-8 left-4 z-10">
           <div className="h-18 w-18 overflow-hidden rounded-xl border-2 border-background bg-background shadow-md">

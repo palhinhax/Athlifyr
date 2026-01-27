@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { VenueStaffManager } from "@/components/venue-staff-manager";
 import { VenueEditForm } from "@/components/venue-edit-form";
 import { VenuePaymentsSettings } from "@/components/venue-payments-settings";
+import { VenueSessionsSettings } from "@/components/venue-sessions-settings";
 
 interface VenueSettingsModalProps {
   venue: {
@@ -31,6 +32,7 @@ interface VenueSettingsModalProps {
     country: string;
     latitude: number | null;
     longitude: number | null;
+    services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
@@ -50,6 +52,7 @@ interface VenueSettingsModalProps {
   };
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onRefresh?: () => void;
   userId: string;
   isOwner: boolean;
   userRole?: string;
@@ -59,6 +62,7 @@ export function VenueSettingsModal({
   venue,
   open,
   onOpenChange,
+  onRefresh,
   userId,
   isOwner,
   userRole,
@@ -75,9 +79,12 @@ export function VenueSettingsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="general">
               {t("settingsTabs.general")}
+            </TabsTrigger>
+            <TabsTrigger value="sessions">
+              {t("settingsTabs.sessions")}
             </TabsTrigger>
             <TabsTrigger value="staff">{t("settingsTabs.staff")}</TabsTrigger>
             <TabsTrigger value="payments">
@@ -91,8 +98,15 @@ export function VenueSettingsModal({
           <TabsContent value="general" className="mt-6">
             <VenueEditForm
               venue={venue}
-              onSuccess={() => onOpenChange(false)}
+              onSuccess={() => {
+                if (onRefresh) onRefresh();
+                onOpenChange(false);
+              }}
             />
+          </TabsContent>
+
+          <TabsContent value="sessions" className="mt-6">
+            <VenueSessionsSettings venue={venue} onRefresh={onRefresh} />
           </TabsContent>
 
           <TabsContent value="staff" className="mt-6">

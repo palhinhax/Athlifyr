@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
-import { SportType } from "@prisma/client";
+import { SportType, VenueService } from "@prisma/client";
 
 // GET - Get venue by ID or slug
 export async function GET(
@@ -159,6 +159,7 @@ export async function PATCH(
       isActive,
       logo,
       coverImage,
+      services,
       defaultSessionCapacity,
       defaultBookingAdvanceDays,
       defaultCancellationDeadlineMinutes,
@@ -172,6 +173,19 @@ export async function PATCH(
       if (!validSportTypes) {
         return NextResponse.json(
           { error: "Invalid sport type(s)" },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Validate services if provided
+    if (services && Array.isArray(services)) {
+      const validServices = services.every((service: string) =>
+        Object.values(VenueService).includes(service as VenueService)
+      );
+      if (!validServices) {
+        return NextResponse.json(
+          { error: "Invalid service type(s)" },
           { status: 400 }
         );
       }
@@ -200,6 +214,8 @@ export async function PATCH(
         ...(coverImage !== undefined && {
           coverImage: coverImage || null,
         }),
+        // Services
+        ...(services !== undefined && { services }),
         // Session defaults
         ...(defaultSessionCapacity !== undefined && {
           defaultSessionCapacity,

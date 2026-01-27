@@ -14,6 +14,7 @@
     "venueDetails": "Venue Details",
     "settingsTabs": {
       "general": "General",
+      "sessions": "Sessions & Services",
       "staff": "Staff",
       "payments": "Payments",
       "advanced": "Advanced"
@@ -129,6 +130,30 @@
       "NUTRITION": "Nutrition",
       "OTHER": "Other"
     },
+    "services": {
+      "CROSSFIT": "CrossFit",
+      "HYROX": "HYROX",
+      "WEIGHTLIFTING": "Weightlifting",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Olympic Lifting",
+      "FUNCTIONAL_FITNESS": "Functional Fitness",
+      "PERSONAL_TRAINING": "Personal Training",
+      "GROUP_CLASSES": "Group Classes",
+      "OPEN_GYM": "Open Gym",
+      "MASSAGE": "Massage",
+      "PHYSIOTHERAPY": "Physiotherapy",
+      "NUTRITION": "Nutrition",
+      "YOGA": "Yoga",
+      "PILATES": "Pilates",
+      "BOXING": "Boxing",
+      "KICKBOXING": "Kickboxing",
+      "MMA": "MMA",
+      "BJJ": "Brazilian Jiu-Jitsu",
+      "RECOVERY": "Recovery",
+      "SAUNA": "Sauna",
+      "COLD_PLUNGE": "Cold Plunge",
+      "OTHER": "Other"
+    },
     "roles": {
       "OWNER": "Owner",
       "ADMIN": "Admin",
@@ -177,7 +202,10 @@
       "bookingAdvanceDays": "Booking Advance (Days)",
       "defaultCancellationDeadline": "Cancellation (Minutes)",
       "defaultCancellationDeadlineHint": "How many minutes before start users can cancel",
-      "cancellationDeadline": "Cancellation Deadline (Hours)"
+      "cancellationDeadline": "Cancellation Deadline (Hours)",
+      "servicesTitle": "Available Services",
+      "servicesDescription": "Select the services your venue offers",
+      "noServicesSelected": "No services selected"
     },
     "membership": {
       "title": "Membership",

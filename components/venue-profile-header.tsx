@@ -27,6 +27,7 @@ interface VenueProfileHeaderProps {
     instagram: string | null;
     latitude: number | null;
     longitude: number | null;
+    services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
@@ -52,6 +53,7 @@ interface VenueProfileHeaderProps {
   userId?: string;
   userRole?: string;
   isOwnerOrAdmin?: boolean;
+  onRefresh?: () => void;
   slug: string;
   locale: string;
 }
@@ -61,6 +63,7 @@ export function VenueProfileHeader({
   userId,
   userRole,
   isOwnerOrAdmin,
+  onRefresh,
   slug,
   locale,
 }: VenueProfileHeaderProps) {
@@ -194,6 +197,7 @@ export function VenueProfileHeader({
           venue={venue}
           open={editModalOpen}
           onOpenChange={setEditModalOpen}
+          onRefresh={onRefresh}
           userId={userId}
           isOwner={isOwner}
           userRole={userRole}

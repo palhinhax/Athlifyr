@@ -450,9 +450,7 @@ export function VenueEditModal({
           {/* Session Defaults Section */}
           <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
             <div className="space-y-1">
-              <h3 className="text-sm font-semibold">
-                {tInfo("sessionDefaults")}
-              </h3>
+              <h3 className="text-sm font-semibold">{t("sessionDefaults")}</h3>
               <p className="text-xs text-muted-foreground">
                 {tInfo("sessionDefaultsDescription")}
               </p>

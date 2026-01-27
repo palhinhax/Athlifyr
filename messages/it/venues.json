@@ -14,6 +14,7 @@
     "venueDetails": "Dettagli Struttura",
     "settingsTabs": {
       "general": "Generale",
+      "sessions": "Sessioni e Servizi",
       "staff": "Personale",
       "payments": "Pagamenti",
       "advanced": "Avanzate"
@@ -129,6 +130,30 @@
       "NUTRITION": "Nutrizione",
       "OTHER": "Altro"
     },
+    "services": {
+      "CROSSFIT": "CrossFit",
+      "HYROX": "HYROX",
+      "WEIGHTLIFTING": "Sollevamento Pesi",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Sollevamento Olimpico",
+      "FUNCTIONAL_FITNESS": "Fitness Funzionale",
+      "PERSONAL_TRAINING": "Allenamento Personale",
+      "GROUP_CLASSES": "Lezioni di Gruppo",
+      "OPEN_GYM": "Palestra Libera",
+      "MASSAGE": "Massaggio",
+      "PHYSIOTHERAPY": "Fisioterapia",
+      "NUTRITION": "Nutrizione",
+      "YOGA": "Yoga",
+      "PILATES": "Pilates",
+      "BOXING": "Pugilato",
+      "KICKBOXING": "Kickboxing",
+      "MMA": "MMA",
+      "BJJ": "Jiu-Jitsu Brasiliano",
+      "RECOVERY": "Recupero",
+      "SAUNA": "Sauna",
+      "COLD_PLUNGE": "Bagno Freddo",
+      "OTHER": "Altro"
+    },
     "roles": {
       "OWNER": "Proprietario",
       "ADMIN": "Amministratore",
@@ -177,7 +202,10 @@
       "bookingAdvanceDays": "Anticipo Prenotazione (Giorni)",
       "defaultCancellationDeadline": "Cancellazione (Minuti)",
       "defaultCancellationDeadlineHint": "Quanti minuti prima dell'inizio gli utenti possono cancellare",
-      "cancellationDeadline": "Scadenza Cancellazione (Ore)"
+      "cancellationDeadline": "Scadenza Cancellazione (Ore)",
+      "servicesTitle": "Servizi Disponibili",
+      "servicesDescription": "Seleziona i servizi offerti dalla tua struttura",
+      "noServicesSelected": "Nessun servizio selezionato"
     },
     "membership": {
       "title": "Iscrizione",

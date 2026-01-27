@@ -111,28 +111,46 @@ export function PerformanceEntriesList({
         </span>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("entries.date")}</TableHead>
+              <TableHead className="whitespace-nowrap">
+                {t("entries.date")}
+              </TableHead>
               {type === "RUN" || type === "TRAIL" ? (
                 <>
-                  <TableHead>{t("entries.event")}</TableHead>
-                  <TableHead>{t("entries.distance")}</TableHead>
-                  <TableHead>{t("entries.time")}</TableHead>
-                  <TableHead>{t("entries.pace")}</TableHead>
-                  <TableHead>{t("entries.elevation")}</TableHead>
+                  <TableHead className="hidden sm:table-cell">
+                    {t("entries.event")}
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    {t("entries.distance")}
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    {t("entries.time")}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-nowrap md:table-cell">
+                    {t("entries.pace")}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-nowrap lg:table-cell">
+                    {t("entries.elevation")}
+                  </TableHead>
                 </>
               ) : (
                 <>
                   <TableHead>{t("entries.exercise")}</TableHead>
-                  <TableHead>{t("entries.weight")}</TableHead>
-                  <TableHead>{t("entries.reps")}</TableHead>
-                  <TableHead>{t("entries.e1rm")}</TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    {t("entries.weight")}
+                  </TableHead>
+                  <TableHead className="whitespace-nowrap">
+                    {t("entries.reps")}
+                  </TableHead>
+                  <TableHead className="hidden whitespace-nowrap sm:table-cell">
+                    {t("entries.e1rm")}
+                  </TableHead>
                 </>
               )}
-              <TableHead className="w-[100px]">
+              <TableHead className="w-[80px] sm:w-[100px]">
                 {t("entries.actions")}
               </TableHead>
             </TableRow>
@@ -140,7 +158,7 @@ export function PerformanceEntriesList({
           <TableBody>
             {displayedEntries.map((entry) => (
               <TableRow key={entry.id}>
-                <TableCell>
+                <TableCell className="whitespace-nowrap">
                   {new Date(entry.performedAt).toLocaleDateString(undefined, {
                     day: "numeric",
                     month: "short",
@@ -149,7 +167,7 @@ export function PerformanceEntriesList({
                 </TableCell>
                 {type === "RUN" || type === "TRAIL" ? (
                   <>
-                    <TableCell>
+                    <TableCell className="hidden sm:table-cell">
                       {entry.eventResult ? (
                         <Link
                           href={`/events/${entry.eventResult.eventSlug}`}
@@ -170,17 +188,19 @@ export function PerformanceEntriesList({
                         <span className="text-muted-foreground">-</span>
                       )}
                     </TableCell>
-                    <TableCell>{entry.distanceKm?.toFixed(2)} km</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {entry.distanceKm?.toFixed(1)} km
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
                       {entry.timeSeconds ? formatTime(entry.timeSeconds) : "-"}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden whitespace-nowrap md:table-cell">
                       {entry.distanceKm && entry.timeSeconds
                         ? formatPace(entry.timeSeconds / entry.distanceKm)
                         : "-"}
                       /km
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden whitespace-nowrap lg:table-cell">
                       {entry.elevationGainM ? `${entry.elevationGainM}m` : "-"}
                     </TableCell>
                   </>
@@ -189,9 +209,13 @@ export function PerformanceEntriesList({
                     <TableCell className="font-medium">
                       {entry.exerciseName || "-"}
                     </TableCell>
-                    <TableCell>{entry.weightKg} kg</TableCell>
-                    <TableCell>{entry.reps}</TableCell>
-                    <TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {entry.weightKg} kg
+                    </TableCell>
+                    <TableCell className="whitespace-nowrap">
+                      {entry.reps}
+                    </TableCell>
+                    <TableCell className="hidden whitespace-nowrap sm:table-cell">
                       {entry.weightKg && entry.reps
                         ? `${(entry.weightKg * (1 + entry.reps / 30)).toFixed(1)} kg`
                         : "-"}

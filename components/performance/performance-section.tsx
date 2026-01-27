@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { useTranslations } from "next-intl";
 import {
-  Activity,
+  Footprints,
   Dumbbell,
   Plus,
   Loader2,
@@ -126,7 +126,7 @@ export function PerformanceSection() {
     <div className="mt-12">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-2xl font-bold">
-          <Activity className="h-6 w-6 text-primary" />
+          <Footprints className="h-6 w-6 text-primary" />
           {t("title")}
         </h2>
         <Button onClick={handleAddClick} className="gap-2">
@@ -143,21 +143,33 @@ export function PerformanceSection() {
           }
         >
           <TabsList className="mb-4 grid w-full grid-cols-4">
-            <TabsTrigger value="run" className="gap-2">
-              <Activity className="h-4 w-4" />
-              {t("tabs.run")}
+            <TabsTrigger
+              value="run"
+              className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
+            >
+              <Footprints className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.run")}</span>
             </TabsTrigger>
-            <TabsTrigger value="trail" className="gap-2">
-              <Mountain className="h-4 w-4" />
-              {t("tabs.trail")}
+            <TabsTrigger
+              value="trail"
+              className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
+            >
+              <Mountain className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.trail")}</span>
             </TabsTrigger>
-            <TabsTrigger value="strength" className="gap-2">
-              <Dumbbell className="h-4 w-4" />
-              {t("tabs.strength")}
+            <TabsTrigger
+              value="strength"
+              className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
+            >
+              <Dumbbell className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.strength")}</span>
             </TabsTrigger>
-            <TabsTrigger value="hyrox" className="gap-2">
-              <Flame className="h-4 w-4" />
-              {t("tabs.hyrox")}
+            <TabsTrigger
+              value="hyrox"
+              className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
+            >
+              <Flame className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.hyrox")}</span>
             </TabsTrigger>
           </TabsList>
 

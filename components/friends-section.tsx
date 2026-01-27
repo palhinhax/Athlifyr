@@ -323,32 +323,31 @@ export function FriendsSection() {
         )}
       </h2>
 
-      <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
+      <div className="rounded-lg border bg-card p-4 text-card-foreground shadow-sm sm:p-6">
         {/* Tabs */}
-        <div className="mb-6 flex gap-1 overflow-x-auto border-b sm:gap-2">
+        <div className="mb-6 grid w-full grid-cols-3 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground">
           <button
             onClick={() => setActiveTab("friends")}
-            className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
+            className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-sm px-1 py-1.5 text-xs font-medium transition-all sm:gap-2 sm:px-3 sm:text-sm ${
               activeTab === "friends"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "hover:text-foreground"
             }`}
           >
-            <Users className="h-4 w-4" />
-            <span className="hidden sm:inline">Meus Amigos</span>
-            <span className="sm:hidden">Amigos</span>
+            <Users className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">Amigos</span>
             <span className="text-xs">({friends.length})</span>
           </button>
           <button
             onClick={() => setActiveTab("pending")}
-            className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
+            className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-sm px-1 py-1.5 text-xs font-medium transition-all sm:gap-2 sm:px-3 sm:text-sm ${
               activeTab === "pending"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "hover:text-foreground"
             }`}
           >
-            <Clock className="h-4 w-4" />
-            Pendentes
+            <Clock className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">Pendentes</span>
             {(pendingRequests.length > 0 || sentRequests.length > 0) && (
               <span className="flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
                 {pendingRequests.length + sentRequests.length}
@@ -357,14 +356,14 @@ export function FriendsSection() {
           </button>
           <button
             onClick={() => setActiveTab("search")}
-            className={`flex shrink-0 items-center gap-1 px-3 py-2 text-sm font-medium transition-colors sm:gap-2 sm:px-4 ${
+            className={`inline-flex items-center justify-center gap-1 whitespace-nowrap rounded-sm px-1 py-1.5 text-xs font-medium transition-all sm:gap-2 sm:px-3 sm:text-sm ${
               activeTab === "search"
-                ? "border-b-2 border-primary text-primary"
-                : "text-muted-foreground hover:text-foreground"
+                ? "bg-background text-foreground shadow-sm"
+                : "hover:text-foreground"
             }`}
           >
-            <Search className="h-4 w-4" />
-            Procurar
+            <Search className="h-4 w-4 shrink-0" />
+            <span className="hidden sm:inline">Procurar</span>
           </button>
         </div>
 

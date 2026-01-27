@@ -454,7 +454,7 @@ export function ChatSidebar({
                     onClick={() => onSelectConversation(conversation.id)}
                     className="flex flex-1 items-start gap-3"
                   >
-                    <Avatar className="h-10 w-10 shrink-0 sm:h-12 sm:w-12">
+                    <Avatar className="h-10 w-10 shrink-0 border border-border sm:h-12 sm:w-12">
                       <AvatarImage src={otherUser?.image || undefined} />
                       <AvatarFallback>
                         {getInitials(otherUser?.name || null)}

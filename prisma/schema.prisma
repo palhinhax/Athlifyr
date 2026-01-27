@@ -506,6 +506,7 @@ model Venue {
   name                               String
   type                               VenueType
   sportTypes                         SportType[]
+  services                           VenueService[]          @default([])
   description                        String?
   phone                              String?
   email                              String?
@@ -840,6 +841,7 @@ model ConversationParticipant {
   conversationId String
   userId         String
   hidden         Boolean      @default(false)
+  lastSeenAt     DateTime     @default(now())
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -919,6 +921,31 @@ enum VenueType {
   MASSAGE
   PHYSIO
   NUTRITION
+  OTHER
+}
+
+enum VenueService {
+  CROSSFIT
+  HYROX
+  WEIGHTLIFTING
+  POWERLIFTING
+  OLYMPIC_LIFTING
+  FUNCTIONAL_FITNESS
+  PERSONAL_TRAINING
+  GROUP_CLASSES
+  OPEN_GYM
+  MASSAGE
+  PHYSIOTHERAPY
+  NUTRITION
+  YOGA
+  PILATES
+  BOXING
+  KICKBOXING
+  MMA
+  BJJ
+  RECOVERY
+  SAUNA
+  COLD_PLUNGE
   OTHER
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { useTranslations } from "next-intl";
@@ -15,6 +16,9 @@ interface ActiveVenue {
   subscriptionEndsAt: Date | null;
 }
 
+// Pages where the venues bar should be hidden
+const HIDDEN_ON_PATHS = ["/chat"];
+
 /**
  * Active Venues Bar
  * Shows a quick access bar to venues where the user has an active subscription
@@ -22,6 +26,7 @@ interface ActiveVenue {
  */
 export function ActiveVenuesBar() {
   const t = useTranslations("venues");
+  const pathname = usePathname();
   const [activeVenues, setActiveVenues] = useState<ActiveVenue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -43,8 +48,11 @@ export function ActiveVenuesBar() {
     fetchActiveVenues();
   }, []);
 
-  // Don't render if no active venues or still loading
-  if (isLoading || activeVenues.length === 0) {
+  // Check if we should hide on current path
+  const shouldHide = HIDDEN_ON_PATHS.some((path) => pathname.includes(path));
+
+  // Don't render if no active venues, still loading, or on hidden paths
+  if (isLoading || activeVenues.length === 0 || shouldHide) {
     return null;
   }
 

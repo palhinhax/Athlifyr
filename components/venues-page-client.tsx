@@ -43,6 +43,8 @@ interface VenueCardData {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  coverImage: string | null;
+  logo: string | null;
   _count: {
     members: number;
     sessions: number;

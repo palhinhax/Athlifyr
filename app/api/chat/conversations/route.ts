@@ -124,86 +124,102 @@ export async function POST(request: Request) {
       }
     }
 
-    // Check if conversation already exists between these two users
-    const existingConversation = await prisma.conversation.findFirst({
-      where: {
-        AND: [
-          {
+    // Use a serializable transaction to prevent race conditions
+    // This ensures only one conversation is created between two users
+    const result = await prisma.$transaction(
+      async (tx) => {
+        // Check if conversation already exists between these two users
+        const existingConversation = await tx.conversation.findFirst({
+          where: {
+            AND: [
+              {
+                participants: {
+                  some: {
+                    userId: session.user.id,
+                  },
+                },
+              },
+              {
+                participants: {
+                  some: {
+                    userId: otherUserId,
+                  },
+                },
+              },
+            ],
+          },
+          include: {
             participants: {
-              some: {
-                userId: session.user.id,
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+            messages: {
+              take: 1,
+              orderBy: {
+                createdAt: "desc",
+              },
+              include: {
+                sender: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                  },
+                },
               },
             },
           },
-          {
+        });
+
+        if (existingConversation) {
+          return { conversation: existingConversation, isNew: false };
+        }
+
+        // Create new conversation with both participants
+        const conversation = await tx.conversation.create({
+          data: {
             participants: {
-              some: {
-                userId: otherUserId,
-              },
+              create: [{ userId: session.user.id }, { userId: otherUserId }],
             },
-          },
-        ],
-      },
-      include: {
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                email: true,
-              },
-            },
-          },
-        },
-        messages: {
-          take: 1,
-          orderBy: {
-            createdAt: "desc",
           },
           include: {
-            sender: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
+            participants: {
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    image: true,
+                    email: true,
+                  },
+                },
               },
             },
+            messages: true,
           },
-        },
-      },
-    });
+        });
 
-    if (existingConversation) {
-      return NextResponse.json({ conversation: existingConversation });
-    }
-
-    // Create new conversation with both participants
-    const conversation = await prisma.conversation.create({
-      data: {
-        participants: {
-          create: [{ userId: session.user.id }, { userId: otherUserId }],
-        },
+        return { conversation, isNew: true };
       },
-      include: {
-        participants: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                image: true,
-                email: true,
-              },
-            },
-          },
-        },
-        messages: true,
-      },
-    });
+      {
+        isolationLevel: "Serializable", // Prevents race conditions
+        maxWait: 5000, // Maximum time to wait to acquire a transaction slot
+        timeout: 10000, // Maximum time the transaction can run
+      }
+    );
 
-    return NextResponse.json({ conversation }, { status: 201 });
+    return NextResponse.json(
+      { conversation: result.conversation },
+      { status: result.isNew ? 201 : 200 }
+    );
   } catch (error) {
     console.error("Error creating conversation:", error);
     return NextResponse.json(

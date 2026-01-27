@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// GET - Get chat notifications (recent messages from conversations)
+// GET - Get chat notifications (unread messages from conversations)
 export async function GET() {
   try {
     const session = await auth();
@@ -11,32 +11,42 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get recent messages from conversations where user is a participant
-    // Only get messages not sent by the current user
-    const conversations = await prisma.conversation.findMany({
+    // Get conversations where user is a participant
+    const participations = await prisma.conversationParticipant.findMany({
       where: {
-        participants: {
-          some: {
-            userId: session.user.id,
-            hidden: false,
-          },
-        },
+        userId: session.user.id,
+        hidden: false,
       },
-      include: {
-        messages: {
+      select: {
+        conversationId: true,
+        lastSeenAt: true,
+      },
+    });
+
+    if (participations.length === 0) {
+      return NextResponse.json({
+        notifications: [],
+        unreadCount: 0,
+      });
+    }
+
+    // Get unread messages (messages created after lastSeenAt)
+    const unreadMessages = await Promise.all(
+      participations.map(async (participation) => {
+        const messages = await prisma.message.findMany({
           where: {
+            conversationId: participation.conversationId,
             senderId: {
               not: session.user.id,
             },
-            // Get recent messages as "notifications"
             createdAt: {
-              gte: new Date(Date.now() - 24 * 60 * 60 * 1000), // Last 24 hours
+              gt: participation.lastSeenAt,
             },
           },
           orderBy: {
             createdAt: "desc",
           },
-          take: 5, // Last 5 messages per conversation
+          take: 5,
           include: {
             sender: {
               select: {
@@ -46,32 +56,32 @@ export async function GET() {
               },
             },
           },
-        },
-      },
-    });
+        });
 
-    // Transform messages into notifications
-    const notifications = conversations.flatMap((conversation) =>
-      conversation.messages.map((msg) => ({
-        id: msg.id,
-        conversationId: conversation.id,
-        senderId: msg.sender.id,
-        senderName: msg.sender.name,
-        senderImage: msg.sender.image,
-        content: msg.content,
-        createdAt: msg.createdAt,
-        read: false, // For now, all recent messages show as unread
-      }))
+        return messages.map((msg) => ({
+          id: msg.id,
+          conversationId: participation.conversationId,
+          senderId: msg.sender.id,
+          senderName: msg.sender.name,
+          senderImage: msg.sender.image,
+          content: msg.content,
+          createdAt: msg.createdAt,
+          read: false,
+        }));
+      })
     );
 
-    // Sort by date descending
-    notifications.sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    // Flatten and sort notifications
+    const notifications = unreadMessages
+      .flat()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+      .slice(0, 20);
 
     return NextResponse.json({
-      notifications: notifications.slice(0, 20), // Max 20 notifications
+      notifications,
       unreadCount: notifications.length,
     });
   } catch (error) {

@@ -1,3 +1,9 @@
+## [14.3.3](https://github.com/palhinhax/Athlifyr/compare/v14.3.2...v14.3.3) (2026-01-28)
+
+### Bug Fixes
+
+- **ci:** use GET method for regenerate-sessions endpoint ([dec3b23](https://github.com/palhinhax/Athlifyr/commit/dec3b23bbdcb437a05d22e3fbc5f6977bfa3a50d))
+
 ## [14.3.2](https://github.com/palhinhax/Athlifyr/compare/v14.3.1...v14.3.2) (2026-01-28)
 
 ### Bug Fixes

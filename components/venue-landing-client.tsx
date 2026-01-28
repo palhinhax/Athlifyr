@@ -11,6 +11,8 @@ import {
   ArrowRight,
   Play,
   ChevronDown,
+  Instagram,
+  Mail,
 } from "lucide-react";
 import { VenueLandingFAQ } from "@/components/venue-landing-faq";
 import { VenueLandingFeatures } from "@/components/venue-landing-features";
@@ -287,6 +289,29 @@ export function VenueLandingClient({
                 <ArrowRight className="h-5 w-5" />
               </Link>
             </Button>
+
+            {/* Contact Info */}
+            <div className="mt-10 flex flex-col items-center gap-4 border-t border-white/20 pt-8 sm:flex-row sm:justify-center sm:gap-8">
+              <p className="text-sm opacity-80">{t("finalCta.questions")}</p>
+              <div className="flex items-center gap-6">
+                <a
+                  href="https://instagram.com/athlifyr"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+                >
+                  <Instagram className="h-5 w-5" />
+                  @athlifyr
+                </a>
+                <a
+                  href="mailto:hello@athlifyr.com"
+                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+                >
+                  <Mail className="h-5 w-5" />
+                  hello@athlifyr.com
+                </a>
+              </div>
+            </div>
           </motion.div>
         </div>
       </section>

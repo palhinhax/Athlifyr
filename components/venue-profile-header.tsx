@@ -176,16 +176,6 @@ export function VenueProfileHeader({
                   isOwnerOrAdmin={isOwnerOrAdmin}
                 />
               </div>
-
-              {/* Action Buttons - only show if there are buttons to display */}
-              {(!userId || (userId && !isOwnerOrAdmin)) && (
-                <div className="flex gap-2">
-                  {!userId && <Button>{t("signIn")}</Button>}
-                  {userId && !isOwnerOrAdmin && (
-                    <Button>{t("membership.join")}</Button>
-                  )}
-                </div>
-              )}
             </div>
           </div>
         </div>

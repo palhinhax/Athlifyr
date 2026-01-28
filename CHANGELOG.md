@@ -1,3 +1,9 @@
+# [14.4.0](https://github.com/palhinhax/Athlifyr/compare/v14.3.3...v14.4.0) (2026-01-28)
+
+### Features
+
+- **seeds:** add event seeds and marketing template ([eeda5fe](https://github.com/palhinhax/Athlifyr/commit/eeda5fea4a799987a697be35d17b9b90501b25af))
+
 ## [14.3.3](https://github.com/palhinhax/Athlifyr/compare/v14.3.2...v14.3.3) (2026-01-28)
 
 ### Bug Fixes

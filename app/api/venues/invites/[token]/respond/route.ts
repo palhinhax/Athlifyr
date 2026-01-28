@@ -3,9 +3,10 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 // POST - Respond to venue invite (accept or decline)
+// This endpoint accepts invites by invite ID (passed as token param)
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ inviteId: string }> }
+  { params }: { params: Promise<{ token: string }> }
 ) {
   try {
     const session = await auth();
@@ -14,10 +15,10 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { inviteId } = await params;
+    const { token: inviteId } = await params;
     const { accept } = await request.json();
 
-    // Find the invite
+    // Find the invite by ID
     const invite = await prisma.venueInvite.findUnique({
       where: { id: inviteId },
       include: {
@@ -58,7 +59,7 @@ export async function POST(
     }
 
     if (accept) {
-      // Accept invite - create membership and update invite status
+      // Accept invite - create or upgrade membership and update invite status
       await prisma.$transaction(async (tx) => {
         // Check if already a member
         const existingMember = await tx.venueMember.findUnique({
@@ -71,21 +72,26 @@ export async function POST(
         });
 
         if (existingMember) {
-          // Update existing membership if it was suspended or left
-          if (
+          // Update existing membership:
+          // - If CLIENT, upgrade to new staff role
+          // - If suspended or left, reactivate with new role
+          // - If already active staff, keep existing role (shouldn't happen due to invite validation)
+          const shouldUpdate =
+            existingMember.role === "CLIENT" ||
             existingMember.status === "SUSPENDED" ||
-            existingMember.status === "LEFT"
-          ) {
+            existingMember.status === "LEFT";
+
+          if (shouldUpdate) {
             await tx.venueMember.update({
               where: { id: existingMember.id },
               data: {
                 role: invite.role,
                 status: "ACTIVE",
-                joinedAt: new Date(),
+                joinedAt: existingMember.joinedAt || new Date(),
               },
             });
           }
-          // If already active, just keep it
+          // If already active staff, just keep it (edge case)
         } else {
           // Create new membership
           await tx.venueMember.create({

@@ -16,12 +16,24 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Briefcase,
   Building2,
   Check,
   X,
   Loader2,
   ExternalLink,
+  LogOut,
 } from "lucide-react";
 
 interface VenueInvite {
@@ -70,6 +82,9 @@ export function ProfileProfessionalSection({
   const [memberships, setMemberships] = useState<VenueMembership[]>([]);
   const [loading, setLoading] = useState(true);
   const [processingInvite, setProcessingInvite] = useState<string | null>(null);
+  const [leavingMembership, setLeavingMembership] = useState<string | null>(
+    null
+  );
 
   useEffect(() => {
     fetchProfessionalData();
@@ -134,6 +149,43 @@ export function ProfileProfessionalSection({
       });
     } finally {
       setProcessingInvite(null);
+    }
+  }
+
+  async function handleLeaveVenue(membershipId: string, venueName: string) {
+    setLeavingMembership(membershipId);
+    try {
+      const response = await fetch("/api/profile/professional", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ membershipId }),
+      });
+
+      if (response.ok) {
+        // Remove from memberships
+        setMemberships((prev) => prev.filter((m) => m.id !== membershipId));
+        toast({
+          title: t("leftVenue"),
+          description: t("leftVenueDesc", { venue: venueName }),
+        });
+        router.refresh();
+      } else {
+        const error = await response.json();
+        toast({
+          title: t("error"),
+          description: error.error || t("errorLeavingVenue"),
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Error leaving venue:", error);
+      toast({
+        title: t("error"),
+        description: t("errorLeavingVenue"),
+        variant: "destructive",
+      });
+    } finally {
+      setLeavingMembership(null);
     }
   }
 
@@ -248,12 +300,14 @@ export function ProfileProfessionalSection({
           <CardContent>
             <div className="grid gap-4 sm:grid-cols-2">
               {memberships.map((membership) => (
-                <Link
+                <div
                   key={membership.id}
-                  href={`/venues/${membership.venue.slug}`}
-                  className="group"
+                  className="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-accent"
                 >
-                  <div className="flex items-center gap-4 rounded-lg border p-4 transition-colors hover:bg-accent">
+                  <Link
+                    href={`/venues/${membership.venue.slug}`}
+                    className="group flex flex-1 items-center gap-4"
+                  >
                     <Avatar className="h-12 w-12">
                       <AvatarImage
                         src={membership.venue.logo || undefined}
@@ -275,8 +329,54 @@ export function ProfileProfessionalSection({
                         {tRoles(membership.role)}
                       </Badge>
                     </div>
-                  </div>
-                </Link>
+                  </Link>
+
+                  {/* Leave venue button - only for non-owners */}
+                  {membership.role !== "OWNER" && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-destructive"
+                          disabled={leavingMembership === membership.id}
+                        >
+                          {leavingMembership === membership.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <LogOut className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>
+                            {t("leaveVenueTitle")}
+                          </AlertDialogTitle>
+                          <AlertDialogDescription>
+                            {t("leaveVenueConfirm", {
+                              venue: membership.venue.name,
+                            })}
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>{t("cancel")}</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() =>
+                              handleLeaveVenue(
+                                membership.id,
+                                membership.venue.name
+                              )
+                            }
+                          >
+                            {t("confirmLeave")}
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
               ))}
             </div>
           </CardContent>

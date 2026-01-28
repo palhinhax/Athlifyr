@@ -42,6 +42,7 @@
     "event": "Evento",
     "venue": "Venue",
     "person": "Pessoa",
+    "official": "Oficial",
     "toNavigate": "para navegar",
     "toOpen": "para abrir",
     "toClose": "para fechar"

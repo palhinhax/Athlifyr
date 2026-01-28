@@ -1,3 +1,9 @@
+# [14.2.0](https://github.com/palhinhax/Athlifyr/compare/v14.1.0...v14.2.0) (2026-01-28)
+
+### Features
+
+- **venues:** remove free forever badge and video controls from join page ([bb607d2](https://github.com/palhinhax/Athlifyr/commit/bb607d22cabda722ee3def3252326ae4c20d8faa))
+
 # [14.1.0](https://github.com/palhinhax/Athlifyr/compare/v14.0.0...v14.1.0) (2026-01-28)
 
 ### Bug Fixes

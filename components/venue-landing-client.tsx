@@ -4,12 +4,9 @@ import { motion } from "framer-motion";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Sparkles,
   CheckCircle2,
   ArrowRight,
-  Play,
   ChevronDown,
   Instagram,
   Mail,
@@ -17,7 +14,7 @@ import {
 import { VenueLandingFAQ } from "@/components/venue-landing-faq";
 import { VenueLandingFeatures } from "@/components/venue-landing-features";
 import { VenueLandingForWho } from "@/components/venue-landing-for-who";
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect } from "react";
 
 interface VenueLandingClientProps {
   locale: string;
@@ -27,7 +24,6 @@ export function VenueLandingClient({
   locale: _locale,
 }: VenueLandingClientProps) {
   const t = useTranslations("venues.landing");
-  const [isVideoPlaying, setIsVideoPlaying] = useState(true);
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -35,21 +31,10 @@ export function VenueLandingClient({
     if (videoRef.current) {
       videoRef.current.play().catch(() => {
         // Autoplay failed, probably due to browser policy
-        setIsVideoPlaying(false);
+        // Video will remain paused
       });
     }
   }, []);
-
-  const toggleVideo = () => {
-    if (videoRef.current) {
-      if (isVideoPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsVideoPlaying(!isVideoPlaying);
-    }
-  };
 
   const scrollToContent = () => {
     const element = document.getElementById("features");
@@ -83,15 +68,6 @@ export function VenueLandingClient({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            {/* Free Badge */}
-            <Badge
-              variant="secondary"
-              className="mb-6 bg-primary/90 px-4 py-2 text-sm font-bold tracking-wider text-primary-foreground backdrop-blur-sm"
-            >
-              <Sparkles className="mr-2 h-4 w-4" />
-              {t("hero.tagline")}
-            </Badge>
-
             {/* Main Title */}
             <h1 className="mb-6 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
               {t("hero.title")}
@@ -117,15 +93,6 @@ export function VenueLandingClient({
                   {t("cta.primary")}
                   <ArrowRight className="h-5 w-5" />
                 </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="min-w-[200px] gap-2 border-white/30 bg-white/10 text-lg text-white backdrop-blur-sm hover:bg-white/20"
-                onClick={toggleVideo}
-              >
-                <Play className="h-5 w-5" />
-                {isVideoPlaying ? "Pausar Vídeo" : t("cta.secondary")}
               </Button>
             </div>
           </motion.div>

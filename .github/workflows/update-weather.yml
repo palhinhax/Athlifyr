@@ -11,8 +11,72 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Validate Secrets
+        run: |
+          echo "🔐 Validating required secrets..."
+          
+          if [ -z "${{ secrets.APP_URL }}" ]; then
+            echo "❌ ERROR: APP_URL secret is not configured"
+            exit 1
+          fi
+          echo "✅ APP_URL is configured"
+          
+          if [ -z "${{ secrets.WEATHER_UPDATE_SECRET }}" ]; then
+            echo "❌ ERROR: WEATHER_UPDATE_SECRET secret is not configured"
+            exit 1
+          fi
+          echo "✅ WEATHER_UPDATE_SECRET is configured"
+          
+          echo ""
+          echo "📍 Target URL: ${{ secrets.APP_URL }}/api/weather/update"
+
       - name: Update Weather Forecasts
         run: |
-          curl -X POST https://athlifyr.com/api/weather/update \
+          echo "🌤️  Starting weather forecast update..."
+          echo "📅 Current time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+          
+          # Make the API request with detailed output
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---REDIRECT_URL---%{url_effective}---TIME_TOTAL---%{time_total}s" \
+            -X POST "${{ secrets.APP_URL }}/api/weather/update" \
             -H "Authorization: Bearer ${{ secrets.WEATHER_UPDATE_SECRET }}" \
-            -H "Content-Type: application/json"
+            -H "Content-Type: application/json")
+          
+          # Parse response parts
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+          final_url=$(echo "$response" | grep -oP '(?<=---REDIRECT_URL---).*?(?=---TIME_TOTAL---)')
+          time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+          
+          echo "📊 Request Details:"
+          echo "   Final URL: $final_url"
+          echo "   HTTP Status: $http_code"
+          echo "   Time: $time_total"
+          echo ""
+          echo "📦 Response Body:"
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo ""
+          
+          # Validate response
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Weather update failed with HTTP status $http_code"
+            exit 1
+          fi
+          
+          # Parse and display stats if JSON
+          if echo "$body" | jq -e '.stats' > /dev/null 2>&1; then
+            total=$(echo "$body" | jq -r '.stats.totalEvents // "N/A"')
+            success=$(echo "$body" | jq -r '.stats.successCount // "N/A"')
+            errors=$(echo "$body" | jq -r '.stats.errorCount // "N/A"')
+            
+            echo "📈 Statistics:"
+            echo "   Total Events: $total"
+            echo "   Successful: $success"
+            echo "   Errors: $errors"
+          fi
+          
+          echo ""
+          echo "✅ Weather update completed successfully!"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          WEATHER_UPDATE_SECRET: ${{ secrets.WEATHER_UPDATE_SECRET }}

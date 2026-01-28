@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
 import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
+import { VenueClientsManager } from "@/components/venue-clients-manager";
 import {
   Trash2,
   CheckCircle,
@@ -66,6 +67,7 @@ interface Venue {
   defaultCancellationDeadlineMinutes: number;
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
   externalPaymentInstructions: string | null;
+  visibleTabs?: string[];
   members: Array<{
     id: string;
     role: string;
@@ -297,6 +299,59 @@ export function VenueDetailClient({
     fetchVenue();
   }, [fetchVenue]);
 
+  // Helper function to check if a tab is visible
+  const isTabVisible = useCallback(
+    (tabId: string) => {
+      // Default tabs if not configured
+      const defaultTabs = [
+        "feed",
+        "about",
+        "plans",
+        "sessions",
+        "team",
+        "clients",
+        "subscriptions",
+      ];
+      const visibleTabs = venue?.visibleTabs ?? defaultTabs;
+      return visibleTabs.includes(tabId);
+    },
+    [venue?.visibleTabs]
+  );
+
+  // Count visible tabs to hide TabsList when only 1 tab is visible
+  const visibleTabsCount = useMemo(() => {
+    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const adminTabs = ["clients", "subscriptions"];
+
+    let count = publicTabs.filter((tab) => isTabVisible(tab)).length;
+
+    if (isOwnerOrAdmin) {
+      count += adminTabs.filter((tab) => isTabVisible(tab)).length;
+    }
+
+    return count;
+  }, [isTabVisible, isOwnerOrAdmin]);
+
+  // Get the first visible tab as default
+  const getDefaultTab = useCallback(() => {
+    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const adminTabs = ["clients", "subscriptions"];
+
+    // Check public tabs first
+    for (const tab of publicTabs) {
+      if (isTabVisible(tab)) return tab;
+    }
+
+    // Then admin tabs if user is owner/admin
+    if (isOwnerOrAdmin) {
+      for (const tab of adminTabs) {
+        if (isTabVisible(tab)) return tab;
+      }
+    }
+
+    return "feed"; // Fallback
+  }, [isTabVisible, isOwnerOrAdmin]);
+
   if (loading) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -334,39 +389,59 @@ export function VenueDetailClient({
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
         {/* Tabs */}
-        <Tabs defaultValue="feed" className="w-full">
-          <div className="overflow-x-auto">
-            <TabsList className="w-full min-w-max md:min-w-0">
-              <TabsTrigger
-                value="feed"
-                className="flex-1 gap-2 md:flex-initial"
-              >
-                <Home className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("tabs.feed")}</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="about"
-                className="flex-1 gap-2 md:flex-initial"
-              >
-                <Info className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("tabs.about")}</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="plans"
-                className="flex-1 gap-2 md:flex-initial"
-              >
-                <CreditCard className="h-4 w-4" />
-                <span className="hidden sm:inline">{tPlans("title")}</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="sessions"
-                className="flex-1 gap-2 md:flex-initial"
-              >
-                <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline">{t("tabs.sessions")}</span>
-              </TabsTrigger>
-              {isOwnerOrAdmin && (
-                <>
+        <Tabs defaultValue={getDefaultTab()} className="w-full">
+          {/* Hide TabsList when only 1 tab is visible */}
+          {visibleTabsCount > 1 && (
+            <div className="overflow-x-auto">
+              <TabsList className="w-full min-w-max md:min-w-0">
+                {isTabVisible("feed") && (
+                  <TabsTrigger
+                    value="feed"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <Home className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("tabs.feed")}</span>
+                  </TabsTrigger>
+                )}
+                {isTabVisible("about") && (
+                  <TabsTrigger
+                    value="about"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <Info className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("tabs.about")}</span>
+                  </TabsTrigger>
+                )}
+                {isTabVisible("plans") && (
+                  <TabsTrigger
+                    value="plans"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    <span className="hidden sm:inline">{tPlans("title")}</span>
+                  </TabsTrigger>
+                )}
+                {isTabVisible("sessions") && (
+                  <TabsTrigger
+                    value="sessions"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    <span className="hidden sm:inline">
+                      {t("tabs.sessions")}
+                    </span>
+                  </TabsTrigger>
+                )}
+                {isTabVisible("team") && (
+                  <TabsTrigger
+                    value="team"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <Users className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("tabs.team")}</span>
+                  </TabsTrigger>
+                )}
+                {isOwnerOrAdmin && isTabVisible("clients") && (
                   <TabsTrigger
                     value="clients"
                     className="flex-1 gap-2 md:flex-initial"
@@ -376,6 +451,8 @@ export function VenueDetailClient({
                       {t("tabs.clients")}
                     </span>
                   </TabsTrigger>
+                )}
+                {isOwnerOrAdmin && isTabVisible("subscriptions") && (
                   <TabsTrigger
                     value="subscriptions"
                     className="flex-1 gap-2 md:flex-initial"
@@ -385,320 +462,332 @@ export function VenueDetailClient({
                       {t("tabs.subscriptions")}
                     </span>
                   </TabsTrigger>
-                </>
-              )}
-            </TabsList>
-          </div>
+                )}
+              </TabsList>
+            </div>
+          )}
 
           {/* Feed Tab */}
-          <TabsContent value="feed">
-            <VenueFeed
-              venueId={venue.id}
-              userId={userId}
-              userName={userName}
-              userImage={userImage}
-              isMember={isMember}
-            />
-          </TabsContent>
+          {isTabVisible("feed") && (
+            <TabsContent value="feed">
+              <VenueFeed
+                venueId={venue.id}
+                userId={userId}
+                userName={userName}
+                userImage={userImage}
+                isMember={isMember}
+              />
+            </TabsContent>
+          )}
 
           {/* About Tab */}
-          <TabsContent value="about" className="space-y-6">
-            <div className="rounded-lg border bg-card p-6">
-              <h2 className="mb-4 text-2xl font-semibold">
-                {tInfo("description")}
-              </h2>
-              <p className="text-muted-foreground">
-                {venue.description || t("noDescription")}
-              </p>
-            </div>
-
-            {/* Contact Information */}
-            {(venue.phone ||
-              venue.email ||
-              venue.website ||
-              venue.instagram) && (
+          {isTabVisible("about") && (
+            <TabsContent value="about" className="space-y-6">
               <div className="rounded-lg border bg-card p-6">
                 <h2 className="mb-4 text-2xl font-semibold">
-                  {tInfo("contactInformation")}
+                  {tInfo("description")}
                 </h2>
-                <div className="flex flex-wrap gap-4 text-sm">
-                  {venue.phone && (
-                    <a
-                      href={`tel:${venue.phone}`}
-                      className="flex items-center gap-2 transition-colors hover:text-primary"
-                    >
-                      <Phone className="h-4 w-4" />
-                      {venue.phone}
-                    </a>
-                  )}
-                  {venue.email && (
-                    <a
-                      href={`mailto:${venue.email}`}
-                      className="flex items-center gap-2 transition-colors hover:text-primary"
-                    >
-                      <Mail className="h-4 w-4" />
-                      {venue.email}
-                    </a>
-                  )}
-                  {venue.website && (
-                    <a
-                      href={venue.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition-colors hover:text-primary"
-                    >
-                      <Globe className="h-4 w-4" />
-                      {tInfo("website")}
-                    </a>
-                  )}
-                  {venue.instagram && (
-                    <a
-                      href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-2 transition-colors hover:text-primary"
-                    >
-                      <Instagram className="h-4 w-4" />@
-                      {venue.instagram.replace("@", "")}
-                    </a>
-                  )}
-                </div>
+                <p className="text-muted-foreground">
+                  {venue.description || t("noDescription")}
+                </p>
               </div>
-            )}
 
-            {/* Location Information */}
-            {(venue.address || venue.city) && (
-              <div className="rounded-lg border bg-card p-6">
-                <h2 className="mb-4 text-2xl font-semibold">
-                  {tInfo("location")}
-                </h2>
-                <div className="space-y-2 text-muted-foreground">
-                  {venue.address && <p>{venue.address}</p>}
-                  {venue.city && (
-                    <p>
-                      {venue.city}, {venue.country}
+              {/* Contact Information */}
+              {(venue.phone ||
+                venue.email ||
+                venue.website ||
+                venue.instagram) && (
+                <div className="rounded-lg border bg-card p-6">
+                  <h2 className="mb-4 text-2xl font-semibold">
+                    {tInfo("contactInformation")}
+                  </h2>
+                  <div className="flex flex-wrap gap-4 text-sm">
+                    {venue.phone && (
+                      <a
+                        href={`tel:${venue.phone}`}
+                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {venue.phone}
+                      </a>
+                    )}
+                    {venue.email && (
+                      <a
+                        href={`mailto:${venue.email}`}
+                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                      >
+                        <Mail className="h-4 w-4" />
+                        {venue.email}
+                      </a>
+                    )}
+                    {venue.website && (
+                      <a
+                        href={venue.website}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                      >
+                        <Globe className="h-4 w-4" />
+                        {tInfo("website")}
+                      </a>
+                    )}
+                    {venue.instagram && (
+                      <a
+                        href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                      >
+                        <Instagram className="h-4 w-4" />@
+                        {venue.instagram.replace("@", "")}
+                      </a>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Location Information */}
+              {(venue.address || venue.city) && (
+                <div className="rounded-lg border bg-card p-6">
+                  <h2 className="mb-4 text-2xl font-semibold">
+                    {tInfo("location")}
+                  </h2>
+                  <div className="space-y-2 text-muted-foreground">
+                    {venue.address && <p>{venue.address}</p>}
+                    {venue.city && (
+                      <p>
+                        {venue.city}, {venue.country}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {!userId && (
+                <div className="rounded-lg bg-muted p-6">
+                  <p className="mb-4 text-sm">{t("signInToJoin")}</p>
+                  <Button>{t("signIn")}</Button>
+                </div>
+              )}
+            </TabsContent>
+          )}
+
+          {/* Plans Tab */}
+          {isTabVisible("plans") && (
+            <TabsContent value="plans" className="space-y-6">
+              {isOwnerOrAdmin && (
+                <div className="flex justify-end">
+                  <Button
+                    onClick={() => {
+                      setEditingPlan(null);
+                      setPlanModalOpen(true);
+                    }}
+                  >
+                    {tPlans("createPlan")}
+                  </Button>
+                </div>
+              )}
+
+              {venue.plans.length === 0 ? (
+                <div className="rounded-lg border border-dashed p-12 text-center">
+                  <p className="text-muted-foreground">
+                    {t("noPlansAvailable")}
+                  </p>
+                  {isOwnerOrAdmin && (
+                    <p className="mt-2 text-sm text-muted-foreground">
+                      {tPlans("createFirstPlan")}
                     </p>
                   )}
                 </div>
-              </div>
-            )}
-
-            {!userId && (
-              <div className="rounded-lg bg-muted p-6">
-                <p className="mb-4 text-sm">{t("signInToJoin")}</p>
-                <Button>{t("signIn")}</Button>
-              </div>
-            )}
-          </TabsContent>
-
-          {/* Plans Tab */}
-          <TabsContent value="plans" className="space-y-6">
-            {isOwnerOrAdmin && (
-              <div className="flex justify-end">
-                <Button
-                  onClick={() => {
-                    setEditingPlan(null);
-                    setPlanModalOpen(true);
-                  }}
-                >
-                  {tPlans("createPlan")}
-                </Button>
-              </div>
-            )}
-
-            {venue.plans.length === 0 ? (
-              <div className="rounded-lg border border-dashed p-12 text-center">
-                <p className="text-muted-foreground">{t("noPlansAvailable")}</p>
-                {isOwnerOrAdmin && (
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    {tPlans("createFirstPlan")}
-                  </p>
-                )}
-              </div>
-            ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {venue.plans.map((plan) => (
-                  <div
-                    key={plan.id}
-                    className={`rounded-lg border bg-card p-6 ${
-                      !plan.isActive ? "opacity-60" : ""
-                    }`}
-                  >
-                    <div className="mb-2 flex items-start justify-between">
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-xl font-semibold">{plan.name}</h3>
-                        {!plan.isActive && (
-                          <span className="inline-flex w-fit rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                            Inactive
-                          </span>
-                        )}
-                      </div>
-                      {isOwnerOrAdmin && (
-                        <div className="flex gap-1">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => {
-                              setEditingPlan(plan);
-                              setPlanModalOpen(true);
-                            }}
-                          >
-                            {tPlans("edit")}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleTogglePlanActiveClick(plan.id)}
-                            className={
-                              plan.isActive
-                                ? "text-destructive hover:text-destructive"
-                                : "text-green-600 hover:text-green-700"
-                            }
-                          >
-                            {plan.isActive ? (
-                              <Trash2 className="h-4 w-4" />
-                            ) : (
-                              <span className="text-xs">Reactivate</span>
-                            )}
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                    {plan.description && (
-                      <p className="mb-4 text-sm text-muted-foreground">
-                        {plan.description}
-                      </p>
-                    )}
-
-                    {/* Plan Policy Info */}
-                    {plan.policy && (
-                      <div className="mb-4 space-y-2 rounded-lg bg-muted/30 p-3 text-sm">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="font-medium">
-                            {tPolicy(`durationType.${plan.policy.duration}`)}
-                            {plan.policy.durationValue &&
-                              plan.policy.durationValue > 1 && (
-                                <span> ({plan.policy.durationValue}x)</span>
-                              )}
-                          </span>
-                        </div>
-                        {plan.policy.duration !== "ONE_TIME" &&
-                          (plan.policy.maxBookingsPerDay ||
-                            plan.policy.maxBookingsPerWeek ||
-                            plan.policy.maxBookingsPerMonth) && (
-                            <div className="text-xs text-muted-foreground">
-                              {plan.policy.maxBookingsPerDay && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerDay}{" "}
-                                  {tPolicy("maxBookingsPerDay")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                              {plan.policy.maxBookingsPerWeek && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerWeek}{" "}
-                                  {tPolicy("maxBookingsPerWeek")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                              {plan.policy.maxBookingsPerMonth && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerMonth}{" "}
-                                  {tPolicy("maxBookingsPerMonth")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                      </div>
-                    )}
-
-                    {plan.price && (
-                      <p className="mb-4 text-2xl font-bold">
-                        {plan.price} {plan.currency}
-                        {plan.policy?.duration !== "ONE_TIME" && (
-                          <span className="text-sm font-normal text-muted-foreground">
-                            {" "}
-                            / {tPlans("perMonth")}
-                          </span>
-                        )}
-                      </p>
-                    )}
-
-                    {/* Check if user has active subscription */}
-                    {plan.subscriptions && plan.subscriptions.length > 0 ? (
-                      <div className="space-y-3">
-                        <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                          <CheckCircle className="h-5 w-5" />
-                          <span className="font-medium">
-                            {tPlans("subscribed")}
-                          </span>
-                        </div>
-                        {plan.subscriptions[0].endsAt && (
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Calendar className="h-4 w-4" />
-                            <span>
-                              {tPlans("validUntil")}:{" "}
-                              {new Date(
-                                plan.subscriptions[0].endsAt
-                              ).toLocaleDateString(locale, {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
+              ) : (
+                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                  {venue.plans.map((plan) => (
+                    <div
+                      key={plan.id}
+                      className={`rounded-lg border bg-card p-6 ${
+                        !plan.isActive ? "opacity-60" : ""
+                      }`}
+                    >
+                      <div className="mb-2 flex items-start justify-between">
+                        <div className="flex flex-col gap-1">
+                          <h3 className="text-xl font-semibold">{plan.name}</h3>
+                          {!plan.isActive && (
+                            <span className="inline-flex w-fit rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
+                              Inactive
                             </span>
+                          )}
+                        </div>
+                        {isOwnerOrAdmin && (
+                          <div className="flex gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => {
+                                setEditingPlan(plan);
+                                setPlanModalOpen(true);
+                              }}
+                            >
+                              {tPlans("edit")}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() =>
+                                handleTogglePlanActiveClick(plan.id)
+                              }
+                              className={
+                                plan.isActive
+                                  ? "text-destructive hover:text-destructive"
+                                  : "text-green-600 hover:text-green-700"
+                              }
+                            >
+                              {plan.isActive ? (
+                                <Trash2 className="h-4 w-4" />
+                              ) : (
+                                <span className="text-xs">Reactivate</span>
+                              )}
+                            </Button>
                           </div>
                         )}
                       </div>
-                    ) : (
-                      <Button
-                        className="w-full"
-                        onClick={() => handleSubscribeClick(plan)}
-                        disabled={!userId || !plan.price}
-                      >
-                        {tPlans("subscribe")}
-                      </Button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-          </TabsContent>
+                      {plan.description && (
+                        <p className="mb-4 text-sm text-muted-foreground">
+                          {plan.description}
+                        </p>
+                      )}
+
+                      {/* Plan Policy Info */}
+                      {plan.policy && (
+                        <div className="mb-4 space-y-2 rounded-lg bg-muted/30 p-3 text-sm">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                            <span className="font-medium">
+                              {tPolicy(`durationType.${plan.policy.duration}`)}
+                              {plan.policy.durationValue &&
+                                plan.policy.durationValue > 1 && (
+                                  <span> ({plan.policy.durationValue}x)</span>
+                                )}
+                            </span>
+                          </div>
+                          {plan.policy.duration !== "ONE_TIME" &&
+                            (plan.policy.maxBookingsPerDay ||
+                              plan.policy.maxBookingsPerWeek ||
+                              plan.policy.maxBookingsPerMonth) && (
+                              <div className="text-xs text-muted-foreground">
+                                {plan.policy.maxBookingsPerDay && (
+                                  <div>
+                                    • Max {plan.policy.maxBookingsPerDay}{" "}
+                                    {tPolicy("maxBookingsPerDay")
+                                      .toLowerCase()
+                                      .split(" ")
+                                      .slice(1)
+                                      .join(" ")}
+                                  </div>
+                                )}
+                                {plan.policy.maxBookingsPerWeek && (
+                                  <div>
+                                    • Max {plan.policy.maxBookingsPerWeek}{" "}
+                                    {tPolicy("maxBookingsPerWeek")
+                                      .toLowerCase()
+                                      .split(" ")
+                                      .slice(1)
+                                      .join(" ")}
+                                  </div>
+                                )}
+                                {plan.policy.maxBookingsPerMonth && (
+                                  <div>
+                                    • Max {plan.policy.maxBookingsPerMonth}{" "}
+                                    {tPolicy("maxBookingsPerMonth")
+                                      .toLowerCase()
+                                      .split(" ")
+                                      .slice(1)
+                                      .join(" ")}
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                        </div>
+                      )}
+
+                      {plan.price && (
+                        <p className="mb-4 text-2xl font-bold">
+                          {plan.price} {plan.currency}
+                          {plan.policy?.duration !== "ONE_TIME" && (
+                            <span className="text-sm font-normal text-muted-foreground">
+                              {" "}
+                              / {tPlans("perMonth")}
+                            </span>
+                          )}
+                        </p>
+                      )}
+
+                      {/* Check if user has active subscription */}
+                      {plan.subscriptions && plan.subscriptions.length > 0 ? (
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                            <CheckCircle className="h-5 w-5" />
+                            <span className="font-medium">
+                              {tPlans("subscribed")}
+                            </span>
+                          </div>
+                          {plan.subscriptions[0].endsAt && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Calendar className="h-4 w-4" />
+                              <span>
+                                {tPlans("validUntil")}:{" "}
+                                {new Date(
+                                  plan.subscriptions[0].endsAt
+                                ).toLocaleDateString(locale, {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <Button
+                          className="w-full"
+                          onClick={() => handleSubscribeClick(plan)}
+                          disabled={!userId || !plan.price}
+                        >
+                          {tPlans("subscribe")}
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </TabsContent>
+          )}
 
           {/* Sessions Tab */}
-          <TabsContent value="sessions" className="space-y-6">
-            <VenueSessionsCalendar
-              venueId={venue.id}
-              locale={locale}
-              userId={userId}
-              hasActiveSubscription={venue.plans.some(
-                (plan) =>
-                  plan.subscriptions &&
-                  plan.subscriptions.some((sub) => sub.status === "ACTIVE")
-              )}
-              isOwnerOrAdmin={isOwnerOrAdmin}
-              venueDefaults={{
-                defaultSessionCapacity: venue.defaultSessionCapacity,
-                defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays,
-                defaultCancellationDeadlineMinutes:
-                  venue.defaultCancellationDeadlineMinutes,
-              }}
-            />
-          </TabsContent>
+          {isTabVisible("sessions") && (
+            <TabsContent value="sessions" className="space-y-6">
+              <VenueSessionsCalendar
+                venueId={venue.id}
+                locale={locale}
+                userId={userId}
+                hasActiveSubscription={venue.plans.some(
+                  (plan) =>
+                    plan.subscriptions &&
+                    plan.subscriptions.some((sub) => sub.status === "ACTIVE")
+                )}
+                isOwnerOrAdmin={isOwnerOrAdmin}
+                venueDefaults={{
+                  defaultSessionCapacity: venue.defaultSessionCapacity,
+                  defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays,
+                  defaultCancellationDeadlineMinutes:
+                    venue.defaultCancellationDeadlineMinutes,
+                }}
+              />
+            </TabsContent>
+          )}
 
-          {/* Clients Tab (Only for Owners/Admins) */}
-          {isOwnerOrAdmin && (
-            <TabsContent value="clients" className="space-y-4">
+          {/* Team Tab (Public - shows staff: owners, admins, coaches) */}
+          {isTabVisible("team") && (
+            <TabsContent value="team" className="space-y-4">
               {venue.members.length === 0 ? (
                 <div className="rounded-lg border border-dashed p-12 text-center">
                   <p className="text-muted-foreground">{t("noTeamMembers")}</p>
@@ -738,8 +827,15 @@ export function VenueDetailClient({
             </TabsContent>
           )}
 
+          {/* Clients Tab (Only for Owners/Admins - shows clients) */}
+          {isOwnerOrAdmin && isTabVisible("clients") && (
+            <TabsContent value="clients" className="space-y-4">
+              <VenueClientsManager venueId={venue.id} locale={locale} />
+            </TabsContent>
+          )}
+
           {/* Subscriptions Tab (Only for Owners/Admins) */}
-          {isOwnerOrAdmin && (
+          {isOwnerOrAdmin && isTabVisible("subscriptions") && (
             <TabsContent value="subscriptions" className="space-y-4">
               <VenueSubscribersManager
                 venueId={venue.id}

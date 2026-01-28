@@ -444,6 +444,7 @@
     "noPlansAvailable": "No plans available yet.",
     "sessionsComingSoon": "Sessions calendar coming soon",
     "noTeamMembers": "No team members yet.",
+    "noClients": "No clients registered yet.",
     "noDescription": "No description available.",
     "payment": {
       "title": "Payment",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "About",
       "feed": "Feed",
+      "plans": "Plans",
       "sessions": "Sessions",
+      "team": "Team",
       "clients": "Clients",
       "subscriptions": "Subscriptions",
       "reviews": "Reviews"
@@ -689,6 +692,25 @@
       "replyError": "Error processing reply",
       "venueResponse": "Venue Response",
       "adminOnly": "Only venue admins can reply"
+    },
+    "visibility": {
+      "title": "Tab Visibility",
+      "description": "Choose which tabs are visible on your venue's public page",
+      "publicTabs": "Public Tabs",
+      "publicTabsDescription": "These tabs are visible to all visitors",
+      "adminTabs": "Management Tabs",
+      "adminTabsDescription": "These tabs are only visible to owners and admins",
+      "ownerOnly": "Only the owner can change visibility settings",
+      "atLeastOne": "At least one tab must be visible",
+      "tabs": {
+        "feedDescription": "Show the venue feed with posts and updates",
+        "aboutDescription": "Show venue information, contact details and location",
+        "plansDescription": "Show available membership plans and pricing",
+        "sessionsDescription": "Show the sessions calendar and booking",
+        "teamDescription": "Show the venue staff (owners, coaches, admins)",
+        "clientsDescription": "Show the list of venue members and clients",
+        "subscriptionsDescription": "Show and manage active subscriptions"
+      }
     }
   }
 }

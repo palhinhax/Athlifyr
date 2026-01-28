@@ -15,6 +15,7 @@ import { VenueEditForm } from "@/components/venue-edit-form";
 import { VenuePaymentsSettings } from "@/components/venue-payments-settings";
 import { VenueSessionsSettings } from "@/components/venue-sessions-settings";
 import { VenueSEOSettings } from "@/components/venue-seo-settings";
+import { VenueVisibilitySettings } from "@/components/venue-visibility-settings";
 
 interface VenueSettingsModalProps {
   venue: {
@@ -39,6 +40,7 @@ interface VenueSettingsModalProps {
     defaultCancellationDeadlineMinutes: number;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
     externalPaymentInstructions: string | null;
+    visibleTabs?: string[];
     members: Array<{
       id: string;
       role: string;
@@ -80,7 +82,7 @@ export function VenueSettingsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-6">
             <TabsTrigger value="general">
               {t("settingsTabs.general")}
             </TabsTrigger>
@@ -90,6 +92,9 @@ export function VenueSettingsModal({
             <TabsTrigger value="staff">{t("settingsTabs.staff")}</TabsTrigger>
             <TabsTrigger value="payments">
               {t("settingsTabs.payments")}
+            </TabsTrigger>
+            <TabsTrigger value="advanced">
+              {t("settingsTabs.advanced")}
             </TabsTrigger>
             <TabsTrigger value="seo">{t("settingsTabs.seo")}</TabsTrigger>
           </TabsList>
@@ -126,6 +131,16 @@ export function VenueSettingsModal({
               userRole={userRole}
               currentPaymentMode={venue.paymentMode}
               externalPaymentInstructions={venue.externalPaymentInstructions}
+            />
+          </TabsContent>
+
+          <TabsContent value="advanced" className="mt-6">
+            <VenueVisibilitySettings
+              venueId={venue.id}
+              visibleTabs={venue.visibleTabs || []}
+              isOwner={isOwner}
+              isAppAdmin={userRole === "ADMIN"}
+              onRefresh={onRefresh}
             />
           </TabsContent>
 

@@ -549,6 +549,7 @@ model Venue {
   stripeLastWebhookAt                DateTime?
   stripeOnboardingStatus             StripeOnboardingStatus  @default(NOT_STARTED)
   stripePayoutsEnabled               Boolean                 @default(false)
+  visibleTabs                        String[]                @default(["feed", "about", "plans", "sessions", "team", "clients", "subscriptions"])
   paymentIntents                     PaymentIntent[]
   posts                              Post[]
   bookings                           VenueBooking[]

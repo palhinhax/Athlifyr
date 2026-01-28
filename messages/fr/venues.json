@@ -444,6 +444,7 @@
     "noPlansAvailable": "Aucun plan disponible pour le moment.",
     "sessionsComingSoon": "Calendrier des sessions à venir",
     "noTeamMembers": "Pas encore de membres de l'équipe.",
+    "noClients": "Aucun client enregistré pour le moment.",
     "noDescription": "Aucune description disponible.",
     "payment": {
       "title": "Paiement",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "À Propos",
       "feed": "Fil d'actualité",
+      "plans": "Plans",
       "sessions": "Sessions",
+      "team": "Équipe",
       "clients": "Clients",
       "subscriptions": "Abonnements",
       "reviews": "Avis"
@@ -689,6 +692,25 @@
       "replyError": "Erreur lors du traitement de la réponse",
       "venueResponse": "Réponse du Lieu",
       "adminOnly": "Seuls les administrateurs du lieu peuvent répondre"
+    },
+    "visibility": {
+      "title": "Visibilité des Onglets",
+      "description": "Choisissez quels onglets sont visibles sur la page publique de votre lieu",
+      "publicTabs": "Onglets Publics",
+      "publicTabsDescription": "Ces onglets sont visibles pour tous les visiteurs",
+      "adminTabs": "Onglets de Gestion",
+      "adminTabsDescription": "Ces onglets ne sont visibles que pour les propriétaires et administrateurs",
+      "ownerOnly": "Seul le propriétaire peut modifier les paramètres de visibilité",
+      "atLeastOne": "Au moins un onglet doit être visible",
+      "tabs": {
+        "feedDescription": "Affiche le flux du lieu avec les publications et mises à jour",
+        "aboutDescription": "Affiche les informations du lieu, les contacts et l'emplacement",
+        "plansDescription": "Affiche les plans d'abonnement et les tarifs disponibles",
+        "sessionsDescription": "Affiche le calendrier des séances et les réservations",
+        "teamDescription": "Affiche l'équipe du lieu (propriétaires, coaches, admins)",
+        "clientsDescription": "Affiche la liste des membres et clients du lieu",
+        "subscriptionsDescription": "Affiche et gère les abonnements actifs"
+      }
     }
   }
 }

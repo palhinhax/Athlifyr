@@ -444,6 +444,7 @@
     "noPlansAvailable": "Nessun piano disponibile al momento.",
     "sessionsComingSoon": "Calendario delle sessioni in arrivo",
     "noTeamMembers": "Nessun membro del team ancora.",
+    "noClients": "Nessun cliente registrato ancora.",
     "noDescription": "Nessuna descrizione disponibile.",
     "payment": {
       "title": "Pagamento",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "Informazioni",
       "feed": "Feed",
+      "plans": "Piani",
       "sessions": "Sessioni",
+      "team": "Team",
       "clients": "Clienti",
       "subscriptions": "Abbonamenti",
       "reviews": "Recensioni"
@@ -689,6 +692,25 @@
       "replyError": "Errore nell'elaborazione della risposta",
       "venueResponse": "Risposta del Locale",
       "adminOnly": "Solo gli amministratori del locale possono rispondere"
+    },
+    "visibility": {
+      "title": "Visibilità delle Schede",
+      "description": "Scegli quali schede sono visibili nella pagina pubblica della tua struttura",
+      "publicTabs": "Schede Pubbliche",
+      "publicTabsDescription": "Queste schede sono visibili a tutti i visitatori",
+      "adminTabs": "Schede di Gestione",
+      "adminTabsDescription": "Queste schede sono visibili solo ai proprietari e agli amministratori",
+      "ownerOnly": "Solo il proprietario può modificare le impostazioni di visibilità",
+      "atLeastOne": "Almeno una scheda deve essere visibile",
+      "tabs": {
+        "feedDescription": "Mostra il feed della struttura con post e aggiornamenti",
+        "aboutDescription": "Mostra le informazioni della struttura, i contatti e la posizione",
+        "plansDescription": "Mostra i piani di abbonamento e i prezzi disponibili",
+        "sessionsDescription": "Mostra il calendario delle sessioni e le prenotazioni",
+        "teamDescription": "Mostra il team della struttura (proprietari, coach, admin)",
+        "clientsDescription": "Mostra l'elenco dei membri e dei clienti della struttura",
+        "subscriptionsDescription": "Mostra e gestisce gli abbonamenti attivi"
+      }
     }
   }
 }

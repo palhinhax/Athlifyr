@@ -19,7 +19,10 @@
     "showLess": "Voir moins",
     "create": "Créer",
     "change": "Changer",
-    "searching": "Recherche en cours"
+    "searching": "Recherche en cours",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "changesSaved": "Modifications enregistrées"
   },
   "upload": {
     "uploadImage": "Télécharger une Image",

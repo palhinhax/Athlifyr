@@ -86,9 +86,23 @@ export function PerformanceStrengthChart({
             unit=" kg"
           />
           <Tooltip
-            content={({ active, payload }) => {
-              if (active && payload && payload.length) {
-                const data = payload[0].payload as (typeof chartData)[0];
+            content={({
+              active,
+              payload,
+            }: {
+              active?: boolean;
+              payload?: readonly unknown[];
+            }) => {
+              if (
+                active &&
+                payload &&
+                payload.length &&
+                typeof payload[0] === "object" &&
+                payload[0] !== null &&
+                "payload" in payload[0]
+              ) {
+                const data = (payload[0] as { payload: unknown })
+                  .payload as (typeof chartData)[0];
                 return (
                   <div className="rounded-lg border bg-popover px-3 py-2 shadow-md">
                     <p className="text-sm font-medium">{data.dateFormatted}</p>

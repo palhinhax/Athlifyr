@@ -209,16 +209,24 @@
 }
 
 /**
- * SSR Content for SEO - Visually hidden but accessible to crawlers
- * This ensures search engines can index the content while users see the full interactive UI
- * Using CSS that hides visually but keeps content accessible for screen readers and crawlers
+ * SSR Content for SEO - Visually hidden from users but visible to crawlers
+ * 
+ * CRITICAL: This content is hidden from visual display to prevent duplication
+ * with the interactive client component, but remains in the DOM and is fully
+ * accessible to search engine crawlers for indexing.
+ * 
+ * We use a careful CSS approach that:
+ * - Hides the content visually from users (position absolute + clip)
+ * - Does NOT use display:none or visibility:hidden (which hide from crawlers)
+ * - Keeps content in DOM and accessible to screen readers and bots
+ * - Prevents layout shifts and visual duplication
  */
 @layer components {
   /* 
-   * Visually hide SSR content but keep it accessible for crawlers and screen readers
-   * NOT using display:none or visibility:hidden as those hide from crawlers too
+   * Hide SSR content visually but keep accessible for crawlers
+   * This is the recommended approach for SEO-only content
    */
-  .sr-only-mobile {
+  .venue-ssr-content {
     position: absolute;
     width: 1px;
     height: 1px;
@@ -230,17 +238,16 @@
     border-width: 0;
   }
 
-  /* Style the venue SSR content sections */
-  .venue-ssr-content section {
-    @apply mb-4 last:mb-0;
-  }
-
-  .venue-ssr-content h2 {
-    @apply text-lg font-semibold;
-  }
-
-  /* Fallback content styling - this one IS visible to users */
+  /* Fallback content styling - VISIBLE to users when venue has incomplete data */
   .venue-ssr-fallback {
-    @apply mb-6;
+    @apply mb-6 rounded-lg border bg-card p-6;
+  }
+
+  .venue-ssr-fallback h1 {
+    @apply mb-4 text-2xl font-bold;
+  }
+
+  .venue-ssr-fallback p {
+    @apply text-muted-foreground;
   }
 }

@@ -13,6 +13,7 @@ import {
 } from "@/lib/structured-data";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { Suspense } from "react";
 
 type Language = "en" | "pt" | "es" | "fr" | "de" | "it";
 
@@ -159,6 +160,8 @@ export async function generateMetadata({
   };
 }
 
+// Use dynamic rendering for now due to client component using useSearchParams
+// TODO: Refactor VenueDetailClient to be Suspense-compatible for ISR
 export const dynamic = "force-dynamic";
 
 export default async function VenueDetailPage({
@@ -226,28 +229,30 @@ export default async function VenueDetailPage({
       <StructuredData data={venueSchema} />
       <StructuredData data={breadcrumbSchema} />
 
-      {/* SSR Content - Visible to crawlers without JavaScript */}
-      <div className="container mx-auto px-4 py-4">
-        {hasMinimalContent ? (
-          <VenueSSRContent
-            venue={venueForSchema}
-            translation={translation || null}
-            locale={locale}
-          />
-        ) : (
-          <VenueSSRFallback venueName={venue.name} locale={locale} />
-        )}
-      </div>
+      {/* SSR Content - Hidden visually but visible to crawlers */}
+      {hasMinimalContent ? (
+        <VenueSSRContent
+          venue={venueForSchema}
+          translation={translation || null}
+          locale={locale}
+        />
+      ) : (
+        <VenueSSRFallback venueName={venue.name} locale={locale} />
+      )}
 
-      {/* Client-side interactive component - Loads after SSR content */}
-      <VenueDetailClient
-        slug={slug}
-        locale={locale}
-        userId={session?.user?.id}
-        userName={session?.user?.name}
-        userImage={session?.user?.image}
-        userRole={session?.user?.role}
-      />
+      {/* Client-side interactive component - Main visible content */}
+      <Suspense
+        fallback={<div className="container mx-auto px-4 py-8">Loading...</div>}
+      >
+        <VenueDetailClient
+          slug={slug}
+          locale={locale}
+          userId={session?.user?.id}
+          userName={session?.user?.name}
+          userImage={session?.user?.image}
+          userRole={session?.user?.role}
+        />
+      </Suspense>
     </>
   );
 }

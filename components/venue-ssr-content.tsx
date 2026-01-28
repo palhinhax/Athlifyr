@@ -402,7 +402,7 @@ export function VenueSSRContent({
 
   return (
     <article
-      className="venue-ssr-content sr-only-mobile"
+      className="venue-ssr-content"
       itemScope
       itemType="https://schema.org/LocalBusiness"
     >
@@ -416,10 +416,7 @@ export function VenueSSRContent({
 
       {/* Main Heading - Essential for SEO */}
       <header className="mb-6">
-        <h1
-          className="text-3xl font-bold tracking-tight md:text-4xl"
-          itemProp="name"
-        >
+        <h1 className="mb-3" itemProp="name">
           {venue.name}
         </h1>
         <div className="mt-2 flex flex-wrap items-center gap-2">
@@ -466,7 +463,7 @@ export function VenueSSRContent({
 
       {/* Description - Essential for content indexing */}
       <section className="mb-6" aria-labelledby="venue-about">
-        <h2 id="venue-about" className="mb-3 text-xl font-semibold">
+        <h2 id="venue-about" className="mb-3">
           {getLabel("about", locale)} {venue.name}
         </h2>
         {hasDescription ? (
@@ -474,11 +471,12 @@ export function VenueSSRContent({
             className="prose prose-sm dark:prose-invert max-w-none"
             itemProp="description"
           >
-            {/* Render first 500 chars as plain text for crawlers, full content loads in client */}
-            <p>
-              {description.substring(0, 500)}
-              {description.length > 500 ? "..." : ""}
-            </p>
+            {/* Render full description for crawlers and initial page load */}
+            <div
+              dangerouslySetInnerHTML={{
+                __html: description.replace(/\n/g, "<br />"),
+              }}
+            />
           </div>
         ) : (
           <p className="text-muted-foreground" itemProp="description">

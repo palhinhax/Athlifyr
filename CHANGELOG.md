@@ -1,3 +1,9 @@
+## [14.4.1](https://github.com/palhinhax/Athlifyr/compare/v14.4.0...v14.4.1) (2026-01-28)
+
+### Bug Fixes
+
+- **venues:** correct auth links from /auth/register to /auth/signup ([ac9f99f](https://github.com/palhinhax/Athlifyr/commit/ac9f99fd6232085490c318a519d885a5f960f24d))
+
 # [14.4.0](https://github.com/palhinhax/Athlifyr/compare/v14.3.3...v14.4.0) (2026-01-28)
 
 ### Features

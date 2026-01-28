@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SportType, Language } from "@prisma/client";
+import { isOfficialAthlifyrAccount } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -13,6 +14,7 @@ interface SearchResult {
   href: string;
   sportTypes?: SportType[];
   date?: string;
+  isOfficial?: boolean;
 }
 
 // Helper to validate language
@@ -328,6 +330,7 @@ export async function GET(request: NextRequest) {
         subtitle: user.email?.split("@")[0] || undefined,
         image: user.image,
         href: `/user/${user.id}`,
+        isOfficial: isOfficialAthlifyrAccount(user.email),
       })),
     ];
 

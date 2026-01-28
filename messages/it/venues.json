@@ -18,7 +18,8 @@
       "staff": "Personale",
       "payments": "Pagamenti",
       "advanced": "Avanzate",
-      "seo": "SEO"
+      "seo": "SEO",
+      "translations": "Traduzioni"
     },
     "staff": {
       "title": "Gestione del Personale",
@@ -141,6 +142,27 @@
       "savedDescription": "Le modifiche SEO sono state salvate con successo",
       "error": "Errore nel salvataggio",
       "errorDescription": "Si è verificato un errore durante il salvataggio delle impostazioni SEO"
+    },
+    "translations": {
+      "title": "Traduzioni",
+      "description": "Traduci la descrizione della tua struttura in diverse lingue",
+      "descriptionLabel": "Descrizione",
+      "descriptionPlaceholder": "Descrizione in {language}",
+      "metaTitleLabel": "Titolo Meta SEO",
+      "metaTitlePlaceholder": "Titolo meta in {language}",
+      "metaDescriptionLabel": "Descrizione Meta SEO",
+      "metaDescriptionPlaceholder": "Descrizione meta in {language}",
+      "originalDescription": "Descrizione Originale",
+      "copyOriginal": "Copia originale",
+      "ownerOnly": "Solo il proprietario può modificare le traduzioni",
+      "markdownSupported": "Supporta la formattazione Markdown: **grassetto**, *corsivo*, elenchi, link",
+      "complete": "Completa",
+      "incomplete": "Incompleta",
+      "save": "Salva traduzioni",
+      "saved": "Traduzioni salvate",
+      "savedDescription": "Le traduzioni sono state salvate con successo",
+      "error": "Errore nel salvataggio",
+      "errorDescription": "Si è verificato un errore durante il salvataggio delle traduzioni"
     },
     "noVenues": "Nessuna struttura trovata",
     "noResults": "Nessun risultato trovato con i filtri attuali",
@@ -573,7 +595,8 @@
       "imageUploadSuccess": "Immagine caricata con successo",
       "imageUploadError": "Errore nel caricamento dell'immagine",
       "updateSuccess": "Struttura aggiornata con successo",
-      "updateError": "Errore nell'aggiornamento della struttura"
+      "updateError": "Errore nell'aggiornamento della struttura",
+      "markdownSupported": "Supporta la formattazione Markdown: **grassetto**, *corsivo*, elenchi, link"
     },
     "plan": {
       "policy": "Politica del Piano",

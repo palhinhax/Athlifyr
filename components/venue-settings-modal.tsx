@@ -16,6 +16,7 @@ import { VenuePaymentsSettings } from "@/components/venue-payments-settings";
 import { VenueSessionsSettings } from "@/components/venue-sessions-settings";
 import { VenueSEOSettings } from "@/components/venue-seo-settings";
 import { VenueVisibilitySettings } from "@/components/venue-visibility-settings";
+import { VenueDescriptionTranslations } from "@/components/venue-description-translations";
 
 interface VenueSettingsModalProps {
   venue: {
@@ -82,9 +83,12 @@ export function VenueSettingsModal({
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="general">
               {t("settingsTabs.general")}
+            </TabsTrigger>
+            <TabsTrigger value="translations">
+              {t("settingsTabs.translations")}
             </TabsTrigger>
             <TabsTrigger value="sessions">
               {t("settingsTabs.sessions")}
@@ -106,6 +110,15 @@ export function VenueSettingsModal({
                 if (onRefresh) onRefresh();
                 onOpenChange(false);
               }}
+            />
+          </TabsContent>
+
+          <TabsContent value="translations" className="mt-6">
+            <VenueDescriptionTranslations
+              venueId={venue.id}
+              venueDescription={venue.description}
+              isOwner={isOwner}
+              isAppAdmin={userRole === "ADMIN"}
             />
           </TabsContent>
 

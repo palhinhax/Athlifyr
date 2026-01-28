@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import Image from "next/image";
 import { Link } from "@/i18n/routing";
 import {
@@ -53,6 +54,7 @@ export function FriendsSection() {
   const { data: session } = useSession();
   const { toast } = useToast();
   const router = useRouter();
+  const locale = useLocale();
   const [activeTab, setActiveTab] = useState<Tab>("friends");
   const [friends, setFriends] = useState<Friend[]>([]);
   const [pendingRequests, setPendingRequests] = useState<PendingRequest[]>([]);
@@ -290,7 +292,7 @@ export function FriendsSection() {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(`/chat?conversation=${data.conversation.id}`);
+        router.push(`/${locale}/chat?conversation=${data.conversation.id}`);
       } else {
         toast({
           variant: "destructive",

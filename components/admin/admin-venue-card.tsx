@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { MapPin, Edit, Trash2, UserPlus, DollarSign } from "lucide-react";
@@ -54,6 +55,7 @@ export function AdminVenueCard({
   onDelete,
 }: AdminVenueCardProps) {
   const router = useRouter();
+  const locale = useLocale();
 
   return (
     <Card className="relative">
@@ -85,7 +87,7 @@ export function AdminVenueCard({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => router.push(`/venues/${venue.slug}`)}
+              onClick={() => router.push(`/${locale}/venues/${venue.slug}`)}
             >
               <Edit className="h-4 w-4" />
             </Button>

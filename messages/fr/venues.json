@@ -18,7 +18,8 @@
       "staff": "Personnel",
       "payments": "Paiements",
       "advanced": "Avancé",
-      "seo": "SEO"
+      "seo": "SEO",
+      "translations": "Traductions"
     },
     "staff": {
       "title": "Gestion du Personnel",
@@ -141,6 +142,27 @@
       "savedDescription": "Les modifications SEO ont été enregistrées avec succès",
       "error": "Erreur lors de l'enregistrement",
       "errorDescription": "Une erreur s'est produite lors de l'enregistrement des paramètres SEO"
+    },
+    "translations": {
+      "title": "Traductions",
+      "description": "Traduisez la description de votre lieu dans différentes langues",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Description en {language}",
+      "metaTitleLabel": "Titre Meta SEO",
+      "metaTitlePlaceholder": "Titre meta en {language}",
+      "metaDescriptionLabel": "Description Meta SEO",
+      "metaDescriptionPlaceholder": "Description meta en {language}",
+      "originalDescription": "Description Originale",
+      "copyOriginal": "Copier l'original",
+      "ownerOnly": "Seul le propriétaire peut modifier les traductions",
+      "markdownSupported": "Prend en charge le format Markdown : **gras**, *italique*, listes, liens",
+      "complete": "Complète",
+      "incomplete": "Incomplète",
+      "save": "Enregistrer les traductions",
+      "saved": "Traductions enregistrées",
+      "savedDescription": "Les traductions ont été enregistrées avec succès",
+      "error": "Erreur lors de l'enregistrement",
+      "errorDescription": "Une erreur s'est produite lors de l'enregistrement des traductions"
     },
     "noVenues": "Aucun lieu trouvé",
     "noResults": "Aucun résultat trouvé avec les filtres actuels",
@@ -573,7 +595,8 @@
       "imageUploadSuccess": "Image téléchargée avec succès",
       "imageUploadError": "Échec du téléchargement de l'image",
       "updateSuccess": "Lieu mis à jour avec succès",
-      "updateError": "Échec de la mise à jour du lieu"
+      "updateError": "Échec de la mise à jour du lieu",
+      "markdownSupported": "Prend en charge le format Markdown : **gras**, *italique*, listes, liens"
     },
     "plan": {
       "policy": "Politique du Plan",

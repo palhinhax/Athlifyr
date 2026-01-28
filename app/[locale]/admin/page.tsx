@@ -14,7 +14,7 @@ import {
   Users,
   Flag,
 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 
 // Lazy load admin components
 const AdminEventsContent = lazy(() => import("./events/page"));
@@ -31,6 +31,7 @@ function AdminContent() {
   const searchParams = useSearchParams();
   const currentTab = searchParams.get("tab") || "events";
   const t = useTranslations("admin.dashboard");
+  const locale = useLocale();
 
   useEffect(() => {
     if (status === "loading") return;
@@ -60,7 +61,7 @@ function AdminContent() {
   }
 
   const handleTabChange = (value: string) => {
-    router.push(`/admin?tab=${value}`);
+    router.push(`/${locale}/admin?tab=${value}`);
   };
 
   return (

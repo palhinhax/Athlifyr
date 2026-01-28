@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -28,6 +29,7 @@ interface OfficialProfilePageProps {
 export function OfficialProfilePage({ user }: OfficialProfilePageProps) {
   const t = useTranslations("officialProfile");
   const router = useRouter();
+  const locale = useLocale();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -42,7 +44,7 @@ export function OfficialProfilePage({ user }: OfficialProfilePageProps) {
 
       if (res.ok) {
         const data = await res.json();
-        router.push(`/chat?conversation=${data.conversation.id}`);
+        router.push(`/${locale}/chat?conversation=${data.conversation.id}`);
       } else {
         toast({
           variant: "destructive",

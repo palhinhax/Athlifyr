@@ -30,6 +30,7 @@ import { VenuePlanModal } from "@/components/venue-plan-modal";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
 import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import { VenueClientsManager } from "@/components/venue-clients-manager";
+import { CollapsibleDescription } from "@/components/collapsible-description";
 import {
   Trash2,
   CheckCircle,
@@ -128,6 +129,9 @@ export function VenueDetailClient({
   const { toast } = useToast();
 
   const [venue, setVenue] = useState<Venue | null>(null);
+  const [translatedDescription, setTranslatedDescription] = useState<
+    string | null
+  >(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<{
@@ -288,12 +292,32 @@ export function VenueDetailClient({
 
       const data = await response.json();
       setVenue(data);
+
+      // Fetch translations for the venue description
+      try {
+        const translationsResponse = await fetch(`/api/venues/${slug}/seo`);
+        if (translationsResponse.ok) {
+          const translationsData = await translationsResponse.json();
+          const translation = translationsData.translations?.find(
+            (t: { language: string; description?: string }) =>
+              t.language === locale
+          );
+          if (translation?.description) {
+            setTranslatedDescription(translation.description);
+          } else {
+            setTranslatedDescription(null);
+          }
+        }
+      } catch {
+        // If translations fetch fails, use the default description
+        setTranslatedDescription(null);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load venue");
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, locale]);
 
   useEffect(() => {
     fetchVenue();
@@ -487,9 +511,15 @@ export function VenueDetailClient({
                 <h2 className="mb-4 text-2xl font-semibold">
                   {tInfo("description")}
                 </h2>
-                <p className="text-muted-foreground">
-                  {venue.description || t("noDescription")}
-                </p>
+                {translatedDescription || venue.description ? (
+                  <CollapsibleDescription
+                    description={
+                      translatedDescription || venue.description || ""
+                    }
+                  />
+                ) : (
+                  <p className="text-muted-foreground">{t("noDescription")}</p>
+                )}
               </div>
 
               {/* Contact Information */}

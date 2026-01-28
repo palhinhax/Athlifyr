@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -82,6 +83,7 @@ const venueTypeLabels: Record<VenueType, string> = {
 export default function AdminVenuesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const locale = useLocale();
   const [venues, setVenues] = useState<Venue[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -817,7 +819,9 @@ export default function AdminVenuesPage() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => router.push(`/venues/${venue.slug}`)}
+                      onClick={() =>
+                        router.push(`/${locale}/venues/${venue.slug}`)
+                      }
                     >
                       <Edit className="h-4 w-4" />
                     </Button>

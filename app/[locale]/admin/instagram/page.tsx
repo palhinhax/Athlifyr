@@ -30,6 +30,7 @@ import { SplitScreenForm } from "@/components/instagram/split-screen-form";
 import { TestimonialStatsForm } from "@/components/instagram/testimonial-stats-form";
 import { VerticalChallengeForm } from "@/components/instagram/vertical-challenge-form";
 import { HookCtaForm } from "@/components/instagram/hook-cta-form";
+import { VenuePromoForm } from "@/components/instagram/venue-promo-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -44,6 +45,7 @@ import {
   type TestimonialStatsPayload,
   type VerticalChallengePayload,
   type HookCtaPayload,
+  type VenuePromoPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -132,7 +134,7 @@ export default function InstagramGeneratorPage() {
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
   const [t1Subtitle, setT1Subtitle] = useState("Singles • Doubles");
   const [t1MetaLine, setT1MetaLine] = useState("Mar 2026 • Lisboa");
-  const [t1Cta, setT1Cta] = useState("Descobre na Athlifyr");
+  const [t1Cta, setT1Cta] = useState("Descobre em Athlifyr");
 
   // T2: Category Card
   const [t2CategoryTitle, setT2CategoryTitle] = useState("TRAIL");
@@ -204,6 +206,16 @@ export default function InstagramGeneratorPage() {
     "Discover 1000+ sports events across Portugal. From running to CrossFit, find your next challenge."
   );
   const [t10Cta, setT10Cta] = useState("DISCOVER NOW");
+
+  // T11: Venue Promo
+  const [t11VenueName, setT11VenueName] = useState("");
+  const [t11VenueType, setT11VenueType] = useState("");
+  const [t11Tagline, setT11Tagline] = useState("");
+  const [t11Location, setT11Location] = useState("");
+  const [t11Services, setT11Services] = useState<string[]>([]);
+  const [t11LogoUrl, setT11LogoUrl] = useState<string | undefined>();
+  const [t11Cta, setT11Cta] = useState("Descobre na Athlifyr");
+  const [t11Instagram, setT11Instagram] = useState<string | undefined>();
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -385,7 +397,7 @@ export default function InstagramGeneratorPage() {
     }
 
     setT1MetaLine(`${formattedDate} • ${event.city}, ${event.country}`);
-    setT1Cta("Descobre na Athlifyr");
+    setT1Cta("Descobre em Athlifyr");
 
     toast({
       title: "Evento selecionado",
@@ -571,8 +583,21 @@ export default function InstagramGeneratorPage() {
           background,
         } as HookCtaPayload;
 
+      case "T11":
+        return {
+          venueName: t11VenueName,
+          venueType: t11VenueType,
+          tagline: t11Tagline,
+          location: t11Location,
+          services: t11Services.length > 0 ? t11Services : undefined,
+          logoUrl: t11LogoUrl,
+          cta: t11Cta || undefined,
+          instagram: t11Instagram,
+          background,
+        } as VenuePromoPayload;
+
       default:
-        throw new Error(`Unknown template: ${templateKey}. Expected T1-T10.`);
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T11.`);
     }
   };
 
@@ -957,6 +982,32 @@ export default function InstagramGeneratorPage() {
                 onHookChange={setT10Hook}
                 onBodyChange={setT10Body}
                 onCtaChange={setT10Cta}
+              />
+            )}
+
+            {templateKey === "T11" && (
+              <VenuePromoForm
+                payload={{
+                  venueName: t11VenueName,
+                  venueType: t11VenueType,
+                  tagline: t11Tagline,
+                  location: t11Location,
+                  services: t11Services,
+                  logoUrl: t11LogoUrl,
+                  cta: t11Cta,
+                  instagram: t11Instagram,
+                  background: getBackground(),
+                }}
+                onPayloadChange={(payload) => {
+                  setT11VenueName(payload.venueName);
+                  setT11VenueType(payload.venueType);
+                  setT11Tagline(payload.tagline);
+                  setT11Location(payload.location);
+                  setT11Services(payload.services || []);
+                  setT11LogoUrl(payload.logoUrl);
+                  setT11Cta(payload.cta || "Descobre na Athlifyr");
+                  setT11Instagram(payload.instagram);
+                }}
               />
             )}
           </Card>

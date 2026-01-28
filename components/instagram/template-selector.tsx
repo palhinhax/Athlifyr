@@ -46,6 +46,7 @@ export function TemplateSelector({
             <SelectItem value="T8">T8: Testimonial/Stats Card</SelectItem>
             <SelectItem value="T9">T9: Vertical Challenge (TikTok)</SelectItem>
             <SelectItem value="T10">T10: Hook + CTA (Viral)</SelectItem>
+            <SelectItem value="T11">T11: Venue Promo</SelectItem>
           </SelectContent>
         </Select>
       </div>

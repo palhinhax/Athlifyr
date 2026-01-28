@@ -21,7 +21,7 @@ Perfect for promoting specific events.
 - **Title** (required, max 50 chars): Main event name
 - **Subtitle** (optional, max 40 chars): Additional info like "Singles • Doubles"
 - **Date/Location** (optional, max 30 chars): Event details like "Mar 2026 • Lisboa"
-- **CTA** (optional, max 30 chars): Call to action like "Descobre na Athlifyr"
+- **CTA** (optional, max 30 chars): Call to action like "Descobre em Athlifyr"
 
 #### T2: Category Card
 

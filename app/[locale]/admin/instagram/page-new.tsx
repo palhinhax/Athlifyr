@@ -79,7 +79,7 @@ export default function InstagramGeneratorPage() {
   const [t1Title, setT1Title] = useState("HYROX LISBOA");
   const [t1Subtitle, setT1Subtitle] = useState("Singles • Doubles");
   const [t1MetaLine, setT1MetaLine] = useState("Mar 2026 • Lisboa");
-  const [t1Cta, setT1Cta] = useState("Descobre na Athlifyr");
+  const [t1Cta, setT1Cta] = useState("Descobre em Athlifyr");
 
   // T2: Category Card
   const [t2CategoryTitle, setT2CategoryTitle] = useState("TRAIL");
@@ -289,7 +289,7 @@ export default function InstagramGeneratorPage() {
     }
 
     setT1MetaLine(`${formattedDate} • ${event.city}, ${event.country}`);
-    setT1Cta("Descobre na Athlifyr");
+    setT1Cta("Descobre em Athlifyr");
 
     toast({
       title: "Evento selecionado",

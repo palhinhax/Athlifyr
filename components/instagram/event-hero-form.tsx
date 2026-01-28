@@ -67,7 +67,7 @@ export function EventHeroForm({
           value={cta}
           onChange={(e) => onCtaChange(e.target.value)}
           maxLength={30}
-          placeholder="Descobre na Athlifyr"
+          placeholder="Descobre em Athlifyr"
           autoComplete="off"
         />
         <p className="mt-1 text-xs text-muted-foreground">{cta.length}/30</p>

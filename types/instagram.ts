@@ -8,7 +8,8 @@ export type TemplateKey =
   | "T7"
   | "T8"
   | "T9"
-  | "T10";
+  | "T10"
+  | "T11";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -139,6 +140,19 @@ export interface HookCtaPayload {
   background: Background;
 }
 
+// Template T11: Venue Promo (Venue promotion with logo)
+export interface VenuePromoPayload {
+  venueName: string; // required, max 40 chars
+  venueType: string; // required, max 30 chars (e.g., "Massagem Desportiva")
+  tagline: string; // required, max 60 chars
+  location: string; // required, max 40 chars (e.g., "Ermesinde, Porto")
+  services?: string[]; // optional, 2-4 services
+  logoUrl?: string; // optional, venue logo URL (circular)
+  cta?: string; // optional, max 30 chars (e.g., "Marca já!")
+  instagram?: string; // optional, Instagram handle
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
@@ -149,7 +163,8 @@ export type TemplatePayload =
   | SplitScreenPayload
   | TestimonialStatsPayload
   | VerticalChallengePayload
-  | HookCtaPayload;
+  | HookCtaPayload
+  | VenuePromoPayload;
 
 export interface InstagramDraft {
   id: string;

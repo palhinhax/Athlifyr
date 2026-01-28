@@ -554,3 +554,338 @@ export function generateBreadcrumbSchema(
     })),
   };
 }
+
+/**
+ * Venue data interface for structured data generation
+ */
+export interface VenueForStructuredData {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  services: string[];
+  description: string | null;
+  phone: string | null;
+  email: string | null;
+  website: string | null;
+  instagram: string | null;
+  address: string | null;
+  city: string | null;
+  country: string;
+  latitude: number | null;
+  longitude: number | null;
+  logo: string | null;
+  coverImage: string | null;
+  isVerified: boolean;
+}
+
+/**
+ * Map venue type to schema.org business type
+ */
+function getSchemaBusinessType(
+  venueType: string
+): "LocalBusiness" | "SportsActivityLocation" | "HealthAndBeautyBusiness" {
+  switch (venueType) {
+    case "CROSSFIT_BOX":
+    case "GYM":
+    case "PT_STUDIO":
+      return "SportsActivityLocation";
+    case "MASSAGE":
+    case "PHYSIO":
+    case "NUTRITION":
+      return "HealthAndBeautyBusiness";
+    default:
+      return "LocalBusiness";
+  }
+}
+
+/**
+ * Map venue type to human-readable name
+ */
+function getVenueTypeName(venueType: string, locale: string = "en"): string {
+  const typeNames: Record<string, Record<string, string>> = {
+    CROSSFIT_BOX: {
+      en: "CrossFit Box",
+      pt: "Box de CrossFit",
+      es: "Box de CrossFit",
+      fr: "Box de CrossFit",
+      de: "CrossFit Box",
+      it: "Box di CrossFit",
+    },
+    GYM: {
+      en: "Gym",
+      pt: "Ginásio",
+      es: "Gimnasio",
+      fr: "Salle de sport",
+      de: "Fitnessstudio",
+      it: "Palestra",
+    },
+    PT_STUDIO: {
+      en: "Personal Training Studio",
+      pt: "Estúdio de Personal Training",
+      es: "Estudio de Entrenamiento Personal",
+      fr: "Studio d'entraînement personnel",
+      de: "Personal Training Studio",
+      it: "Studio di Personal Training",
+    },
+    MASSAGE: {
+      en: "Massage Therapy",
+      pt: "Massagem Terapêutica",
+      es: "Masaje Terapéutico",
+      fr: "Massothérapie",
+      de: "Massagetherapie",
+      it: "Massoterapia",
+    },
+    PHYSIO: {
+      en: "Physiotherapy",
+      pt: "Fisioterapia",
+      es: "Fisioterapia",
+      fr: "Physiothérapie",
+      de: "Physiotherapie",
+      it: "Fisioterapia",
+    },
+    NUTRITION: {
+      en: "Nutrition",
+      pt: "Nutrição",
+      es: "Nutrición",
+      fr: "Nutrition",
+      de: "Ernährung",
+      it: "Nutrizione",
+    },
+    OTHER: {
+      en: "Venue",
+      pt: "Espaço",
+      es: "Local",
+      fr: "Lieu",
+      de: "Einrichtung",
+      it: "Locale",
+    },
+  };
+
+  return (
+    typeNames[venueType]?.[locale] || typeNames[venueType]?.["en"] || venueType
+  );
+}
+
+/**
+ * Map service to human-readable name
+ */
+function getServiceName(service: string, locale: string = "en"): string {
+  const serviceNames: Record<string, Record<string, string>> = {
+    CROSSFIT: {
+      en: "CrossFit",
+      pt: "CrossFit",
+      es: "CrossFit",
+      fr: "CrossFit",
+      de: "CrossFit",
+      it: "CrossFit",
+    },
+    HYROX: {
+      en: "HYROX Training",
+      pt: "Treino HYROX",
+      es: "Entrenamiento HYROX",
+      fr: "Entraînement HYROX",
+      de: "HYROX Training",
+      it: "Allenamento HYROX",
+    },
+    MASSAGE: {
+      en: "Sports Massage",
+      pt: "Massagem Desportiva",
+      es: "Masaje Deportivo",
+      fr: "Massage sportif",
+      de: "Sportmassage",
+      it: "Massaggio sportivo",
+    },
+    PHYSIOTHERAPY: {
+      en: "Physiotherapy",
+      pt: "Fisioterapia",
+      es: "Fisioterapia",
+      fr: "Physiothérapie",
+      de: "Physiotherapie",
+      it: "Fisioterapia",
+    },
+    PERSONAL_TRAINING: {
+      en: "Personal Training",
+      pt: "Personal Training",
+      es: "Entrenamiento Personal",
+      fr: "Entraînement personnel",
+      de: "Personal Training",
+      it: "Personal Training",
+    },
+    GROUP_CLASSES: {
+      en: "Group Classes",
+      pt: "Aulas de Grupo",
+      es: "Clases Grupales",
+      fr: "Cours collectifs",
+      de: "Gruppenkurse",
+      it: "Lezioni di gruppo",
+    },
+    RECOVERY: {
+      en: "Recovery Services",
+      pt: "Serviços de Recuperação",
+      es: "Servicios de Recuperación",
+      fr: "Services de récupération",
+      de: "Erholungsdienstleistungen",
+      it: "Servizi di recupero",
+    },
+    NUTRITION: {
+      en: "Nutrition Consulting",
+      pt: "Consultoria Nutricional",
+      es: "Consultoría Nutricional",
+      fr: "Conseil en nutrition",
+      de: "Ernährungsberatung",
+      it: "Consulenza nutrizionale",
+    },
+    YOGA: {
+      en: "Yoga",
+      pt: "Yoga",
+      es: "Yoga",
+      fr: "Yoga",
+      de: "Yoga",
+      it: "Yoga",
+    },
+    PILATES: {
+      en: "Pilates",
+      pt: "Pilates",
+      es: "Pilates",
+      fr: "Pilates",
+      de: "Pilates",
+      it: "Pilates",
+    },
+  };
+
+  return (
+    serviceNames[service]?.[locale] || serviceNames[service]?.["en"] || service
+  );
+}
+
+/**
+ * Generate LocalBusiness/SportsActivityLocation/HealthAndBeautyBusiness schema for venue pages
+ * https://schema.org/LocalBusiness
+ * https://schema.org/SportsActivityLocation
+ * https://schema.org/HealthAndBeautyBusiness
+ *
+ * Essential for Google Local SEO and preventing Soft 404 issues
+ */
+export function generateVenueSchema(
+  venue: VenueForStructuredData,
+  locale: string = "en",
+  translatedDescription?: string | null
+) {
+  const baseUrl =
+    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
+  const venueUrl = `${baseUrl}/${locale}/venues/${venue.slug}`;
+  const venueImage = venue.coverImage || venue.logo || `${baseUrl}/logo.png`;
+
+  // Determine the most appropriate schema type based on venue type
+  const schemaType = getSchemaBusinessType(venue.type);
+
+  // Build address
+  const address: {
+    "@type": string;
+    addressLocality?: string;
+    addressRegion?: string;
+    addressCountry: string;
+    streetAddress?: string;
+  } = {
+    "@type": "PostalAddress",
+    addressCountry: venue.country || "PT",
+  };
+
+  if (venue.city) {
+    address.addressLocality = venue.city;
+    // For Portugal, derive region from city if possible
+    address.addressRegion = venue.city;
+  }
+
+  if (venue.address) {
+    address.streetAddress = venue.address;
+  }
+
+  // Build geo coordinates
+  const geo =
+    venue.latitude && venue.longitude
+      ? {
+          "@type": "GeoCoordinates",
+          latitude: venue.latitude,
+          longitude: venue.longitude,
+        }
+      : undefined;
+
+  // Build services offered
+  const servicesOffered = venue.services.map((service) => ({
+    "@type": "Service",
+    name: getServiceName(service, locale),
+  }));
+
+  // Get venue type name for additional context
+  const venueTypeName = getVenueTypeName(venue.type, locale);
+
+  // Use translated description or fall back to original
+  const description =
+    translatedDescription ||
+    venue.description ||
+    `${venue.name} - ${venueTypeName} ${venue.city ? `in ${venue.city}` : ""}, ${venue.country}`;
+
+  // Build the schema object
+  const schema: Record<string, unknown> = {
+    "@context": "https://schema.org",
+    "@type": schemaType,
+    "@id": venueUrl,
+    name: venue.name,
+    description: description.substring(0, 500), // Limit description length
+    url: venueUrl,
+    image: [venueImage],
+    address,
+    ...(geo && { geo }),
+    ...(venue.phone && { telephone: venue.phone }),
+    ...(venue.email && { email: venue.email }),
+    ...(venue.website && { sameAs: [venue.website] }),
+    ...(venue.instagram && {
+      sameAs: [
+        venue.website,
+        `https://instagram.com/${venue.instagram.replace("@", "")}`,
+      ].filter(Boolean),
+    }),
+    ...(servicesOffered.length > 0 && {
+      hasOfferCatalog: {
+        "@type": "OfferCatalog",
+        name: "Services",
+        itemListElement: servicesOffered,
+      },
+    }),
+    // Additional type-specific properties
+    ...(schemaType === "SportsActivityLocation" && {
+      sport: venueTypeName,
+    }),
+    // Indicate if verified
+    ...(venue.isVerified && {
+      isAccessibleForFree: false,
+    }),
+  };
+
+  return schema;
+}
+
+/**
+ * Generate venue page breadcrumbs schema
+ */
+export function generateVenueBreadcrumbSchema(
+  venue: { name: string; slug: string },
+  locale: string = "en"
+) {
+  const breadcrumbLabels: Record<string, string> = {
+    en: "Venues",
+    pt: "Espaços",
+    es: "Locales",
+    fr: "Lieux",
+    de: "Einrichtungen",
+    it: "Locali",
+  };
+
+  return generateBreadcrumbSchema([
+    { name: "Home", url: `/${locale}` },
+    { name: breadcrumbLabels[locale] || "Venues", url: `/${locale}/venues` },
+    { name: venue.name, url: `/${locale}/venues/${venue.slug}` },
+  ]);
+}

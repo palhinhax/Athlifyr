@@ -14,6 +14,7 @@ import { TemplateSplitScreen } from "./template-split-screen";
 import { TemplateTestimonialStats } from "./template-testimonial-stats";
 import { TemplateVerticalChallenge } from "./template-vertical-challenge";
 import { TemplateHookCta } from "./template-hook-cta";
+import { TemplateVenuePromo } from "./template-venue-promo";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -152,10 +153,21 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T11":
+          return (
+            <TemplateVenuePromo
+              payload={
+                payload as Parameters<typeof TemplateVenuePromo>[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1-T10.
+              Unknown template: {templateKey}. Expected T1-T11.
             </div>
           );
       }

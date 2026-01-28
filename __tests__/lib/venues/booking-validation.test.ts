@@ -15,6 +15,7 @@ jest.mock("@/lib/prisma", () => ({
       findUnique: jest.fn(),
     },
     venueBooking: {
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       count: jest.fn(),
     },
@@ -106,7 +107,7 @@ describe("booking-validation", () => {
         startsAt: new Date("2026-06-15T10:00:00Z"),
         bookings: [],
       });
-      (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue({
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue({
         id: "booking-1",
         status: BookingStatus.BOOKED,
       });
@@ -137,7 +138,7 @@ describe("booking-validation", () => {
         startsAt: new Date("2026-06-15T10:00:00Z"),
         bookings: [{ id: "b1" }, { id: "b2" }],
       });
-      (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -169,7 +170,7 @@ describe("booking-validation", () => {
         startsAt: new Date("2026-06-15T10:00:00Z"),
         bookings: [],
       });
-      (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
       (prisma.venueBooking.count as jest.Mock).mockResolvedValue(1);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -202,7 +203,7 @@ describe("booking-validation", () => {
         startsAt: new Date("2026-06-15T09:00:00Z"), // 09:00 is before 18:00
         bookings: [],
       });
-      (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -230,7 +231,7 @@ describe("booking-validation", () => {
         startsAt: new Date("2026-06-15T10:00:00Z"),
         bookings: [],
       });
-      (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue(null);
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 

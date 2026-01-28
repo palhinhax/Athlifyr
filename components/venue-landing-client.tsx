@@ -185,8 +185,8 @@ export function VenueLandingClient({
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-y bg-muted/20 py-16">
+      {/* Stats Section - Temporarily hidden until we have accurate data */}
+      {/* <section className="border-y bg-muted/20 py-16">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
             {[
@@ -213,7 +213,7 @@ export function VenueLandingClient({
             ))}
           </div>
         </div>
-      </section>
+      </section> */}
 
       {/* FAQ Section */}
       <section className="py-20">

@@ -755,6 +755,145 @@
         "clientsDescription": "Mostra l'elenco dei membri e dei clienti della struttura",
         "subscriptionsDescription": "Mostra e gestisce gli abbonamenti attivi"
       }
+    },
+    "landing": {
+      "seo": {
+        "title": "Software Gratuito di Gestione per Palestre, Studi e Personal Trainer | Athlifyr",
+        "description": "Software gratuito per gestire la tua palestra, studio, box o attività di personal training. Programma lezioni, gestisci abbonamenti, clienti e pagamenti. Inizia oggi senza costi!"
+      },
+      "hero": {
+        "tagline": "GRATUITO PER SEMPRE",
+        "title": "Gestisci il tuo spazio fitness",
+        "titleHighlight": "senza complicazioni",
+        "subtitle": "La piattaforma gratuita che ti aiuta a gestire clienti, lezioni, abbonamenti e pagamenti. Concentrati su ciò che conta: i tuoi atleti."
+      },
+      "mission": {
+        "title": "La Nostra Missione",
+        "description": "Athlifyr è nata con un obiettivo chiaro: creare una community dove gli atleti scoprono eventi, trovano luoghi di allenamento e si connettono con altri appassionati di sport. I venues sono il cuore di questa community.",
+        "subtitle": "Insieme, costruiamo un ecosistema sportivo più forte"
+      },
+      "cta": {
+        "primary": "Crea Account Gratuito",
+        "secondary": "Guarda la Demo",
+        "startFree": "Inizia Gratis",
+        "contact": "Contattaci"
+      },
+      "features": {
+        "title": "Tutto ciò di cui hai bisogno per gestire il tuo spazio",
+        "subtitle": "Nessun costo nascosto. Nessuna limitazione. Completamente gratuito.",
+        "clients": {
+          "title": "Gestione Clienti",
+          "description": "Mantieni un registro completo dei tuoi membri, con storico presenze, abbonamenti attivi e informazioni di contatto."
+        },
+        "schedule": {
+          "title": "Orari e Lezioni",
+          "description": "Crea e gestisci il calendario delle lezioni, sessioni di allenamento e disponibilità. I tuoi clienti possono prenotare direttamente."
+        },
+        "subscriptions": {
+          "title": "Abbonamenti e Piani",
+          "description": "Definisci piani mensili, pacchetti di lezioni o sessioni singole. Monitora rinnovi e pagamenti."
+        },
+        "team": {
+          "title": "Team e Staff",
+          "description": "Aggiungi allenatori, coach e amministratori. Imposta permessi e monitora le prestazioni di ciascuno."
+        },
+        "payments": {
+          "title": "Pagamenti Integrati",
+          "description": "Accetta pagamenti online con Stripe. Ricevi direttamente sul tuo conto, senza intermediari."
+        },
+        "community": {
+          "title": "Community Athlifyr",
+          "description": "I tuoi atleti ti trovano attraverso la nostra piattaforma. Più visibilità, più clienti potenziali."
+        }
+      },
+      "forWho": {
+        "title": "Per chi è Athlifyr?",
+        "subtitle": "Qualsiasi spazio dedicato allo sport e al benessere può beneficiarne",
+        "gyms": {
+          "title": "Palestre e Club Fitness",
+          "description": "Gestisci membri, lezioni di gruppo e attrezzature"
+        },
+        "crossfit": {
+          "title": "Box di CrossFit",
+          "description": "WOD, lezioni e tracking dei progressi"
+        },
+        "studios": {
+          "title": "Studi di Yoga e Pilates",
+          "description": "Lezioni, workshop e ritiri"
+        },
+        "personalTrainers": {
+          "title": "Personal Trainer",
+          "description": "Agenda clienti e sessioni individuali"
+        },
+        "massage": {
+          "title": "Massaggiatori e Terapisti",
+          "description": "Appuntamenti e gestione trattamenti"
+        },
+        "clubs": {
+          "title": "Club Sportivi",
+          "description": "Squadre, allenamenti e competizioni"
+        }
+      },
+      "whyFree": {
+        "title": "Perché è gratuito?",
+        "description": "Crediamo che tutti i professionisti dello sport meritino strumenti di qualità, indipendentemente dalle dimensioni della loro attività. La nostra missione è democratizzare la gestione sportiva.",
+        "point1": "Nessun canone mensile o annuale",
+        "point2": "Nessun limite di clienti o membri",
+        "point3": "Nessuna funzionalità bloccata",
+        "point4": "Solo una piccola commissione sulle transazioni di pagamento"
+      },
+      "testimonials": {
+        "title": "Cosa dicono i nostri partner",
+        "subtitle": "Venues che fanno già parte della community Athlifyr"
+      },
+      "faq": {
+        "title": "Domande Frequenti",
+        "subtitle": "Tutto quello che devi sapere prima di iniziare",
+        "q1": {
+          "question": "È davvero gratuito? Qual è la fregatura?",
+          "answer": "Sì, è 100% gratuito! Non c'è nessuna fregatura. Athlifyr è finanziato attraverso una piccola commissione sulle transazioni di pagamento elaborate dalla piattaforma (quando usi il nostro sistema di pagamento integrato). Se preferisci gestire i pagamenti esternamente, non paghi nulla."
+        },
+        "q2": {
+          "question": "Quanto tempo ci vuole per configurare?",
+          "answer": "Puoi avere il tuo spazio configurato in meno di 10 minuti. Basta creare un account, aggiungere le informazioni di base del tuo venue, impostare i tuoi servizi e orari, e sei pronto!"
+        },
+        "q3": {
+          "question": "Posso importare i miei clienti esistenti?",
+          "answer": "Sì! Puoi importare la tua base clienti tramite file CSV o aggiungerli manualmente. Puoi anche invitare i tuoi clienti a unirsi direttamente alla piattaforma."
+        },
+        "q4": {
+          "question": "I miei clienti devono creare un account?",
+          "answer": "I clienti possono creare un account Athlifyr gratuito per accesso completo: prenotare lezioni, vedere orari, pagare abbonamenti e tracciare i loro progressi. Ma puoi anche gestire clienti che non hanno un account."
+        },
+        "q5": {
+          "question": "Posso usare il mio brand e i miei colori?",
+          "answer": "Certo! Puoi personalizzare la pagina del tuo venue con il tuo logo, colori, foto e tutte le informazioni rilevanti. I tuoi clienti vedono il tuo brand, non il nostro."
+        },
+        "q6": {
+          "question": "E se ho bisogno di aiuto?",
+          "answer": "Hai accesso al supporto via email e alla nostra documentazione completa. Siamo qui per aiutarti a ottenere il massimo dalla piattaforma."
+        },
+        "q7": {
+          "question": "Posso annullare in qualsiasi momento?",
+          "answer": "Assolutamente! Non ci sono contratti né impegni. Puoi esportare tutti i tuoi dati e andartene quando vuoi. Ma siamo sicuri che amerai restare!"
+        },
+        "q8": {
+          "question": "Quali metodi di pagamento posso accettare?",
+          "answer": "Tramite l'integrazione Stripe, puoi accettare carte di credito/debito, bonifici bancari e altro. I pagamenti vanno direttamente sul tuo conto."
+        }
+      },
+      "finalCta": {
+        "title": "Pronto a semplificare la gestione del tuo spazio?",
+        "subtitle": "Unisciti a centinaia di professionisti che già si fidano di Athlifyr",
+        "button": "Crea Account Gratuito Ora",
+        "questions": "Hai domande? Contattaci:"
+      },
+      "stats": {
+        "venues": "Venues Attivi",
+        "athletes": "Atleti nella Community",
+        "sessions": "Sessioni al Mese",
+        "countries": "Paesi"
+      }
     }
   }
 }

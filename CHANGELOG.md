@@ -1,3 +1,9 @@
+# [14.3.0](https://github.com/palhinhax/Athlifyr/compare/v14.2.0...v14.3.0) (2026-01-28)
+
+### Features
+
+- **venues:** add choose path section with simple profile option ([00e1f58](https://github.com/palhinhax/Athlifyr/commit/00e1f58b694fcf6bc3830eb4cd125fbd162d8b82))
+
 # [14.2.0](https://github.com/palhinhax/Athlifyr/compare/v14.1.0...v14.2.0) (2026-01-28)
 
 ### Features

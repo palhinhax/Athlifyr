@@ -73,6 +73,8 @@ export async function POST(request: Request) {
 
     let successCount = 0;
     let errorCount = 0;
+    const errors: Array<{ event: string; error: string }> = [];
+    const processed: Array<{ event: string; status: string }> = [];
 
     for (const event of upcomingEvents) {
       try {
@@ -90,9 +92,11 @@ export async function POST(request: Request) {
 
         if (!response.ok) {
           const errorText = await response.text();
+          const errorMsg = `HTTP ${response.status}: ${errorText.substring(0, 200)}`;
           console.error(
             `❌ Failed to fetch weather for ${event.title}: ${response.status} - ${errorText}`
           );
+          errors.push({ event: event.title, error: errorMsg });
           errorCount++;
           continue;
         }
@@ -147,11 +151,15 @@ export async function POST(request: Request) {
         }
 
         successCount++;
+        processed.push({ event: event.title, status: "success" });
 
         // Rate limiting: 60 requests/minute = 1 request per second
         await new Promise((resolve) => setTimeout(resolve, 1100));
       } catch (error) {
         console.error(`❌ Error processing event ${event.title}:`, error);
+        const errorMsg =
+          error instanceof Error ? error.message : "Unknown error";
+        errors.push({ event: event.title, error: errorMsg });
         if (error instanceof Error) {
           console.error(`   Stack: ${error.stack}`);
         }
@@ -167,6 +175,8 @@ export async function POST(request: Request) {
         successCount,
         errorCount,
       },
+      processed,
+      errors,
     });
   } catch (error) {
     console.error("❌ Error updating weather:", error);

@@ -6,7 +6,7 @@ import { Language } from "@prisma/client";
 
 const SUPPORTED_LANGUAGES: Language[] = ["en", "pt", "es", "fr", "de", "it"];
 
-// GET - Get venue SEO translations
+// GET - Get venue SEO translations (including description)
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -38,7 +38,7 @@ export async function GET(
   }
 }
 
-// PUT - Update venue SEO translations
+// PUT - Update venue SEO translations (including description)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -88,7 +88,7 @@ export async function PUT(
     const updatedTranslations = [];
 
     for (const translation of translations) {
-      const { language, metaTitle, metaDescription } = translation;
+      const { language, description, metaTitle, metaDescription } = translation;
 
       // Validate language
       if (!SUPPORTED_LANGUAGES.includes(language)) {
@@ -96,7 +96,7 @@ export async function PUT(
       }
 
       // Only upsert if at least one field has content
-      if (metaTitle || metaDescription) {
+      if (description || metaTitle || metaDescription) {
         const upserted = await prisma.venueTranslation.upsert({
           where: {
             venueId_language: {
@@ -105,19 +105,21 @@ export async function PUT(
             },
           },
           update: {
+            description: description || null,
             metaTitle: metaTitle || null,
             metaDescription: metaDescription || null,
           },
           create: {
             venueId: venue.id,
             language: language as Language,
+            description: description || null,
             metaTitle: metaTitle || null,
             metaDescription: metaDescription || null,
           },
         });
         updatedTranslations.push(upserted);
       } else {
-        // Delete translation if both fields are empty
+        // Delete translation if all fields are empty
         await prisma.venueTranslation.deleteMany({
           where: {
             venueId: venue.id,

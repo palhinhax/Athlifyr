@@ -18,7 +18,8 @@
       "staff": "Personal",
       "payments": "Pagos",
       "advanced": "Avanzado",
-      "seo": "SEO"
+      "seo": "SEO",
+      "translations": "Traducciones"
     },
     "staff": {
       "title": "Gestión de Personal",
@@ -141,6 +142,27 @@
       "savedDescription": "Los cambios de SEO se han guardado correctamente",
       "error": "Error al guardar",
       "errorDescription": "Ocurrió un error al guardar la configuración de SEO"
+    },
+    "translations": {
+      "title": "Traducciones",
+      "description": "Traduce la descripción de tu local a diferentes idiomas",
+      "descriptionLabel": "Descripción",
+      "descriptionPlaceholder": "Descripción en {language}",
+      "metaTitleLabel": "Título Meta SEO",
+      "metaTitlePlaceholder": "Título meta en {language}",
+      "metaDescriptionLabel": "Descripción Meta SEO",
+      "metaDescriptionPlaceholder": "Descripción meta en {language}",
+      "originalDescription": "Descripción Original",
+      "copyOriginal": "Copiar original",
+      "ownerOnly": "Solo el propietario puede editar las traducciones",
+      "markdownSupported": "Soporta formato Markdown: **negrita**, *cursiva*, listas, enlaces",
+      "complete": "Completa",
+      "incomplete": "Incompleta",
+      "save": "Guardar Traducciones",
+      "saved": "Traducciones guardadas",
+      "savedDescription": "Las traducciones se han guardado correctamente",
+      "error": "Error al guardar",
+      "errorDescription": "Ocurrió un error al guardar las traducciones"
     },
     "noVenues": "No se encontraron locales",
     "noResults": "No se encontraron resultados con los filtros actuales",
@@ -573,7 +595,8 @@
       "imageUploadSuccess": "Imagen subida con éxito",
       "imageUploadError": "Error al subir imagen",
       "updateSuccess": "Local actualizado con éxito",
-      "updateError": "Error al actualizar local"
+      "updateError": "Error al actualizar local",
+      "markdownSupported": "Soporta formato Markdown: **negrita**, *cursiva*, listas, enlaces"
     },
     "plan": {
       "policy": "Política del Plan",

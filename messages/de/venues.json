@@ -18,7 +18,8 @@
       "staff": "Personal",
       "payments": "Zahlungen",
       "advanced": "Erweitert",
-      "seo": "SEO"
+      "seo": "SEO",
+      "translations": "Übersetzungen"
     },
     "staff": {
       "title": "Personalverwaltung",
@@ -141,6 +142,27 @@
       "savedDescription": "Die SEO-Änderungen wurden erfolgreich gespeichert",
       "error": "Fehler beim Speichern",
       "errorDescription": "Beim Speichern der SEO-Einstellungen ist ein Fehler aufgetreten"
+    },
+    "translations": {
+      "title": "Übersetzungen",
+      "description": "Übersetzen Sie die Beschreibung Ihres Standorts in verschiedene Sprachen",
+      "descriptionLabel": "Beschreibung",
+      "descriptionPlaceholder": "Beschreibung auf {language}",
+      "metaTitleLabel": "SEO Meta-Titel",
+      "metaTitlePlaceholder": "Meta-Titel auf {language}",
+      "metaDescriptionLabel": "SEO Meta-Beschreibung",
+      "metaDescriptionPlaceholder": "Meta-Beschreibung auf {language}",
+      "originalDescription": "Originalbeschreibung",
+      "copyOriginal": "Original kopieren",
+      "ownerOnly": "Nur der Eigentümer kann Übersetzungen bearbeiten",
+      "markdownSupported": "Unterstützt Markdown-Formatierung: **fett**, *kursiv*, Listen, Links",
+      "complete": "Vollständig",
+      "incomplete": "Unvollständig",
+      "save": "Übersetzungen speichern",
+      "saved": "Übersetzungen gespeichert",
+      "savedDescription": "Die Übersetzungen wurden erfolgreich gespeichert",
+      "error": "Fehler beim Speichern",
+      "errorDescription": "Beim Speichern der Übersetzungen ist ein Fehler aufgetreten"
     },
     "noVenues": "Keine Standorte gefunden",
     "noResults": "Keine Ergebnisse mit den aktuellen Filtern gefunden",
@@ -573,7 +595,8 @@
       "imageUploadSuccess": "Bild erfolgreich hochgeladen",
       "imageUploadError": "Fehler beim Hochladen des Bildes",
       "updateSuccess": "Standort erfolgreich aktualisiert",
-      "updateError": "Fehler beim Aktualisieren des Standorts"
+      "updateError": "Fehler beim Aktualisieren des Standorts",
+      "markdownSupported": "Unterstützt Markdown-Formatierung: **fett**, *kursiv*, Listen, Links"
     },
     "plan": {
       "policy": "Plan-Richtlinie",

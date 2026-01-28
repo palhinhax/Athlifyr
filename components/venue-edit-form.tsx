@@ -233,6 +233,9 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
           onChange={handleInputChange}
           rows={4}
         />
+        <p className="text-xs text-muted-foreground">
+          {t("edit.markdownSupported")}
+        </p>
       </div>
 
       {/* Contact Info */}

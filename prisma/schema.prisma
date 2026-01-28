@@ -576,6 +576,7 @@ model VenueTranslation {
   id              String   @id @default(cuid())
   venueId         String
   language        Language
+  description     String?
   metaTitle       String?
   metaDescription String?
   createdAt       DateTime @default(now())

@@ -14,6 +14,7 @@
     "venueDetails": "Venue Details",
     "settingsTabs": {
       "general": "General",
+      "translations": "Translations",
       "sessions": "Sessions & Services",
       "staff": "Staff",
       "payments": "Payments",
@@ -141,6 +142,27 @@
       "savedDescription": "SEO changes have been saved successfully",
       "error": "Error saving",
       "errorDescription": "An error occurred while saving SEO settings"
+    },
+    "translations": {
+      "title": "Translations",
+      "description": "Translate your venue description to different languages",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Description in {language}",
+      "metaTitleLabel": "SEO Meta Title",
+      "metaTitlePlaceholder": "Meta title in {language}",
+      "metaDescriptionLabel": "SEO Meta Description",
+      "metaDescriptionPlaceholder": "Meta description in {language}",
+      "originalDescription": "Original venue description",
+      "copyOriginal": "Copy original",
+      "ownerOnly": "Only the owner can manage translations",
+      "markdownSupported": "Supports Markdown formatting: **bold**, *italic*, lists, links",
+      "complete": "Complete",
+      "incomplete": "Incomplete",
+      "save": "Save Translations",
+      "saved": "Translations saved",
+      "savedDescription": "Translations have been saved successfully",
+      "error": "Error saving",
+      "errorDescription": "An error occurred while saving translations"
     },
     "noVenues": "No venues found",
     "noResults": "No results found with current filters",
@@ -573,7 +595,8 @@
       "imageUploadSuccess": "Image uploaded successfully",
       "imageUploadError": "Failed to upload image",
       "updateSuccess": "Venue updated successfully",
-      "updateError": "Failed to update venue"
+      "updateError": "Failed to update venue",
+      "markdownSupported": "Supports Markdown formatting: **bold**, *italic*, lists, links"
     },
     "plan": {
       "policy": "Plan Policy",

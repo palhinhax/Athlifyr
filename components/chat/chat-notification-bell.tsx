@@ -51,7 +51,7 @@ export function ChatNotificationBell() {
   ) => {
     markAsRead(notificationId);
     setIsOpen(false);
-    router.push(`/chat?conversation=${conversationId}`);
+    router.push(`/${locale}/chat?conversation=${conversationId}`);
   };
 
   return (

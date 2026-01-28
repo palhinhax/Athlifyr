@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { VenueLandingClient } from "@/components/venue-landing-client";
 import { StructuredData } from "@/components/structured-data";
@@ -7,6 +8,9 @@ import {
   generateBreadcrumbSchema,
 } from "@/lib/structured-data";
 import { locales, type Locale } from "@/i18n/routing";
+
+// Force dynamic rendering to avoid SSG issues with useSearchParams from next-intl Link
+export const dynamic = "force-dynamic";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -307,7 +311,18 @@ export default async function VenueJoinPage({ params }: PageProps) {
       <StructuredData data={softwareSchema} />
 
       {/* Main Content */}
-      <VenueLandingClient locale={locale} />
+      <Suspense fallback={<VenueLandingFallback />}>
+        <VenueLandingClient locale={locale} />
+      </Suspense>
     </>
+  );
+}
+
+// Loading fallback component
+function VenueLandingFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-black">
+      <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+    </div>
   );
 }

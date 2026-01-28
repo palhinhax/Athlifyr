@@ -76,19 +76,48 @@ export async function POST(
     });
 
     if (existingMember) {
-      // Update invite status
-      await prisma.venueInvite.update({
-        where: { token },
-        data: { status: "ACCEPTED" },
-      });
+      // If already staff (not CLIENT), just accept invite and return
+      if (existingMember.role !== "CLIENT") {
+        await prisma.venueInvite.update({
+          where: { token },
+          data: { status: "ACCEPTED" },
+        });
 
-      return NextResponse.json(
-        { error: "You are already a member of this venue" },
-        { status: 400 }
-      );
+        return NextResponse.json(
+          { error: "You are already a staff member of this venue" },
+          { status: 400 }
+        );
+      }
+
+      // If CLIENT, upgrade to staff role
+      const [member] = await prisma.$transaction([
+        prisma.venueMember.update({
+          where: { id: existingMember.id },
+          data: {
+            role: invite.role,
+            status: "ACTIVE",
+            joinedAt: existingMember.joinedAt || new Date(),
+          },
+          include: {
+            venue: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+              },
+            },
+          },
+        }),
+        prisma.venueInvite.update({
+          where: { token },
+          data: { status: "ACCEPTED" },
+        }),
+      ]);
+
+      return NextResponse.json(member, { status: 200 });
     }
 
-    // Create member and update invite in transaction
+    // Create new member and update invite in transaction
     const [member] = await prisma.$transaction([
       prisma.venueMember.create({
         data: {

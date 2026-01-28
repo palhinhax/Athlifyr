@@ -12,7 +12,14 @@ export interface VenueMember {
 
 export interface VenueInvite {
   id: string;
-  email: string;
+  email: string | null;
+  invitedUserId: string | null;
+  invitedUser?: {
+    id: string;
+    name: string;
+    email: string;
+    image: string | null;
+  } | null;
   role: string;
   name: string | null;
   message: string | null;

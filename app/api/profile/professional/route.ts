@@ -106,3 +106,78 @@ export async function GET() {
     );
   }
 }
+
+// DELETE - Leave a venue (remove membership)
+export async function DELETE(request: Request) {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const { membershipId } = await request.json();
+
+    if (!membershipId) {
+      return NextResponse.json(
+        { error: "Membership ID is required" },
+        { status: 400 }
+      );
+    }
+
+    // Find the membership and verify it belongs to the user
+    const membership = await prisma.venueMember.findUnique({
+      where: { id: membershipId },
+      include: {
+        venue: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+      },
+    });
+
+    if (!membership) {
+      return NextResponse.json(
+        { error: "Membership not found" },
+        { status: 404 }
+      );
+    }
+
+    if (membership.userId !== userId) {
+      return NextResponse.json(
+        { error: "You can only leave your own memberships" },
+        { status: 403 }
+      );
+    }
+
+    // Check if user is the OWNER - owners cannot leave their own venue
+    if (membership.role === "OWNER") {
+      return NextResponse.json(
+        {
+          error:
+            "Owners cannot leave their own venue. Transfer ownership first.",
+        },
+        { status: 400 }
+      );
+    }
+
+    // Delete the membership
+    await prisma.venueMember.delete({
+      where: { id: membershipId },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully left ${membership.venue.name}`,
+    });
+  } catch (error) {
+    console.error("Error leaving venue:", error);
+    return NextResponse.json(
+      { error: "Failed to leave venue" },
+      { status: 500 }
+    );
+  }
+}

@@ -35,9 +35,14 @@ export function HomeCtaSection({
     });
   };
 
-  // Random hero image
-  const heroImage =
-    CTA_HERO_IMAGES[Math.floor(Math.random() * CTA_HERO_IMAGES.length)];
+  // Select hero image based on the current day to avoid hydration mismatch
+  // This ensures the same image is shown on both server and client
+  const today = new Date();
+  const dayOfYear = Math.floor(
+    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
+      (1000 * 60 * 60 * 24)
+  );
+  const heroImage = CTA_HERO_IMAGES[dayOfYear % CTA_HERO_IMAGES.length];
 
   return (
     <HeroBackground image={heroImage} className="mt-12" overlayOpacity="dark">

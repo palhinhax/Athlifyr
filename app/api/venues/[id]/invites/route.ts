@@ -5,7 +5,7 @@ import { canManageVenue } from "@/lib/venues/authorization";
 import { VenueRole } from "@prisma/client";
 import crypto from "crypto";
 
-// GET - List pending invites (owner only)
+// GET - List pending invites (owner/admin only)
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -19,19 +19,31 @@ export async function GET(
 
     const { id: venueId } = await params;
 
-    // Check if user is owner
-    const member = await prisma.venueMember.findUnique({
-      where: {
-        venueId_userId: {
-          venueId,
-          userId: session.user.id,
+    // Check if user can manage invites (owner, admin, or app admin)
+    const [member, user] = await Promise.all([
+      prisma.venueMember.findUnique({
+        where: {
+          venueId_userId: {
+            venueId,
+            userId: session.user.id,
+          },
         },
-      },
-    });
+      }),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { role: true },
+      }),
+    ]);
 
-    if (!member || member.role !== VenueRole.OWNER) {
+    const isAppAdmin = user?.role === "ADMIN";
+    const canViewInvites =
+      isAppAdmin ||
+      member?.role === VenueRole.OWNER ||
+      member?.role === VenueRole.ADMIN;
+
+    if (!canViewInvites) {
       return NextResponse.json(
-        { error: "Only owner can view invites" },
+        { error: "Only owner or admin can view invites" },
         { status: 403 }
       );
     }
@@ -50,21 +62,34 @@ export async function GET(
       },
     });
 
-    // Get inviter names separately
-    const invitesWithInviter = await Promise.all(
+    // Get inviter names and invited user info
+    const invitesWithDetails = await Promise.all(
       invites.map(async (invite) => {
         const inviter = await prisma.user.findUnique({
           where: { id: invite.invitedByUserId },
           select: { name: true },
         });
+
+        // If invited by userId, get user details
+        let invitedUser = null;
+        if (invite.invitedUserId) {
+          invitedUser = await prisma.user.findUnique({
+            where: { id: invite.invitedUserId },
+            select: { id: true, name: true, email: true, image: true },
+          });
+        }
+
         return {
           ...invite,
           invitedBy: inviter,
+          invitedUser,
+          // For backwards compatibility, use email from user if invited by userId
+          email: invite.invitedEmail || invitedUser?.email || null,
         };
       })
     );
 
-    return NextResponse.json(invitesWithInviter);
+    return NextResponse.json(invitesWithDetails);
   } catch (error) {
     console.error("Error fetching invites:", error);
     return NextResponse.json(
@@ -118,7 +143,8 @@ export async function POST(
       );
     }
 
-    // Check if user is already a member
+    // Check if user is already a staff member (OWNER/ADMIN/COACH)
+    // Note: CLIENT members can be invited to become staff
     if (userId) {
       const existingMember = await prisma.venueMember.findUnique({
         where: {
@@ -129,9 +155,27 @@ export async function POST(
         },
       });
 
-      if (existingMember) {
+      // Only block if user is already staff (not CLIENT)
+      if (existingMember && existingMember.role !== VenueRole.CLIENT) {
         return NextResponse.json(
-          { error: "User is already a member" },
+          { error: "User is already a staff member" },
+          { status: 400 }
+        );
+      }
+
+      // Also check for pending invites for this user
+      const pendingInvite = await prisma.venueInvite.findFirst({
+        where: {
+          venueId,
+          invitedUserId: userId,
+          status: "PENDING",
+          expiresAt: { gt: new Date() },
+        },
+      });
+
+      if (pendingInvite) {
+        return NextResponse.json(
+          { error: "User already has a pending invite" },
           { status: 400 }
         );
       }

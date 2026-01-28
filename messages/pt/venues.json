@@ -444,6 +444,7 @@
     "noPlansAvailable": "Ainda não há planos disponíveis.",
     "sessionsComingSoon": "Calendário de sessões em breve",
     "noTeamMembers": "Ainda não há membros da equipa.",
+    "noClients": "Ainda não há clientes registados.",
     "noDescription": "Sem descrição disponível.",
     "payment": {
       "title": "Pagamento",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "Sobre",
       "feed": "Feed",
+      "plans": "Planos",
       "sessions": "Sessões",
+      "team": "Equipa",
       "clients": "Clientes",
       "subscriptions": "Subscrições",
       "reviews": "Avaliações"
@@ -689,6 +692,25 @@
       "replyError": "Erro ao processar resposta",
       "venueResponse": "Resposta do Local",
       "adminOnly": "Apenas administradores do local podem responder"
+    },
+    "visibility": {
+      "title": "Visibilidade dos Separadores",
+      "description": "Escolhe quais separadores ficam visíveis na página pública do teu local",
+      "publicTabs": "Separadores Públicos",
+      "publicTabsDescription": "Estes separadores são visíveis para todos os visitantes",
+      "adminTabs": "Separadores de Gestão",
+      "adminTabsDescription": "Estes separadores são visíveis apenas para proprietários e administradores",
+      "ownerOnly": "Apenas o proprietário pode alterar as definições de visibilidade",
+      "atLeastOne": "Pelo menos um separador tem de estar visível",
+      "tabs": {
+        "feedDescription": "Mostra o feed do local com publicações e atualizações",
+        "aboutDescription": "Mostra informações do local, contactos e localização",
+        "plansDescription": "Mostra os planos de subscrição e preços disponíveis",
+        "sessionsDescription": "Mostra o calendário de sessões e marcações",
+        "teamDescription": "Mostra a equipa do local (proprietários, coaches, admins)",
+        "clientsDescription": "Mostra a lista de membros e clientes do local",
+        "subscriptionsDescription": "Mostra e gere as subscrições ativas"
+      }
     }
   }
 }

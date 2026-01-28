@@ -444,6 +444,7 @@
     "noPlansAvailable": "Aún no hay planes disponibles.",
     "sessionsComingSoon": "Calendario de sesiones próximamente",
     "noTeamMembers": "Todavía no hay miembros del equipo.",
+    "noClients": "Aún no hay clientes registrados.",
     "noDescription": "Sin descripción disponible.",
     "payment": {
       "title": "Pago",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "Acerca de",
       "feed": "Feed",
+      "plans": "Planes",
       "sessions": "Sesiones",
+      "team": "Equipo",
       "clients": "Clientes",
       "subscriptions": "Suscripciones",
       "reviews": "Reseñas"
@@ -689,6 +692,25 @@
       "replyError": "Error al procesar respuesta",
       "venueResponse": "Respuesta del Local",
       "adminOnly": "Solo los administradores del local pueden responder"
+    },
+    "visibility": {
+      "title": "Visibilidad de Pestañas",
+      "description": "Elige qué pestañas son visibles en la página pública de tu local",
+      "publicTabs": "Pestañas Públicas",
+      "publicTabsDescription": "Estas pestañas son visibles para todos los visitantes",
+      "adminTabs": "Pestañas de Gestión",
+      "adminTabsDescription": "Estas pestañas solo son visibles para propietarios y administradores",
+      "ownerOnly": "Solo el propietario puede cambiar la configuración de visibilidad",
+      "atLeastOne": "Al menos una pestaña debe estar visible",
+      "tabs": {
+        "feedDescription": "Muestra el feed del local con publicaciones y actualizaciones",
+        "aboutDescription": "Muestra información del local, contacto y ubicación",
+        "plansDescription": "Muestra los planes de suscripción y precios disponibles",
+        "sessionsDescription": "Muestra el calendario de sesiones y reservas",
+        "teamDescription": "Muestra el equipo del local (propietarios, coaches, admins)",
+        "clientsDescription": "Muestra la lista de miembros y clientes del local",
+        "subscriptionsDescription": "Muestra y gestiona las suscripciones activas"
+      }
     }
   }
 }

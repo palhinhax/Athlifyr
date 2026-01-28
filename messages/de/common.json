@@ -19,7 +19,10 @@
     "showLess": "Weniger anzeigen",
     "create": "Erstellen",
     "change": "Ändern",
-    "searching": "Suche läuft"
+    "searching": "Suche läuft",
+    "active": "Aktiv",
+    "inactive": "Inaktiv",
+    "changesSaved": "Änderungen gespeichert"
   },
   "upload": {
     "uploadImage": "Bild Hochladen",

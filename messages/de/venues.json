@@ -444,6 +444,7 @@
     "noPlansAvailable": "Noch keine Pläne verfügbar.",
     "sessionsComingSoon": "Sitzungskalender kommt bald",
     "noTeamMembers": "Noch keine Teammitglieder.",
+    "noClients": "Noch keine Kunden registriert.",
     "noDescription": "Keine Beschreibung verfügbar.",
     "payment": {
       "title": "Zahlung",
@@ -483,7 +484,9 @@
     "tabs": {
       "about": "Über",
       "feed": "Feed",
+      "plans": "Pläne",
       "sessions": "Sitzungen",
+      "team": "Team",
       "clients": "Kunden",
       "subscriptions": "Abonnements",
       "reviews": "Bewertungen"
@@ -689,6 +692,25 @@
       "replyError": "Fehler beim Verarbeiten der Antwort",
       "venueResponse": "Antwort des Standorts",
       "adminOnly": "Nur Standort-Administratoren können antworten"
+    },
+    "visibility": {
+      "title": "Tab-Sichtbarkeit",
+      "description": "Wählen Sie, welche Tabs auf der öffentlichen Seite Ihres Standorts sichtbar sind",
+      "publicTabs": "Öffentliche Tabs",
+      "publicTabsDescription": "Diese Tabs sind für alle Besucher sichtbar",
+      "adminTabs": "Verwaltungs-Tabs",
+      "adminTabsDescription": "Diese Tabs sind nur für Eigentümer und Administratoren sichtbar",
+      "ownerOnly": "Nur der Eigentümer kann die Sichtbarkeitseinstellungen ändern",
+      "atLeastOne": "Mindestens ein Tab muss sichtbar sein",
+      "tabs": {
+        "feedDescription": "Zeigt den Feed des Standorts mit Beiträgen und Updates",
+        "aboutDescription": "Zeigt Standortinformationen, Kontaktdaten und Standort",
+        "plansDescription": "Zeigt verfügbare Mitgliedschaftspläne und Preise",
+        "sessionsDescription": "Zeigt den Sitzungskalender und Buchungen",
+        "teamDescription": "Zeigt das Team des Standorts (Eigentümer, Coaches, Admins)",
+        "clientsDescription": "Zeigt die Liste der Mitglieder und Kunden des Standorts",
+        "subscriptionsDescription": "Zeigt und verwaltet aktive Abonnements"
+      }
     }
   }
 }

@@ -19,7 +19,10 @@
     "showLess": "Show less",
     "create": "Create",
     "change": "Change",
-    "searching": "Searching"
+    "searching": "Searching",
+    "active": "Active",
+    "inactive": "Inactive",
+    "changesSaved": "Changes saved"
   },
   "upload": {
     "uploadImage": "Upload Image",

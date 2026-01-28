@@ -35,9 +35,9 @@ jobs:
           echo "📅 Current time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
           echo ""
 
-          # Make the API request with detailed output
+          # Make the API request with detailed output (GET request, not POST!)
           response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---REDIRECT_URL---%{url_effective}---TIME_TOTAL---%{time_total}s" \
-            -X POST "${{ secrets.APP_URL }}/api/cron/regenerate-sessions" \
+            -X GET "${{ secrets.APP_URL }}/api/cron/regenerate-sessions" \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
 

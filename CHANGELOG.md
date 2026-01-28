@@ -1,3 +1,14 @@
+# [14.1.0](https://github.com/palhinhax/Athlifyr/compare/v14.0.0...v14.1.0) (2026-01-28)
+
+### Bug Fixes
+
+- **venues:** add Suspense boundary and dynamic rendering for join page ([df7bcf7](https://github.com/palhinhax/Athlifyr/commit/df7bcf7dcb3236e9e8c8e6483069e03aa8d7be3c))
+
+### Features
+
+- **venues:** add contact info to landing page ([cb76924](https://github.com/palhinhax/Athlifyr/commit/cb76924ca7ddd6226c9c3f9ecbb500cf01bde9bf))
+- **venues:** add landing page to attract venues ([8b635e6](https://github.com/palhinhax/Athlifyr/commit/8b635e6c2faa952844ad96802729fc91e5d7f463))
+
 # [14.0.0](https://github.com/palhinhax/Athlifyr/compare/v13.0.0...v14.0.0) (2026-01-28)
 
 ### Bug Fixes

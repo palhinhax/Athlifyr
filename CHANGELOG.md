@@ -1,3 +1,9 @@
+## [14.3.1](https://github.com/palhinhax/Athlifyr/compare/v14.3.0...v14.3.1) (2026-01-28)
+
+### Bug Fixes
+
+- **workflows:** improve error messages for missing secrets in session regeneration and weather update ([824071b](https://github.com/palhinhax/Athlifyr/commit/824071b81d416dbc649f88569104a18b5d01a228))
+
 # [14.3.0](https://github.com/palhinhax/Athlifyr/compare/v14.2.0...v14.3.0) (2026-01-28)
 
 ### Features

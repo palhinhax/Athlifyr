@@ -7,9 +7,18 @@ let authExpiry: number = 0;
 
 async function getB2Client(): Promise<B2> {
   if (!b2Client) {
+    const applicationKeyId = process.env.B2_APPLICATION_KEY_ID;
+    const applicationKey = process.env.B2_APPLICATION_KEY;
+
+    if (!applicationKeyId || !applicationKey) {
+      throw new Error(
+        "B2_APPLICATION_KEY_ID and B2_APPLICATION_KEY environment variables must be set"
+      );
+    }
+
     b2Client = new B2({
-      applicationKeyId: process.env.B2_APPLICATION_KEY_ID!,
-      applicationKey: process.env.B2_APPLICATION_KEY!,
+      applicationKeyId,
+      applicationKey,
     });
   }
 

@@ -893,6 +893,30 @@
         "athletes": "Athleten in der Community",
         "sessions": "Sitzungen pro Monat",
         "countries": "Länder"
+      },
+      "choosePath": {
+        "title": "Wählen Sie, was für Sie funktioniert",
+        "subtitle": "Möchten Sie nur von Athleten gefunden werden oder benötigen Sie vollständige Verwaltungstools? Die Wahl liegt bei Ihnen.",
+        "simple": {
+          "title": "Einfaches Profil",
+          "description": "Perfekt, wenn Sie nur möchten, dass Athleten Sie auf unserer Plattform finden. Keine Verwaltung, nur Sichtbarkeit.",
+          "point1": "Ihre Raumseite auf Athlifyr",
+          "point2": "Standort auf Karte und Suche",
+          "point3": "Kontaktdaten und Öffnungszeiten",
+          "point4": "Fotogalerie Ihres Raums",
+          "cta": "Einfaches Profil Erstellen"
+        },
+        "full": {
+          "title": "Vollständige Verwaltung",
+          "description": "Für alle, die ihr gesamtes Geschäft verwalten möchten: Kunden, Kurse, Abonnements und Zahlungen auf einer Plattform.",
+          "badge": "EMPFOHLEN",
+          "point1": "Alles vom einfachen Profil inklusive",
+          "point2": "Kunden- und Mitgliederverwaltung",
+          "point3": "Kurskalender und Buchungen",
+          "point4": "Abonnements und Zahlungspläne",
+          "point5": "Online-Zahlungen mit Stripe",
+          "cta": "Mit Vollständiger Verwaltung Starten"
+        }
       }
     }
   }

@@ -209,6 +209,9 @@ importers:
       "@types/react-dom":
         specifier: ^18
         version: 18.3.7(@types/react@18.3.27)
+      "@types/recharts":
+        specifier: ^2.0.1
+        version: 2.0.1(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react-is@18.3.1)(react@18.3.1)(redux@5.0.1)
       eslint:
         specifier: ^8
         version: 8.57.1
@@ -3192,6 +3195,13 @@ packages:
       {
         integrity: sha512-cisd7gxkzjBKU2GgdYrTdtQx1SORymWyaAFhaxQPK9bYO9ot3Y5OikQRvY0VYQtvwjeQnizCINJAenh/V7MK2w==,
       }
+
+  "@types/recharts@2.0.1":
+    resolution:
+      {
+        integrity: sha512-/cFs7oiafzByUwBSWA1IzE6FW+ppPwQAWsDTadSgVOwzveY9MESpyLHyyHY0SfPPKLW4+4qVNYHPXd0rFiC8vg==,
+      }
+    deprecated: This is a stub types definition. recharts provides its own type definitions, so you do not need this installed.
 
   "@types/stack-utils@2.0.3":
     resolution:
@@ -11999,6 +12009,16 @@ snapshots:
     dependencies:
       "@types/prop-types": 15.7.15
       csstype: 3.2.3
+
+  "@types/recharts@2.0.1(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react-is@18.3.1)(react@18.3.1)(redux@5.0.1)":
+    dependencies:
+      recharts: 3.7.0(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react-is@18.3.1)(react@18.3.1)(redux@5.0.1)
+    transitivePeerDependencies:
+      - "@types/react"
+      - react
+      - react-dom
+      - react-is
+      - redux
 
   "@types/stack-utils@2.0.3": {}
 

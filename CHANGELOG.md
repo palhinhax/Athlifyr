@@ -1,3 +1,104 @@
+# [14.0.0](https://github.com/palhinhax/Athlifyr/compare/v13.0.0...v14.0.0) (2026-01-28)
+
+### Bug Fixes
+
+- **build:** lazy initialize B2 client to prevent build-time errors ([bf40ea1](https://github.com/palhinhax/Athlifyr/commit/bf40ea10b54d595aed76f77c457e7149f5d172d9))
+- **build:** resolve TypeScript errors and add missing dependencies ([f52a2f2](https://github.com/palhinhax/Athlifyr/commit/f52a2f266baa8fc0a0929b008901034e1669f299))
+- **ci:** replace next lint with direct eslint command ([c90b447](https://github.com/palhinhax/Athlifyr/commit/c90b447bb732fcb867ddb64f32cf032cfa8f0d52))
+- **deps:** regenerate pnpm-lock.yaml and remove package-lock.json ([3cd61f1](https://github.com/palhinhax/Athlifyr/commit/3cd61f1cab096942ab39880ec6c29d38baf8cf46))
+- **i18n:** add missing sports translations import ([ca979dc](https://github.com/palhinhax/Athlifyr/commit/ca979dc7e542509c31900c89ec5e9ed5345f49fc))
+- **i18n:** add sport type translations to sports namespace ([60e791d](https://github.com/palhinhax/Athlifyr/commit/60e791d3ae25eb9f091a6b031d02f1f5403c4b57))
+- **i18n:** correct sports translation namespace in SportBadge component ([18586a5](https://github.com/palhinhax/Athlifyr/commit/18586a578042e8b994ee5d5708689437e61c3d65))
+- **i18n:** correct sports translations in all components ([f3e244c](https://github.com/palhinhax/Athlifyr/commit/f3e244c0f608a75f4f79ce70c42d33cc9a2ecbb3))
+- **i18n:** preserve locale in router.push navigation across components ([f81f111](https://github.com/palhinhax/Athlifyr/commit/f81f1115b47b976ad1b2cfaef942e04f1f340d05))
+- **instagram:** correct event search interface to match API response ([52e5d0a](https://github.com/palhinhax/Athlifyr/commit/52e5d0ab076beaa6700b097706e8f2958e545879))
+- replace sport type display with SportBadge component in AdminEventsPage ([9d30213](https://github.com/palhinhax/Athlifyr/commit/9d30213267297b8c9eebecf1dba4d4d8e52fac72))
+- **seo:** resolve venue Soft 404 by preventing 'not found' message during client load ([7829c20](https://github.com/palhinhax/Athlifyr/commit/7829c20a973c97558cbb2aa897881fb133d47cc1))
+- **test:** correct venueBooking mock to use findFirst method ([41bc509](https://github.com/palhinhax/Athlifyr/commit/41bc509f2a85e34c24b0ec68bb092082202f3201))
+
+### Features
+
+- add venue image management functionality ([675a022](https://github.com/palhinhax/Athlifyr/commit/675a022e031bf4402037fe0b372fcee47808719f))
+- add venue visibility settings and update venue settings modal ([b623313](https://github.com/palhinhax/Athlifyr/commit/b6233138210ec19f30857576a28a488d16049940))
+- **chat:** add navigation links and complete translations ([7c67c81](https://github.com/palhinhax/Athlifyr/commit/7c67c81a86b92635a06593e2d365fef23e3f9f21))
+- **chat:** add socket token endpoint and migration ([48cf05c](https://github.com/palhinhax/Athlifyr/commit/48cf05cf84c9f12f8fbe3ffe3a79196c6e9abe68))
+- **chat:** add user report, block, and hide conversation features ([c19f023](https://github.com/palhinhax/Athlifyr/commit/c19f02328acf3541076b80d2667a98aea6e4e1b3))
+- **chat:** implement real-time 1:1 chat with Socket.IO ([a56b035](https://github.com/palhinhax/Athlifyr/commit/a56b035ee6905339daec6f0ddd59d560358f0818))
+- **chat:** improve notifications and venue cards design ([a71aaac](https://github.com/palhinhax/Athlifyr/commit/a71aaac37a300909861819eec4e2b109de5ecc05))
+- **chat:** replace Socket.IO with HTTP polling for Vercel compatibility ([bd5bcc9](https://github.com/palhinhax/Athlifyr/commit/bd5bcc9c213fac4be5e8da0ba105ef05a13cc6ab))
+- enhance SSR content for SEO with improved accessibility and styling ([152c075](https://github.com/palhinhax/Athlifyr/commit/152c075c461e81f505452d4cd8c6c709fc99c224))
+- **events:** add past participation tracking with completion time logging ([24303f0](https://github.com/palhinhax/Athlifyr/commit/24303f0a0a97109ff206ac40f41ad01de7400e4e))
+- implement venue staff management components ([74a03d2](https://github.com/palhinhax/Athlifyr/commit/74a03d2e823cd752a1b5190d9455069d7bb99fff))
+- **instagram:** add T11 venue promo template and venue page improvements ([1e4c644](https://github.com/palhinhax/Athlifyr/commit/1e4c6443ee8b75d6f72cf236cdb09dc0837b46da))
+- **nav:** make venues visible to all users in mobile navigation ([1086300](https://github.com/palhinhax/Athlifyr/commit/108630088aa705ebd3154f3b262165c2c05ac0e9))
+- **performance:** add performance tracking with HYROX, running and strength ([f2c452d](https://github.com/palhinhax/Athlifyr/commit/f2c452dc24a0f3c2b85ea9113c86d96737f34c6f))
+- **performance:** separate trail from road running with elevation support ([de3245a](https://github.com/palhinhax/Athlifyr/commit/de3245a93fcfa4dfcbe6ae655ee870980b930eaf))
+- **posts:** add video support for posts ([7ad4dba](https://github.com/palhinhax/Athlifyr/commit/7ad4dba8e02578f089943c90dac0d19755208ce8))
+- **profile:** add ability to leave venue from professional section ([9dbdcf6](https://github.com/palhinhax/Athlifyr/commit/9dbdcf630f707e104958b668224326b99184fbd6))
+- **search:** show official badge for Athlifyr account in global search ([1f56ce4](https://github.com/palhinhax/Athlifyr/commit/1f56ce4935289a2d905e31cf83ce4155372e2f7e))
+- **seeds:** add 10th Trail Rota dos Espigueiros 2026 seed ([1ef9236](https://github.com/palhinhax/Athlifyr/commit/1ef92368e86daa0e26e13ccb74ddb836cef589f0))
+- **seeds:** add Trail Atlânticas 2026 seed ([9880928](https://github.com/palhinhax/Athlifyr/commit/9880928999414613f3dafdeff006c321d3c5cdec))
+- **seeds:** add west games 2026 event seed ([ddbb613](https://github.com/palhinhax/Athlifyr/commit/ddbb6136cb0ad0f1dba35b0667e4fab450847c30))
+- **seeds:** add XI Trail Montes Saloios 2026 event seed ([815eeda](https://github.com/palhinhax/Athlifyr/commit/815eedacc1398b235828000bf526ba72b46a0b3f))
+- **ui:** add collapsible sidebar navigation and fix sports translations ([00119e1](https://github.com/palhinhax/Athlifyr/commit/00119e141cc31780e4712caf924e0c4dd8966197))
+- **ui:** add option to hide VS badge in split-screen Instagram template ([4a0d2b7](https://github.com/palhinhax/Athlifyr/commit/4a0d2b747490060e013399bf75ffb97513d09dae))
+- **ui:** improve mobile responsiveness and add login icons ([d59954b](https://github.com/palhinhax/Athlifyr/commit/d59954ba8037f56db923da1aebdfe7b87a432d68))
+- **venues:** add sessions & services settings tab with complete i18n ([68f726d](https://github.com/palhinhax/Athlifyr/commit/68f726d55c79a53649f6659a7109a1ebdd10bcd0))
+- **venues:** add Stripe Connect payments and modularize admin venues page ([e5048df](https://github.com/palhinhax/Athlifyr/commit/e5048dfd28518ec27af131679dea2e7657e75376))
+
+### BREAKING CHANGES
+
+- **performance:** None - existing RUN entries remain unchanged, only new trail
+  events will be classified as TRAIL type.
+- **chat:** Socket.IO is no longer used. The custom server.ts
+  is removed - use standard 'next start' for production.
+- **events:** completionTime field changed from String to Int.
+  All existing completion times will be lost during migration.
+- **venues:** VenuePlan.paymentProvider field removed. Payment processing now managed at venue level via Venue.paymentMode (IN_APP, EXTERNAL, MIXED).
+
+* Add Stripe Connect onboarding and payment processing for venues
+* Create database migration for guest bookings support
+* Add Stripe webhook handling for account updates
+* Implement venue commission system (PERCENT/FIXED types)
+* Add fee management API endpoint and UI dialog (admin only)
+* Refactor admin venues page into 5 modular components
+* Create venue cards, dialogs for create/owner/fees management
+* Add 2 new event seeds: Trail do Vale + Tribal Clash Portugal
+* Fix translation structure: move weather inside events namespace
+* Fix unused variable ESLint error in image-upload component
+
+New Stripe features:
+Venue owner Stripe Connect onboarding
+Platform commission configuration per venue
+Automated payment splitting
+Webhook sync for account status
+
+New admin features:
+Fee management modal for venue commissions
+Owner assignment dialog with user search
+Modular component architecture (195 vs 883 lines)
+
+Database changes:
+Guest booking support (userId optional)
+PaymentsProvider enum (NONE, STRIPE)
+StripeOnboardingStatus tracking
+Commission fields (commissionType, commissionValue)
+StripeWebhookEvent tracking table
+
+Event seeds:
+Trail do Vale 2026 (Tomar, 17 May)
+Tribal Clash Portugal 2026 (Vilamoura, 2-3 May)
+Complete translations for all 6 languages
+SEO metadata with metaTitle/metaDescription
+FAQs in all languages
+
+Code quality:
+pnpm format passed
+ESLint passed (2 warnings only - <img> tags)
+TypeScript typecheck passed
+All changes follow conventional commits
+Documentation created for refactoring
+
 # [13.0.0](https://github.com/palhinhax/Athlifyr/compare/v12.10.0...v13.0.0) (2026-01-23)
 
 ### Bug Fixes

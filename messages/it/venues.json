@@ -12,6 +12,25 @@
     "editVenueModal": "Modifica Informazioni Struttura",
     "venueSettings": "Impostazioni Struttura",
     "venueDetails": "Dettagli Struttura",
+    "gallery": {
+      "title": "Galleria Foto",
+      "addImage": "Aggiungi Foto",
+      "addFirstImage": "Aggiungi la tua prima foto",
+      "noImages": "Nessuna foto ancora",
+      "selectImage": "Seleziona Immagine",
+      "caption": "Didascalia (opzionale)",
+      "captionPlaceholder": "Descrivi questa foto...",
+      "save": "Salva",
+      "cancel": "Annulla",
+      "uploadSuccess": "Foto aggiunta",
+      "imageAdded": "La foto è stata aggiunta alla galleria",
+      "uploadError": "Caricamento fallito",
+      "uploadErrorDesc": "Impossibile aggiungere la foto. Riprova.",
+      "deleteSuccess": "Foto rimossa",
+      "imageDeleted": "La foto è stata rimossa dalla galleria",
+      "deleteError": "Eliminazione fallita",
+      "deleteErrorDesc": "Impossibile rimuovere la foto. Riprova."
+    },
     "settingsTabs": {
       "general": "Generale",
       "sessions": "Sessioni e Servizi",
@@ -155,7 +174,7 @@
       "originalDescription": "Descrizione Originale",
       "copyOriginal": "Copia originale",
       "ownerOnly": "Solo il proprietario può modificare le traduzioni",
-      "markdownSupported": "Supporta la formattazione Markdown: **grassetto**, *corsivo*, elenchi, link",
+      "markdownSupported": "Supporta Markdown: **grassetto**, *corsivo*, elenchi, link, immagini ![alt](url)",
       "complete": "Completa",
       "incomplete": "Incompleta",
       "save": "Salva traduzioni",
@@ -240,8 +259,10 @@
     },
     "coverImage": "Immagine di Copertina",
     "changeCover": "Cambia Copertina",
+    "uploadCover": "Carica Copertina",
     "logo": "Logo",
     "changeLogo": "Cambia Logo",
+    "uploadLogo": "Carica Logo",
     "sessionDefaults": "Impostazioni Predefinite Sessioni",
     "info": {
       "name": "Nome",
@@ -596,7 +617,7 @@
       "imageUploadError": "Errore nel caricamento dell'immagine",
       "updateSuccess": "Struttura aggiornata con successo",
       "updateError": "Errore nell'aggiornamento della struttura",
-      "markdownSupported": "Supporta la formattazione Markdown: **grassetto**, *corsivo*, elenchi, link"
+      "markdownSupported": "Supporta Markdown: **grassetto**, *corsivo*, elenchi, link, immagini ![alt](url)"
     },
     "plan": {
       "policy": "Politica del Piano",

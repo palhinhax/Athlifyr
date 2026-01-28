@@ -12,6 +12,25 @@
     "editVenueModal": "Editar Información del Local",
     "venueSettings": "Configuración del Local",
     "venueDetails": "Detalles del Local",
+    "gallery": {
+      "title": "Galería de Fotos",
+      "addImage": "Añadir Foto",
+      "addFirstImage": "Añade tu primera foto",
+      "noImages": "Aún no hay fotos",
+      "selectImage": "Seleccionar Imagen",
+      "caption": "Descripción (opcional)",
+      "captionPlaceholder": "Describe esta foto...",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "uploadSuccess": "Foto añadida",
+      "imageAdded": "La foto se ha añadido a la galería",
+      "uploadError": "Error de carga",
+      "uploadErrorDesc": "No se pudo añadir la foto. Inténtalo de nuevo.",
+      "deleteSuccess": "Foto eliminada",
+      "imageDeleted": "La foto se ha eliminado de la galería",
+      "deleteError": "Error al eliminar",
+      "deleteErrorDesc": "No se pudo eliminar la foto. Inténtalo de nuevo."
+    },
     "settingsTabs": {
       "general": "General",
       "sessions": "Sesiones y Servicios",
@@ -155,7 +174,7 @@
       "originalDescription": "Descripción Original",
       "copyOriginal": "Copiar original",
       "ownerOnly": "Solo el propietario puede editar las traducciones",
-      "markdownSupported": "Soporta formato Markdown: **negrita**, *cursiva*, listas, enlaces",
+      "markdownSupported": "Soporta Markdown: **negrita**, *cursiva*, listas, enlaces, imágenes ![alt](url)",
       "complete": "Completa",
       "incomplete": "Incompleta",
       "save": "Guardar Traducciones",
@@ -240,8 +259,10 @@
     },
     "coverImage": "Imagen de Portada",
     "changeCover": "Cambiar Portada",
+    "uploadCover": "Subir Portada",
     "logo": "Logotipo",
     "changeLogo": "Cambiar Logotipo",
+    "uploadLogo": "Subir Logotipo",
     "sessionDefaults": "Configuración Predeterminada de Sesiones",
     "info": {
       "name": "Nombre",
@@ -596,7 +617,7 @@
       "imageUploadError": "Error al subir imagen",
       "updateSuccess": "Local actualizado con éxito",
       "updateError": "Error al actualizar local",
-      "markdownSupported": "Soporta formato Markdown: **negrita**, *cursiva*, listas, enlaces"
+      "markdownSupported": "Soporta Markdown: **negrita**, *cursiva*, listas, enlaces, imágenes ![alt](url)"
     },
     "plan": {
       "policy": "Política del Plan",

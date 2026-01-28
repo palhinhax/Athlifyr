@@ -561,6 +561,7 @@ model Venue {
   reviews                            VenueReview[]
   sessions                           VenueSession[]
   subscriptions                      VenueSubscription[]
+  images                             VenueImage[]
 
   translations                       VenueTranslation[]
 
@@ -570,6 +571,21 @@ model Venue {
   @@index([isActive])
   @@index([createdByUserId])
   @@index([sportTypes])
+}
+
+model VenueImage {
+  id        String   @id @default(cuid())
+  venueId   String
+  imageUrl  String
+  caption   String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  venue     Venue    @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([order])
+  @@index([createdAt])
 }
 
 model VenueTranslation {

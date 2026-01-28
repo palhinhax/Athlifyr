@@ -31,6 +31,7 @@ import { VenueSubscribersManager } from "@/components/venue-subscribers-manager"
 import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import { VenueClientsManager } from "@/components/venue-clients-manager";
 import { CollapsibleDescription } from "@/components/collapsible-description";
+import { VenueGallery } from "@/components/venue-gallery";
 import {
   Trash2,
   CheckCircle,
@@ -522,6 +523,9 @@ export function VenueDetailClient({
                 )}
               </div>
 
+              {/* Venue Photo Gallery */}
+              <VenueGallery venueId={venue.id} isOwner={isOwnerOrAdmin} />
+
               {/* Contact Information */}
               {(venue.phone ||
                 venue.email ||
@@ -584,21 +588,16 @@ export function VenueDetailClient({
                   </h2>
                   <div className="space-y-2 text-muted-foreground">
                     {venue.address && <p>{venue.address}</p>}
-                    {venue.city && (
-                      <p>
-                        {venue.city}, {venue.country}
-                      </p>
-                    )}
                   </div>
                 </div>
               )}
 
-              {!userId && (
+              {/* {!userId && (
                 <div className="rounded-lg bg-muted p-6">
                   <p className="mb-4 text-sm">{t("signInToJoin")}</p>
                   <Button>{t("signIn")}</Button>
                 </div>
-              )}
+              )} */}
             </TabsContent>
           )}
 

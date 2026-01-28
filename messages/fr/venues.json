@@ -12,6 +12,25 @@
     "editVenueModal": "Modifier les Informations du Lieu",
     "venueSettings": "Paramètres du Lieu",
     "venueDetails": "Détails du Lieu",
+    "gallery": {
+      "title": "Galerie Photos",
+      "addImage": "Ajouter Photo",
+      "addFirstImage": "Ajoutez votre première photo",
+      "noImages": "Pas encore de photos",
+      "selectImage": "Sélectionner Image",
+      "caption": "Légende (optionnel)",
+      "captionPlaceholder": "Décrivez cette photo...",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "uploadSuccess": "Photo ajoutée",
+      "imageAdded": "La photo a été ajoutée à la galerie",
+      "uploadError": "Échec du téléchargement",
+      "uploadErrorDesc": "Impossible d'ajouter la photo. Veuillez réessayer.",
+      "deleteSuccess": "Photo supprimée",
+      "imageDeleted": "La photo a été supprimée de la galerie",
+      "deleteError": "Échec de la suppression",
+      "deleteErrorDesc": "Impossible de supprimer la photo. Veuillez réessayer."
+    },
     "settingsTabs": {
       "general": "Général",
       "sessions": "Séances et Services",
@@ -155,7 +174,7 @@
       "originalDescription": "Description Originale",
       "copyOriginal": "Copier l'original",
       "ownerOnly": "Seul le propriétaire peut modifier les traductions",
-      "markdownSupported": "Prend en charge le format Markdown : **gras**, *italique*, listes, liens",
+      "markdownSupported": "Prend en charge Markdown : **gras**, *italique*, listes, liens, images ![alt](url)",
       "complete": "Complète",
       "incomplete": "Incomplète",
       "save": "Enregistrer les traductions",
@@ -240,8 +259,10 @@
     },
     "coverImage": "Image de Couverture",
     "changeCover": "Changer la Couverture",
+    "uploadCover": "Télécharger Couverture",
     "logo": "Logo",
     "changeLogo": "Changer le Logo",
+    "uploadLogo": "Télécharger Logo",
     "sessionDefaults": "Paramètres par Défaut des Séances",
     "info": {
       "name": "Nom",
@@ -596,7 +617,7 @@
       "imageUploadError": "Échec du téléchargement de l'image",
       "updateSuccess": "Lieu mis à jour avec succès",
       "updateError": "Échec de la mise à jour du lieu",
-      "markdownSupported": "Prend en charge le format Markdown : **gras**, *italique*, listes, liens"
+      "markdownSupported": "Prend en charge Markdown : **gras**, *italique*, listes, liens, images ![alt](url)"
     },
     "plan": {
       "policy": "Politique du Plan",

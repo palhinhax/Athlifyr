@@ -35,15 +35,13 @@ export function NavLinks() {
       >
         {t("events")}
       </Link>
-      {session?.user?.role === "ADMIN" && (
-        <Link
-          href="/venues"
-          className="text-sm font-medium hover:underline"
-          onClick={() => handleNavClick("venues")}
-        >
-          {t("venues")}
-        </Link>
-      )}
+      <Link
+        href="/venues"
+        className="text-sm font-medium hover:underline"
+        onClick={() => handleNavClick("venues")}
+      >
+        {t("venues")}
+      </Link>
       {session && (
         <Link
           href="/feed"

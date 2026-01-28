@@ -209,36 +209,48 @@
 }
 
 /**
- * SSR Content for SEO - Visually hidden from users but visible to crawlers
+ * SSR Content for SEO - Visible initially, then hidden by client
  * 
- * CRITICAL: This content is hidden from visual display to prevent duplication
- * with the interactive client component, but remains in the DOM and is fully
- * accessible to search engine crawlers for indexing.
+ * CRITICAL: This content must be VISIBLE in the initial HTML for Google indexing.
+ * The client component will hide it after hydration to prevent duplication.
  * 
- * We use a careful CSS approach that:
- * - Hides the content visually from users (position absolute + clip)
- * - Does NOT use display:none or visibility:hidden (which hide from crawlers)
- * - Keeps content in DOM and accessible to screen readers and bots
- * - Prevents layout shifts and visual duplication
+ * Progressive Enhancement Strategy:
+ * 1. SSR content is visible initially (crawlers + users see it)
+ * 2. Client component loads and hides SSR content via data-ssr-content attribute
+ * 3. Client component shows interactive UI
+ * 
+ * This prevents Google from seeing "thin content" or treating it as Soft 404.
  */
 @layer components {
   /* 
-   * Hide SSR content visually but keep accessible for crawlers
-   * This is the recommended approach for SEO-only content
+   * SSR content visible by default - CRITICAL for SEO
+   * Client will hide this after successful load using JavaScript
    */
   .venue-ssr-content {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border-width: 0;
+    @apply container mx-auto px-4 py-8;
   }
 
-  /* Fallback content styling - VISIBLE to users when venue has incomplete data */
+  .venue-ssr-content section {
+    @apply mb-6 last:mb-0;
+  }
+
+  .venue-ssr-content h1 {
+    @apply mb-4 text-3xl font-bold tracking-tight md:text-4xl;
+  }
+
+  .venue-ssr-content h2 {
+    @apply mb-3 text-xl font-semibold;
+  }
+
+  .venue-ssr-content address {
+    @apply not-italic text-muted-foreground;
+  }
+
+  .venue-ssr-content ul {
+    @apply flex flex-wrap gap-2;
+  }
+
+  /* Fallback content styling - VISIBLE when venue has incomplete data */
   .venue-ssr-fallback {
     @apply mb-6 rounded-lg border bg-card p-6;
   }

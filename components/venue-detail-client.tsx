@@ -324,6 +324,17 @@ export function VenueDetailClient({
     fetchVenue();
   }, [fetchVenue]);
 
+  // Hide SSR content when client loads successfully
+  useEffect(() => {
+    if (!loading && venue) {
+      // Find and hide SSR content
+      const ssrContent = document.querySelector(".venue-ssr-content");
+      if (ssrContent) {
+        (ssrContent as HTMLElement).style.display = "none";
+      }
+    }
+  }, [loading, venue]);
+
   // Helper function to check if a tab is visible
   const isTabVisible = useCallback(
     (tabId: string) => {
@@ -377,25 +388,15 @@ export function VenueDetailClient({
     return "feed"; // Fallback
   }, [isTabVisible, isOwnerOrAdmin]);
 
+  // Show loading skeleton only during initial load
   if (loading) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="h-96 animate-pulse rounded-lg bg-muted" />
-      </div>
-    );
+    return null; // SSR content is already visible
   }
 
+  // If error or no venue after loading, don't show anything
+  // SSR content is already rendered in the DOM for crawlers
   if (error || !venue) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="mb-2 text-lg font-medium">{t("venueNotFound")}</p>
-          <p className="text-sm text-muted-foreground">
-            {t("venueNotFoundDesc")}
-          </p>
-        </div>
-      </div>
-    );
+    return null; // Let SSR content be the only visible content
   }
 
   return (

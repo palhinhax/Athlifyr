@@ -1,3 +1,9 @@
+## [14.3.2](https://github.com/palhinhax/Athlifyr/compare/v14.3.1...v14.3.2) (2026-01-28)
+
+### Bug Fixes
+
+- **api:** add detailed error logging to weather update endpoint ([f0c46c5](https://github.com/palhinhax/Athlifyr/commit/f0c46c51be6c38966c32ad4724935337508333d1))
+
 ## [14.3.1](https://github.com/palhinhax/Athlifyr/compare/v14.3.0...v14.3.1) (2026-01-28)
 
 ### Bug Fixes

@@ -885,7 +885,8 @@
       "finalCta": {
         "title": "¿Listo para simplificar la gestión de tu espacio?",
         "subtitle": "Únete a cientos de profesionales que ya confían en Athlifyr",
-        "button": "Crear Cuenta Gratuita Ahora"
+        "button": "Crear Cuenta Gratuita Ahora",
+        "questions": "¿Tienes preguntas? Contáctanos:"
       },
       "stats": {
         "venues": "Venues Activos",

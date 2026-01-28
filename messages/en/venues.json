@@ -885,7 +885,8 @@
       "finalCta": {
         "title": "Ready to simplify your space management?",
         "subtitle": "Join hundreds of professionals who already trust Athlifyr",
-        "button": "Create Free Account Now"
+        "button": "Create Free Account Now",
+        "questions": "Have questions? Contact us:"
       },
       "stats": {
         "venues": "Active Venues",

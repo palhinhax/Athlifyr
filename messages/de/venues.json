@@ -885,7 +885,8 @@
       "finalCta": {
         "title": "Bereit, die Verwaltung Ihres Raums zu vereinfachen?",
         "subtitle": "Schließen Sie sich Hunderten von Profis an, die bereits auf Athlifyr vertrauen",
-        "button": "Jetzt Kostenloses Konto Erstellen"
+        "button": "Jetzt Kostenloses Konto Erstellen",
+        "questions": "Haben Sie Fragen? Kontaktieren Sie uns:"
       },
       "stats": {
         "venues": "Aktive Venues",

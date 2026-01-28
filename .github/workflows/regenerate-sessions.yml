@@ -28,6 +28,14 @@ jobs:
 
           echo ""
           echo "📍 Target URL: ${{ secrets.APP_URL }}/api/cron/regenerate-sessions"
+          echo ""
+          echo "🔍 Debug info:"
+          echo "   APP_URL length: ${#APP_URL}"
+          echo "   CRON_SECRET length: ${#CRON_SECRET}"
+          echo "   First 10 chars of secret: ${CRON_SECRET:0:10}***"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
 
       - name: Trigger Session Regeneration
         run: |

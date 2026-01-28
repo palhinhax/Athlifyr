@@ -893,6 +893,30 @@
         "athletes": "Athletes in Community",
         "sessions": "Sessions per Month",
         "countries": "Countries"
+      },
+      "choosePath": {
+        "title": "Choose what works for you",
+        "subtitle": "Just want to be found by athletes or need full management tools? The choice is yours.",
+        "simple": {
+          "title": "Simple Profile",
+          "description": "Perfect if you just want athletes to find you on our platform. No management, just visibility.",
+          "point1": "Your space page on Athlifyr",
+          "point2": "Location on map and search",
+          "point3": "Contact info and opening hours",
+          "point4": "Photo gallery of your space",
+          "cta": "Create Simple Profile"
+        },
+        "full": {
+          "title": "Full Management",
+          "description": "For those who want to manage their entire business: clients, classes, subscriptions and payments in one platform.",
+          "badge": "RECOMMENDED",
+          "point1": "Everything from simple profile included",
+          "point2": "Client and member management",
+          "point3": "Class calendar and bookings",
+          "point4": "Subscriptions and payment plans",
+          "point5": "Online payments with Stripe",
+          "cta": "Start with Full Management"
+        }
       }
     }
   }

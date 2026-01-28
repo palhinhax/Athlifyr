@@ -10,6 +10,8 @@ import {
   ChevronDown,
   Instagram,
   Mail,
+  Eye,
+  Settings2,
 } from "lucide-react";
 import { VenueLandingFAQ } from "@/components/venue-landing-faq";
 import { VenueLandingFeatures } from "@/components/venue-landing-features";
@@ -132,8 +134,124 @@ export function VenueLandingClient({
         </div>
       </section>
 
+      {/* Choose Your Path Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              {t("choosePath.title")}
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              {t("choosePath.subtitle")}
+            </p>
+          </motion.div>
+
+          <div className="mx-auto grid max-w-5xl gap-6 md:grid-cols-2">
+            {/* Simple Profile Option */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="group relative overflow-hidden rounded-2xl border bg-card p-8 shadow-sm transition-all hover:shadow-lg"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 transition-opacity group-hover:opacity-100" />
+
+              <div className="relative">
+                <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 p-3 text-white">
+                  <Eye className="h-6 w-6" />
+                </div>
+
+                <h3 className="mb-2 text-2xl font-bold">
+                  {t("choosePath.simple.title")}
+                </h3>
+                <p className="mb-6 text-muted-foreground">
+                  {t("choosePath.simple.description")}
+                </p>
+
+                <ul className="mb-8 space-y-3">
+                  {[
+                    t("choosePath.simple.point1"),
+                    t("choosePath.simple.point2"),
+                    t("choosePath.simple.point3"),
+                    t("choosePath.simple.point4"),
+                  ].map((point, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-blue-500" />
+                      <span className="text-sm">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild variant="outline" className="w-full gap-2">
+                  <Link href="/auth/register">
+                    {t("choosePath.simple.cta")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Full Management Option */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="group relative overflow-hidden rounded-2xl border-2 border-primary bg-card p-8 shadow-sm transition-all hover:shadow-lg"
+            >
+              <div className="absolute -right-4 -top-4 rounded-bl-2xl bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
+                {t("choosePath.full.badge")}
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
+
+              <div className="relative">
+                <div className="mb-4 inline-flex rounded-xl bg-gradient-to-br from-primary to-primary/60 p-3 text-white">
+                  <Settings2 className="h-6 w-6" />
+                </div>
+
+                <h3 className="mb-2 text-2xl font-bold">
+                  {t("choosePath.full.title")}
+                </h3>
+                <p className="mb-6 text-muted-foreground">
+                  {t("choosePath.full.description")}
+                </p>
+
+                <ul className="mb-8 space-y-3">
+                  {[
+                    t("choosePath.full.point1"),
+                    t("choosePath.full.point2"),
+                    t("choosePath.full.point3"),
+                    t("choosePath.full.point4"),
+                    t("choosePath.full.point5"),
+                  ].map((point, index) => (
+                    <li key={index} className="flex items-center gap-2">
+                      <CheckCircle2 className="h-5 w-5 shrink-0 text-primary" />
+                      <span className="text-sm">{point}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <Button asChild className="w-full gap-2">
+                  <Link href="/auth/register">
+                    {t("choosePath.full.cta")}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
-      <section id="features" className="py-20">
+      <section id="features" className="bg-muted/30 py-20">
         <VenueLandingFeatures />
       </section>
 

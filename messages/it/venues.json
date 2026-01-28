@@ -893,6 +893,30 @@
         "athletes": "Atleti nella Community",
         "sessions": "Sessioni al Mese",
         "countries": "Paesi"
+      },
+      "choosePath": {
+        "title": "Scegli ciò che fa per te",
+        "subtitle": "Vuoi solo essere trovato dagli atleti o hai bisogno di strumenti di gestione completi? La scelta è tua.",
+        "simple": {
+          "title": "Profilo Semplice",
+          "description": "Perfetto se vuoi solo che gli atleti ti trovino sulla nostra piattaforma. Nessuna gestione, solo visibilità.",
+          "point1": "La tua pagina spazio su Athlifyr",
+          "point2": "Posizione su mappa e ricerca",
+          "point3": "Contatti e orari di apertura",
+          "point4": "Galleria foto del tuo spazio",
+          "cta": "Crea Profilo Semplice"
+        },
+        "full": {
+          "title": "Gestione Completa",
+          "description": "Per chi vuole gestire tutta l'attività: clienti, lezioni, abbonamenti e pagamenti in un'unica piattaforma.",
+          "badge": "CONSIGLIATO",
+          "point1": "Tutto del profilo semplice incluso",
+          "point2": "Gestione clienti e membri",
+          "point3": "Calendario lezioni e prenotazioni",
+          "point4": "Abbonamenti e piani di pagamento",
+          "point5": "Pagamenti online con Stripe",
+          "cta": "Inizia con Gestione Completa"
+        }
       }
     }
   }

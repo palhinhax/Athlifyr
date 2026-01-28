@@ -91,7 +91,7 @@ export function VenueLandingClient({
                 asChild
                 className="min-w-[200px] gap-2 text-lg font-bold"
               >
-                <Link href="/auth/register">
+                <Link href="/auth/signup">
                   {t("cta.primary")}
                   <ArrowRight className="h-5 w-5" />
                 </Link>
@@ -190,7 +190,7 @@ export function VenueLandingClient({
                 </ul>
 
                 <Button asChild variant="outline" className="w-full gap-2">
-                  <Link href="/auth/register">
+                  <Link href="/auth/signup">
                     {t("choosePath.simple.cta")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -239,7 +239,7 @@ export function VenueLandingClient({
                 </ul>
 
                 <Button asChild className="w-full gap-2">
-                  <Link href="/auth/register">
+                  <Link href="/auth/signup">
                     {t("choosePath.full.cta")}
                     <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -369,7 +369,7 @@ export function VenueLandingClient({
               asChild
               className="gap-2 text-lg font-bold"
             >
-              <Link href="/auth/register">
+              <Link href="/auth/signup">
                 {t("finalCta.button")}
                 <ArrowRight className="h-5 w-5" />
               </Link>

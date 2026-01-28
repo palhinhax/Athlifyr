@@ -66,7 +66,6 @@ export function AppSidebar() {
           href: "/venues",
           icon: Building2Icon,
           label: t("venues"),
-          adminOnly: true,
         },
         {
           href: "/chat",
@@ -93,7 +92,11 @@ export function AppSidebar() {
           icon: CalendarIcon,
           label: t("events"),
         },
-        // Future: venues for public
+        {
+          href: "/venues",
+          icon: Building2Icon,
+          label: t("venues"),
+        },
       ];
 
   const filteredNavItems = navItems.filter((item) => {

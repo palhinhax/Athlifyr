@@ -106,13 +106,6 @@ export function VenueCard({ venue }: VenueCardProps) {
             </span>
           </div>
         )}
-
-        {/* Description */}
-        {venue.description && (
-          <p className="line-clamp-2 text-sm text-muted-foreground">
-            {venue.description}
-          </p>
-        )}
       </div>
     </Link>
   );

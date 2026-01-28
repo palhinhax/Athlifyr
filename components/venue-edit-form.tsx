@@ -161,6 +161,7 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
               </div>
             )}
             <ImageUpload
+              id="venue-cover-upload"
               onUploadComplete={(url, fileId, fileName) => {
                 handleImageUpload(url, fileId, fileName, "cover");
               }}
@@ -190,6 +191,7 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
               </div>
             )}
             <ImageUpload
+              id="venue-logo-upload"
               onUploadComplete={(url, fileId, fileName) => {
                 handleImageUpload(url, fileId, fileName, "logo");
               }}

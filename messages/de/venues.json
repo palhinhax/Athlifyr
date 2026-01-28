@@ -12,6 +12,25 @@
     "editVenueModal": "Standortinformationen Bearbeiten",
     "venueSettings": "Standorteinstellungen",
     "venueDetails": "Standortdetails",
+    "gallery": {
+      "title": "Fotogalerie",
+      "addImage": "Foto Hinzufügen",
+      "addFirstImage": "Füge dein erstes Foto hinzu",
+      "noImages": "Noch keine Fotos",
+      "selectImage": "Bild Auswählen",
+      "caption": "Beschriftung (optional)",
+      "captionPlaceholder": "Beschreibe dieses Foto...",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "uploadSuccess": "Foto hinzugefügt",
+      "imageAdded": "Das Foto wurde zur Galerie hinzugefügt",
+      "uploadError": "Upload fehlgeschlagen",
+      "uploadErrorDesc": "Das Foto konnte nicht hinzugefügt werden. Bitte erneut versuchen.",
+      "deleteSuccess": "Foto entfernt",
+      "imageDeleted": "Das Foto wurde aus der Galerie entfernt",
+      "deleteError": "Löschen fehlgeschlagen",
+      "deleteErrorDesc": "Das Foto konnte nicht entfernt werden. Bitte erneut versuchen."
+    },
     "settingsTabs": {
       "general": "Allgemein",
       "sessions": "Sitzungen & Dienstleistungen",
@@ -155,7 +174,7 @@
       "originalDescription": "Originalbeschreibung",
       "copyOriginal": "Original kopieren",
       "ownerOnly": "Nur der Eigentümer kann Übersetzungen bearbeiten",
-      "markdownSupported": "Unterstützt Markdown-Formatierung: **fett**, *kursiv*, Listen, Links",
+      "markdownSupported": "Unterstützt Markdown: **fett**, *kursiv*, Listen, Links, Bilder ![alt](url)",
       "complete": "Vollständig",
       "incomplete": "Unvollständig",
       "save": "Übersetzungen speichern",
@@ -240,8 +259,10 @@
     },
     "coverImage": "Titelbild",
     "changeCover": "Titelbild Ändern",
+    "uploadCover": "Titelbild Hochladen",
     "logo": "Logo",
     "changeLogo": "Logo Ändern",
+    "uploadLogo": "Logo Hochladen",
     "sessionDefaults": "Standard-Sitzungseinstellungen",
     "info": {
       "name": "Name",
@@ -596,7 +617,7 @@
       "imageUploadError": "Fehler beim Hochladen des Bildes",
       "updateSuccess": "Standort erfolgreich aktualisiert",
       "updateError": "Fehler beim Aktualisieren des Standorts",
-      "markdownSupported": "Unterstützt Markdown-Formatierung: **fett**, *kursiv*, Listen, Links"
+      "markdownSupported": "Unterstützt Markdown: **fett**, *kursiv*, Listen, Links, Bilder ![alt](url)"
     },
     "plan": {
       "policy": "Plan-Richtlinie",

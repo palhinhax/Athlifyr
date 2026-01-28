@@ -12,6 +12,25 @@
     "editVenueModal": "Edit Venue Information",
     "venueSettings": "Venue Settings",
     "venueDetails": "Venue Details",
+    "gallery": {
+      "title": "Photo Gallery",
+      "addImage": "Add Photo",
+      "addFirstImage": "Add your first photo",
+      "noImages": "No photos yet",
+      "selectImage": "Select Image",
+      "caption": "Caption (optional)",
+      "captionPlaceholder": "Describe this photo...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "uploadSuccess": "Photo added",
+      "imageAdded": "Photo has been added to the gallery",
+      "uploadError": "Upload failed",
+      "uploadErrorDesc": "Failed to add photo. Please try again.",
+      "deleteSuccess": "Photo removed",
+      "imageDeleted": "Photo has been removed from the gallery",
+      "deleteError": "Delete failed",
+      "deleteErrorDesc": "Failed to remove photo. Please try again."
+    },
     "settingsTabs": {
       "general": "General",
       "translations": "Translations",
@@ -155,7 +174,7 @@
       "originalDescription": "Original venue description",
       "copyOriginal": "Copy original",
       "ownerOnly": "Only the owner can manage translations",
-      "markdownSupported": "Supports Markdown formatting: **bold**, *italic*, lists, links",
+      "markdownSupported": "Supports Markdown: **bold**, *italic*, lists, links, images ![alt](url)",
       "complete": "Complete",
       "incomplete": "Incomplete",
       "save": "Save Translations",
@@ -240,8 +259,10 @@
     },
     "coverImage": "Cover Image",
     "changeCover": "Change Cover",
+    "uploadCover": "Upload Cover",
     "logo": "Logo",
     "changeLogo": "Change Logo",
+    "uploadLogo": "Upload Logo",
     "sessionDefaults": "Session Defaults",
     "info": {
       "name": "Name",
@@ -596,7 +617,7 @@
       "imageUploadError": "Failed to upload image",
       "updateSuccess": "Venue updated successfully",
       "updateError": "Failed to update venue",
-      "markdownSupported": "Supports Markdown formatting: **bold**, *italic*, lists, links"
+      "markdownSupported": "Supports Markdown: **bold**, *italic*, lists, links, images ![alt](url)"
     },
     "plan": {
       "policy": "Plan Policy",

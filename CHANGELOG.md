@@ -1,3 +1,9 @@
+# [14.8.0](https://github.com/palhinhax/Athlifyr/compare/v14.7.0...v14.8.0) (2026-01-29)
+
+### Features
+
+- **settings:** add email notifications, verification flow, tabs organization, and theme selector ([8c544eb](https://github.com/palhinhax/Athlifyr/commit/8c544eb6ea34f23a7a61691e9c8162ad0e0b997e))
+
 # [14.7.0](https://github.com/palhinhax/Athlifyr/compare/v14.6.0...v14.7.0) (2026-01-29)
 
 ### Features

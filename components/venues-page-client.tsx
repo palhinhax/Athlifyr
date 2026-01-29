@@ -7,7 +7,6 @@ import { VenueCard } from "@/components/venue-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
-import { calculateDistance } from "@/lib/geolocation";
 import type { VenuesFilters as VenuesFiltersType } from "@/components/venues-filters";
 import { HeroBackground } from "@/components/hero-background";
 import dynamic from "next/dynamic";
@@ -125,6 +124,18 @@ export function VenuesPageClient() {
           params.append("search", filters.searchQuery);
         }
 
+        // Add location-based filtering params
+        if (
+          filters.locationEnabled &&
+          filters.userLat &&
+          filters.userLng &&
+          filters.distanceRadius
+        ) {
+          params.append("lat", filters.userLat.toString());
+          params.append("lng", filters.userLng.toString());
+          params.append("radius", filters.distanceRadius.toString());
+        }
+
         const response = await fetch(`/api/venues?${params}`);
         if (!response.ok) {
           throw new Error("Failed to fetch venues");
@@ -135,35 +146,10 @@ export function VenuesPageClient() {
           pagination: PaginationInfo;
         } = await response.json();
 
-        let fetchedVenues = data.venues;
-
-        // Filter by distance if location is enabled
-        if (
-          viewMode === "list" &&
-          filters.locationEnabled &&
-          filters.userLat &&
-          filters.userLng &&
-          filters.distanceRadius &&
-          !filters.searchQuery
-        ) {
-          fetchedVenues = fetchedVenues.filter((venue) => {
-            if (!venue.latitude || !venue.longitude) return false;
-
-            const distance = calculateDistance(
-              filters.userLat!,
-              filters.userLng!,
-              venue.latitude,
-              venue.longitude
-            );
-
-            return distance <= filters.distanceRadius!;
-          });
-        }
-
         if (append) {
-          setVenues((prev) => [...prev, ...fetchedVenues]);
+          setVenues((prev) => [...prev, ...data.venues]);
         } else {
-          setVenues(fetchedVenues);
+          setVenues(data.venues);
         }
 
         setPagination(data.pagination);
@@ -175,13 +161,13 @@ export function VenuesPageClient() {
         setLoadingMore(false);
       }
     },
-    [filters, viewMode]
+    [filters]
   );
 
   useEffect(() => {
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchVenues(1, false);
-  }, [filters, viewMode, fetchVenues]);
+  }, [filters, fetchVenues]);
 
   // Infinite scroll observer
   useEffect(() => {

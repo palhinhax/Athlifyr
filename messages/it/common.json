@@ -45,6 +45,8 @@
   "contact": {
     "title": "Contattaci",
     "description": "Inviaci suggerimenti, segnala problemi o fai domande",
+    "welcomeMessage": "👋 Ciao! Hai una domanda, un suggerimento o un feedback? Inviaci un messaggio veloce e ti risponderemo il prima possibile.",
+    "welcomeMessageLoggedIn": "👋 Ciao {name}! Come possiamo aiutarti?",
     "cards": {
       "suggestions": "Suggerimenti",
       "suggestionsDesc": "Condividi idee per migliorare la piattaforma",
@@ -57,12 +59,14 @@
       "name": "Nome",
       "namePlaceholder": "Il tuo nome",
       "email": "Email",
-      "emailPlaceholder": "tua@email.com",
+      "emailPlaceholder": "tua@email.it",
       "type": "Tipo di Contatto",
       "types": {
+        "question": "❓ Domanda",
+        "addEvent": "� Aggiungi Evento",
+        "addVenue": "� Aggiungi Luogo",
         "suggestion": "💡 Suggerimento",
         "bug": "🐛 Segnala Bug",
-        "question": "❓ Domanda",
         "feedback": "💬 Feedback",
         "other": "📧 Altro"
       },
@@ -70,6 +74,10 @@
       "subjectPlaceholder": "Riepilogo del tuo contatto",
       "message": "Messaggio",
       "messagePlaceholder": "Descrivi in dettaglio...",
+      "placeholders": {
+        "addEvent": "Nome dell'evento, data, luogo, link al sito ufficiale...",
+        "addVenue": "Nome del luogo, indirizzo, tipo (box, palestra, etc)..."
+      },
       "messageHelper": "Sii il più specifico possibile per aiutarci meglio",
       "submit": "Invia Messaggio",
       "submitting": "Invio in corso..."
@@ -122,6 +130,41 @@
       "description": "Sei sicuro di voler rimuovere {name} dai tuoi amici? Non vedrai più le sue attività nel tuo feed.",
       "confirm": "Rimuovi",
       "cancel": "Annulla"
+    }
+  },
+  "quickChat": {
+    "title": "Chatta Con Noi",
+    "subtitle": "Rispondiamo velocemente!",
+    "openChat": "Apri chat",
+    "welcomeMessage": "👋 Ciao! Hai una domanda, un suggerimento o un feedback? Inviaci un messaggio veloce e ti risponderemo il prima possibile.",
+    "welcomeMessageLoggedIn": "👋 Ciao {name}! Come possiamo aiutarti?",
+    "form": {
+      "name": "Il tuo nome",
+      "namePlaceholder": "Come ti chiami?",
+      "email": "Email",
+      "emailPlaceholder": "la.tua@email.it",
+      "type": "Tipo di messaggio",
+      "types": {
+        "question": "Domanda",
+        "addEvent": "Aggiungi Evento",
+        "addVenue": "Aggiungi Luogo",
+        "suggestion": "Suggerimento",
+        "bug": "Segnala Problema",
+        "feedback": "Feedback",
+        "other": "Altro"
+      },
+      "message": "Messaggio",
+      "messagePlaceholder": "Scrivi il tuo messaggio qui...",
+      "placeholders": {
+        "addEvent": "Nome dell'evento, data, luogo, link al sito ufficiale...",
+        "addVenue": "Nome del luogo, indirizzo, tipo (box, palestra, etc)..."
+      },
+      "send": "Invia Messaggio",
+      "sending": "Invio in corso..."
+    },
+    "success": {
+      "title": "Messaggio Inviato! 🎉",
+      "description": "Grazie per averci contattato! Ti risponderemo via email il prima possibile."
     }
   }
 }

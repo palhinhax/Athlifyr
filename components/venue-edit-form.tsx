@@ -23,6 +23,7 @@ import Image from "next/image";
 // Venue types from Prisma schema
 const VENUE_TYPES = [
   "CROSSFIT_BOX",
+  "CROSSTRAINING_BOX",
   "GYM",
   "PT_STUDIO",
   "MASSAGE",
@@ -69,6 +70,7 @@ interface VenueEditFormProps {
     email: string | null;
     website: string | null;
     instagram: string | null;
+    whatsapp: string | null;
     address: string | null;
     city: string | null;
     country: string;
@@ -101,6 +103,7 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
     email: venue.email || "",
     website: venue.website || "",
     instagram: venue.instagram || "",
+    whatsapp: venue.whatsapp || "",
     address: venue.address || "",
     city: venue.city || "",
     country: venue.country,
@@ -375,6 +378,17 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
             value={formData.instagram}
             onChange={handleInputChange}
             placeholder="@username"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="whatsapp">WhatsApp</Label>
+          <Input
+            id="whatsapp"
+            name="whatsapp"
+            value={formData.whatsapp}
+            onChange={handleInputChange}
+            placeholder="+351 912 345 678"
           />
         </div>
       </div>

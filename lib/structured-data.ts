@@ -569,6 +569,7 @@ export interface VenueForStructuredData {
   email: string | null;
   website: string | null;
   instagram: string | null;
+  whatsapp: string | null;
   address: string | null;
   city: string | null;
   country: string;
@@ -611,6 +612,14 @@ function getVenueTypeName(venueType: string, locale: string = "en"): string {
       fr: "Box de CrossFit",
       de: "CrossFit Box",
       it: "Box di CrossFit",
+    },
+    CROSSTRAINING_BOX: {
+      en: "CrossTraining Box",
+      pt: "Box de CrossTraining",
+      es: "Box de CrossTraining",
+      fr: "Box de CrossTraining",
+      de: "CrossTraining Box",
+      it: "Box di CrossTraining",
     },
     GYM: {
       en: "Gym",

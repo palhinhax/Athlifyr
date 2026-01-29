@@ -14,6 +14,7 @@ import {
   LocateFixed,
   LocateOff,
 } from "lucide-react";
+import { getServiceIcon } from "@/lib/venue-icons";
 
 interface VenuesFiltersProps {
   userId?: string;
@@ -58,10 +59,9 @@ const VENUE_SERVICES = [
 
 type VenueService = (typeof VENUE_SERVICES)[number];
 
-const DEFAULT_RADIUS = 25; // km
+const DEFAULT_RADIUS = 50; // km (same as events)
 
 export function VenuesFilters({
-  userId,
   onFiltersChange,
   searchQuery,
   viewMode = "list",
@@ -69,6 +69,7 @@ export function VenuesFilters({
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [gettingLocation, setGettingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -110,7 +111,7 @@ export function VenuesFilters({
     };
   }, [isOpen]);
 
-  // Load preferences from localStorage or API
+  // Load preferences on mount
   useEffect(() => {
     const loadPreferences = async () => {
       setLoading(true);
@@ -120,12 +121,19 @@ export function VenuesFilters({
           const prefs = JSON.parse(storedPrefs);
           setSelectedServices(prefs.services || []);
           setDistanceRadius(prefs.distanceRadius || DEFAULT_RADIUS);
+          setUserLat(prefs.userLat || null);
+          setUserLng(prefs.userLng || null);
+          setLocationEnabled(prefs.locationEnabled || false);
 
-          if (prefs.userLat && prefs.userLng) {
-            setUserLat(prefs.userLat);
-            setUserLng(prefs.userLng);
-            setLocationEnabled(true);
-          }
+          // Notify parent of loaded filters
+          stableOnFiltersChange({
+            services: prefs.services || [],
+            distanceRadius: prefs.locationEnabled ? prefs.distanceRadius : null,
+            searchQuery,
+            userLat: prefs.userLat || null,
+            userLng: prefs.userLng || null,
+            locationEnabled: prefs.locationEnabled || false,
+          });
         }
       } catch (error) {
         console.error("Error loading preferences:", error);
@@ -135,82 +143,104 @@ export function VenuesFilters({
     };
 
     loadPreferences();
-  }, [userId]);
+  }, [stableOnFiltersChange, searchQuery]);
 
-  // Update parent component when filters change
-  useEffect(() => {
-    stableOnFiltersChange({
-      services: selectedServices,
-      distanceRadius: locationEnabled ? distanceRadius : null,
-      searchQuery,
-      userLat: locationEnabled ? userLat : null,
-      userLng: locationEnabled ? userLng : null,
-      locationEnabled,
-    });
-  }, [
-    selectedServices,
-    distanceRadius,
-    searchQuery,
-    userLat,
-    userLng,
-    locationEnabled,
-    stableOnFiltersChange,
-  ]);
-
-  const handleGetLocation = () => {
-    setGettingLocation(true);
-    setLocationError(null);
-
+  const requestLocation = () => {
     if (!navigator.geolocation) {
-      setLocationError(t("events.filters.locationNotSupported"));
-      setGettingLocation(false);
+      setLocationError(t("eventsPage.filters.locationNotSupported"));
       return;
     }
 
+    setGettingLocation(true);
+    setLocationError(null);
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        setUserLat(lat);
-        setUserLng(lng);
+        setUserLat(position.coords.latitude);
+        setUserLng(position.coords.longitude);
         setLocationEnabled(true);
         setGettingLocation(false);
-
-        // Save to localStorage
-        const prefs = {
-          services: selectedServices,
-          distanceRadius,
-          userLat: lat,
-          userLng: lng,
-        };
-        localStorage.setItem("venuesFilters", JSON.stringify(prefs));
       },
       (error) => {
-        console.error("Error getting location:", error);
-        setLocationError(t("events.filters.locationError"));
+        let errorMessage = t("eventsPage.filters.locationError");
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            errorMessage = t("eventsPage.filters.locationDenied");
+            break;
+          case error.POSITION_UNAVAILABLE:
+            errorMessage = t("eventsPage.filters.locationUnavailable");
+            break;
+          case error.TIMEOUT:
+            errorMessage = t("eventsPage.filters.locationTimeout");
+            break;
+        }
+        setLocationError(errorMessage);
         setGettingLocation(false);
       },
       {
-        enableHighAccuracy: false,
-        timeout: 10000,
-        maximumAge: 300000, // 5 minutes
+        enableHighAccuracy: true,
+        timeout: 30000,
+        maximumAge: 300000,
       }
     );
   };
 
-  const handleToggleLocation = () => {
-    if (locationEnabled) {
-      setLocationEnabled(false);
-      setUserLat(null);
-      setUserLng(null);
-    } else if (userLat && userLng) {
-      setLocationEnabled(true);
-    } else {
-      handleGetLocation();
-    }
+  const disableLocation = () => {
+    setLocationEnabled(false);
   };
 
-  const handleToggleService = (service: VenueService) => {
+  const savePreferences = () => {
+    setSaving(true);
+
+    const filters: VenuesFilters = {
+      services: selectedServices,
+      distanceRadius: locationEnabled ? distanceRadius : null,
+      searchQuery,
+      userLat,
+      userLng,
+      locationEnabled,
+    };
+
+    // Save to localStorage
+    const prefs = {
+      services: selectedServices,
+      distanceRadius,
+      userLat,
+      userLng,
+      locationEnabled,
+    };
+    localStorage.setItem("venuesFilters", JSON.stringify(prefs));
+
+    // Apply filters
+    stableOnFiltersChange(filters);
+
+    // Close panel after applying filters
+    setIsOpen(false);
+    setSaving(false);
+  };
+
+  const clearFilters = () => {
+    setSelectedServices([]);
+    setDistanceRadius(DEFAULT_RADIUS);
+    setLocationEnabled(false);
+
+    const filters: VenuesFilters = {
+      services: [],
+      distanceRadius: null,
+      searchQuery: "",
+      userLat,
+      userLng,
+      locationEnabled: false,
+    };
+
+    // Clear localStorage
+    localStorage.removeItem("venuesFilters");
+
+    stableOnFiltersChange(filters);
+    setIsOpen(false);
+  };
+
+  const toggleService = (service: VenueService) => {
     setSelectedServices((prev) =>
       prev.includes(service)
         ? prev.filter((s) => s !== service)
@@ -218,155 +248,159 @@ export function VenuesFilters({
     );
   };
 
-  const handleClearFilters = () => {
-    setSelectedServices([]);
-    setDistanceRadius(DEFAULT_RADIUS);
-    setLocationEnabled(false);
-    localStorage.removeItem("venuesFilters");
-  };
-
   const activeFiltersCount =
-    selectedServices.length + (locationEnabled ? 1 : 0);
+    (selectedServices.length > 0 ? 1 : 0) + (locationEnabled ? 1 : 0);
+
+  if (loading) {
+    return (
+      <Button variant="outline" disabled>
+        <Loader2 className="h-4 w-4 animate-spin" />
+      </Button>
+    );
+  }
 
   return (
-    <div className="relative" ref={panelRef}>
+    <div ref={panelRef} className="relative">
+      {/* Toggle Button */}
       <Button
         variant="outline"
-        size="lg"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
-        className="gap-2"
+        className="shadow-sm"
       >
-        <Filter className="h-4 w-4" />
-        <span className="hidden sm:inline">{t("events.filters.title")}</span>
+        <Filter className="mr-2 h-4 w-4" />
+        {t("eventsPage.filters.title")}
         {activeFiltersCount > 0 && (
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+          <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
             {activeFiltersCount}
           </span>
         )}
       </Button>
 
+      {/* Filters Panel */}
       {isOpen && (
-        <Card className="absolute left-0 top-full z-50 mt-2 w-[90vw] max-w-md overflow-hidden shadow-lg sm:w-96">
-          <div className="p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="font-semibold">{t("events.filters.title")}</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsOpen(false)}
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
+        <Card className="absolute left-0 top-full z-50 mt-2 w-96 max-w-[calc(100vw-2rem)] p-4 shadow-xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="font-semibold">{t("eventsPage.filters.title")}</h3>
+            <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              <div className="space-y-6">
-                {/* Venue Services */}
-                <div>
-                  <h4 className="mb-3 text-sm font-medium">
-                    {t("venues.filters.services")}
-                  </h4>
-                  <div className="max-h-[300px] space-y-1 overflow-y-auto">
-                    {VENUE_SERVICES.map((service) => (
-                      <label
-                        key={service}
-                        className="flex cursor-pointer items-center gap-2 rounded-lg border p-2 transition-colors hover:bg-muted"
-                      >
-                        <Checkbox
-                          checked={selectedServices.includes(service)}
-                          onCheckedChange={() => handleToggleService(service)}
-                        />
-                        <span className="text-sm">
-                          {t(`venues.services.${service}`)}
-                        </span>
-                      </label>
-                    ))}
+          {/* Location Filter - Hidden in map mode */}
+          {viewMode !== "map" && (
+            <div className="mb-4">
+              <h4 className="mb-2 text-sm font-medium">
+                {t("eventsPage.filters.location")}
+              </h4>
+              <div className="space-y-3">
+                {locationEnabled ? (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={disableLocation}
+                      className="flex-1"
+                    >
+                      <LocateOff className="mr-2 h-4 w-4" />
+                      {t("eventsPage.filters.disableLocation")}
+                    </Button>
+                    <span className="text-xs text-green-600">
+                      <MapPin className="inline h-3 w-3" />{" "}
+                      {t("eventsPage.filters.locationActive")}
+                    </span>
                   </div>
-                </div>
-
-                {/* Location Filter */}
-                {viewMode === "list" && !searchQuery && (
-                  <div>
-                    <div className="mb-3 flex items-center justify-between">
-                      <h4 className="text-sm font-medium">
-                        <MapPin className="mr-1 inline h-4 w-4" />
-                        {t("events.filters.locationFilter")}
-                      </h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleToggleLocation}
-                        disabled={gettingLocation}
-                        className="h-8 gap-2 px-2"
-                      >
-                        {gettingLocation ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : locationEnabled ? (
-                          <LocateFixed className="h-4 w-4 text-primary" />
-                        ) : (
-                          <LocateOff className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span className="text-xs">
-                          {locationEnabled
-                            ? t("events.filters.enabled")
-                            : t("events.filters.disabled")}
-                        </span>
-                      </Button>
-                    </div>
-
-                    {locationError && (
-                      <p className="mb-2 text-xs text-destructive">
-                        {locationError}
-                      </p>
-                    )}
-
-                    {locationEnabled && (
-                      <div>
-                        <label className="mb-2 block text-sm text-muted-foreground">
-                          {t("events.filters.radius", {
-                            distance: distanceRadius,
-                          })}
-                        </label>
-                        <Slider
-                          value={[distanceRadius]}
-                          onValueChange={(values) =>
-                            setDistanceRadius(values[0])
-                          }
-                          min={5}
-                          max={100}
-                          step={5}
-                          className="mb-2"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Actions */}
-                <div className="flex gap-2 border-t pt-4">
+                ) : (
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleClearFilters}
-                    className="flex-1"
-                    disabled={activeFiltersCount === 0}
+                    onClick={requestLocation}
+                    disabled={gettingLocation}
+                    className="w-full"
                   >
-                    {t("events.filters.clearAll")}
+                    {gettingLocation ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <LocateFixed className="mr-2 h-4 w-4" />
+                    )}
+                    {t("eventsPage.filters.enableLocation")}
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={() => setIsOpen(false)}
-                    className="flex-1"
-                  >
-                    {t("events.filters.apply")}
-                  </Button>
-                </div>
+                )}
+                {locationError && (
+                  <p className="text-xs text-destructive">{locationError}</p>
+                )}
+
+                {/* Distance Radius Slider */}
+                {locationEnabled && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-muted-foreground">
+                        {t("eventsPage.filters.radius")}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {distanceRadius} km
+                      </span>
+                    </div>
+                    <Slider
+                      value={[distanceRadius]}
+                      onValueChange={(value) => setDistanceRadius(value[0])}
+                      min={10}
+                      max={500}
+                      step={10}
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>10 km</span>
+                      <span>500 km</span>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
+          )}
+
+          {/* Services Filter */}
+          <div className="mb-4">
+            <h4 className="mb-2 text-sm font-medium">
+              {t("venues.filters.services")}
+            </h4>
+            <div className="max-h-40 space-y-2 overflow-y-auto">
+              {VENUE_SERVICES.map((service) => (
+                <div key={service} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`venue-service-${service}`}
+                    checked={selectedServices.includes(service)}
+                    onCheckedChange={() => toggleService(service)}
+                  />
+                  <label
+                    htmlFor={`venue-service-${service}`}
+                    className="flex cursor-pointer items-center gap-2 text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                  >
+                    <span className="text-base leading-none">
+                      {getServiceIcon(service)}
+                    </span>
+                    <span>{t(`venues.services.${service}`)}</span>
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button
+              onClick={savePreferences}
+              disabled={saving}
+              className="flex-1"
+            >
+              {saving ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                t("eventsPage.filters.applyFilters")
+              )}
+            </Button>
+            <Button variant="outline" onClick={clearFilters} disabled={saving}>
+              {t("eventsPage.filters.clearFilters")}
+            </Button>
           </div>
         </Card>
       )}

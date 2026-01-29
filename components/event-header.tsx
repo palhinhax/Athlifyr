@@ -33,6 +33,16 @@ interface EventHeaderProps {
     imageUrl: string | null;
     externalUrl: string | null;
     stravaRouteEmbed: string | null;
+    featuredVenueId: string | null;
+    featuredVenue: {
+      id: string;
+      slug: string;
+      name: string;
+      type: string;
+      logo: string | null;
+      city: string | null;
+      country: string;
+    } | null;
     variants: {
       id: string;
       name: string;

@@ -30,6 +30,7 @@ interface VenueSettingsModalProps {
     email: string | null;
     website: string | null;
     instagram: string | null;
+    whatsapp: string | null;
     address: string | null;
     city: string | null;
     country: string;

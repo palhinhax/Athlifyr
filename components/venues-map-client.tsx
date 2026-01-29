@@ -8,14 +8,28 @@ import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
 import { createVenueMarkerHtml } from "@/lib/venue-icons";
 
-// Create custom icon for venues based on their services
-const createVenueIcon = (services?: string[]): L.DivIcon => {
+/**
+ * Get marker size based on zoom level
+ * - Zoom <= 6: Small markers (24px)
+ * - Zoom 7-9: Medium markers (32px)
+ * - Zoom 10-12: Normal markers (40px)
+ * - Zoom >= 13: Large markers (48px)
+ */
+function getMarkerSizeForZoom(zoom: number): number {
+  if (zoom <= 6) return 24;
+  if (zoom <= 9) return 32;
+  if (zoom <= 12) return 40;
+  return 48;
+}
+
+// Create custom icon for venues based on their services and zoom level
+const createVenueIcon = (services?: string[], size: number = 40): L.DivIcon => {
   return L.divIcon({
-    html: createVenueMarkerHtml(services),
+    html: createVenueMarkerHtml(services, size),
     className: "custom-marker",
-    iconSize: [40, 40],
-    iconAnchor: [20, 40],
-    popupAnchor: [0, -40],
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size],
+    popupAnchor: [0, -size],
   });
 };
 
@@ -57,9 +71,20 @@ export default function VenuesMapClient({
   const [filters, setFilters] = useState<{ services: string[] } | undefined>(
     initialFilters
   );
+  const [currentZoom, setCurrentZoom] = useState(initialZoom);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
   const filtersRef = useRef(filters);
+
+  // Sync filters state when props change
+  useEffect(() => {
+    const newServicesStr = JSON.stringify(initialFilters?.services || []);
+    const currentServicesStr = JSON.stringify(filters?.services || []);
+
+    if (newServicesStr !== currentServicesStr) {
+      setFilters(initialFilters);
+    }
+  }, [initialFilters, filters?.services]);
 
   // Keep filtersRef in sync
   useEffect(() => {
@@ -190,8 +215,12 @@ export default function VenuesMapClient({
 
     // Set up event handlers for bounds changes
     const onMoveEnd = () => handleBoundsChange(map.getBounds());
+    const onZoomEnd = () => {
+      handleBoundsChange(map.getBounds());
+      setCurrentZoom(map.getZoom());
+    };
     map.on("moveend", onMoveEnd);
-    map.on("zoomend", onMoveEnd);
+    map.on("zoomend", onZoomEnd);
 
     // Initial fetch
     handleBoundsChange(map.getBounds());
@@ -207,7 +236,7 @@ export default function VenuesMapClient({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mounted]); // Only depend on mounted - map should initialize once
 
-  // Update markers when venues change
+  // Update markers when venues or zoom change
   useEffect(() => {
     if (!markersLayerRef.current) return;
 
@@ -217,10 +246,13 @@ export default function VenuesMapClient({
     // Get locale from pathname
     const locale = pathname.split("/")[1] || "pt";
 
+    // Get marker size based on current zoom
+    const markerSize = getMarkerSizeForZoom(currentZoom);
+
     // Add new markers
     venues.forEach((venue) => {
       const marker = L.marker([venue.latitude, venue.longitude], {
-        icon: createVenueIcon(venue.services),
+        icon: createVenueIcon(venue.services, markerSize),
       });
 
       marker.bindPopup(`
@@ -236,7 +268,7 @@ export default function VenuesMapClient({
 
       marker.addTo(markersLayerRef.current!);
     });
-  }, [venues, pathname]);
+  }, [venues, pathname, currentZoom]);
 
   // Prevent rendering until mounted
   if (!mounted) {

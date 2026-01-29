@@ -31,8 +31,9 @@ interface Venue {
   createdAt: string;
 }
 
-const venueTypeLabels: Record<VenueType, string> = {
+const venueTypeLabels: Record<string, string> = {
   CROSSFIT_BOX: "CrossFit Box",
+  CROSSTRAINING_BOX: "CrossTraining Box",
   GYM: "Ginásio",
   PT_STUDIO: "Estúdio PT",
   MASSAGE: "Massagem",

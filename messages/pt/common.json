@@ -45,6 +45,8 @@
   "contact": {
     "title": "Contacta-nos",
     "description": "Envia-nos sugestões, reporta problemas ou faz perguntas",
+    "welcomeMessage": "👋 Olá! Tens alguma dúvida, sugestão ou feedback? Envia-nos uma mensagem rápida e respondemos o mais breve possível.",
+    "welcomeMessageLoggedIn": "👋 Olá {name}! Como te podemos ajudar?",
     "cards": {
       "suggestions": "Sugestões",
       "suggestionsDesc": "Partilha ideias para melhorar a plataforma",
@@ -60,9 +62,11 @@
       "emailPlaceholder": "teu@email.com",
       "type": "Tipo de Contacto",
       "types": {
+        "question": "❓ Pergunta",
+        "addEvent": "📅 Adicionar Prova",
+        "addVenue": "� Adicionar Local",
         "suggestion": "💡 Sugestão",
         "bug": "🐛 Reportar Bug",
-        "question": "❓ Pergunta",
         "feedback": "💬 Feedback",
         "other": "📧 Outro"
       },
@@ -70,6 +74,10 @@
       "subjectPlaceholder": "Resumo do teu contacto",
       "message": "Mensagem",
       "messagePlaceholder": "Descreve em detalhe...",
+      "placeholders": {
+        "addEvent": "Nome da prova, data, local, link do site oficial...",
+        "addVenue": "Nome do local, morada, tipo (box, ginásio, etc)..."
+      },
       "messageHelper": "Sê o mais específico possível para podermos ajudar melhor",
       "submit": "Enviar Mensagem",
       "submitting": "A enviar..."
@@ -122,6 +130,41 @@
       "description": "Tens a certeza que queres remover {name} dos teus amigos? Deixarás de ver as atividades desta pessoa no teu feed.",
       "confirm": "Remover",
       "cancel": "Cancelar"
+    }
+  },
+  "quickChat": {
+    "title": "Fala Connosco",
+    "subtitle": "Respondemos rapidamente!",
+    "openChat": "Abrir chat",
+    "welcomeMessage": "👋 Olá! Tens alguma dúvida, sugestão ou feedback? Envia-nos uma mensagem rápida e respondemos o mais breve possível.",
+    "welcomeMessageLoggedIn": "👋 Olá {name}! Como te podemos ajudar?",
+    "form": {
+      "name": "O teu nome",
+      "namePlaceholder": "Como te chamas?",
+      "email": "Email",
+      "emailPlaceholder": "o.teu@email.com",
+      "type": "Tipo de mensagem",
+      "types": {
+        "question": "Pergunta",
+        "addEvent": "Adicionar Prova",
+        "addVenue": "Adicionar Local",
+        "suggestion": "Sugestão",
+        "bug": "Reportar Problema",
+        "feedback": "Feedback",
+        "other": "Outro"
+      },
+      "message": "Mensagem",
+      "messagePlaceholder": "Escreve aqui a tua mensagem...",
+      "placeholders": {
+        "addEvent": "Nome da prova, data, local, link do site oficial...",
+        "addVenue": "Nome do local, morada, tipo (box, ginásio, etc)..."
+      },
+      "send": "Enviar Mensagem",
+      "sending": "A enviar..."
+    },
+    "success": {
+      "title": "Mensagem Enviada! 🎉",
+      "description": "Obrigado pelo teu contacto! Vamos responder-te por email o mais rápido possível."
     }
   }
 }

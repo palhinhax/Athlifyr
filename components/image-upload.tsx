@@ -31,6 +31,7 @@ export function ImageUpload({
   id,
 }: ImageUploadProps) {
   const t = useTranslations("upload");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
   const { data: session } = useSession();
   const [isUploading, setIsUploading] = useState(false);
@@ -117,7 +118,7 @@ export function ImageUpload({
       onUploadComplete(data.file.url, data.file.fileId, data.file.fileName);
 
       toast({
-        title: t("common.success"),
+        title: tCommon("success"),
         description: t("uploadSuccess"),
       });
     } catch (error) {

@@ -45,6 +45,8 @@
   "contact": {
     "title": "Contact Us",
     "description": "Send us suggestions, report issues or ask questions",
+    "welcomeMessage": "👋 Hi there! Have a question, suggestion or feedback? Send us a quick message and we'll get back to you as soon as possible.",
+    "welcomeMessageLoggedIn": "👋 Hi {name}! How can we help you?",
     "cards": {
       "suggestions": "Suggestions",
       "suggestionsDesc": "Share ideas to improve the platform",
@@ -60,9 +62,11 @@
       "emailPlaceholder": "your@email.com",
       "type": "Contact Type",
       "types": {
+        "question": "❓ Question",
+        "addEvent": "� Add Event",
+        "addVenue": "📍 Add Venue",
         "suggestion": "💡 Suggestion",
         "bug": "🐛 Report Bug",
-        "question": "❓ Question",
         "feedback": "💬 Feedback",
         "other": "📧 Other"
       },
@@ -70,6 +74,10 @@
       "subjectPlaceholder": "Summary of your contact",
       "message": "Message",
       "messagePlaceholder": "Describe in detail...",
+      "placeholders": {
+        "addEvent": "Event name, date, location, official website link...",
+        "addVenue": "Venue name, address, type (box, gym, etc)..."
+      },
       "messageHelper": "Be as specific as possible so we can help better",
       "submit": "Send Message",
       "submitting": "Sending..."
@@ -122,6 +130,41 @@
       "description": "Are you sure you want to remove {name} from your friends? You will no longer see their activities in your feed.",
       "confirm": "Remove",
       "cancel": "Cancel"
+    }
+  },
+  "quickChat": {
+    "title": "Chat With Us",
+    "subtitle": "We reply quickly!",
+    "openChat": "Open chat",
+    "welcomeMessage": "👋 Hi there! Have a question, suggestion or feedback? Send us a quick message and we'll get back to you as soon as possible.",
+    "welcomeMessageLoggedIn": "👋 Hi {name}! How can we help you?",
+    "form": {
+      "name": "Your name",
+      "namePlaceholder": "What's your name?",
+      "email": "Email",
+      "emailPlaceholder": "your@email.com",
+      "type": "Message type",
+      "types": {
+        "question": "Question",
+        "addEvent": "Add Event",
+        "addVenue": "Add Venue",
+        "suggestion": "Suggestion",
+        "bug": "Report Problem",
+        "feedback": "Feedback",
+        "other": "Other"
+      },
+      "message": "Message",
+      "messagePlaceholder": "Write your message here...",
+      "placeholders": {
+        "addEvent": "Event name, date, location, official website link...",
+        "addVenue": "Venue name, address, type (box, gym, etc)..."
+      },
+      "send": "Send Message",
+      "sending": "Sending..."
+    },
+    "success": {
+      "title": "Message Sent! 🎉",
+      "description": "Thanks for reaching out! We'll reply to your email as soon as possible."
     }
   }
 }

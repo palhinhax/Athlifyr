@@ -1,3 +1,9 @@
+# [14.6.0](https://github.com/palhinhax/Athlifyr/compare/v14.5.0...v14.6.0) (2026-01-29)
+
+### Features
+
+- **venues:** add ownership claim system and improve UI ([fecfa33](https://github.com/palhinhax/Athlifyr/commit/fecfa33c86c71e6116292924953d5a8c2f05c568))
+
 # [14.5.0](https://github.com/palhinhax/Athlifyr/compare/v14.4.1...v14.5.0) (2026-01-29)
 
 ### Features

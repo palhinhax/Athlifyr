@@ -30,6 +30,7 @@ interface VenueEditModalProps {
     email: string | null;
     website: string | null;
     instagram: string | null;
+    whatsapp: string | null;
     address: string | null;
     city: string | null;
     country: string;
@@ -65,6 +66,7 @@ export function VenueEditModal({
     email: venue.email || "",
     website: venue.website || "",
     instagram: venue.instagram || "",
+    whatsapp: venue.whatsapp || "",
     address: venue.address || "",
     city: venue.city || "",
     country: venue.country,
@@ -360,6 +362,19 @@ export function VenueEditModal({
                 value={formData.instagram}
                 onChange={handleInputChange}
                 placeholder="@username"
+                disabled={loading}
+              />
+            </div>
+
+            {/* WhatsApp */}
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp">WhatsApp</Label>
+              <Input
+                id="whatsapp"
+                name="whatsapp"
+                value={formData.whatsapp}
+                onChange={handleInputChange}
+                placeholder="+351 912 345 678"
                 disabled={loading}
               />
             </div>

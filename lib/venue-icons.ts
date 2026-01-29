@@ -57,9 +57,9 @@ export const SERVICE_COLORS: Record<
   BOXING: { bg: "#ef4444", border: "#dc2626", text: "#ffffff" },
   KICKBOXING: { bg: "#f97316", border: "#ea580c", text: "#ffffff" },
 
-  // CrossFit/HYROX - Orange/Yellow
-  CROSSFIT: { bg: "#f59e0b", border: "#d97706", text: "#000000" },
-  HYROX: { bg: "#eab308", border: "#ca8a04", text: "#000000" },
+  // CrossFit/HYROX - Black background with white icon
+  CROSSFIT: { bg: "#000000", border: "#333333", text: "#ffffff" },
+  HYROX: { bg: "#1a1a1a", border: "#404040", text: "#ffffff" },
 
   // Strength Sports - Blue tones
   WEIGHTLIFTING: { bg: "#3b82f6", border: "#2563eb", text: "#ffffff" },
@@ -168,28 +168,35 @@ export function getVenueIconPath(services?: string[] | null): string {
 
 /**
  * Create a Leaflet-compatible HTML string for a venue marker
+ * @param services - Array of services the venue offers
+ * @param size - Size of the marker (default: 40, small: 28, large: 48)
  */
-export function createVenueMarkerHtml(services?: string[] | null): string {
+export function createVenueMarkerHtml(
+  services?: string[] | null,
+  size: number = 40
+): string {
   const color = getVenueColor(services);
   const iconPath = getVenueIconPath(services);
+  const iconSize = Math.round(size * 0.45); // Icon is ~45% of marker size
+  const borderWidth = size >= 36 ? 3 : 2;
 
   return `
     <div style="
-      width: 40px;
-      height: 40px;
+      width: ${size}px;
+      height: ${size}px;
       background: ${color.bg};
       border-radius: 50% 50% 50% 0;
       transform: rotate(-45deg);
       display: flex;
       align-items: center;
       justify-content: center;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      border: 3px solid ${color.border};
+      box-shadow: 0 ${Math.round(size * 0.1)}px ${Math.round(size * 0.3)}px rgba(0, 0, 0, 0.3);
+      border: ${borderWidth}px solid ${color.border};
     ">
       <svg 
         xmlns="http://www.w3.org/2000/svg" 
-        width="18" 
-        height="18" 
+        width="${iconSize}" 
+        height="${iconSize}" 
         viewBox="0 0 24 24" 
         fill="none" 
         stroke="${color.text}" 
@@ -218,4 +225,49 @@ export function getVenueBadgeStyle(services?: string[] | null): {
     color: color.text,
     borderColor: color.border,
   };
+}
+
+/**
+ * Get emoji icon for a service type
+ */
+export function getServiceIcon(service: string): string {
+  const icons: Record<string, string> = {
+    // Combat Sports
+    MMA: "🥊",
+    BJJ: "🥋",
+    BOXING: "🥊",
+    KICKBOXING: "🦵",
+
+    // CrossFit/HYROX
+    CROSSFIT: "🏋️",
+    HYROX: "💪",
+
+    // Strength Sports
+    WEIGHTLIFTING: "🏋️‍♂️",
+    POWERLIFTING: "🏋️‍♀️",
+    OLYMPIC_LIFTING: "🏅",
+
+    // Functional & Training
+    FUNCTIONAL_FITNESS: "⚡",
+    PERSONAL_TRAINING: "👤",
+    GROUP_CLASSES: "👥",
+    OPEN_GYM: "🏢",
+
+    // Mind & Body
+    YOGA: "🧘",
+    PILATES: "🧘‍♀️",
+
+    // Recovery & Wellness
+    PHYSIOTHERAPY: "🩺",
+    MASSAGE: "💆",
+    NUTRITION: "🥗",
+    RECOVERY: "❤️‍🩹",
+    SAUNA: "🧖",
+    COLD_PLUNGE: "🧊",
+
+    // Default
+    OTHER: "📍",
+  };
+
+  return icons[service] || "📍";
 }

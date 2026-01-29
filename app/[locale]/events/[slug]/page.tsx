@@ -48,6 +48,24 @@ async function getEvent(
           language: locale,
         },
       },
+      featuredVenue: {
+        select: {
+          id: true,
+          slug: true,
+          name: true,
+          type: true,
+          logo: true,
+          city: true,
+          country: true,
+          services: true,
+          _count: {
+            select: {
+              recommendations: true,
+              reviews: true,
+            },
+          },
+        },
+      },
       variants: {
         include: {
           translations: {
@@ -300,6 +318,8 @@ export default async function EventPage({ params }: PageProps) {
     imageUrl: event.imageUrl,
     externalUrl: event.externalUrl,
     stravaRouteEmbed: event.stravaRouteEmbed,
+    featuredVenueId: event.featuredVenueId,
+    featuredVenue: event.featuredVenue,
     variants: event.variants.map((v) => ({
       id: v.id,
       name: v.name,
@@ -483,6 +503,7 @@ export default async function EventPage({ params }: PageProps) {
               googleMapsUrl: event.googleMapsUrl,
               stravaRouteEmbed: event.stravaRouteEmbed,
               sportTypes: event.sportTypes,
+              featuredVenue: event.featuredVenue,
             }}
             weather={event.weather}
           />

@@ -14,6 +14,17 @@ export async function GET(request: NextRequest) {
     const sports = searchParams.getAll("sports");
     const city = searchParams.get("city");
 
+    // Location-based filtering params
+    const userLat = searchParams.get("lat")
+      ? parseFloat(searchParams.get("lat")!)
+      : null;
+    const userLng = searchParams.get("lng")
+      ? parseFloat(searchParams.get("lng")!)
+      : null;
+    const radiusKm = searchParams.get("radius")
+      ? parseFloat(searchParams.get("radius")!)
+      : null;
+
     const where: Prisma.VenueWhereInput = {
       isActive: true,
     };
@@ -132,6 +143,152 @@ export async function GET(request: NextRequest) {
     }
 
     const skip = (page - 1) * pageSize;
+
+    // If location filtering is enabled, use raw SQL for distance calculation
+    if (userLat !== null && userLng !== null && radiusKm !== null && !search) {
+      try {
+        // Build service filter condition
+        let serviceFilter = Prisma.empty;
+        if (services.length > 0) {
+          const serviceArray = services.map(
+            (s) => Prisma.sql`${s}::"VenueService"`
+          );
+          serviceFilter = Prisma.sql`AND v.services && ARRAY[${Prisma.join(serviceArray, ",")}]`;
+        }
+
+        // Build sport filter condition
+        let sportFilter = Prisma.empty;
+        if (sports.length > 0) {
+          const sportArray = sports.map((s) => Prisma.sql`${s}::"SportType"`);
+          sportFilter = Prisma.sql`AND v."sportTypes" && ARRAY[${Prisma.join(sportArray, ",")}]`;
+        }
+
+        // Use CTE with Haversine formula to calculate distance in km
+        const venuesWithDistance = await prisma.$queryRaw<
+          {
+            id: string;
+            slug: string;
+            name: string;
+            type: string;
+            services: string[];
+            description: string | null;
+            city: string | null;
+            country: string;
+            latitude: number | null;
+            longitude: number | null;
+            cover_image: string | null;
+            logo: string | null;
+            instagram: string | null;
+            members_count: bigint;
+            sessions_count: bigint;
+            distance_km: number;
+          }[]
+        >`
+          WITH venues_with_distance AS (
+            SELECT 
+              v.id,
+              v.slug,
+              v.name,
+              v.type,
+              v.services,
+              v.description,
+              v.city,
+              v.country,
+              v.latitude,
+              v.longitude,
+              v."coverImage" as cover_image,
+              v.logo,
+              v.instagram,
+              (SELECT COUNT(*) FROM "VenueMember" WHERE "venueId" = v.id)::bigint as members_count,
+              (SELECT COUNT(*) FROM "VenueSession" WHERE "venueId" = v.id)::bigint as sessions_count,
+              (
+                6371 * acos(
+                  LEAST(1.0, GREATEST(-1.0,
+                    cos(radians(${userLat})) * cos(radians(v.latitude)) *
+                    cos(radians(v.longitude) - radians(${userLng})) +
+                    sin(radians(${userLat})) * sin(radians(v.latitude))
+                  ))
+                )
+              ) AS distance_km
+            FROM "Venue" v
+            WHERE 
+              v."isActive" = true
+              AND v.latitude IS NOT NULL
+              AND v.longitude IS NOT NULL
+              ${serviceFilter}
+              ${sportFilter}
+          )
+          SELECT * FROM venues_with_distance
+          WHERE distance_km <= ${radiusKm}
+          ORDER BY distance_km ASC
+          LIMIT ${pageSize}
+          OFFSET ${skip}
+        `;
+
+        // Get total count for pagination
+        const countResult = await prisma.$queryRaw<{ count: bigint }[]>`
+          WITH venues_with_distance AS (
+            SELECT 
+              v.id,
+              (
+                6371 * acos(
+                  LEAST(1.0, GREATEST(-1.0,
+                    cos(radians(${userLat})) * cos(radians(v.latitude)) *
+                    cos(radians(v.longitude) - radians(${userLng})) +
+                    sin(radians(${userLat})) * sin(radians(v.latitude))
+                  ))
+                )
+              ) AS distance_km
+            FROM "Venue" v
+            WHERE 
+              v."isActive" = true
+              AND v.latitude IS NOT NULL
+              AND v.longitude IS NOT NULL
+              ${serviceFilter}
+              ${sportFilter}
+          )
+          SELECT COUNT(*) as count FROM venues_with_distance
+          WHERE distance_km <= ${radiusKm}
+        `;
+
+        const totalCount = Number(countResult[0]?.count || 0);
+
+        // Transform results to match expected format
+        const venues = venuesWithDistance.map((v) => ({
+          id: v.id,
+          slug: v.slug,
+          name: v.name,
+          type: v.type,
+          services: v.services,
+          description: v.description,
+          city: v.city,
+          country: v.country,
+          latitude: v.latitude,
+          longitude: v.longitude,
+          coverImage: v.cover_image,
+          logo: v.logo,
+          instagram: v.instagram,
+          _count: {
+            members: Number(v.members_count),
+            sessions: Number(v.sessions_count),
+          },
+        }));
+
+        return NextResponse.json({
+          venues,
+          pagination: {
+            page,
+            pageSize,
+            totalCount,
+            totalPages: Math.ceil(totalCount / pageSize),
+            hasMore: skip + venues.length < totalCount,
+          },
+        });
+      } catch (sqlError) {
+        console.error("Distance filter SQL error:", sqlError);
+        // Fall back to non-distance filtered query
+      }
+    }
 
     const totalCount = await prisma.venue.count({ where });
 

@@ -43,47 +43,55 @@
     "supportedFormats": "Unterstützte Formate: {formats}"
   },
   "contact": {
-    "title": "Kontaktieren Sie uns",
-    "description": "Senden Sie uns Vorschläge, melden Sie Probleme oder stellen Sie Fragen",
+    "title": "Kontaktiere uns",
+    "description": "Sende uns Vorschläge, melde Probleme oder stelle Fragen",
+    "welcomeMessage": "👋 Hallo! Hast du eine Frage, einen Vorschlag oder Feedback? Schick uns eine kurze Nachricht und wir melden uns so schnell wie möglich.",
+    "welcomeMessageLoggedIn": "👋 Hallo {name}! Wie können wir dir helfen?",
     "cards": {
       "suggestions": "Vorschläge",
-      "suggestionsDesc": "Teilen Sie Ideen zur Verbesserung der Plattform",
+      "suggestionsDesc": "Teile Ideen zur Verbesserung der Plattform",
       "reportProblem": "Problem melden",
-      "reportProblemDesc": "Haben Sie einen Fehler gefunden? Lassen Sie es uns wissen!",
+      "reportProblemDesc": "Hast du einen Fehler gefunden? Lass es uns wissen!",
       "questions": "Fragen",
-      "questionsDesc": "Haben Sie eine Frage? Wir sind hier um zu helfen"
+      "questionsDesc": "Hast du eine Frage? Wir sind hier um zu helfen"
     },
     "form": {
       "name": "Name",
-      "namePlaceholder": "Ihr Name",
+      "namePlaceholder": "Dein Name",
       "email": "E-Mail",
-      "emailPlaceholder": "ihre@email.com",
+      "emailPlaceholder": "deine@email.de",
       "type": "Kontakttyp",
       "types": {
+        "question": "❓ Frage",
+        "addEvent": "� Event hinzufügen",
+        "addVenue": "📍 Ort hinzufügen",
         "suggestion": "💡 Vorschlag",
         "bug": "🐛 Fehler melden",
-        "question": "❓ Frage",
         "feedback": "💬 Feedback",
-        "other": "📧 Andere"
+        "other": "📧 Sonstiges"
       },
       "subject": "Betreff",
-      "subjectPlaceholder": "Zusammenfassung Ihres Kontakts",
+      "subjectPlaceholder": "Zusammenfassung deines Kontakts",
       "message": "Nachricht",
       "messagePlaceholder": "Im Detail beschreiben...",
-      "messageHelper": "Seien Sie so spezifisch wie möglich, damit wir besser helfen können",
+      "placeholders": {
+        "addEvent": "Name des Events, Datum, Ort, Link zur offiziellen Website...",
+        "addVenue": "Name des Ortes, Adresse, Typ (Box, Fitnessstudio, etc)..."
+      },
+      "messageHelper": "Sei so spezifisch wie möglich, damit wir besser helfen können",
       "submit": "Nachricht senden",
       "submitting": "Wird gesendet..."
     },
     "toast": {
       "requiredFields": "Pflichtfelder",
-      "requiredFieldsDesc": "Bitte füllen Sie Betreff und Nachricht aus.",
+      "requiredFieldsDesc": "Bitte fülle Betreff und Nachricht aus.",
       "success": "Nachricht gesendet!",
-      "successDesc": "Vielen Dank für Ihre Kontaktaufnahme. Wir antworten bald per E-Mail.",
+      "successDesc": "Vielen Dank für deine Kontaktaufnahme. Wir antworten bald per E-Mail.",
       "error": "Fehler beim Senden",
-      "errorDesc": "Nachricht konnte nicht gesendet werden. Bitte versuchen Sie es erneut."
+      "errorDesc": "Nachricht konnte nicht gesendet werden. Bitte versuche es erneut."
     },
     "footer": {
-      "directContact": "📧 Sie können uns auch direkt kontaktieren unter:",
+      "directContact": "📧 Du kannst uns auch direkt kontaktieren unter:",
       "responseTime": "Wir antworten normalerweise innerhalb von",
       "hours": "24-48 Stunden"
     }
@@ -122,6 +130,41 @@
       "description": "Bist du sicher, dass du {name} aus deinen Freunden entfernen möchtest? Du wirst die Aktivitäten dieser Person nicht mehr in deinem Feed sehen.",
       "confirm": "Entfernen",
       "cancel": "Abbrechen"
+    }
+  },
+  "quickChat": {
+    "title": "Chatte Mit Uns",
+    "subtitle": "Wir antworten schnell!",
+    "openChat": "Chat öffnen",
+    "welcomeMessage": "👋 Hallo! Hast du eine Frage, einen Vorschlag oder Feedback? Schick uns eine kurze Nachricht und wir melden uns so schnell wie möglich.",
+    "welcomeMessageLoggedIn": "👋 Hallo {name}! Wie können wir dir helfen?",
+    "form": {
+      "name": "Dein Name",
+      "namePlaceholder": "Wie heißt du?",
+      "email": "E-Mail",
+      "emailPlaceholder": "deine@email.de",
+      "type": "Art der Nachricht",
+      "types": {
+        "question": "Frage",
+        "addEvent": "Event hinzufügen",
+        "addVenue": "Ort hinzufügen",
+        "suggestion": "Vorschlag",
+        "bug": "Problem melden",
+        "feedback": "Feedback",
+        "other": "Sonstiges"
+      },
+      "message": "Nachricht",
+      "messagePlaceholder": "Schreibe deine Nachricht hier...",
+      "placeholders": {
+        "addEvent": "Name des Events, Datum, Ort, Link zur offiziellen Website...",
+        "addVenue": "Name des Ortes, Adresse, Typ (Box, Fitnessstudio, etc)..."
+      },
+      "send": "Nachricht Senden",
+      "sending": "Wird gesendet..."
+    },
+    "success": {
+      "title": "Nachricht Gesendet! 🎉",
+      "description": "Danke für deine Nachricht! Wir antworten dir so schnell wie möglich per E-Mail."
     }
   }
 }

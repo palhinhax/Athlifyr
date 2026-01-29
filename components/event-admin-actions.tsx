@@ -14,7 +14,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Building2, X, Search } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, Language } from "@prisma/client";
 import { useTranslations } from "next-intl";
@@ -50,6 +50,16 @@ interface EventVariant {
   startTime: string | null;
 }
 
+interface FeaturedVenue {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  logo: string | null;
+  city: string | null;
+  country: string;
+}
+
 interface EventAdminActionsProps {
   event: {
     id: string;
@@ -66,6 +76,8 @@ interface EventAdminActionsProps {
     imageUrl: string | null;
     externalUrl: string | null;
     stravaRouteEmbed: string | null;
+    featuredVenueId: string | null;
+    featuredVenue: FeaturedVenue | null;
     variants: EventVariant[];
   };
 }
@@ -76,6 +88,16 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const t = useTranslations("admin.events");
+
+  // Featured venue state
+  const [selectedVenue, setSelectedVenue] = useState<FeaturedVenue | null>(
+    event.featuredVenue
+  );
+  const [venueSearch, setVenueSearch] = useState("");
+  const [venueSearchResults, setVenueSearchResults] = useState<FeaturedVenue[]>(
+    []
+  );
+  const [isSearchingVenues, setIsSearchingVenues] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -92,6 +114,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     imageUrl: event.imageUrl || "",
     externalUrl: event.externalUrl || "",
     stravaRouteEmbed: event.stravaRouteEmbed || "",
+    featuredVenueId: event.featuredVenueId || "",
   });
 
   // Helper to create empty variant translations
@@ -314,6 +337,61 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     );
   };
 
+  // Venue search function
+  const searchVenues = useCallback(async (query: string) => {
+    if (query.length < 2) {
+      setVenueSearchResults([]);
+      return;
+    }
+
+    setIsSearchingVenues(true);
+    try {
+      const response = await fetch(
+        `/api/venues?search=${encodeURIComponent(query)}&limit=5`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setVenueSearchResults(
+          data.venues?.map((v: FeaturedVenue) => ({
+            id: v.id,
+            slug: v.slug,
+            name: v.name,
+            type: v.type,
+            logo: v.logo,
+            city: v.city,
+            country: v.country,
+          })) || []
+        );
+      }
+    } catch (error) {
+      console.error("Error searching venues:", error);
+    } finally {
+      setIsSearchingVenues(false);
+    }
+  }, []);
+
+  // Debounced venue search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (venueSearch) {
+        searchVenues(venueSearch);
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [venueSearch, searchVenues]);
+
+  const handleSelectVenue = (venue: FeaturedVenue) => {
+    setSelectedVenue(venue);
+    setFormData((prev) => ({ ...prev, featuredVenueId: venue.id }));
+    setVenueSearch("");
+    setVenueSearchResults([]);
+  };
+
+  const handleRemoveVenue = () => {
+    setSelectedVenue(null);
+    setFormData((prev) => ({ ...prev, featuredVenueId: "" }));
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
     try {
@@ -326,6 +404,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
         ...formData,
         latitude: formData.latitude ? parseFloat(formData.latitude) : null,
         longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        featuredVenueId: formData.featuredVenueId || null,
         variants: variants
           .filter((v) => v.name.trim())
           .map((v) => ({
@@ -521,6 +600,93 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
               />
               <p className="text-xs text-muted-foreground">
                 {t("stravaEmbedHelp")}
+              </p>
+            </div>
+
+            {/* Featured Venue Selector */}
+            <div className="grid gap-2">
+              <Label>{t("featuredVenueLabel")}</Label>
+              {selectedVenue ? (
+                <div className="flex items-center gap-3 rounded-lg border p-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
+                    {selectedVenue.logo ? (
+                      <img
+                        src={selectedVenue.logo}
+                        alt={selectedVenue.name}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Building2 className="h-5 w-5 text-muted-foreground" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-medium">{selectedVenue.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedVenue.city}, {selectedVenue.country}
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveVenue}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      value={venueSearch}
+                      onChange={(e) => setVenueSearch(e.target.value)}
+                      placeholder={t("searchVenuePlaceholder")}
+                      className="pl-10"
+                    />
+                  </div>
+                  {isSearchingVenues && (
+                    <div className="flex items-center justify-center py-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                    </div>
+                  )}
+                  {venueSearchResults.length > 0 && (
+                    <div className="max-h-[200px] overflow-y-auto rounded-md border">
+                      {venueSearchResults.map((venue) => (
+                        <button
+                          key={venue.id}
+                          type="button"
+                          onClick={() => handleSelectVenue(venue)}
+                          className="flex w-full items-center gap-3 p-2 text-left transition-colors hover:bg-muted"
+                        >
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded border bg-muted">
+                            {venue.logo ? (
+                              <img
+                                src={venue.logo}
+                                alt={venue.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <Building2 className="h-4 w-4 text-muted-foreground" />
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-sm font-medium">
+                              {venue.name}
+                            </p>
+                            <p className="truncate text-xs text-muted-foreground">
+                              {venue.city}, {venue.country}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                {t("featuredVenueHelp")}
               </p>
             </div>
 

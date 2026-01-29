@@ -32,6 +32,8 @@
     "community": "Gemeinschaft",
     "locationTitle": "Standort",
     "openInGoogleMaps": "In Google Maps öffnen",
+    "featuredVenue": "Empfohlenes Venue",
+    "viewVenue": "Venue ansehen",
     "filters": {
       "title": "Filter",
       "locationFilter": "Standortfilter",

@@ -8,6 +8,7 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { ActiveVenuesBar } from "@/components/active-venues-bar";
+import { FloatingChatButton } from "@/components/floating-chat-button";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -260,6 +261,7 @@ export default async function RootLayout({
             </div>
             <Toaster />
             <CookieConsent />
+            <FloatingChatButton />
           </SessionProvider>
         </NextIntlClientProvider>
         <VercelAnalytics />

@@ -25,6 +25,7 @@ interface VenueProfileHeaderProps {
     email: string | null;
     website: string | null;
     instagram: string | null;
+    whatsapp: string | null;
     latitude: number | null;
     longitude: number | null;
     services?: string[];

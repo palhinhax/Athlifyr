@@ -123,6 +123,8 @@ model Event {
   latitude             Float?
   longitude            Float?
   stravaRouteEmbed     String?
+  featuredVenueId      String?
+  featuredVenue        Venue?             @relation("FeaturedVenue", fields: [featuredVenueId], references: [id], onDelete: SetNull)
   comments             Comment[]
   faqs                 EventFAQ[]
   translations         EventTranslation[]
@@ -138,6 +140,7 @@ model Event {
   @@index([city])
   @@index([isFeatured])
   @@index([slug])
+  @@index([featuredVenueId])
 }
 
 model EventTranslation {
@@ -524,6 +527,7 @@ model Venue {
   email                              String?
   website                            String?
   instagram                          String?
+  whatsapp                           String?
   address                            String?
   city                               String?
   country                            String                  @default("Portugal")
@@ -564,6 +568,7 @@ model Venue {
   sessions                           VenueSession[]
   subscriptions                      VenueSubscription[]
   images                             VenueImage[]
+  featuredInEvents                   Event[]                 @relation("FeaturedVenue")
 
   translations                       VenueTranslation[]
 
@@ -984,6 +989,7 @@ enum TriathlonTerrainType {
 
 enum VenueType {
   CROSSFIT_BOX
+  CROSSTRAINING_BOX
   GYM
   PT_STUDIO
   MASSAGE

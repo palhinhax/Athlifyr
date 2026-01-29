@@ -179,6 +179,9 @@ export function AdminVenueCreateDialog({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="CROSSFIT_BOX">CrossFit Box</SelectItem>
+                <SelectItem value="CROSSTRAINING_BOX">
+                  CrossTraining Box
+                </SelectItem>
                 <SelectItem value="GYM">Ginásio</SelectItem>
                 <SelectItem value="PT_STUDIO">Estúdio PT</SelectItem>
                 <SelectItem value="MASSAGE">Massagem</SelectItem>

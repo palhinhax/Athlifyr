@@ -8,7 +8,23 @@ import { EventLocationMap } from "./event-location-map";
 import { StravaRouteEmbed } from "./strava-route-embed";
 import { EventImageLightbox } from "@/components/event-image-lightbox";
 import { EventWeather } from "@/components/event-weather";
+import { EventFeaturedVenue } from "@/components/event-featured-venue";
 import { useTranslations, useLocale } from "next-intl";
+
+interface FeaturedVenue {
+  id: string;
+  slug: string;
+  name: string;
+  type: string;
+  logo: string | null;
+  city: string | null;
+  country: string;
+  services?: string[];
+  _count?: {
+    recommendations: number;
+    reviews: number;
+  };
+}
 
 interface EventSidebarProps {
   event: {
@@ -22,6 +38,7 @@ interface EventSidebarProps {
     googleMapsUrl: string | null;
     stravaRouteEmbed: string | null;
     sportTypes: string[];
+    featuredVenue?: FeaturedVenue | null;
   };
   weather?: Array<{
     date: Date;
@@ -127,6 +144,11 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
                 )}
               </div>
             </div>
+          )}
+
+          {/* Featured Venue Card */}
+          {event.featuredVenue && (
+            <EventFeaturedVenue venue={event.featuredVenue} />
           )}
 
           {/* Strava Route Embed */}

@@ -6,40 +6,12 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
+import { createVenueMarkerHtml } from "@/lib/venue-icons";
 
-// Create custom icon for venues
-const createVenueIcon = (): L.DivIcon => {
+// Create custom icon for venues based on their services
+const createVenueIcon = (services?: string[]): L.DivIcon => {
   return L.divIcon({
-    html: `
-      <div style="
-        width: 40px;
-        height: 40px;
-        background: hsl(var(--primary));
-        border-radius: 50% 50% 50% 0;
-        transform: rotate(-45deg);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-        border: 3px solid white;
-      ">
-        <svg 
-          xmlns="http://www.w3.org/2000/svg" 
-          width="20" 
-          height="20" 
-          viewBox="0 0 24 24" 
-          fill="none" 
-          stroke="white" 
-          stroke-width="2" 
-          stroke-linecap="round" 
-          stroke-linejoin="round"
-          style="transform: rotate(45deg);"
-        >
-          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
-          <circle cx="12" cy="10" r="3"/>
-        </svg>
-      </div>
-    `,
+    html: createVenueMarkerHtml(services),
     className: "custom-marker",
     iconSize: [40, 40],
     iconAnchor: [20, 40],
@@ -56,6 +28,7 @@ interface MapVenue {
   country: string;
   latitude: number;
   longitude: number;
+  services?: string[];
 }
 
 interface VenuesMapClientProps {
@@ -247,7 +220,7 @@ export default function VenuesMapClient({
     // Add new markers
     venues.forEach((venue) => {
       const marker = L.marker([venue.latitude, venue.longitude], {
-        icon: createVenueIcon(),
+        icon: createVenueIcon(venue.services),
       });
 
       marker.bindPopup(`

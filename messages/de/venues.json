@@ -12,6 +12,38 @@
     "editVenueModal": "Standortinformationen Bearbeiten",
     "venueSettings": "Standorteinstellungen",
     "venueDetails": "Standortdetails",
+    "ownershipClaim": {
+      "claimOwnership": "Verwalten Sie diesen Standort?",
+      "claimDescription": "Wenn Sie der Eigentümer oder Manager dieses Standorts sind, können Sie die Verwaltung auf Athlifyr beantragen.",
+      "claimButton": "Verwaltung Beantragen",
+      "claimPending": "Verwaltungsantrag ausstehend",
+      "claimPendingDescription": "Ihr Antrag wird geprüft. Wir werden Sie bald kontaktieren.",
+      "claimRejected": "Antrag abgelehnt",
+      "claimRejectedDescription": "Ihr Antrag wurde abgelehnt. Sie können einen neuen Antrag stellen.",
+      "claimApproved": "Antrag genehmigt",
+      "claimMessage": "Nachricht (optional)",
+      "claimMessagePlaceholder": "Erklären Sie Ihre Verbindung zu diesem Standort...",
+      "submitClaim": "Antrag Einreichen",
+      "cancel": "Abbrechen",
+      "loginRequired": "Sie müssen sich anmelden, um die Verwaltung dieses Standorts zu beantragen.",
+      "loginButton": "Anmelden",
+      "claimSuccess": "Antrag eingereicht",
+      "claimSuccessDescription": "Ihr Antrag wurde erfolgreich eingereicht. Wir werden ihn bald prüfen.",
+      "claimError": "Fehler beim Einreichen",
+      "alreadyHasOwner": "Dieser Standort hat bereits einen Verwalter.",
+      "adminTitle": "Verwaltungsanträge",
+      "adminDescription": "Verwalten Sie die Eigentumsanträge für Standorte",
+      "noClaims": "Keine ausstehenden Anträge",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "adminNotes": "Notizen (optional)",
+      "adminNotesPlaceholder": "Fügen Sie Notizen zu dieser Entscheidung hinzu...",
+      "status": {
+        "PENDING": "Ausstehend",
+        "APPROVED": "Genehmigt",
+        "REJECTED": "Abgelehnt"
+      }
+    },
     "gallery": {
       "title": "Fotogalerie",
       "addImage": "Foto Hinzufügen",
@@ -290,7 +322,8 @@
       "cancellationDeadline": "Stornierungsfrist (Stunden)",
       "servicesTitle": "Verfügbare Dienstleistungen",
       "servicesDescription": "Wählen Sie die Dienstleistungen aus, die Ihr Standort anbietet",
-      "noServicesSelected": "Keine Dienstleistungen ausgewählt"
+      "noServicesSelected": "Keine Dienstleistungen ausgewählt",
+      "openInGoogleMaps": "In Google Maps öffnen"
     },
     "membership": {
       "title": "Mitgliedschaft",

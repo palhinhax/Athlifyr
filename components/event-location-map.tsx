@@ -8,6 +8,7 @@ interface EventLocationMapProps {
   longitude: number;
   title: string;
   sportTypes?: string[];
+  venueServices?: string[];
   zoom?: number;
 }
 

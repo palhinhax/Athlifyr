@@ -12,6 +12,38 @@
     "editVenueModal": "Editar Información del Local",
     "venueSettings": "Configuración del Local",
     "venueDetails": "Detalles del Local",
+    "ownershipClaim": {
+      "claimOwnership": "¿Gestionas este local?",
+      "claimDescription": "Si eres el propietario o gestor de este local, puedes solicitar gestionarlo en Athlifyr.",
+      "claimButton": "Solicitar Gestión",
+      "claimPending": "Solicitud de gestión pendiente",
+      "claimPendingDescription": "Tu solicitud está siendo revisada. Te contactaremos pronto.",
+      "claimRejected": "Solicitud rechazada",
+      "claimRejectedDescription": "Tu solicitud fue rechazada. Puedes enviar una nueva solicitud.",
+      "claimApproved": "Solicitud aprobada",
+      "claimMessage": "Mensaje (opcional)",
+      "claimMessagePlaceholder": "Explica tu conexión con este local...",
+      "submitClaim": "Enviar Solicitud",
+      "cancel": "Cancelar",
+      "loginRequired": "Debes iniciar sesión para solicitar la gestión de este local.",
+      "loginButton": "Iniciar Sesión",
+      "claimSuccess": "Solicitud enviada",
+      "claimSuccessDescription": "Tu solicitud se ha enviado correctamente. La revisaremos pronto.",
+      "claimError": "Error al enviar solicitud",
+      "alreadyHasOwner": "Este local ya tiene un gestor.",
+      "adminTitle": "Solicitudes de Gestión",
+      "adminDescription": "Gestiona las solicitudes de ownership de locales",
+      "noClaims": "No hay solicitudes pendientes",
+      "approve": "Aprobar",
+      "reject": "Rechazar",
+      "adminNotes": "Notas (opcional)",
+      "adminNotesPlaceholder": "Añade notas sobre esta decisión...",
+      "status": {
+        "PENDING": "Pendiente",
+        "APPROVED": "Aprobado",
+        "REJECTED": "Rechazado"
+      }
+    },
     "gallery": {
       "title": "Galería de Fotos",
       "addImage": "Añadir Foto",
@@ -290,7 +322,8 @@
       "cancellationDeadline": "Plazo de Cancelación (Horas)",
       "servicesTitle": "Servicios Disponibles",
       "servicesDescription": "Selecciona los servicios que ofrece tu local",
-      "noServicesSelected": "Ningún servicio seleccionado"
+      "noServicesSelected": "Ningún servicio seleccionado",
+      "openInGoogleMaps": "Abrir en Google Maps"
     },
     "membership": {
       "title": "Membresía",

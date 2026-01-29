@@ -12,6 +12,38 @@
     "editVenueModal": "Modifier les Informations du Lieu",
     "venueSettings": "Paramètres du Lieu",
     "venueDetails": "Détails du Lieu",
+    "ownershipClaim": {
+      "claimOwnership": "Vous gérez ce lieu ?",
+      "claimDescription": "Si vous êtes le propriétaire ou le gérant de ce lieu, vous pouvez demander à le gérer sur Athlifyr.",
+      "claimButton": "Demander la Gestion",
+      "claimPending": "Demande de gestion en attente",
+      "claimPendingDescription": "Votre demande est en cours d'examen. Nous vous contacterons bientôt.",
+      "claimRejected": "Demande rejetée",
+      "claimRejectedDescription": "Votre demande a été rejetée. Vous pouvez soumettre une nouvelle demande.",
+      "claimApproved": "Demande approuvée",
+      "claimMessage": "Message (optionnel)",
+      "claimMessagePlaceholder": "Expliquez votre lien avec ce lieu...",
+      "submitClaim": "Soumettre la Demande",
+      "cancel": "Annuler",
+      "loginRequired": "Vous devez vous connecter pour demander la gestion de ce lieu.",
+      "loginButton": "Se Connecter",
+      "claimSuccess": "Demande soumise",
+      "claimSuccessDescription": "Votre demande a été soumise avec succès. Nous l'examinerons bientôt.",
+      "claimError": "Erreur lors de la soumission",
+      "alreadyHasOwner": "Ce lieu a déjà un gestionnaire.",
+      "adminTitle": "Demandes de Gestion",
+      "adminDescription": "Gérer les demandes de propriété des lieux",
+      "noClaims": "Aucune demande en attente",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "adminNotes": "Notes (optionnel)",
+      "adminNotesPlaceholder": "Ajoutez des notes sur cette décision...",
+      "status": {
+        "PENDING": "En attente",
+        "APPROVED": "Approuvé",
+        "REJECTED": "Rejeté"
+      }
+    },
     "gallery": {
       "title": "Galerie Photos",
       "addImage": "Ajouter Photo",
@@ -290,7 +322,8 @@
       "cancellationDeadline": "Délai d'Annulation (Heures)",
       "servicesTitle": "Services Disponibles",
       "servicesDescription": "Sélectionnez les services proposés par votre lieu",
-      "noServicesSelected": "Aucun service sélectionné"
+      "noServicesSelected": "Aucun service sélectionné",
+      "openInGoogleMaps": "Ouvrir dans Google Maps"
     },
     "membership": {
       "title": "Adhésion",

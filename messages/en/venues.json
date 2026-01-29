@@ -12,6 +12,38 @@
     "editVenueModal": "Edit Venue Information",
     "venueSettings": "Venue Settings",
     "venueDetails": "Venue Details",
+    "ownershipClaim": {
+      "claimOwnership": "Do you manage this venue?",
+      "claimDescription": "If you're the owner or manager of this venue, you can request to manage it on Athlifyr.",
+      "claimButton": "Request Management",
+      "claimPending": "Management request pending",
+      "claimPendingDescription": "Your request is being reviewed. We'll contact you soon.",
+      "claimRejected": "Request rejected",
+      "claimRejectedDescription": "Your request was rejected. You can submit a new request.",
+      "claimApproved": "Request approved",
+      "claimMessage": "Message (optional)",
+      "claimMessagePlaceholder": "Explain your connection to this venue...",
+      "submitClaim": "Submit Request",
+      "cancel": "Cancel",
+      "loginRequired": "You must log in to request management of this venue.",
+      "loginButton": "Log In",
+      "claimSuccess": "Request submitted",
+      "claimSuccessDescription": "Your request has been submitted successfully. We'll review it soon.",
+      "claimError": "Error submitting request",
+      "alreadyHasOwner": "This venue already has a manager.",
+      "adminTitle": "Management Requests",
+      "adminDescription": "Manage venue ownership requests",
+      "noClaims": "No pending requests",
+      "approve": "Approve",
+      "reject": "Reject",
+      "adminNotes": "Notes (optional)",
+      "adminNotesPlaceholder": "Add notes about this decision...",
+      "status": {
+        "PENDING": "Pending",
+        "APPROVED": "Approved",
+        "REJECTED": "Rejected"
+      }
+    },
     "gallery": {
       "title": "Photo Gallery",
       "addImage": "Add Photo",
@@ -290,7 +322,8 @@
       "cancellationDeadline": "Cancellation Deadline (Hours)",
       "servicesTitle": "Available Services",
       "servicesDescription": "Select the services your venue offers",
-      "noServicesSelected": "No services selected"
+      "noServicesSelected": "No services selected",
+      "openInGoogleMaps": "Open in Google Maps"
     },
     "membership": {
       "title": "Membership",

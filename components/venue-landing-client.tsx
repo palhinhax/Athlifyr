@@ -206,9 +206,6 @@ export function VenueLandingClient({
               viewport={{ once: true }}
               className="group relative overflow-hidden rounded-2xl border-2 border-primary bg-card p-8 shadow-sm transition-all hover:shadow-lg"
             >
-              <div className="absolute -right-4 -top-4 rounded-bl-2xl bg-primary px-4 py-1 text-xs font-bold text-primary-foreground">
-                {t("choosePath.full.badge")}
-              </div>
               <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-primary/10 opacity-0 transition-opacity group-hover:opacity-100" />
 
               <div className="relative">

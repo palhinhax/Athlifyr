@@ -52,10 +52,10 @@ export function VenueCard({ venue }: VenueCardProps) {
         {/* Gradient overlay for better text readability */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-        {/* Logo - Positioned at bottom left, overlapping the content area */}
-        <div className="absolute -bottom-8 left-4 z-10">
-          <div className="h-18 w-18 overflow-hidden rounded-xl border-2 border-background bg-background shadow-md">
-            {venue.logo ? (
+        {/* Logo - Only shown when venue has a logo */}
+        {venue.logo && (
+          <div className="absolute -bottom-8 left-4 z-10">
+            <div className="h-18 w-18 overflow-hidden rounded-xl border-2 border-background bg-background shadow-md">
               <Image
                 src={venue.logo}
                 alt={`${venue.name} logo`}
@@ -63,13 +63,9 @@ export function VenueCard({ venue }: VenueCardProps) {
                 height={72}
                 className="h-full w-full object-cover"
               />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center bg-primary/10">
-                <Building2 className="h-8 w-8 text-primary" />
-              </div>
-            )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Services Badges - Top right */}
         {venue.services && venue.services.length > 0 && (
@@ -91,7 +87,7 @@ export function VenueCard({ venue }: VenueCardProps) {
         )}
       </div>
 
-      <div className="p-4 pt-10">
+      <div className={`p-4 ${venue.logo ? "pt-10" : ""}`}>
         {/* Venue Name */}
         <h3 className="mb-1 text-lg font-semibold group-hover:text-primary">
           {venue.name}

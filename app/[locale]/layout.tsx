@@ -9,6 +9,7 @@ import { CookieConsent } from "@/components/cookie-consent";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { ActiveVenuesBar } from "@/components/active-venues-bar";
 import { FloatingChatButton } from "@/components/floating-chat-button";
+import { ThemeProvider } from "@/components/theme-provider";
 import { Instagram } from "lucide-react";
 import {
   generateOrganizationSchema,
@@ -175,95 +176,97 @@ export default async function RootLayout({
       >
         {gaId && <GoogleAnalytics gaId={gaId} />}
         <NavigationProgress />
-        <NextIntlClientProvider messages={messages} locale={locale}>
-          <SessionProvider>
-            <div className="flex min-h-screen">
-              {/* Sidebar - Desktop only */}
-              <AppSidebar />
+        <ThemeProvider>
+          <NextIntlClientProvider messages={messages} locale={locale}>
+            <SessionProvider>
+              <div className="flex min-h-screen">
+                {/* Sidebar - Desktop only */}
+                <AppSidebar />
 
-              {/* Main content area */}
-              <div className="flex flex-1 flex-col">
-                {/* Simplified Header - Logo, Search, User */}
-                <header className="sticky top-0 z-50 border-b bg-background">
-                  <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <LogoLink />
+                {/* Main content area */}
+                <div className="flex flex-1 flex-col">
+                  {/* Simplified Header - Logo, Search, User */}
+                  <header className="sticky top-0 z-50 border-b bg-background">
+                    <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                      <LogoLink />
 
-                    {/* Search - Desktop */}
-                    <div className="hidden flex-1 justify-center px-8 md:flex">
-                      <GlobalSearch />
-                    </div>
-
-                    {/* User Nav - Desktop */}
-                    <div className="hidden items-center gap-2 md:flex">
-                      <UserNav />
-                    </div>
-
-                    {/* Mobile Navigation */}
-                    <div className="md:hidden">
-                      <MobileNav />
-                    </div>
-                  </div>
-                </header>
-
-                {/* Active Venues Quick Access Bar */}
-                <ActiveVenuesBar />
-
-                <main className="flex-1">{children}</main>
-                <footer className="border-t py-6">
-                  <div className="container mx-auto px-4">
-                    <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
-                      <p className="text-center md:text-left">
-                        Athlifyr - ONE PLACE. ALL SPORTS.
-                      </p>
-                      <div className="flex flex-wrap items-center justify-center gap-4">
-                        <Link
-                          href="/contact"
-                          className="transition-colors hover:text-foreground"
-                        >
-                          Contact
-                        </Link>
-                        <Link
-                          href="/privacy"
-                          className="transition-colors hover:text-foreground"
-                        >
-                          Privacy
-                        </Link>
-                        <Link
-                          href="/terms"
-                          className="transition-colors hover:text-foreground"
-                        >
-                          Terms
-                        </Link>
-                        <Link
-                          href="/cookies"
-                          className="transition-colors hover:text-foreground"
-                        >
-                          Cookies
-                        </Link>
-                        <a
-                          href="https://www.instagram.com/athlifyr/"
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-                          aria-label="Segue-nos no Instagram"
-                        >
-                          <Instagram className="h-4 w-4" />
-                          <span>@athlifyr</span>
-                        </a>
+                      {/* Search - Desktop */}
+                      <div className="hidden flex-1 justify-center px-8 md:flex">
+                        <GlobalSearch />
                       </div>
-                      <p className="text-center text-xs md:text-right">
-                        © 2026 Athlifyr • v{packageJson.version}
-                      </p>
+
+                      {/* User Nav - Desktop */}
+                      <div className="hidden items-center gap-2 md:flex">
+                        <UserNav />
+                      </div>
+
+                      {/* Mobile Navigation */}
+                      <div className="md:hidden">
+                        <MobileNav />
+                      </div>
                     </div>
-                  </div>
-                </footer>
+                  </header>
+
+                  {/* Active Venues Quick Access Bar */}
+                  <ActiveVenuesBar />
+
+                  <main className="flex-1">{children}</main>
+                  <footer className="border-t py-6">
+                    <div className="container mx-auto px-4">
+                      <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
+                        <p className="text-center md:text-left">
+                          Athlifyr - ONE PLACE. ALL SPORTS.
+                        </p>
+                        <div className="flex flex-wrap items-center justify-center gap-4">
+                          <Link
+                            href="/contact"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Contact
+                          </Link>
+                          <Link
+                            href="/privacy"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Privacy
+                          </Link>
+                          <Link
+                            href="/terms"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Terms
+                          </Link>
+                          <Link
+                            href="/cookies"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Cookies
+                          </Link>
+                          <a
+                            href="https://www.instagram.com/athlifyr/"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+                            aria-label="Segue-nos no Instagram"
+                          >
+                            <Instagram className="h-4 w-4" />
+                            <span>@athlifyr</span>
+                          </a>
+                        </div>
+                        <p className="text-center text-xs md:text-right">
+                          © 2026 Athlifyr • v{packageJson.version}
+                        </p>
+                      </div>
+                    </div>
+                  </footer>
+                </div>
               </div>
-            </div>
-            <Toaster />
-            <CookieConsent />
-            <FloatingChatButton />
-          </SessionProvider>
-        </NextIntlClientProvider>
+              <Toaster />
+              <CookieConsent />
+              <FloatingChatButton />
+            </SessionProvider>
+          </NextIntlClientProvider>
+        </ThemeProvider>
         <VercelAnalytics />
       </body>
     </html>

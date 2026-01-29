@@ -20,6 +20,7 @@ model User {
   favoriteSports       SportType[]
   locale               String                @default("pt")
   isBanned             Boolean               @default(false)
+  emailNotifications   Boolean               @default(false)
   accounts             Account[]
   comments             Comment[]
   eventsPreferences    EventsPreferences?

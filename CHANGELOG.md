@@ -1,3 +1,9 @@
+# [14.7.0](https://github.com/palhinhax/Athlifyr/compare/v14.6.0...v14.7.0) (2026-01-29)
+
+### Features
+
+- **ui:** add floating chat button and unify contact form ([9bb9277](https://github.com/palhinhax/Athlifyr/commit/9bb927780cd8c0b92410d119ea3b9e33300e66d7))
+
 # [14.6.0](https://github.com/palhinhax/Athlifyr/compare/v14.5.0...v14.6.0) (2026-01-29)
 
 ### Features

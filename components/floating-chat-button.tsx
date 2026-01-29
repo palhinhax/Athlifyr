@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactForm } from "@/components/contact-form";
@@ -10,34 +10,7 @@ import { cn } from "@/lib/utils";
 export function FloatingChatButton() {
   const t = useTranslations();
   const [isOpen, setIsOpen] = useState(false);
-  const [shouldBounce, setShouldBounce] = useState(false);
   const [formKey, setFormKey] = useState(0);
-
-  // Bounce animation on scroll (debounced)
-  useEffect(() => {
-    let scrollTimeout: NodeJS.Timeout;
-    let bounceTimeout: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      if (isOpen) return; // Don't bounce when chat is open
-
-      clearTimeout(scrollTimeout);
-      scrollTimeout = setTimeout(() => {
-        setShouldBounce(true);
-        bounceTimeout = setTimeout(() => {
-          setShouldBounce(false);
-        }, 1000);
-      }, 150);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      clearTimeout(scrollTimeout);
-      clearTimeout(bounceTimeout);
-    };
-  }, [isOpen]);
 
   // Close handler - reset form after animation
   const handleClose = useCallback(() => {
@@ -103,16 +76,15 @@ export function FloatingChatButton() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-4 right-4 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:bottom-6 sm:right-6",
-          shouldBounce && !isOpen && "animate-bounce",
+          "fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
           isOpen && "rotate-90 bg-muted text-muted-foreground"
         )}
         aria-label={isOpen ? t("common.close") : t("contact.title")}
       >
         {isOpen ? (
-          <X className="h-6 w-6" />
+          <X className="h-5 w-5 sm:h-6 sm:w-6" />
         ) : (
-          <MessageCircle className="h-6 w-6" />
+          <MessageCircle className="h-5 w-5 sm:h-6 sm:w-6" />
         )}
       </button>
 

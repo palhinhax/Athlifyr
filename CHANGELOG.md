@@ -1,3 +1,9 @@
+# [14.5.0](https://github.com/palhinhax/Athlifyr/compare/v14.4.1...v14.5.0) (2026-01-29)
+
+### Features
+
+- **venues:** add CrossFit Foz Matosinhos seed and hide logo when null ([ceb7a13](https://github.com/palhinhax/Athlifyr/commit/ceb7a13e1916fb24619bfa314a97b3a39df3e10a))
+
 ## [14.4.1](https://github.com/palhinhax/Athlifyr/compare/v14.4.0...v14.4.1) (2026-01-28)
 
 ### Bug Fixes

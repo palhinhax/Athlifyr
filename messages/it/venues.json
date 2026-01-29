@@ -12,6 +12,38 @@
     "editVenueModal": "Modifica Informazioni Struttura",
     "venueSettings": "Impostazioni Struttura",
     "venueDetails": "Dettagli Struttura",
+    "ownershipClaim": {
+      "claimOwnership": "Gestisci questa struttura?",
+      "claimDescription": "Se sei il proprietario o il gestore di questa struttura, puoi richiedere di gestirla su Athlifyr.",
+      "claimButton": "Richiedi Gestione",
+      "claimPending": "Richiesta di gestione in sospeso",
+      "claimPendingDescription": "La tua richiesta è in fase di revisione. Ti contatteremo presto.",
+      "claimRejected": "Richiesta rifiutata",
+      "claimRejectedDescription": "La tua richiesta è stata rifiutata. Puoi inviare una nuova richiesta.",
+      "claimApproved": "Richiesta approvata",
+      "claimMessage": "Messaggio (opzionale)",
+      "claimMessagePlaceholder": "Spiega il tuo collegamento con questa struttura...",
+      "submitClaim": "Invia Richiesta",
+      "cancel": "Annulla",
+      "loginRequired": "Devi accedere per richiedere la gestione di questa struttura.",
+      "loginButton": "Accedi",
+      "claimSuccess": "Richiesta inviata",
+      "claimSuccessDescription": "La tua richiesta è stata inviata con successo. La esamineremo presto.",
+      "claimError": "Errore nell'invio",
+      "alreadyHasOwner": "Questa struttura ha già un gestore.",
+      "adminTitle": "Richieste di Gestione",
+      "adminDescription": "Gestisci le richieste di proprietà delle strutture",
+      "noClaims": "Nessuna richiesta in sospeso",
+      "approve": "Approva",
+      "reject": "Rifiuta",
+      "adminNotes": "Note (opzionale)",
+      "adminNotesPlaceholder": "Aggiungi note su questa decisione...",
+      "status": {
+        "PENDING": "In sospeso",
+        "APPROVED": "Approvato",
+        "REJECTED": "Rifiutato"
+      }
+    },
     "gallery": {
       "title": "Galleria Foto",
       "addImage": "Aggiungi Foto",
@@ -290,7 +322,8 @@
       "cancellationDeadline": "Scadenza Cancellazione (Ore)",
       "servicesTitle": "Servizi Disponibili",
       "servicesDescription": "Seleziona i servizi offerti dalla tua struttura",
-      "noServicesSelected": "Nessun servizio selezionato"
+      "noServicesSelected": "Nessun servizio selezionato",
+      "openInGoogleMaps": "Apri in Google Maps"
     },
     "membership": {
       "title": "Iscrizione",

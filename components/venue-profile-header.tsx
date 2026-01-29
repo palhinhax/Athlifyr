@@ -69,7 +69,11 @@ export function VenueProfileHeader({
 }: VenueProfileHeaderProps) {
   const t = useTranslations("venues");
   const tTypes = useTranslations("venues.types");
+  const tServices = useTranslations("venues.services");
   const [editModalOpen, setEditModalOpen] = useState(false);
+
+  // Check if venue has services
+  const hasServices = venue.services && venue.services.length > 0;
 
   // Determine if user is owner
   const isOwner =
@@ -106,16 +110,30 @@ export function VenueProfileHeader({
         <div className="container absolute bottom-0 left-0 right-0 px-4 pb-6 sm:px-6 sm:pb-8">
           <div className="mx-auto flex items-end gap-4 md:gap-6">
             {/* Spacer for logo (logo will be positioned here via the profile container) */}
-            <div className="h-16 w-32 shrink-0 md:h-20 md:w-40" />
-
             {/* Name and Badge */}
             <div className="flex-1">
               <h1 className="mb-2 text-2xl font-bold text-white drop-shadow-lg [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] md:text-3xl lg:text-4xl">
                 {venue.name}
               </h1>
-              <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
-                {tTypes(venue.type)}
-              </span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
+                  {tTypes(venue.type)}
+                </span>
+                {hasServices &&
+                  venue.services!.slice(0, 4).map((service) => (
+                    <span
+                      key={service}
+                      className="inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm"
+                    >
+                      {tServices(service)}
+                    </span>
+                  ))}
+                {hasServices && venue.services!.length > 4 && (
+                  <span className="inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm">
+                    +{venue.services!.length - 4}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -147,9 +165,9 @@ export function VenueProfileHeader({
       <div className="container mx-auto px-4">
         <div className="relative -mt-16 md:-mt-20">
           <div className="flex flex-row items-end gap-4 sm:gap-6">
-            {/* Logo - positioned half on cover, half below */}
-            <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border-4 border-background bg-background shadow-xl md:h-40 md:w-40">
-              {venue.logo ? (
+            {/* Logo - positioned half on cover, half below (only if venue has logo) */}
+            {venue.logo && (
+              <div className="relative h-32 w-32 shrink-0 overflow-hidden rounded-lg border-4 border-background bg-background shadow-xl md:h-40 md:w-40">
                 <Image
                   src={venue.logo}
                   alt={venue.name}
@@ -158,15 +176,13 @@ export function VenueProfileHeader({
                   priority
                   key={venue.logo}
                 />
-              ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary/10 text-4xl font-bold text-primary md:text-5xl">
-                  {venue.name[0].toUpperCase()}
-                </div>
-              )}
-            </div>
+              </div>
+            )}
 
-            {/* Recommendations and Reviews - Right side */}
-            <div className="flex flex-col gap-3 pb-2 md:pb-4 lg:pb-6">
+            {/* Recommendations and Reviews - Always show */}
+            <div
+              className={`flex flex-col gap-3 ${venue.logo ? "pb-2 md:pb-4 lg:pb-6" : "pb-2 pt-20 md:pt-24"}`}
+            >
               <div className="flex gap-2">
                 <VenueRecommendations venueId={venue.id} userId={userId} />
                 <VenueReviewsModal

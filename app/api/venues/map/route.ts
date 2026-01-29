@@ -54,6 +54,7 @@ export async function GET(request: NextRequest) {
         country: true,
         latitude: true,
         longitude: true,
+        services: true,
       },
       take: 500, // Limit for performance
     });

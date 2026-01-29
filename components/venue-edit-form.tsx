@@ -8,9 +8,54 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ImageUpload } from "@/components/image-upload";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
+
+// Venue types from Prisma schema
+const VENUE_TYPES = [
+  "CROSSFIT_BOX",
+  "GYM",
+  "PT_STUDIO",
+  "MASSAGE",
+  "PHYSIO",
+  "NUTRITION",
+  "OTHER",
+] as const;
+
+// Venue services from Prisma schema
+const VENUE_SERVICES = [
+  "CROSSFIT",
+  "HYROX",
+  "WEIGHTLIFTING",
+  "POWERLIFTING",
+  "OLYMPIC_LIFTING",
+  "FUNCTIONAL_FITNESS",
+  "PERSONAL_TRAINING",
+  "GROUP_CLASSES",
+  "OPEN_GYM",
+  "MASSAGE",
+  "PHYSIOTHERAPY",
+  "NUTRITION",
+  "YOGA",
+  "PILATES",
+  "BOXING",
+  "KICKBOXING",
+  "MMA",
+  "BJJ",
+  "RECOVERY",
+  "SAUNA",
+  "COLD_PLUNGE",
+  "OTHER",
+] as const;
 
 interface VenueEditFormProps {
   venue: {
@@ -29,6 +74,7 @@ interface VenueEditFormProps {
     country: string;
     latitude: number | null;
     longitude: number | null;
+    services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
@@ -39,6 +85,8 @@ interface VenueEditFormProps {
 export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
   const t = useTranslations("venues");
   const tInfo = useTranslations("venues.info");
+  const tTypes = useTranslations("venues.types");
+  const tServices = useTranslations("venues.services");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const { toast } = useToast();
@@ -47,6 +95,7 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
 
   const [formData, setFormData] = useState({
     name: venue.name,
+    type: venue.type,
     description: venue.description || "",
     phone: venue.phone || "",
     email: venue.email || "",
@@ -59,6 +108,7 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
     coverImage: venue.coverImage || "",
     latitude: venue.latitude?.toString() || "",
     longitude: venue.longitude?.toString() || "",
+    services: venue.services || [],
     defaultSessionCapacity: venue.defaultSessionCapacity?.toString() || "",
     defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
     defaultCancellationDeadlineMinutes:
@@ -70,6 +120,19 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTypeChange = (value: string) => {
+    setFormData((prev) => ({ ...prev, type: value }));
+  };
+
+  const handleServiceToggle = (service: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      services: prev.services.includes(service)
+        ? prev.services.filter((s) => s !== service)
+        : [...prev.services, service],
+    }));
   };
 
   const handleImageUpload = async (
@@ -215,12 +278,40 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
         </div>
 
         <div className="space-y-2">
+          <Label htmlFor="type">{tInfo("type")}</Label>
+          <Select value={formData.type} onValueChange={handleTypeChange}>
+            <SelectTrigger>
+              <SelectValue placeholder={tInfo("type")} />
+            </SelectTrigger>
+            <SelectContent>
+              {VENUE_TYPES.map((type) => (
+                <SelectItem key={type} value={type}>
+                  {tTypes(type)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="space-y-2">
           <Label htmlFor="email">{tInfo("email")}</Label>
           <Input
             id="email"
             name="email"
             type="email"
             value={formData.email}
+            onChange={handleInputChange}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">{tInfo("phone")}</Label>
+          <Input
+            id="phone"
+            name="phone"
+            value={formData.phone}
             onChange={handleInputChange}
           />
         </div>
@@ -240,18 +331,31 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
         </p>
       </div>
 
+      {/* Services */}
+      <div className="space-y-3">
+        <Label>{tInfo("servicesTitle")}</Label>
+        <p className="text-sm text-muted-foreground">
+          {tInfo("servicesDescription")}
+        </p>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
+          {VENUE_SERVICES.map((service) => (
+            <label
+              key={service}
+              className="flex cursor-pointer items-center space-x-2 rounded-md border p-2 hover:bg-muted/50"
+            >
+              <Checkbox
+                id={`service-${service}`}
+                checked={formData.services.includes(service)}
+                onCheckedChange={() => handleServiceToggle(service)}
+              />
+              <span className="text-sm">{tServices(service)}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
       {/* Contact Info */}
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2">
-          <Label htmlFor="phone">{tInfo("phone")}</Label>
-          <Input
-            id="phone"
-            name="phone"
-            value={formData.phone}
-            onChange={handleInputChange}
-          />
-        </div>
-
         <div className="space-y-2">
           <Label htmlFor="website">{tInfo("website")}</Label>
           <Input
@@ -262,17 +366,17 @@ export function VenueEditForm({ venue, onSuccess }: VenueEditFormProps) {
             onChange={handleInputChange}
           />
         </div>
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="instagram">{tInfo("instagram")}</Label>
-        <Input
-          id="instagram"
-          name="instagram"
-          value={formData.instagram}
-          onChange={handleInputChange}
-          placeholder="@username"
-        />
+        <div className="space-y-2">
+          <Label htmlFor="instagram">{tInfo("instagram")}</Label>
+          <Input
+            id="instagram"
+            name="instagram"
+            value={formData.instagram}
+            onChange={handleInputChange}
+            placeholder="@username"
+          />
+        </div>
       </div>
 
       {/* Location */}

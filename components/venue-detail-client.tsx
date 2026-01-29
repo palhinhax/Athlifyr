@@ -32,6 +32,7 @@ import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import { VenueClientsManager } from "@/components/venue-clients-manager";
 import { CollapsibleDescription } from "@/components/collapsible-description";
 import { VenueGallery } from "@/components/venue-gallery";
+import { VenueOwnershipClaimButton } from "@/components/venue-ownership-claim-button";
 import {
   Trash2,
   CheckCircle,
@@ -44,7 +45,10 @@ import {
   Info,
   CreditCard,
   Users,
+  MapPin,
+  ExternalLink,
 } from "lucide-react";
+import { EventLocationMap } from "@/components/event-location-map";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
 
 interface Venue {
@@ -64,6 +68,7 @@ interface Venue {
   country: string;
   latitude: number | null;
   longitude: number | null;
+  services?: string[];
   defaultSessionCapacity: number | null;
   defaultBookingAdvanceDays: number;
   defaultCancellationDeadlineMinutes: number;
@@ -509,20 +514,19 @@ export function VenueDetailClient({
           {/* About Tab */}
           {isTabVisible("about") && (
             <TabsContent value="about" className="space-y-6">
-              <div className="rounded-lg border bg-card p-6">
-                <h2 className="mb-4 text-2xl font-semibold">
-                  {tInfo("description")}
-                </h2>
-                {translatedDescription || venue.description ? (
+              {/* Description - only show if venue has description */}
+              {(translatedDescription || venue.description) && (
+                <div className="rounded-lg border bg-card p-6">
+                  <h2 className="mb-4 text-2xl font-semibold">
+                    {tInfo("description")}
+                  </h2>
                   <CollapsibleDescription
                     description={
                       translatedDescription || venue.description || ""
                     }
                   />
-                ) : (
-                  <p className="text-muted-foreground">{t("noDescription")}</p>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Venue Photo Gallery */}
               <VenueGallery venueId={venue.id} isOwner={isOwnerOrAdmin} />
@@ -536,23 +540,35 @@ export function VenueDetailClient({
                   <h2 className="mb-4 text-2xl font-semibold">
                     {tInfo("contactInformation")}
                   </h2>
-                  <div className="flex flex-wrap gap-4 text-sm">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     {venue.phone && (
                       <a
                         href={`tel:${venue.phone}`}
-                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
                       >
-                        <Phone className="h-4 w-4" />
-                        {venue.phone}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Phone className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">
+                            {tInfo("phone")}
+                          </p>
+                          <p className="truncate font-medium">{venue.phone}</p>
+                        </div>
                       </a>
                     )}
                     {venue.email && (
                       <a
                         href={`mailto:${venue.email}`}
-                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
                       >
-                        <Mail className="h-4 w-4" />
-                        {venue.email}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Mail className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">Email</p>
+                          <p className="truncate font-medium">{venue.email}</p>
+                        </div>
                       </a>
                     )}
                     {venue.website && (
@@ -560,10 +576,22 @@ export function VenueDetailClient({
                         href={venue.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
                       >
-                        <Globe className="h-4 w-4" />
-                        {tInfo("website")}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                          <Globe className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-muted-foreground">
+                            {tInfo("website")}
+                          </p>
+                          <p className="flex items-center gap-1 truncate font-medium">
+                            {venue.website
+                              .replace(/^https?:\/\//, "")
+                              .replace(/\/$/, "")}
+                            <ExternalLink className="h-3 w-3 shrink-0 opacity-50" />
+                          </p>
+                        </div>
                       </a>
                     )}
                     {venue.instagram && (
@@ -571,25 +599,70 @@ export function VenueDetailClient({
                         href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 transition-colors hover:text-primary"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-pink-500 hover:bg-pink-500/5"
                       >
-                        <Instagram className="h-4 w-4" />@
-                        {venue.instagram.replace("@", "")}
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20 text-pink-500">
+                          <Instagram className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs text-muted-foreground">
+                            Instagram
+                          </p>
+                          <p className="truncate font-medium">
+                            @{venue.instagram.replace("@", "")}
+                          </p>
+                        </div>
                       </a>
                     )}
                   </div>
                 </div>
               )}
 
-              {/* Location Information */}
-              {(venue.address || venue.city) && (
-                <div className="rounded-lg border bg-card p-6">
-                  <h2 className="mb-4 text-2xl font-semibold">
-                    {tInfo("location")}
-                  </h2>
-                  <div className="space-y-2 text-muted-foreground">
-                    {venue.address && <p>{venue.address}</p>}
+              {/* Location Information with Map */}
+              {(venue.address ||
+                venue.city ||
+                (venue.latitude && venue.longitude)) && (
+                <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+                  <div className="p-6">
+                    <h2 className="mb-3 flex items-center gap-2 text-2xl font-semibold">
+                      <MapPin className="h-5 w-5 text-primary" />
+                      {tInfo("location")}
+                    </h2>
+                    {venue.address && (
+                      <p className="text-muted-foreground">{venue.address}</p>
+                    )}
+                    {venue.city && (
+                      <p className="text-muted-foreground">
+                        {venue.city}, {venue.country}
+                      </p>
+                    )}
                   </div>
+
+                  {/* Map */}
+                  {venue.latitude && venue.longitude && (
+                    <>
+                      <div className="relative aspect-[16/9] w-full">
+                        <EventLocationMap
+                          latitude={venue.latitude}
+                          longitude={venue.longitude}
+                          title={venue.name}
+                          venueServices={venue.services}
+                          zoom={13}
+                        />
+                      </div>
+                      <div className="p-4">
+                        <a
+                          href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                          {tInfo("openInGoogleMaps")}
+                        </a>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -875,6 +948,19 @@ export function VenueDetailClient({
             </TabsContent>
           )}
         </Tabs>
+
+        {/* Ownership Claim - Discrete footer for venues without owner */}
+        {!venue.members.some((m) => m.role === "OWNER") && (
+          <div className="mt-12 border-t pt-6">
+            <VenueOwnershipClaimButton
+              venueId={venue.id}
+              venueName={venue.name}
+              hasOwner={false}
+              userId={userId}
+              locale={locale}
+            />
+          </div>
+        )}
       </div>
 
       {/* Checkout Dialog */}

@@ -37,6 +37,7 @@ model User {
   sessions             Session[]
   venueBookings        VenueBooking[]
   venueMembers         VenueMember[]
+  venueOwnershipClaims VenueOwnershipClaim[]
   venueRecommendations VenueRecommendation[]
   venueReviews              VenueReview[]
   venueReviewReplies        VenueReviewReply[]
@@ -555,6 +556,7 @@ model Venue {
   bookings                           VenueBooking[]
   invites                            VenueInvite[]
   members                            VenueMember[]
+  ownershipClaims                    VenueOwnershipClaim[]
   plans                              VenuePlan[]
   recommendations                    VenueRecommendation[]
   recurringSessions                  VenueRecurringSession[]
@@ -615,6 +617,26 @@ model VenueMember {
   updatedAt DateTime     @updatedAt
   user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue     Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([venueId, userId])
+  @@index([venueId])
+  @@index([userId])
+  @@index([status])
+}
+
+model VenueOwnershipClaim {
+  id          String                    @id @default(cuid())
+  venueId     String
+  userId      String
+  status      VenueOwnershipClaimStatus @default(PENDING)
+  message     String?                   // Optional message from user explaining their claim
+  adminNotes  String?                   // Notes from admin when reviewing
+  reviewedAt  DateTime?
+  reviewedBy  String?                   // Admin who reviewed
+  createdAt   DateTime                  @default(now())
+  updatedAt   DateTime                  @updatedAt
+  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue       Venue                     @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
   @@unique([venueId, userId])
   @@index([venueId])
@@ -1015,6 +1037,12 @@ enum InviteStatus {
   REJECTED
   EXPIRED
   CANCELLED
+}
+
+enum VenueOwnershipClaimStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum SessionType {

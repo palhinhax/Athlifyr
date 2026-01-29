@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { AdminOwnershipClaims } from "@/components/admin-ownership-claims";
 
 // Local type definitions instead of importing from Prisma
 type VenueType =
@@ -393,6 +395,11 @@ export default function AdminVenuesPage() {
 
   return (
     <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      {/* Ownership Claims Section */}
+      <div className="mb-8">
+        <AdminOwnershipClaims locale={locale} />
+      </div>
+
       <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold sm:text-3xl">Gestão de Venues</h1>
@@ -792,9 +799,12 @@ export default function AdminVenuesPage() {
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <h3 className="truncate text-lg font-semibold">
+                    <Link
+                      href={`/${locale}/venues/${venue.slug}`}
+                      className="truncate text-lg font-semibold hover:text-primary hover:underline"
+                    >
                       {venue.name}
-                    </h3>
+                    </Link>
                     <p className="text-sm text-muted-foreground">
                       {venueTypeLabels[venue.type]}
                     </p>

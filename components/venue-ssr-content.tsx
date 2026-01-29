@@ -461,12 +461,12 @@ export function VenueSSRContent({
         </section>
       )}
 
-      {/* Description - Essential for content indexing */}
-      <section className="mb-6" aria-labelledby="venue-about">
-        <h2 id="venue-about" className="mb-3">
-          {getLabel("about", locale)} {venue.name}
-        </h2>
-        {hasDescription ? (
+      {/* Description - Essential for content indexing - Only show if venue has description */}
+      {hasDescription && (
+        <section className="mb-6" aria-labelledby="venue-about">
+          <h2 id="venue-about" className="mb-3">
+            {getLabel("about", locale)} {venue.name}
+          </h2>
           <div
             className="prose prose-sm dark:prose-invert max-w-none"
             itemProp="description"
@@ -478,12 +478,8 @@ export function VenueSSRContent({
               }}
             />
           </div>
-        ) : (
-          <p className="text-muted-foreground" itemProp="description">
-            {getLabel("noDescription", locale)}
-          </p>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Services - Important for search queries */}
       {hasServices && (

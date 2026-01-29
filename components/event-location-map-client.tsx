@@ -9,12 +9,14 @@ import {
   getSportColors,
   getPrimarySport,
 } from "@/lib/sport-config";
+import { createVenueMarkerHtml } from "@/lib/venue-icons";
 
 interface EventLocationMapClientProps {
   latitude: number;
   longitude: number;
   title: string;
   sportTypes?: string[];
+  venueServices?: string[];
   zoom?: number;
 }
 
@@ -23,6 +25,7 @@ export default function EventLocationMapClient({
   longitude,
   title,
   sportTypes = ["OTHER"],
+  venueServices,
   zoom = 10,
 }: EventLocationMapClientProps) {
   const pathname = usePathname();
@@ -65,17 +68,32 @@ export default function EventLocationMapClient({
         '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
-    const primarySport = getPrimarySport(sportTypes);
-    const icon = getSportIcon(primarySport);
-    const colors = getSportColors(primarySport);
+    // Use venue services icon if provided, otherwise use sport types
+    let customIcon: L.DivIcon;
 
-    const customIcon = L.divIcon({
-      html: `<div style="width:40px;height:40px;background:${colors.gradient};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px ${colors.shadow};border:3px solid white;"><span style="font-size:20px;transform:rotate(45deg);display:block;">${icon}</span></div>`,
-      className: "custom-marker",
-      iconSize: [40, 40],
-      iconAnchor: [20, 40],
-      popupAnchor: [0, -40],
-    });
+    if (venueServices && venueServices.length > 0) {
+      // Use venue-specific icon based on services
+      customIcon = L.divIcon({
+        html: createVenueMarkerHtml(venueServices),
+        className: "custom-marker",
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+      });
+    } else {
+      // Use sport-based icon for events
+      const primarySport = getPrimarySport(sportTypes);
+      const icon = getSportIcon(primarySport);
+      const colors = getSportColors(primarySport);
+
+      customIcon = L.divIcon({
+        html: `<div style="width:40px;height:40px;background:${colors.gradient};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px ${colors.shadow};border:3px solid white;"><span style="font-size:20px;transform:rotate(45deg);display:block;">${icon}</span></div>`,
+        className: "custom-marker",
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -40],
+      });
+    }
 
     L.marker([latitude, longitude], { icon: customIcon })
       .addTo(map)
@@ -89,7 +107,7 @@ export default function EventLocationMapClient({
         mapInstanceRef.current = null;
       }
     };
-  }, [mounted, latitude, longitude, title, sportTypes, zoom]);
+  }, [mounted, latitude, longitude, title, sportTypes, venueServices, zoom]);
 
   // Prevent rendering until mounted (avoids SSR/hydration issues and HMR double-init)
   if (!mounted) {

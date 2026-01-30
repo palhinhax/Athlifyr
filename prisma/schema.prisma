@@ -1382,7 +1382,6 @@ model WorkoutBlock {
   // Timing (todos em segundos)
   timeCap         Int?                    // Para AMRAP, FOR_TIME
   workTime        Int?                    // Para EMOM (tempo de trabalho por minuto)
-  restTime        Int?                    // Descanso entre rounds/sets
   rounds          Int?                    // Número de rounds prescritos
   
   notes           String?

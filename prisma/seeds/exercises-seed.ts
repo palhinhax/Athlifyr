@@ -1945,6 +1945,18 @@ const other: ExerciseSeed[] = [
     effortScore: 5.0,
     isGlobal: true,
   },
+  // ============================================================================
+  // REST / RECOVERY (special exercise type for workout blocks)
+  // Used to prescribe rest periods between exercises in a block
+  // Example: Back Squat 5x5 → Rest 2:00 → RDL 4x8 → Rest 1:30
+  // ============================================================================
+  {
+    name: "Rest",
+    aliases: ["Descanso", "Pause", "Recovery", "Break"],
+    category: "OTHER",
+    effortScore: 0.0, // Zero effort - it's rest!
+    isGlobal: true,
+  },
 ];
 
 // ============================================================================

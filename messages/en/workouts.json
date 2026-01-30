@@ -92,6 +92,9 @@
     "duplicateSet": "Duplicate Last",
     "noSetPrescriptions": "No set prescription. Use the fields above for uniform values or add variable sets.",
     "setNotes": "Notes (e.g., to failure)",
+    "maleFemalePrescription": "Gender-specific prescription (M/F)",
+    "male": "Male",
+    "female": "Female",
     "units": {
       "KG": "kg",
       "LB": "lb",

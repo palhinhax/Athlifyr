@@ -30,6 +30,7 @@ import {
 // Prescrição variável por set (ex: 5 reps @ 65%, 5 reps @ 70%, 3 reps @ 75%)
 export interface CreateSetPrescriptionInput {
   setNumber: number;
+  // Male/Rx
   reps?: number; // null = max reps
   weight?: number;
   weightUnit?: WeightUnit;
@@ -38,6 +39,15 @@ export interface CreateSetPrescriptionInput {
   distance?: number;
   distanceUnit?: DistanceUnit;
   calories?: number;
+  // Female (optional - when different from Male)
+  repsFemale?: number;
+  weightFemale?: number;
+  weightUnitFemale?: WeightUnit;
+  weightPercentFemale?: number;
+  timeFemale?: number;
+  distanceFemale?: number;
+  distanceUnitFemale?: DistanceUnit;
+  caloriesFemale?: number;
   notes?: string;
 }
 
@@ -115,6 +125,7 @@ export interface CreateWorkoutBlockInput {
 export interface CreateWorkoutBlockExerciseInput {
   exerciseId: string;
   orderIndex: number;
+  // Male/Rx
   prescribedReps?: number;
   prescribedWeight?: number;
   prescribedWeightUnit?: WeightUnit;
@@ -124,6 +135,16 @@ export interface CreateWorkoutBlockExerciseInput {
   prescribedTime?: number;
   prescribedCalories?: number;
   prescribedSets?: number;
+  // Female (optional - when different from Male)
+  prescribedRepsFemale?: number;
+  prescribedWeightFemale?: number;
+  prescribedWeightUnitFemale?: WeightUnit;
+  prescribedWeightPercentFemale?: number;
+  prescribedDistanceFemale?: number;
+  prescribedDistanceUnitFemale?: DistanceUnit;
+  prescribedTimeFemale?: number;
+  prescribedCaloriesFemale?: number;
+  prescribedSetsFemale?: number;
   notes?: string;
   setPrescriptions?: CreateSetPrescriptionInput[];
 }

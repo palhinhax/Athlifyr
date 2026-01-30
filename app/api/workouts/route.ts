@@ -10,6 +10,7 @@ import { WorkoutBlockType, WeightUnit, DistanceUnit } from "@prisma/client";
 
 const setPrescriptionSchema = z.object({
   setNumber: z.number().int().positive(),
+  // Male/Rx
   reps: z.number().int().positive().optional(),
   weight: z.number().positive().optional(),
   weightUnit: z.nativeEnum(WeightUnit).optional(),
@@ -18,12 +19,22 @@ const setPrescriptionSchema = z.object({
   distance: z.number().positive().optional(),
   distanceUnit: z.nativeEnum(DistanceUnit).optional(),
   calories: z.number().int().positive().optional(),
+  // Female (optional)
+  repsFemale: z.number().int().positive().optional(),
+  weightFemale: z.number().positive().optional(),
+  weightUnitFemale: z.nativeEnum(WeightUnit).optional(),
+  weightPercentFemale: z.number().min(0).max(200).optional(),
+  timeFemale: z.number().int().positive().optional(),
+  distanceFemale: z.number().positive().optional(),
+  distanceUnitFemale: z.nativeEnum(DistanceUnit).optional(),
+  caloriesFemale: z.number().int().positive().optional(),
   notes: z.string().optional(),
 });
 
 const createExerciseSchema = z.object({
   exerciseId: z.string().min(1),
   orderIndex: z.number().int().min(0),
+  // Male/Rx
   prescribedReps: z.number().int().positive().optional(),
   prescribedWeight: z.number().positive().optional(),
   prescribedWeightUnit: z.nativeEnum(WeightUnit).optional(),
@@ -33,6 +44,16 @@ const createExerciseSchema = z.object({
   prescribedTime: z.number().int().positive().optional(),
   prescribedCalories: z.number().int().positive().optional(),
   prescribedSets: z.number().int().positive().optional(),
+  // Female (optional)
+  prescribedRepsFemale: z.number().int().positive().optional(),
+  prescribedWeightFemale: z.number().positive().optional(),
+  prescribedWeightUnitFemale: z.nativeEnum(WeightUnit).optional(),
+  prescribedWeightPercentFemale: z.number().min(0).max(200).optional(),
+  prescribedDistanceFemale: z.number().positive().optional(),
+  prescribedDistanceUnitFemale: z.nativeEnum(DistanceUnit).optional(),
+  prescribedTimeFemale: z.number().int().positive().optional(),
+  prescribedCaloriesFemale: z.number().int().positive().optional(),
+  prescribedSetsFemale: z.number().int().positive().optional(),
   notes: z.string().optional(),
   setPrescriptions: z.array(setPrescriptionSchema).optional(),
 });
@@ -253,6 +274,7 @@ export async function POST(request: Request) {
               create: block.exercises.map((exercise) => ({
                 exerciseId: exercise.exerciseId,
                 orderIndex: exercise.orderIndex,
+                // Male/Rx
                 prescribedReps: exercise.prescribedReps,
                 prescribedWeight: exercise.prescribedWeight,
                 prescribedWeightUnit: exercise.prescribedWeightUnit,
@@ -262,12 +284,25 @@ export async function POST(request: Request) {
                 prescribedTime: exercise.prescribedTime,
                 prescribedCalories: exercise.prescribedCalories,
                 prescribedSets: exercise.prescribedSets,
+                // Female (optional)
+                prescribedRepsFemale: exercise.prescribedRepsFemale,
+                prescribedWeightFemale: exercise.prescribedWeightFemale,
+                prescribedWeightUnitFemale: exercise.prescribedWeightUnitFemale,
+                prescribedWeightPercentFemale:
+                  exercise.prescribedWeightPercentFemale,
+                prescribedDistanceFemale: exercise.prescribedDistanceFemale,
+                prescribedDistanceUnitFemale:
+                  exercise.prescribedDistanceUnitFemale,
+                prescribedTimeFemale: exercise.prescribedTimeFemale,
+                prescribedCaloriesFemale: exercise.prescribedCaloriesFemale,
+                prescribedSetsFemale: exercise.prescribedSetsFemale,
                 notes: exercise.notes,
                 // Create set prescriptions if provided
                 ...(exercise.setPrescriptions?.length && {
                   setPrescriptions: {
                     create: exercise.setPrescriptions.map((sp) => ({
                       setNumber: sp.setNumber,
+                      // Male/Rx
                       reps: sp.reps,
                       weight: sp.weight,
                       weightUnit: sp.weightUnit,
@@ -276,6 +311,15 @@ export async function POST(request: Request) {
                       distance: sp.distance,
                       distanceUnit: sp.distanceUnit,
                       calories: sp.calories,
+                      // Female (optional)
+                      repsFemale: sp.repsFemale,
+                      weightFemale: sp.weightFemale,
+                      weightUnitFemale: sp.weightUnitFemale,
+                      weightPercentFemale: sp.weightPercentFemale,
+                      timeFemale: sp.timeFemale,
+                      distanceFemale: sp.distanceFemale,
+                      distanceUnitFemale: sp.distanceUnitFemale,
+                      caloriesFemale: sp.caloriesFemale,
                       notes: sp.notes,
                     })),
                   },

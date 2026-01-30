@@ -92,6 +92,9 @@
     "duplicateSet": "Duplicar Última",
     "noSetPrescriptions": "Sin prescripción por serie. Usa los campos de arriba para valores uniformes o añade series variables.",
     "setNotes": "Notas (ej: hasta el fallo)",
+    "maleFemalePrescription": "Prescripción diferenciada (H/M)",
+    "male": "Hombre",
+    "female": "Mujer",
     "units": {
       "KG": "kg",
       "LB": "lb",

@@ -97,6 +97,7 @@ export function WorkoutBlockEditor({
       blockId: block.id,
       exerciseId: exercise.id,
       orderIndex: block.exercises.length,
+      // Male/Rx
       prescribedReps: null,
       prescribedWeight: null,
       prescribedWeightUnit: null,
@@ -106,6 +107,16 @@ export function WorkoutBlockEditor({
       prescribedTime: null,
       prescribedCalories: null,
       prescribedSets: null,
+      // Female (optional)
+      prescribedRepsFemale: null,
+      prescribedWeightFemale: null,
+      prescribedWeightUnitFemale: null,
+      prescribedWeightPercentFemale: null,
+      prescribedDistanceFemale: null,
+      prescribedDistanceUnitFemale: null,
+      prescribedTimeFemale: null,
+      prescribedCaloriesFemale: null,
+      prescribedSetsFemale: null,
       notes: null,
       exercise: {
         id: exercise.id,

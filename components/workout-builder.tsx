@@ -213,6 +213,7 @@ export function WorkoutBuilder({
             exercises: block.exercises.map((ex, exIndex) => ({
               exerciseId: ex.exercise.id,
               orderIndex: exIndex,
+              // Male/Rx
               prescribedReps: ex.prescribedReps || undefined,
               prescribedWeight: ex.prescribedWeight || undefined,
               prescribedWeightUnit: ex.prescribedWeightUnit || undefined,
@@ -222,11 +223,27 @@ export function WorkoutBuilder({
               prescribedTime: ex.prescribedTime || undefined,
               prescribedCalories: ex.prescribedCalories || undefined,
               prescribedSets: ex.prescribedSets || undefined,
+              // Female (optional)
+              prescribedRepsFemale: ex.prescribedRepsFemale || undefined,
+              prescribedWeightFemale: ex.prescribedWeightFemale || undefined,
+              prescribedWeightUnitFemale:
+                ex.prescribedWeightUnitFemale || undefined,
+              prescribedWeightPercentFemale:
+                ex.prescribedWeightPercentFemale || undefined,
+              prescribedDistanceFemale:
+                ex.prescribedDistanceFemale || undefined,
+              prescribedDistanceUnitFemale:
+                ex.prescribedDistanceUnitFemale || undefined,
+              prescribedTimeFemale: ex.prescribedTimeFemale || undefined,
+              prescribedCaloriesFemale:
+                ex.prescribedCaloriesFemale || undefined,
+              prescribedSetsFemale: ex.prescribedSetsFemale || undefined,
               notes: ex.notes || undefined,
               // Include set prescriptions if available
               setPrescriptions: ex.setPrescriptions?.length
                 ? ex.setPrescriptions.map((sp, spIndex) => ({
                     setNumber: sp.setNumber ?? spIndex + 1,
+                    // Male/Rx
                     reps: sp.reps || undefined,
                     weight: sp.weight || undefined,
                     weightUnit: sp.weightUnit || undefined,
@@ -235,6 +252,15 @@ export function WorkoutBuilder({
                     distance: sp.distance || undefined,
                     distanceUnit: sp.distanceUnit || undefined,
                     calories: sp.calories || undefined,
+                    // Female (optional)
+                    repsFemale: sp.repsFemale || undefined,
+                    weightFemale: sp.weightFemale || undefined,
+                    weightUnitFemale: sp.weightUnitFemale || undefined,
+                    weightPercentFemale: sp.weightPercentFemale || undefined,
+                    timeFemale: sp.timeFemale || undefined,
+                    distanceFemale: sp.distanceFemale || undefined,
+                    distanceUnitFemale: sp.distanceUnitFemale || undefined,
+                    caloriesFemale: sp.caloriesFemale || undefined,
                     notes: sp.notes || undefined,
                   }))
                 : undefined,

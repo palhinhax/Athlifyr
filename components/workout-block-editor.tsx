@@ -31,7 +31,9 @@ import { WeightUnit, DistanceUnit, ExerciseCategory } from "@prisma/client";
 import type {
   WorkoutBlockWithExercises,
   WorkoutBlockExerciseWithDetails,
+  CreateSetPrescriptionInput,
 } from "@/types/workout";
+import { SetPrescriptionEditor } from "@/components/workout-set-prescription-editor";
 
 interface StrengthExerciseOption {
   id: string;
@@ -110,6 +112,7 @@ export function WorkoutBlockEditor({
         name: exercise.name,
         category: exercise.category,
       },
+      setPrescriptions: [], // Initialize empty set prescriptions
     };
     onChange({
       ...block,
@@ -136,6 +139,21 @@ export function WorkoutBlockEditor({
   ) => {
     const newExercises = [...block.exercises];
     newExercises[index] = { ...newExercises[index], [field]: value };
+    onChange({ ...block, exercises: newExercises });
+  };
+
+  // Update set prescriptions for an exercise
+  const updateSetPrescriptions = (
+    exerciseIndex: number,
+    setPrescriptions: CreateSetPrescriptionInput[]
+  ) => {
+    const newExercises = [...block.exercises];
+    newExercises[exerciseIndex] = {
+      ...newExercises[exerciseIndex],
+      setPrescriptions,
+      // Also update prescribedSets to match the number of set prescriptions
+      prescribedSets: setPrescriptions.length || null,
+    };
     onChange({ ...block, exercises: newExercises });
   };
 
@@ -530,6 +548,19 @@ export function WorkoutBlockEditor({
                       </div>
                     </div>
                   </div>
+
+                  {/* Set Prescriptions - for STRENGTH/EMOM blocks with variable sets */}
+                  {(block.type === "STRENGTH" || block.type === "EMOM") && (
+                    <SetPrescriptionEditor
+                      exerciseName={exercise.exercise.name}
+                      sets={
+                        (exercise.setPrescriptions as CreateSetPrescriptionInput[]) ||
+                        []
+                      }
+                      onChange={(sets) => updateSetPrescriptions(index, sets)}
+                      blockType={block.type}
+                    />
+                  )}
                 </div>
               </div>
             ))}

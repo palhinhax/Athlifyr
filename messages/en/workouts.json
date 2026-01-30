@@ -87,6 +87,11 @@
     "prescribedCalories": "Calories",
     "weightPercent": "% of 1RM",
     "notes": "Notes",
+    "setPrescriptions": "Set Prescription",
+    "addSet": "Add Set",
+    "duplicateSet": "Duplicate Last",
+    "noSetPrescriptions": "No set prescription. Use the fields above for uniform values or add variable sets.",
+    "setNotes": "Notes (e.g., to failure)",
     "units": {
       "KG": "kg",
       "LB": "lb",

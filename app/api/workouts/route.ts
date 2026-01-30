@@ -8,6 +8,19 @@ import { WorkoutBlockType, WeightUnit, DistanceUnit } from "@prisma/client";
 // Validation Schemas
 // ============================================================================
 
+const setPrescriptionSchema = z.object({
+  setNumber: z.number().int().positive(),
+  reps: z.number().int().positive().optional(),
+  weight: z.number().positive().optional(),
+  weightUnit: z.nativeEnum(WeightUnit).optional(),
+  weightPercent: z.number().min(0).max(200).optional(),
+  time: z.number().int().positive().optional(),
+  distance: z.number().positive().optional(),
+  distanceUnit: z.nativeEnum(DistanceUnit).optional(),
+  calories: z.number().int().positive().optional(),
+  notes: z.string().optional(),
+});
+
 const createExerciseSchema = z.object({
   exerciseId: z.string().min(1),
   orderIndex: z.number().int().min(0),
@@ -21,6 +34,7 @@ const createExerciseSchema = z.object({
   prescribedCalories: z.number().int().positive().optional(),
   prescribedSets: z.number().int().positive().optional(),
   notes: z.string().optional(),
+  setPrescriptions: z.array(setPrescriptionSchema).optional(),
 });
 
 const createBlockSchema = z.object({
@@ -107,6 +121,9 @@ export async function GET(request: Request) {
                     name: true,
                     category: true,
                   },
+                },
+                setPrescriptions: {
+                  orderBy: { setNumber: "asc" },
                 },
               },
             },
@@ -246,6 +263,23 @@ export async function POST(request: Request) {
                 prescribedCalories: exercise.prescribedCalories,
                 prescribedSets: exercise.prescribedSets,
                 notes: exercise.notes,
+                // Create set prescriptions if provided
+                ...(exercise.setPrescriptions?.length && {
+                  setPrescriptions: {
+                    create: exercise.setPrescriptions.map((sp) => ({
+                      setNumber: sp.setNumber,
+                      reps: sp.reps,
+                      weight: sp.weight,
+                      weightUnit: sp.weightUnit,
+                      weightPercent: sp.weightPercent,
+                      time: sp.time,
+                      distance: sp.distance,
+                      distanceUnit: sp.distanceUnit,
+                      calories: sp.calories,
+                      notes: sp.notes,
+                    })),
+                  },
+                }),
               })),
             },
           })),
@@ -278,6 +312,9 @@ export async function POST(request: Request) {
                     name: true,
                     category: true,
                   },
+                },
+                setPrescriptions: {
+                  orderBy: { setNumber: "asc" },
                 },
               },
             },

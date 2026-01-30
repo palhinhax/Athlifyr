@@ -87,6 +87,11 @@
     "prescribedCalories": "Kalorien",
     "weightPercent": "% vom 1RM",
     "notes": "Notizen",
+    "setPrescriptions": "Satzvorgabe",
+    "addSet": "Satz Hinzufügen",
+    "duplicateSet": "Letzten Duplizieren",
+    "noSetPrescriptions": "Keine Satzvorgabe. Verwenden Sie die Felder oben für einheitliche Werte oder fügen Sie variable Sätze hinzu.",
+    "setNotes": "Notizen (z.B. bis zum Versagen)",
     "units": {
       "KG": "kg",
       "LB": "lb",

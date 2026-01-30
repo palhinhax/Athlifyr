@@ -223,6 +223,21 @@ export function WorkoutBuilder({
               prescribedCalories: ex.prescribedCalories || undefined,
               prescribedSets: ex.prescribedSets || undefined,
               notes: ex.notes || undefined,
+              // Include set prescriptions if available
+              setPrescriptions: ex.setPrescriptions?.length
+                ? ex.setPrescriptions.map((sp, spIndex) => ({
+                    setNumber: sp.setNumber ?? spIndex + 1,
+                    reps: sp.reps || undefined,
+                    weight: sp.weight || undefined,
+                    weightUnit: sp.weightUnit || undefined,
+                    weightPercent: sp.weightPercent || undefined,
+                    time: sp.time || undefined,
+                    distance: sp.distance || undefined,
+                    distanceUnit: sp.distanceUnit || undefined,
+                    calories: sp.calories || undefined,
+                    notes: sp.notes || undefined,
+                  }))
+                : undefined,
             })),
           })
         ),

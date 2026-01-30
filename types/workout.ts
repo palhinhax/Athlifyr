@@ -20,7 +20,26 @@ import {
   User,
   Venue,
   VenueSession,
+  WorkoutSetPrescription,
 } from "@prisma/client";
+
+// ============================================================================
+// Set Prescription Input (defined first to be used in other types)
+// ============================================================================
+
+// Prescrição variável por set (ex: 5 reps @ 65%, 5 reps @ 70%, 3 reps @ 75%)
+export interface CreateSetPrescriptionInput {
+  setNumber: number;
+  reps?: number; // null = max reps
+  weight?: number;
+  weightUnit?: WeightUnit;
+  weightPercent?: number; // % do 1RM/PR
+  time?: number;
+  distance?: number;
+  distanceUnit?: DistanceUnit;
+  calories?: number;
+  notes?: string;
+}
 
 // ============================================================================
 // Workout com relações
@@ -38,6 +57,7 @@ export type WorkoutBlockWithExercises = WorkoutBlock & {
 
 export type WorkoutBlockExerciseWithDetails = WorkoutBlockExercise & {
   exercise: Pick<StrengthExercise, "id" | "name" | "category">;
+  setPrescriptions?: WorkoutSetPrescription[] | CreateSetPrescriptionInput[];
 };
 
 // ============================================================================
@@ -105,6 +125,7 @@ export interface CreateWorkoutBlockExerciseInput {
   prescribedCalories?: number;
   prescribedSets?: number;
   notes?: string;
+  setPrescriptions?: CreateSetPrescriptionInput[];
 }
 
 // ============================================================================

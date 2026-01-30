@@ -1,16 +1,24 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { usePathname } from "next/navigation";
 import { MessageCircle, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ContactForm } from "@/components/contact-form";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 
+// Pages where the floating chat button should be hidden
+const HIDDEN_ON_PATHS = ["/chat"];
+
 export function FloatingChatButton() {
   const t = useTranslations();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
   const [formKey, setFormKey] = useState(0);
+
+  // Check if we should hide on current path
+  const shouldHide = HIDDEN_ON_PATHS.some((path) => pathname.includes(path));
 
   // Close handler - reset form after animation
   const handleClose = useCallback(() => {
@@ -20,6 +28,11 @@ export function FloatingChatButton() {
       setFormKey((prev) => prev + 1);
     }, 300);
   }, []);
+
+  // Don't render on hidden paths
+  if (shouldHide) {
+    return null;
+  }
 
   return (
     <>

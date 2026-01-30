@@ -1,3 +1,10 @@
+## [14.13.2](https://github.com/palhinhax/Athlifyr/compare/v14.13.1...v14.13.2) (2026-01-30)
+
+### Bug Fixes
+
+- **nav:** hide exercises link from mobile nav until feature is ready ([9b4419a](https://github.com/palhinhax/Athlifyr/commit/9b4419ab270e090c9a479126dc4ee34903c74e65))
+- **nav:** hide exercises link from mobile nav until feature is ready ([bb58e46](https://github.com/palhinhax/Athlifyr/commit/bb58e46f6af78a53a3ffe227a13bdb9cc5b9341a))
+
 ## [14.13.1](https://github.com/palhinhax/Athlifyr/compare/v14.13.0...v14.13.1) (2026-01-30)
 
 ### Bug Fixes

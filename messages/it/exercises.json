@@ -1,21 +1,25 @@
 {
-  "title": "Esercizi",
-  "description": "Crea e gestisci i tuoi esercizi personalizzati da utilizzare negli allenamenti.",
-  "searchPlaceholder": "Cerca esercizi...",
-  "createExercise": "Crea Esercizio",
-  "createFirst": "Crea il Primo Esercizio",
-  "noExercises": "Nessun esercizio",
-  "noExercisesDescription": "Non hai ancora esercizi personalizzati. Crea il tuo primo esercizio per iniziare.",
-  "aliases": "Conosciuto anche come",
-  "global": "Globale",
-  "showingResults": "Visualizzazione di {count} esercizi",
-  "categories": {
-    "ALL": "Tutti",
-    "CROSSFIT": "CrossFit",
-    "GYM": "Palestra",
-    "WEIGHTLIFTING": "Sollevamento Pesi",
-    "BODYWEIGHT": "Peso Corporeo",
-    "CARDIO": "Cardio",
-    "OTHER": "Altri"
+  "exercises": {
+    "title": "Esercizi",
+    "description": "Crea e gestisci i tuoi esercizi personalizzati da utilizzare negli allenamenti.",
+    "searchPlaceholder": "Cerca esercizi...",
+    "createExercise": "Crea Esercizio",
+    "createFirst": "Crea il Primo Esercizio",
+    "noExercises": "Nessun esercizio",
+    "noExercisesDescription": "Non hai ancora esercizi personalizzati. Crea il tuo primo esercizio per iniziare.",
+    "aliases": "Conosciuto anche come",
+    "global": "Globale",
+    "showingResults": "Visualizzazione da {start} a {end} di {total} esercizi",
+    "previous": "Precedente",
+    "next": "Successivo",
+    "categories": {
+      "ALL": "Tutti",
+      "CROSSFIT": "CrossFit",
+      "GYM": "Palestra",
+      "WEIGHTLIFTING": "Sollevamento Pesi",
+      "BODYWEIGHT": "Peso Corporeo",
+      "CARDIO": "Cardio",
+      "OTHER": "Altri"
+    }
   }
 }

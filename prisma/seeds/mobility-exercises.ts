@@ -513,7 +513,7 @@ async function main() {
 
   for (const exercise of exercises) {
     // Check if exercise already exists (by name)
-    const existing = await prisma.strengthExercise.findFirst({
+    const existing = await prisma.exercise.findFirst({
       where: {
         name: {
           equals: exercise.name,
@@ -529,7 +529,7 @@ async function main() {
       continue;
     }
 
-    await prisma.strengthExercise.create({
+    await prisma.exercise.create({
       data: {
         name: exercise.name,
         aliases: exercise.aliases,

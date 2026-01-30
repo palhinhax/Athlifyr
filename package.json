@@ -18,7 +18,7 @@
     "db:push": "prisma db push",
     "db:seed": "npx tsx prisma/seed.ts",
     "db:seed:test-users": "npx tsx prisma/seeds/test-users.ts",
-    "db:seed:exercises": "npx tsx prisma/seeds/strength-exercises.ts",
+    "db:seed:exercises": "npx tsx prisma/seeds/exercises-seed.ts",
     "db:studio": "prisma studio",
     "prepare": "husky",
     "semantic-release": "semantic-release",

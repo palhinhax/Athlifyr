@@ -32,7 +32,7 @@ const categoryColors: Record<ExerciseCategory, string> = {
 };
 
 export function ExercisesPageClient({ exercises }: ExercisesPageClientProps) {
-  const t = useTranslations("exercises");
+  const t = useTranslations("exercises.exercises");
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<
     ExerciseCategory | "ALL"

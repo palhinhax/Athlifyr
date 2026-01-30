@@ -1,16 +1,16 @@
 "use client";
 
 /**
- * Wall Clock - Small LED Clock Display
+ * Wall Clock - LED Clock Display (Rogue-style)
  *
- * Small 7-segment LED clock for navigation bar
+ * Professional 7-segment LED clock for navigation bar
+ * Inspired by Rogue Fitness gym timers with red LED display
  * Shows current time in HH:MM format, updating every second
  */
 
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { dseg7 } from "@/app/fonts/dseg7";
-import { Clock } from "lucide-react";
 
 interface WallClockProps {
   className?: string;
@@ -54,18 +54,20 @@ export function WallClock({ className, show24Hour = true }: WallClockProps) {
     return (
       <div
         className={cn(
-          "relative flex flex-col items-center justify-center gap-1 rounded-xl border border-gray-800 bg-black px-4 py-2 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)]",
+          "relative flex flex-col overflow-hidden rounded-lg border border-gray-900 bg-black px-6 py-2 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)]",
           className
         )}
       >
-        <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4 text-gray-600" />
-          <span className={cn(dseg7.className, "text-xl text-gray-800")}>
-            --:--
-          </span>
-        </div>
-        <span className="text-[9px] font-semibold tracking-wide text-white opacity-60">
-          Athlifyr
+        <span
+          className={cn(
+            dseg7.className,
+            "text-3xl font-bold tracking-[0.15em] text-gray-900"
+          )}
+        >
+          --:--
+        </span>
+        <span className="absolute bottom-0.5 left-1.5 text-[8px] font-bold tracking-wider text-white opacity-50">
+          ATHLIFYR
         </span>
       </div>
     );
@@ -74,31 +76,28 @@ export function WallClock({ className, show24Hour = true }: WallClockProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col items-center justify-center gap-1 rounded-xl border border-gray-800 bg-black px-4 py-2 shadow-[inset_0_0_20px_rgba(0,0,0,0.8)] transition-all duration-300",
-        "hover:border-gray-700",
+        "relative flex flex-col overflow-hidden rounded-lg border border-gray-900 bg-black px-6 py-2 shadow-[inset_0_0_30px_rgba(0,0,0,0.9)] transition-all duration-300",
+        "hover:shadow-[inset_0_0_40px_rgba(0,0,0,0.8)]",
         className
       )}
       title="Current time"
     >
-      {/* Clock icon and LED time */}
-      <div className="flex items-center gap-2">
-        <Clock className="h-4 w-4 text-gray-600" />
-        <span
-          className={cn(
-            dseg7.className,
-            "text-xl font-bold tracking-wider text-green-400",
-            // LED glow effect - enhanced
-            "drop-shadow-[0_0_10px_currentColor] drop-shadow-[0_0_20px_currentColor]",
-            "[text-shadow:0_0_8px_currentColor]"
-          )}
-        >
-          {time}
-        </span>
-      </div>
+      {/* LED Time Display - Rogue style red */}
+      <span
+        className={cn(
+          dseg7.className,
+          "text-3xl font-bold tracking-[0.15em] text-red-600",
+          // Intense red LED glow effect
+          "drop-shadow-[0_0_12px_rgba(220,38,38,0.8)] drop-shadow-[0_0_25px_rgba(220,38,38,0.6)]",
+          "[text-shadow:0_0_10px_rgba(220,38,38,0.9)]"
+        )}
+      >
+        {time}
+      </span>
 
-      {/* Athlifyr branding */}
-      <span className="text-[9px] font-semibold tracking-wide text-white opacity-60">
-        Athlifyr
+      {/* Athlifyr branding - Rogue style */}
+      <span className="absolute bottom-0.5 left-1.5 text-[8px] font-bold tracking-wider text-white opacity-50">
+        ATHLIFYR
       </span>
     </div>
   );

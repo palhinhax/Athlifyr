@@ -18,7 +18,6 @@ import {
   HomeIcon,
   Building2Icon,
   Dumbbell,
-  ListChecks,
 } from "lucide-react";
 import { GlobalSearch } from "./global-search";
 import { WallClock } from "./wall-clock";
@@ -103,17 +102,6 @@ export function MobileNav() {
                     <Dumbbell className="h-4 w-4" />
                     {t("workouts")}
                   </Link>
-
-                  {session?.user?.role === "ADMIN" && (
-                    <Link
-                      href="/exercises"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                    >
-                      <ListChecks className="h-4 w-4" />
-                      {t("exercises")}
-                    </Link>
-                  )}
                 </>
               ) : (
                 <Link

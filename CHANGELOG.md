@@ -1,3 +1,9 @@
+# [14.12.0](https://github.com/palhinhax/Athlifyr/compare/v14.11.0...v14.12.0) (2026-01-30)
+
+### Features
+
+- **ui:** implement authentic SVG 7-segment LED clock ([aa7550b](https://github.com/palhinhax/Athlifyr/commit/aa7550b8e715c06a913d20a51e8f55910aef3161))
+
 # [14.11.0](https://github.com/palhinhax/Athlifyr/compare/v14.10.2...v14.11.0) (2026-01-30)
 
 ### Bug Fixes

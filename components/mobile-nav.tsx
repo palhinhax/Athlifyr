@@ -45,7 +45,7 @@ export function MobileNav() {
 
   return (
     <div className="flex items-center gap-2 md:hidden">
-      {session?.user?.role === "ADMIN" && <WallClock className="scale-75" />}
+      <WallClock className="scale-75" />
       <GlobalSearch />
       <Button
         variant="ghost"

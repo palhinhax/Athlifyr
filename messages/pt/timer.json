@@ -38,7 +38,7 @@
     "startAgain": "Iniciar novamente"
   },
 
-  "settings": {
+  "timerSettings": {
     "title": "Definições do Timer",
     "selectMode": "Selecionar Modo de Timer",
     "display": "Definições de Visualização",

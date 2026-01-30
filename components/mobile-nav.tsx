@@ -20,7 +20,7 @@ import {
   Dumbbell,
 } from "lucide-react";
 import { GlobalSearch } from "./global-search";
-import { WallClock } from "./wall-clock";
+// import { WallClock } from "./wall-clock"; // TODO: Temporarily hidden
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 
 export function MobileNav() {
@@ -44,7 +44,6 @@ export function MobileNav() {
 
   return (
     <div className="flex items-center gap-2 md:hidden">
-      <WallClock className="scale-75" />
       <GlobalSearch />
       <Button
         variant="ghost"

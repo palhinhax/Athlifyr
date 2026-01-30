@@ -1,3 +1,20 @@
+# [14.9.0](https://github.com/palhinhax/Athlifyr/compare/v14.8.0...v14.9.0) (2026-01-30)
+
+### Features
+
+- **active-venues:** update active venues retrieval to include user roles and enhance response documentation ([8c75a5d](https://github.com/palhinhax/Athlifyr/commit/8c75a5ddc7cbc341c1f1d0daa01188876bf35c05))
+- **auth:** add professional account feature for exercises page access ([20cc163](https://github.com/palhinhax/Athlifyr/commit/20cc1638cfb70bfc5d516dbd0a3604ddac9d30c9))
+- **auth:** restrict exercises page and wall clock to admin only ([51a2f97](https://github.com/palhinhax/Athlifyr/commit/51a2f97ec1959ba5d2e10580f7fca67a92413bf1))
+- **floating-chat-button:** hide button on specific paths ([5745e27](https://github.com/palhinhax/Athlifyr/commit/5745e273297ca048b19fa481902261be4b5f77d7))
+- **timer:** add authentic 7-segment LED display style ([7d88bf2](https://github.com/palhinhax/Athlifyr/commit/7d88bf20efd41f059c8275d3bea19a3681772966))
+- **timer:** add wall timer for workout execution ([a989ddd](https://github.com/palhinhax/Athlifyr/commit/a989ddd292ac2b03ed335ded1e8761ea1202c2ae)), closes [hi#precision](https://github.com/hi/issues/precision) [Hi#precision](https://github.com/Hi/issues/precision)
+- **ui:** add 3D depth effect to wall clock ([5ef7b97](https://github.com/palhinhax/Athlifyr/commit/5ef7b976d8dc23e1660e80194c61d9fecc77030e))
+- **ui:** add LED wall clock to navigation bar ([6ee234a](https://github.com/palhinhax/Athlifyr/commit/6ee234ac5942681e10f928637f78c9d21277377c))
+- **ui:** transform wall clock to Rogue-style LED display ([2ccfae0](https://github.com/palhinhax/Athlifyr/commit/2ccfae0ef50ad69125763ad78ed6c87c2f504d5d))
+- **workouts:** add complete workout builder system with logging and performance integration ([8a106d3](https://github.com/palhinhax/Athlifyr/commit/8a106d351c9de319a5670dc436fa33733422196c))
+- **workouts:** add gender-specific prescription support (Male/Female) ([b8fa58a](https://github.com/palhinhax/Athlifyr/commit/b8fa58a9aa63e3a3e97055e1697f1b1074c2e02c))
+- **workouts:** add set-level prescription support for variable reps and weights ([2bd94ce](https://github.com/palhinhax/Athlifyr/commit/2bd94ce7d491b0566cc9d8b8d835f45ae7cf6a32))
+
 # [14.8.0](https://github.com/palhinhax/Athlifyr/compare/v14.7.0...v14.8.0) (2026-01-29)
 
 ### Features

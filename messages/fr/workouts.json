@@ -1,175 +1,177 @@
 {
-  "title": "Entraînements",
-  "subtitle": "Créez et gérez vos entraînements",
-  "createWorkout": "Créer un Entraînement",
-  "editWorkout": "Modifier l'Entraînement",
-  "deleteWorkout": "Supprimer l'Entraînement",
-  "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet entraînement ?",
-  "myWorkouts": "Mes Entraînements",
-  "publicWorkouts": "Entraînements Publics",
-  "templates": "Modèles",
-  "venueWorkouts": "Entraînements du Centre",
-  "noWorkouts": "Vous n'avez pas encore d'entraînements",
-  "noWorkoutsDescription": "Créez votre premier entraînement pour commencer à suivre vos progrès.",
+  "workouts": {
+    "title": "Entraînements",
+    "subtitle": "Créez et gérez vos entraînements",
+    "createWorkout": "Créer un Entraînement",
+    "editWorkout": "Modifier l'Entraînement",
+    "deleteWorkout": "Supprimer l'Entraînement",
+    "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet entraînement ?",
+    "myWorkouts": "Mes Entraînements",
+    "publicWorkouts": "Entraînements Publics",
+    "templates": "Modèles",
+    "venueWorkouts": "Entraînements du Centre",
+    "noWorkouts": "Vous n'avez pas encore d'entraînements",
+    "noWorkoutsDescription": "Créez votre premier entraînement pour commencer à suivre vos progrès.",
 
-  "form": {
-    "name": "Nom de l'Entraînement",
-    "namePlaceholder": "Ex: WOD Lundi",
-    "description": "Description",
-    "descriptionPlaceholder": "Décrivez l'entraînement...",
-    "estimatedTime": "Temps Estimé (min)",
-    "difficulty": "Difficulté",
-    "difficultyLevels": {
-      "1": "Débutant",
-      "2": "Facile",
-      "3": "Modéré",
-      "4": "Difficile",
-      "5": "Élite"
+    "form": {
+      "name": "Nom de l'Entraînement",
+      "namePlaceholder": "Ex: WOD Lundi",
+      "description": "Description",
+      "descriptionPlaceholder": "Décrivez l'entraînement...",
+      "estimatedTime": "Temps Estimé (min)",
+      "difficulty": "Difficulté",
+      "difficultyLevels": {
+        "1": "Débutant",
+        "2": "Facile",
+        "3": "Modéré",
+        "4": "Difficile",
+        "5": "Élite"
+      },
+      "tags": "Tags",
+      "tagsPlaceholder": "Ajouter un tag...",
+      "isTemplate": "Enregistrer comme modèle",
+      "isPublic": "Entraînement public",
+      "save": "Enregistrer",
+      "cancel": "Annuler"
     },
-    "tags": "Tags",
-    "tagsPlaceholder": "Ajouter un tag...",
-    "isTemplate": "Enregistrer comme modèle",
-    "isPublic": "Entraînement public",
-    "save": "Enregistrer",
-    "cancel": "Annuler"
-  },
 
-  "blocks": {
-    "title": "Blocs d'Entraînement",
-    "addBlock": "Ajouter un Bloc",
-    "moveUp": "Monter",
-    "moveDown": "Descendre",
-    "delete": "Supprimer le bloc",
-    "duplicate": "Dupliquer le bloc",
-    "types": {
-      "WARMUP": "Échauffement",
-      "STRENGTH": "Force",
-      "AMRAP": "AMRAP",
-      "EMOM": "EMOM",
-      "FOR_TIME": "For Time",
-      "TABATA": "Tabata",
-      "CHIPPER": "Chipper",
-      "REST": "Repos",
-      "COOLDOWN": "Retour au Calme",
-      "SKILL": "Skill"
+    "blocks": {
+      "title": "Blocs d'Entraînement",
+      "addBlock": "Ajouter un Bloc",
+      "moveUp": "Monter",
+      "moveDown": "Descendre",
+      "delete": "Supprimer le bloc",
+      "duplicate": "Dupliquer le bloc",
+      "types": {
+        "WARMUP": "Échauffement",
+        "STRENGTH": "Force",
+        "AMRAP": "AMRAP",
+        "EMOM": "EMOM",
+        "FOR_TIME": "For Time",
+        "TABATA": "Tabata",
+        "CHIPPER": "Chipper",
+        "REST": "Repos",
+        "COOLDOWN": "Retour au Calme",
+        "SKILL": "Skill"
+      },
+      "typeDescriptions": {
+        "WARMUP": "Préparation à l'entraînement",
+        "STRENGTH": "Travail de force avec séries et répétitions",
+        "AMRAP": "As Many Rounds As Possible",
+        "EMOM": "Every Minute On the Minute",
+        "FOR_TIME": "Terminer le plus vite possible",
+        "TABATA": "20s travail / 10s repos",
+        "CHIPPER": "Liste séquentielle d'exercices",
+        "REST": "Période de récupération",
+        "COOLDOWN": "Étirements et récupération",
+        "SKILL": "Travail technique"
+      },
+      "timeCap": "Time Cap",
+      "timeCapMinutes": "Time Cap (min)",
+      "workTime": "Temps de Travail (s)",
+      "restTime": "Temps de Repos (s)",
+      "rounds": "Tours",
+      "notes": "Notes",
+      "notesPlaceholder": "Notes du bloc..."
     },
-    "typeDescriptions": {
-      "WARMUP": "Préparation à l'entraînement",
-      "STRENGTH": "Travail de force avec séries et répétitions",
-      "AMRAP": "As Many Rounds As Possible",
-      "EMOM": "Every Minute On the Minute",
-      "FOR_TIME": "Terminer le plus vite possible",
-      "TABATA": "20s travail / 10s repos",
-      "CHIPPER": "Liste séquentielle d'exercices",
-      "REST": "Période de récupération",
-      "COOLDOWN": "Étirements et récupération",
-      "SKILL": "Travail technique"
-    },
-    "timeCap": "Time Cap",
-    "timeCapMinutes": "Time Cap (min)",
-    "workTime": "Temps de Travail (s)",
-    "restTime": "Temps de Repos (s)",
-    "rounds": "Tours",
-    "notes": "Notes",
-    "notesPlaceholder": "Notes du bloc..."
-  },
 
-  "exercises": {
-    "title": "Exercices",
-    "addExercise": "Ajouter un Exercice",
-    "searchExercise": "Rechercher un exercice...",
-    "noExercises": "Aucun exercice ajouté",
-    "prescribedReps": "Reps",
-    "prescribedWeight": "Poids",
-    "prescribedSets": "Séries",
-    "prescribedDistance": "Distance",
-    "prescribedTime": "Temps (s)",
-    "prescribedCalories": "Calories",
-    "weightPercent": "% du 1RM",
-    "notes": "Notes",
-    "setPrescriptions": "Prescription par Série",
-    "addSet": "Ajouter Série",
-    "duplicateSet": "Dupliquer Dernière",
-    "noSetPrescriptions": "Pas de prescription par série. Utilisez les champs ci-dessus pour des valeurs uniformes ou ajoutez des séries variables.",
-    "setNotes": "Notes (ex: jusqu'à l'échec)",
-    "maleFemalePrescription": "Prescription différenciée (H/F)",
-    "male": "Homme",
-    "female": "Femme",
-    "units": {
-      "KG": "kg",
-      "LB": "lb",
-      "M": "m",
-      "KM": "km",
-      "MI": "mi",
-      "FT": "ft"
+    "exercises": {
+      "title": "Exercices",
+      "addExercise": "Ajouter un Exercice",
+      "searchExercise": "Rechercher un exercice...",
+      "noExercises": "Aucun exercice ajouté",
+      "prescribedReps": "Reps",
+      "prescribedWeight": "Poids",
+      "prescribedSets": "Séries",
+      "prescribedDistance": "Distance",
+      "prescribedTime": "Temps (s)",
+      "prescribedCalories": "Calories",
+      "weightPercent": "% du 1RM",
+      "notes": "Notes",
+      "setPrescriptions": "Prescription par Série",
+      "addSet": "Ajouter Série",
+      "duplicateSet": "Dupliquer Dernière",
+      "noSetPrescriptions": "Pas de prescription par série. Utilisez les champs ci-dessus pour des valeurs uniformes ou ajoutez des séries variables.",
+      "setNotes": "Notes (ex: jusqu'à l'échec)",
+      "maleFemalePrescription": "Prescription différenciée (H/F)",
+      "male": "Homme",
+      "female": "Femme",
+      "units": {
+        "KG": "kg",
+        "LB": "lb",
+        "M": "m",
+        "KM": "km",
+        "MI": "mi",
+        "FT": "ft"
+      }
+    },
+
+    "log": {
+      "title": "Enregistrer l'Entraînement",
+      "startWorkout": "Démarrer l'Entraînement",
+      "finishWorkout": "Terminer l'Entraînement",
+      "saveLog": "Enregistrer le Journal",
+      "feeling": "Comment vous êtes-vous senti ?",
+      "feelingLevels": {
+        "1": "Très mal",
+        "2": "Mal",
+        "3": "Normal",
+        "4": "Bien",
+        "5": "Excellent"
+      },
+      "perceivedEffort": "Effort Perçu (RPE)",
+      "notes": "Notes de l'entraînement",
+      "notesPlaceholder": "Comment s'est passé l'entraînement ?",
+      "actualWeight": "Poids utilisé",
+      "actualReps": "Reps effectuées",
+      "actualTime": "Temps",
+      "actualDistance": "Distance",
+      "actualCalories": "Calories",
+      "completedRounds": "Tours complétés",
+      "extraReps": "Reps supplémentaires",
+      "completedTime": "Temps total",
+      "completedInTime": "Terminé dans le temps",
+      "set": "Série",
+      "addSet": "Ajouter une Série",
+      "pr": "PR ! 🎉",
+      "prDetected": "Nouveau Record Personnel !",
+      "performanceUpdated": "Performance mise à jour",
+      "performanceEntriesCreated": "{count} entrées de performance créées"
+    },
+
+    "history": {
+      "title": "Historique des Entraînements",
+      "noLogs": "Vous n'avez pas encore de journaux d'entraînement",
+      "viewDetails": "Voir les détails",
+      "performedAt": "Réalisé le",
+      "duration": "Durée"
+    },
+
+    "assign": {
+      "title": "Assigner l'Entraînement",
+      "toSession": "Assigner à une Session",
+      "toUser": "Assigner à un Athlète",
+      "selectSession": "Sélectionner une session",
+      "selectUser": "Sélectionner un athlète",
+      "scheduledFor": "Programmé pour",
+      "notes": "Notes pour l'athlète",
+      "success": "Entraînement assigné avec succès"
+    },
+
+    "errors": {
+      "loadFailed": "Échec du chargement des entraînements",
+      "saveFailed": "Échec de l'enregistrement de l'entraînement",
+      "deleteFailed": "Échec de la suppression de l'entraînement",
+      "logFailed": "Échec de l'enregistrement du journal",
+      "notFound": "Entraînement non trouvé",
+      "noPermission": "Aucune permission pour cette action"
+    },
+
+    "success": {
+      "created": "Entraînement créé avec succès",
+      "updated": "Entraînement mis à jour avec succès",
+      "deleted": "Entraînement supprimé avec succès",
+      "logged": "Entraînement enregistré avec succès"
     }
-  },
-
-  "log": {
-    "title": "Enregistrer l'Entraînement",
-    "startWorkout": "Démarrer l'Entraînement",
-    "finishWorkout": "Terminer l'Entraînement",
-    "saveLog": "Enregistrer le Journal",
-    "feeling": "Comment vous êtes-vous senti ?",
-    "feelingLevels": {
-      "1": "Très mal",
-      "2": "Mal",
-      "3": "Normal",
-      "4": "Bien",
-      "5": "Excellent"
-    },
-    "perceivedEffort": "Effort Perçu (RPE)",
-    "notes": "Notes de l'entraînement",
-    "notesPlaceholder": "Comment s'est passé l'entraînement ?",
-    "actualWeight": "Poids utilisé",
-    "actualReps": "Reps effectuées",
-    "actualTime": "Temps",
-    "actualDistance": "Distance",
-    "actualCalories": "Calories",
-    "completedRounds": "Tours complétés",
-    "extraReps": "Reps supplémentaires",
-    "completedTime": "Temps total",
-    "completedInTime": "Terminé dans le temps",
-    "set": "Série",
-    "addSet": "Ajouter une Série",
-    "pr": "PR ! 🎉",
-    "prDetected": "Nouveau Record Personnel !",
-    "performanceUpdated": "Performance mise à jour",
-    "performanceEntriesCreated": "{count} entrées de performance créées"
-  },
-
-  "history": {
-    "title": "Historique des Entraînements",
-    "noLogs": "Vous n'avez pas encore de journaux d'entraînement",
-    "viewDetails": "Voir les détails",
-    "performedAt": "Réalisé le",
-    "duration": "Durée"
-  },
-
-  "assign": {
-    "title": "Assigner l'Entraînement",
-    "toSession": "Assigner à une Session",
-    "toUser": "Assigner à un Athlète",
-    "selectSession": "Sélectionner une session",
-    "selectUser": "Sélectionner un athlète",
-    "scheduledFor": "Programmé pour",
-    "notes": "Notes pour l'athlète",
-    "success": "Entraînement assigné avec succès"
-  },
-
-  "errors": {
-    "loadFailed": "Échec du chargement des entraînements",
-    "saveFailed": "Échec de l'enregistrement de l'entraînement",
-    "deleteFailed": "Échec de la suppression de l'entraînement",
-    "logFailed": "Échec de l'enregistrement du journal",
-    "notFound": "Entraînement non trouvé",
-    "noPermission": "Aucune permission pour cette action"
-  },
-
-  "success": {
-    "created": "Entraînement créé avec succès",
-    "updated": "Entraînement mis à jour avec succès",
-    "deleted": "Entraînement supprimé avec succès",
-    "logged": "Entraînement enregistré avec succès"
   }
 }

@@ -38,7 +38,7 @@
     "startAgain": "Riavvia"
   },
 
-  "settings": {
+  "timerSettings": {
     "title": "Impostazioni Timer",
     "selectMode": "Seleziona Modalità Timer",
     "display": "Impostazioni Display",

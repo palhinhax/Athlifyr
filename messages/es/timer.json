@@ -38,7 +38,7 @@
     "startAgain": "Iniciar de nuevo"
   },
 
-  "settings": {
+  "timerSettings": {
     "title": "Configuración del Temporizador",
     "selectMode": "Seleccionar Modo de Temporizador",
     "display": "Configuración de Pantalla",

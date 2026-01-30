@@ -1396,9 +1396,35 @@ model WorkoutBlockExercise {
   block           WorkoutBlock      @relation(fields: [blockId], references: [id], onDelete: Cascade)
   exercise        StrengthExercise  @relation(fields: [exerciseId], references: [id])
   results         WorkoutExerciseResult[]
+  setPrescriptions WorkoutSetPrescription[] // Prescrições variáveis por set
   
   @@index([blockId])
   @@index([exerciseId])
+}
+
+// Prescrição individual por set - permite diferentes reps/peso/% por set
+// Exemplo: Set 1 = 5 reps @ 65%, Set 2 = 5 reps @ 70%, Set 3 = 3 reps @ 75%
+model WorkoutSetPrescription {
+  id                    String              @id @default(cuid())
+  blockExerciseId       String
+  setNumber             Int                 // 1, 2, 3, 4...
+  
+  // Prescrição para este set específico
+  reps                  Int?                // null = max reps
+  weight                Float?              // Peso fixo (alternativa ao %)
+  weightUnit            WeightUnit?
+  weightPercent         Float?              // % do 1RM/PR
+  time                  Int?                // Tempo em segundos
+  distance              Float?
+  distanceUnit          DistanceUnit?
+  calories              Int?
+  
+  notes                 String?             // Ex: "até falha técnica"
+  
+  blockExercise         WorkoutBlockExercise @relation(fields: [blockExerciseId], references: [id], onDelete: Cascade)
+  
+  @@unique([blockExerciseId, setNumber])
+  @@index([blockExerciseId])
 }
 
 // Atribuição de workout a uma sessão de venue

@@ -87,6 +87,11 @@
     "prescribedCalories": "Calorie",
     "weightPercent": "% del 1RM",
     "notes": "Note",
+    "setPrescriptions": "Prescrizione per Serie",
+    "addSet": "Aggiungi Serie",
+    "duplicateSet": "Duplica Ultima",
+    "noSetPrescriptions": "Nessuna prescrizione per serie. Usa i campi sopra per valori uniformi o aggiungi serie variabili.",
+    "setNotes": "Note (es: fino al cedimento)",
     "units": {
       "KG": "kg",
       "LB": "lb",

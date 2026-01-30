@@ -1,23 +1,21 @@
 {
-  "exercises": {
-    "title": "Exercices",
-    "description": "Créez et gérez vos exercices personnalisés pour les utiliser dans vos entraînements.",
-    "searchPlaceholder": "Rechercher des exercices...",
-    "createExercise": "Créer un Exercice",
-    "createFirst": "Créer le Premier Exercice",
-    "noExercises": "Aucun exercice",
-    "noExercisesDescription": "Vous n'avez pas encore d'exercices personnalisés. Créez votre premier exercice pour commencer.",
-    "aliases": "Aussi connu sous",
-    "global": "Global",
-    "showingResults": "Affichage de {count} exercices",
-    "categories": {
-      "ALL": "Tous",
-      "CROSSFIT": "CrossFit",
-      "GYM": "Salle de sport",
-      "WEIGHTLIFTING": "Haltérophilie",
-      "BODYWEIGHT": "Poids du corps",
-      "CARDIO": "Cardio",
-      "OTHER": "Autres"
-    }
+  "title": "Exercices",
+  "description": "Créez et gérez vos exercices personnalisés pour les utiliser dans vos entraînements.",
+  "searchPlaceholder": "Rechercher des exercices...",
+  "createExercise": "Créer un Exercice",
+  "createFirst": "Créer le Premier Exercice",
+  "noExercises": "Aucun exercice",
+  "noExercisesDescription": "Vous n'avez pas encore d'exercices personnalisés. Créez votre premier exercice pour commencer.",
+  "aliases": "Aussi connu sous",
+  "global": "Global",
+  "showingResults": "Affichage de {count} exercices",
+  "categories": {
+    "ALL": "Tous",
+    "CROSSFIT": "CrossFit",
+    "GYM": "Salle de sport",
+    "WEIGHTLIFTING": "Haltérophilie",
+    "BODYWEIGHT": "Poids du corps",
+    "CARDIO": "Cardio",
+    "OTHER": "Autres"
   }
 }

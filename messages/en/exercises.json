@@ -1,23 +1,21 @@
 {
-  "exercises": {
-    "title": "Exercises",
-    "description": "Create and manage your custom exercises for use in workouts.",
-    "searchPlaceholder": "Search exercises...",
-    "createExercise": "Create Exercise",
-    "createFirst": "Create First Exercise",
-    "noExercises": "No exercises",
-    "noExercisesDescription": "You don't have any custom exercises yet. Create your first exercise to get started.",
-    "aliases": "Also known as",
-    "global": "Global",
-    "showingResults": "Showing {count} exercises",
-    "categories": {
-      "ALL": "All",
-      "CROSSFIT": "CrossFit",
-      "GYM": "Gym",
-      "WEIGHTLIFTING": "Weightlifting",
-      "BODYWEIGHT": "Bodyweight",
-      "CARDIO": "Cardio",
-      "OTHER": "Other"
-    }
+  "title": "Exercises",
+  "description": "Create and manage your custom exercises for use in workouts.",
+  "searchPlaceholder": "Search exercises...",
+  "createExercise": "Create Exercise",
+  "createFirst": "Create First Exercise",
+  "noExercises": "No exercises",
+  "noExercisesDescription": "You don't have any custom exercises yet. Create your first exercise to get started.",
+  "aliases": "Also known as",
+  "global": "Global",
+  "showingResults": "Showing {count} exercises",
+  "categories": {
+    "ALL": "All",
+    "CROSSFIT": "CrossFit",
+    "GYM": "Gym",
+    "WEIGHTLIFTING": "Weightlifting",
+    "BODYWEIGHT": "Bodyweight",
+    "CARDIO": "Cardio",
+    "OTHER": "Other"
   }
 }

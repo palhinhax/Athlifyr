@@ -183,7 +183,7 @@ async function main() {
   let skipped = 0;
 
   for (const exercise of exercises) {
-    const existing = await prisma.strengthExercise.findFirst({
+    const existing = await prisma.exercise.findFirst({
       where: {
         name: exercise.name,
         isGlobal: true,
@@ -196,7 +196,7 @@ async function main() {
       continue;
     }
 
-    await prisma.strengthExercise.create({
+    await prisma.exercise.create({
       data: {
         name: exercise.name,
         aliases: exercise.aliases,

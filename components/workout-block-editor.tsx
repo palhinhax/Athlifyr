@@ -35,7 +35,7 @@ import type {
 } from "@/types/workout";
 import { SetPrescriptionEditor } from "@/components/workout-set-prescription-editor";
 
-interface StrengthExerciseOption {
+interface ExerciseOption {
   id: string;
   name: string;
   category: ExerciseCategory;
@@ -51,7 +51,7 @@ export function WorkoutBlockEditor({
   onChange,
 }: WorkoutBlockEditorProps) {
   const t = useTranslations("workouts");
-  const [exercises, setExercises] = useState<StrengthExerciseOption[]>([]);
+  const [exercises, setExercises] = useState<ExerciseOption[]>([]);
   const [exerciseDialogOpen, setExerciseDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -91,7 +91,7 @@ export function WorkoutBlockEditor({
   };
 
   // Add exercise to block
-  const addExercise = (exercise: StrengthExerciseOption) => {
+  const addExercise = (exercise: ExerciseOption) => {
     const newExercise: WorkoutBlockExerciseWithDetails = {
       id: `temp-ex-${Date.now()}`,
       blockId: block.id,

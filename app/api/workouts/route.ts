@@ -232,7 +232,7 @@ export async function POST(request: Request) {
     const uniqueExerciseIds = [...new Set(exerciseIds)];
 
     if (uniqueExerciseIds.length > 0) {
-      const exercises = await prisma.strengthExercise.findMany({
+      const exercises = await prisma.exercise.findMany({
         where: { id: { in: uniqueExerciseIds } },
         select: { id: true },
       });

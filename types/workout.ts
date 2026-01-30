@@ -16,7 +16,7 @@ import {
   WorkoutBlockType,
   WeightUnit,
   DistanceUnit,
-  StrengthExercise,
+  Exercise,
   User,
   Venue,
   VenueSession,
@@ -66,7 +66,7 @@ export type WorkoutBlockWithExercises = WorkoutBlock & {
 };
 
 export type WorkoutBlockExerciseWithDetails = WorkoutBlockExercise & {
-  exercise: Pick<StrengthExercise, "id" | "name" | "category">;
+  exercise: Pick<Exercise, "id" | "name" | "category">;
   setPrescriptions?: WorkoutSetPrescription[] | CreateSetPrescriptionInput[];
 };
 
@@ -86,7 +86,7 @@ export type WorkoutBlockResultWithExercises = WorkoutBlockResult & {
 };
 
 export type WorkoutExerciseResultWithSets = WorkoutExerciseResult & {
-  exercise: Pick<StrengthExercise, "id" | "name">;
+  exercise: Pick<Exercise, "id" | "name">;
   blockExercise: Pick<
     WorkoutBlockExercise,
     "id" | "prescribedReps" | "prescribedWeight" | "prescribedWeightUnit"

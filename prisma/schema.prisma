@@ -51,7 +51,7 @@ model User {
   blocksMade                UserBlock[]           @relation("BlocksMade")
   blocksReceived            UserBlock[]           @relation("BlocksReceived")
   performanceEntries        UserPerformanceEntry[]
-  strengthExercises         StrengthExercise[]
+  exercises                 Exercise[]
   
   // Workout Builder relations
   createdWorkouts           Workout[]             @relation("CreatedWorkouts")
@@ -1230,7 +1230,7 @@ model UserPerformanceEntry {
   updatedAt        DateTime              @updatedAt
   
   user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exercise         StrengthExercise?     @relation(fields: [exerciseId], references: [id])
+  exercise         Exercise?             @relation(fields: [exerciseId], references: [id])
   result           Result?               @relation("ResultPerformance", fields: [resultId], references: [id], onDelete: Cascade)
   
   // Workout Builder relations
@@ -1244,11 +1244,12 @@ model UserPerformanceEntry {
   @@index([workoutExerciseResultId])
 }
 
-model StrengthExercise {
+model Exercise {
   id            String                  @id @default(cuid())
   name          String
   aliases       String[]                @default([])
   category      ExerciseCategory        @default(OTHER)
+  effortScore   Float                   @default(5.0) // 1-10 scale: effort/intensity rating
   createdById   String?
   isGlobal      Boolean                 @default(false)
   createdAt     DateTime                @default(now())
@@ -1256,6 +1257,7 @@ model StrengthExercise {
   
   createdBy     User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
   entries       UserPerformanceEntry[]
+  translations  ExerciseTranslation[]
   
   // Workout Builder relations
   workoutBlockExercises WorkoutBlockExercise[]
@@ -1264,6 +1266,24 @@ model StrengthExercise {
   @@index([name])
   @@index([createdById])
   @@index([isGlobal])
+  @@index([effortScore])
+}
+
+model ExerciseTranslation {
+  id          String           @id @default(cuid())
+  exerciseId  String
+  language    Language
+  name        String
+  aliases     String[]         @default([])
+  description String?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([exerciseId, language])
+  @@index([exerciseId])
+  @@index([language])
+  @@index([name])
 }
 
 enum PerformanceEntryType {
@@ -1377,7 +1397,7 @@ model WorkoutBlock {
 model WorkoutBlockExercise {
   id              String            @id @default(cuid())
   blockId         String
-  exerciseId      String            // FK para StrengthExercise
+  exerciseId      String            // FK para Exercise
   orderIndex      Int               // Ordem no bloco (0, 1, 2...)
   
   // Prescrição - o que o coach prescreve (Male/Rx)
@@ -1405,7 +1425,7 @@ model WorkoutBlockExercise {
   notes           String?           // Notas específicas do exercício
   
   block           WorkoutBlock      @relation(fields: [blockId], references: [id], onDelete: Cascade)
-  exercise        StrengthExercise  @relation(fields: [exerciseId], references: [id])
+  exercise        Exercise          @relation(fields: [exerciseId], references: [id])
   results         WorkoutExerciseResult[]
   setPrescriptions WorkoutSetPrescription[] // Prescrições variáveis por set
   
@@ -1538,7 +1558,7 @@ model WorkoutExerciseResult {
   id                  String            @id @default(cuid())
   blockResultId       String
   blockExerciseId     String            // FK para WorkoutBlockExercise
-  exerciseId          String            // FK para StrengthExercise (denormalizado para queries)
+  exerciseId          String            // FK para Exercise (denormalizado para queries)
   
   // O que foi realmente feito (resumo - usado quando não há sets individuais)
   actualReps          Int?
@@ -1555,7 +1575,7 @@ model WorkoutExerciseResult {
   
   blockResult         WorkoutBlockResult    @relation(fields: [blockResultId], references: [id], onDelete: Cascade)
   blockExercise       WorkoutBlockExercise  @relation(fields: [blockExerciseId], references: [id])
-  exercise            StrengthExercise      @relation("WorkoutExerciseResults", fields: [exerciseId], references: [id])
+  exercise            Exercise              @relation("WorkoutExerciseResults", fields: [exerciseId], references: [id])
   sets                WorkoutExerciseSet[]  // Múltiplos sets (para STRENGTH)
   performanceEntries  UserPerformanceEntry[] @relation("WorkoutResultPerformance")
   

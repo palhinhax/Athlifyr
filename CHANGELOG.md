@@ -1,3 +1,9 @@
+## [14.10.1](https://github.com/palhinhax/Athlifyr/compare/v14.10.0...v14.10.1) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** correct translation namespace for exercises page ([359f155](https://github.com/palhinhax/Athlifyr/commit/359f155319d41eaf0a429523a8dcfa97d3daade8))
+
 # [14.10.0](https://github.com/palhinhax/Athlifyr/compare/v14.9.0...v14.10.0) (2026-01-30)
 
 ### Bug Fixes

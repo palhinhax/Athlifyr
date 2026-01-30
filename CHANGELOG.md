@@ -1,3 +1,13 @@
+# [14.10.0](https://github.com/palhinhax/Athlifyr/compare/v14.9.0...v14.10.0) (2026-01-30)
+
+### Bug Fixes
+
+- **build:** resolve DSEG7 font Turbopack compatibility issue ([79b0770](https://github.com/palhinhax/Athlifyr/commit/79b077037c229440f17578ffaf218b11b798f9af))
+
+### Features
+
+- **mobile:** add wall clock and exercises link for admin users ([4228c0a](https://github.com/palhinhax/Athlifyr/commit/4228c0aaed31b468fb1555c6086dced18c1af505))
+
 # [14.9.0](https://github.com/palhinhax/Athlifyr/compare/v14.8.0...v14.9.0) (2026-01-30)
 
 ### Features

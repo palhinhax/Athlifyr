@@ -17,13 +17,14 @@ export default async function ExercisesPage({
     redirect("/auth/signin");
   }
 
-  // Check if user has pro account enabled
+  // Check if user is admin (always has access) or has pro account
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { isProAccount: true },
+    select: { isProAccount: true, role: true },
   });
 
-  if (!user?.isProAccount) {
+  // Admins always have access, non-admins need pro account
+  if (user?.role !== "ADMIN" && !user?.isProAccount) {
     redirect("/settings");
   }
 

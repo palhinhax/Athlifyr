@@ -1,3 +1,9 @@
+## [14.10.2](https://github.com/palhinhax/Athlifyr/compare/v14.10.1...v14.10.2) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** remove unnecessary wrapper from exercises translations ([027a4b1](https://github.com/palhinhax/Athlifyr/commit/027a4b1abe81b1bc96f75531663440b242c2f497))
+
 ## [14.10.1](https://github.com/palhinhax/Athlifyr/compare/v14.10.0...v14.10.1) (2026-01-30)
 
 ### Bug Fixes

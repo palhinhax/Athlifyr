@@ -1,0 +1,167 @@
+{
+  "title": "Trainings",
+  "subtitle": "Erstelle und verwalte deine Trainings",
+  "createWorkout": "Training Erstellen",
+  "editWorkout": "Training Bearbeiten",
+  "deleteWorkout": "Training Löschen",
+  "deleteConfirm": "Bist du sicher, dass du dieses Training löschen möchtest?",
+  "myWorkouts": "Meine Trainings",
+  "publicWorkouts": "Öffentliche Trainings",
+  "templates": "Vorlagen",
+  "venueWorkouts": "Studio-Trainings",
+  "noWorkouts": "Du hast noch keine Trainings",
+  "noWorkoutsDescription": "Erstelle dein erstes Training, um deinen Fortschritt zu verfolgen.",
+
+  "form": {
+    "name": "Trainingsname",
+    "namePlaceholder": "z.B. WOD Montag",
+    "description": "Beschreibung",
+    "descriptionPlaceholder": "Beschreibe das Training...",
+    "estimatedTime": "Geschätzte Zeit (min)",
+    "difficulty": "Schwierigkeit",
+    "difficultyLevels": {
+      "1": "Anfänger",
+      "2": "Leicht",
+      "3": "Mittel",
+      "4": "Schwer",
+      "5": "Elite"
+    },
+    "tags": "Tags",
+    "tagsPlaceholder": "Tag hinzufügen...",
+    "isTemplate": "Als Vorlage speichern",
+    "isPublic": "Öffentliches Training",
+    "save": "Speichern",
+    "cancel": "Abbrechen"
+  },
+
+  "blocks": {
+    "title": "Trainingsblöcke",
+    "addBlock": "Block Hinzufügen",
+    "moveUp": "Nach oben",
+    "moveDown": "Nach unten",
+    "delete": "Block löschen",
+    "duplicate": "Block duplizieren",
+    "types": {
+      "WARMUP": "Aufwärmen",
+      "STRENGTH": "Kraft",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Pause",
+      "COOLDOWN": "Cool Down",
+      "SKILL": "Skill"
+    },
+    "typeDescriptions": {
+      "WARMUP": "Vorbereitung auf das Training",
+      "STRENGTH": "Kraftarbeit mit Sätzen und Wiederholungen",
+      "AMRAP": "As Many Rounds As Possible",
+      "EMOM": "Every Minute On the Minute",
+      "FOR_TIME": "So schnell wie möglich fertig werden",
+      "TABATA": "20s Arbeit / 10s Pause",
+      "CHIPPER": "Sequentielle Übungsliste",
+      "REST": "Erholungsphase",
+      "COOLDOWN": "Dehnen und Erholung",
+      "SKILL": "Technikarbeit"
+    },
+    "timeCap": "Time Cap",
+    "timeCapMinutes": "Time Cap (min)",
+    "workTime": "Arbeitszeit (s)",
+    "restTime": "Pausenzeit (s)",
+    "rounds": "Runden",
+    "notes": "Notizen",
+    "notesPlaceholder": "Block-Notizen..."
+  },
+
+  "exercises": {
+    "title": "Übungen",
+    "addExercise": "Übung Hinzufügen",
+    "searchExercise": "Übung suchen...",
+    "noExercises": "Keine Übungen hinzugefügt",
+    "prescribedReps": "Wdh",
+    "prescribedWeight": "Gewicht",
+    "prescribedSets": "Sätze",
+    "prescribedDistance": "Distanz",
+    "prescribedTime": "Zeit (s)",
+    "prescribedCalories": "Kalorien",
+    "weightPercent": "% vom 1RM",
+    "notes": "Notizen",
+    "units": {
+      "KG": "kg",
+      "LB": "lb",
+      "M": "m",
+      "KM": "km",
+      "MI": "mi",
+      "FT": "ft"
+    }
+  },
+
+  "log": {
+    "title": "Training Protokollieren",
+    "startWorkout": "Training Starten",
+    "finishWorkout": "Training Beenden",
+    "saveLog": "Protokoll Speichern",
+    "feeling": "Wie hast du dich gefühlt?",
+    "feelingLevels": {
+      "1": "Sehr schlecht",
+      "2": "Schlecht",
+      "3": "Normal",
+      "4": "Gut",
+      "5": "Ausgezeichnet"
+    },
+    "perceivedEffort": "Empfundene Anstrengung (RPE)",
+    "notes": "Training-Notizen",
+    "notesPlaceholder": "Wie war das Training?",
+    "actualWeight": "Verwendetes Gewicht",
+    "actualReps": "Durchgeführte Wdh",
+    "actualTime": "Zeit",
+    "actualDistance": "Distanz",
+    "actualCalories": "Kalorien",
+    "completedRounds": "Absolvierte Runden",
+    "extraReps": "Extra Wdh",
+    "completedTime": "Gesamtzeit",
+    "completedInTime": "Rechtzeitig fertig",
+    "set": "Satz",
+    "addSet": "Satz Hinzufügen",
+    "pr": "PR! 🎉",
+    "prDetected": "Neuer Persönlicher Rekord!",
+    "performanceUpdated": "Leistung aktualisiert",
+    "performanceEntriesCreated": "{count} Leistungseinträge erstellt"
+  },
+
+  "history": {
+    "title": "Trainings-Historie",
+    "noLogs": "Du hast noch keine Training-Protokolle",
+    "viewDetails": "Details ansehen",
+    "performedAt": "Durchgeführt am",
+    "duration": "Dauer"
+  },
+
+  "assign": {
+    "title": "Training Zuweisen",
+    "toSession": "Zur Session Zuweisen",
+    "toUser": "Zum Athleten Zuweisen",
+    "selectSession": "Session auswählen",
+    "selectUser": "Athlet auswählen",
+    "scheduledFor": "Geplant für",
+    "notes": "Notizen für den Athleten",
+    "success": "Training erfolgreich zugewiesen"
+  },
+
+  "errors": {
+    "loadFailed": "Fehler beim Laden der Trainings",
+    "saveFailed": "Fehler beim Speichern des Trainings",
+    "deleteFailed": "Fehler beim Löschen des Trainings",
+    "logFailed": "Fehler beim Speichern des Protokolls",
+    "notFound": "Training nicht gefunden",
+    "noPermission": "Keine Berechtigung für diese Aktion"
+  },
+
+  "success": {
+    "created": "Training erfolgreich erstellt",
+    "updated": "Training erfolgreich aktualisiert",
+    "deleted": "Training erfolgreich gelöscht",
+    "logged": "Training erfolgreich protokolliert"
+  }
+}

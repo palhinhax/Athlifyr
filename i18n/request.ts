@@ -25,6 +25,8 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
     const chat = (await import(`@/messages/${locale}/chat.json`)).default;
     const performance = (await import(`@/messages/${locale}/performance.json`))
       .default;
+    const workouts = (await import(`@/messages/${locale}/workouts.json`))
+      .default;
 
     // Merge all messages
     Object.assign(
@@ -40,7 +42,8 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       sports,
       venues,
       chat,
-      performance
+      performance,
+      workouts
     );
   } catch (error) {
     console.error(`Failed to load messages for locale "${locale}":`, error);

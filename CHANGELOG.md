@@ -1,3 +1,9 @@
+## [14.12.1](https://github.com/palhinhax/Athlifyr/compare/v14.12.0...v14.12.1) (2026-01-30)
+
+### Bug Fixes
+
+- **ui:** move ATHLIFYR branding to left side of clock ([8307bad](https://github.com/palhinhax/Athlifyr/commit/8307bad206aac21ec6e51e173751ebf60ccaa4be))
+
 # [14.12.0](https://github.com/palhinhax/Athlifyr/compare/v14.11.0...v14.12.0) (2026-01-30)
 
 ### Features

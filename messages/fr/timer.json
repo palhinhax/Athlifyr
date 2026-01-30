@@ -1,0 +1,112 @@
+{
+  "title": "Minuteur Mural",
+  "subtitle": "Minuteur d'entraînement inspiré des horloges murales de box",
+
+  "modes": {
+    "interval": "Intervalle",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Chronomètre",
+    "clock": "Horloge"
+  },
+
+  "phases": {
+    "work": "Travail",
+    "rest": "Repos",
+    "transition": "Transition",
+    "idle": "Arrêté"
+  },
+
+  "states": {
+    "ready": "Prêt",
+    "running": "En Cours",
+    "paused": "En Pause",
+    "finished": "Terminé"
+  },
+
+  "controls": {
+    "start": "Démarrer",
+    "pause": "Pause",
+    "resume": "Reprendre",
+    "reset": "Réinitialiser",
+    "settings": "Paramètres",
+    "close": "Fermer",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran",
+    "startAgain": "Recommencer"
+  },
+
+  "settings": {
+    "title": "Paramètres du Minuteur",
+    "selectMode": "Sélectionner le Mode de Minuteur",
+    "display": "Paramètres d'Affichage",
+    "sound": "Paramètres Audio",
+
+    "brightness": "Luminosité",
+    "highContrast": "Contraste Élevé",
+    "volume": "Volume",
+    "countdownBeeps": "Sons de Compte à Rebours",
+    "transitionBeeps": "Sons de Transition",
+    "completionSound": "Son de Fin",
+
+    "interval": {
+      "title": "Paramètres d'Intervalle",
+      "workTime": "Temps de Travail (secondes)",
+      "restTime": "Temps de Repos (secondes)",
+      "rounds": "Tours"
+    },
+
+    "emom": {
+      "title": "Paramètres EMOM",
+      "duration": "Durée (minutes)",
+      "workTimePerMinute": "Temps de Travail par Minute (secondes)"
+    },
+
+    "tabata": {
+      "title": "Paramètres Tabata",
+      "workTime": "Temps de Travail (secondes)",
+      "restTime": "Temps de Repos (secondes)",
+      "rounds": "Tours"
+    },
+
+    "amrap": {
+      "title": "Paramètres AMRAP",
+      "duration": "Durée (minutes)"
+    },
+
+    "forTime": {
+      "title": "Paramètres For Time",
+      "countDown": "Compte à Rebours",
+      "duration": "Durée (minutes)"
+    }
+  },
+
+  "labels": {
+    "round": "Tour",
+    "of": "sur",
+    "elapsed": "Écoulé",
+    "remaining": "Restant"
+  },
+
+  "keyboard": {
+    "hint": "Raccourcis clavier",
+    "space": "Démarrer/Pause",
+    "reset": "Réinitialiser",
+    "settings": "Paramètres",
+    "escape": "Fermer"
+  },
+
+  "errors": {
+    "notConfigured": "Minuteur non configuré",
+    "invalidMode": "Mode invalide",
+    "invalidConfig": "Configuration invalide"
+  },
+
+  "completion": {
+    "title": "Entraînement Terminé !",
+    "message": "Félicitations ! Vous avez terminé l'entraînement.",
+    "startNew": "Démarrer un Nouveau Minuteur"
+  }
+}

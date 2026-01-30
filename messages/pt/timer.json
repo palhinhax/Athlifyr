@@ -1,0 +1,112 @@
+{
+  "title": "Timer de Parede",
+  "subtitle": "Timer para treinos inspirado em relógios de box",
+
+  "modes": {
+    "interval": "Intervalo",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Cronómetro",
+    "clock": "Relógio"
+  },
+
+  "phases": {
+    "work": "Trabalho",
+    "rest": "Descanso",
+    "transition": "Transição",
+    "idle": "Parado"
+  },
+
+  "states": {
+    "ready": "Pronto",
+    "running": "A Correr",
+    "paused": "Pausado",
+    "finished": "Concluído"
+  },
+
+  "controls": {
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "resume": "Retomar",
+    "reset": "Reiniciar",
+    "settings": "Definições",
+    "close": "Fechar",
+    "fullscreen": "Ecrã inteiro",
+    "exitFullscreen": "Sair do ecrã inteiro",
+    "startAgain": "Iniciar novamente"
+  },
+
+  "settings": {
+    "title": "Definições do Timer",
+    "selectMode": "Selecionar Modo de Timer",
+    "display": "Definições de Visualização",
+    "sound": "Definições de Som",
+
+    "brightness": "Brilho",
+    "highContrast": "Alto Contraste",
+    "volume": "Volume",
+    "countdownBeeps": "Sons de Contagem",
+    "transitionBeeps": "Sons de Transição",
+    "completionSound": "Som de Conclusão",
+
+    "interval": {
+      "title": "Definições de Intervalo",
+      "workTime": "Tempo de Trabalho (segundos)",
+      "restTime": "Tempo de Descanso (segundos)",
+      "rounds": "Rondas"
+    },
+
+    "emom": {
+      "title": "Definições EMOM",
+      "duration": "Duração (minutos)",
+      "workTimePerMinute": "Tempo de Trabalho por Minuto (segundos)"
+    },
+
+    "tabata": {
+      "title": "Definições Tabata",
+      "workTime": "Tempo de Trabalho (segundos)",
+      "restTime": "Tempo de Descanso (segundos)",
+      "rounds": "Rondas"
+    },
+
+    "amrap": {
+      "title": "Definições AMRAP",
+      "duration": "Duração (minutos)"
+    },
+
+    "forTime": {
+      "title": "Definições For Time",
+      "countDown": "Contagem Decrescente",
+      "duration": "Duração (minutos)"
+    }
+  },
+
+  "labels": {
+    "round": "Ronda",
+    "of": "de",
+    "elapsed": "Decorrido",
+    "remaining": "Restante"
+  },
+
+  "keyboard": {
+    "hint": "Atalhos de teclado",
+    "space": "Iniciar/Pausar",
+    "reset": "Reiniciar",
+    "settings": "Definições",
+    "escape": "Fechar"
+  },
+
+  "errors": {
+    "notConfigured": "Timer não configurado",
+    "invalidMode": "Modo inválido",
+    "invalidConfig": "Configuração inválida"
+  },
+
+  "completion": {
+    "title": "Treino Concluído!",
+    "message": "Parabéns! Completaste o treino.",
+    "startNew": "Iniciar Novo Timer"
+  }
+}

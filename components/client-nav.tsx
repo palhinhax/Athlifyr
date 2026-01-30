@@ -13,7 +13,7 @@ export function DesktopNav() {
 
   return (
     <nav className="hidden items-center gap-4 md:flex">
-      {session?.user?.role === "ADMIN" && <WallClock />}
+      <WallClock />
       <GlobalSearch />
       <NavLinks />
       {session && <ChatNotificationBell />}

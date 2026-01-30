@@ -1,0 +1,112 @@
+{
+  "title": "Temporizador de Pared",
+  "subtitle": "Temporizador para entrenamientos inspirado en relojes de box",
+
+  "modes": {
+    "interval": "Intervalo",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Cronómetro",
+    "clock": "Reloj"
+  },
+
+  "phases": {
+    "work": "Trabajo",
+    "rest": "Descanso",
+    "transition": "Transición",
+    "idle": "Detenido"
+  },
+
+  "states": {
+    "ready": "Listo",
+    "running": "En Marcha",
+    "paused": "Pausado",
+    "finished": "Completado"
+  },
+
+  "controls": {
+    "start": "Iniciar",
+    "pause": "Pausar",
+    "resume": "Reanudar",
+    "reset": "Reiniciar",
+    "settings": "Configuración",
+    "close": "Cerrar",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa",
+    "startAgain": "Iniciar de nuevo"
+  },
+
+  "settings": {
+    "title": "Configuración del Temporizador",
+    "selectMode": "Seleccionar Modo de Temporizador",
+    "display": "Configuración de Pantalla",
+    "sound": "Configuración de Sonido",
+
+    "brightness": "Brillo",
+    "highContrast": "Alto Contraste",
+    "volume": "Volumen",
+    "countdownBeeps": "Sonidos de Cuenta",
+    "transitionBeeps": "Sonidos de Transición",
+    "completionSound": "Sonido de Finalización",
+
+    "interval": {
+      "title": "Configuración de Intervalo",
+      "workTime": "Tiempo de Trabajo (segundos)",
+      "restTime": "Tiempo de Descanso (segundos)",
+      "rounds": "Rondas"
+    },
+
+    "emom": {
+      "title": "Configuración EMOM",
+      "duration": "Duración (minutos)",
+      "workTimePerMinute": "Tiempo de Trabajo por Minuto (segundos)"
+    },
+
+    "tabata": {
+      "title": "Configuración Tabata",
+      "workTime": "Tiempo de Trabajo (segundos)",
+      "restTime": "Tiempo de Descanso (segundos)",
+      "rounds": "Rondas"
+    },
+
+    "amrap": {
+      "title": "Configuración AMRAP",
+      "duration": "Duración (minutos)"
+    },
+
+    "forTime": {
+      "title": "Configuración For Time",
+      "countDown": "Cuenta Regresiva",
+      "duration": "Duración (minutos)"
+    }
+  },
+
+  "labels": {
+    "round": "Ronda",
+    "of": "de",
+    "elapsed": "Transcurrido",
+    "remaining": "Restante"
+  },
+
+  "keyboard": {
+    "hint": "Atajos de teclado",
+    "space": "Iniciar/Pausar",
+    "reset": "Reiniciar",
+    "settings": "Configuración",
+    "escape": "Cerrar"
+  },
+
+  "errors": {
+    "notConfigured": "Temporizador no configurado",
+    "invalidMode": "Modo inválido",
+    "invalidConfig": "Configuración inválida"
+  },
+
+  "completion": {
+    "title": "¡Entrenamiento Completado!",
+    "message": "¡Felicidades! Has completado el entrenamiento.",
+    "startNew": "Iniciar Nuevo Temporizador"
+  }
+}

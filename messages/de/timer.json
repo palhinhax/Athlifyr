@@ -1,0 +1,112 @@
+{
+  "title": "Wand-Timer",
+  "subtitle": "Trainings-Timer inspiriert von Box-Wanduhren",
+
+  "modes": {
+    "interval": "Intervall",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Stoppuhr",
+    "clock": "Uhr"
+  },
+
+  "phases": {
+    "work": "Arbeit",
+    "rest": "Pause",
+    "transition": "Übergang",
+    "idle": "Gestoppt"
+  },
+
+  "states": {
+    "ready": "Bereit",
+    "running": "Läuft",
+    "paused": "Pausiert",
+    "finished": "Beendet"
+  },
+
+  "controls": {
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Fortsetzen",
+    "reset": "Zurücksetzen",
+    "settings": "Einstellungen",
+    "close": "Schließen",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden",
+    "startAgain": "Neu starten"
+  },
+
+  "settings": {
+    "title": "Timer-Einstellungen",
+    "selectMode": "Timer-Modus auswählen",
+    "display": "Anzeigeeinstellungen",
+    "sound": "Toneinstellungen",
+
+    "brightness": "Helligkeit",
+    "highContrast": "Hoher Kontrast",
+    "volume": "Lautstärke",
+    "countdownBeeps": "Countdown-Töne",
+    "transitionBeeps": "Übergangstöne",
+    "completionSound": "Abschluss-Ton",
+
+    "interval": {
+      "title": "Intervall-Einstellungen",
+      "workTime": "Arbeitszeit (Sekunden)",
+      "restTime": "Pausenzeit (Sekunden)",
+      "rounds": "Runden"
+    },
+
+    "emom": {
+      "title": "EMOM-Einstellungen",
+      "duration": "Dauer (Minuten)",
+      "workTimePerMinute": "Arbeitszeit pro Minute (Sekunden)"
+    },
+
+    "tabata": {
+      "title": "Tabata-Einstellungen",
+      "workTime": "Arbeitszeit (Sekunden)",
+      "restTime": "Pausenzeit (Sekunden)",
+      "rounds": "Runden"
+    },
+
+    "amrap": {
+      "title": "AMRAP-Einstellungen",
+      "duration": "Dauer (Minuten)"
+    },
+
+    "forTime": {
+      "title": "For Time-Einstellungen",
+      "countDown": "Countdown",
+      "duration": "Dauer (Minuten)"
+    }
+  },
+
+  "labels": {
+    "round": "Runde",
+    "of": "von",
+    "elapsed": "Vergangen",
+    "remaining": "Verbleibend"
+  },
+
+  "keyboard": {
+    "hint": "Tastenkombinationen",
+    "space": "Start/Pause",
+    "reset": "Zurücksetzen",
+    "settings": "Einstellungen",
+    "escape": "Schließen"
+  },
+
+  "errors": {
+    "notConfigured": "Timer nicht konfiguriert",
+    "invalidMode": "Ungültiger Modus",
+    "invalidConfig": "Ungültige Konfiguration"
+  },
+
+  "completion": {
+    "title": "Training Abgeschlossen!",
+    "message": "Herzlichen Glückwunsch! Sie haben das Training abgeschlossen.",
+    "startNew": "Neuen Timer starten"
+  }
+}

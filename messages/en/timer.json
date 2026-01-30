@@ -1,0 +1,112 @@
+{
+  "title": "Wall Timer",
+  "subtitle": "Workout timer inspired by box wall clocks",
+
+  "modes": {
+    "interval": "Interval",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Stopwatch",
+    "clock": "Clock"
+  },
+
+  "phases": {
+    "work": "Work",
+    "rest": "Rest",
+    "transition": "Transition",
+    "idle": "Idle"
+  },
+
+  "states": {
+    "ready": "Ready",
+    "running": "Running",
+    "paused": "Paused",
+    "finished": "Finished"
+  },
+
+  "controls": {
+    "start": "Start",
+    "pause": "Pause",
+    "resume": "Resume",
+    "reset": "Reset",
+    "settings": "Settings",
+    "close": "Close",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen",
+    "startAgain": "Start Again"
+  },
+
+  "settings": {
+    "title": "Timer Settings",
+    "selectMode": "Select Timer Mode",
+    "display": "Display Settings",
+    "sound": "Sound Settings",
+
+    "brightness": "Brightness",
+    "highContrast": "High Contrast",
+    "volume": "Volume",
+    "countdownBeeps": "Countdown Beeps",
+    "transitionBeeps": "Transition Beeps",
+    "completionSound": "Completion Sound",
+
+    "interval": {
+      "title": "Interval Settings",
+      "workTime": "Work Time (seconds)",
+      "restTime": "Rest Time (seconds)",
+      "rounds": "Rounds"
+    },
+
+    "emom": {
+      "title": "EMOM Settings",
+      "duration": "Duration (minutes)",
+      "workTimePerMinute": "Work Time Per Minute (seconds)"
+    },
+
+    "tabata": {
+      "title": "Tabata Settings",
+      "workTime": "Work Time (seconds)",
+      "restTime": "Rest Time (seconds)",
+      "rounds": "Rounds"
+    },
+
+    "amrap": {
+      "title": "AMRAP Settings",
+      "duration": "Duration (minutes)"
+    },
+
+    "forTime": {
+      "title": "For Time Settings",
+      "countDown": "Count Down",
+      "duration": "Duration (minutes)"
+    }
+  },
+
+  "labels": {
+    "round": "Round",
+    "of": "of",
+    "elapsed": "Elapsed",
+    "remaining": "Remaining"
+  },
+
+  "keyboard": {
+    "hint": "Keyboard shortcuts",
+    "space": "Start/Pause",
+    "reset": "Reset",
+    "settings": "Settings",
+    "escape": "Close"
+  },
+
+  "errors": {
+    "notConfigured": "Timer not configured",
+    "invalidMode": "Invalid mode",
+    "invalidConfig": "Invalid configuration"
+  },
+
+  "completion": {
+    "title": "Workout Complete!",
+    "message": "Congratulations! You completed the workout.",
+    "startNew": "Start New Timer"
+  }
+}

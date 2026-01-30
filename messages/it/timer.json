@@ -1,0 +1,112 @@
+{
+  "title": "Timer da Parete",
+  "subtitle": "Timer per allenamenti ispirato agli orologi da parete dei box",
+
+  "modes": {
+    "interval": "Intervallo",
+    "emom": "EMOM",
+    "tabata": "Tabata",
+    "amrap": "AMRAP",
+    "forTime": "For Time",
+    "stopwatch": "Cronometro",
+    "clock": "Orologio"
+  },
+
+  "phases": {
+    "work": "Lavoro",
+    "rest": "Riposo",
+    "transition": "Transizione",
+    "idle": "Fermo"
+  },
+
+  "states": {
+    "ready": "Pronto",
+    "running": "In Corso",
+    "paused": "In Pausa",
+    "finished": "Completato"
+  },
+
+  "controls": {
+    "start": "Avvia",
+    "pause": "Pausa",
+    "resume": "Riprendi",
+    "reset": "Reimposta",
+    "settings": "Impostazioni",
+    "close": "Chiudi",
+    "fullscreen": "Schermo intero",
+    "exitFullscreen": "Esci da schermo intero",
+    "startAgain": "Riavvia"
+  },
+
+  "settings": {
+    "title": "Impostazioni Timer",
+    "selectMode": "Seleziona Modalità Timer",
+    "display": "Impostazioni Display",
+    "sound": "Impostazioni Audio",
+
+    "brightness": "Luminosità",
+    "highContrast": "Alto Contrasto",
+    "volume": "Volume",
+    "countdownBeeps": "Suoni di Conto alla Rovescia",
+    "transitionBeeps": "Suoni di Transizione",
+    "completionSound": "Suono di Completamento",
+
+    "interval": {
+      "title": "Impostazioni Intervallo",
+      "workTime": "Tempo di Lavoro (secondi)",
+      "restTime": "Tempo di Riposo (secondi)",
+      "rounds": "Round"
+    },
+
+    "emom": {
+      "title": "Impostazioni EMOM",
+      "duration": "Durata (minuti)",
+      "workTimePerMinute": "Tempo di Lavoro per Minuto (secondi)"
+    },
+
+    "tabata": {
+      "title": "Impostazioni Tabata",
+      "workTime": "Tempo di Lavoro (secondi)",
+      "restTime": "Tempo di Riposo (secondi)",
+      "rounds": "Round"
+    },
+
+    "amrap": {
+      "title": "Impostazioni AMRAP",
+      "duration": "Durata (minuti)"
+    },
+
+    "forTime": {
+      "title": "Impostazioni For Time",
+      "countDown": "Conto alla Rovescia",
+      "duration": "Durata (minuti)"
+    }
+  },
+
+  "labels": {
+    "round": "Round",
+    "of": "di",
+    "elapsed": "Trascorso",
+    "remaining": "Rimanente"
+  },
+
+  "keyboard": {
+    "hint": "Scorciatoie da tastiera",
+    "space": "Avvia/Pausa",
+    "reset": "Reimposta",
+    "settings": "Impostazioni",
+    "escape": "Chiudi"
+  },
+
+  "errors": {
+    "notConfigured": "Timer non configurato",
+    "invalidMode": "Modalità non valida",
+    "invalidConfig": "Configurazione non valida"
+  },
+
+  "completion": {
+    "title": "Allenamento Completato!",
+    "message": "Congratulazioni! Hai completato l'allenamento.",
+    "startNew": "Avvia Nuovo Timer"
+  }
+}

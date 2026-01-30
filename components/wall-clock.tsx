@@ -275,7 +275,7 @@ export function WallClock({ className }: WallClockProps) {
       />
 
       {/* Branding */}
-      <span className="absolute bottom-0 right-1 text-[5px] font-bold tracking-wider text-white/30">
+      <span className="absolute bottom-0 left-1 text-[5px] font-bold tracking-wider text-white/30">
         ATHLIFYR
       </span>
     </div>

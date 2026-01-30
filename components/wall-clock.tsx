@@ -314,12 +314,12 @@ export function WallClock({ className }: WallClockProps) {
           ATHLIFYR
         </span>
 
-        {/* WORK / REST badges */}
+        {/* WORK / REST badges - LED style (off state = dim, visible) */}
         <div className="flex gap-1">
-          <span className="rounded-sm bg-green-600 px-1 py-0.5 text-[5px] font-bold leading-none text-white shadow-[0_0_4px_rgba(34,197,94,0.5)]">
+          <span className="rounded-sm bg-green-950 px-1 py-0.5 text-[5px] font-bold leading-none text-green-900">
             WORK
           </span>
-          <span className="rounded-sm bg-red-600 px-1 py-0.5 text-[5px] font-bold leading-none text-white shadow-[0_0_4px_rgba(239,68,68,0.5)]">
+          <span className="rounded-sm bg-red-950 px-1 py-0.5 text-[5px] font-bold leading-none text-red-900">
             REST
           </span>
         </div>

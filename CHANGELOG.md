@@ -1,3 +1,17 @@
+# [15.0.0](https://github.com/palhinhax/Athlifyr/compare/v14.13.3...v15.0.0) (2026-01-30)
+
+### Code Refactoring
+
+- **db:** rename StrengthExercise to Exercise and expand exercise system ([f182817](https://github.com/palhinhax/Athlifyr/commit/f182817bf66f596f3163dfbbe2a21fc103f5ad77))
+
+### Features
+
+- **exercises:** add special exercise type for rest periods in workout blocks ([a1a4004](https://github.com/palhinhax/Athlifyr/commit/a1a40049f9dbe63ea89c02407f612be781d80505))
+
+### BREAKING CHANGES
+
+- **db:** StrengthExercise renamed to Exercise. Database migration required.
+
 ## [14.13.3](https://github.com/palhinhax/Athlifyr/compare/v14.13.2...v14.13.3) (2026-01-30)
 
 ### Bug Fixes

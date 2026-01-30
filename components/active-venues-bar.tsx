@@ -13,6 +13,7 @@ interface ActiveVenue {
   name: string;
   slug: string;
   imageUrl: string | null;
+  role: string | null;
   subscriptionEndsAt: Date | null;
 }
 
@@ -98,6 +99,24 @@ export function ActiveVenuesBar() {
                 <span className="max-w-[150px] truncate md:max-w-[200px]">
                   {venue.name}
                 </span>
+
+                {/* Role Badge */}
+                {/* {venue.role && (
+                  <span
+                    className={cn(
+                      "rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase",
+                      venue.role === "OWNER" && "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+                      venue.role === "ADMIN" && "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400",
+                      venue.role === "COACH" && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+                      venue.role === "CLIENT" && "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                    )}
+                  >
+                    {venue.role === "OWNER" && "Owner"}
+                    {venue.role === "ADMIN" && "Admin"}
+                    {venue.role === "COACH" && "Coach"}
+                    {venue.role === "CLIENT" && "Member"}
+                  </span>
+                )} */}
 
                 {/* Arrow Icon */}
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-hover:translate-x-0.5" />

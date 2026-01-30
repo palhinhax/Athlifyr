@@ -1,3 +1,70 @@
+## [14.13.1](https://github.com/palhinhax/Athlifyr/compare/v14.13.0...v14.13.1) (2026-01-30)
+
+### Bug Fixes
+
+- **exercises:** allow admin users to access exercises page without pro account ([99d8e95](https://github.com/palhinhax/Athlifyr/commit/99d8e950b43862e936a12c9d6e422b45d2c2e4d2))
+
+# [14.13.0](https://github.com/palhinhax/Athlifyr/compare/v14.12.1...v14.13.0) (2026-01-30)
+
+### Bug Fixes
+
+- **ui:** make WORK/REST badges dim like real LED display when off ([3f2954e](https://github.com/palhinhax/Athlifyr/commit/3f2954e2cfb7c5695044a6c23413eb64db55b52d))
+- **ui:** move ATHLIFYR branding to left side of clock ([9ced4ea](https://github.com/palhinhax/Athlifyr/commit/9ced4ea75c12a079c61b138e6dd992617445a44e))
+
+### Features
+
+- **ui:** add seconds display and WORK/REST badges to clock ([4545be1](https://github.com/palhinhax/Athlifyr/commit/4545be18f14b43bf632b0874474f92185853d999))
+- **ui:** implement authentic SVG 7-segment LED clock ([1821baa](https://github.com/palhinhax/Athlifyr/commit/1821baacd520cc7994541e03bca003e84c64c467))
+
+## [14.12.1](https://github.com/palhinhax/Athlifyr/compare/v14.12.0...v14.12.1) (2026-01-30)
+
+### Bug Fixes
+
+- **ui:** move ATHLIFYR branding to left side of clock ([8307bad](https://github.com/palhinhax/Athlifyr/commit/8307bad206aac21ec6e51e173751ebf60ccaa4be))
+
+# [14.12.0](https://github.com/palhinhax/Athlifyr/compare/v14.11.0...v14.12.0) (2026-01-30)
+
+### Features
+
+- **ui:** implement authentic SVG 7-segment LED clock ([aa7550b](https://github.com/palhinhax/Athlifyr/commit/aa7550b8e715c06a913d20a51e8f55910aef3161))
+
+# [14.11.0](https://github.com/palhinhax/Athlifyr/compare/v14.10.2...v14.11.0) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** add missing exercises and timer translation imports ([22b6977](https://github.com/palhinhax/Athlifyr/commit/22b69776d99cf4f4158a9c8695edb6a323e2e07e))
+- **i18n:** add missing exercises and timer translation imports ([8afa59c](https://github.com/palhinhax/Athlifyr/commit/8afa59c8ed64cda07057f857d368de34f198301f))
+- **i18n:** correct translation namespace for exercises page ([56ff041](https://github.com/palhinhax/Athlifyr/commit/56ff04152832e146fda6ac6cc98c06355609f9f8))
+- **i18n:** correct translation namespace for exercises page ([7adb232](https://github.com/palhinhax/Athlifyr/commit/7adb232166ff66d6e24a969ae165e7730de1cfdb))
+- **i18n:** remove unnecessary wrapper from exercises translations ([1e797a3](https://github.com/palhinhax/Athlifyr/commit/1e797a383eab19a5683e31640ec06d59fdfe8ef9))
+- **i18n:** remove unnecessary wrapper from exercises translations ([7ee9138](https://github.com/palhinhax/Athlifyr/commit/7ee913871c1294ec49951f0cfb46537c72074345))
+
+### Features
+
+- **ui:** make wall clock visible to all users ([7208826](https://github.com/palhinhax/Athlifyr/commit/7208826e6c90e864443790f1f454e6f9a1721035))
+
+## [14.10.2](https://github.com/palhinhax/Athlifyr/compare/v14.10.1...v14.10.2) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** remove unnecessary wrapper from exercises translations ([027a4b1](https://github.com/palhinhax/Athlifyr/commit/027a4b1abe81b1bc96f75531663440b242c2f497))
+
+## [14.10.1](https://github.com/palhinhax/Athlifyr/compare/v14.10.0...v14.10.1) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** correct translation namespace for exercises page ([359f155](https://github.com/palhinhax/Athlifyr/commit/359f155319d41eaf0a429523a8dcfa97d3daade8))
+
+# [14.10.0](https://github.com/palhinhax/Athlifyr/compare/v14.9.0...v14.10.0) (2026-01-30)
+
+### Bug Fixes
+
+- **build:** resolve DSEG7 font Turbopack compatibility issue ([79b0770](https://github.com/palhinhax/Athlifyr/commit/79b077037c229440f17578ffaf218b11b798f9af))
+
+### Features
+
+- **mobile:** add wall clock and exercises link for admin users ([4228c0a](https://github.com/palhinhax/Athlifyr/commit/4228c0aaed31b468fb1555c6086dced18c1af505))
+
 # [14.9.0](https://github.com/palhinhax/Athlifyr/compare/v14.8.0...v14.9.0) (2026-01-30)
 
 ### Features

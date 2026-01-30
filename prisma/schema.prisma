@@ -21,6 +21,7 @@ model User {
   locale               String                @default("pt")
   isBanned             Boolean               @default(false)
   emailNotifications   Boolean               @default(false)
+  isProAccount         Boolean               @default(false)
   accounts             Account[]
   comments             Comment[]
   eventsPreferences    EventsPreferences?

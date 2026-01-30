@@ -3,13 +3,11 @@
  *
  * Authentic 7-segment LED display font for timer
  * Source: https://github.com/keshikan/DSEG
+ *
+ * Note: Using CSS @font-face instead of next/font/local due to Turbopack compatibility
  */
 
-import localFont from "next/font/local";
-
-export const dseg7 = localFont({
-  src: "./DSEG7Modern-Bold.woff2",
+export const dseg7 = {
+  className: "font-dseg7",
   variable: "--font-dseg7",
-  display: "swap",
-  weight: "700",
-});
+};

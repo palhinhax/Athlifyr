@@ -79,7 +79,7 @@ export function AppSidebar() {
           href: "/exercises",
           icon: ListChecksIcon,
           label: t("exercises"),
-          proOnly: true,
+          adminOnly: true,
         },
         {
           href: "/chat",

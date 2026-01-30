@@ -10,11 +10,11 @@ pnpm db:seed:test-users
 
 Este comando cria:
 
-- ✅ 6 usuários de teste com diferentes roles
-- ✅ 1 venue de teste (Test Gym CrossFit)
-- ✅ 1 plano de subscrição
-- ✅ 1 subscrição ativa
-- ✅ 3 sessões de teste
+- ✅ 8 usuários de teste com diferentes roles (ver docs/test-users.md)
+- ✅ Venues de teste (CrossFit Cascais, HYROX Lisboa, Box Funcional Porto)
+- ✅ Planos de subscrição
+- ✅ Subscrições ativas
+- ✅ Sessões de teste
 
 ### 2. Login Manual
 
@@ -22,18 +22,23 @@ Aceder a: `http://localhost:3000/auth/signin`
 
 **Credenciais** (password igual para todos: `Test123!`):
 
-| User Type        | Email                   | Role          | Permissions                    |
-| ---------------- | ----------------------- | ------------- | ------------------------------ |
-| **App Admin**    | `admin@athlifyr.com`    | ADMIN         | Acesso total à plataforma      |
-| **Gym Owner**    | `owner@testgym.com`     | USER (OWNER)  | Gestão completa do venue       |
-| **Gym Admin**    | `admin@testgym.com`     | USER (ADMIN)  | Gestão do venue (sem eliminar) |
-| **Gym Coach**    | `coach@testgym.com`     | USER (COACH)  | Ver sessões, gerir bookings    |
-| **Free User**    | `user.free@test.com`    | USER (CLIENT) | Sem subscrição                 |
-| **Premium User** | `user.premium@test.com` | USER (CLIENT) | Com subscrição ativa           |
+| User Type              | Email                   | Role          | Permissions                         |
+| ---------------------- | ----------------------- | ------------- | ----------------------------------- |
+| **App Admin**          | `admin@athlifyr.com`    | ADMIN         | Acesso total à plataforma           |
+| **Box Owner (João)**   | `joao.owner@test.com`   | USER (OWNER)  | Gestão completa do CrossFit Cascais |
+| **Coach (Maria)**      | `maria.coach@test.com`  | USER (COACH)  | Treinadora no CrossFit Cascais      |
+| **Member (Pedro)**     | `pedro.atleta@test.com` | USER (MEMBER) | Membro do CrossFit Cascais          |
+| **Free Athlete (Ana)** | `ana.free@test.com`     | USER          | Atleta independente, sem box        |
+| **Multi-Box (Carlos)** | `carlos.multi@test.com` | USER          | Owner HYROX + Membro/Coach outros   |
+| **New User (Sofia)**   | `sofia.nova@test.com`   | USER          | Email não verificado                |
+| **Banned User**        | `banned@test.com`       | USER (BANNED) | Conta suspensa                      |
 
 ### 3. Testar Navegação
 
-**Venue de Teste**: `/venues/test-gym-crossfit`
+**Venues de Teste**:
+
+- `/venues/crossfit-cascais`
+- `/venues/hyrox-lisboa`
 
 ---
 

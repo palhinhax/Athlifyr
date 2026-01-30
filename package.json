@@ -21,14 +21,17 @@
     "db:studio": "prisma studio",
     "prepare": "husky",
     "semantic-release": "semantic-release",
-    "test:e2e": "playwright test tests/e2e/test-users.spec.ts",
-    "test:e2e:ui": "playwright test tests/e2e/test-users.spec.ts --ui",
-    "test:e2e:admin": "playwright test tests/e2e/test-users.spec.ts -g \"App Admin\"",
-    "test:e2e:gym-owner": "playwright test tests/e2e/test-users.spec.ts -g \"Gym Owner\"",
-    "test:e2e:gym-admin": "playwright test tests/e2e/test-users.spec.ts -g \"Gym Admin\"",
-    "test:e2e:gym-coach": "playwright test tests/e2e/test-users.spec.ts -g \"Gym Coach\"",
-    "test:e2e:user-free": "playwright test tests/e2e/test-users.spec.ts -g \"Free User\"",
-    "test:e2e:user-premium": "playwright test tests/e2e/test-users.spec.ts -g \"Premium User\""
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:auth": "playwright test tests/e2e/auth-users.spec.ts",
+    "test:e2e:functional": "playwright test tests/e2e/functional-tests.spec.ts",
+    "test:e2e:admin": "playwright test -g \"Admin\"",
+    "test:e2e:owner": "playwright test -g \"Owner\"",
+    "test:e2e:coach": "playwright test -g \"Coach\"",
+    "test:e2e:member": "playwright test -g \"Atleta|Member\"",
+    "test:e2e:free": "playwright test -g \"Free\"",
+    "test:e2e:security": "playwright test -g \"Security\"",
+    "test:e2e:i18n": "playwright test -g \"Internationalization\""
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

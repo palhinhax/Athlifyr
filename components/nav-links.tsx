@@ -44,6 +44,15 @@ export function NavLinks() {
       </Link>
       {session && (
         <Link
+          href="/workouts"
+          className="text-sm font-medium hover:underline"
+          onClick={() => handleNavClick("workouts")}
+        >
+          {t("workouts")}
+        </Link>
+      )}
+      {session && (
+        <Link
           href="/feed"
           className="text-sm font-medium hover:underline"
           onClick={() => handleNavClick("feed")}

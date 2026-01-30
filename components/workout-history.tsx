@@ -23,7 +23,6 @@ export function WorkoutHistory({ userId }: WorkoutHistoryProps) {
   const t = useTranslations("workouts");
   const [logs, setLogs] = useState<WorkoutLogWithDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-
   const fetchLogs = useCallback(async () => {
     try {
       setIsLoading(true);

@@ -1,23 +1,21 @@
 {
-  "exercises": {
-    "title": "Exercícios",
-    "description": "Cria e gere os teus exercícios personalizados para usar nos treinos.",
-    "searchPlaceholder": "Pesquisar exercícios...",
-    "createExercise": "Criar Exercício",
-    "createFirst": "Criar Primeiro Exercício",
-    "noExercises": "Sem exercícios",
-    "noExercisesDescription": "Ainda não tens exercícios personalizados. Cria o teu primeiro exercício para começar.",
-    "aliases": "Também conhecido como",
-    "global": "Global",
-    "showingResults": "A mostrar {count} exercícios",
-    "categories": {
-      "ALL": "Todos",
-      "CROSSFIT": "CrossFit",
-      "GYM": "Ginásio",
-      "WEIGHTLIFTING": "Halterofilismo",
-      "BODYWEIGHT": "Peso Corporal",
-      "CARDIO": "Cardio",
-      "OTHER": "Outros"
-    }
+  "title": "Exercícios",
+  "description": "Cria e gere os teus exercícios personalizados para usar nos treinos.",
+  "searchPlaceholder": "Pesquisar exercícios...",
+  "createExercise": "Criar Exercício",
+  "createFirst": "Criar Primeiro Exercício",
+  "noExercises": "Sem exercícios",
+  "noExercisesDescription": "Ainda não tens exercícios personalizados. Cria o teu primeiro exercício para começar.",
+  "aliases": "Também conhecido como",
+  "global": "Global",
+  "showingResults": "A mostrar {count} exercícios",
+  "categories": {
+    "ALL": "Todos",
+    "CROSSFIT": "CrossFit",
+    "GYM": "Ginásio",
+    "WEIGHTLIFTING": "Halterofilismo",
+    "BODYWEIGHT": "Peso Corporal",
+    "CARDIO": "Cardio",
+    "OTHER": "Outros"
   }
 }

@@ -1,3 +1,9 @@
+## [14.13.1](https://github.com/palhinhax/Athlifyr/compare/v14.13.0...v14.13.1) (2026-01-30)
+
+### Bug Fixes
+
+- **exercises:** allow admin users to access exercises page without pro account ([99d8e95](https://github.com/palhinhax/Athlifyr/commit/99d8e950b43862e936a12c9d6e422b45d2c2e4d2))
+
 # [14.13.0](https://github.com/palhinhax/Athlifyr/compare/v14.12.1...v14.13.0) (2026-01-30)
 
 ### Bug Fixes

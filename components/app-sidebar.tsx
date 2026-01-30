@@ -23,6 +23,7 @@ import {
   ShieldIcon,
   HomeIcon,
   DumbbellIcon,
+  ListChecksIcon,
 } from "lucide-react";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ interface NavItem {
   label: string;
   badge?: number;
   adminOnly?: boolean;
+  proOnly?: boolean;
   authOnly?: boolean;
   publicOnly?: boolean;
 }
@@ -74,6 +76,12 @@ export function AppSidebar() {
           label: t("workouts"),
         },
         {
+          href: "/exercises",
+          icon: ListChecksIcon,
+          label: t("exercises"),
+          proOnly: true,
+        },
+        {
           href: "/chat",
           icon: MessageCircleIcon,
           label: t("messages"),
@@ -107,6 +115,7 @@ export function AppSidebar() {
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.adminOnly && session?.user?.role !== "ADMIN") return false;
+    if (item.proOnly && !session?.user?.isProAccount) return false;
     return true;
   });
 

@@ -59,6 +59,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          isProAccount: user.isProAccount,
         };
       },
     }),
@@ -78,6 +79,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (user) {
         token.role = user.role as UserRole;
         token.id = user.id;
+        // For Google login, fetch isProAccount from database
+        if (account?.provider === "google") {
+          const dbUser = await prisma.user.findUnique({
+            where: { id: user.id },
+            select: { isProAccount: true },
+          });
+          token.isProAccount = dbUser?.isProAccount ?? false;
+        } else {
+          token.isProAccount = user.isProAccount as boolean;
+        }
         // Use Google profile picture if available, otherwise use stored image
         token.picture =
           account?.provider === "google" && profile?.picture
@@ -89,6 +100,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (trigger === "update" && session) {
         token.picture = session.user?.image;
         token.name = session.user?.name;
+        if (session.user?.isProAccount !== undefined) {
+          token.isProAccount = session.user.isProAccount;
+        }
       }
 
       return token;
@@ -98,6 +112,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         session.user.role = token.role as UserRole;
         session.user.id = token.id as string;
         session.user.image = token.picture as string | null;
+        session.user.isProAccount = token.isProAccount as boolean;
       }
       return session;
     },

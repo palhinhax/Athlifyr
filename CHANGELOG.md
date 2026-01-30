@@ -1,3 +1,15 @@
+# [14.13.0](https://github.com/palhinhax/Athlifyr/compare/v14.12.1...v14.13.0) (2026-01-30)
+
+### Bug Fixes
+
+- **ui:** make WORK/REST badges dim like real LED display when off ([3f2954e](https://github.com/palhinhax/Athlifyr/commit/3f2954e2cfb7c5695044a6c23413eb64db55b52d))
+- **ui:** move ATHLIFYR branding to left side of clock ([9ced4ea](https://github.com/palhinhax/Athlifyr/commit/9ced4ea75c12a079c61b138e6dd992617445a44e))
+
+### Features
+
+- **ui:** add seconds display and WORK/REST badges to clock ([4545be1](https://github.com/palhinhax/Athlifyr/commit/4545be18f14b43bf632b0874474f92185853d999))
+- **ui:** implement authentic SVG 7-segment LED clock ([1821baa](https://github.com/palhinhax/Athlifyr/commit/1821baacd520cc7994541e03bca003e84c64c467))
+
 ## [14.12.1](https://github.com/palhinhax/Athlifyr/compare/v14.12.0...v14.12.1) (2026-01-30)
 
 ### Bug Fixes

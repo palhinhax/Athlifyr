@@ -183,7 +183,14 @@ interface WallClockProps {
 }
 
 export function WallClock({ className }: WallClockProps) {
-  const [time, setTime] = useState({ h1: "0", h2: "0", m1: "0", m2: "0" });
+  const [time, setTime] = useState({
+    h1: "0",
+    h2: "0",
+    m1: "0",
+    m2: "0",
+    s1: "0",
+    s2: "0",
+  });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -193,12 +200,15 @@ export function WallClock({ className }: WallClockProps) {
       const now = new Date();
       const hours = now.getHours().toString().padStart(2, "0");
       const minutes = now.getMinutes().toString().padStart(2, "0");
+      const seconds = now.getSeconds().toString().padStart(2, "0");
 
       setTime({
         h1: hours[0],
         h2: hours[1],
         m1: minutes[0],
         m2: minutes[1],
+        s1: seconds[0],
+        s2: seconds[1],
       });
     };
 
@@ -207,24 +217,26 @@ export function WallClock({ className }: WallClockProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Segment colors - bright red LED
-  const colorOn = "#ff2222";
-  const colorOff = "#220505";
-  const digitWidth = 18;
-  const digitHeight = 32;
+  // Segment colors
+  const greenOn = "#22ff22";
+  const greenOff = "#052205";
+  const redOn = "#ff2222";
+  const redOff = "#220505";
+  const digitWidth = 14;
+  const digitHeight = 26;
 
   if (!mounted) {
     return (
       <div
         className={cn(
-          "relative flex items-center gap-0.5 overflow-hidden rounded-lg border border-gray-800 bg-black px-2 py-1.5",
+          "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black px-2 pb-2 pt-1.5",
           "shadow-[inset_0_0_20px_rgba(0,0,0,0.9),0_4px_8px_rgba(0,0,0,0.4)]",
           className
         )}
       >
         <div
           className="animate-pulse rounded bg-gray-900"
-          style={{ width: digitWidth * 4 + 30, height: digitHeight }}
+          style={{ width: digitWidth * 6 + 50, height: digitHeight }}
         />
       </div>
     );
@@ -233,51 +245,85 @@ export function WallClock({ className }: WallClockProps) {
   return (
     <div
       className={cn(
-        "relative flex items-center gap-0.5 overflow-hidden rounded-lg border border-gray-800 bg-black px-2 py-1.5",
+        "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black px-2 pb-2 pt-1.5",
         "shadow-[inset_0_0_20px_rgba(0,0,0,0.9),0_4px_8px_rgba(0,0,0,0.4)]",
         "before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-gray-700/20 before:to-transparent",
         className
       )}
       title="Current time"
     >
-      {/* Hours */}
-      <SevenSegmentDigit
-        value={time.h1}
-        colorOn={colorOn}
-        colorOff={colorOff}
-        width={digitWidth}
-        height={digitHeight}
-      />
-      <SevenSegmentDigit
-        value={time.h2}
-        colorOn={colorOn}
-        colorOff={colorOff}
-        width={digitWidth}
-        height={digitHeight}
-      />
+      {/* Digits row */}
+      <div className="flex items-center gap-0.5">
+        {/* Hours - GREEN */}
+        <SevenSegmentDigit
+          value={time.h1}
+          colorOn={greenOn}
+          colorOff={greenOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
+        <SevenSegmentDigit
+          value={time.h2}
+          colorOn={greenOn}
+          colorOff={greenOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
 
-      <Colon height={digitHeight} colorOn={colorOn} />
+        <Colon height={digitHeight} colorOn={redOn} />
 
-      {/* Minutes */}
-      <SevenSegmentDigit
-        value={time.m1}
-        colorOn={colorOn}
-        colorOff={colorOff}
-        width={digitWidth}
-        height={digitHeight}
-      />
-      <SevenSegmentDigit
-        value={time.m2}
-        colorOn={colorOn}
-        colorOff={colorOff}
-        width={digitWidth}
-        height={digitHeight}
-      />
+        {/* Minutes - RED */}
+        <SevenSegmentDigit
+          value={time.m1}
+          colorOn={redOn}
+          colorOff={redOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
+        <SevenSegmentDigit
+          value={time.m2}
+          colorOn={redOn}
+          colorOff={redOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
 
-      {/* Branding */}
-      <span className="absolute bottom-0 left-1 text-[5px] font-bold tracking-wider text-white/30">
-        ATHLIFYR
-      </span>
+        <Colon height={digitHeight} colorOn={redOn} />
+
+        {/* Seconds - RED */}
+        <SevenSegmentDigit
+          value={time.s1}
+          colorOn={redOn}
+          colorOff={redOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
+        <SevenSegmentDigit
+          value={time.s2}
+          colorOn={redOn}
+          colorOff={redOff}
+          width={digitWidth}
+          height={digitHeight}
+        />
+      </div>
+
+      {/* Bottom row: Branding + Badges */}
+      <div className="mt-1 flex items-center justify-between">
+        {/* Branding */}
+        <span className="text-[5px] font-bold tracking-wider text-white/40">
+          ATHLIFYR
+        </span>
+
+        {/* WORK / REST badges - LED style (off state = dim, visible) */}
+        <div className="flex gap-1">
+          <span className="rounded-sm bg-green-950 px-1 py-0.5 text-[5px] font-bold leading-none text-green-900">
+            WORK
+          </span>
+          <span className="rounded-sm bg-red-950 px-1 py-0.5 text-[5px] font-bold leading-none text-red-900">
+            REST
+          </span>
+        </div>
+      </div>
     </div>
   );
 }

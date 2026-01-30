@@ -31,7 +31,6 @@ const updateBlockSchema = z.object({
   orderIndex: z.number().int().min(0),
   timeCap: z.number().int().positive().optional().nullable(),
   workTime: z.number().int().positive().optional().nullable(),
-  restTime: z.number().int().positive().optional().nullable(),
   rounds: z.number().int().positive().optional().nullable(),
   notes: z.string().optional().nullable(),
   exercises: z.array(updateExerciseSchema),
@@ -236,7 +235,6 @@ export async function PATCH(
               orderIndex: block.orderIndex,
               timeCap: block.timeCap,
               workTime: block.workTime,
-              restTime: block.restTime,
               rounds: block.rounds,
               notes: block.notes,
               exercises: {

@@ -246,21 +246,6 @@ export function WorkoutBlockEditor({
               />
             </div>
             <div className="space-y-2">
-              <Label>{t("blocks.restTime")}</Label>
-              <Input
-                type="number"
-                min={1}
-                value={block.restTime || ""}
-                onChange={(e) =>
-                  updateField(
-                    "restTime",
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
-                placeholder="10"
-              />
-            </div>
-            <div className="space-y-2">
               <Label>{t("blocks.rounds")}</Label>
               <Input
                 type="number"
@@ -298,23 +283,9 @@ export function WorkoutBlockEditor({
         );
 
       case "REST":
-        return (
-          <div className="space-y-2">
-            <Label>{t("blocks.restTime")}</Label>
-            <Input
-              type="number"
-              min={1}
-              value={block.restTime || ""}
-              onChange={(e) =>
-                updateField(
-                  "restTime",
-                  e.target.value ? parseInt(e.target.value) : null
-                )
-              }
-              placeholder="120"
-            />
-          </div>
-        );
+        // Blocos REST não precisam de campos de timing
+        // O descanso é definido adicionando o exercício "Rest" com prescribedTime
+        return null;
 
       default:
         return null;

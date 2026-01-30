@@ -64,7 +64,6 @@ const createBlockSchema = z.object({
   orderIndex: z.number().int().min(0),
   timeCap: z.number().int().positive().optional(),
   workTime: z.number().int().positive().optional(),
-  restTime: z.number().int().positive().optional(),
   rounds: z.number().int().positive().optional(),
   notes: z.string().optional(),
   exercises: z.array(createExerciseSchema).min(0),
@@ -267,7 +266,6 @@ export async function POST(request: Request) {
             orderIndex: block.orderIndex,
             timeCap: block.timeCap,
             workTime: block.workTime,
-            restTime: block.restTime,
             rounds: block.rounds,
             notes: block.notes,
             exercises: {

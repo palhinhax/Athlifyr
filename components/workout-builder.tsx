@@ -78,7 +78,6 @@ export function WorkoutBuilder({
       orderIndex: blocks.length,
       timeCap: type === "AMRAP" || type === "FOR_TIME" ? 600 : null,
       workTime: type === "EMOM" ? 60 : type === "TABATA" ? 20 : null,
-      restTime: type === "TABATA" ? 10 : null,
       rounds: type === "EMOM" || type === "TABATA" ? 8 : null,
       notes: null,
       exercises: [],
@@ -207,7 +206,6 @@ export function WorkoutBuilder({
             orderIndex: index,
             timeCap: block.timeCap || undefined,
             workTime: block.workTime || undefined,
-            restTime: block.restTime || undefined,
             rounds: block.rounds || undefined,
             notes: block.notes || undefined,
             exercises: block.exercises.map((ex, exIndex) => ({

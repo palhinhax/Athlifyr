@@ -116,7 +116,6 @@ export interface CreateWorkoutBlockInput {
   orderIndex: number;
   timeCap?: number;
   workTime?: number;
-  restTime?: number;
   rounds?: number;
   notes?: string;
   exercises: CreateWorkoutBlockExerciseInput[];
@@ -216,7 +215,6 @@ export interface WorkoutBlockState {
   name: string;
   timeCap: number | null;
   workTime: number | null;
-  restTime: number | null;
   rounds: number | null;
   notes: string;
   exercises: WorkoutExerciseState[];
@@ -252,7 +250,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: boolean;
     hasRounds: boolean;
     hasWorkTime: boolean;
-    hasRestTime: boolean;
   }
 > = {
   WARMUP: {
@@ -263,7 +260,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   STRENGTH: {
     label: "Força",
@@ -273,7 +269,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: true,
   },
   AMRAP: {
     label: "AMRAP",
@@ -283,7 +278,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   EMOM: {
     label: "EMOM",
@@ -293,7 +287,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: true,
     hasWorkTime: true,
-    hasRestTime: false,
   },
   FOR_TIME: {
     label: "For Time",
@@ -303,7 +296,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: true,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   TABATA: {
     label: "Tabata",
@@ -313,7 +305,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: true,
     hasWorkTime: true,
-    hasRestTime: true,
   },
   CHIPPER: {
     label: "Chipper",
@@ -323,17 +314,15 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   REST: {
     label: "Descanso",
-    description: "Período de recuperação",
+    description: "Período de recuperação - usar exercício Rest",
     icon: "😮‍💨",
     color: "bg-gray-100 text-gray-800",
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: true,
   },
   COOLDOWN: {
     label: "Retorno à Calma",
@@ -343,7 +332,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   SKILL: {
     label: "Skill",
@@ -353,7 +341,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
 };
 

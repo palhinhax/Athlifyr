@@ -4,7 +4,8 @@ import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/user/active-venues
- * Returns venues where the user has an active subscription
+ * Returns venues where the user is a member (owner, admin, coach, client)
+ * or has an active subscription
  */
 export async function GET() {
   try {
@@ -14,7 +15,52 @@ export async function GET() {
       return NextResponse.json([]);
     }
 
-    // Fetch active subscriptions with venue details
+    // Interface for the response
+    interface ActiveVenue {
+      id: string;
+      name: string;
+      slug: string;
+      imageUrl: string | null;
+      role: string | null;
+      subscriptionEndsAt: Date | null;
+    }
+
+    const venueMap = new Map<string, ActiveVenue>();
+
+    // 1. Fetch venues where user is a member (owner, admin, coach, client)
+    const venueMemberships = await prisma.venueMember.findMany({
+      where: {
+        userId: session.user.id,
+        status: "ACTIVE",
+      },
+      include: {
+        venue: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            logo: true,
+            isActive: true,
+          },
+        },
+      },
+    });
+
+    // Add memberships to the map
+    venueMemberships.forEach((membership) => {
+      if (membership.venue.isActive) {
+        venueMap.set(membership.venue.id, {
+          id: membership.venue.id,
+          name: membership.venue.name,
+          slug: membership.venue.slug,
+          imageUrl: membership.venue.logo,
+          role: membership.role,
+          subscriptionEndsAt: null,
+        });
+      }
+    });
+
+    // 2. Fetch active subscriptions with venue details
     const activeSubscriptions = await prisma.venueSubscription.findMany({
       where: {
         userId: session.user.id,
@@ -31,6 +77,7 @@ export async function GET() {
             name: true,
             slug: true,
             logo: true,
+            isActive: true,
           },
         },
       },
@@ -39,42 +86,31 @@ export async function GET() {
       },
     });
 
-    // Transform data for client and deduplicate by venue ID
-    interface ActiveVenue {
-      id: string;
-      name: string;
-      slug: string;
-      imageUrl: string | null;
-      subscriptionEndsAt: Date | null;
-    }
-
-    const venueMap = new Map<string, ActiveVenue>();
-
+    // Add/update with subscription info
     activeSubscriptions.forEach((subscription) => {
-      const venueId = subscription.venue.id;
+      if (!subscription.venue.isActive) return;
 
-      // Only add if not already in map, or if this subscription ends later
-      if (!venueMap.has(venueId)) {
+      const venueId = subscription.venue.id;
+      const existing = venueMap.get(venueId);
+
+      if (!existing) {
+        // Venue not in memberships, add from subscription
         venueMap.set(venueId, {
           id: subscription.venue.id,
           name: subscription.venue.name,
           slug: subscription.venue.slug,
           imageUrl: subscription.venue.logo,
+          role: null,
           subscriptionEndsAt: subscription.endsAt,
         });
       } else {
-        // If venue already exists, keep the one with the latest end date
-        const existing = venueMap.get(venueId)!;
-        const existingEndDate =
-          existing.subscriptionEndsAt?.getTime() || Infinity;
+        // Venue exists from membership, update subscription end date if later
+        const existingEndDate = existing.subscriptionEndsAt?.getTime() || 0;
         const currentEndDate = subscription.endsAt?.getTime() || Infinity;
 
         if (currentEndDate > existingEndDate) {
           venueMap.set(venueId, {
-            id: subscription.venue.id,
-            name: subscription.venue.name,
-            slug: subscription.venue.slug,
-            imageUrl: subscription.venue.logo,
+            ...existing,
             subscriptionEndsAt: subscription.endsAt,
           });
         }

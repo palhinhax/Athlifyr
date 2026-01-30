@@ -1,3 +1,18 @@
+# [14.11.0](https://github.com/palhinhax/Athlifyr/compare/v14.10.2...v14.11.0) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** add missing exercises and timer translation imports ([22b6977](https://github.com/palhinhax/Athlifyr/commit/22b69776d99cf4f4158a9c8695edb6a323e2e07e))
+- **i18n:** add missing exercises and timer translation imports ([8afa59c](https://github.com/palhinhax/Athlifyr/commit/8afa59c8ed64cda07057f857d368de34f198301f))
+- **i18n:** correct translation namespace for exercises page ([56ff041](https://github.com/palhinhax/Athlifyr/commit/56ff04152832e146fda6ac6cc98c06355609f9f8))
+- **i18n:** correct translation namespace for exercises page ([7adb232](https://github.com/palhinhax/Athlifyr/commit/7adb232166ff66d6e24a969ae165e7730de1cfdb))
+- **i18n:** remove unnecessary wrapper from exercises translations ([1e797a3](https://github.com/palhinhax/Athlifyr/commit/1e797a383eab19a5683e31640ec06d59fdfe8ef9))
+- **i18n:** remove unnecessary wrapper from exercises translations ([7ee9138](https://github.com/palhinhax/Athlifyr/commit/7ee913871c1294ec49951f0cfb46537c72074345))
+
+### Features
+
+- **ui:** make wall clock visible to all users ([7208826](https://github.com/palhinhax/Athlifyr/commit/7208826e6c90e864443790f1f454e6f9a1721035))
+
 ## [14.10.2](https://github.com/palhinhax/Athlifyr/compare/v14.10.1...v14.10.2) (2026-01-30)
 
 ### Bug Fixes

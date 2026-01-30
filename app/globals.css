@@ -4,6 +4,19 @@
 @tailwind components;
 @tailwind utilities;
 
+/* DSEG7 Font - 7-Segment Display Font */
+@font-face {
+  font-family: "DSEG7";
+  src: url("/fonts/DSEG7Modern-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-dseg7 {
+  font-family: "DSEG7", monospace;
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;

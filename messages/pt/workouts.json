@@ -92,6 +92,9 @@
     "duplicateSet": "Duplicar Último",
     "noSetPrescriptions": "Sem prescrição por set. Usa os campos acima para valores uniformes ou adiciona sets variáveis.",
     "setNotes": "Notas (ex: até falha)",
+    "maleFemalePrescription": "Prescrição diferenciada (M/F)",
+    "male": "Homem",
+    "female": "Mulher",
     "units": {
       "KG": "kg",
       "LB": "lb",

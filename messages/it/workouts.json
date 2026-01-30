@@ -92,6 +92,9 @@
     "duplicateSet": "Duplica Ultima",
     "noSetPrescriptions": "Nessuna prescrizione per serie. Usa i campi sopra per valori uniformi o aggiungi serie variabili.",
     "setNotes": "Note (es: fino al cedimento)",
+    "maleFemalePrescription": "Prescrizione differenziata (U/D)",
+    "male": "Uomo",
+    "female": "Donna",
     "units": {
       "KG": "kg",
       "LB": "lb",

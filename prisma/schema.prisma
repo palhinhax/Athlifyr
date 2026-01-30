@@ -1380,7 +1380,7 @@ model WorkoutBlockExercise {
   exerciseId      String            // FK para StrengthExercise
   orderIndex      Int               // Ordem no bloco (0, 1, 2...)
   
-  // Prescrição - o que o coach prescreve
+  // Prescrição - o que o coach prescreve (Male/Rx)
   prescribedReps      Int?
   prescribedWeight    Float?
   prescribedWeightUnit WeightUnit?
@@ -1390,6 +1390,17 @@ model WorkoutBlockExercise {
   prescribedTime      Int?          // segundos
   prescribedCalories  Int?
   prescribedSets      Int?          // número de sets prescritos (para STRENGTH)
+  
+  // Prescrição Female (opcionais - quando diferente de Male)
+  prescribedRepsFemale        Int?
+  prescribedWeightFemale      Float?
+  prescribedWeightUnitFemale  WeightUnit?
+  prescribedWeightPercentFemale Float?
+  prescribedDistanceFemale    Float?
+  prescribedDistanceUnitFemale DistanceUnit?
+  prescribedTimeFemale        Int?
+  prescribedCaloriesFemale    Int?
+  prescribedSetsFemale        Int?
   
   notes           String?           // Notas específicas do exercício
   
@@ -1409,7 +1420,7 @@ model WorkoutSetPrescription {
   blockExerciseId       String
   setNumber             Int                 // 1, 2, 3, 4...
   
-  // Prescrição para este set específico
+  // Prescrição para este set específico - Male/Rx
   reps                  Int?                // null = max reps
   weight                Float?              // Peso fixo (alternativa ao %)
   weightUnit            WeightUnit?
@@ -1418,6 +1429,16 @@ model WorkoutSetPrescription {
   distance              Float?
   distanceUnit          DistanceUnit?
   calories              Int?
+  
+  // Prescrição Female (opcionais - quando diferente de Male)
+  repsFemale            Int?
+  weightFemale          Float?
+  weightUnitFemale      WeightUnit?
+  weightPercentFemale   Float?
+  timeFemale            Int?
+  distanceFemale        Float?
+  distanceUnitFemale    DistanceUnit?
+  caloriesFemale        Int?
   
   notes                 String?             // Ex: "até falha técnica"
   

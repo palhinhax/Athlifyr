@@ -1,3 +1,9 @@
+## [14.13.3](https://github.com/palhinhax/Athlifyr/compare/v14.13.2...v14.13.3) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** rename timer settings namespace to avoid conflicts ([154fb81](https://github.com/palhinhax/Athlifyr/commit/154fb81cde46e06f4aef7a7c556437a1bcc40ad1))
+
 ## [14.13.2](https://github.com/palhinhax/Athlifyr/compare/v14.13.1...v14.13.2) (2026-01-30)
 
 ### Bug Fixes

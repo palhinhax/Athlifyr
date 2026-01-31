@@ -3,9 +3,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ResponsiveTabs,
+  ResponsiveTabsContent,
+} from "@/components/ui/responsive-tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, DumbbellIcon, GlobeIcon, HistoryIcon } from "lucide-react";
 import { WorkoutCard } from "@/components/workout-card";
 import { WorkoutBuilder } from "@/components/workout-builder";
 import { WorkoutHistory } from "@/components/workout-history";
@@ -29,6 +32,7 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingWorkout, setEditingWorkout] =
     useState<WorkoutWithBlocks | null>(null);
+  const [activeTab, setActiveTab] = useState("my-workouts");
 
   const fetchWorkouts = useCallback(async () => {
     try {
@@ -126,6 +130,36 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
     );
   }
 
+  const tabs = [
+    {
+      value: "my-workouts",
+      label: t("myWorkouts"),
+      icon: <DumbbellIcon />,
+      badge:
+        workouts.length > 0 ? (
+          <span className="text-xs text-muted-foreground">
+            ({workouts.length})
+          </span>
+        ) : undefined,
+    },
+    {
+      value: "public",
+      label: t("publicWorkouts"),
+      icon: <GlobeIcon />,
+      badge:
+        publicWorkouts.length > 0 ? (
+          <span className="text-xs text-muted-foreground">
+            ({publicWorkouts.length})
+          </span>
+        ) : undefined,
+    },
+    {
+      value: "history",
+      label: t("history.title"),
+      icon: <HistoryIcon />,
+    },
+  ];
+
   return (
     <div className="container py-8">
       <div className="mb-8 flex items-center justify-between">
@@ -135,86 +169,72 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
         </div>
         <Button onClick={handleCreateWorkout}>
           <PlusIcon className="mr-2 h-4 w-4" />
-          {t("createWorkout")}
+          <span className="hidden sm:inline">{t("createWorkout")}</span>
         </Button>
       </div>
 
-      <Tabs defaultValue="my-workouts">
-        <TabsList>
-          <TabsTrigger value="my-workouts">{t("myWorkouts")}</TabsTrigger>
-          <TabsTrigger value="public">{t("publicWorkouts")}</TabsTrigger>
-          <TabsTrigger value="history">{t("history.title")}</TabsTrigger>
-        </TabsList>
+      <ResponsiveTabs
+        tabs={tabs}
+        value={activeTab}
+        onValueChange={setActiveTab}
+      />
 
-        <TabsContent value="my-workouts" className="mt-6">
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-48 animate-pulse rounded-lg bg-muted"
-                />
-              ))}
-            </div>
-          ) : workouts.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-lg font-medium">{t("noWorkouts")}</p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("noWorkoutsDescription")}
-              </p>
-              <Button onClick={handleCreateWorkout} className="mt-4">
-                <PlusIcon className="mr-2 h-4 w-4" />
-                {t("createWorkout")}
-              </Button>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {workouts.map((workout) => (
-                <WorkoutCard
-                  key={workout.id}
-                  workout={workout}
-                  onEdit={() => handleEditWorkout(workout)}
-                  onDelete={() => handleDeleteWorkout(workout.id)}
-                  canEdit={true}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+      <ResponsiveTabsContent value="my-workouts" activeValue={activeTab}>
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
+        ) : workouts.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-12 text-center">
+            <p className="text-lg font-medium">{t("noWorkouts")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              {t("noWorkoutsDescription")}
+            </p>
+            <Button onClick={handleCreateWorkout} className="mt-4">
+              <PlusIcon className="mr-2 h-4 w-4" />
+              {t("createWorkout")}
+            </Button>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {workouts.map((workout) => (
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
+                onEdit={() => handleEditWorkout(workout)}
+                onDelete={() => handleDeleteWorkout(workout.id)}
+                canEdit={true}
+              />
+            ))}
+          </div>
+        )}
+      </ResponsiveTabsContent>
 
-        <TabsContent value="public" className="mt-6">
-          {isLoading ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="h-48 animate-pulse rounded-lg bg-muted"
-                />
-              ))}
-            </div>
-          ) : publicWorkouts.length === 0 ? (
-            <div className="rounded-lg border border-dashed p-12 text-center">
-              <p className="text-muted-foreground">
-                No public workouts available yet.
-              </p>
-            </div>
-          ) : (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {publicWorkouts.map((workout) => (
-                <WorkoutCard
-                  key={workout.id}
-                  workout={workout}
-                  canEdit={false}
-                />
-              ))}
-            </div>
-          )}
-        </TabsContent>
+      <ResponsiveTabsContent value="public" activeValue={activeTab}>
+        {isLoading ? (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+            ))}
+          </div>
+        ) : publicWorkouts.length === 0 ? (
+          <div className="rounded-lg border border-dashed p-12 text-center">
+            <p className="text-muted-foreground">{t("noPublicWorkouts")}</p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {publicWorkouts.map((workout) => (
+              <WorkoutCard key={workout.id} workout={workout} canEdit={false} />
+            ))}
+          </div>
+        )}
+      </ResponsiveTabsContent>
 
-        <TabsContent value="history" className="mt-6">
-          <WorkoutHistory userId={userId} />
-        </TabsContent>
-      </Tabs>
+      <ResponsiveTabsContent value="history" activeValue={activeTab}>
+        <WorkoutHistory userId={userId} />
+      </ResponsiveTabsContent>
     </div>
   );
 }

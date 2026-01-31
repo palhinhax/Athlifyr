@@ -12,6 +12,7 @@
     "venueWorkouts": "Studio-Trainings",
     "noWorkouts": "Du hast noch keine Trainings",
     "noWorkoutsDescription": "Erstelle dein erstes Training, um deinen Fortschritt zu verfolgen.",
+    "noPublicWorkouts": "Es sind noch keine öffentlichen Trainings verfügbar.",
 
     "form": {
       "name": "Trainingsname",
@@ -71,8 +72,27 @@
       "workTime": "Arbeitszeit (s)",
       "restTime": "Pausenzeit (s)",
       "rounds": "Runden",
+      "name": "Blockname",
       "notes": "Notizen",
       "notesPlaceholder": "Block-Notizen..."
+    },
+
+    "exerciseGroups": {
+      "title": "Übungsgruppen",
+      "addGroup": "Gruppe Hinzufügen",
+      "groupName": "Gruppenname",
+      "groupNamePlaceholder": "z.B. Superset A, Zirkel 1...",
+      "rounds": "Runden",
+      "restBetweenRounds": "Pause zwischen Runden (s)",
+      "notes": "Notizen",
+      "notesPlaceholder": "Gruppen-Notizen...",
+      "noGroups": "Keine Gruppen hinzugefügt",
+      "exercises": "Übungen in der Gruppe",
+      "deleteGroup": "Gruppe löschen",
+      "expandGroup": "Gruppe erweitern",
+      "collapseGroup": "Gruppe minimieren",
+      "emptyGroup": "Keine Übungen in dieser Gruppe",
+      "addExerciseToGroup": "Übung zur Gruppe hinzufügen"
     },
 
     "exercises": {

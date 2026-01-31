@@ -12,6 +12,7 @@
     "venueWorkouts": "Treinos do Espaço",
     "noWorkouts": "Ainda não tens treinos",
     "noWorkoutsDescription": "Cria o teu primeiro treino para começar a registar o teu progresso.",
+    "noPublicWorkouts": "Ainda não existem treinos públicos disponíveis.",
 
     "form": {
       "name": "Nome do Treino",
@@ -71,8 +72,27 @@
       "workTime": "Tempo de Trabalho (s)",
       "restTime": "Tempo de Descanso (s)",
       "rounds": "Rounds",
+      "name": "Nome do Bloco",
       "notes": "Notas",
       "notesPlaceholder": "Notas do bloco..."
+    },
+
+    "exerciseGroups": {
+      "title": "Grupos de Exercícios",
+      "addGroup": "Adicionar Grupo",
+      "groupName": "Nome do Grupo",
+      "groupNamePlaceholder": "ex: Superset A, Circuito 1...",
+      "rounds": "Rondas",
+      "restBetweenRounds": "Descanso entre rondas (s)",
+      "notes": "Notas",
+      "notesPlaceholder": "Notas do grupo...",
+      "noGroups": "Nenhum grupo adicionado",
+      "exercises": "Exercícios no grupo",
+      "deleteGroup": "Apagar grupo",
+      "expandGroup": "Expandir grupo",
+      "collapseGroup": "Recolher grupo",
+      "emptyGroup": "Sem exercícios neste grupo",
+      "addExerciseToGroup": "Adicionar exercício ao grupo"
     },
 
     "exercises": {

@@ -21,6 +21,7 @@ import {
   Venue,
   VenueSession,
   WorkoutSetPrescription,
+  ExerciseGroup,
 } from "@prisma/client";
 
 // ============================================================================
@@ -63,11 +64,17 @@ export type WorkoutWithBlocks = Workout & {
 
 export type WorkoutBlockWithExercises = WorkoutBlock & {
   exercises: WorkoutBlockExerciseWithDetails[];
+  exerciseGroups?: ExerciseGroupWithExercises[];
+};
+
+export type ExerciseGroupWithExercises = ExerciseGroup & {
+  exercises: WorkoutBlockExerciseWithDetails[];
 };
 
 export type WorkoutBlockExerciseWithDetails = WorkoutBlockExercise & {
   exercise: Pick<Exercise, "id" | "name" | "category">;
   setPrescriptions?: WorkoutSetPrescription[] | CreateSetPrescriptionInput[];
+  group?: Pick<ExerciseGroup, "id" | "name" | "rounds"> | null;
 };
 
 // ============================================================================
@@ -117,6 +124,16 @@ export interface CreateWorkoutBlockInput {
   timeCap?: number;
   workTime?: number;
   rounds?: number;
+  notes?: string;
+  exercises: CreateWorkoutBlockExerciseInput[];
+  exerciseGroups?: CreateExerciseGroupInput[];
+}
+
+export interface CreateExerciseGroupInput {
+  name?: string;
+  orderIndex: number;
+  rounds: number;
+  restBetweenRounds?: number;
   notes?: string;
   exercises: CreateWorkoutBlockExerciseInput[];
 }
@@ -218,12 +235,25 @@ export interface WorkoutBlockState {
   rounds: number | null;
   notes: string;
   exercises: WorkoutExerciseState[];
+  exerciseGroups: ExerciseGroupState[];
+}
+
+export interface ExerciseGroupState {
+  id: string; // ID temporário para UI
+  name: string;
+  orderIndex: number;
+  rounds: number;
+  restBetweenRounds: number | null;
+  notes: string;
+  exercises: WorkoutExerciseState[];
 }
 
 export interface WorkoutExerciseState {
   id: string; // ID temporário para UI
   exerciseId: string;
   exerciseName: string;
+  exerciseCategory?: string; // Category for field visibility
+  groupId?: string | null; // Reference to ExerciseGroupState for grouped exercises
   prescribedReps: number | null;
   prescribedWeight: number | null;
   prescribedWeightUnit: WeightUnit;

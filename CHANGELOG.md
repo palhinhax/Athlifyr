@@ -1,3 +1,10 @@
+# [15.2.0](https://github.com/palhinhax/Athlifyr/compare/v15.1.0...v15.2.0) (2026-01-31)
+
+### Features
+
+- add support for exercise groups in workout builder ([f7e68b8](https://github.com/palhinhax/Athlifyr/commit/f7e68b8565121ec376e9e474837b6c09ac38c5d0))
+- **workout-block-editor:** add functionality to move items up and down in the list ([bd1f18d](https://github.com/palhinhax/Athlifyr/commit/bd1f18d93508bb6cc1c79d12ef40d82cce42d01e))
+
 # [15.1.0](https://github.com/palhinhax/Athlifyr/compare/v15.0.0...v15.1.0) (2026-01-31)
 
 ### Bug Fixes

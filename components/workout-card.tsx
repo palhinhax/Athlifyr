@@ -190,7 +190,7 @@ export function WorkoutCard({
 
         <CardFooter className="pt-0">
           <Button asChild className="w-full">
-            <Link href={`/workouts/${workout.id}/log`}>
+            <Link href={`/workouts/${workout.id}/run`}>
               <PlayIcon className="mr-2 h-4 w-4" />
               {t("log.startWorkout")}
             </Link>

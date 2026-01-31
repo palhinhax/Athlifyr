@@ -147,6 +147,17 @@
       "duration": "Dauer"
     },
 
+    "runner": {
+      "inProgress": "Training läuft",
+      "start": "Starten",
+      "pause": "Pause",
+      "resume": "Fortsetzen",
+      "finish": "Beenden",
+      "finishTitle": "Training Beenden?",
+      "finishDescription": "Gesamtzeit: {time}. Du wirst weitergeleitet, um deine Ergebnisse zu protokollieren.",
+      "finishAndLog": "Beenden und Protokollieren"
+    },
+
     "assign": {
       "title": "Training Zuweisen",
       "toSession": "Zur Session Zuweisen",

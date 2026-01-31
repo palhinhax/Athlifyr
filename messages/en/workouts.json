@@ -147,6 +147,17 @@
       "duration": "Duration"
     },
 
+    "runner": {
+      "inProgress": "Workout in Progress",
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "finish": "Finish",
+      "finishTitle": "Finish Workout?",
+      "finishDescription": "Total time: {time}. You will be redirected to log your results.",
+      "finishAndLog": "Finish and Log"
+    },
+
     "assign": {
       "title": "Assign Workout",
       "toSession": "Assign to Session",

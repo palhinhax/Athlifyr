@@ -147,6 +147,17 @@
       "duration": "Duración"
     },
 
+    "runner": {
+      "inProgress": "Entrenamiento en Curso",
+      "start": "Iniciar",
+      "pause": "Pausar",
+      "resume": "Continuar",
+      "finish": "Terminar",
+      "finishTitle": "¿Terminar Entrenamiento?",
+      "finishDescription": "Tiempo total: {time}. Serás redirigido para registrar tus resultados.",
+      "finishAndLog": "Terminar y Registrar"
+    },
+
     "assign": {
       "title": "Asignar Entrenamiento",
       "toSession": "Asignar a Sesión",

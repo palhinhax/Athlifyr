@@ -180,9 +180,10 @@ function Colon({
 
 interface WallClockProps {
   className?: string;
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
-export function WallClock({ className }: WallClockProps) {
+export function WallClock({ className, size = "sm" }: WallClockProps) {
   const [time, setTime] = useState({
     h1: "0",
     h2: "0",
@@ -222,14 +223,52 @@ export function WallClock({ className }: WallClockProps) {
   const greenOff = "#052205";
   const redOn = "#ff2222";
   const redOff = "#220505";
-  const digitWidth = 14;
-  const digitHeight = 26;
+
+  // Size configurations
+  const sizeConfig = {
+    sm: {
+      digitWidth: 14,
+      digitHeight: 26,
+      padding: "px-2 pb-2 pt-1.5",
+      gap: "gap-0.5",
+      brandingSize: "text-[5px]",
+      badgeSize: "text-[5px] px-1 py-0.5",
+    },
+    md: {
+      digitWidth: 28,
+      digitHeight: 52,
+      padding: "px-4 pb-3 pt-2",
+      gap: "gap-1",
+      brandingSize: "text-[8px]",
+      badgeSize: "text-[8px] px-1.5 py-1",
+    },
+    lg: {
+      digitWidth: 48,
+      digitHeight: 80,
+      padding: "px-6 pb-4 pt-3",
+      gap: "gap-1.5",
+      brandingSize: "text-xs",
+      badgeSize: "text-[10px] px-2 py-1",
+    },
+    xl: {
+      digitWidth: 72,
+      digitHeight: 120,
+      padding: "px-8 pb-6 pt-4",
+      gap: "gap-2",
+      brandingSize: "text-sm",
+      badgeSize: "text-xs px-3 py-1.5",
+    },
+  };
+
+  const { digitWidth, digitHeight, padding, gap, brandingSize, badgeSize } =
+    sizeConfig[size];
 
   if (!mounted) {
     return (
       <div
         className={cn(
-          "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black px-2 pb-2 pt-1.5",
+          "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black",
+          padding,
           "shadow-[inset_0_0_20px_rgba(0,0,0,0.9),0_4px_8px_rgba(0,0,0,0.4)]",
           className
         )}
@@ -245,7 +284,8 @@ export function WallClock({ className }: WallClockProps) {
   return (
     <div
       className={cn(
-        "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black px-2 pb-2 pt-1.5",
+        "relative flex flex-col overflow-hidden rounded-lg border border-gray-800 bg-black",
+        padding,
         "shadow-[inset_0_0_20px_rgba(0,0,0,0.9),0_4px_8px_rgba(0,0,0,0.4)]",
         "before:absolute before:inset-x-0 before:top-0 before:h-[1px] before:bg-gradient-to-r before:from-transparent before:via-gray-700/20 before:to-transparent",
         className
@@ -253,7 +293,7 @@ export function WallClock({ className }: WallClockProps) {
       title="Current time"
     >
       {/* Digits row */}
-      <div className="flex items-center gap-0.5">
+      <div className={cn("flex items-center", gap)}>
         {/* Hours - GREEN */}
         <SevenSegmentDigit
           value={time.h1}
@@ -308,18 +348,30 @@ export function WallClock({ className }: WallClockProps) {
       </div>
 
       {/* Bottom row: Branding + Badges */}
-      <div className="mt-1 flex items-center justify-between">
+      <div className="mt-2 flex items-center justify-between">
         {/* Branding */}
-        <span className="text-[5px] font-bold tracking-wider text-white/40">
+        <span
+          className={cn("font-bold tracking-wider text-white/40", brandingSize)}
+        >
           ATHLIFYR
         </span>
 
         {/* WORK / REST badges - LED style (off state = dim, visible) */}
         <div className="flex gap-1">
-          <span className="rounded-sm bg-green-950 px-1 py-0.5 text-[5px] font-bold leading-none text-green-900">
+          <span
+            className={cn(
+              "rounded-sm bg-green-950 font-bold leading-none text-green-900",
+              badgeSize
+            )}
+          >
             WORK
           </span>
-          <span className="rounded-sm bg-red-950 px-1 py-0.5 text-[5px] font-bold leading-none text-red-900">
+          <span
+            className={cn(
+              "rounded-sm bg-red-950 font-bold leading-none text-red-900",
+              badgeSize
+            )}
+          >
             REST
           </span>
         </div>

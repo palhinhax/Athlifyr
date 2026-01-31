@@ -24,9 +24,10 @@ import {
 import {
   PlusIcon,
   TrashIcon,
-  GripVerticalIcon,
   SearchIcon,
   RepeatIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
 } from "lucide-react";
 import { WeightUnit, DistanceUnit, ExerciseCategory } from "@prisma/client";
 import type {
@@ -238,6 +239,140 @@ export function WorkoutBlockEditor({
   }, [block.exercises, exerciseGroups]);
 
   const blockItems = buildBlockItems();
+
+  // Move item up in the list
+  const moveItemUp = useCallback(
+    (itemIndex: number) => {
+      if (itemIndex === 0) return;
+
+      const items = buildBlockItems();
+      const currentItem = items[itemIndex];
+      const previousItem = items[itemIndex - 1];
+
+      // Swap orderIndex values
+      const currentOrderIndex = currentItem.orderIndex;
+      const previousOrderIndex = previousItem.orderIndex;
+
+      if (currentItem.type === "exercise") {
+        const newExercises = block.exercises.map((ex) => {
+          if (ex.id === currentItem.data.id) {
+            return { ...ex, orderIndex: previousOrderIndex };
+          }
+          return ex;
+        });
+        if (previousItem.type === "exercise") {
+          const updatedExercises = newExercises.map((ex) => {
+            if (ex.id === previousItem.data.id) {
+              return { ...ex, orderIndex: currentOrderIndex };
+            }
+            return ex;
+          });
+          onChange({ ...block, exercises: updatedExercises });
+        } else {
+          // Previous is a group
+          const updatedGroups = exerciseGroups.map((g) =>
+            g.id === previousItem.data.id
+              ? { ...g, orderIndex: currentOrderIndex }
+              : g
+          );
+          updateExerciseGroups(updatedGroups);
+          onChange({ ...block, exercises: newExercises });
+        }
+      } else {
+        // Current is a group
+        const newGroups = exerciseGroups.map((g) =>
+          g.id === currentItem.data.id
+            ? { ...g, orderIndex: previousOrderIndex }
+            : g
+        );
+        if (previousItem.type === "group") {
+          const updatedGroups = newGroups.map((g) =>
+            g.id === previousItem.data.id
+              ? { ...g, orderIndex: currentOrderIndex }
+              : g
+          );
+          updateExerciseGroups(updatedGroups);
+        } else {
+          // Previous is an exercise
+          const updatedExercises = block.exercises.map((ex) =>
+            ex.id === previousItem.data.id
+              ? { ...ex, orderIndex: currentOrderIndex }
+              : ex
+          );
+          updateExerciseGroups(newGroups);
+          onChange({ ...block, exercises: updatedExercises });
+        }
+      }
+    },
+    [block, exerciseGroups, buildBlockItems, onChange, updateExerciseGroups]
+  );
+
+  // Move item down in the list
+  const moveItemDown = useCallback(
+    (itemIndex: number) => {
+      const items = buildBlockItems();
+      if (itemIndex >= items.length - 1) return;
+
+      const currentItem = items[itemIndex];
+      const nextItem = items[itemIndex + 1];
+
+      // Swap orderIndex values
+      const currentOrderIndex = currentItem.orderIndex;
+      const nextOrderIndex = nextItem.orderIndex;
+
+      if (currentItem.type === "exercise") {
+        const newExercises = block.exercises.map((ex) => {
+          if (ex.id === currentItem.data.id) {
+            return { ...ex, orderIndex: nextOrderIndex };
+          }
+          return ex;
+        });
+        if (nextItem.type === "exercise") {
+          const updatedExercises = newExercises.map((ex) => {
+            if (ex.id === nextItem.data.id) {
+              return { ...ex, orderIndex: currentOrderIndex };
+            }
+            return ex;
+          });
+          onChange({ ...block, exercises: updatedExercises });
+        } else {
+          // Next is a group
+          const updatedGroups = exerciseGroups.map((g) =>
+            g.id === nextItem.data.id
+              ? { ...g, orderIndex: currentOrderIndex }
+              : g
+          );
+          updateExerciseGroups(updatedGroups);
+          onChange({ ...block, exercises: newExercises });
+        }
+      } else {
+        // Current is a group
+        const newGroups = exerciseGroups.map((g) =>
+          g.id === currentItem.data.id
+            ? { ...g, orderIndex: nextOrderIndex }
+            : g
+        );
+        if (nextItem.type === "group") {
+          const updatedGroups = newGroups.map((g) =>
+            g.id === nextItem.data.id
+              ? { ...g, orderIndex: currentOrderIndex }
+              : g
+          );
+          updateExerciseGroups(updatedGroups);
+        } else {
+          // Next is an exercise
+          const updatedExercises = block.exercises.map((ex) =>
+            ex.id === nextItem.data.id
+              ? { ...ex, orderIndex: currentOrderIndex }
+              : ex
+          );
+          updateExerciseGroups(newGroups);
+          onChange({ ...block, exercises: updatedExercises });
+        }
+      }
+    },
+    [block, exerciseGroups, buildBlockItems, onChange, updateExerciseGroups]
+  );
 
   // Fetch exercises for search
   const fetchExercises = useCallback(async (query: string) => {
@@ -600,27 +735,50 @@ export function WorkoutBlockEditor({
           </div>
         ) : (
           <div className="space-y-2">
-            {blockItems.map((item) => {
+            {blockItems.map((item, itemIndex) => {
               if (item.type === "group") {
                 const group = item.data;
                 const groupIndex = exerciseGroups.findIndex(
                   (g) => g.id === group.id
                 );
                 return (
-                  <ExerciseGroupEditor
-                    key={group.id}
-                    group={group}
-                    onChange={(updatedGroup) => {
-                      const newGroups = [...exerciseGroups];
-                      newGroups[groupIndex] = updatedGroup;
-                      updateExerciseGroups(newGroups);
-                    }}
-                    onDelete={() => {
-                      updateExerciseGroups(
-                        exerciseGroups.filter((g) => g.id !== group.id)
-                      );
-                    }}
-                  />
+                  <div key={group.id} className="flex items-start gap-1">
+                    <div className="flex flex-col">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => moveItemUp(itemIndex)}
+                        disabled={itemIndex === 0}
+                      >
+                        <ChevronUpIcon className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => moveItemDown(itemIndex)}
+                        disabled={itemIndex === blockItems.length - 1}
+                      >
+                        <ChevronDownIcon className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex-1">
+                      <ExerciseGroupEditor
+                        group={group}
+                        onChange={(updatedGroup) => {
+                          const newGroups = [...exerciseGroups];
+                          newGroups[groupIndex] = updatedGroup;
+                          updateExerciseGroups(newGroups);
+                        }}
+                        onDelete={() => {
+                          updateExerciseGroups(
+                            exerciseGroups.filter((g) => g.id !== group.id)
+                          );
+                        }}
+                      />
+                    </div>
+                  </div>
                 );
               }
 
@@ -633,9 +791,28 @@ export function WorkoutBlockEditor({
               return (
                 <div
                   key={exercise.id}
-                  className="flex items-start gap-2 rounded border bg-muted/50 p-3"
+                  className="flex items-start gap-1 rounded border bg-muted/50 p-3"
                 >
-                  <GripVerticalIcon className="mt-1 h-4 w-4 cursor-grab text-muted-foreground" />
+                  <div className="flex flex-col">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => moveItemUp(itemIndex)}
+                      disabled={itemIndex === 0}
+                    >
+                      <ChevronUpIcon className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => moveItemDown(itemIndex)}
+                      disabled={itemIndex === blockItems.length - 1}
+                    >
+                      <ChevronDownIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
                   <div className="flex-1 space-y-2">
                     <div className="flex items-center justify-between">
                       <div>

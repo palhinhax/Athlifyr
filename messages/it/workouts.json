@@ -12,6 +12,7 @@
     "venueWorkouts": "Allenamenti del Centro",
     "noWorkouts": "Non hai ancora allenamenti",
     "noWorkoutsDescription": "Crea il tuo primo allenamento per iniziare a monitorare i tuoi progressi.",
+    "noPublicWorkouts": "Nessun allenamento pubblico disponibile al momento.",
 
     "form": {
       "name": "Nome Allenamento",
@@ -71,8 +72,27 @@
       "workTime": "Tempo di Lavoro (s)",
       "restTime": "Tempo di Riposo (s)",
       "rounds": "Round",
+      "name": "Nome del Blocco",
       "notes": "Note",
       "notesPlaceholder": "Note del blocco..."
+    },
+
+    "exerciseGroups": {
+      "title": "Gruppi di Esercizi",
+      "addGroup": "Aggiungi Gruppo",
+      "groupName": "Nome del Gruppo",
+      "groupNamePlaceholder": "es: Superset A, Circuito 1...",
+      "rounds": "Round",
+      "restBetweenRounds": "Riposo tra round (s)",
+      "notes": "Note",
+      "notesPlaceholder": "Note del gruppo...",
+      "noGroups": "Nessun gruppo aggiunto",
+      "exercises": "Esercizi nel gruppo",
+      "deleteGroup": "Elimina gruppo",
+      "expandGroup": "Espandi gruppo",
+      "collapseGroup": "Comprimi gruppo",
+      "emptyGroup": "Nessun esercizio in questo gruppo",
+      "addExerciseToGroup": "Aggiungi esercizio al gruppo"
     },
 
     "exercises": {

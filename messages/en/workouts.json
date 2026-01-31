@@ -12,6 +12,7 @@
     "venueWorkouts": "Venue Workouts",
     "noWorkouts": "You don't have any workouts yet",
     "noWorkoutsDescription": "Create your first workout to start tracking your progress.",
+    "noPublicWorkouts": "No public workouts available yet.",
 
     "form": {
       "name": "Workout Name",
@@ -71,8 +72,27 @@
       "workTime": "Work Time (s)",
       "restTime": "Rest Time (s)",
       "rounds": "Rounds",
+      "name": "Block Name",
       "notes": "Notes",
       "notesPlaceholder": "Block notes..."
+    },
+
+    "exerciseGroups": {
+      "title": "Exercise Groups",
+      "addGroup": "Add Group",
+      "groupName": "Group Name",
+      "groupNamePlaceholder": "e.g., Superset A, Circuit 1...",
+      "rounds": "Rounds",
+      "restBetweenRounds": "Rest between rounds (s)",
+      "notes": "Notes",
+      "notesPlaceholder": "Group notes...",
+      "noGroups": "No groups added",
+      "exercises": "Exercises in group",
+      "deleteGroup": "Delete group",
+      "expandGroup": "Expand group",
+      "collapseGroup": "Collapse group",
+      "emptyGroup": "No exercises in this group",
+      "addExerciseToGroup": "Add exercise to group"
     },
 
     "exercises": {

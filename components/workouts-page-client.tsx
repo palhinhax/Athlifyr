@@ -17,6 +17,7 @@ interface WorkoutsPageClientProps {
 
 interface WorkoutApiResponse extends WorkoutWithBlocks {
   createdById: string;
+  isPublic: boolean;
 }
 
 export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
@@ -32,21 +33,23 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
   const fetchWorkouts = useCallback(async () => {
     try {
       setIsLoading(true);
-      // Fetch user's workouts
-      const myResponse = await fetch(`/api/workouts?creatorId=${userId}`);
-      if (myResponse.ok) {
-        const myData = await myResponse.json();
-        setWorkouts(myData.workouts || []);
-      }
+      // Fetch all workouts (user's own + public)
+      const response = await fetch("/api/workouts");
+      if (response.ok) {
+        const data = await response.json();
+        const allWorkouts = data.items || [];
 
-      // Fetch public workouts
-      const publicResponse = await fetch("/api/workouts?isPublic=true");
-      if (publicResponse.ok) {
-        const publicData = await publicResponse.json();
+        // Separate user's workouts from public workouts
+        setWorkouts(
+          allWorkouts.filter(
+            (w: WorkoutApiResponse) => w.createdById === userId
+          )
+        );
         setPublicWorkouts(
-          publicData.workouts?.filter(
-            (w: WorkoutApiResponse) => w.createdById !== userId
-          ) || []
+          allWorkouts.filter(
+            (w: WorkoutApiResponse) =>
+              w.createdById !== userId && w.isPublic === true
+          )
         );
       }
     } catch (error) {

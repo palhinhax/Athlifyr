@@ -1,3 +1,14 @@
+# [15.1.0](https://github.com/palhinhax/Athlifyr/compare/v15.0.0...v15.1.0) (2026-01-31)
+
+### Bug Fixes
+
+- **workouts:** fix workout list not showing saved workouts ([563b933](https://github.com/palhinhax/Athlifyr/commit/563b9330171abee5c0c5daf7c63bd071ca95a154)), closes [#missing-workouts](https://github.com/palhinhax/Athlifyr/issues/missing-workouts)
+
+### Features
+
+- **ui:** add configurable WallClock size to workout runner ([f72aaad](https://github.com/palhinhax/Athlifyr/commit/f72aaad5a43082dec65f4cff789490f23ea9bf16))
+- **workouts:** add workout runner page and update routing links ([088d3fe](https://github.com/palhinhax/Athlifyr/commit/088d3fe073e4c3afdf8f918d128aa6e3042e68bf))
+
 # [15.0.0](https://github.com/palhinhax/Athlifyr/compare/v14.13.3...v15.0.0) (2026-01-30)
 
 ### Code Refactoring

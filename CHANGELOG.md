@@ -1,3 +1,9 @@
+# [15.3.0](https://github.com/palhinhax/Athlifyr/compare/v15.2.0...v15.3.0) (2026-02-01)
+
+### Features
+
+- **events:** add DEKA Spain events and new Portuguese trails ([03fba94](https://github.com/palhinhax/Athlifyr/commit/03fba94b366cd2f3e1cf51769fa5216cc1615b5c))
+
 # [15.2.0](https://github.com/palhinhax/Athlifyr/compare/v15.1.0...v15.2.0) (2026-01-31)
 
 ### Features

@@ -209,7 +209,7 @@ model EventVariant {
   description       String?
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
-  distanceKm        Int?
+  distanceKm        Float?
   startDate         DateTime?
   startTime         String?
   atrpGrade         Int?

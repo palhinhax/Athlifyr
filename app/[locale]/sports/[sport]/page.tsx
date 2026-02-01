@@ -56,6 +56,9 @@ async function getSportEvents(sportType: SportType, locale: Language) {
         },
       },
       variants: true,
+      _count: {
+        select: { comments: true },
+      },
     },
     orderBy: {
       startDate: "asc",

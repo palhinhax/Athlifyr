@@ -1,3 +1,9 @@
+# [15.8.0](https://github.com/palhinhax/Athlifyr/compare/v15.7.0...v15.8.0) (2026-02-02)
+
+### Features
+
+- **admin:** add mobile responsive cards for users and reports pages ([087a38b](https://github.com/palhinhax/Athlifyr/commit/087a38ba278a23397fcc2fcb2c4df885eaf58539))
+
 # [15.7.0](https://github.com/palhinhax/Athlifyr/compare/v15.6.0...v15.7.0) (2026-02-02)
 
 ### Features

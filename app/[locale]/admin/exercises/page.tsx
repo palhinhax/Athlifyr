@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { ExercisesPageClient } from "@/components/exercises-page-client";
+import { AdminExercisesClient } from "@/components/admin-exercises-client";
 import { Loader2 } from "lucide-react";
 import type { ExerciseCategory } from "@prisma/client";
 
@@ -19,6 +19,13 @@ interface Exercise {
     id: string;
     name: string | null;
   } | null;
+  // Measurement fields
+  hasReps: boolean;
+  hasWeight: boolean;
+  hasDistance: boolean;
+  hasTime: boolean;
+  hasCalories: boolean;
+  hasHeight: boolean;
 }
 
 interface PaginationData {
@@ -93,7 +100,7 @@ export default function AdminExercisesPage() {
         <h2 className="text-2xl font-bold">{t("title")}</h2>
         <p className="mt-2 text-muted-foreground">{t("description")}</p>
       </div>
-      <ExercisesPageClient
+      <AdminExercisesClient
         initialExercises={exercises}
         initialPagination={pagination}
       />

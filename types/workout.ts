@@ -72,7 +72,18 @@ export type ExerciseGroupWithExercises = ExerciseGroup & {
 };
 
 export type WorkoutBlockExerciseWithDetails = WorkoutBlockExercise & {
-  exercise: Pick<Exercise, "id" | "name" | "category">;
+  exercise: Pick<
+    Exercise,
+    | "id"
+    | "name"
+    | "category"
+    | "hasReps"
+    | "hasWeight"
+    | "hasDistance"
+    | "hasTime"
+    | "hasCalories"
+    | "hasHeight"
+  >;
   setPrescriptions?: WorkoutSetPrescription[] | CreateSetPrescriptionInput[];
   group?: Pick<ExerciseGroup, "id" | "name" | "rounds"> | null;
 };

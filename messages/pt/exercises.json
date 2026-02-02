@@ -12,6 +12,24 @@
     "showingResults": "A mostrar {start} a {end} de {total} exercícios",
     "previous": "Anterior",
     "next": "Seguinte",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "noMeasurements": "Sem métricas",
+    "editMeasurements": "Editar Métricas",
+    "editMeasurementsDesc": "Seleciona quais métricas podem ser registadas para este exercício.",
+    "measurementsSaved": "Métricas guardadas",
+    "measurementsSavedDesc": "As configurações de métricas do exercício foram atualizadas.",
+    "measurements": {
+      "hasReps": "Repetições",
+      "hasWeight": "Peso",
+      "hasDistance": "Distância",
+      "hasTime": "Tempo",
+      "hasCalories": "Calorias",
+      "hasHeight": "Altura"
+    },
+    "errors": {
+      "saveFailed": "Erro ao guardar métricas"
+    },
     "categories": {
       "ALL": "Todos",
       "CROSSFIT": "CrossFit",

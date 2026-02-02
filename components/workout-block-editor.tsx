@@ -455,6 +455,12 @@ export function WorkoutBlockEditor({
         id: exercise.id,
         name: exercise.name,
         category: exercise.category,
+        hasReps: true,
+        hasWeight: false,
+        hasDistance: false,
+        hasTime: false,
+        hasCalories: false,
+        hasHeight: false,
       },
       setPrescriptions: [], // Initialize empty set prescriptions
     };

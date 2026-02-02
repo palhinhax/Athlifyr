@@ -108,17 +108,23 @@ export function useAudioAlerts(): UseAudioAlertsReturn {
 
   // Short high beep for countdown (3, 2, 1)
   const playCountdownBeep = useCallback(() => {
-    playBeep(880, 0.1, "sine", 0.4); // A5, short
+    playBeep(880, 0.1, "sine", 0.4); // A5, 100ms
   }, [playBeep]);
 
-  // Long lower beep for GO!
+  // Two quick beeps at different pitches for GO!
   const playGoBeep = useCallback(() => {
-    playBeep(440, 0.5, "sine", 0.6); // A4, longer
-  }, [playBeep]);
+    if (isMuted) return;
+    // First beep - lower pitch
+    playBeep(440, 0.1, "sine", 0.5); // A4, 100ms
+    // Second beep - higher pitch after short delay
+    setTimeout(() => {
+      playBeep(880, 0.15, "sine", 0.6); // A5, 150ms
+    }, 120);
+  }, [isMuted, playBeep]);
 
-  // Medium beep for work/rest transitions
+  // Quick beep for work/rest transitions
   const playTransitionBeep = useCallback(() => {
-    playBeep(660, 0.2, "sine", 0.5); // E5, medium
+    playBeep(660, 0.1, "sine", 0.5); // E5, 100ms
   }, [playBeep]);
 
   // Double beep for finish

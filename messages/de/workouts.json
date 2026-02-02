@@ -180,6 +180,7 @@
       "getReady": "Mach dich bereit...",
       "mute": "Töne stumm schalten",
       "unmute": "Töne aktivieren",
+      "playBlock": "Starten",
       "submitResults": "Ergebnisse Einreichen",
       "finishTitle": "Training Beenden?",
       "finishDescription": "Gesamtzeit: {time}. Du wirst weitergeleitet, um deine Ergebnisse zu protokollieren.",

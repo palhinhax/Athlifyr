@@ -180,6 +180,7 @@
       "getReady": "Preparati...",
       "mute": "Disattiva suoni",
       "unmute": "Attiva suoni",
+      "playBlock": "Avvia",
       "submitResults": "Invia Risultati",
       "finishTitle": "Terminare l'Allenamento?",
       "finishDescription": "Tempo totale: {time}. Verrai reindirizzato per registrare i tuoi risultati.",

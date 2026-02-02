@@ -12,7 +12,7 @@
  * - Fullscreen mode hides sidebar and topbar, keeping the same layout
  */
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import type { WorkoutWithBlocks } from "@/types/workout";
@@ -39,27 +39,31 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
   // Audio alerts
   const audioAlerts = useAudioAlerts();
 
+  // Store audio functions in refs to prevent callback recreation
+  const audioAlertsRef = useRef(audioAlerts);
+  audioAlertsRef.current = audioAlerts;
+
   // Timer mode configuration
   const [timerConfig, setTimerConfig] =
     useState<TimerModeConfig>(DEFAULT_TIMER_CONFIG);
   const [showModeSettings, setShowModeSettings] = useState(false);
 
-  // Audio callback handlers (wrapped in useCallback to prevent re-renders)
+  // Audio callback handlers - use refs to avoid recreating on every render
   const handlePrepCountdownTick = useCallback(() => {
-    audioAlerts.playCountdownBeep();
-  }, [audioAlerts]);
+    audioAlertsRef.current.playCountdownBeep();
+  }, []);
 
   const handleTimerStart = useCallback(() => {
-    audioAlerts.playGoBeep();
-  }, [audioAlerts]);
+    audioAlertsRef.current.playGoBeep();
+  }, []);
 
   const handlePhaseChange = useCallback(() => {
-    audioAlerts.playTransitionBeep();
-  }, [audioAlerts]);
+    audioAlertsRef.current.playTransitionBeep();
+  }, []);
 
   const handleTimerFinish = useCallback(() => {
-    audioAlerts.playFinishBeep();
-  }, [audioAlerts]);
+    audioAlertsRef.current.playFinishBeep();
+  }, []);
 
   // Timer hook with audio callbacks
   const timer = useTimer({
@@ -108,6 +112,23 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
       router.push(`/workouts/${workout.id}/log?elapsed=${timer.elapsedTime}`);
     }
   }, [timer.elapsedTime, onFinish, router, workout.id]);
+
+  // Handle play block - auto-configure and start timer
+  const handlePlayBlock = useCallback(
+    (config: TimerModeConfig) => {
+      // Reset current timer if running
+      if (timer.hasStarted) {
+        timer.confirmReset();
+      }
+      // Apply the block's config
+      setTimerConfig(config);
+      // Start the timer after a short delay to allow config to apply
+      setTimeout(() => {
+        timer.start();
+      }, 100);
+    },
+    [timer]
+  );
 
   // Get mode label for display
   const getModeLabel = useCallback((): string => {
@@ -222,7 +243,14 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
             size="lg"
             timerMode={{
               seconds: getDisplaySeconds(),
-              status: timer.getTimerStatus(),
+              // Map "preparing" to "running" for WallClock (it animates)
+              status: (timer.getTimerStatus() === "preparing"
+                ? "running"
+                : timer.getTimerStatus()) as
+                | "idle"
+                | "running"
+                | "paused"
+                | "done",
               phase:
                 timer.currentPhase === "IDLE"
                   ? "work"
@@ -253,12 +281,12 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
 
       {/* Workout Content - Scrollable */}
       <div className="flex-1 space-y-4 bg-background p-4">
-        <WorkoutBlocks workout={workout} />
-        <SubmitSection
-          hasStarted={timer.hasStarted}
-          elapsedTime={timer.elapsedTime}
-          onSubmit={handleSubmitResults}
+        <WorkoutBlocks
+          workout={workout}
+          onPlayBlock={handlePlayBlock}
+          isTimerRunning={timer.isRunning || timer.isPreparing}
         />
+        <SubmitSection onSubmit={handleSubmitResults} />
       </div>
     </div>
   );

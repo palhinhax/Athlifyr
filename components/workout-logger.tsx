@@ -26,6 +26,7 @@ import {
 import { Link } from "@/i18n/routing";
 import { WeightUnit, DistanceUnit } from "@prisma/client";
 import type { WorkoutWithBlocks, CreateWorkoutLogInput } from "@/types/workout";
+import { TimeInput } from "@/components/time-input";
 import { BLOCK_TYPE_INFO, formatTime } from "@/types/workout";
 
 interface WorkoutLoggerProps {
@@ -316,19 +317,17 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
 
               {block.type === "FOR_TIME" && (
                 <div className="space-y-2">
-                  <Label>{t("log.completedTime")} (s)</Label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={blockResults[blockIndex].completedTime || ""}
-                    onChange={(e) =>
+                  <Label>{t("log.completedTime")}</Label>
+                  <TimeInput
+                    value={blockResults[blockIndex].completedTime ?? null}
+                    onChange={(seconds) =>
                       updateBlockResult(
                         blockIndex,
                         "completedTime",
-                        e.target.value ? parseInt(e.target.value) : undefined
+                        seconds ?? undefined
                       )
                     }
-                    placeholder="300"
+                    size="sm"
                   />
                 </div>
               )}
@@ -498,28 +497,24 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
                       {exercise.exercise.hasTime && (
                         <div className="space-y-1">
                           <Label className="text-xs">
-                            {t("log.actualTime")} (s)
+                            {t("log.actualTime")}
                           </Label>
-                          <Input
-                            type="number"
-                            min={0}
-                            className="h-8"
-                            placeholder="300"
+                          <TimeInput
                             value={
                               blockResults[blockIndex].exerciseResults[
                                 exerciseIndex
-                              ].actualTime || ""
+                              ].actualTime ?? null
                             }
-                            onChange={(e) =>
+                            onChange={(seconds) =>
                               updateExerciseResult(
                                 blockIndex,
                                 exerciseIndex,
                                 "actualTime",
-                                e.target.value
-                                  ? parseInt(e.target.value)
-                                  : undefined
+                                seconds ?? undefined
                               )
                             }
+                            hideHours
+                            size="sm"
                           />
                         </div>
                       )}

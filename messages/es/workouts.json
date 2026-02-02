@@ -2,6 +2,7 @@
   "workouts": {
     "title": "Entrenamientos",
     "subtitle": "Crea y gestiona tus entrenamientos",
+    "createdBy": "Creado por",
     "createWorkout": "Crear Entrenamiento",
     "editWorkout": "Editar Entrenamiento",
     "deleteWorkout": "Eliminar Entrenamiento",
@@ -237,6 +238,7 @@
     "plans": {
       "title": "Planes de Entrenamiento",
       "subtitle": "Crea y gestiona programas de entrenamiento estructurados",
+      "createdBy": "Creado por",
       "myPlans": "Mis Planes",
       "publicPlans": "Planes Públicos",
       "templates": "Plantillas",
@@ -317,7 +319,8 @@
         "notes": "Notas para el atleta",
         "notesPlaceholder": "Instrucciones o modificaciones específicas...",
         "assignSuccess": "Plan asignado con éxito",
-        "alreadyAssigned": "Este atleta ya tiene este plan activo"
+        "alreadyAssigned": "Este atleta ya tiene este plan activo",
+        "cancel": "Cancelar"
       },
 
       "progress": {

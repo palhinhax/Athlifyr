@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
 
 interface TrainingPlanCardProps {
@@ -65,7 +66,7 @@ export function TrainingPlanCard({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const totalWorkouts = plan.weeks.reduce(
-    (sum, week) => sum + week.workouts.length,
+    (sum: number, week: { workouts: unknown[] }) => sum + week.workouts.length,
     0
   );
 
@@ -188,6 +189,32 @@ export function TrainingPlanCard({
               <Badge variant="outline">{t("templates")}</Badge>
             )}
           </div>
+
+          {/* Creator info - only show for public plans */}
+          {plan.isPublic && plan.createdBy && (
+            <Link
+              href={`/profile/${plan.createdBy.id}`}
+              className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-muted"
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={plan.createdBy.image || undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {plan.createdBy.name
+                    ?.split(" ")
+                    .map((n: string) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">
+                {t("createdBy")}{" "}
+                <span className="font-medium text-foreground">
+                  {plan.createdBy.name}
+                </span>
+              </span>
+            </Link>
+          )}
         </CardContent>
 
         <CardFooter className="pt-3">

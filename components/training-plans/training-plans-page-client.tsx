@@ -29,6 +29,7 @@ import {
   TrainingPlanForm,
   type TrainingPlanFormData,
 } from "./training-plan-form";
+import { AssignPlanDialog } from "./assign-plan-dialog";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
 import { useRouter } from "@/i18n/routing";
 
@@ -49,6 +50,9 @@ export function TrainingPlansPageClient({
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState("my-plans");
+  const [isAssignOpen, setIsAssignOpen] = useState(false);
+  const [selectedPlanForAssign, setSelectedPlanForAssign] =
+    useState<TrainingPlanWithDetails | null>(null);
 
   const fetchPlans = useCallback(async () => {
     setIsLoading(true);
@@ -129,6 +133,59 @@ export function TrainingPlansPageClient({
       title: "Coming soon",
       description: "Plan duplication will be available soon.",
     });
+  };
+
+  const handleOpenAssignDialog = (plan: TrainingPlanWithDetails) => {
+    setSelectedPlanForAssign(plan);
+    setIsAssignOpen(true);
+  };
+
+  const handleAssignPlan = async (
+    planId: string,
+    userId: string,
+    startDate: Date,
+    notes?: string
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/training-plans/${planId}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          startDate: startDate.toISOString(),
+          notes,
+        }),
+      });
+
+      if (response.ok) {
+        toast({
+          title: t("success.assigned"),
+        });
+        // Refresh plans to update assigned count
+        fetchPlans();
+        return true;
+      } else {
+        const data = await response.json();
+        if (response.status === 400 && data.error?.includes("already")) {
+          toast({
+            title: t("assignment.alreadyAssigned"),
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: t("errors.assignFailed"),
+            variant: "destructive",
+          });
+        }
+        return false;
+      }
+    } catch {
+      toast({
+        title: t("errors.assignFailed"),
+        variant: "destructive",
+      });
+      return false;
+    }
   };
 
   const myPlans = plans.filter((p) => !p.isTemplate);
@@ -223,6 +280,7 @@ export function TrainingPlansPageClient({
                     onEdit={() => router.push(`/workouts/plans/${plan.id}`)}
                     onDelete={() => handleDeletePlan(plan.id)}
                     onDuplicate={() => handleDuplicatePlan(plan.id)}
+                    onAssign={() => handleOpenAssignDialog(plan)}
                   />
                 ))}
               </div>
@@ -286,6 +344,14 @@ export function TrainingPlansPageClient({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Assign Plan Dialog */}
+      <AssignPlanDialog
+        plan={selectedPlanForAssign}
+        open={isAssignOpen}
+        onOpenChange={setIsAssignOpen}
+        onAssign={handleAssignPlan}
+      />
     </div>
   );
 }

@@ -23,6 +23,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   ArrowLeftIcon,
   CalendarDaysIcon,
@@ -92,7 +93,9 @@ export function TrainingPlanDetailClient() {
 
       if (response.ok) {
         const { plan: updatedPlan } = await response.json();
-        setPlan((prev) => (prev ? { ...prev, ...updatedPlan } : null));
+        setPlan((prev: TrainingPlanWithDetails | null) =>
+          prev ? { ...prev, ...updatedPlan } : null
+        );
         setIsEditing(false);
         toast({ title: t("success.updated") });
       }
@@ -240,7 +243,7 @@ export function TrainingPlanDetailClient() {
   }
 
   const totalWorkouts = plan.weeks.reduce(
-    (sum, week) => sum + week.workouts.length,
+    (sum: number, week: { workouts: unknown[] }) => sum + week.workouts.length,
     0
   );
 
@@ -275,6 +278,32 @@ export function TrainingPlanDetailClient() {
             <h1 className="text-2xl font-bold">{plan.name}</h1>
             {plan.description && (
               <p className="mt-1 text-muted-foreground">{plan.description}</p>
+            )}
+
+            {/* Creator info */}
+            {plan.createdBy && (
+              <Link
+                href={`/profile/${plan.createdBy.id}`}
+                className="mt-3 inline-flex items-center gap-2 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted"
+              >
+                <Avatar className="h-6 w-6">
+                  <AvatarImage src={plan.createdBy.image || undefined} />
+                  <AvatarFallback className="text-xs">
+                    {plan.createdBy.name
+                      ?.split(" ")
+                      .map((n: string) => n[0])
+                      .join("")
+                      .toUpperCase()
+                      .slice(0, 2) || "?"}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-sm">
+                  <span className="text-muted-foreground">
+                    {t("createdBy")}
+                  </span>{" "}
+                  <span className="font-medium">{plan.createdBy.name}</span>
+                </span>
+              </Link>
             )}
 
             <div className="mt-3 flex flex-wrap items-center gap-3">
@@ -352,23 +381,28 @@ export function TrainingPlanDetailClient() {
             </div>
           ) : (
             <div className="space-y-3">
-              {plan.weeks.map((week, index) => (
-                <TrainingPlanWeekEditor
-                  key={week.id}
-                  week={week}
-                  weekNumber={week.weekNumber}
-                  planId={planId}
-                  isExpanded={expandedWeeks.has(week.id)}
-                  onToggleExpand={() => toggleWeekExpanded(week.id)}
-                  onUpdate={handleUpdateWeek}
-                  onDelete={handleDeleteWeek}
-                  onDuplicate={handleDuplicateWeek}
-                  canMoveUp={index > 0}
-                  canMoveDown={index < plan.weeks.length - 1}
-                  onWorkoutAdded={fetchPlan}
-                  onWorkoutRemoved={fetchPlan}
-                />
-              ))}
+              {plan.weeks.map(
+                (
+                  week: TrainingPlanWithDetails["weeks"][number],
+                  index: number
+                ) => (
+                  <TrainingPlanWeekEditor
+                    key={week.id}
+                    week={week}
+                    weekNumber={week.weekNumber}
+                    planId={planId}
+                    isExpanded={expandedWeeks.has(week.id)}
+                    onToggleExpand={() => toggleWeekExpanded(week.id)}
+                    onUpdate={handleUpdateWeek}
+                    onDelete={handleDeleteWeek}
+                    onDuplicate={handleDuplicateWeek}
+                    canMoveUp={index > 0}
+                    canMoveDown={index < plan.weeks.length - 1}
+                    onWorkoutAdded={fetchPlan}
+                    onWorkoutRemoved={fetchPlan}
+                  />
+                )
+              )}
             </div>
           )}
         </CardContent>

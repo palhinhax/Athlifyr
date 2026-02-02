@@ -2,6 +2,7 @@
   "workouts": {
     "title": "Trainings",
     "subtitle": "Erstelle und verwalte deine Trainings",
+    "createdBy": "Erstellt von",
     "createWorkout": "Training Erstellen",
     "editWorkout": "Training Bearbeiten",
     "deleteWorkout": "Training Löschen",
@@ -237,6 +238,7 @@
     "plans": {
       "title": "Trainingspläne",
       "subtitle": "Erstelle und verwalte strukturierte Trainingsprogramme",
+      "createdBy": "Erstellt von",
       "myPlans": "Meine Pläne",
       "publicPlans": "Öffentliche Pläne",
       "templates": "Vorlagen",
@@ -317,7 +319,8 @@
         "notes": "Notizen für den Athleten",
         "notesPlaceholder": "Spezifische Anweisungen oder Anpassungen...",
         "assignSuccess": "Plan erfolgreich zugewiesen",
-        "alreadyAssigned": "Dieser Athlet hat diesen Plan bereits aktiv"
+        "alreadyAssigned": "Dieser Athlet hat diesen Plan bereits aktiv",
+        "cancel": "Abbrechen"
       },
 
       "progress": {

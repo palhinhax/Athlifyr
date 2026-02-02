@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  BookmarkIcon,
   CalendarDaysIcon,
   DumbbellIcon,
   GlobeIcon,
@@ -33,19 +34,25 @@ import { AssignPlanDialog } from "./assign-plan-dialog";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
 import { useRouter } from "@/i18n/routing";
 
+type TrainingPlanWithSaved = TrainingPlanWithDetails & {
+  isSaved?: boolean;
+};
+
 interface TrainingPlansPageClientProps {
-  initialPlans?: TrainingPlanWithDetails[];
+  initialPlans?: TrainingPlanWithSaved[];
+  userId?: string;
 }
 
 export function TrainingPlansPageClient({
   initialPlans = [],
+  userId,
 }: TrainingPlansPageClientProps) {
   const t = useTranslations("workouts.plans");
   const tWorkouts = useTranslations("workouts");
   const { toast } = useToast();
   const router = useRouter();
 
-  const [plans, setPlans] = useState<TrainingPlanWithDetails[]>(initialPlans);
+  const [plans, setPlans] = useState<TrainingPlanWithSaved[]>(initialPlans);
   const [isLoading, setIsLoading] = useState(!initialPlans.length);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
@@ -188,9 +195,23 @@ export function TrainingPlansPageClient({
     }
   };
 
-  const myPlans = plans.filter((p) => !p.isTemplate);
+  const handleSaveToggle = () => {
+    // Refresh to update the lists
+    fetchPlans();
+  };
+
+  // Filter plans by ownership and save status
+  const myCreatedPlans = plans.filter(
+    (p) => p.createdById === userId && !p.isTemplate
+  );
+  const savedPlans = plans.filter((p) => p.createdById !== userId && p.isSaved);
   const templates = plans.filter((p) => p.isTemplate);
-  const publicPlans = plans.filter((p) => p.isPublic);
+  const publicPlans = plans.filter(
+    (p) => p.isPublic && p.createdById !== userId && !p.isSaved
+  );
+
+  // Combined count for "My Plans" tab
+  const myPlansCount = myCreatedPlans.length + savedPlans.length;
 
   const tabs = [
     {
@@ -198,9 +219,9 @@ export function TrainingPlansPageClient({
       label: t("myPlans"),
       icon: <CalendarDaysIcon />,
       badge:
-        myPlans.length > 0 ? (
+        myPlansCount > 0 ? (
           <span className="text-xs text-muted-foreground">
-            ({myPlans.length})
+            ({myPlansCount})
           </span>
         ) : undefined,
     },
@@ -262,7 +283,7 @@ export function TrainingPlansPageClient({
           />
 
           <ResponsiveTabsContent value="my-plans" activeValue={activeTab}>
-            {myPlans.length === 0 ? (
+            {myPlansCount === 0 ? (
               <EmptyState
                 title={t("noPlans")}
                 description={t("noPlansDescription")}
@@ -270,19 +291,55 @@ export function TrainingPlansPageClient({
                 actionLabel={t("createPlan")}
               />
             ) : (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {myPlans.map((plan) => (
-                  <TrainingPlanCard
-                    key={plan.id}
-                    plan={plan}
-                    canEdit
-                    canAssign
-                    onEdit={() => router.push(`/workouts/plans/${plan.id}`)}
-                    onDelete={() => handleDeletePlan(plan.id)}
-                    onDuplicate={() => handleDuplicatePlan(plan.id)}
-                    onAssign={() => handleOpenAssignDialog(plan)}
-                  />
-                ))}
+              <div className="space-y-6">
+                {/* My created plans */}
+                {myCreatedPlans.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                      <CalendarDaysIcon className="h-5 w-5" />
+                      {t("createdByMe")}
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {myCreatedPlans.map((plan) => (
+                        <TrainingPlanCard
+                          key={plan.id}
+                          plan={plan}
+                          canEdit
+                          canAssign
+                          onEdit={() =>
+                            router.push(`/workouts/plans/${plan.id}`)
+                          }
+                          onDelete={() => handleDeletePlan(plan.id)}
+                          onDuplicate={() => handleDuplicatePlan(plan.id)}
+                          onAssign={() => handleOpenAssignDialog(plan)}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Saved plans */}
+                {savedPlans.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="flex items-center gap-2 text-lg font-semibold">
+                      <BookmarkIcon className="h-5 w-5" />
+                      {t("savedPlans")}
+                    </h3>
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {savedPlans.map((plan) => (
+                        <TrainingPlanCard
+                          key={plan.id}
+                          plan={plan}
+                          canSave
+                          onEdit={() =>
+                            router.push(`/workouts/plans/${plan.id}`)
+                          }
+                          onSaveToggle={handleSaveToggle}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </ResponsiveTabsContent>
@@ -321,7 +378,9 @@ export function TrainingPlansPageClient({
                   <TrainingPlanCard
                     key={plan.id}
                     plan={plan}
+                    canSave
                     onEdit={() => router.push(`/workouts/plans/${plan.id}`)}
+                    onSaveToggle={handleSaveToggle}
                   />
                 ))}
               </div>

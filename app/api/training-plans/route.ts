@@ -21,6 +21,18 @@ export async function GET(request: Request) {
     const isPublic = searchParams.get("public") === "true";
     const myPlans = searchParams.get("myPlans") === "true";
     const assignedToMe = searchParams.get("assignedToMe") === "true";
+    const includeSaved = searchParams.get("includeSaved") !== "false"; // Default true
+
+    // Get user's saved plan IDs
+    const savedPlanIds =
+      includeSaved && session?.user?.id
+        ? (
+            await prisma.savedTrainingPlan.findMany({
+              where: { userId: session.user.id },
+              select: { planId: true },
+            })
+          ).map((s) => s.planId)
+        : [];
 
     // Build where clause
     const where: Prisma.TrainingPlanWhereInput = {};
@@ -33,8 +45,12 @@ export async function GET(request: Request) {
       // Not logged in - only show public plans
       where.isPublic = true;
     } else {
-      // Logged in - show public + own plans
-      where.OR = [{ isPublic: true }, { createdById: session.user.id }];
+      // Logged in - show public + own plans + saved plans
+      where.OR = [
+        { isPublic: true },
+        { createdById: session.user.id },
+        ...(savedPlanIds.length > 0 ? [{ id: { in: savedPlanIds } }] : []),
+      ];
     }
 
     if (category) {
@@ -110,7 +126,13 @@ export async function GET(request: Request) {
       orderBy: { createdAt: "desc" },
     });
 
-    return NextResponse.json({ plans });
+    // Add isSaved flag to each plan
+    const plansWithSaved = plans.map((plan) => ({
+      ...plan,
+      isSaved: savedPlanIds.includes(plan.id),
+    }));
+
+    return NextResponse.json({ plans: plansWithSaved });
   } catch (error) {
     console.error("Error fetching training plans:", error);
     return NextResponse.json(

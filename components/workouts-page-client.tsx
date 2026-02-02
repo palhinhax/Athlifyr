@@ -14,6 +14,7 @@ import {
   GlobeIcon,
   HistoryIcon,
   CalendarDaysIcon,
+  BookmarkIcon,
 } from "lucide-react";
 import { WorkoutCard } from "@/components/workout-card";
 import { WorkoutBuilder } from "@/components/workout-builder";
@@ -28,13 +29,17 @@ interface WorkoutsPageClientProps {
 interface WorkoutApiResponse extends WorkoutWithBlocks {
   createdById: string;
   isPublic: boolean;
+  isSaved?: boolean;
 }
 
 export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
   const t = useTranslations("workouts");
   const { toast } = useToast();
-  const [workouts, setWorkouts] = useState<WorkoutWithBlocks[]>([]);
-  const [publicWorkouts, setPublicWorkouts] = useState<WorkoutWithBlocks[]>([]);
+  const [myWorkouts, setMyWorkouts] = useState<WorkoutApiResponse[]>([]);
+  const [savedWorkouts, setSavedWorkouts] = useState<WorkoutApiResponse[]>([]);
+  const [publicWorkouts, setPublicWorkouts] = useState<WorkoutApiResponse[]>(
+    []
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingWorkout, setEditingWorkout] =
@@ -44,22 +49,25 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
   const fetchWorkouts = useCallback(async () => {
     try {
       setIsLoading(true);
-      // Fetch all workouts (user's own + public)
+      // Fetch all workouts (user's own + public + saved)
       const response = await fetch("/api/workouts");
       if (response.ok) {
         const data = await response.json();
-        const allWorkouts = data.items || [];
+        const allWorkouts: WorkoutApiResponse[] = data.items || [];
 
-        // Separate user's workouts from public workouts
-        setWorkouts(
-          allWorkouts.filter(
-            (w: WorkoutApiResponse) => w.createdById === userId
-          )
+        // Separate workouts into categories
+        // My workouts: created by me
+        setMyWorkouts(allWorkouts.filter((w) => w.createdById === userId));
+
+        // Saved workouts: not created by me but saved
+        setSavedWorkouts(
+          allWorkouts.filter((w) => w.createdById !== userId && w.isSaved)
         );
+
+        // Public workouts: not created by me and not saved (for discovery)
         setPublicWorkouts(
           allWorkouts.filter(
-            (w: WorkoutApiResponse) =>
-              w.createdById !== userId && w.isPublic === true
+            (w) => w.createdById !== userId && w.isPublic && !w.isSaved
           )
         );
       }
@@ -125,6 +133,11 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
     setEditingWorkout(null);
   };
 
+  const handleSaveToggle = () => {
+    // Refresh to update the lists
+    fetchWorkouts();
+  };
+
   if (showBuilder) {
     return (
       <div className="container py-8">
@@ -137,15 +150,18 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
     );
   }
 
+  // Combined count: my workouts + saved workouts
+  const myWorkoutsCount = myWorkouts.length + savedWorkouts.length;
+
   const tabs = [
     {
       value: "my-workouts",
       label: t("myWorkouts"),
       icon: <DumbbellIcon />,
       badge:
-        workouts.length > 0 ? (
+        myWorkoutsCount > 0 ? (
           <span className="text-xs text-muted-foreground">
-            ({workouts.length})
+            ({myWorkoutsCount})
           </span>
         ) : undefined,
     },
@@ -201,7 +217,7 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
               <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
             ))}
           </div>
-        ) : workouts.length === 0 ? (
+        ) : myWorkoutsCount === 0 ? (
           <div className="rounded-lg border border-dashed p-12 text-center">
             <p className="text-lg font-medium">{t("noWorkouts")}</p>
             <p className="mt-1 text-sm text-muted-foreground">
@@ -213,16 +229,48 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
             </Button>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {workouts.map((workout) => (
-              <WorkoutCard
-                key={workout.id}
-                workout={workout}
-                onEdit={() => handleEditWorkout(workout)}
-                onDelete={() => handleDeleteWorkout(workout.id)}
-                canEdit={true}
-              />
-            ))}
+          <div className="space-y-6">
+            {/* My created workouts */}
+            {myWorkouts.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="flex items-center gap-2 text-lg font-semibold">
+                  <DumbbellIcon className="h-5 w-5" />
+                  {t("createdByMe")}
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {myWorkouts.map((workout) => (
+                    <WorkoutCard
+                      key={workout.id}
+                      workout={workout}
+                      onEdit={() => handleEditWorkout(workout)}
+                      onDelete={() => handleDeleteWorkout(workout.id)}
+                      canEdit={true}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Saved workouts */}
+            {savedWorkouts.length > 0 && (
+              <div className="space-y-4">
+                <h3 className="flex items-center gap-2 text-lg font-semibold">
+                  <BookmarkIcon className="h-5 w-5" />
+                  {t("savedWorkouts")}
+                </h3>
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                  {savedWorkouts.map((workout) => (
+                    <WorkoutCard
+                      key={workout.id}
+                      workout={workout}
+                      canEdit={false}
+                      canSave={true}
+                      onSaveToggle={handleSaveToggle}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </ResponsiveTabsContent>
@@ -241,7 +289,13 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {publicWorkouts.map((workout) => (
-              <WorkoutCard key={workout.id} workout={workout} canEdit={false} />
+              <WorkoutCard
+                key={workout.id}
+                workout={workout}
+                canEdit={false}
+                canSave={true}
+                onSaveToggle={handleSaveToggle}
+              />
             ))}
           </div>
         )}

@@ -35,28 +35,38 @@ import {
   TrashIcon,
   PlayIcon,
   GlobeIcon,
+  BookmarkIcon,
+  Loader2Icon,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
 import type { WorkoutWithBlocks } from "@/types/workout";
 import { BLOCK_TYPE_INFO } from "@/types/workout";
 
 interface WorkoutCardProps {
-  workout: WorkoutWithBlocks;
+  workout: WorkoutWithBlocks & { isSaved?: boolean };
   onEdit?: () => void;
   onDelete?: () => void;
+  onSaveToggle?: (isSaved: boolean) => void;
   canEdit?: boolean;
+  canSave?: boolean;
 }
 
 export function WorkoutCard({
   workout,
   onEdit,
   onDelete,
+  onSaveToggle,
   canEdit = false,
+  canSave = false,
 }: WorkoutCardProps) {
   const t = useTranslations("workouts");
+  const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(workout.isSaved || false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const totalExercises = workout.blocks.reduce(
     (sum, block) => sum + block.exercises.length,
@@ -68,6 +78,33 @@ export function WorkoutCard({
   const handleDelete = () => {
     setShowDeleteDialog(false);
     onDelete?.();
+  };
+
+  const handleToggleSave = async () => {
+    setIsSaving(true);
+    try {
+      const method = isSaved ? "DELETE" : "POST";
+      const response = await fetch(`/api/workouts/${workout.id}/save`, {
+        method,
+      });
+
+      if (response.ok) {
+        setIsSaved(!isSaved);
+        onSaveToggle?.(!isSaved);
+        toast({
+          title: isSaved ? t("unsaved") : t("saved"),
+        });
+      } else {
+        throw new Error("Failed to toggle save");
+      }
+    } catch {
+      toast({
+        title: t("errors.saveFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -85,28 +122,47 @@ export function WorkoutCard({
                 </CardDescription>
               )}
             </div>
-            {canEdit && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
-                    <MoreVerticalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={onEdit}>
-                    <PencilIcon className="mr-2 h-4 w-4" />
-                    {t("editWorkout")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    {t("deleteWorkout")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <div className="flex items-center gap-1">
+              {canSave && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-mr-1 -mt-2"
+                  onClick={handleToggleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <BookmarkIcon
+                      className={`h-4 w-4 ${isSaved ? "fill-current text-primary" : ""}`}
+                    />
+                  )}
+                </Button>
+              )}
+              {canEdit && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                      <MoreVerticalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onEdit}>
+                      <PencilIcon className="mr-2 h-4 w-4" />
+                      {t("editWorkout")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <TrashIcon className="mr-2 h-4 w-4" />
+                      {t("deleteWorkout")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </CardHeader>
 

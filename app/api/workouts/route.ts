@@ -97,14 +97,28 @@ export async function GET(request: Request) {
     const venueId = searchParams.get("venueId");
     const isTemplate = searchParams.get("isTemplate") === "true";
     const isPublic = searchParams.get("isPublic") === "true";
+    const includeSaved = searchParams.get("includeSaved") !== "false"; // Default true
     const cursor = searchParams.get("cursor");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
 
-    // Build where clause
+    // Get user's saved workout IDs
+    const savedWorkoutIds = includeSaved
+      ? (
+          await prisma.savedWorkout.findMany({
+            where: { userId: session.user.id },
+            select: { workoutId: true },
+          })
+        ).map((s) => s.workoutId)
+      : [];
+
+    // Build where clause - include own, public, and saved workouts
     const where = {
       OR: [
         { createdById: session.user.id },
         { isPublic: true },
+        ...(savedWorkoutIds.length > 0
+          ? [{ id: { in: savedWorkoutIds } }]
+          : []),
         ...(venueId ? [{ venueId }] : []),
       ],
       ...(venueId && { venueId }),
@@ -164,8 +178,14 @@ export async function GET(request: Request) {
     const items = hasMore ? workouts.slice(0, -1) : workouts;
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
+    // Add isSaved flag to each workout
+    const itemsWithSaved = items.map((workout) => ({
+      ...workout,
+      isSaved: savedWorkoutIds.includes(workout.id),
+    }));
+
     return NextResponse.json({
-      items,
+      items: itemsWithSaved,
       nextCursor,
       hasMore,
     });

@@ -1,3 +1,9 @@
+# [15.9.0](https://github.com/palhinhax/Athlifyr/compare/v15.8.2...v15.9.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add responsive timer and hide/show clock option ([a80d598](https://github.com/palhinhax/Athlifyr/commit/a80d598ceabbba1b9a5298b4b9d5a250c7769bfd))
+
 ## [15.8.2](https://github.com/palhinhax/Athlifyr/compare/v15.8.1...v15.8.2) (2026-02-02)
 
 ### Bug Fixes

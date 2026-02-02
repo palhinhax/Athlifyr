@@ -29,7 +29,8 @@ export default async function TrainingPlansPage({
 
   if (!session?.user?.id) {
     redirect({ href: "/auth/signin", locale });
+    return null;
   }
 
-  return <TrainingPlansPageClient />;
+  return <TrainingPlansPageClient userId={session.user.id} />;
 }

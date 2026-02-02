@@ -28,10 +28,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  BookmarkIcon,
   CalendarDaysIcon,
   ClipboardListIcon,
   CopyIcon,
   GlobeIcon,
+  Loader2Icon,
   MoreVerticalIcon,
   PencilIcon,
   TrashIcon,
@@ -41,16 +43,19 @@ import {
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
 
 interface TrainingPlanCardProps {
-  plan: TrainingPlanWithDetails;
+  plan: TrainingPlanWithDetails & { isSaved?: boolean };
   onEdit?: () => void;
   onDelete?: () => void;
   onDuplicate?: () => void;
   onAssign?: () => void;
+  onSaveToggle?: (isSaved: boolean) => void;
   canEdit?: boolean;
   canAssign?: boolean;
+  canSave?: boolean;
 }
 
 export function TrainingPlanCard({
@@ -59,11 +64,16 @@ export function TrainingPlanCard({
   onDelete,
   onDuplicate,
   onAssign,
+  onSaveToggle,
   canEdit = false,
   canAssign = false,
+  canSave = false,
 }: TrainingPlanCardProps) {
   const t = useTranslations("workouts.plans");
+  const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(plan.isSaved || false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const totalWorkouts = plan.weeks.reduce(
     (sum: number, week: { workouts: unknown[] }) => sum + week.workouts.length,
@@ -73,6 +83,33 @@ export function TrainingPlanCard({
   const handleDelete = () => {
     setShowDeleteDialog(false);
     onDelete?.();
+  };
+
+  const handleToggleSave = async () => {
+    setIsSaving(true);
+    try {
+      const method = isSaved ? "DELETE" : "POST";
+      const response = await fetch(`/api/training-plans/${plan.id}/save`, {
+        method,
+      });
+
+      if (response.ok) {
+        setIsSaved(!isSaved);
+        onSaveToggle?.(!isSaved);
+        toast({
+          title: isSaved ? t("unsaved") : t("saved"),
+        });
+      } else {
+        throw new Error("Failed to toggle save");
+      }
+    } catch {
+      toast({
+        title: t("errors.saveFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const getDifficultyColor = (difficulty: number) => {
@@ -110,38 +147,57 @@ export function TrainingPlanCard({
                 </CardDescription>
               )}
             </div>
-            {canEdit && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
-                    <MoreVerticalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={onEdit}>
-                    <PencilIcon className="mr-2 h-4 w-4" />
-                    {t("editPlan")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={onDuplicate}>
-                    <CopyIcon className="mr-2 h-4 w-4" />
-                    {t("duplicatePlan")}
-                  </DropdownMenuItem>
-                  {canAssign && (
-                    <DropdownMenuItem onClick={onAssign}>
-                      <UserPlusIcon className="mr-2 h-4 w-4" />
-                      {t("assignPlan")}
-                    </DropdownMenuItem>
+            <div className="flex items-center gap-1">
+              {canSave && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-mr-1 -mt-2"
+                  onClick={handleToggleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <BookmarkIcon
+                      className={`h-4 w-4 ${isSaved ? "fill-current text-primary" : ""}`}
+                    />
                   )}
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    {t("deletePlan")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                </Button>
+              )}
+              {canEdit && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                      <MoreVerticalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onEdit}>
+                      <PencilIcon className="mr-2 h-4 w-4" />
+                      {t("editPlan")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={onDuplicate}>
+                      <CopyIcon className="mr-2 h-4 w-4" />
+                      {t("duplicatePlan")}
+                    </DropdownMenuItem>
+                    {canAssign && (
+                      <DropdownMenuItem onClick={onAssign}>
+                        <UserPlusIcon className="mr-2 h-4 w-4" />
+                        {t("assignPlan")}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      className="text-destructive"
+                      onClick={() => setShowDeleteDialog(true)}
+                    >
+                      <TrashIcon className="mr-2 h-4 w-4" />
+                      {t("deletePlan")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </CardHeader>
 

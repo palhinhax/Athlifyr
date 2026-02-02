@@ -58,11 +58,13 @@ model User {
   assignedWorkouts UserWorkout[] @relation("AssignedWorkouts")
   workoutsAssigned UserWorkout[] @relation("WorkoutAssigner")
   workoutLogs      WorkoutLog[]
+  savedWorkouts    SavedWorkout[]
 
   // Training Plans relations
-  createdPlans     TrainingPlan[]     @relation("CreatedPlans")
-  assignedPlans    UserTrainingPlan[] @relation("AssignedPlans")
-  plansAssigned    UserTrainingPlan[] @relation("PlanAssigner")
+  createdPlans          TrainingPlan[]          @relation("CreatedPlans")
+  assignedPlans         UserTrainingPlan[]      @relation("AssignedPlans")
+  plansAssigned         UserTrainingPlan[]      @relation("PlanAssigner")
+  savedTrainingPlans    SavedTrainingPlan[]
 
   @@index([email])
   @@index([name])
@@ -1374,6 +1376,7 @@ model Workout {
   userWorkouts    UserWorkout[]
   logs            WorkoutLog[]
   planWorkouts    TrainingPlanWorkout[]
+  savedBy         SavedWorkout[]
 
   @@index([createdById])
   @@index([venueId])
@@ -1669,6 +1672,7 @@ model TrainingPlan {
   weeks              TrainingPlanWeek[]
   assignedToUsers    UserTrainingPlan[]
   assignedToSessions VenueSessionPlan[]
+  savedBy            SavedTrainingPlan[]
 
   @@index([createdById])
   @@index([venueId])
@@ -1733,6 +1737,40 @@ model UserTrainingPlan {
   @@index([userId])
   @@index([planId])
   @@index([status])
+}
+
+// ============================================================================
+// SAVED WORKOUTS & TRAINING PLANS (Bookmarks)
+// ============================================================================
+
+// Permite ao utilizador guardar/bookmark workouts públicos de outros criadores
+model SavedWorkout {
+  id        String   @id @default(cuid())
+  userId    String
+  workoutId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workoutId])
+  @@index([userId])
+  @@index([workoutId])
+}
+
+// Permite ao utilizador guardar/bookmark planos de treino públicos de outros criadores
+model SavedTrainingPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  planId    String
+  createdAt DateTime @default(now())
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, planId])
+  @@index([userId])
+  @@index([planId])
 }
 
 // Atribuição de plano de treino a uma sessão de venue

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -17,6 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { SessionWorkoutSelector } from "@/components/session-workout-selector";
 import { format, parseISO, setHours, setMinutes } from "date-fns";
 
 interface VenueSession {
@@ -57,9 +58,11 @@ export function VenueSessionModal({
 }: VenueSessionModalProps) {
   const t = useTranslations("venues.sessions");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [selectedWorkoutIds, setSelectedWorkoutIds] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -72,6 +75,28 @@ export function VenueSessionModal({
     bookingAdvanceDays: "4",
     cancellationDeadlineMinutes: "30",
   });
+
+  // Fetch session workouts when editing
+  const fetchSessionWorkouts = useCallback(async () => {
+    if (!session?.id) {
+      setSelectedWorkoutIds([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/venues/${venueId}/sessions/${session.id}/workouts`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedWorkoutIds(
+          data.workouts?.map((w: { id: string }) => w.id) || []
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching session workouts:", error);
+    }
+  }, [session?.id, venueId]);
 
   // Reset form when modal opens/closes or session changes
   useEffect(() => {
@@ -92,6 +117,7 @@ export function VenueSessionModal({
           bookingAdvanceDays: "4",
           cancellationDeadlineMinutes: "30",
         });
+        fetchSessionWorkouts();
       } else {
         // Creating new session - use venue defaults
         const dateToUse = defaultDate || new Date();
@@ -110,12 +136,14 @@ export function VenueSessionModal({
             venueDefaults?.defaultCancellationDeadlineMinutes.toString() ||
             "30",
         });
+        setSelectedWorkoutIds([]);
       }
     }
   }, [
     open,
     session,
     defaultDate,
+    fetchSessionWorkouts,
     venueDefaults?.defaultSessionCapacity,
     venueDefaults?.defaultBookingAdvanceDays,
     venueDefaults?.defaultCancellationDeadlineMinutes,
@@ -205,7 +233,17 @@ export function VenueSessionModal({
       }
 
       const result = await response.json();
+      const sessionId = session?.id || result.id;
       const sessionsCreated = result.count || 1;
+
+      // Save workout assignments if session exists (not for recurring bulk creation)
+      if (sessionId && !formData.isRecurring) {
+        await fetch(`/api/venues/${venueId}/sessions/${sessionId}/workouts`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workoutIds: selectedWorkoutIds }),
+        });
+      }
 
       toast({
         title: session
@@ -345,6 +383,19 @@ export function VenueSessionModal({
             />
             <p className="text-xs text-muted-foreground">{t("tagsHint")}</p>
           </div>
+
+          {/* Workout Assignment - Only for single sessions (not recurring) */}
+          {!formData.isRecurring && (
+            <div className="space-y-4 rounded-lg border p-4">
+              <SessionWorkoutSelector
+                venueId={venueId}
+                sessionId={session?.id}
+                selectedWorkoutIds={selectedWorkoutIds}
+                onSelectionChange={setSelectedWorkoutIds}
+                locale={locale}
+              />
+            </div>
+          )}
 
           {/* Booking Rules */}
           <div className="space-y-4 rounded-lg border p-4">

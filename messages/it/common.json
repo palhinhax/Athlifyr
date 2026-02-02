@@ -24,6 +24,14 @@
     "inactive": "Inattivo",
     "changesSaved": "Modifiche salvate"
   },
+  "time": {
+    "hours": "Ore",
+    "minutes": "Minuti",
+    "seconds": "Secondi",
+    "h": "h",
+    "m": "m",
+    "s": "s"
+  },
   "upload": {
     "uploadImage": "Carica Immagine",
     "chooseImage": "Scegli Immagine",

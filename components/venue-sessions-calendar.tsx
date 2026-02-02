@@ -4,13 +4,14 @@ import { useState, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Plus } from "lucide-react";
+import { Plus, Dumbbell } from "lucide-react";
 import { format, addMonths, subMonths } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { VenueSessionModal } from "@/components/venue-session-modal";
 import { MonthCalendarView } from "@/components/month-calendar-view";
 import { VenueSessionCard } from "@/components/venue-session-card";
 import { SessionDetailsDialog } from "@/components/session-details-dialog";
+import { BulkWorkoutAssignDialog } from "@/components/bulk-workout-assign-dialog";
 import {
   SessionDeleteDialog,
   SessionCancelDialog,
@@ -118,6 +119,9 @@ export function VenueSessionsCalendar({
     onSuccess: fetchSessions,
   });
 
+  // Bulk workout assignment state
+  const [bulkAssignOpen, setBulkAssignOpen] = useState(false);
+
   // Navigation handlers
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const goToNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
@@ -142,7 +146,11 @@ export function VenueSessionsCalendar({
     <div className="space-y-4">
       {/* Create Session Button (Owner/Admin) */}
       {isOwnerOrAdmin && (
-        <div className="flex justify-end">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button variant="outline" onClick={() => setBulkAssignOpen(true)}>
+            <Dumbbell className="mr-2 h-4 w-4" />
+            {t("bulkAssignWorkout")}
+          </Button>
           <Button onClick={() => openCreateSessionModal(selectedDay)}>
             <Plus className="mr-2 h-4 w-4" />
             {t("createSession")}
@@ -238,6 +246,14 @@ export function VenueSessionsCalendar({
         onOpenChange={setCancelDialogOpen}
         onConfirm={confirmCancelBooking}
         isCancelling={false}
+      />
+
+      {/* Bulk Workout Assignment Dialog */}
+      <BulkWorkoutAssignDialog
+        open={bulkAssignOpen}
+        onOpenChange={setBulkAssignOpen}
+        venueId={venueId}
+        onSuccess={fetchSessions}
       />
     </div>
   );

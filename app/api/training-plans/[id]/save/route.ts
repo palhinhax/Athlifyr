@@ -9,10 +9,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// POST /api/training-plans/[planId]/save - Save a training plan
+// POST /api/training-plans/[id]/save - Save a training plan
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ planId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { planId } = await params;
+    const { id: planId } = await params;
 
     // Check if plan exists and is public (or user is creator)
     const plan = await prisma.trainingPlan.findUnique({
@@ -77,10 +77,10 @@ export async function POST(
   }
 }
 
-// DELETE /api/training-plans/[planId]/save - Unsave a training plan
+// DELETE /api/training-plans/[id]/save - Unsave a training plan
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ planId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -89,7 +89,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { planId } = await params;
+    const { id: planId } = await params;
 
     await prisma.savedTrainingPlan.deleteMany({
       where: {

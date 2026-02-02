@@ -9,10 +9,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-// POST /api/workouts/[workoutId]/save - Save a workout
+// POST /api/workouts/[id]/save - Save a workout
 export async function POST(
   request: Request,
-  { params }: { params: Promise<{ workoutId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { workoutId } = await params;
+    const { id: workoutId } = await params;
 
     // Check if workout exists and is public (or user is creator)
     const workout = await prisma.workout.findUnique({
@@ -74,10 +74,10 @@ export async function POST(
   }
 }
 
-// DELETE /api/workouts/[workoutId]/save - Unsave a workout
+// DELETE /api/workouts/[id]/save - Unsave a workout
 export async function DELETE(
   request: Request,
-  { params }: { params: Promise<{ workoutId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await auth();
@@ -86,7 +86,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { workoutId } = await params;
+    const { id: workoutId } = await params;
 
     await prisma.savedWorkout.deleteMany({
       where: {

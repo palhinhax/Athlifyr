@@ -1,3 +1,9 @@
+## [15.8.2](https://github.com/palhinhax/Athlifyr/compare/v15.8.1...v15.8.2) (2026-02-02)
+
+### Bug Fixes
+
+- **admin:** improve mobile responsiveness for ownership claims section ([19a1ed0](https://github.com/palhinhax/Athlifyr/commit/19a1ed0b61b9fddc1f8e6545734bef3211f7c7bd))
+
 ## [15.8.1](https://github.com/palhinhax/Athlifyr/compare/v15.8.0...v15.8.1) (2026-02-02)
 
 ### Bug Fixes

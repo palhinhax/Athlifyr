@@ -272,6 +272,7 @@ export async function POST(request: Request) {
                   select: {
                     id: true,
                     name: true,
+                    hasWeight: true,
                   },
                 },
                 sets: {
@@ -285,7 +286,9 @@ export async function POST(request: Request) {
     });
 
     // ========================================================================
-    // PERFORMANCE INTEGRATION: Create performance entries for strength work
+    // PERFORMANCE INTEGRATION: Create performance entries for strength exercises
+    // Only exercises with hasWeight:true go to performance tracking
+    // PRs are only set when beating historical bests (not lowering)
     // ========================================================================
 
     const performanceEntries: string[] = [];
@@ -297,6 +300,11 @@ export async function POST(request: Request) {
 
     for (const blockResult of log.blockResults) {
       for (const exerciseResult of blockResult.exerciseResults) {
+        // Skip exercises that don't track weight - they don't go to performance
+        if (!exerciseResult.exercise.hasWeight) {
+          continue;
+        }
+
         // For exercises with individual sets
         if (exerciseResult.sets.length > 0) {
           for (const set of exerciseResult.sets) {
@@ -329,6 +337,8 @@ export async function POST(request: Request) {
             );
 
             // Check if this is a PR (best e1RM)
+            // PRs are only set when the current performance BEATS the historical best
+            // Lower performances don't affect PR status (not every workout is max effort)
             const currentE1rm = weightKg * (1 + set.reps / 30);
             const bestHistoricalE1rm = history.reduce((best, h) => {
               if (!h.weightKg || !h.reps) return best;
@@ -336,7 +346,8 @@ export async function POST(request: Request) {
               return Math.max(best, e1rm);
             }, 0);
 
-            const isPR = currentE1rm > bestHistoricalE1rm && history.length > 0;
+            // Only mark as PR if we beat the previous best (must have history to compare)
+            const isPR = history.length > 0 && currentE1rm > bestHistoricalE1rm;
 
             if (isPR) {
               prsDetected.push({
@@ -371,6 +382,7 @@ export async function POST(request: Request) {
           }
         }
         // For exercises without individual sets but with weight/reps
+        // hasWeight is already checked above, so we know this exercise tracks weight
         else if (exerciseResult.actualWeight && exerciseResult.actualReps) {
           const weightKg = convertToKg(
             exerciseResult.actualWeight,
@@ -402,7 +414,8 @@ export async function POST(request: Request) {
             }))
           );
 
-          // Check PR
+          // Check PR - only mark when beating the best, not when lower
+          // (not every workout is max effort)
           const currentE1rm = weightKg * (1 + exerciseResult.actualReps / 30);
           const bestHistoricalE1rm = history.reduce((best, h) => {
             if (!h.weightKg || !h.reps) return best;
@@ -410,7 +423,8 @@ export async function POST(request: Request) {
             return Math.max(best, e1rm);
           }, 0);
 
-          const isPR = currentE1rm > bestHistoricalE1rm && history.length > 0;
+          // Only mark as PR if we beat the previous best (must have history to compare)
+          const isPR = history.length > 0 && currentE1rm > bestHistoricalE1rm;
 
           if (isPR) {
             prsDetected.push({

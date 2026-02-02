@@ -24,7 +24,7 @@ import {
   TrashIcon,
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
-import { WeightUnit } from "@prisma/client";
+import { WeightUnit, DistanceUnit } from "@prisma/client";
 import type { WorkoutWithBlocks, CreateWorkoutLogInput } from "@/types/workout";
 import { BLOCK_TYPE_INFO, formatTime } from "@/types/workout";
 
@@ -48,6 +48,8 @@ interface ExerciseResultData {
   actualWeightUnit?: WeightUnit;
   actualTime?: number;
   actualDistance?: number;
+  actualDistanceUnit?: DistanceUnit;
+  actualCalories?: number;
   sets: ExerciseSetData[];
 }
 
@@ -203,6 +205,8 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
             actualWeightUnit: er.actualWeightUnit,
             actualTime: er.actualTime,
             actualDistance: er.actualDistance,
+            actualDistanceUnit: er.actualDistanceUnit,
+            actualCalories: er.actualCalories,
             sets: er.sets,
           })),
         })),
@@ -373,37 +377,15 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
                     </div>
                   </div>
 
-                  {/* Simple result (for non-strength) */}
+                  {/* Simple result (for non-strength) - fields based on exercise settings */}
                   {block.type !== "STRENGTH" && (
                     <div className="grid gap-2 sm:grid-cols-3">
-                      <div className="space-y-1">
-                        <Label className="text-xs">{t("log.actualReps")}</Label>
-                        <Input
-                          type="number"
-                          min={0}
-                          className="h-8"
-                          value={
-                            blockResults[blockIndex].exerciseResults[
-                              exerciseIndex
-                            ].actualReps || ""
-                          }
-                          onChange={(e) =>
-                            updateExerciseResult(
-                              blockIndex,
-                              exerciseIndex,
-                              "actualReps",
-                              e.target.value
-                                ? parseInt(e.target.value)
-                                : undefined
-                            )
-                          }
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <Label className="text-xs">
-                          {t("log.actualWeight")}
-                        </Label>
-                        <div className="flex gap-1">
+                      {/* Reps - when exercise has reps */}
+                      {exercise.exercise.hasReps && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">
+                            {t("log.actualReps")}
+                          </Label>
                           <Input
                             type="number"
                             min={0}
@@ -411,44 +393,186 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
                             value={
                               blockResults[blockIndex].exerciseResults[
                                 exerciseIndex
-                              ].actualWeight || ""
+                              ].actualReps || ""
                             }
                             onChange={(e) =>
                               updateExerciseResult(
                                 blockIndex,
                                 exerciseIndex,
-                                "actualWeight",
+                                "actualReps",
                                 e.target.value
-                                  ? parseFloat(e.target.value)
+                                  ? parseInt(e.target.value)
                                   : undefined
                               )
                             }
                           />
-                          <Select
+                        </div>
+                      )}
+                      {/* Weight - when exercise has weight */}
+                      {exercise.exercise.hasWeight && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">
+                            {t("log.actualWeight")}
+                          </Label>
+                          <div className="flex gap-1">
+                            <Input
+                              type="number"
+                              min={0}
+                              className="h-8"
+                              value={
+                                blockResults[blockIndex].exerciseResults[
+                                  exerciseIndex
+                                ].actualWeight || ""
+                              }
+                              onChange={(e) =>
+                                updateExerciseResult(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  "actualWeight",
+                                  e.target.value
+                                    ? parseFloat(e.target.value)
+                                    : undefined
+                                )
+                              }
+                            />
+                            <Select
+                              value={
+                                blockResults[blockIndex].exerciseResults[
+                                  exerciseIndex
+                                ].actualWeightUnit || "KG"
+                              }
+                              onValueChange={(v) =>
+                                updateExerciseResult(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  "actualWeightUnit",
+                                  v as WeightUnit
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-8 w-16">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="KG">kg</SelectItem>
+                                <SelectItem value="LB">lb</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+                      {/* Distance - when exercise has distance */}
+                      {exercise.exercise.hasDistance && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">
+                            {t("log.actualDistance")}
+                          </Label>
+                          <div className="flex gap-1">
+                            <Input
+                              type="number"
+                              min={0}
+                              step="0.01"
+                              className="h-8"
+                              value={
+                                blockResults[blockIndex].exerciseResults[
+                                  exerciseIndex
+                                ].actualDistance || ""
+                              }
+                              onChange={(e) =>
+                                updateExerciseResult(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  "actualDistance",
+                                  e.target.value
+                                    ? parseFloat(e.target.value)
+                                    : undefined
+                                )
+                              }
+                            />
+                            <Select
+                              value={
+                                blockResults[blockIndex].exerciseResults[
+                                  exerciseIndex
+                                ].actualDistanceUnit || "KM"
+                              }
+                              onValueChange={(v) =>
+                                updateExerciseResult(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  "actualDistanceUnit",
+                                  v as DistanceUnit
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-8 w-16">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="KM">km</SelectItem>
+                                <SelectItem value="M">m</SelectItem>
+                                <SelectItem value="MI">mi</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      )}
+                      {/* Time - when exercise has time */}
+                      {exercise.exercise.hasTime && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">
+                            {t("log.actualTime")} (s)
+                          </Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            className="h-8"
+                            placeholder="300"
                             value={
                               blockResults[blockIndex].exerciseResults[
                                 exerciseIndex
-                              ].actualWeightUnit || "KG"
+                              ].actualTime || ""
                             }
-                            onValueChange={(v) =>
+                            onChange={(e) =>
                               updateExerciseResult(
                                 blockIndex,
                                 exerciseIndex,
-                                "actualWeightUnit",
-                                v as WeightUnit
+                                "actualTime",
+                                e.target.value
+                                  ? parseInt(e.target.value)
+                                  : undefined
                               )
                             }
-                          >
-                            <SelectTrigger className="h-8 w-16">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="KG">kg</SelectItem>
-                              <SelectItem value="LB">lb</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          />
                         </div>
-                      </div>
+                      )}
+                      {/* Calories - when exercise has calories */}
+                      {exercise.exercise.hasCalories && (
+                        <div className="space-y-1">
+                          <Label className="text-xs">
+                            {t("log.actualCalories")}
+                          </Label>
+                          <Input
+                            type="number"
+                            min={0}
+                            className="h-8"
+                            value={
+                              blockResults[blockIndex].exerciseResults[
+                                exerciseIndex
+                              ].actualCalories || ""
+                            }
+                            onChange={(e) =>
+                              updateExerciseResult(
+                                blockIndex,
+                                exerciseIndex,
+                                "actualCalories",
+                                e.target.value
+                                  ? parseInt(e.target.value)
+                                  : undefined
+                              )
+                            }
+                          />
+                        </div>
+                      )}
                     </div>
                   )}
 

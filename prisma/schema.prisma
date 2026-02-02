@@ -1265,6 +1265,14 @@ model Exercise {
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
+  // Measurement fields - which metrics make sense for this exercise
+  hasReps     Boolean @default(true)  // repetitions (e.g., squats, push-ups)
+  hasWeight   Boolean @default(false) // weight used (e.g., deadlifts, bench press)
+  hasDistance Boolean @default(false) // distance covered (e.g., running, rowing)
+  hasTime     Boolean @default(false) // time taken/held (e.g., planks, running)
+  hasCalories Boolean @default(false) // calories burned (e.g., rowing, assault bike)
+  hasHeight   Boolean @default(false) // height (e.g., box jumps)
+
   createdBy    User?                  @relation(fields: [createdById], references: [id], onDelete: SetNull)
   entries      UserPerformanceEntry[]
   translations ExerciseTranslation[]

@@ -12,6 +12,24 @@
     "showingResults": "Showing {start} to {end} of {total} exercises",
     "previous": "Previous",
     "next": "Next",
+    "cancel": "Cancel",
+    "save": "Save",
+    "noMeasurements": "No measurements",
+    "editMeasurements": "Edit Measurements",
+    "editMeasurementsDesc": "Select which metrics can be logged for this exercise.",
+    "measurementsSaved": "Measurements saved",
+    "measurementsSavedDesc": "Exercise measurement settings have been updated.",
+    "measurements": {
+      "hasReps": "Repetitions",
+      "hasWeight": "Weight",
+      "hasDistance": "Distance",
+      "hasTime": "Time",
+      "hasCalories": "Calories",
+      "hasHeight": "Height"
+    },
+    "errors": {
+      "saveFailed": "Failed to save measurements"
+    },
     "categories": {
       "ALL": "All",
       "CROSSFIT": "CrossFit",

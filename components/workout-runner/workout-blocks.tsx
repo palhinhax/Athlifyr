@@ -25,6 +25,8 @@ interface WorkoutBlocksProps {
   onPlayBlock?: (config: TimerModeConfig) => void;
   /** Whether a timer is currently running (disables play buttons) */
   isTimerRunning?: boolean;
+  /** Whether to show play buttons (hidden when clock is hidden) */
+  showPlayButtons?: boolean;
 }
 
 /**
@@ -99,6 +101,7 @@ export function WorkoutBlocks({
   workout,
   onPlayBlock,
   isTimerRunning = false,
+  showPlayButtons = true,
 }: WorkoutBlocksProps) {
   const t = useTranslations("workouts");
 
@@ -153,7 +156,7 @@ export function WorkoutBlocks({
                   )}
                 </div>
                 {/* Play button for compatible blocks */}
-                {canAutoPlay && onPlayBlock && (
+                {showPlayButtons && canAutoPlay && onPlayBlock && (
                   <Button
                     size="sm"
                     variant="outline"

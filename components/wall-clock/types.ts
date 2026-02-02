@@ -19,7 +19,7 @@ export interface TimerModeProps {
   isWarning?: boolean;
 }
 
-export type WallClockSize = "sm" | "md" | "lg" | "xl";
+export type WallClockSize = "sm" | "md" | "lg" | "xl" | "responsive";
 
 export interface WallClockProps {
   /** Size variant */
@@ -96,6 +96,16 @@ export const SIZE_CONFIG = {
     padding: "p-6",
     brandingSize: "text-sm",
     badgeSize: "px-3 py-1.5 text-xs",
+  },
+  // Responsive size for mobile - smaller on mobile, larger on desktop
+  responsive: {
+    digitWidth: 36, // Will be adjusted via CSS scale
+    digitHeight: 58,
+    leftDisplay: { width: 36, height: 58 },
+    gap: "gap-0.5 sm:gap-1",
+    padding: "p-2 sm:p-4",
+    brandingSize: "text-[8px] sm:text-xs",
+    badgeSize: "px-1 py-0.5 text-[6px] sm:px-2 sm:py-1 sm:text-[10px]",
   },
 } as const;
 

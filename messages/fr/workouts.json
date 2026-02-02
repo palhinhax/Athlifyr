@@ -185,6 +185,8 @@
       "getReady": "Préparez-vous...",
       "mute": "Couper les sons",
       "unmute": "Activer les sons",
+      "hideClock": "Masquer le chronomètre",
+      "showClock": "Afficher le chronomètre",
       "playBlock": "Démarrer",
       "submitResults": "Soumettre les Résultats",
       "finishTitle": "Terminer l'Entraînement ?",

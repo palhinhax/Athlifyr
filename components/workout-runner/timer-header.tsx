@@ -3,7 +3,7 @@
 /**
  * TimerHeader Component
  *
- * Header section with back button, title, mute toggle, settings and fullscreen toggle.
+ * Header section with back button, title, mute toggle, clock toggle, settings and fullscreen toggle.
  */
 
 import { useTranslations } from "next-intl";
@@ -16,6 +16,8 @@ import {
   SettingsIcon,
   Volume2Icon,
   VolumeXIcon,
+  ClockIcon,
+  EyeOffIcon,
 } from "lucide-react";
 
 interface TimerHeaderProps {
@@ -23,7 +25,9 @@ interface TimerHeaderProps {
   isFullscreen: boolean;
   hasStarted: boolean;
   isMuted: boolean;
+  isClockVisible: boolean;
   onToggleMute: () => void;
+  onToggleClockVisibility: () => void;
   onToggleSettings: () => void;
   onToggleFullscreen: () => void;
 }
@@ -33,7 +37,9 @@ export function TimerHeader({
   isFullscreen,
   hasStarted,
   isMuted,
+  isClockVisible,
   onToggleMute,
+  onToggleClockVisibility,
   onToggleSettings,
   onToggleFullscreen,
 }: TimerHeaderProps) {
@@ -62,6 +68,20 @@ export function TimerHeader({
               <VolumeXIcon className="h-5 w-5" />
             ) : (
               <Volume2Icon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleClockVisibility}
+            title={
+              isClockVisible ? t("runner.hideClock") : t("runner.showClock")
+            }
+          >
+            {isClockVisible ? (
+              <ClockIcon className="h-5 w-5" />
+            ) : (
+              <EyeOffIcon className="h-5 w-5" />
             )}
           </Button>
           <Button variant="ghost" size="icon" onClick={onToggleFullscreen}>
@@ -99,6 +119,18 @@ export function TimerHeader({
             <VolumeXIcon className="h-5 w-5" />
           ) : (
             <Volume2Icon className="h-5 w-5" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleClockVisibility}
+          title={isClockVisible ? t("runner.hideClock") : t("runner.showClock")}
+        >
+          {isClockVisible ? (
+            <ClockIcon className="h-5 w-5" />
+          ) : (
+            <EyeOffIcon className="h-5 w-5" />
           )}
         </Button>
         <Button

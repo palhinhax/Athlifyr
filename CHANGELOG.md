@@ -1,3 +1,10 @@
+# [15.4.0](https://github.com/palhinhax/Athlifyr/compare/v15.3.0...v15.4.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add auto-play buttons to workout blocks and improve audio alerts ([b6839c4](https://github.com/palhinhax/Athlifyr/commit/b6839c47984230309563fa4d0430c6ddd8d8d629))
+- **workouts:** refactor workout runner to modular architecture with audio controls ([237a821](https://github.com/palhinhax/Athlifyr/commit/237a821ee860c3297681d85b3f13a5cb1e58d576))
+
 # [15.3.0](https://github.com/palhinhax/Athlifyr/compare/v15.2.0...v15.3.0) (2026-02-01)
 
 ### Features

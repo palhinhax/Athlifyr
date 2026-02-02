@@ -1,3 +1,9 @@
+# [15.6.0](https://github.com/palhinhax/Athlifyr/compare/v15.5.0...v15.6.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add plan assignment dialog and creator info display ([8c1ccd4](https://github.com/palhinhax/Athlifyr/commit/8c1ccd4c65dfb01eec656024d0ea6f9caec63b79))
+
 # [15.5.0](https://github.com/palhinhax/Athlifyr/compare/v15.4.0...v15.5.0) (2026-02-02)
 
 ### Features

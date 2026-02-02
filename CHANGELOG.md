@@ -1,3 +1,9 @@
+# [15.5.0](https://github.com/palhinhax/Athlifyr/compare/v15.4.0...v15.5.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add training plans system for structured workout programs ([782d169](https://github.com/palhinhax/Athlifyr/commit/782d169a81447251d810e99ff3e7097eda627ddd))
+
 # [15.4.0](https://github.com/palhinhax/Athlifyr/compare/v15.3.0...v15.4.0) (2026-02-02)
 
 ### Features

@@ -1,3 +1,9 @@
+## [16.1.1](https://github.com/palhinhax/Athlifyr/compare/v16.1.0...v16.1.1) (2026-02-02)
+
+### Bug Fixes
+
+- **workouts:** use TimeInput component for time fields in workout logger ([8cae760](https://github.com/palhinhax/Athlifyr/commit/8cae76096f0947af77cc0c3711de7b81dec59272))
+
 # [16.1.0](https://github.com/palhinhax/Athlifyr/compare/v16.0.0...v16.1.0) (2026-02-02)
 
 ### Features

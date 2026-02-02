@@ -180,6 +180,7 @@
       "getReady": "Get Ready...",
       "mute": "Mute sounds",
       "unmute": "Unmute sounds",
+      "playBlock": "Play",
       "submitResults": "Submit Results",
       "finishTitle": "Finish Workout?",
       "finishDescription": "Total time: {time}. You will be redirected to log your results.",

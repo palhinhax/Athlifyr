@@ -1,3 +1,9 @@
+## [15.8.1](https://github.com/palhinhax/Athlifyr/compare/v15.8.0...v15.8.1) (2026-02-02)
+
+### Bug Fixes
+
+- **api:** resolve dynamic path slug conflicts preventing server start ([13856ad](https://github.com/palhinhax/Athlifyr/commit/13856ad78072288ebdf5d3f01496ded1de1752be))
+
 # [15.8.0](https://github.com/palhinhax/Athlifyr/compare/v15.7.0...v15.8.0) (2026-02-02)
 
 ### Features

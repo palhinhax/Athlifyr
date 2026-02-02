@@ -232,6 +232,148 @@
       "updated": "Workout updated successfully",
       "deleted": "Workout deleted successfully",
       "logged": "Workout logged successfully"
+    },
+
+    "plans": {
+      "title": "Training Plans",
+      "subtitle": "Create and manage structured training programs",
+      "myPlans": "My Plans",
+      "publicPlans": "Public Plans",
+      "templates": "Templates",
+      "assignedPlans": "Assigned Plans",
+      "createPlan": "Create Plan",
+      "editPlan": "Edit Plan",
+      "deletePlan": "Delete Plan",
+      "viewPlan": "View Plan",
+      "duplicatePlan": "Duplicate Plan",
+      "assignPlan": "Assign Plan",
+      "noPlans": "No training plans yet",
+      "noPlansDescription": "Create your first training plan to help athletes achieve their goals.",
+      "noAssignedPlans": "You don't have any assigned plans",
+      "noAssignedPlansDescription": "Ask your coach to assign you a training plan.",
+
+      "form": {
+        "name": "Plan Name",
+        "namePlaceholder": "E.g.: 8-Week Strength Program",
+        "description": "Description",
+        "descriptionPlaceholder": "Describe the training plan goals and methodology...",
+        "duration": "Duration (weeks)",
+        "difficulty": "Difficulty Level",
+        "isPublic": "Make plan public",
+        "isTemplate": "Save as template",
+        "save": "Save Plan",
+        "cancel": "Cancel"
+      },
+
+      "weeks": {
+        "title": "Weeks",
+        "week": "Week",
+        "weekNumber": "Week {number}",
+        "addWeek": "Add Week",
+        "editWeek": "Edit Week",
+        "deleteWeek": "Delete Week",
+        "duplicateWeek": "Duplicate Week",
+        "name": "Week Name",
+        "namePlaceholder": "E.g.: Foundation Week",
+        "description": "Description",
+        "descriptionPlaceholder": "What's the focus this week?",
+        "focus": "Focus Area",
+        "focusPlaceholder": "E.g.: Technique, Volume, Intensity",
+        "noWeeks": "No weeks added yet",
+        "noWeeksDescription": "Add weeks to structure your training plan."
+      },
+
+      "days": {
+        "monday": "Monday",
+        "tuesday": "Tuesday",
+        "wednesday": "Wednesday",
+        "thursday": "Thursday",
+        "friday": "Friday",
+        "saturday": "Saturday",
+        "sunday": "Sunday",
+        "rest": "Rest Day",
+        "addWorkout": "Add Workout",
+        "noWorkout": "No workout scheduled",
+        "optional": "Optional"
+      },
+
+      "workouts": {
+        "addToDay": "Add Workout to Day",
+        "selectWorkout": "Select a workout",
+        "searchWorkouts": "Search workouts...",
+        "isOptional": "Mark as optional",
+        "notes": "Workout Notes",
+        "notesPlaceholder": "Any specific instructions for this day...",
+        "removeFromDay": "Remove from day",
+        "noWorkoutsAvailable": "You have no workouts created. Create a workout first.",
+        "noResults": "No workouts found matching your search"
+      },
+
+      "assignment": {
+        "title": "Assign Plan",
+        "selectAthlete": "Select Athlete",
+        "searchAthletes": "Search athletes...",
+        "startDate": "Start Date",
+        "notes": "Notes for athlete",
+        "notesPlaceholder": "Any specific instructions or modifications...",
+        "assignSuccess": "Plan assigned successfully",
+        "alreadyAssigned": "This athlete already has this plan active"
+      },
+
+      "progress": {
+        "title": "Progress",
+        "currentWeek": "Current Week",
+        "weekOf": "Week {current} of {total}",
+        "completed": "Completed",
+        "completedWorkouts": "{completed} of {total} workouts",
+        "startDate": "Start Date",
+        "endDate": "Expected End",
+        "status": "Status",
+        "markWeekComplete": "Mark Week Complete",
+        "advanceWeek": "Advance to Next Week",
+        "leavePlan": "Leave Plan",
+        "leavePlanConfirm": "Are you sure you want to leave this plan? Your progress will be lost."
+      },
+
+      "status": {
+        "ACTIVE": "Active",
+        "PAUSED": "Paused",
+        "COMPLETED": "Completed",
+        "CANCELLED": "Cancelled"
+      },
+
+      "difficulty": {
+        "1": "Beginner",
+        "2": "Intermediate",
+        "3": "Advanced",
+        "4": "Elite"
+      },
+
+      "stats": {
+        "totalWeeks": "{count} weeks",
+        "totalWorkouts": "{count} workouts",
+        "estimatedTime": "~{hours}h per week",
+        "assignedAthletes": "{count} athletes"
+      },
+
+      "errors": {
+        "loadFailed": "Error loading training plans",
+        "saveFailed": "Error saving training plan",
+        "deleteFailed": "Error deleting training plan",
+        "assignFailed": "Error assigning training plan",
+        "notFound": "Training plan not found",
+        "noPermission": "No permission for this action"
+      },
+
+      "success": {
+        "created": "Training plan created successfully",
+        "updated": "Training plan updated successfully",
+        "deleted": "Training plan deleted successfully",
+        "assigned": "Training plan assigned successfully",
+        "weekAdded": "Week added successfully",
+        "weekUpdated": "Week updated successfully",
+        "weekDeleted": "Week deleted successfully"
+      }
     }
   }
 }

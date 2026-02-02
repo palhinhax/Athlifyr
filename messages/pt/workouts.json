@@ -232,6 +232,148 @@
       "updated": "Treino atualizado com sucesso",
       "deleted": "Treino apagado com sucesso",
       "logged": "Treino registado com sucesso"
+    },
+
+    "plans": {
+      "title": "Planos de Treino",
+      "subtitle": "Cria e gere programas de treino estruturados",
+      "myPlans": "Os Meus Planos",
+      "publicPlans": "Planos Públicos",
+      "templates": "Modelos",
+      "assignedPlans": "Planos Atribuídos",
+      "createPlan": "Criar Plano",
+      "editPlan": "Editar Plano",
+      "deletePlan": "Apagar Plano",
+      "viewPlan": "Ver Plano",
+      "duplicatePlan": "Duplicar Plano",
+      "assignPlan": "Atribuir Plano",
+      "noPlans": "Ainda não tens planos de treino",
+      "noPlansDescription": "Cria o teu primeiro plano de treino para ajudar atletas a atingir os seus objetivos.",
+      "noAssignedPlans": "Não tens planos atribuídos",
+      "noAssignedPlansDescription": "Pede ao teu treinador para te atribuir um plano de treino.",
+
+      "form": {
+        "name": "Nome do Plano",
+        "namePlaceholder": "Ex.: Programa de Força de 8 Semanas",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Descreve os objetivos e metodologia do plano de treino...",
+        "duration": "Duração (semanas)",
+        "difficulty": "Nível de Dificuldade",
+        "isPublic": "Tornar plano público",
+        "isTemplate": "Guardar como modelo",
+        "save": "Guardar Plano",
+        "cancel": "Cancelar"
+      },
+
+      "weeks": {
+        "title": "Semanas",
+        "week": "Semana",
+        "weekNumber": "Semana {number}",
+        "addWeek": "Adicionar Semana",
+        "editWeek": "Editar Semana",
+        "deleteWeek": "Apagar Semana",
+        "duplicateWeek": "Duplicar Semana",
+        "name": "Nome da Semana",
+        "namePlaceholder": "Ex.: Semana de Fundação",
+        "description": "Descrição",
+        "descriptionPlaceholder": "Qual é o foco desta semana?",
+        "focus": "Área de Foco",
+        "focusPlaceholder": "Ex.: Técnica, Volume, Intensidade",
+        "noWeeks": "Ainda não foram adicionadas semanas",
+        "noWeeksDescription": "Adiciona semanas para estruturar o teu plano de treino."
+      },
+
+      "days": {
+        "monday": "Segunda-feira",
+        "tuesday": "Terça-feira",
+        "wednesday": "Quarta-feira",
+        "thursday": "Quinta-feira",
+        "friday": "Sexta-feira",
+        "saturday": "Sábado",
+        "sunday": "Domingo",
+        "rest": "Dia de Descanso",
+        "addWorkout": "Adicionar Treino",
+        "noWorkout": "Sem treino agendado",
+        "optional": "Opcional"
+      },
+
+      "workouts": {
+        "addToDay": "Adicionar Treino ao Dia",
+        "selectWorkout": "Seleciona um treino",
+        "searchWorkouts": "Pesquisar treinos...",
+        "isOptional": "Marcar como opcional",
+        "notes": "Notas do Treino",
+        "notesPlaceholder": "Instruções específicas para este dia...",
+        "removeFromDay": "Remover do dia",
+        "noWorkoutsAvailable": "Não tens treinos criados. Cria um treino primeiro.",
+        "noResults": "Nenhum treino encontrado com essa pesquisa"
+      },
+
+      "assignment": {
+        "title": "Atribuir Plano",
+        "selectAthlete": "Seleciona Atleta",
+        "searchAthletes": "Pesquisar atletas...",
+        "startDate": "Data de Início",
+        "notes": "Notas para o atleta",
+        "notesPlaceholder": "Instruções ou modificações específicas...",
+        "assignSuccess": "Plano atribuído com sucesso",
+        "alreadyAssigned": "Este atleta já tem este plano ativo"
+      },
+
+      "progress": {
+        "title": "Progresso",
+        "currentWeek": "Semana Atual",
+        "weekOf": "Semana {current} de {total}",
+        "completed": "Concluído",
+        "completedWorkouts": "{completed} de {total} treinos",
+        "startDate": "Data de Início",
+        "endDate": "Fim Previsto",
+        "status": "Estado",
+        "markWeekComplete": "Marcar Semana Completa",
+        "advanceWeek": "Avançar para Próxima Semana",
+        "leavePlan": "Abandonar Plano",
+        "leavePlanConfirm": "Tens a certeza que queres abandonar este plano? O teu progresso será perdido."
+      },
+
+      "status": {
+        "ACTIVE": "Ativo",
+        "PAUSED": "Pausado",
+        "COMPLETED": "Concluído",
+        "CANCELLED": "Cancelado"
+      },
+
+      "difficulty": {
+        "1": "Iniciante",
+        "2": "Intermédio",
+        "3": "Avançado",
+        "4": "Elite"
+      },
+
+      "stats": {
+        "totalWeeks": "{count} semanas",
+        "totalWorkouts": "{count} treinos",
+        "estimatedTime": "~{hours}h por semana",
+        "assignedAthletes": "{count} atletas"
+      },
+
+      "errors": {
+        "loadFailed": "Erro ao carregar planos de treino",
+        "saveFailed": "Erro ao guardar plano de treino",
+        "deleteFailed": "Erro ao apagar plano de treino",
+        "assignFailed": "Erro ao atribuir plano de treino",
+        "notFound": "Plano de treino não encontrado",
+        "noPermission": "Sem permissão para esta ação"
+      },
+
+      "success": {
+        "created": "Plano de treino criado com sucesso",
+        "updated": "Plano de treino atualizado com sucesso",
+        "deleted": "Plano de treino apagado com sucesso",
+        "assigned": "Plano de treino atribuído com sucesso",
+        "weekAdded": "Semana adicionada com sucesso",
+        "weekUpdated": "Semana atualizada com sucesso",
+        "weekDeleted": "Semana apagada com sucesso"
+      }
     }
   }
 }

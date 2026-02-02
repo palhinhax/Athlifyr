@@ -8,10 +8,17 @@ import {
   ResponsiveTabsContent,
 } from "@/components/ui/responsive-tabs";
 import { useToast } from "@/components/ui/use-toast";
-import { PlusIcon, DumbbellIcon, GlobeIcon, HistoryIcon } from "lucide-react";
+import {
+  PlusIcon,
+  DumbbellIcon,
+  GlobeIcon,
+  HistoryIcon,
+  CalendarDaysIcon,
+} from "lucide-react";
 import { WorkoutCard } from "@/components/workout-card";
 import { WorkoutBuilder } from "@/components/workout-builder";
 import { WorkoutHistory } from "@/components/workout-history";
+import { Link } from "@/i18n/routing";
 import type { WorkoutWithBlocks } from "@/types/workout";
 
 interface WorkoutsPageClientProps {
@@ -167,10 +174,18 @@ export function WorkoutsPageClient({ userId }: WorkoutsPageClientProps) {
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">{t("subtitle")}</p>
         </div>
-        <Button onClick={handleCreateWorkout}>
-          <PlusIcon className="mr-2 h-4 w-4" />
-          <span className="hidden sm:inline">{t("createWorkout")}</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" asChild>
+            <Link href="/workouts/plans">
+              <CalendarDaysIcon className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">{t("plans.title")}</span>
+            </Link>
+          </Button>
+          <Button onClick={handleCreateWorkout}>
+            <PlusIcon className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">{t("createWorkout")}</span>
+          </Button>
+        </div>
       </div>
 
       <ResponsiveTabs

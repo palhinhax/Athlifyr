@@ -59,6 +59,11 @@ model User {
   workoutsAssigned UserWorkout[] @relation("WorkoutAssigner")
   workoutLogs      WorkoutLog[]
 
+  // Training Plans relations
+  createdPlans     TrainingPlan[]     @relation("CreatedPlans")
+  assignedPlans    UserTrainingPlan[] @relation("AssignedPlans")
+  plansAssigned    UserTrainingPlan[] @relation("PlanAssigner")
+
   @@index([email])
   @@index([name])
 }
@@ -581,7 +586,9 @@ model Venue {
   translations VenueTranslation[]
 
   // Workout Builder relations
-  workouts Workout[]
+  workouts      Workout[]
+  trainingPlans TrainingPlan[]
+  sessionPlans  VenueSessionPlan[]
 
   @@index([slug])
   @@index([type])
@@ -780,6 +787,7 @@ model VenueSession {
   // Workout Builder relations
   sessionWorkouts VenueSessionWorkout[]
   workoutLogs     WorkoutLog[]
+  sessionPlans    VenueSessionPlan[]
 
   @@index([venueId])
   @@index([type])
@@ -1365,6 +1373,7 @@ model Workout {
   sessionWorkouts VenueSessionWorkout[]
   userWorkouts    UserWorkout[]
   logs            WorkoutLog[]
+  planWorkouts    TrainingPlanWorkout[]
 
   @@index([createdById])
   @@index([venueId])
@@ -1624,6 +1633,130 @@ model WorkoutExerciseSet {
 }
 
 // ============================================================================
+// TRAINING PLANS (Planos de Treino)
+// ============================================================================
+
+// Plano de treino - coleção estruturada de workouts com progressão ao longo do tempo
+// Exemplo: "CrossFit Iniciantes - 8 Semanas", "Preparação Maratona", "Força e Hipertrofia"
+model TrainingPlan {
+  id          String  @id @default(cuid())
+  name        String // "CrossFit Iniciantes - 8 Semanas"
+  description String? // Descrição detalhada do plano
+  imageUrl    String? // Imagem de capa do plano
+
+  createdById String
+  venueId     String? // Se criado por um venue específico (null = criador independente)
+
+  duration     Int? // Duração total em semanas
+  difficulty   Int? // 1-5 (dificuldade)
+  tags         String[] @default([])
+  isTemplate   Boolean  @default(false) // Plano reutilizável
+  isPublic     Boolean  @default(false) // Visível para todos
+  isPremium    Boolean  @default(false) // Requer conta PRO para aceder
+  category     String? // "Strength", "CrossFit", "Running", "Hybrid", etc.
+  targetAudience String? // "Iniciantes", "Intermédio", "Avançado"
+
+  // Metadata de marketing
+  goals        String[] @default([]) // ["Perder peso", "Ganhar força", "Melhorar resistência"]
+  requirements String[] @default([]) // ["Barra de pull-ups", "Kettlebell", "Corda"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy User   @relation("CreatedPlans", fields: [createdById], references: [id])
+  venue     Venue? @relation(fields: [venueId], references: [id])
+
+  weeks              TrainingPlanWeek[]
+  assignedToUsers    UserTrainingPlan[]
+  assignedToSessions VenueSessionPlan[]
+
+  @@index([createdById])
+  @@index([venueId])
+  @@index([isPublic])
+  @@index([category])
+}
+
+// Semana dentro de um plano de treino
+// Exemplo: "Semana 1 - Fundamentos", "Semana 2 - Volume", etc.
+model TrainingPlanWeek {
+  id        String @id @default(cuid())
+  planId    String
+  weekNumber Int // 1, 2, 3, 4...
+  name      String? // "Fundamentos", "Teste de Volume", "Deload Week"
+  description String? // Foco da semana
+  orderIndex Int // Para reordenar semanas se necessário
+
+  plan     TrainingPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  workouts TrainingPlanWorkout[]
+
+  @@unique([planId, weekNumber])
+  @@index([planId])
+}
+
+// Workout dentro de uma semana do plano
+// Define qual workout fazer em que dia da semana
+model TrainingPlanWorkout {
+  id        String @id @default(cuid())
+  weekId    String
+  workoutId String
+  dayOfWeek Int // 0=Domingo, 1=Segunda, 2=Terça, ..., 6=Sábado
+  orderIndex Int // Ordem dentro do mesmo dia (se houver múltiplos workouts por dia)
+  notes     String? // Notas específicas para este workout nesta semana
+
+  week    TrainingPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  workout Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([weekId])
+  @@index([workoutId])
+}
+
+// Atribuição de plano de treino a um utilizador
+// Tracking de progressão do utilizador através do plano
+model UserTrainingPlan {
+  id           String    @id @default(cuid())
+  userId       String
+  planId       String
+  assignedById String? // Coach que atribuiu (null se auto-atribuído)
+  startDate    DateTime // Data de início do plano
+  endDate      DateTime? // Data prevista de fim (calculada pela duração)
+  currentWeek  Int       @default(1) // Semana atual do utilizador no plano
+  status       TrainingPlanStatus @default(ACTIVE)
+  notes        String? // Notas do coach ou do utilizador
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User         @relation("AssignedPlans", fields: [userId], references: [id], onDelete: Cascade)
+  plan       TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  assignedBy User?        @relation("PlanAssigner", fields: [assignedById], references: [id])
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+}
+
+// Atribuição de plano de treino a uma sessão de venue
+// Permite que um venue siga um plano estruturado nas suas sessões
+model VenueSessionPlan {
+  id          String   @id @default(cuid())
+  venueId     String
+  sessionId   String
+  planId      String
+  startDate   DateTime // Quando começou a seguir o plano nesta sessão
+  currentWeek Int      @default(1)
+  notes       String?
+
+  venue   Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  session VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  plan    TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, planId])
+  @@index([venueId])
+  @@index([sessionId])
+  @@index([planId])
+}
+
+// ============================================================================
 // ENUMS para Workout Builder
 // ============================================================================
 
@@ -1638,6 +1771,13 @@ enum WorkoutBlockType {
   REST // Descanso
   COOLDOWN // Retorno à calma
   SKILL // Técnica/Skill work
+}
+
+enum TrainingPlanStatus {
+  ACTIVE // A seguir ativamente
+  PAUSED // Pausado temporariamente
+  COMPLETED // Concluído
+  CANCELLED // Cancelado antes de terminar
 }
 
 enum WeightUnit {

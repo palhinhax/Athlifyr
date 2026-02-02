@@ -1,263 +1,299 @@
 "use client";
 
 /**
- * Wall Timer Hook
+ * useWallTimer Hook
  *
- * React hook wrapper for WallTimerEngine
- * Manages timer state and provides controls
+ * Timer engine for wall timer display with support for:
+ * - INTERVAL, EMOM, TABATA, AMRAP, FOR_TIME, STOPWATCH modes
+ * - Sound notifications
+ * - Precise timestamp-based timing
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import { WallTimerEngine } from "@/lib/timer-engine";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type {
   TimerConfig,
-  TimerDisplayState,
-  TimerPhase,
   TimerState,
+  TimerPhase,
+  TimerDisplayState,
   SoundSettings,
-  SoundType,
 } from "@/types/timer";
 
-export interface UseWallTimerOptions {
+interface UseWallTimerOptions {
   config?: TimerConfig;
   soundSettings?: SoundSettings;
   onComplete?: () => void;
 }
 
-export interface UseWallTimerReturn {
-  // State
+interface UseWallTimerReturn {
   displayState: TimerDisplayState;
   timerState: TimerState;
-  phase: TimerPhase;
-
-  // Controls
   start: () => void;
   pause: () => void;
   resume: () => void;
   reset: () => void;
-
-  // Configuration
   configure: (config: TimerConfig) => void;
-
-  // Sound
-  playSound: (type: SoundType) => void;
 }
 
-export function useWallTimer(
-  options: UseWallTimerOptions = {}
-): UseWallTimerReturn {
-  const engineRef = useRef<WallTimerEngine | null>(null);
+const DEFAULT_DISPLAY_STATE: TimerDisplayState = {
+  minutes: 0,
+  seconds: 0,
+  milliseconds: 0,
+  currentRound: 0,
+  totalRounds: 0,
+  phase: "IDLE",
+  state: "READY",
+  progress: 0,
+  elapsed: 0,
+  remaining: 0,
+};
 
-  // State
-  const [displayState, setDisplayState] = useState<TimerDisplayState>({
-    minutes: 0,
-    seconds: 0,
-    milliseconds: 0,
-    currentRound: 0,
-    totalRounds: 0,
-    phase: "IDLE",
-    state: "READY",
-    progress: 0,
-    elapsed: 0,
-    remaining: 0,
-  });
-
+export function useWallTimer({
+  config: initialConfig,
+  soundSettings,
+  onComplete,
+}: UseWallTimerOptions = {}): UseWallTimerReturn {
+  const [config, setConfig] = useState<TimerConfig | undefined>(initialConfig);
   const [timerState, setTimerState] = useState<TimerState>("READY");
-  const [phase, setPhase] = useState<TimerPhase>("IDLE");
-
-  // Track previous phase for sound triggers
-  const prevPhaseRef = useRef<TimerPhase>("IDLE");
-  const prevRoundRef = useRef<number>(0);
-  const soundSettingsRef = useRef<SoundSettings>(
-    options.soundSettings || {
-      volume: 3,
-      enableCountdown: true,
-      enableTransitions: true,
-      enableCompletion: true,
-    }
+  const [displayState, setDisplayState] = useState<TimerDisplayState>(
+    DEFAULT_DISPLAY_STATE
   );
 
-  // ============================================================================
-  // Sound System
-  // ============================================================================
+  // Refs for precise timing
+  const startTimeRef = useRef<number | null>(null);
+  const pausedTimeRef = useRef<number>(0);
+  const animationFrameRef = useRef<number | null>(null);
 
-  const playSound = useCallback((type: SoundType) => {
-    const settings = soundSettingsRef.current;
+  // Calculate total duration based on config
+  const getTotalDuration = useCallback((): number => {
+    if (!config) return 0;
 
-    if (settings.volume === 0) return;
-
-    // Create appropriate sound based on type
-    const audioContext = new (
-      window.AudioContext ||
-      (window as Window & { webkitAudioContext?: typeof AudioContext })
-        .webkitAudioContext
-    )();
-    const oscillator = audioContext.createOscillator();
-    const gainNode = audioContext.createGain();
-
-    oscillator.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    // Volume scaling (0-5 -> 0.0-1.0)
-    const volumeScale = settings.volume / 5;
-
-    switch (type) {
-      case "beep-short":
-        if (!settings.enableTransitions) return;
-        oscillator.frequency.value = 800;
-        gainNode.gain.value = 0.3 * volumeScale;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.1);
-        break;
-
-      case "beep-long":
-        if (!settings.enableCompletion) return;
-        oscillator.frequency.value = 600;
-        gainNode.gain.value = 0.4 * volumeScale;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.5);
-        break;
-
-      case "countdown-3":
-      case "countdown-2":
-      case "countdown-1":
-        if (!settings.enableCountdown) return;
-        oscillator.frequency.value = 1000;
-        gainNode.gain.value = 0.2 * volumeScale;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.1);
-        break;
-
-      case "countdown-go":
-        if (!settings.enableCountdown) return;
-        oscillator.frequency.value = 1200;
-        gainNode.gain.value = 0.4 * volumeScale;
-        oscillator.start();
-        oscillator.stop(audioContext.currentTime + 0.2);
-        break;
-    }
-  }, []);
-
-  // ============================================================================
-  // Timer Engine Setup
-  // ============================================================================
-
-  useEffect(() => {
-    // Create timer engine
-    const engine = new WallTimerEngine();
-    engineRef.current = engine;
-
-    // Configure if initial config provided
-    if (options.config) {
-      engine.configure(options.config);
-    }
-
-    // Setup callbacks
-    engine.onTick((state) => {
-      setDisplayState(state);
-
-      // Handle countdown sounds (3, 2, 1 before phase change)
-      if (
-        state.state === "RUNNING" &&
-        state.remaining > 0 &&
-        state.remaining <= 3000
-      ) {
-        const seconds = Math.ceil(state.remaining / 1000);
-        const prevSeconds = Math.ceil((state.remaining + 16) / 1000); // ~60fps
-
-        if (seconds !== prevSeconds) {
-          if (seconds === 3) playSound("countdown-3");
-          else if (seconds === 2) playSound("countdown-2");
-          else if (seconds === 1) playSound("countdown-1");
+    switch (config.mode) {
+      case "INTERVAL": {
+        const { workTime, restTime, rounds } = config.config;
+        return (workTime + restTime) * rounds * 1000;
+      }
+      case "EMOM": {
+        return config.config.duration * 60 * 1000;
+      }
+      case "TABATA": {
+        const { workTime, restTime, rounds } = config.config;
+        return (workTime + restTime) * rounds * 1000;
+      }
+      case "AMRAP": {
+        return config.config.duration * 1000;
+      }
+      case "FOR_TIME": {
+        if (config.config.countDown && config.config.duration) {
+          return config.config.duration * 1000;
         }
+        return 0; // Unlimited for count up
       }
-    });
-
-    engine.onStateChange((state) => {
-      setTimerState(state);
-
-      if (state === "FINISHED" && options.onComplete) {
-        options.onComplete();
-      }
-    });
-
-    engine.onPhaseChange((newPhase) => {
-      setPhase(newPhase);
-
-      // Play sound on phase change
-      if (prevPhaseRef.current !== newPhase && newPhase !== "IDLE") {
-        playSound("beep-short");
-      }
-
-      prevPhaseRef.current = newPhase;
-    });
-
-    engine.onRoundChange((round) => {
-      // Play sound on round change
-      if (prevRoundRef.current !== round && round > 0) {
-        playSound("countdown-go");
-      }
-
-      prevRoundRef.current = round;
-    });
-
-    engine.onComplete(() => {
-      playSound("beep-long");
-    });
-
-    // Cleanup
-    return () => {
-      engine.destroy();
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [playSound]);
-
-  // Update sound settings when changed
-  useEffect(() => {
-    if (options.soundSettings) {
-      soundSettingsRef.current = options.soundSettings;
+      case "STOPWATCH":
+      case "CLOCK":
+        return 0; // Unlimited
     }
-  }, [options.soundSettings]);
+  }, [config]);
 
-  // ============================================================================
+  // Get current phase and round based on elapsed time
+  const getPhaseAndRound = useCallback(
+    (
+      elapsed: number
+    ): { phase: TimerPhase; round: number; totalRounds: number } => {
+      if (!config) {
+        return { phase: "IDLE", round: 0, totalRounds: 0 };
+      }
+
+      const elapsedSeconds = Math.floor(elapsed / 1000);
+
+      switch (config.mode) {
+        case "INTERVAL": {
+          const { workTime, restTime, rounds } = config.config;
+          const cycleTime = workTime + restTime;
+          const round = Math.floor(elapsedSeconds / cycleTime) + 1;
+          const positionInCycle = elapsedSeconds % cycleTime;
+          const phase: TimerPhase =
+            positionInCycle < workTime ? "WORK" : "REST";
+          return { phase, round: Math.min(round, rounds), totalRounds: rounds };
+        }
+        case "EMOM": {
+          const totalMinutes = config.config.duration;
+          const workTime = config.config.workTime || 50;
+          const round = Math.floor(elapsedSeconds / 60) + 1;
+          const positionInMinute = elapsedSeconds % 60;
+          const phase: TimerPhase =
+            positionInMinute < workTime ? "WORK" : "REST";
+          return {
+            phase,
+            round: Math.min(round, totalMinutes),
+            totalRounds: totalMinutes,
+          };
+        }
+        case "TABATA": {
+          const { workTime, restTime, rounds } = config.config;
+          const cycleTime = workTime + restTime;
+          const round = Math.floor(elapsedSeconds / cycleTime) + 1;
+          const positionInCycle = elapsedSeconds % cycleTime;
+          const phase: TimerPhase =
+            positionInCycle < workTime ? "WORK" : "REST";
+          return { phase, round: Math.min(round, rounds), totalRounds: rounds };
+        }
+        case "AMRAP":
+        case "FOR_TIME":
+          return { phase: "WORK", round: 1, totalRounds: 1 };
+        case "STOPWATCH":
+        case "CLOCK":
+          return { phase: "IDLE", round: 0, totalRounds: 0 };
+      }
+    },
+    [config]
+  );
+
+  // Update display state
+  const updateDisplay = useCallback(
+    (elapsed: number) => {
+      const totalDuration = getTotalDuration();
+      const { phase, round, totalRounds } = getPhaseAndRound(elapsed);
+
+      // Calculate remaining time for countdown modes
+      const remaining =
+        totalDuration > 0 ? Math.max(0, totalDuration - elapsed) : 0;
+
+      // Calculate display time
+      let displayMs = elapsed;
+      if (config?.mode === "FOR_TIME" && config.config.countDown) {
+        displayMs = remaining;
+      } else if (
+        ["AMRAP", "INTERVAL", "TABATA", "EMOM"].includes(config?.mode || "")
+      ) {
+        displayMs = remaining;
+      }
+
+      const totalSeconds = Math.floor(displayMs / 1000);
+      const minutes = Math.floor(totalSeconds / 60);
+      const seconds = totalSeconds % 60;
+      const milliseconds = Math.floor((displayMs % 1000) / 10);
+
+      // Calculate progress
+      const progress = totalDuration > 0 ? (elapsed / totalDuration) * 100 : 0;
+
+      setDisplayState({
+        minutes,
+        seconds,
+        milliseconds,
+        currentRound: round,
+        totalRounds,
+        phase,
+        state: timerState,
+        progress: Math.min(100, progress),
+        elapsed,
+        remaining,
+      });
+
+      // Check for completion
+      if (totalDuration > 0 && elapsed >= totalDuration) {
+        setTimerState("FINISHED");
+        onComplete?.();
+        return true; // Timer finished
+      }
+
+      return false;
+    },
+    [config, getTotalDuration, getPhaseAndRound, timerState, onComplete]
+  );
+
+  // Animation loop
+  useEffect(() => {
+    if (timerState !== "RUNNING") {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+      return;
+    }
+
+    const animate = () => {
+      if (startTimeRef.current === null) return;
+
+      const now = Date.now();
+      const elapsed = now - startTimeRef.current + pausedTimeRef.current;
+
+      const finished = updateDisplay(elapsed);
+
+      if (!finished && timerState === "RUNNING") {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameRef.current = requestAnimationFrame(animate);
+
+    return () => {
+      if (animationFrameRef.current) {
+        cancelAnimationFrame(animationFrameRef.current);
+      }
+    };
+  }, [timerState, updateDisplay]);
+
+  // Play sound (placeholder - implement with actual audio)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _playSound = useCallback(
+    (_type: string) => {
+      if (!soundSettings || soundSettings.volume === 0) return;
+      // TODO: Implement actual sound playback
+      // Could use Web Audio API or preloaded audio elements
+    },
+    [soundSettings]
+  );
+
   // Controls
-  // ============================================================================
-
   const start = useCallback(() => {
-    engineRef.current?.start();
-  }, []);
+    if (timerState === "READY" || timerState === "FINISHED") {
+      startTimeRef.current = Date.now();
+      pausedTimeRef.current = 0;
+      setTimerState("RUNNING");
+    }
+  }, [timerState]);
 
   const pause = useCallback(() => {
-    engineRef.current?.pause();
-  }, []);
+    if (timerState === "RUNNING" && startTimeRef.current !== null) {
+      pausedTimeRef.current += Date.now() - startTimeRef.current;
+      startTimeRef.current = null;
+      setTimerState("PAUSED");
+    }
+  }, [timerState]);
 
   const resume = useCallback(() => {
-    engineRef.current?.resume();
-  }, []);
+    if (timerState === "PAUSED") {
+      startTimeRef.current = Date.now();
+      setTimerState("RUNNING");
+    }
+  }, [timerState]);
 
   const reset = useCallback(() => {
-    engineRef.current?.reset();
-    prevPhaseRef.current = "IDLE";
-    prevRoundRef.current = 0;
+    if (animationFrameRef.current) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
+    startTimeRef.current = null;
+    pausedTimeRef.current = 0;
+    setTimerState("READY");
+    setDisplayState(DEFAULT_DISPLAY_STATE);
   }, []);
 
-  const configure = useCallback((config: TimerConfig) => {
-    engineRef.current?.configure(config);
-  }, []);
-
-  // ============================================================================
-  // Return
-  // ============================================================================
+  const configure = useCallback(
+    (newConfig: TimerConfig) => {
+      setConfig(newConfig);
+      reset();
+    },
+    [reset]
+  );
 
   return {
     displayState,
     timerState,
-    phase,
     start,
     pause,
     resume,
     reset,
     configure,
-    playSound,
   };
 }

@@ -1,0 +1,122 @@
+"use client";
+
+/**
+ * TimerHeader Component
+ *
+ * Header section with back button, title, mute toggle, settings and fullscreen toggle.
+ */
+
+import { useTranslations } from "next-intl";
+import { Button } from "@/components/ui/button";
+import { Link } from "@/i18n/routing";
+import {
+  ArrowLeftIcon,
+  ExpandIcon,
+  ShrinkIcon,
+  SettingsIcon,
+  Volume2Icon,
+  VolumeXIcon,
+} from "lucide-react";
+
+interface TimerHeaderProps {
+  workoutName: string;
+  isFullscreen: boolean;
+  hasStarted: boolean;
+  isMuted: boolean;
+  onToggleMute: () => void;
+  onToggleSettings: () => void;
+  onToggleFullscreen: () => void;
+}
+
+export function TimerHeader({
+  workoutName,
+  isFullscreen,
+  hasStarted,
+  isMuted,
+  onToggleMute,
+  onToggleSettings,
+  onToggleFullscreen,
+}: TimerHeaderProps) {
+  const t = useTranslations("workouts");
+
+  // Fullscreen header - simplified, no back button or settings
+  if (isFullscreen) {
+    return (
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <div className="flex items-center gap-3">
+          <div>
+            <h1 className="text-lg font-semibold">{workoutName}</h1>
+            <p className="text-sm text-muted-foreground">
+              {t("runner.inProgress")}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleMute}
+            title={isMuted ? t("runner.unmute") : t("runner.mute")}
+          >
+            {isMuted ? (
+              <VolumeXIcon className="h-5 w-5" />
+            ) : (
+              <Volume2Icon className="h-5 w-5" />
+            )}
+          </Button>
+          <Button variant="ghost" size="icon" onClick={onToggleFullscreen}>
+            <ShrinkIcon className="h-5 w-5" />
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Normal header
+  return (
+    <div className="flex items-center justify-between border-b px-4 py-2">
+      <div className="flex items-center gap-3">
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="/workouts">
+            <ArrowLeftIcon className="h-5 w-5" />
+          </Link>
+        </Button>
+        <div>
+          <h1 className="text-lg font-semibold">{workoutName}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("runner.inProgress")}
+          </p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleMute}
+          title={isMuted ? t("runner.unmute") : t("runner.mute")}
+        >
+          {isMuted ? (
+            <VolumeXIcon className="h-5 w-5" />
+          ) : (
+            <Volume2Icon className="h-5 w-5" />
+          )}
+        </Button>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleSettings}
+          disabled={hasStarted}
+        >
+          <SettingsIcon className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" onClick={onToggleFullscreen}>
+          {isFullscreen ? (
+            <ShrinkIcon className="h-5 w-5" />
+          ) : (
+            <ExpandIcon className="h-5 w-5" />
+          )}
+        </Button>
+      </div>
+    </div>
+  );
+}

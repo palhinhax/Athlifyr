@@ -1,3 +1,9 @@
+# [15.7.0](https://github.com/palhinhax/Athlifyr/compare/v15.6.0...v15.7.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add save/bookmark functionality for workouts and training plans ([388b3a0](https://github.com/palhinhax/Athlifyr/commit/388b3a043295165227697095fa147314e52f3e2f))
+
 # [15.6.0](https://github.com/palhinhax/Athlifyr/compare/v15.5.0...v15.6.0) (2026-02-02)
 
 ### Features

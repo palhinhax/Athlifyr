@@ -1,3 +1,9 @@
+# [16.1.0](https://github.com/palhinhax/Athlifyr/compare/v16.0.0...v16.1.0) (2026-02-02)
+
+### Features
+
+- **workouts:** enhance time input UX and add session workout management ([2fd9fd8](https://github.com/palhinhax/Athlifyr/commit/2fd9fd889ec0c48a4cb55c555ce2c567fa8f7d3e))
+
 # [16.0.0](https://github.com/palhinhax/Athlifyr/compare/v15.9.0...v16.0.0) (2026-02-02)
 
 ### Features

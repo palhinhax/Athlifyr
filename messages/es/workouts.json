@@ -185,6 +185,8 @@
       "getReady": "Prepárate...",
       "mute": "Silenciar sonidos",
       "unmute": "Activar sonidos",
+      "hideClock": "Ocultar reloj",
+      "showClock": "Mostrar reloj",
       "playBlock": "Iniciar",
       "submitResults": "Enviar Resultados",
       "finishTitle": "¿Terminar Entrenamiento?",

@@ -185,6 +185,8 @@
       "getReady": "Get Ready...",
       "mute": "Mute sounds",
       "unmute": "Unmute sounds",
+      "hideClock": "Hide timer",
+      "showClock": "Show timer",
       "playBlock": "Play",
       "submitResults": "Submit Results",
       "finishTitle": "Finish Workout?",

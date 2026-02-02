@@ -20,6 +20,7 @@ import { WallClock } from "@/components/wall-clock";
 
 import { useTimer } from "./hooks/use-timer";
 import { useAudioAlerts } from "./hooks/use-audio-alerts";
+import { useClockVisibility } from "./hooks/use-clock-visibility";
 import { TimerHeader } from "./timer-header";
 import { TimerSettings } from "./timer-settings";
 import { TimerControls } from "./timer-controls";
@@ -38,6 +39,9 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
 
   // Audio alerts
   const audioAlerts = useAudioAlerts();
+
+  // Clock visibility
+  const clockVisibility = useClockVisibility();
 
   // Store audio functions in refs to prevent callback recreation
   const audioAlertsRef = useRef(audioAlerts);
@@ -223,60 +227,70 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
           isFullscreen={isFullscreen}
           hasStarted={timer.hasStarted}
           isMuted={audioAlerts.isMuted}
+          isClockVisible={clockVisibility.isClockVisible}
           onToggleMute={audioAlerts.toggleMute}
+          onToggleClockVisibility={clockVisibility.toggleClockVisibility}
           onToggleSettings={() => setShowModeSettings(!showModeSettings)}
           onToggleFullscreen={toggleFullscreen}
         />
 
-        {/* Mode Selection (only when not started and not preparing) */}
-        {!timer.hasStarted && !timer.isPreparing && showModeSettings && (
-          <TimerSettings
-            config={timerConfig}
-            onConfigChange={setTimerConfig}
-            disabled={timer.hasStarted || timer.isPreparing}
-          />
+        {/* Mode Selection (only when not started and not preparing and clock visible) */}
+        {clockVisibility.isClockVisible &&
+          !timer.hasStarted &&
+          !timer.isPreparing &&
+          showModeSettings && (
+            <TimerSettings
+              config={timerConfig}
+              onConfigChange={setTimerConfig}
+              disabled={timer.hasStarted || timer.isPreparing}
+            />
+          )}
+
+        {/* WallClock Display - Timer Mode (only when clock is visible) */}
+        {clockVisibility.isClockVisible && (
+          <div className="flex flex-col items-center justify-center p-2 py-4 sm:p-4 sm:py-6">
+            <div className="w-full max-w-full">
+              <WallClock
+                size="responsive"
+                className="mx-auto w-full max-w-[calc(100vw-2rem)] scale-[0.85] transform sm:w-auto sm:max-w-none sm:scale-100"
+                timerMode={{
+                  seconds: getDisplaySeconds(),
+                  // Map "preparing" to "running" for WallClock (it animates)
+                  status: (timer.getTimerStatus() === "preparing"
+                    ? "running"
+                    : timer.getTimerStatus()) as
+                    | "idle"
+                    | "running"
+                    | "paused"
+                    | "done",
+                  phase:
+                    timer.currentPhase === "IDLE"
+                      ? "work"
+                      : (timer.currentPhase.toLowerCase() as "work" | "rest"),
+                  statusLabel: getStatusLabel(),
+                  modeLabel: timer.isPreparing ? "GET READY" : getModeLabel(),
+                  leftDisplayValue: getLeftDisplayValue(),
+                  isWarning:
+                    (timer.remainingTime > 0 && timer.remainingTime <= 10) ||
+                    (timer.isPreparing && timer.prepCountdown <= 3),
+                }}
+              />
+            </div>
+
+            {/* Timer Controls */}
+            <TimerControls
+              hasStarted={timer.hasStarted}
+              isRunning={timer.isRunning}
+              isFinished={timer.isFinished}
+              isPreparing={timer.isPreparing}
+              isFullscreen={isFullscreen}
+              onStart={timer.start}
+              onPause={timer.pause}
+              onReset={handleReset}
+              onFinish={timer.finish}
+            />
+          </div>
         )}
-
-        {/* WallClock Display - Timer Mode */}
-        <div className="flex flex-col items-center justify-center p-4 py-6">
-          <WallClock
-            size="lg"
-            timerMode={{
-              seconds: getDisplaySeconds(),
-              // Map "preparing" to "running" for WallClock (it animates)
-              status: (timer.getTimerStatus() === "preparing"
-                ? "running"
-                : timer.getTimerStatus()) as
-                | "idle"
-                | "running"
-                | "paused"
-                | "done",
-              phase:
-                timer.currentPhase === "IDLE"
-                  ? "work"
-                  : (timer.currentPhase.toLowerCase() as "work" | "rest"),
-              statusLabel: getStatusLabel(),
-              modeLabel: timer.isPreparing ? "GET READY" : getModeLabel(),
-              leftDisplayValue: getLeftDisplayValue(),
-              isWarning:
-                (timer.remainingTime > 0 && timer.remainingTime <= 10) ||
-                (timer.isPreparing && timer.prepCountdown <= 3),
-            }}
-          />
-
-          {/* Timer Controls */}
-          <TimerControls
-            hasStarted={timer.hasStarted}
-            isRunning={timer.isRunning}
-            isFinished={timer.isFinished}
-            isPreparing={timer.isPreparing}
-            isFullscreen={isFullscreen}
-            onStart={timer.start}
-            onPause={timer.pause}
-            onReset={handleReset}
-            onFinish={timer.finish}
-          />
-        </div>
       </div>
 
       {/* Workout Content - Scrollable */}
@@ -285,6 +299,7 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
           workout={workout}
           onPlayBlock={handlePlayBlock}
           isTimerRunning={timer.isRunning || timer.isPreparing}
+          showPlayButtons={clockVisibility.isClockVisible}
         />
         <SubmitSection onSubmit={handleSubmitResults} />
       </div>

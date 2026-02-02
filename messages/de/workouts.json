@@ -185,6 +185,8 @@
       "getReady": "Mach dich bereit...",
       "mute": "Töne stumm schalten",
       "unmute": "Töne aktivieren",
+      "hideClock": "Timer ausblenden",
+      "showClock": "Timer anzeigen",
       "playBlock": "Starten",
       "submitResults": "Ergebnisse Einreichen",
       "finishTitle": "Training Beenden?",

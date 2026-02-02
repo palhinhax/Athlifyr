@@ -1,3 +1,13 @@
+# [16.0.0](https://github.com/palhinhax/Athlifyr/compare/v15.9.0...v16.0.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add exercise measurement tracking and admin controls ([08b481f](https://github.com/palhinhax/Athlifyr/commit/08b481faee33b6cebf9719c6670a8d67d214921d))
+
+### BREAKING CHANGES
+
+- **workouts:** Performance entries now only created for exercises with hasWeight=true. Running, burpees, and other bodyweight exercises no longer tracked in strength performance section.
+
 # [15.9.0](https://github.com/palhinhax/Athlifyr/compare/v15.8.2...v15.9.0) (2026-02-02)
 
 ### Features

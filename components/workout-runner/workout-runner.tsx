@@ -217,7 +217,7 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
       )}
     >
       {/* Timer Header - Fixed at top */}
-      <div className="sticky top-0 z-50 bg-background">
+      <div className="sticky top-0 z-10 bg-background">
         <TimerHeader
           workoutName={workout.name}
           isFullscreen={isFullscreen}

@@ -67,11 +67,6 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
   const { toast } = useToast();
   const router = useRouter();
 
-  // Timer state
-  const [startTime] = useState<Date>(new Date());
-  const [elapsedTime, setElapsedTime] = useState(0);
-  const [isRunning, setIsRunning] = useState(true);
-
   // Form state
   const [notes, setNotes] = useState("");
   const [feeling, setFeeling] = useState<number | undefined>();
@@ -95,16 +90,6 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
   );
 
   const [isSaving, setIsSaving] = useState(false);
-
-  // Timer effect
-  useState(() => {
-    const interval = setInterval(() => {
-      if (isRunning) {
-        setElapsedTime(Math.floor((Date.now() - startTime.getTime()) / 1000));
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  });
 
   // Update block result
   const updateBlockResult = (
@@ -183,7 +168,6 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
   // Save workout log
   const handleSave = async () => {
     setIsSaving(true);
-    setIsRunning(false);
 
     try {
       const logData: CreateWorkoutLogInput = {
@@ -260,12 +244,6 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
             <h1 className="text-2xl font-bold">{workout.name}</h1>
             <p className="text-muted-foreground">{t("log.title")}</p>
           </div>
-        </div>
-        <div className="text-right">
-          <div className="font-mono text-2xl font-bold">
-            {formatTime(elapsedTime)}
-          </div>
-          <p className="text-xs text-muted-foreground">{t("log.actualTime")}</p>
         </div>
       </div>
 

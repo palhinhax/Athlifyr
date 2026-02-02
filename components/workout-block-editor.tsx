@@ -38,6 +38,7 @@ import type {
 } from "@/types/workout";
 import { SetPrescriptionEditor } from "@/components/workout-set-prescription-editor";
 import { ExerciseGroupEditor } from "@/components/workout-exercise-group-editor";
+import { TimeInput } from "@/components/time-input";
 
 interface ExerciseOption {
   id: string;
@@ -514,18 +515,12 @@ export function WorkoutBlockEditor({
       case "FOR_TIME":
         return (
           <div className="space-y-2">
-            <Label>{t("blocks.timeCapMinutes")}</Label>
-            <Input
-              type="number"
-              min={1}
-              value={block.timeCap ? Math.floor(block.timeCap / 60) : ""}
-              onChange={(e) =>
-                updateField(
-                  "timeCap",
-                  e.target.value ? parseInt(e.target.value) * 60 : null
-                )
-              }
-              placeholder="10"
+            <Label>{t("blocks.timeCap")}</Label>
+            <TimeInput
+              value={block.timeCap}
+              onChange={(seconds) => updateField("timeCap", seconds)}
+              hideHours
+              size="sm"
             />
           </div>
         );
@@ -535,17 +530,11 @@ export function WorkoutBlockEditor({
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>{t("blocks.workTime")}</Label>
-              <Input
-                type="number"
-                min={1}
-                value={block.workTime || ""}
-                onChange={(e) =>
-                  updateField(
-                    "workTime",
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
-                placeholder="60"
+              <TimeInput
+                value={block.workTime}
+                onChange={(seconds) => updateField("workTime", seconds)}
+                hideHours
+                size="sm"
               />
             </div>
             <div className="space-y-2">
@@ -568,20 +557,14 @@ export function WorkoutBlockEditor({
 
       case "TABATA":
         return (
-          <div className="grid gap-4 sm:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>{t("blocks.workTime")}</Label>
-              <Input
-                type="number"
-                min={1}
-                value={block.workTime || ""}
-                onChange={(e) =>
-                  updateField(
-                    "workTime",
-                    e.target.value ? parseInt(e.target.value) : null
-                  )
-                }
-                placeholder="20"
+              <TimeInput
+                value={block.workTime}
+                onChange={(seconds) => updateField("workTime", seconds)}
+                hideHours
+                size="sm"
               />
             </div>
             <div className="space-y-2">

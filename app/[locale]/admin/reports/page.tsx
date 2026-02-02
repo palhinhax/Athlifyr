@@ -422,8 +422,156 @@ export default function AdminReportsPage() {
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border">
-          <div className="overflow-x-auto">
+        <>
+          {/* Mobile Cards View */}
+          <div className="space-y-3 md:hidden">
+            {reports.map((report) => (
+              <div
+                key={report.id}
+                className="rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-3 flex items-center gap-2">
+                      {getStatusBadge(report.status)}
+                      <span className="text-xs text-muted-foreground">
+                        {formatDistanceToNow(new Date(report.createdAt), {
+                          addSuffix: true,
+                          locale: dateLocale,
+                        })}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {t("table.reporter")}:
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {report.reporter.image ? (
+                            <Image
+                              src={report.reporter.image}
+                              alt={report.reporter.name || ""}
+                              width={20}
+                              height={20}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                              {getInitials(report.reporter.name)}
+                            </div>
+                          )}
+                          <span className="truncate text-sm font-medium">
+                            {report.reporter.name || "Unknown"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          {t("table.reported")}:
+                        </span>
+                        <div className="flex items-center gap-2">
+                          {report.reported.image ? (
+                            <Image
+                              src={report.reported.image}
+                              alt={report.reported.name || ""}
+                              width={20}
+                              height={20}
+                              className="rounded-full"
+                            />
+                          ) : (
+                            <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted text-[10px] font-medium">
+                              {getInitials(report.reported.name)}
+                            </div>
+                          )}
+                          <span className="truncate text-sm font-medium">
+                            {report.reported.name || "Unknown"}
+                          </span>
+                          {report.reported.isBanned && (
+                            <Badge variant="destructive" className="text-xs">
+                              Banned
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-2">
+                      <p className="text-sm font-medium">
+                        {getReasonLabel(report.reason)}
+                      </p>
+                      {report.details && (
+                        <p className="line-clamp-2 text-xs text-muted-foreground">
+                          {report.details}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                        <MoreVertical className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => handleViewConversation(report)}
+                      >
+                        <MessageSquare className="mr-2 h-4 w-4" />
+                        {t("actions.viewConversation")}
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      {report.status !== "REVIEWING" && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleUpdateStatus(report.id, "REVIEWING")
+                          }
+                        >
+                          <Eye className="mr-2 h-4 w-4" />
+                          {t("filters.reviewing")}
+                        </DropdownMenuItem>
+                      )}
+                      {report.status !== "RESOLVED" && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleUpdateStatus(report.id, "RESOLVED")
+                          }
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          {t("actions.resolve")}
+                        </DropdownMenuItem>
+                      )}
+                      {report.status !== "DISMISSED" && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleUpdateStatus(report.id, "DISMISSED")
+                          }
+                        >
+                          <XCircle className="mr-2 h-4 w-4" />
+                          {t("actions.dismiss")}
+                        </DropdownMenuItem>
+                      )}
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem
+                        onClick={() => handleBanUser(report)}
+                        className={
+                          report.reported.isBanned
+                            ? "text-green-600"
+                            : "text-destructive"
+                        }
+                      >
+                        <Ban className="mr-2 h-4 w-4" />
+                        {report.reported.isBanned
+                          ? t("actions.unbanUser")
+                          : t("actions.banUser")}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden rounded-lg border md:block">
             <table className="w-full">
               <thead className="border-b bg-muted/50">
                 <tr>
@@ -594,7 +742,7 @@ export default function AdminReportsPage() {
               </tbody>
             </table>
           </div>
-        </div>
+        </>
       )}
 
       {/* Pagination */}

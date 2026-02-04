@@ -1,3 +1,9 @@
+## [16.1.2](https://github.com/palhinhax/Athlifyr/compare/v16.1.1...v16.1.2) (2026-02-04)
+
+### Bug Fixes
+
+- **workouts:** add cascade delete to WorkoutLog-Workout relation ([8049c5c](https://github.com/palhinhax/Athlifyr/commit/8049c5cbf1c99990f5527c0ee95f41270b624a73))
+
 ## [16.1.1](https://github.com/palhinhax/Athlifyr/compare/v16.1.0...v16.1.1) (2026-02-02)
 
 ### Bug Fixes

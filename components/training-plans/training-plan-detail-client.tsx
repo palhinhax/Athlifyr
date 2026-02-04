@@ -336,102 +336,139 @@ export function TrainingPlanDetailClient({
     <div className="container py-6">
       {/* Header */}
       <div className="mb-6">
-        <Button variant="ghost" asChild className="mb-4">
+        {/* Back button - Icon only on mobile */}
+        <Button variant="ghost" asChild className="-ml-2 mb-4">
           <Link href="/workouts/plans">
-            <ArrowLeftIcon className="mr-2 h-4 w-4" />
-            {t("title")}
+            <ArrowLeftIcon className="mr-0 h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t("title")}</span>
           </Link>
         </Button>
 
-        <div className="flex items-start justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">{plan.name}</h1>
+        {/* Title and actions row */}
+        <div className="mb-4 flex items-start justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="break-words text-xl font-bold sm:text-2xl">
+              {plan.name}
+            </h1>
             {plan.description && (
-              <p className="mt-1 text-muted-foreground">{plan.description}</p>
+              <p className="mt-1 text-sm text-muted-foreground sm:text-base">
+                {plan.description}
+              </p>
             )}
+          </div>
 
-            {/* Creator info */}
-            {plan.createdBy && (
-              <Link
-                href={`/profile/${plan.createdBy.id}`}
-                className="mt-3 inline-flex items-center gap-2 rounded-full bg-muted/50 px-3 py-1.5 transition-colors hover:bg-muted"
+          {/* Action buttons - Responsive */}
+          {isOwner && (
+            <div className="flex shrink-0 gap-2">
+              {/* Mobile: Icon buttons only */}
+              <Button
+                variant="default"
+                size="icon"
+                onClick={() => setIsAssignDialogOpen(true)}
+                className="sm:hidden"
               >
-                <Avatar className="h-6 w-6">
-                  <AvatarImage src={plan.createdBy.image || undefined} />
-                  <AvatarFallback className="text-xs">
-                    {plan.createdBy.name
-                      ?.split(" ")
-                      .map((n: string) => n[0])
-                      .join("")
-                      .toUpperCase()
-                      .slice(0, 2) || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <span className="text-sm">
-                  <span className="text-muted-foreground">
-                    {t("createdBy")}
-                  </span>{" "}
-                  <span className="font-medium">{plan.createdBy.name}</span>
-                </span>
-              </Link>
-            )}
+                <UsersIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => setIsEditing(true)}
+                className="sm:hidden"
+              >
+                <PencilIcon className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => setIsDeleting(true)}
+                className="sm:hidden"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </Button>
 
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <CalendarDaysIcon className="h-4 w-4" />
-                <span>
-                  {t("stats.totalWeeks", { count: plan.duration ?? 0 })}
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                <ClipboardListIcon className="h-4 w-4" />
-                <span>
-                  {t("stats.totalWorkouts", { count: totalWorkouts })}
-                </span>
-              </div>
-              {isOwner && plan._count?.assignedToUsers > 0 && (
-                <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                  <UsersIcon className="h-4 w-4" />
-                  <span>
-                    {t("stats.assignedAthletes", {
-                      count: plan._count.assignedToUsers,
-                    })}
-                  </span>
-                </div>
-              )}
-              <Badge
-                variant="secondary"
-                className={getDifficultyColor(plan.difficulty ?? 1)}
+              {/* Desktop: Full buttons with text */}
+              <Button
+                variant="default"
+                onClick={() => setIsAssignDialogOpen(true)}
+                className="hidden sm:flex"
               >
-                {t(`difficulty.${plan.difficulty ?? 1}`)}
-              </Badge>
+                <UsersIcon className="mr-2 h-4 w-4" />
+                {t("assignPlan")}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setIsEditing(true)}
+                className="hidden sm:flex"
+              >
+                <PencilIcon className="mr-2 h-4 w-4" />
+                {t("editPlan")}
+              </Button>
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={() => setIsDeleting(true)}
+                className="hidden sm:flex"
+              >
+                <TrashIcon className="h-4 w-4" />
+              </Button>
             </div>
-          </div>
+          )}
+        </div>
 
-          <div className="flex gap-2">
-            {isOwner && (
-              <>
-                <Button
-                  variant="default"
-                  onClick={() => setIsAssignDialogOpen(true)}
-                >
-                  <UsersIcon className="mr-2 h-4 w-4" />
-                  {t("assignPlan")}
-                </Button>
-                <Button variant="outline" onClick={() => setIsEditing(true)}>
-                  <PencilIcon className="mr-2 h-4 w-4" />
-                  {t("editPlan")}
-                </Button>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => setIsDeleting(true)}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
-              </>
-            )}
+        {/* Creator info - Stacked on mobile */}
+        {plan.createdBy && (
+          <Link
+            href={`/profile/${plan.createdBy.id}`}
+            className="mb-3 inline-flex w-full items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 transition-colors hover:bg-muted sm:w-auto sm:rounded-full"
+          >
+            <Avatar className="h-6 w-6 shrink-0">
+              <AvatarImage src={plan.createdBy.image || undefined} />
+              <AvatarFallback className="text-xs">
+                {plan.createdBy.name
+                  ?.split(" ")
+                  .map((n: string) => n[0])
+                  .join("")
+                  .toUpperCase()
+                  .slice(0, 2) || "?"}
+              </AvatarFallback>
+            </Avatar>
+            <span className="min-w-0 text-sm">
+              <span className="text-muted-foreground">{t("createdBy")}</span>{" "}
+              <span className="font-medium">{plan.createdBy.name}</span>
+            </span>
+          </Link>
+        )}
+
+        {/* Stats - Grid layout on mobile */}
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <CalendarDaysIcon className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">
+              {t("stats.totalWeeks", { count: plan.duration ?? 0 })}
+            </span>
           </div>
+          <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+            <ClipboardListIcon className="h-4 w-4 shrink-0" />
+            <span className="whitespace-nowrap">
+              {t("stats.totalWorkouts", { count: totalWorkouts })}
+            </span>
+          </div>
+          {isOwner && plan._count?.assignedToUsers > 0 && (
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <UsersIcon className="h-4 w-4 shrink-0" />
+              <span className="whitespace-nowrap">
+                {t("stats.assignedAthletes", {
+                  count: plan._count.assignedToUsers,
+                })}
+              </span>
+            </div>
+          )}
+          <Badge
+            variant="secondary"
+            className={getDifficultyColor(plan.difficulty ?? 1)}
+          >
+            {t(`difficulty.${plan.difficulty ?? 1}`)}
+          </Badge>
         </div>
       </div>
 

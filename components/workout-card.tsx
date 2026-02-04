@@ -273,7 +273,7 @@ export function WorkoutCard({
           {/* Creator info - only show for public workouts from other users */}
           {workout.isPublic && workout.createdBy && (
             <Link
-              href={`/profile/${workout.createdBy.id}`}
+              href={`/user/${workout.createdBy.id}`}
               className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-muted"
             >
               <Avatar className="h-5 w-5">

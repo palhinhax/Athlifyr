@@ -1,3 +1,14 @@
+# [16.2.0](https://github.com/palhinhax/Athlifyr/compare/v16.1.2...v16.2.0) (2026-02-04)
+
+### Bug Fixes
+
+- **workouts:** correct profile link URLs to use /user instead of /profile ([3dc3fdd](https://github.com/palhinhax/Athlifyr/commit/3dc3fdd48936ad37e2f2a06c29056f7abbfac3fc))
+
+### Features
+
+- **venues:** add coach assignment and workout display in session details ([f8670d5](https://github.com/palhinhax/Athlifyr/commit/f8670d5e7efcbefe8d0ca5bd61a99e7c8ca2bf05))
+- **workouts:** improve training plan detail mobile layout ([1886357](https://github.com/palhinhax/Athlifyr/commit/188635754a4ea754227b3383d564dc1404e771c1))
+
 ## [16.1.2](https://github.com/palhinhax/Athlifyr/compare/v16.1.1...v16.1.2) (2026-02-04)
 
 ### Bug Fixes

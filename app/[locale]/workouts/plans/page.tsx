@@ -32,5 +32,11 @@ export default async function TrainingPlansPage({
     return null;
   }
 
+  // Only Pro users can access training plans page
+  if (!session.user.isProAccount) {
+    redirect({ href: "/workouts", locale });
+    return null;
+  }
+
   return <TrainingPlansPageClient userId={session.user.id} />;
 }

@@ -4,8 +4,8 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import {
-  Dumbbell,
+  UserCircle,
   Search,
   Loader2,
   Clock,
@@ -25,8 +25,8 @@ import {
   ChevronRight,
   CheckCircle2,
   Users,
+  UserX,
 } from "lucide-react";
-import { useDebounce } from "@/hooks/use-debounce";
 import { cn } from "@/lib/utils";
 import {
   format,
@@ -37,15 +37,8 @@ import {
   isAfter,
 } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
-
-interface Workout {
-  id: string;
-  name: string;
-  description?: string | null;
-  estimatedTime?: number | null;
-  difficulty?: number | null;
-  tags: string[];
-}
+import { Input } from "@/components/ui/input";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface VenueSession {
   id: string;
@@ -54,12 +47,25 @@ interface VenueSession {
   endsAt: string;
   capacity: number | null;
   type: string;
+  coachId: string | null;
   _count?: {
     bookings: number;
   };
 }
 
-interface BulkWorkoutAssignDialogProps {
+interface StaffMember {
+  id: string;
+  role: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+}
+
+interface BulkCoachAssignDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   venueId: string;
@@ -75,20 +81,20 @@ const localeMap: Record<string, Locale> = {
   it: it,
 };
 
-export function BulkWorkoutAssignDialog({
+export function BulkCoachAssignDialog({
   open,
   onOpenChange,
   venueId,
   onSuccess,
-}: BulkWorkoutAssignDialogProps) {
+}: BulkCoachAssignDialogProps) {
   const t = useTranslations("venues.sessions");
-  const tWorkout = useTranslations("workouts");
+  const tVenues = useTranslations("venues");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const dateLocale = localeMap[locale] || enUS;
   const { toast } = useToast();
 
-  // Step state: 1 = select sessions, 2 = select workout
+  // Step state: 1 = select sessions, 2 = select coach
   const [step, setStep] = useState<1 | 2>(1);
 
   // Session selection
@@ -97,13 +103,11 @@ export function BulkWorkoutAssignDialog({
   const [selectedSessionIds, setSelectedSessionIds] = useState<string[]>([]);
   const [loadingSessions, setLoadingSessions] = useState(false);
 
-  // Workout selection
-  const [workouts, setWorkouts] = useState<Workout[]>([]);
-  const [selectedWorkoutId, setSelectedWorkoutId] = useState<string | null>(
-    null
-  );
+  // Staff selection
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
+  const [loadingStaff, setLoadingStaff] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [loadingWorkouts, setLoadingWorkouts] = useState(false);
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   // Submit state
@@ -140,30 +144,29 @@ export function BulkWorkoutAssignDialog({
     }
   }, [venueId, selectedDate]);
 
-  // Fetch workouts
-  const fetchWorkouts = useCallback(async () => {
-    setLoadingWorkouts(true);
+  // Fetch venue staff/members (only OWNER, ADMIN, COACH - not CLIENT)
+  const fetchStaff = useCallback(async () => {
+    setLoadingStaff(true);
     try {
-      const params = new URLSearchParams({
-        venueId,
-        includePublic: "true",
-      });
-
-      if (debouncedSearch) {
-        params.append("search", debouncedSearch);
-      }
-
-      const response = await fetch(`/api/workouts?${params.toString()}`);
-      if (!response.ok) throw new Error("Failed to fetch workouts");
+      const response = await fetch(`/api/venues/${venueId}/members`);
+      if (!response.ok) throw new Error("Failed to fetch staff");
 
       const data = await response.json();
-      setWorkouts(data.items || data.workouts || []);
+      // Filter to only show staff (OWNER, ADMIN, COACH) - exclude CLIENT role
+      const staffMembers = (data.members || []).filter(
+        (member: StaffMember) =>
+          member.role === "OWNER" ||
+          member.role === "ADMIN" ||
+          member.role === "COACH"
+      );
+      setStaff(staffMembers);
     } catch (error) {
-      console.error("Error fetching workouts:", error);
+      console.error("Error fetching staff:", error);
+      setStaff([]);
     } finally {
-      setLoadingWorkouts(false);
+      setLoadingStaff(false);
     }
-  }, [venueId, debouncedSearch]);
+  }, [venueId]);
 
   // Reset state when dialog opens/closes
   useEffect(() => {
@@ -171,7 +174,7 @@ export function BulkWorkoutAssignDialog({
       setStep(1);
       setSelectedDate(new Date());
       setSelectedSessionIds([]);
-      setSelectedWorkoutId(null);
+      setSelectedCoachId(null);
       setSearchQuery("");
     }
   }, [open]);
@@ -183,12 +186,12 @@ export function BulkWorkoutAssignDialog({
     }
   }, [open, step, fetchSessions]);
 
-  // Fetch workouts when step 2
+  // Fetch staff when step 2
   useEffect(() => {
     if (open && step === 2) {
-      fetchWorkouts();
+      fetchStaff();
     }
-  }, [open, step, fetchWorkouts]);
+  }, [open, step, fetchStaff]);
 
   // Handle session selection
   const toggleSession = (sessionId: string) => {
@@ -227,46 +230,58 @@ export function BulkWorkoutAssignDialog({
     setSelectedSessionIds([]);
   };
 
+  // Filter staff by search
+  const filteredStaff = staff.filter((member) => {
+    if (!debouncedSearch) return true;
+    const search = debouncedSearch.toLowerCase();
+    return (
+      member.user.name?.toLowerCase().includes(search) ||
+      member.user.email?.toLowerCase().includes(search)
+    );
+  });
+
   // Submit bulk assignment
   const handleSubmit = async () => {
-    if (!selectedWorkoutId || selectedSessionIds.length === 0) return;
+    if (selectedSessionIds.length === 0) return;
 
     setIsSubmitting(true);
     try {
       const response = await fetch(
-        `/api/venues/${venueId}/sessions/bulk-assign-workout`,
+        `/api/venues/${venueId}/sessions/bulk-assign-coach`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             sessionIds: selectedSessionIds,
-            workoutId: selectedWorkoutId,
+            coachId: selectedCoachId,
           }),
         }
       );
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to assign workout");
+        throw new Error(error.error || "Failed to assign coach");
       }
 
       const result = await response.json();
 
       toast({
-        title: t("workoutAssignedToSessions"),
-        description: t("workoutAssignedToSessionsDesc", {
-          count: result.count,
-        }),
+        title: selectedCoachId
+          ? t("coachAssignedToSessions")
+          : t("coachRemovedFromSessions"),
+        description: selectedCoachId
+          ? t("coachAssignedToSessionsDesc", { count: result.count })
+          : t("coachRemovedFromSessionsDesc", { count: result.count }),
       });
 
       onSuccess?.();
       onOpenChange(false);
     } catch (error) {
-      console.error("Error assigning workout:", error);
+      console.error("Error assigning coach:", error);
       toast({
         title: tCommon("error"),
         description:
-          error instanceof Error ? error.message : "Failed to assign workout",
+          error instanceof Error ? error.message : "Failed to assign coach",
         variant: "destructive",
       });
     } finally {
@@ -274,15 +289,38 @@ export function BulkWorkoutAssignDialog({
     }
   };
 
+  const getInitials = (name: string | null) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2);
+  };
+
+  const getRoleBadgeVariant = (role: string) => {
+    switch (role) {
+      case "OWNER":
+        return "default";
+      case "ADMIN":
+        return "secondary";
+      case "COACH":
+        return "outline";
+      default:
+        return "outline";
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-hidden sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t("bulkAssignWorkout")}</DialogTitle>
+          <DialogTitle>{t("bulkAssignCoach")}</DialogTitle>
           <DialogDescription>
             {step === 1
-              ? t("bulkAssignSelectSessions")
-              : t("bulkAssignSelectWorkout")}
+              ? t("bulkAssignCoachSelectSessions")
+              : t("bulkAssignCoachSelectProfessional")}
           </DialogDescription>
         </DialogHeader>
 
@@ -345,6 +383,7 @@ export function BulkWorkoutAssignDialog({
                     <Checkbox
                       checked={selectedSessionIds.length === sessions.length}
                       onCheckedChange={selectAllSessions}
+                      onClick={(e) => e.stopPropagation()}
                     />
                     <span className="text-sm font-medium">
                       {t("selectAllSessions", { count: sessions.length })}
@@ -372,6 +411,7 @@ export function BulkWorkoutAssignDialog({
                         <Checkbox
                           checked={isSelected}
                           onCheckedChange={() => toggleSession(session.id)}
+                          onClick={(e) => e.stopPropagation()}
                         />
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
@@ -427,11 +467,11 @@ export function BulkWorkoutAssignDialog({
           </>
         ) : (
           <>
-            {/* Search Workouts */}
+            {/* Search Staff */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <Input
-                placeholder={tWorkout("searchPlaceholder")}
+                placeholder={t("searchStaff")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10"
@@ -451,60 +491,89 @@ export function BulkWorkoutAssignDialog({
               </p>
             </div>
 
-            {/* Workouts List */}
+            {/* Staff List */}
             <div className="h-[300px] overflow-y-auto">
-              {loadingWorkouts ? (
+              {loadingStaff ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                 </div>
-              ) : workouts.length === 0 ? (
-                <div className="py-12 text-center">
-                  <Dumbbell className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <p className="mt-4 text-sm text-muted-foreground">
-                    {tWorkout("noWorkoutsFound")}
-                  </p>
-                </div>
               ) : (
                 <div className="space-y-2">
-                  {workouts.map((workout) => {
-                    const isSelected = selectedWorkoutId === workout.id;
-                    return (
-                      <div
-                        key={workout.id}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50",
-                          isSelected && "border-primary bg-primary/5"
-                        )}
-                        onClick={() => setSelectedWorkoutId(workout.id)}
-                      >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                          <Dumbbell className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-medium">{workout.name}</p>
-                          {workout.description && (
-                            <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
-                              {workout.description}
-                            </p>
+                  {/* Remove Coach Option */}
+                  <div
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50",
+                      selectedCoachId === null && "border-primary bg-primary/5"
+                    )}
+                    onClick={() => setSelectedCoachId(null)}
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted">
+                      <UserX className="h-5 w-5 text-muted-foreground" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{t("noCoachAssigned")}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t("removeCoachFromSessions")}
+                      </p>
+                    </div>
+                    {selectedCoachId === null && (
+                      <CheckCircle2 className="h-5 w-5 text-primary" />
+                    )}
+                  </div>
+
+                  {filteredStaff.length === 0 ? (
+                    <div className="py-8 text-center">
+                      <UserCircle className="mx-auto h-12 w-12 text-muted-foreground/50" />
+                      <p className="mt-4 text-sm text-muted-foreground">
+                        {t("noStaffFound")}
+                      </p>
+                    </div>
+                  ) : (
+                    filteredStaff.map((member) => {
+                      const isSelected = selectedCoachId === member.userId;
+                      return (
+                        <div
+                          key={member.id}
+                          className={cn(
+                            "flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors hover:bg-muted/50",
+                            isSelected && "border-primary bg-primary/5"
                           )}
-                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                            {workout.estimatedTime && (
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                {workout.estimatedTime} min
-                              </span>
-                            )}
-                            {workout.tags.length > 0 && (
-                              <span>{workout.tags.slice(0, 2).join(", ")}</span>
+                          onClick={() => setSelectedCoachId(member.userId)}
+                        >
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage
+                              src={member.user.image || undefined}
+                              alt={member.user.name || "Staff"}
+                            />
+                            <AvatarFallback>
+                              {getInitials(member.user.name)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium">
+                                {member.user.name || member.user.email}
+                              </p>
+                              <Badge
+                                variant={getRoleBadgeVariant(member.role)}
+                                className="text-xs"
+                              >
+                                {tVenues(`roles.${member.role}`)}
+                              </Badge>
+                            </div>
+                            {member.user.email && member.user.name && (
+                              <p className="text-xs text-muted-foreground">
+                                {member.user.email}
+                              </p>
                             )}
                           </div>
+                          {isSelected && (
+                            <CheckCircle2 className="h-5 w-5 text-primary" />
+                          )}
                         </div>
-                        {isSelected && (
-                          <CheckCircle2 className="h-5 w-5 text-primary" />
-                        )}
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               )}
             </div>
@@ -518,16 +587,13 @@ export function BulkWorkoutAssignDialog({
                   <Button variant="outline" onClick={() => onOpenChange(false)}>
                     {tCommon("cancel")}
                   </Button>
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={!selectedWorkoutId || isSubmitting}
-                  >
+                  <Button onClick={handleSubmit} disabled={isSubmitting}>
                     {isSubmitting ? (
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     ) : (
-                      <Dumbbell className="mr-2 h-4 w-4" />
+                      <UserCircle className="mr-2 h-4 w-4" />
                     )}
-                    {t("assignWorkout")}
+                    {selectedCoachId ? t("assignCoach") : t("removeCoach")}
                   </Button>
                 </div>
               </div>

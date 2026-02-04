@@ -98,7 +98,7 @@ export function SessionWorkoutSelector({
       if (!response.ok) throw new Error("Failed to fetch workouts");
 
       const data = await response.json();
-      setWorkouts(data.workouts || []);
+      setWorkouts(data.items || data.workouts || []);
     } catch (error) {
       console.error("Error fetching workouts:", error);
     } finally {
@@ -200,7 +200,7 @@ export function SessionWorkoutSelector({
                         {workout.blocks.length}{" "}
                         {workout.blocks.length === 1
                           ? tWorkout("block")
-                          : tWorkout("blocks")}
+                          : tWorkout("blockLabel")}
                       </span>
                     )}
                   </div>
@@ -315,7 +315,7 @@ export function SessionWorkoutSelector({
                                 (acc, b) => acc + b.exercises.length,
                                 0
                               )}{" "}
-                              {tWorkout("exercises")}
+                              {tWorkout("exerciseLabel")}
                             </span>
                           )}
                         </div>

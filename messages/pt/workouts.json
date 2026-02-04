@@ -2,6 +2,7 @@
   "workouts": {
     "title": "Treinos",
     "subtitle": "Cria e gere os teus treinos",
+    "subtitleBasic": "Descobre e executa treinos",
     "createdBy": "Criado por",
     "createdByMe": "Criados por Mim",
     "createWorkout": "Criar Treino",
@@ -11,6 +12,7 @@
     "myWorkouts": "Os Meus Treinos",
     "publicWorkouts": "Treinos Públicos",
     "savedWorkouts": "Treinos Guardados",
+    "discoverWorkouts": "Descobre Treinos",
     "saved": "Treino guardado",
     "unsaved": "Treino removido dos guardados",
     "templates": "Modelos",
@@ -19,11 +21,30 @@
     "noWorkouts": "Ainda não tens treinos",
     "noWorkoutsDescription": "Cria o teu primeiro treino para começar a registar o teu progresso.",
     "noPublicWorkouts": "Ainda não existem treinos públicos disponíveis.",
+    "noWorkoutsAvailable": "Nenhum treino disponível",
+    "noWorkoutsAvailableDescription": "Explora os treinos públicos ou guarda treinos na tua coleção.",
     "noWorkoutsFound": "Nenhum treino encontrado",
     "searchPlaceholder": "Pesquisar treinos...",
+    "noSearchResults": "Nenhum treino encontrado",
+    "noSearchResultsDescription": "Tenta um termo de pesquisa diferente ou limpa a pesquisa.",
+    "clearSearch": "Limpar pesquisa",
+    "publicTab": "Público",
+    "noSavedWorkouts": "Nenhum treino guardado",
+    "noSavedWorkoutsDescription": "Explora os treinos públicos e guarda-os na tua coleção.",
+    "noPublicContent": "Nenhum conteúdo público disponível",
+    "noPublicContentDescription": "Volta mais tarde para ver novos treinos e planos de treino.",
     "block": "bloco",
-    "blocks": "blocos",
-    "exercises": "exercícios",
+    "blockLabel": "blocos",
+    "exerciseLabel": "exercícios",
+    "assignToSessions": "Atribuir a Aulas",
+    "assignToSessionsDesc": "Seleciona as aulas às quais queres atribuir o treino \"{workout}\"",
+    "assignedToSessions": "Treino atribuído",
+    "assignedToSessionsDesc": "Treino atribuído a {count, plural, one {# aula} other {# aulas}} com sucesso",
+    "noVenuesToAssign": "Não tens espaços para atribuir treinos",
+    "noVenuesToAssignDesc": "Precisas de ser dono, administrador ou treinador de um espaço para atribuir treinos a aulas.",
+    "selectVenue": "Selecionar Espaço",
+    "selectVenuePlaceholder": "Escolhe um espaço...",
+    "assignWorkout": "Atribuir Treino",
     "difficulty": {
       "easy": "Fácil",
       "medium": "Médio",
@@ -263,6 +284,7 @@
       "subtitle": "Cria e gere programas de treino estruturados",
       "createdBy": "Criado por",
       "createdByMe": "Criados por Mim",
+      "createdByLabel": "Por",
       "myPlans": "Os Meus Planos",
       "publicPlans": "Planos Públicos",
       "savedPlans": "Planos Guardados",
@@ -278,8 +300,16 @@
       "assignPlan": "Atribuir Plano",
       "noPlans": "Ainda não tens planos de treino",
       "noPlansDescription": "Cria o teu primeiro plano de treino para ajudar atletas a atingir os seus objetivos.",
+      "noPlansAvailable": "Nenhum plano disponível",
+      "noPlansAvailableDescription": "Explora os planos de treino públicos para encontrar o programa certo para ti.",
+      "noSavedPlans": "Nenhum plano guardado",
+      "noSavedPlansDescription": "Explora os planos de treino públicos e guarda-os na tua coleção.",
+      "weeksCount": "semanas",
       "noAssignedPlans": "Não tens planos atribuídos",
       "noAssignedPlansDescription": "Pede ao teu treinador para te atribuir um plano de treino.",
+      "assignedToYou": "Atribuído a ti",
+      "assignedByLabel": "Atribuído por",
+      "startDateLabel": "Começa em",
 
       "form": {
         "name": "Nome do Plano",
@@ -291,7 +321,8 @@
         "isPublic": "Tornar plano público",
         "isTemplate": "Guardar como modelo",
         "save": "Guardar Plano",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "close": "Fechar"
       },
 
       "weeks": {
@@ -380,10 +411,11 @@
       },
 
       "stats": {
-        "totalWeeks": "{count} semanas",
-        "totalWorkouts": "{count} treinos",
+        "totalWeeks": "{count, plural, =1 {1 semana} other {# semanas}}",
+        "totalWorkouts": "{count, plural, =1 {1 treino} other {# treinos}}",
+        "totalBlocks": "{count, plural, =1 {1 bloco} other {# blocos}}",
         "estimatedTime": "~{hours}h por semana",
-        "assignedAthletes": "{count} atletas"
+        "assignedAthletes": "{count, plural, =1 {1 atleta} other {# atletas}}"
       },
 
       "errors": {

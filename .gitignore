@@ -34,6 +34,7 @@ yarn-error.log*
 .env.development
 .env.production
 .env.prod
+.env*
 
 # vercel
 .vercel
@@ -44,3 +45,4 @@ next-env.d.ts
 
 # pnpm
 pnpm-workspace.yaml
+components/workouts-page-client.tsx

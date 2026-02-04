@@ -26,6 +26,7 @@ interface TimerHeaderProps {
   hasStarted: boolean;
   isMuted: boolean;
   isClockVisible: boolean;
+  returnTo?: string;
   onToggleMute: () => void;
   onToggleClockVisibility: () => void;
   onToggleSettings: () => void;
@@ -38,6 +39,7 @@ export function TimerHeader({
   hasStarted,
   isMuted,
   isClockVisible,
+  returnTo,
   onToggleMute,
   onToggleClockVisibility,
   onToggleSettings,
@@ -97,7 +99,7 @@ export function TimerHeader({
     <div className="flex items-center justify-between border-b px-4 py-2">
       <div className="flex items-center gap-3">
         <Button variant="ghost" size="icon" asChild>
-          <Link href="/workouts">
+          <Link href={returnTo || "/workouts"}>
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
         </Button>

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -20,12 +21,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import {
+  DumbbellIcon,
   Loader2Icon,
   MoreVerticalIcon,
+  PlayIcon,
   PlusIcon,
   TrashIcon,
 } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import type { Prisma } from "@prisma/client";
+import { BLOCK_TYPE_INFO } from "@/types/workout";
 
 type PlanWorkout = Prisma.TrainingPlanWorkoutGetPayload<{
   include: {
@@ -43,6 +48,7 @@ interface TrainingPlanWeekDaysProps {
   workouts: PlanWorkout[];
   onWorkoutAdded?: () => void;
   onWorkoutRemoved?: () => void;
+  canEdit?: boolean;
 }
 
 const DAYS = [
@@ -61,8 +67,10 @@ export function TrainingPlanWeekDays({
   workouts,
   onWorkoutAdded,
   onWorkoutRemoved,
+  canEdit = true,
 }: TrainingPlanWeekDaysProps) {
   const t = useTranslations("workouts.plans");
+  const tWorkouts = useTranslations("workouts");
   const [addingToDay, setAddingToDay] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -163,126 +171,190 @@ export function TrainingPlanWeekDays({
             {t(`days.${key}`)}
           </div>
 
-          <div className="space-y-1">
+          <div className="space-y-2">
             {dayWorkouts.length === 0 ? (
               <p className="py-2 text-center text-xs text-muted-foreground">
                 {t("days.rest")}
               </p>
             ) : (
-              dayWorkouts.map((planWorkout) => (
-                <div
-                  key={planWorkout.id}
-                  className="group relative rounded bg-background p-2 text-xs shadow-sm"
-                >
-                  <div className="flex items-start justify-between gap-1">
-                    <span className="line-clamp-2 font-medium">
-                      {planWorkout.workout.name}
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-5 w-5 opacity-0 group-hover:opacity-100"
-                        >
-                          <MoreVerticalIcon className="h-3 w-3" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => handleRemoveWorkout(planWorkout.id)}
-                        >
-                          <TrashIcon className="mr-2 h-4 w-4" />
-                          {t("workouts.removeFromDay")}
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                  {planWorkout.notes && (
-                    <p className="mt-1 line-clamp-1 text-muted-foreground">
-                      {planWorkout.notes}
-                    </p>
-                  )}
-                </div>
-              ))
-            )}
+              dayWorkouts.map((planWorkout) => {
+                const blockTypes = [
+                  ...new Set(planWorkout.workout.blocks.map((b) => b.type)),
+                ];
+                const totalBlocks = planWorkout.workout.blocks.length;
 
-            <Dialog
-              open={addingToDay === day}
-              onOpenChange={(open) => !open && setAddingToDay(null)}
-            >
-              <DialogTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 w-full text-xs"
-                  onClick={() => handleOpenAddWorkout(day)}
-                >
-                  <PlusIcon className="mr-1 h-3 w-3" />
-                  {t("days.addWorkout")}
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>{t("workouts.addToDay")}</DialogTitle>
-                  <DialogDescription>{t(`days.${key}`)}</DialogDescription>
-                </DialogHeader>
-
-                <div className="space-y-4">
-                  <Input
-                    placeholder={t("workouts.searchWorkouts")}
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
-
-                  <div className="max-h-[300px] space-y-2 overflow-y-auto">
-                    {isLoadingWorkouts ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : filteredWorkouts.length > 0 ? (
-                      filteredWorkouts.map((workout) => (
-                        <div
-                          key={workout.id}
-                          className="flex cursor-pointer items-center justify-between rounded-lg border p-3 hover:bg-muted"
-                          onClick={() => handleAddWorkout(workout.id)}
-                        >
-                          <div>
-                            <p className="font-medium">{workout.name}</p>
-                            {workout.description && (
-                              <p className="line-clamp-1 text-sm text-muted-foreground">
-                                {workout.description}
-                              </p>
-                            )}
-                          </div>
-                          {isLoading && (
-                            <Loader2Icon className="h-4 w-4 animate-spin" />
-                          )}
+                return (
+                  <Link
+                    key={planWorkout.id}
+                    href={`/workouts/${planWorkout.workout.id}/run?returnTo=/workouts/plans/${planId}`}
+                    className="group relative block cursor-pointer rounded-lg border bg-background p-2.5 text-xs shadow-sm transition-all hover:border-primary/50 hover:shadow-md"
+                  >
+                    {/* Header with name and actions */}
+                    <div className="flex items-start justify-between gap-1">
+                      <div className="flex items-center gap-1.5">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/10">
+                          <PlayIcon className="h-3 w-3 text-primary" />
                         </div>
-                      ))
-                    ) : availableWorkouts.length === 0 ? (
-                      <p className="py-4 text-center text-sm text-muted-foreground">
-                        {t("workouts.noWorkoutsAvailable")}
-                      </p>
-                    ) : (
-                      <p className="py-4 text-center text-sm text-muted-foreground">
-                        {t("workouts.noResults")}
+                        <span className="line-clamp-2 font-semibold">
+                          {planWorkout.workout.name}
+                        </span>
+                      </div>
+                      {canEdit && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 shrink-0 opacity-0 group-hover:opacity-100"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <MoreVerticalIcon className="h-3 w-3" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem
+                              className="text-destructive"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveWorkout(planWorkout.id);
+                              }}
+                            >
+                              <TrashIcon className="mr-2 h-4 w-4" />
+                              {t("workouts.removeFromDay")}
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+
+                    {/* Block types badges */}
+                    {blockTypes.length > 0 && (
+                      <div className="mt-2 flex flex-wrap gap-1">
+                        {blockTypes.slice(0, 2).map((type) => {
+                          const blockInfo = BLOCK_TYPE_INFO[type];
+                          return (
+                            <Badge
+                              key={type}
+                              variant="secondary"
+                              className="px-1.5 py-0 text-[10px]"
+                              style={{
+                                backgroundColor: `${blockInfo.color}20`,
+                                color: blockInfo.color,
+                              }}
+                            >
+                              {tWorkouts(`blocks.types.${type}`)}
+                            </Badge>
+                          );
+                        })}
+                        {blockTypes.length > 2 && (
+                          <Badge
+                            variant="secondary"
+                            className="px-1.5 py-0 text-[10px]"
+                          >
+                            +{blockTypes.length - 2}
+                          </Badge>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="mt-2 flex items-center gap-2 text-[10px] text-muted-foreground">
+                      <div className="flex items-center gap-0.5">
+                        <DumbbellIcon className="h-3 w-3" />
+                        <span>
+                          {t("stats.totalBlocks", { count: totalBlocks })}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Notes */}
+                    {planWorkout.notes && (
+                      <p className="mt-1.5 line-clamp-1 text-[10px] italic text-muted-foreground">
+                        {planWorkout.notes}
                       </p>
                     )}
-                  </div>
-                </div>
+                  </Link>
+                );
+              })
+            )}
 
-                <DialogFooter>
+            {canEdit && (
+              <Dialog
+                open={addingToDay === day}
+                onOpenChange={(open) => !open && setAddingToDay(null)}
+              >
+                <DialogTrigger asChild>
                   <Button
-                    variant="outline"
-                    onClick={() => setAddingToDay(null)}
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-full text-xs"
+                    onClick={() => handleOpenAddWorkout(day)}
                   >
-                    {t("form.cancel")}
+                    <PlusIcon className="mr-1 h-3 w-3" />
+                    {t("days.addWorkout")}
                   </Button>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>{t("workouts.addToDay")}</DialogTitle>
+                    <DialogDescription>{t(`days.${key}`)}</DialogDescription>
+                  </DialogHeader>
+
+                  <div className="space-y-4">
+                    <Input
+                      placeholder={t("workouts.searchWorkouts")}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+
+                    <div className="max-h-[300px] space-y-2 overflow-y-auto">
+                      {isLoadingWorkouts ? (
+                        <div className="flex items-center justify-center py-8">
+                          <Loader2Icon className="h-6 w-6 animate-spin text-muted-foreground" />
+                        </div>
+                      ) : filteredWorkouts.length > 0 ? (
+                        filteredWorkouts.map((workout) => (
+                          <div
+                            key={workout.id}
+                            className="flex cursor-pointer items-center justify-between rounded-lg border p-3 hover:bg-muted"
+                            onClick={() => handleAddWorkout(workout.id)}
+                          >
+                            <div>
+                              <p className="font-medium">{workout.name}</p>
+                              {workout.description && (
+                                <p className="line-clamp-1 text-sm text-muted-foreground">
+                                  {workout.description}
+                                </p>
+                              )}
+                            </div>
+                            {isLoading && (
+                              <Loader2Icon className="h-4 w-4 animate-spin" />
+                            )}
+                          </div>
+                        ))
+                      ) : availableWorkouts.length === 0 ? (
+                        <p className="py-4 text-center text-sm text-muted-foreground">
+                          {t("workouts.noWorkoutsAvailable")}
+                        </p>
+                      ) : (
+                        <p className="py-4 text-center text-sm text-muted-foreground">
+                          {t("workouts.noResults")}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+
+                  <DialogFooter>
+                    <Button
+                      variant="outline"
+                      onClick={() => setAddingToDay(null)}
+                    >
+                      {t("form.cancel")}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
       ))}

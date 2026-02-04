@@ -100,6 +100,7 @@ export async function GET(request: Request) {
     const includeSaved = searchParams.get("includeSaved") !== "false"; // Default true
     const cursor = searchParams.get("cursor");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
+    const search = searchParams.get("search");
 
     // Get user's saved workout IDs
     const savedWorkoutIds = includeSaved
@@ -112,18 +113,29 @@ export async function GET(request: Request) {
       : [];
 
     // Build where clause - include own, public, and saved workouts
+    // When venueId is provided, include venue workouts in addition to user's own and public
+    const accessConditions = [
+      { createdById: session.user.id },
+      { isPublic: true },
+      ...(savedWorkoutIds.length > 0 ? [{ id: { in: savedWorkoutIds } }] : []),
+      ...(venueId ? [{ venueId }] : []),
+    ];
+
+    const searchConditions = search
+      ? [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { description: { contains: search, mode: "insensitive" as const } },
+          { tags: { has: search } },
+        ]
+      : null;
+
     const where = {
-      OR: [
-        { createdById: session.user.id },
-        { isPublic: true },
-        ...(savedWorkoutIds.length > 0
-          ? [{ id: { in: savedWorkoutIds } }]
-          : []),
-        ...(venueId ? [{ venueId }] : []),
+      AND: [
+        { OR: accessConditions },
+        ...(searchConditions ? [{ OR: searchConditions }] : []),
+        ...(isTemplate ? [{ isTemplate: true }] : []),
+        ...(isPublic ? [{ isPublic: true }] : []),
       ],
-      ...(venueId && { venueId }),
-      ...(isTemplate && { isTemplate: true }),
-      ...(isPublic && { isPublic: true }),
     };
 
     const workouts = await prisma.workout.findMany({

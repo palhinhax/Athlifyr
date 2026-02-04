@@ -24,11 +24,14 @@ export async function generateMetadata({
 
 export default async function WorkoutRunPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: Promise<{ returnTo?: string }>;
 }) {
   const session = await auth();
   const { id } = await Promise.resolve(params);
+  const { returnTo } = await searchParams;
 
   if (!session?.user?.id) {
     redirect("/auth/signin");
@@ -74,5 +77,5 @@ export default async function WorkoutRunPage({
     notFound();
   }
 
-  return <WorkoutRunner workout={workout} />;
+  return <WorkoutRunner workout={workout} returnTo={returnTo} />;
 }

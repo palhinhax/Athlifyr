@@ -418,7 +418,7 @@ export function TrainingPlanDetailClient({
         {/* Creator info - Stacked on mobile */}
         {plan.createdBy && (
           <Link
-            href={`/profile/${plan.createdBy.id}`}
+            href={`/user/${plan.createdBy.id}`}
             className="mb-3 inline-flex w-full items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 transition-colors hover:bg-muted sm:w-auto sm:rounded-full"
           >
             <Avatar className="h-6 w-6 shrink-0">

@@ -2,6 +2,7 @@
   "workouts": {
     "title": "Workouts",
     "subtitle": "Create and manage your workouts",
+    "subtitleBasic": "Discover and execute workouts",
     "createdBy": "Created by",
     "createdByMe": "Created by Me",
     "createWorkout": "Create Workout",
@@ -11,6 +12,7 @@
     "myWorkouts": "My Workouts",
     "publicWorkouts": "Public Workouts",
     "savedWorkouts": "Saved Workouts",
+    "discoverWorkouts": "Discover Workouts",
     "saved": "Workout saved",
     "unsaved": "Workout removed from saved",
     "templates": "Templates",
@@ -19,11 +21,30 @@
     "noWorkouts": "You don't have any workouts yet",
     "noWorkoutsDescription": "Create your first workout to start tracking your progress.",
     "noPublicWorkouts": "No public workouts available yet.",
+    "noWorkoutsAvailable": "No workouts available",
+    "noWorkoutsAvailableDescription": "Browse public workouts or save workouts to your collection.",
     "noWorkoutsFound": "No workouts found",
     "searchPlaceholder": "Search workouts...",
+    "noSearchResults": "No workouts found",
+    "noSearchResultsDescription": "Try a different search term or clear the search.",
+    "clearSearch": "Clear search",
+    "publicTab": "Public",
+    "noSavedWorkouts": "No saved workouts",
+    "noSavedWorkoutsDescription": "Explore public workouts and save them to your collection.",
+    "noPublicContent": "No public content available",
+    "noPublicContentDescription": "Check back later for new workouts and training plans.",
     "block": "block",
-    "blocks": "blocks",
-    "exercises": "exercises",
+    "blockLabel": "blocks",
+    "exerciseLabel": "exercises",
+    "assignToSessions": "Assign to Classes",
+    "assignToSessionsDesc": "Select the classes to which you want to assign the workout \"{workout}\"",
+    "assignedToSessions": "Workout assigned",
+    "assignedToSessionsDesc": "Workout assigned to {count, plural, one {# class} other {# classes}} successfully",
+    "noVenuesToAssign": "No venues to assign workouts",
+    "noVenuesToAssignDesc": "You need to be an owner, admin or coach of a venue to assign workouts to classes.",
+    "selectVenue": "Select Venue",
+    "selectVenuePlaceholder": "Choose a venue...",
+    "assignWorkout": "Assign Workout",
     "difficulty": {
       "easy": "Easy",
       "medium": "Medium",
@@ -263,6 +284,7 @@
       "subtitle": "Create and manage structured training programs",
       "createdBy": "Created by",
       "createdByMe": "Created by Me",
+      "createdByLabel": "By",
       "myPlans": "My Plans",
       "publicPlans": "Public Plans",
       "savedPlans": "Saved Plans",
@@ -278,8 +300,16 @@
       "assignPlan": "Assign Plan",
       "noPlans": "No training plans yet",
       "noPlansDescription": "Create your first training plan to help athletes achieve their goals.",
+      "noPlansAvailable": "No plans available",
+      "noPlansAvailableDescription": "Browse public training plans to find the right program for you.",
+      "noSavedPlans": "No saved plans",
+      "noSavedPlansDescription": "Explore public training plans and save them to your collection.",
+      "weeksCount": "weeks",
       "noAssignedPlans": "You don't have any assigned plans",
       "noAssignedPlansDescription": "Ask your coach to assign you a training plan.",
+      "assignedToYou": "Assigned to you",
+      "assignedByLabel": "Assigned by",
+      "startDateLabel": "Starts on",
 
       "form": {
         "name": "Plan Name",
@@ -291,7 +321,8 @@
         "isPublic": "Make plan public",
         "isTemplate": "Save as template",
         "save": "Save Plan",
-        "cancel": "Cancel"
+        "cancel": "Cancel",
+        "close": "Close"
       },
 
       "weeks": {
@@ -380,10 +411,11 @@
       },
 
       "stats": {
-        "totalWeeks": "{count} weeks",
-        "totalWorkouts": "{count} workouts",
+        "totalWeeks": "{count, plural, =1 {1 week} other {# weeks}}",
+        "totalWorkouts": "{count, plural, =1 {1 workout} other {# workouts}}",
+        "totalBlocks": "{count, plural, =1 {1 block} other {# blocks}}",
         "estimatedTime": "~{hours}h per week",
-        "assignedAthletes": "{count} athletes"
+        "assignedAthletes": "{count, plural, =1 {1 athlete} other {# athletes}}"
       },
 
       "errors": {

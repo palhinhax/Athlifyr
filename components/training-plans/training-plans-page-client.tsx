@@ -22,6 +22,7 @@ import {
   Loader2Icon,
   PlusIcon,
   LayoutTemplateIcon,
+  UserCheckIcon,
 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { Link } from "@/i18n/routing";
@@ -31,7 +32,10 @@ import {
   type TrainingPlanFormData,
 } from "./training-plan-form";
 import { AssignPlanDialog } from "./assign-plan-dialog";
-import type { TrainingPlanWithDetails } from "@/types/training-plan";
+import type {
+  TrainingPlanWithDetails,
+  UserTrainingPlanWithDetails,
+} from "@/types/training-plan";
 import { useRouter } from "@/i18n/routing";
 
 type TrainingPlanWithSaved = TrainingPlanWithDetails & {
@@ -53,7 +57,11 @@ export function TrainingPlansPageClient({
   const router = useRouter();
 
   const [plans, setPlans] = useState<TrainingPlanWithSaved[]>(initialPlans);
+  const [assignedPlans, setAssignedPlans] = useState<
+    UserTrainingPlanWithDetails[]
+  >([]);
   const [isLoading, setIsLoading] = useState(!initialPlans.length);
+  const [isLoadingAssigned, setIsLoadingAssigned] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [activeTab, setActiveTab] = useState("my-plans");
@@ -79,11 +87,31 @@ export function TrainingPlansPageClient({
     }
   }, [t, toast]);
 
+  const fetchAssignedPlans = useCallback(async () => {
+    setIsLoadingAssigned(true);
+    try {
+      const response = await fetch("/api/training-plans?assignedToMe=true");
+      if (response.ok) {
+        const data = await response.json();
+        setAssignedPlans(data.userPlans || []);
+      }
+    } catch {
+      toast({
+        title: t("errors.loadFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingAssigned(false);
+    }
+  }, [t, toast]);
+
   useEffect(() => {
     if (!initialPlans.length) {
       fetchPlans();
     }
-  }, [initialPlans.length, fetchPlans]);
+    // Always fetch assigned plans when component mounts
+    fetchAssignedPlans();
+  }, [initialPlans.length, fetchPlans, fetchAssignedPlans]);
 
   const handleCreatePlan = async (data: TrainingPlanFormData) => {
     setIsCreating(true);
@@ -226,6 +254,17 @@ export function TrainingPlansPageClient({
         ) : undefined,
     },
     {
+      value: "assigned",
+      label: t("assignedPlans"),
+      icon: <UserCheckIcon />,
+      badge:
+        assignedPlans.length > 0 ? (
+          <span className="text-xs text-muted-foreground">
+            ({assignedPlans.length})
+          </span>
+        ) : undefined,
+    },
+    {
       value: "templates",
       label: t("templates"),
       icon: <LayoutTemplateIcon />,
@@ -340,6 +379,31 @@ export function TrainingPlansPageClient({
                     </div>
                   </div>
                 )}
+              </div>
+            )}
+          </ResponsiveTabsContent>
+
+          <ResponsiveTabsContent value="assigned" activeValue={activeTab}>
+            {isLoadingAssigned ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
+              </div>
+            ) : assignedPlans.length === 0 ? (
+              <EmptyState
+                title={t("noAssignedPlans")}
+                description={t("noAssignedPlansDescription")}
+              />
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {assignedPlans.map((userPlan) => (
+                  <TrainingPlanCard
+                    key={userPlan.id}
+                    plan={userPlan.plan as TrainingPlanWithDetails}
+                    onEdit={() =>
+                      router.push(`/workouts/plans/${userPlan.plan.id}`)
+                    }
+                  />
+                ))}
               </div>
             )}
           </ResponsiveTabsContent>

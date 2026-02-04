@@ -75,8 +75,9 @@ export function TrainingPlanCard({
   const [isSaved, setIsSaved] = useState(plan.isSaved || false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const totalWorkouts = plan.weeks.reduce(
-    (sum: number, week: { workouts: unknown[] }) => sum + week.workouts.length,
+  const totalWorkouts = (plan.weeks || []).reduce(
+    (sum: number, week: { workouts?: unknown[] }) =>
+      sum + (week.workouts?.length || 0),
     0
   );
 
@@ -214,7 +215,8 @@ export function TrainingPlanCard({
               <ClipboardListIcon className="h-4 w-4" />
               <span>{t("stats.totalWorkouts", { count: totalWorkouts })}</span>
             </div>
-            {plan._count?.assignedToUsers &&
+            {canEdit &&
+              plan._count?.assignedToUsers &&
               plan._count.assignedToUsers > 0 && (
                 <div className="flex items-center gap-1">
                   <UsersIcon className="h-4 w-4" />

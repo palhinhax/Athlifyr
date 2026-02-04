@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -37,6 +38,7 @@ import {
   GlobeIcon,
   BookmarkIcon,
   Loader2Icon,
+  CalendarPlusIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
@@ -44,6 +46,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/components/ui/use-toast";
 import type { WorkoutWithBlocks } from "@/types/workout";
 import { BLOCK_TYPE_INFO } from "@/types/workout";
+import { useUserVenues } from "@/hooks/use-user-venues";
+import { AssignWorkoutToSessionsDialog } from "@/components/assign-workout-to-sessions-dialog";
 
 interface WorkoutCardProps {
   workout: WorkoutWithBlocks & { isSaved?: boolean };
@@ -65,8 +69,15 @@ export function WorkoutCard({
   const t = useTranslations("workouts");
   const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
   const [isSaved, setIsSaved] = useState(workout.isSaved || false);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Check if user can assign workouts to sessions (OWNER, ADMIN, or COACH)
+  const { venues } = useUserVenues();
+  const canAssignToSessions = venues.some(
+    (v) => v.role === "OWNER" || v.role === "ADMIN" || v.role === "COACH"
+  );
 
   const totalExercises = workout.blocks.reduce(
     (sum, block) => sum + block.exercises.length,
@@ -140,7 +151,7 @@ export function WorkoutCard({
                   )}
                 </Button>
               )}
-              {canEdit && (
+              {(canEdit || canAssignToSessions) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
@@ -148,17 +159,32 @@ export function WorkoutCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onEdit}>
-                      <PencilIcon className="mr-2 h-4 w-4" />
-                      {t("editWorkout")}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      className="text-destructive"
-                      onClick={() => setShowDeleteDialog(true)}
-                    >
-                      <TrashIcon className="mr-2 h-4 w-4" />
-                      {t("deleteWorkout")}
-                    </DropdownMenuItem>
+                    {canAssignToSessions && (
+                      <DropdownMenuItem
+                        onClick={() => setShowAssignDialog(true)}
+                      >
+                        <CalendarPlusIcon className="mr-2 h-4 w-4" />
+                        {t("assignToSessions")}
+                      </DropdownMenuItem>
+                    )}
+                    {canAssignToSessions && canEdit && (
+                      <DropdownMenuSeparator />
+                    )}
+                    {canEdit && (
+                      <>
+                        <DropdownMenuItem onClick={onEdit}>
+                          <PencilIcon className="mr-2 h-4 w-4" />
+                          {t("editWorkout")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setShowDeleteDialog(true)}
+                        >
+                          <TrashIcon className="mr-2 h-4 w-4" />
+                          {t("deleteWorkout")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -300,6 +326,13 @@ export function WorkoutCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AssignWorkoutToSessionsDialog
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+        workoutId={workout.id}
+        workoutName={workout.name}
+      />
     </>
   );
 }

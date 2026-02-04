@@ -55,6 +55,7 @@ interface TrainingPlanWeekEditorProps {
   onMoveDown?: () => void;
   canMoveUp?: boolean;
   canMoveDown?: boolean;
+  canEdit?: boolean;
   onWorkoutAdded?: () => void;
   onWorkoutRemoved?: () => void;
 }
@@ -72,6 +73,7 @@ export function TrainingPlanWeekEditor({
   onMoveDown,
   canMoveUp = false,
   canMoveDown = false,
+  canEdit = true,
   onWorkoutAdded,
   onWorkoutRemoved,
 }: TrainingPlanWeekEditorProps) {
@@ -150,63 +152,65 @@ export function TrainingPlanWeekEditor({
                 <ChevronDownIcon className="h-5 w-5 text-muted-foreground" />
               )}
             </div>
-            <div className="flex items-center gap-1">
-              {canMoveUp && (
+            {canEdit && (
+              <div className="flex items-center gap-1">
+                {canMoveUp && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveUp?.();
+                    }}
+                  >
+                    <ChevronUpIcon className="h-4 w-4" />
+                  </Button>
+                )}
+                {canMoveDown && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMoveDown?.();
+                    }}
+                  >
+                    <ChevronDownIcon className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onMoveUp?.();
+                    setIsEditing(true);
                   }}
                 >
-                  <ChevronUpIcon className="h-4 w-4" />
+                  <PencilIcon className="h-4 w-4" />
                 </Button>
-              )}
-              {canMoveDown && (
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={(e) => {
                     e.stopPropagation();
-                    onMoveDown?.();
+                    handleDuplicate();
                   }}
                 >
-                  <ChevronDownIcon className="h-4 w-4" />
+                  <CopyIcon className="h-4 w-4" />
                 </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsEditing(true);
-                }}
-              >
-                <PencilIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDuplicate();
-                }}
-              >
-                <CopyIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="text-destructive hover:text-destructive"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsDeleting(true);
-                }}
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
-            </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDeleting(true);
+                  }}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </div>
+            )}
           </div>
         </CardHeader>
 
@@ -218,6 +222,7 @@ export function TrainingPlanWeekEditor({
               workouts={week.workouts}
               onWorkoutAdded={onWorkoutAdded}
               onWorkoutRemoved={onWorkoutRemoved}
+              canEdit={canEdit}
             />
           </CardContent>
         )}

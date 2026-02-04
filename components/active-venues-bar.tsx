@@ -34,7 +34,9 @@ export function ActiveVenuesBar() {
   useEffect(() => {
     async function fetchActiveVenues() {
       try {
-        const response = await fetch("/api/user/active-venues");
+        const response = await fetch("/api/user/active-venues", {
+          credentials: "include",
+        });
         if (response.ok) {
           const data = await response.json();
           setActiveVenues(data);

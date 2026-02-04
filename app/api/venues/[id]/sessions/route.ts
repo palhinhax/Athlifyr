@@ -61,6 +61,52 @@ export async function GET(
             isActive: true,
           },
         },
+        sessionWorkouts: {
+          select: {
+            id: true,
+            workout: {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                estimatedTime: true,
+                difficulty: true,
+                blocks: {
+                  orderBy: { orderIndex: "asc" },
+                  select: {
+                    id: true,
+                    type: true,
+                    name: true,
+                    rounds: true,
+                    timeCap: true,
+                    notes: true,
+                    exercises: {
+                      orderBy: { orderIndex: "asc" },
+                      select: {
+                        id: true,
+                        exerciseId: true,
+                        exercise: {
+                          select: {
+                            name: true,
+                          },
+                        },
+                        prescribedReps: true,
+                        prescribedWeight: true,
+                        prescribedWeightUnit: true,
+                        prescribedDistance: true,
+                        prescribedDistanceUnit: true,
+                        prescribedTime: true,
+                        prescribedCalories: true,
+                        prescribedSets: true,
+                        notes: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
         bookings: {
           where: {
             status: {
@@ -96,7 +142,48 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ sessions });
+    // Fetch coaches for sessions that have a coachId
+    // coachId in VenueSession stores the userId of the coach, not the venueMember id
+    const coachUserIds = [
+      ...new Set(
+        sessions.filter((s) => s.coachId).map((s) => s.coachId as string)
+      ),
+    ];
+
+    const coaches =
+      coachUserIds.length > 0
+        ? await prisma.venueMember.findMany({
+            where: {
+              venueId,
+              userId: { in: coachUserIds },
+            },
+            select: {
+              id: true,
+              role: true,
+              userId: true,
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  image: true,
+                },
+              },
+            },
+          })
+        : [];
+
+    // Create a map for quick lookup by userId (which matches coachId in sessions)
+    const coachMap = new Map(coaches.map((c) => [c.userId, c]));
+
+    // Add coach data and rename sessionWorkouts to workouts for response
+    const sessionsWithCoach = sessions.map((session) => ({
+      ...session,
+      coach: session.coachId ? coachMap.get(session.coachId) || null : null,
+      workouts: session.sessionWorkouts,
+      sessionWorkouts: undefined, // Remove the original field from response
+    }));
+
+    return NextResponse.json({ sessions: sessionsWithCoach });
   } catch (error) {
     console.error("Error fetching sessions:", error);
     return NextResponse.json(

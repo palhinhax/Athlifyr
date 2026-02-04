@@ -39,11 +39,18 @@ import { Link } from "@/i18n/routing";
 import {
   TrainingPlanForm,
   TrainingPlanWeekEditor,
+  AssignPlanDialog,
   type TrainingPlanFormData,
 } from "@/components/training-plans";
 import type { TrainingPlanWithDetails } from "@/types/training-plan";
 
-export function TrainingPlanDetailClient() {
+interface TrainingPlanDetailClientProps {
+  userId: string;
+}
+
+export function TrainingPlanDetailClient({
+  userId,
+}: TrainingPlanDetailClientProps) {
   const t = useTranslations("workouts.plans");
   const { toast } = useToast();
   const params = useParams();
@@ -56,7 +63,21 @@ export function TrainingPlanDetailClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isAddingWeek, setIsAddingWeek] = useState(false);
-  const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(new Set());
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
+  const [expandedWeeks, setExpandedWeeks] = useState<Set<string>>(() => {
+    // Restore expanded weeks from localStorage on initial load
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem(`plan-expanded-weeks-${planId}`);
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved) as string[]);
+        } catch {
+          return new Set();
+        }
+      }
+    }
+    return new Set();
+  });
 
   const fetchPlan = useCallback(async () => {
     setIsLoading(true);
@@ -201,6 +222,45 @@ export function TrainingPlanDetailClient() {
     }
   };
 
+  const handleAssignPlan = async (
+    planId: string,
+    userId: string,
+    startDate: Date,
+    notes?: string
+  ): Promise<boolean> => {
+    try {
+      const response = await fetch(`/api/training-plans/${planId}/assign`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          userId,
+          startDate: startDate.toISOString(),
+          notes,
+        }),
+      });
+
+      if (response.ok) {
+        toast({ title: t("success.assigned") });
+        fetchPlan(); // Refresh to update assigned count
+        return true;
+      } else {
+        const error = await response.json();
+        toast({
+          title: t("errors.assignFailed"),
+          description: error.error || t("errors.assignFailed"),
+          variant: "destructive",
+        });
+        return false;
+      }
+    } catch {
+      toast({
+        title: t("errors.assignFailed"),
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
   const handleDuplicateWeek = async (_weekId: string) => {
     // TODO: Implement week duplication
     toast({
@@ -216,6 +276,13 @@ export function TrainingPlanDetailClient() {
         next.delete(weekId);
       } else {
         next.add(weekId);
+      }
+      // Persist to localStorage
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          `plan-expanded-weeks-${planId}`,
+          JSON.stringify(Array.from(next))
+        );
       }
       return next;
     });
@@ -246,6 +313,9 @@ export function TrainingPlanDetailClient() {
     (sum: number, week: { workouts: unknown[] }) => sum + week.workouts.length,
     0
   );
+
+  // Check if user is the owner of the plan (can edit)
+  const isOwner = plan.createdById === userId;
 
   const getDifficultyColor = (difficulty: number) => {
     switch (difficulty) {
@@ -319,7 +389,7 @@ export function TrainingPlanDetailClient() {
                   {t("stats.totalWorkouts", { count: totalWorkouts })}
                 </span>
               </div>
-              {plan._count?.assignedToUsers > 0 && (
+              {isOwner && plan._count?.assignedToUsers > 0 && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">
                   <UsersIcon className="h-4 w-4" />
                   <span>
@@ -339,17 +409,28 @@ export function TrainingPlanDetailClient() {
           </div>
 
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setIsEditing(true)}>
-              <PencilIcon className="mr-2 h-4 w-4" />
-              {t("editPlan")}
-            </Button>
-            <Button
-              variant="destructive"
-              size="icon"
-              onClick={() => setIsDeleting(true)}
-            >
-              <TrashIcon className="h-4 w-4" />
-            </Button>
+            {isOwner && (
+              <>
+                <Button
+                  variant="default"
+                  onClick={() => setIsAssignDialogOpen(true)}
+                >
+                  <UsersIcon className="mr-2 h-4 w-4" />
+                  {t("assignPlan")}
+                </Button>
+                <Button variant="outline" onClick={() => setIsEditing(true)}>
+                  <PencilIcon className="mr-2 h-4 w-4" />
+                  {t("editPlan")}
+                </Button>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setIsDeleting(true)}
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -358,14 +439,16 @@ export function TrainingPlanDetailClient() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t("weeks.title")}</CardTitle>
-          <Button onClick={handleAddWeek} disabled={isAddingWeek}>
-            {isAddingWeek ? (
-              <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <PlusIcon className="mr-2 h-4 w-4" />
-            )}
-            {t("weeks.addWeek")}
-          </Button>
+          {isOwner && (
+            <Button onClick={handleAddWeek} disabled={isAddingWeek}>
+              {isAddingWeek ? (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <PlusIcon className="mr-2 h-4 w-4" />
+              )}
+              {t("weeks.addWeek")}
+            </Button>
+          )}
         </CardHeader>
         <CardContent>
           {plan.weeks.length === 0 ? (
@@ -374,10 +457,12 @@ export function TrainingPlanDetailClient() {
               <p className="text-sm text-muted-foreground">
                 {t("weeks.noWeeksDescription")}
               </p>
-              <Button className="mt-4" onClick={handleAddWeek}>
-                <PlusIcon className="mr-2 h-4 w-4" />
-                {t("weeks.addWeek")}
-              </Button>
+              {isOwner && (
+                <Button className="mt-4" onClick={handleAddWeek}>
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                  {t("weeks.addWeek")}
+                </Button>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -400,6 +485,7 @@ export function TrainingPlanDetailClient() {
                     canMoveDown={index < plan.weeks.length - 1}
                     onWorkoutAdded={fetchPlan}
                     onWorkoutRemoved={fetchPlan}
+                    canEdit={isOwner}
                   />
                 )
               )}
@@ -444,6 +530,14 @@ export function TrainingPlanDetailClient() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Assign Plan Dialog */}
+      <AssignPlanDialog
+        plan={plan}
+        open={isAssignDialogOpen}
+        onOpenChange={setIsAssignDialogOpen}
+        onAssign={handleAssignPlan}
+      />
     </div>
   );
 }

@@ -31,10 +31,15 @@ import { DEFAULT_TIMER_CONFIG } from "./types";
 
 interface WorkoutRunnerProps {
   workout: WorkoutWithBlocks;
+  returnTo?: string;
   onFinish?: (elapsedSeconds: number) => void;
 }
 
-export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
+export function WorkoutRunner({
+  workout,
+  returnTo,
+  onFinish,
+}: WorkoutRunnerProps) {
   const router = useRouter();
 
   // Audio alerts
@@ -228,6 +233,7 @@ export function WorkoutRunner({ workout, onFinish }: WorkoutRunnerProps) {
           hasStarted={timer.hasStarted}
           isMuted={audioAlerts.isMuted}
           isClockVisible={clockVisibility.isClockVisible}
+          returnTo={returnTo}
           onToggleMute={audioAlerts.toggleMute}
           onToggleClockVisibility={clockVisibility.toggleClockVisibility}
           onToggleSettings={() => setShowModeSettings(!showModeSettings)}

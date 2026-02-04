@@ -1564,7 +1564,7 @@ model WorkoutLog {
   updatedAt DateTime @updatedAt
 
   user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workout      Workout              @relation(fields: [workoutId], references: [id])
+  workout      Workout              @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   session      VenueSession?        @relation(fields: [sessionId], references: [id])
   blockResults WorkoutBlockResult[]
 

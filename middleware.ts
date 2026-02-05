@@ -48,6 +48,11 @@ export default function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Skip intl middleware for /v/* routes (Easy Book venues)
+  if (pathname.startsWith("/v/")) {
+    return NextResponse.next();
+  }
+
   // Check if maintenance mode is enabled
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
 

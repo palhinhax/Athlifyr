@@ -134,7 +134,7 @@ function TabataTimerSection() {
   const timer = useTabataTimer(isInView);
 
   return (
-    <section ref={ref} className="py-16">
+    <section ref={ref} className="overflow-hidden py-16">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -143,17 +143,19 @@ function TabataTimerSection() {
           viewport={{ once: true }}
           className="flex flex-col items-center justify-center"
         >
-          <WallClock
-            size="xl"
-            timerMode={{
-              seconds: timer.seconds,
-              status: timer.status,
-              phase: timer.phase,
-              modeLabel: `TABATA x${timer.totalRounds}`,
-              leftDisplayValue: timer.currentRound,
-              isWarning: timer.isWarning,
-            }}
-          />
+          <div className="scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100">
+            <WallClock
+              size="xl"
+              timerMode={{
+                seconds: timer.seconds,
+                status: timer.status,
+                phase: timer.phase,
+                modeLabel: `TABATA x${timer.totalRounds}`,
+                leftDisplayValue: timer.currentRound,
+                isWarning: timer.isWarning,
+              }}
+            />
+          </div>
 
           {/* Restart button */}
           {timer.status === "done" && (

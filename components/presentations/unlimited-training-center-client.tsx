@@ -133,8 +133,11 @@ function TabataTimerSection() {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
   const timer = useTabataTimer(isInView);
 
+  // WallClock xl is ~600px wide x ~180px tall
+  // We use a wrapper with explicit dimensions matching the scaled size
+  // to prevent layout overflow from transform: scale()
   return (
-    <section ref={ref} className="overflow-hidden py-16">
+    <section ref={ref} className="py-16">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, scale: 0.9 }}
@@ -143,18 +146,30 @@ function TabataTimerSection() {
           viewport={{ once: true }}
           className="flex flex-col items-center justify-center"
         >
-          <div className="scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100">
-            <WallClock
-              size="xl"
-              timerMode={{
-                seconds: timer.seconds,
-                status: timer.status,
-                phase: timer.phase,
-                modeLabel: `TABATA x${timer.totalRounds}`,
-                leftDisplayValue: timer.currentRound,
-                isWarning: timer.isWarning,
-              }}
-            />
+          {/* Container with explicit height to constrain the scaled WallClock layout box */}
+          <div
+            className="relative flex w-full items-center justify-center overflow-hidden"
+            style={{
+              // Heights match the scaled WallClock: 180px * scale factor
+              height: "clamp(100px, 25vw, 180px)",
+            }}
+          >
+            <div
+              className="absolute origin-center scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100"
+              style={{ transformOrigin: "center center" }}
+            >
+              <WallClock
+                size="xl"
+                timerMode={{
+                  seconds: timer.seconds,
+                  status: timer.status,
+                  phase: timer.phase,
+                  modeLabel: `TABATA x${timer.totalRounds}`,
+                  leftDisplayValue: timer.currentRound,
+                  isWarning: timer.isWarning,
+                }}
+              />
+            </div>
           </div>
 
           {/* Restart button */}
@@ -744,35 +759,39 @@ export function UnlimitedPresentationClient() {
             >
               <div className="mx-auto max-w-md overflow-hidden rounded-2xl border bg-card shadow-xl">
                 {/* Post Header */}
-                <div className="flex items-center gap-3 border-b p-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-sm font-bold text-white">
+                <div className="flex items-center gap-2 border-b p-3 sm:gap-3 sm:p-4">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-orange-500 to-red-500 text-xs font-bold text-white sm:h-10 sm:w-10 sm:text-sm">
                     UTC
                   </div>
-                  <div>
-                    <p className="font-semibold">Unlimited Training Center</p>
-                    <p className="text-xs text-muted-foreground">
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-semibold sm:text-base">
+                      Unlimited Training
+                    </p>
+                    <p className="text-[10px] text-muted-foreground sm:text-xs">
                       há 2 horas • WOD do dia
                     </p>
                   </div>
                 </div>
 
                 {/* WOD Content */}
-                <div className="p-4">
-                  <div className="mb-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 p-4">
+                <div className="p-3 sm:p-4">
+                  <div className="mb-4 rounded-xl bg-gradient-to-br from-orange-500/10 to-red-500/10 p-3 sm:p-4">
                     <div className="mb-3 flex items-center gap-2">
-                      <Timer className="h-5 w-5 text-orange-500" />
-                      <span className="font-bold">AMRAP 20 min</span>
+                      <Timer className="h-4 w-4 text-orange-500 sm:h-5 sm:w-5" />
+                      <span className="text-sm font-bold sm:text-base">
+                        AMRAP 20 min
+                      </span>
                     </div>
-                    <div className="space-y-2 font-mono text-sm">
+                    <div className="space-y-1 font-mono text-xs sm:space-y-2 sm:text-sm">
                       <p>5 Pull-ups</p>
                       <p>10 Push-ups</p>
                       <p>15 Air Squats</p>
                     </div>
-                    <div className="mt-4 border-t border-orange-500/20 pt-3">
-                      <p className="text-xs text-muted-foreground">
+                    <div className="mt-3 border-t border-orange-500/20 pt-2 sm:mt-4 sm:pt-3">
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">
                         <strong>Rx:</strong> Kipping permitido
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">
                         <strong>Scale:</strong> Ring rows, knee push-ups
                       </p>
                     </div>
@@ -780,33 +799,41 @@ export function UnlimitedPresentationClient() {
 
                   {/* Engagement */}
                   <div className="flex items-center justify-between text-muted-foreground">
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <button className="flex items-center gap-1 hover:text-red-500">
-                        <Heart className="h-5 w-5" />
-                        <span className="text-sm">24</span>
+                        <Heart className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <span className="text-xs sm:text-sm">24</span>
                       </button>
                       <button className="flex items-center gap-1 hover:text-primary">
-                        <MessageCircle className="h-5 w-5" />
-                        <span className="text-sm">8</span>
+                        <MessageCircle className="h-4 w-4 sm:h-5 sm:w-5" />
+                        <span className="text-xs sm:text-sm">8</span>
                       </button>
                       <button className="hover:text-primary">
-                        <Share2 className="h-5 w-5" />
+                        <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
                       </button>
                     </div>
-                    <Button size="sm" variant="outline" className="gap-1">
-                      <Trophy className="h-4 w-4" />
-                      Registar Score
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 gap-1 text-[10px] sm:h-8 sm:text-xs"
+                    >
+                      <Trophy className="h-3 w-3 sm:h-4 sm:w-4" />
+                      Score
                     </Button>
                   </div>
                 </div>
 
                 {/* Comments Preview */}
-                <div className="border-t bg-muted/30 p-4">
+                <div className="border-t bg-muted/30 p-3 sm:p-4">
                   <div className="flex items-start gap-2">
-                    <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500" />
-                    <div className="rounded-xl bg-background px-3 py-2">
-                      <p className="text-xs font-semibold">@miguel_cf</p>
-                      <p className="text-sm">12 rondas + 8 reps 💪🔥</p>
+                    <div className="h-7 w-7 shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 sm:h-8 sm:w-8" />
+                    <div className="min-w-0 rounded-xl bg-background px-2 py-1.5 sm:px-3 sm:py-2">
+                      <p className="text-[10px] font-semibold sm:text-xs">
+                        @miguel_cf
+                      </p>
+                      <p className="text-xs sm:text-sm">
+                        12 rondas + 8 reps 💪🔥
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -825,27 +852,30 @@ export function UnlimitedPresentationClient() {
                 <Dumbbell className="h-3 w-3" />
                 WODs & Treinos
               </Badge>
-              <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+              <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-4xl">
                 Publica o <span className="text-primary">WOD do dia</span> em
                 segundos
               </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
+              <p className="mb-8 text-base text-muted-foreground sm:text-lg">
                 Cria WODs rapidamente usando a nossa base de dados de 500+
                 exercícios. Os atletas podem ver, comentar e registar os seus
                 resultados.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {[
-                  "Base de dados com 500+ exercícios catalogados",
-                  "Atletas registam scores e PRs automaticamente",
+                  "500+ exercícios catalogados",
+                  "Atletas registam scores e PRs",
                   "Leaderboard da comunidade",
                 ].map((point, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                      <Check className="h-4 w-4 text-primary" />
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 sm:items-center sm:gap-3"
+                  >
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-6 sm:w-6">
+                      <Check className="h-3 w-3 text-primary sm:h-4 sm:w-4" />
                     </div>
-                    <span>{point}</span>
+                    <span className="text-sm sm:text-base">{point}</span>
                   </div>
                 ))}
               </div>
@@ -872,29 +902,32 @@ export function UnlimitedPresentationClient() {
                 <Dumbbell className="h-3 w-3" />
                 Construtor de Treinos
               </Badge>
-              <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+              <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-4xl">
                 Cria WODs <span className="text-primary">estruturados</span> em
                 segundos
               </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
+              <p className="mb-8 text-base text-muted-foreground sm:text-lg">
                 Esquece o texto plain. O nosso construtor visual permite criar
                 treinos profissionais com blocos arrastáveis, exercícios da base
                 de dados, e formatação automática.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {[
-                  "Blocos visuais: AMRAP, EMOM, For Time, Tabata, Força...",
-                  "Arrasta e reordena exercícios facilmente",
-                  "500+ exercícios com vídeos demonstrativos",
+                  "Blocos visuais: AMRAP, EMOM, For Time...",
+                  "Arrasta e reordena exercícios",
+                  "500+ exercícios com vídeos",
                   "Reutiliza treinos como templates",
-                  "Formatação automática e profissional",
+                  "Formatação automática",
                 ].map((point, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                      <Check className="h-4 w-4 text-primary" />
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 sm:items-center sm:gap-3"
+                  >
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-6 sm:w-6">
+                      <Check className="h-3 w-3 text-primary sm:h-4 sm:w-4" />
                     </div>
-                    <span>{point}</span>
+                    <span className="text-sm sm:text-base">{point}</span>
                   </div>
                 ))}
               </div>
@@ -1047,28 +1080,31 @@ export function UnlimitedPresentationClient() {
                 <TrendingUp className="h-3 w-3" />
                 Evolução dos Atletas
               </Badge>
-              <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+              <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-4xl">
                 Acompanha a <span className="text-primary">evolução</span> de
                 cada atleta
               </h2>
-              <p className="mb-8 text-lg text-muted-foreground">
+              <p className="mb-8 text-base text-muted-foreground sm:text-lg">
                 Gráficos de progresso detalhados para cada movimento. Os atletas
                 veem a sua evolução ao longo do tempo e podem acompanhar o
                 desenvolvimento de toda a comunidade.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {[
                   "Gráficos de evolução por exercício",
                   "Histórico completo de PRs",
                   "Comparação com médias do box",
                   "Exportar dados de performance",
                 ].map((point, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
-                      <Check className="h-4 w-4 text-primary" />
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 sm:items-center sm:gap-3"
+                  >
+                    <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/20 sm:h-6 sm:w-6">
+                      <Check className="h-3 w-3 text-primary sm:h-4 sm:w-4" />
                     </div>
-                    <span>{point}</span>
+                    <span className="text-sm sm:text-base">{point}</span>
                   </div>
                 ))}
               </div>
@@ -1084,24 +1120,30 @@ export function UnlimitedPresentationClient() {
             >
               <div className="w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-xl">
                 {/* Header */}
-                <div className="border-b p-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="font-bold">Back Squat</h3>
-                      <p className="text-sm text-muted-foreground">
-                        Evolução últimos 6 meses
+                <div className="border-b p-3 sm:p-4">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <h3 className="text-sm font-bold sm:text-base">
+                        Back Squat
+                      </h3>
+                      <p className="text-xs text-muted-foreground sm:text-sm">
+                        Últimos 6 meses
                       </p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-2xl font-bold text-primary">125 kg</p>
-                      <p className="text-xs text-green-500">+15 kg desde Jan</p>
+                    <div className="shrink-0 text-right">
+                      <p className="text-lg font-bold text-primary sm:text-2xl">
+                        125 kg
+                      </p>
+                      <p className="text-[10px] text-green-500 sm:text-xs">
+                        +15 kg
+                      </p>
                     </div>
                   </div>
                 </div>
 
                 {/* Chart Mockup */}
-                <div className="p-4">
-                  <div className="relative h-48">
+                <div className="p-3 sm:p-4">
+                  <div className="relative h-36 sm:h-48">
                     {/* Grid lines */}
                     <div className="absolute inset-0 flex flex-col justify-between">
                       {[140, 130, 120, 110, 100].map((val, i) => (
@@ -1193,11 +1235,11 @@ export function UnlimitedPresentationClient() {
                 </div>
 
                 {/* PR History */}
-                <div className="border-t bg-muted/30 p-4">
-                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                <div className="border-t bg-muted/30 p-3 sm:p-4">
+                  <p className="mb-2 text-[10px] font-medium text-muted-foreground sm:text-xs">
                     Últimos PRs
                   </p>
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     {[
                       {
                         date: "5 Fev 2026",
@@ -1292,49 +1334,52 @@ export function UnlimitedPresentationClient() {
               </div>
 
               {/* Event Content */}
-              <div className="p-6">
-                <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
-                  <div>
-                    <h3 className="text-2xl font-bold">HYROX Lisboa</h3>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <div className="p-4 sm:p-6">
+                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
+                  <div className="min-w-0">
+                    <h3 className="text-xl font-bold sm:text-2xl">
+                      HYROX Lisboa
+                    </h3>
+                    <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:text-sm">
                       <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
+                        <Calendar className="h-4 w-4 shrink-0" />
                         <span>1-3 Maio 2026</span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4" />
-                        <span>FIL - Parque das Nações, Lisboa</span>
+                        <MapPin className="h-4 w-4 shrink-0" />
+                        <span className="truncate">FIL, Lisboa</span>
                       </div>
                     </div>
                   </div>
-                  <Button className="gap-2 bg-yellow-500 text-black hover:bg-yellow-600">
+                  <Button className="w-full gap-2 bg-yellow-500 text-black hover:bg-yellow-600 sm:w-auto">
                     <Ticket className="h-4 w-4" />
                     Ver Evento
                   </Button>
                 </div>
 
                 {/* Description */}
-                <p className="mb-6 text-muted-foreground">
+                <p className="mb-6 text-sm text-muted-foreground sm:text-base">
                   A maior competição mundial de fitness chega finalmente a
                   Portugal! 3 dias de competição na FIL com categorias para
-                  todos: Individual, Doubles e Relay. Qualificação para o World
-                  Championship em jogo!
+                  todos: Individual, Doubles e Relay.
                 </p>
 
                 {/* Event Stats */}
-                <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
                   {[
                     { label: "Duração", value: "3 dias" },
                     { label: "Categorias", value: "12+" },
-                    { label: "Distância", value: "8 km run" },
-                    { label: "Estações", value: "8 workout" },
+                    { label: "Corrida", value: "8 km" },
+                    { label: "Estações", value: "8" },
                   ].map((stat, i) => (
                     <div
                       key={i}
-                      className="rounded-xl bg-muted/50 p-3 text-center"
+                      className="rounded-xl bg-muted/50 p-2 text-center sm:p-3"
                     >
-                      <p className="text-lg font-bold">{stat.value}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-base font-bold sm:text-lg">
+                        {stat.value}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground sm:text-xs">
                         {stat.label}
                       </p>
                     </div>
@@ -1424,17 +1469,17 @@ export function UnlimitedPresentationClient() {
             <Badge className="mb-4" variant="secondary">
               Base de Dados de Exercícios
             </Badge>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+            <h2 className="mb-4 text-2xl font-bold sm:text-3xl md:text-4xl">
               <span className="text-primary">500+</span> exercícios catalogados
             </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+            <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
               Todos os movimentos de CrossFit, Weightlifting, Gymnastics e mais.
-              Em português, com vídeos e instruções detalhadas.
+              Em português, com vídeos e instruções.
             </p>
           </motion.div>
 
           {/* Exercise Cards Grid */}
-          <div className="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mx-auto grid max-w-4xl grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3">
             {[
               {
                 name: "Clean & Jerk",
@@ -1476,13 +1521,15 @@ export function UnlimitedPresentationClient() {
                 className="group overflow-hidden rounded-xl border bg-card shadow-sm transition-all hover:shadow-lg"
               >
                 <div
-                  className={`flex h-32 items-center justify-center bg-gradient-to-br ${exercise.color}`}
+                  className={`flex h-24 items-center justify-center bg-gradient-to-br sm:h-32 ${exercise.color}`}
                 >
-                  <Dumbbell className="h-12 w-12 text-white/80 transition-transform group-hover:scale-110" />
+                  <Dumbbell className="h-8 w-8 text-white/80 transition-transform group-hover:scale-110 sm:h-12 sm:w-12" />
                 </div>
-                <div className="p-4">
-                  <h3 className="font-bold">{exercise.name}</h3>
-                  <p className="text-sm text-muted-foreground">
+                <div className="p-3 sm:p-4">
+                  <h3 className="text-sm font-bold sm:text-base">
+                    {exercise.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
                     {exercise.category}
                   </p>
                 </div>
@@ -1508,16 +1555,15 @@ export function UnlimitedPresentationClient() {
                 100% Gratuito
               </span>
             </Badge>
-            <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+            <h2 className="mb-6 text-2xl font-bold sm:text-3xl md:text-4xl">
               Porque é que o Athlifyr é{" "}
               <span className="text-green-500">grátis</span>?
             </h2>
-            <p className="mb-12 text-lg text-muted-foreground">
-              Acreditamos que todos os boxes merecem ferramentas de qualidade,
-              independentemente do orçamento.
+            <p className="mb-8 text-base text-muted-foreground sm:mb-12 sm:text-lg">
+              Acreditamos que todos os boxes merecem ferramentas de qualidade.
             </p>
 
-            <div className="grid gap-6 sm:grid-cols-3">
+            <div className="grid gap-4 sm:grid-cols-3 sm:gap-6">
               {[
                 {
                   icon: Users,
@@ -1541,13 +1587,15 @@ export function UnlimitedPresentationClient() {
                   whileInView={{ opacity: 1, y: 0 }}
                   transition={{ delay: index * 0.1 }}
                   viewport={{ once: true }}
-                  className="rounded-2xl border bg-background p-6 shadow-sm"
+                  className="rounded-2xl border bg-background p-4 shadow-sm sm:p-6"
                 >
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-green-500/20">
-                    <item.icon className="h-6 w-6 text-green-500" />
+                  <div className="mx-auto mb-3 flex h-10 w-10 items-center justify-center rounded-xl bg-green-500/20 sm:mb-4 sm:h-12 sm:w-12">
+                    <item.icon className="h-5 w-5 text-green-500 sm:h-6 sm:w-6" />
                   </div>
-                  <h3 className="mb-2 font-bold">{item.title}</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <h3 className="mb-1 text-sm font-bold sm:mb-2 sm:text-base">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground sm:text-sm">
                     {item.description}
                   </p>
                 </motion.div>
@@ -1575,7 +1623,7 @@ export function UnlimitedPresentationClient() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl lg:text-5xl">
+            <h2 className="mb-4 text-2xl font-bold text-white sm:text-3xl md:text-4xl lg:text-5xl">
               Pronto para começar,
               <br />
               <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
@@ -1583,7 +1631,7 @@ export function UnlimitedPresentationClient() {
               </span>
               ?
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-zinc-400">
+            <p className="mx-auto mb-8 max-w-2xl px-4 text-base text-zinc-400 sm:text-lg">
               Criem a vossa conta gratuita em 2 minutos e começem a transformar
               a gestão do vosso espaço hoje.
             </p>

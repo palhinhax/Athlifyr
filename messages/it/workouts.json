@@ -288,6 +288,8 @@
       "myPlans": "I Miei Piani",
       "publicPlans": "Piani Pubblici",
       "savedPlans": "Piani Salvati",
+      "save": "Salva piano",
+      "unsave": "Rimuovi dai salvati",
       "saved": "Piano salvato",
       "unsaved": "Piano rimosso dai salvati",
       "templates": "Modelli",

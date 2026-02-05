@@ -288,6 +288,8 @@
       "myPlans": "My Plans",
       "publicPlans": "Public Plans",
       "savedPlans": "Saved Plans",
+      "save": "Save plan",
+      "unsave": "Remove from saved",
       "saved": "Plan saved",
       "unsaved": "Plan removed from saved",
       "templates": "Templates",

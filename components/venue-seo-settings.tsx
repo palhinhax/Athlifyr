@@ -276,15 +276,15 @@ export function VenueSEOSettings({
             value={activeLanguage}
             onValueChange={(v) => setActiveLanguage(v as LanguageCode)}
           >
-            <TabsList className="grid w-full grid-cols-6">
+            <TabsList className="grid w-full grid-cols-3 gap-1 sm:grid-cols-6">
               {SUPPORTED_LANGUAGES.map((lang) => (
                 <TabsTrigger
                   key={lang.code}
                   value={lang.code}
-                  className="relative flex items-center gap-1.5"
+                  className="relative flex items-center justify-center gap-1.5"
                 >
                   <span>{lang.flag}</span>
-                  <span className="hidden sm:inline">
+                  <span className="text-xs sm:text-sm">
                     {lang.code.toUpperCase()}
                   </span>
                   {isLanguageComplete(lang.code) && (

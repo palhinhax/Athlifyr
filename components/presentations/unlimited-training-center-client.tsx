@@ -1,6 +1,7 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { motion, useInView } from "framer-motion";
 import {
   Calendar,
   Users,
@@ -26,11 +27,203 @@ import {
   Target,
   Flag,
   Ticket,
+  RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { WallClock } from "@/components/wall-clock/wall-clock";
 import Link from "next/link";
+
+// Tabata timer hook
+function useTabataTimer(isVisible: boolean) {
+  const [isRunning, setIsRunning] = useState(false);
+  const [hasStarted, setHasStarted] = useState(false);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [phase, setPhase] = useState<"work" | "rest">("work");
+  const [seconds, setSeconds] = useState(20);
+  const [status, setStatus] = useState<
+    "idle" | "running" | "paused" | "done" | "preparing"
+  >("idle");
+
+  const totalRounds = 8;
+  const workTime = 20;
+  const restTime = 10;
+
+  // Start timer when section becomes visible (only once)
+  useEffect(() => {
+    if (isVisible && !hasStarted) {
+      // Small delay before starting
+      const timeout = setTimeout(() => {
+        setHasStarted(true);
+        setIsRunning(true);
+        setStatus("running");
+      }, 1000);
+      return () => clearTimeout(timeout);
+    }
+  }, [isVisible, hasStarted]);
+
+  // Timer logic
+  useEffect(() => {
+    if (!isRunning) return;
+
+    const interval = setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          // Time's up for current phase
+          if (phase === "work") {
+            // Switch to rest
+            setPhase("rest");
+            return restTime;
+          } else {
+            // End of rest, next round or done
+            if (currentRound >= totalRounds) {
+              // Tabata complete
+              setIsRunning(false);
+              setStatus("done");
+              return 0;
+            } else {
+              // Next round
+              setCurrentRound((r) => r + 1);
+              setPhase("work");
+              return workTime;
+            }
+          }
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isRunning, phase, currentRound]);
+
+  const reset = useCallback(() => {
+    setIsRunning(false);
+    setHasStarted(false);
+    setCurrentRound(1);
+    setPhase("work");
+    setSeconds(20);
+    setStatus("idle");
+  }, []);
+
+  const restart = useCallback(() => {
+    reset();
+    setTimeout(() => {
+      setHasStarted(true);
+      setIsRunning(true);
+      setStatus("running");
+    }, 100);
+  }, [reset]);
+
+  return {
+    currentRound,
+    totalRounds,
+    phase,
+    seconds,
+    status,
+    isRunning,
+    restart,
+    isWarning: seconds <= 3 && isRunning,
+  };
+}
+
+// Tabata Timer Section Component with WallClock
+function TabataTimerSection() {
+  const ref = useRef<HTMLElement>(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const timer = useTabataTimer(isInView);
+
+  return (
+    <section ref={ref} className="bg-zinc-900 py-20">
+      <div className="container mx-auto px-4">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          {/* WallClock Display */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="flex justify-center"
+          >
+            <div className="relative">
+              <WallClock
+                size="lg"
+                timerMode={{
+                  seconds: timer.seconds,
+                  status: timer.status,
+                  phase: timer.phase,
+                  modeLabel: `TABATA x${timer.totalRounds}`,
+                  leftDisplayValue: timer.currentRound,
+                  isWarning: timer.isWarning,
+                }}
+              />
+
+              {/* Restart button */}
+              {timer.status === "done" && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="mt-4 flex justify-center"
+                >
+                  <Button
+                    onClick={timer.restart}
+                    variant="outline"
+                    className="gap-2 border-zinc-700 text-white hover:bg-zinc-800"
+                  >
+                    <RotateCcw className="h-4 w-4" />
+                    Reiniciar Tabata
+                  </Button>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Text Content */}
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <Badge
+              className="mb-4 gap-1 bg-red-500/20 text-red-400"
+              variant="secondary"
+            >
+              <Timer className="h-3 w-3" />
+              Timers Profissionais
+            </Badge>
+            <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">
+              Relógio de parede <span className="text-primary">digital</span>{" "}
+              incluído
+            </h2>
+            <p className="mb-8 text-lg text-zinc-400">
+              O nosso relógio LED de 7 segmentos é perfeito para o teu box.
+              Suporta TABATA, EMOM, AMRAP, For Time e muito mais. Mostra no ecrã
+              grande durante as aulas!
+            </p>
+
+            <div className="space-y-4">
+              {[
+                "TABATA, EMOM, AMRAP, For Time, Stopwatch",
+                "Contador de rondas integrado",
+                "Indicadores visuais WORK/REST",
+                "Alerta nos últimos 3 segundos",
+                "Funciona em qualquer ecrã/TV",
+              ].map((point, index) => (
+                <div key={index} className="flex items-center gap-3">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20">
+                    <Check className="h-4 w-4 text-red-400" />
+                  </div>
+                  <span className="text-zinc-300">{point}</span>
+                </div>
+              ))}
+            </div>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export function UnlimitedPresentationClient() {
   const scrollToContent = () => {
@@ -703,6 +896,9 @@ export function UnlimitedPresentationClient() {
           </div>
         </div>
       </section>
+
+      {/* Timer Section - Tabata Demo */}
+      <TabataTimerSection />
 
       {/* Athlete Progress Section */}
       <section className="py-20">

@@ -340,9 +340,9 @@ export function VenueLandingClient({
               </div>
 
               <div className="flex items-center gap-4 pt-4">
-                <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 font-mono text-sm">
-                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                  athlifyr.com/v/yourname/book
+                <div className="flex items-center gap-2 overflow-hidden rounded-lg bg-muted px-3 py-2 font-mono text-xs sm:px-4 sm:text-sm">
+                  <LinkIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  <span className="truncate">athlifyr.com/v/yourname/book</span>
                 </div>
               </div>
             </motion.div>
@@ -357,28 +357,30 @@ export function VenueLandingClient({
             >
               <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-background to-muted/50 shadow-xl">
                 {/* Phone mockup header */}
-                <div className="flex items-center gap-2 border-b bg-muted/50 px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
-                    <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                <div className="flex items-center gap-2 border-b bg-muted/50 px-2 py-2 sm:px-4 sm:py-3">
+                  <div className="flex shrink-0 gap-1.5">
+                    <div className="h-2 w-2 rounded-full bg-red-500 sm:h-2.5 sm:w-2.5" />
+                    <div className="h-2 w-2 rounded-full bg-yellow-500 sm:h-2.5 sm:w-2.5" />
+                    <div className="h-2 w-2 rounded-full bg-green-500 sm:h-2.5 sm:w-2.5" />
                   </div>
-                  <div className="flex-1 rounded-md bg-background/50 px-3 py-1 text-center text-xs text-muted-foreground">
+                  <div className="min-w-0 flex-1 truncate rounded-md bg-background/50 px-2 py-1 text-center text-[10px] text-muted-foreground sm:px-3 sm:text-xs">
                     athlifyr.com/v/crossfit-example/book
                   </div>
                 </div>
 
                 {/* Demo content */}
-                <div className="p-6">
-                  <div className="mb-6 flex items-center gap-4">
-                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-                      <span className="text-2xl font-bold text-primary">
+                <div className="p-4 sm:p-6">
+                  <div className="mb-4 flex items-center gap-3 sm:mb-6 sm:gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 sm:h-14 sm:w-14">
+                      <span className="text-xl font-bold text-primary sm:text-2xl">
                         CF
                       </span>
                     </div>
-                    <div>
-                      <h3 className="font-bold">CrossFit Example Box</h3>
-                      <p className="text-sm text-muted-foreground">
+                    <div className="min-w-0">
+                      <h3 className="truncate font-bold">
+                        CrossFit Example Box
+                      </h3>
+                      <p className="text-xs text-muted-foreground sm:text-sm">
                         Lisbon, Portugal
                       </p>
                     </div>
@@ -408,25 +410,29 @@ export function VenueLandingClient({
 
                   {/* Sample session */}
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-lg border bg-card p-3">
-                      <div>
-                        <p className="font-medium">WOD - CrossFit</p>
-                        <p className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2 rounded-lg border bg-card p-2 sm:p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium sm:text-base">
+                          WOD - CrossFit
+                        </p>
+                        <p className="text-[10px] text-muted-foreground sm:text-xs">
                           10:00 - 11:00 • 4 spots left
                         </p>
                       </div>
-                      <div className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
+                      <div className="shrink-0 rounded-md bg-primary px-2 py-1 text-xs font-medium text-primary-foreground sm:px-3 sm:py-1.5 sm:text-sm">
                         Book
                       </div>
                     </div>
-                    <div className="flex items-center justify-between rounded-lg border bg-card p-3 opacity-60">
-                      <div>
-                        <p className="font-medium">Open Gym</p>
-                        <p className="text-xs text-muted-foreground">
+                    <div className="flex items-center justify-between gap-2 rounded-lg border bg-card p-2 opacity-60 sm:p-3">
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium sm:text-base">
+                          Open Gym
+                        </p>
+                        <p className="text-[10px] text-muted-foreground sm:text-xs">
                           17:00 - 19:00 • 8 spots left
                         </p>
                       </div>
-                      <div className="rounded-md border px-3 py-1.5 text-sm">
+                      <div className="shrink-0 rounded-md border px-2 py-1 text-xs sm:px-3 sm:py-1.5 sm:text-sm">
                         Book
                       </div>
                     </div>

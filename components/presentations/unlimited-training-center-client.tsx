@@ -229,13 +229,13 @@ export function UnlimitedPresentationClient() {
             </h1>
 
             {/* Location */}
-            <div className="mb-8 flex items-center justify-center gap-2 text-lg text-zinc-400">
+            <div className="mb-8 flex items-center justify-center gap-2 text-base text-zinc-400 sm:text-lg">
               <MapPin className="h-5 w-5" />
               <span>Mafra, Portugal</span>
             </div>
 
             {/* Subtitle */}
-            <p className="mx-auto mb-10 max-w-2xl text-xl text-zinc-300">
+            <p className="mx-auto mb-10 max-w-2xl px-4 text-base text-zinc-300 sm:text-xl">
               Descobre como o{" "}
               <span className="font-bold text-primary">Athlifyr</span> pode
               transformar a gestão do vosso espaço e criar uma comunidade mais
@@ -378,16 +378,15 @@ export function UnlimitedPresentationClient() {
 
               <div className="space-y-4">
                 {[
-                  "Link único: athlifyr.com/v/unlimited-training/book",
+                  "Link único: athlifyr.com/v/.../book",
                   "Funciona em qualquer telemóvel",
                   "Sem necessidade de instalar app",
-                  "Confirmação automática por email",
                 ].map((point, index) => (
-                  <div key={index} className="flex items-center gap-3">
-                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-green-500/20">
+                  <div key={index} className="flex items-start gap-3">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-green-500/20">
                       <Check className="h-4 w-4 text-green-500" />
                     </div>
-                    <span>{point}</span>
+                    <span className="text-sm sm:text-base">{point}</span>
                   </div>
                 ))}
               </div>
@@ -553,14 +552,14 @@ export function UnlimitedPresentationClient() {
           >
             <div className="overflow-hidden rounded-xl border bg-background shadow-2xl">
               {/* Browser Header */}
-              <div className="flex items-center gap-2 border-b bg-muted/50 px-4 py-3">
-                <div className="flex gap-1.5">
+              <div className="flex items-center gap-2 border-b bg-muted/50 px-2 py-3 sm:px-4">
+                <div className="flex shrink-0 gap-1.5">
                   <div className="h-3 w-3 rounded-full bg-red-500" />
                   <div className="h-3 w-3 rounded-full bg-yellow-500" />
                   <div className="h-3 w-3 rounded-full bg-green-500" />
                 </div>
-                <div className="ml-4 flex-1 rounded-md bg-background/50 px-3 py-1 text-center text-xs text-muted-foreground">
-                  athlifyr.com/venues/unlimited-training-center
+                <div className="ml-2 min-w-0 flex-1 truncate rounded-md bg-background/50 px-2 py-1 text-center text-xs text-muted-foreground sm:ml-4 sm:px-3">
+                  athlifyr.com/v/unlimited-tc
                 </div>
               </div>
 
@@ -653,13 +652,13 @@ export function UnlimitedPresentationClient() {
                     <div className="border-b p-4">
                       <h3 className="font-semibold">Sessões de Hoje</h3>
                     </div>
-                    <div className="p-4">
-                      <table className="w-full text-sm">
+                    <div className="overflow-x-auto p-4">
+                      <table className="w-full min-w-[400px] text-sm">
                         <thead>
                           <tr className="text-left text-muted-foreground">
                             <th className="pb-3">Hora</th>
                             <th className="pb-3">Tipo</th>
-                            <th className="pb-3">Coach</th>
+                            <th className="hidden pb-3 sm:table-cell">Coach</th>
                             <th className="pb-3">Ocupação</th>
                             <th className="pb-3">Estado</th>
                           </tr>
@@ -698,7 +697,9 @@ export function UnlimitedPresentationClient() {
                             <tr key={i} className="border-t">
                               <td className="py-3 font-medium">{row.time}</td>
                               <td className="py-3">{row.type}</td>
-                              <td className="py-3">{row.coach}</td>
+                              <td className="hidden py-3 sm:table-cell">
+                                {row.coach}
+                              </td>
                               <td className="py-3">{row.spots}</td>
                               <td className="py-3">
                                 <Badge
@@ -709,7 +710,7 @@ export function UnlimitedPresentationClient() {
                                         ? "default"
                                         : "outline"
                                   }
-                                  className="text-xs"
+                                  className="whitespace-nowrap text-xs"
                                 >
                                   {row.status}
                                 </Badge>
@@ -1000,23 +1001,23 @@ export function UnlimitedPresentationClient() {
                 </div>
 
                 {/* Comparison: Text vs Builder */}
-                <div className="mt-6 grid grid-cols-2 gap-3">
-                  <div className="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30">
-                    <p className="mb-2 text-xs font-medium text-red-600 dark:text-red-400">
+                <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-3">
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-2 dark:border-red-900 dark:bg-red-950/30 sm:p-3">
+                    <p className="mb-2 text-[10px] font-medium text-red-600 dark:text-red-400 sm:text-xs">
                       ❌ Texto Plain
                     </p>
-                    <div className="space-y-1 font-mono text-[10px] text-muted-foreground">
+                    <div className="space-y-1 font-mono text-[9px] text-muted-foreground sm:text-[10px]">
                       <p>AMRAP 20</p>
                       <p>5 pull ups</p>
                       <p>10 pushups</p>
                       <p>15 squats</p>
                     </div>
                   </div>
-                  <div className="rounded-xl border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950/30">
-                    <p className="mb-2 text-xs font-medium text-green-600 dark:text-green-400">
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-2 dark:border-green-900 dark:bg-green-950/30 sm:p-3">
+                    <p className="mb-2 text-[10px] font-medium text-green-600 dark:text-green-400 sm:text-xs">
                       ✅ Athlifyr
                     </p>
-                    <div className="space-y-1 text-[10px]">
+                    <div className="space-y-1 text-[9px] sm:text-[10px]">
                       <p>• Estrutura visual</p>
                       <p>• Timer integrado</p>
                       <p>• Resultados</p>
@@ -1339,22 +1340,24 @@ export function UnlimitedPresentationClient() {
                 </div>
 
                 {/* Variants Preview */}
-                <div className="rounded-xl border bg-muted/30 p-4">
+                <div className="rounded-xl border bg-muted/30 p-3 sm:p-4">
                   <p className="mb-3 text-sm font-medium">
                     Provas Disponíveis:
                   </p>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
                     {[
                       "HYROX MEN",
                       "HYROX WOMEN",
-                      "HYROX PRO MEN",
-                      "HYROX PRO WOMEN",
-                      "DOUBLES MIXED",
-                      "DOUBLES MEN",
-                      "DOUBLES WOMEN",
-                      "RELAY MIXED",
+                      "PRO MEN",
+                      "PRO WOMEN",
+                      "DOUBLES",
+                      "RELAY",
                     ].map((variant, i) => (
-                      <Badge key={i} variant="outline" className="text-xs">
+                      <Badge
+                        key={i}
+                        variant="outline"
+                        className="text-[10px] sm:text-xs"
+                      >
                         {variant}
                       </Badge>
                     ))}
@@ -1362,7 +1365,7 @@ export function UnlimitedPresentationClient() {
                 </div>
 
                 {/* Friends Going */}
-                <div className="mt-6 flex items-center justify-between border-t pt-4">
+                <div className="mt-6 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex -space-x-2">
                       {[
@@ -1373,16 +1376,16 @@ export function UnlimitedPresentationClient() {
                       ].map((color, i) => (
                         <div
                           key={i}
-                          className={`h-8 w-8 rounded-full border-2 border-background bg-gradient-to-br ${color}`}
+                          className={`h-7 w-7 rounded-full border-2 border-background bg-gradient-to-br sm:h-8 sm:w-8 ${color}`}
                         />
                       ))}
                     </div>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-xs text-muted-foreground sm:text-sm">
                       <strong>12 amigos</strong> vão participar
                     </span>
                   </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Target className="h-4 w-4" />
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground sm:text-sm">
+                    <Target className="h-4 w-4 shrink-0" />
                     <span>324 interessados</span>
                   </div>
                 </div>
@@ -1599,7 +1602,7 @@ export function UnlimitedPresentationClient() {
             {/* Contact */}
             <div className="mt-12 flex flex-col items-center gap-4 border-t border-white/10 pt-8 sm:flex-row sm:justify-center sm:gap-8">
               <p className="text-sm text-zinc-500">Questões? Contacta-nos:</p>
-              <div className="flex items-center gap-6 text-zinc-400">
+              <div className="flex flex-col items-center gap-3 text-zinc-400 sm:flex-row sm:gap-6">
                 <a
                   href="https://instagram.com/athlifyr"
                   target="_blank"

@@ -8,6 +8,7 @@ import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";
 import { PhotoGallery } from "@/components/photo-gallery";
 import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
+import { ProfilePastSessions } from "@/components/profile-past-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { getTranslations } from "next-intl/server";
@@ -116,6 +117,71 @@ export default async function ProfilePage({ params }: PageProps) {
       },
     },
   });
+
+  // Fetch past session bookings (sessions with workouts)
+  const pastBookingsRaw = await prisma.venueBooking.findMany({
+    where: {
+      userId: session.user.id,
+      status: { in: ["BOOKED", "ATTENDED"] },
+      session: {
+        startsAt: { lt: new Date() },
+        sessionWorkouts: { some: {} }, // Only sessions with workouts
+      },
+    },
+    include: {
+      session: {
+        select: {
+          id: true,
+          title: true,
+          startsAt: true,
+          endsAt: true,
+          venue: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              city: true,
+            },
+          },
+          sessionWorkouts: {
+            select: {
+              id: true,
+              workout: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    orderBy: {
+      session: {
+        startsAt: "desc",
+      },
+    },
+    take: 10, // Limit to last 10 sessions
+  });
+
+  // Check which sessions have logged workouts
+  const sessionIds = pastBookingsRaw.map((b) => b.session.id);
+  const workoutLogs = await prisma.workoutLog.findMany({
+    where: {
+      userId: session.user.id,
+      sessionId: { in: sessionIds },
+    },
+    select: {
+      sessionId: true,
+    },
+  });
+  const loggedSessionIds = new Set(workoutLogs.map((l) => l.sessionId));
+
+  const pastBookings = pastBookingsRaw.map((b) => ({
+    ...b,
+    hasLoggedWorkout: loggedSessionIds.has(b.session.id),
+  }));
 
   const upcomingEvents = user.participations.filter(
     (p) => p.event.startDate > new Date() && p.status === "going"
@@ -239,6 +305,9 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Upcoming Session Bookings */}
         <ProfileUpcomingSessions bookings={upcomingBookings} locale={locale} />
+
+        {/* Past Session Bookings with Workouts */}
+        <ProfilePastSessions bookings={pastBookings} locale={locale} />
 
         {/* Past Events */}
         {pastEvents.length > 0 && (

@@ -9,7 +9,19 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  ResponsiveTabs,
+  ResponsiveTabsContent,
+} from "@/components/ui/responsive-tabs";
+import {
+  Building2Icon,
+  CalendarIcon,
+  CreditCardIcon,
+  GlobeIcon,
+  SearchIcon,
+  Settings2Icon,
+  UsersIcon,
+} from "lucide-react";
 import { VenueStaffManager } from "@/components/venue/staff";
 import { VenueEditForm } from "@/components/venue-edit-form";
 import { VenuePaymentsSettings } from "@/components/venue-payments-settings";
@@ -85,91 +97,111 @@ export function VenueSettingsModal({
           <DialogDescription>{venue.name}</DialogDescription>
         </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7">
-            <TabsTrigger value="general">
-              {t("settingsTabs.general")}
-            </TabsTrigger>
-            <TabsTrigger value="translations">
-              {t("settingsTabs.translations")}
-            </TabsTrigger>
-            <TabsTrigger value="sessions">
-              {t("settingsTabs.sessions")}
-            </TabsTrigger>
-            <TabsTrigger value="staff">{t("settingsTabs.staff")}</TabsTrigger>
-            <TabsTrigger value="payments">
-              {t("settingsTabs.payments")}
-            </TabsTrigger>
-            <TabsTrigger value="advanced">
-              {t("settingsTabs.advanced")}
-            </TabsTrigger>
-            <TabsTrigger value="seo">{t("settingsTabs.seo")}</TabsTrigger>
-          </TabsList>
+        <ResponsiveTabs
+          tabs={[
+            {
+              value: "general",
+              label: t("settingsTabs.general"),
+              icon: <Building2Icon />,
+            },
+            {
+              value: "translations",
+              label: t("settingsTabs.translations"),
+              icon: <GlobeIcon />,
+            },
+            {
+              value: "sessions",
+              label: t("settingsTabs.sessions"),
+              icon: <CalendarIcon />,
+            },
+            {
+              value: "staff",
+              label: t("settingsTabs.staff"),
+              icon: <UsersIcon />,
+            },
+            {
+              value: "payments",
+              label: t("settingsTabs.payments"),
+              icon: <CreditCardIcon />,
+            },
+            {
+              value: "advanced",
+              label: t("settingsTabs.advanced"),
+              icon: <Settings2Icon />,
+            },
+            {
+              value: "seo",
+              label: t("settingsTabs.seo"),
+              icon: <SearchIcon />,
+            },
+          ]}
+          value={activeTab}
+          onValueChange={setActiveTab}
+        />
 
-          <TabsContent value="general" className="mt-6">
-            <VenueEditForm
-              venue={venue}
-              onSuccess={() => {
-                if (onRefresh) onRefresh();
-                onOpenChange(false);
-              }}
-            />
-          </TabsContent>
+        <ResponsiveTabsContent value="general" activeValue={activeTab}>
+          <VenueEditForm
+            venue={venue}
+            onSuccess={() => {
+              if (onRefresh) onRefresh();
+              onOpenChange(false);
+            }}
+          />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="translations" className="mt-6">
-            <VenueDescriptionTranslations
-              venueId={venue.id}
-              venueDescription={venue.description}
-              isOwner={isOwner}
-              isAppAdmin={userRole === "ADMIN"}
-            />
-          </TabsContent>
+        <ResponsiveTabsContent value="translations" activeValue={activeTab}>
+          <VenueDescriptionTranslations
+            venueId={venue.id}
+            venueDescription={venue.description}
+            isOwner={isOwner}
+            isAppAdmin={userRole === "ADMIN"}
+          />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="sessions" className="mt-6">
-            <VenueSessionsSettings venue={venue} onRefresh={onRefresh} />
-          </TabsContent>
+        <ResponsiveTabsContent value="sessions" activeValue={activeTab}>
+          <VenueSessionsSettings venue={venue} onRefresh={onRefresh} />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="staff" className="mt-6">
-            <VenueStaffManager
-              venueId={venue.id}
-              venueName={venue.name}
-              members={venue.members}
-              currentUserId={userId}
-              isOwner={isOwner}
-              isAppAdmin={userRole === "ADMIN"}
-            />
-          </TabsContent>
+        <ResponsiveTabsContent value="staff" activeValue={activeTab}>
+          <VenueStaffManager
+            venueId={venue.id}
+            venueName={venue.name}
+            members={venue.members}
+            currentUserId={userId}
+            isOwner={isOwner}
+            isAppAdmin={userRole === "ADMIN"}
+          />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="payments" className="mt-6">
-            <VenuePaymentsSettings
-              venueId={venue.id}
-              isOwner={isOwner}
-              userRole={userRole}
-              currentPaymentMode={venue.paymentMode}
-              externalPaymentInstructions={venue.externalPaymentInstructions}
-            />
-          </TabsContent>
+        <ResponsiveTabsContent value="payments" activeValue={activeTab}>
+          <VenuePaymentsSettings
+            venueId={venue.id}
+            isOwner={isOwner}
+            userRole={userRole}
+            currentPaymentMode={venue.paymentMode}
+            externalPaymentInstructions={venue.externalPaymentInstructions}
+          />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="advanced" className="mt-6">
-            <VenueVisibilitySettings
-              venueId={venue.id}
-              visibleTabs={venue.visibleTabs || []}
-              isOwner={isOwner}
-              isAppAdmin={userRole === "ADMIN"}
-              onRefresh={onRefresh}
-            />
-          </TabsContent>
+        <ResponsiveTabsContent value="advanced" activeValue={activeTab}>
+          <VenueVisibilitySettings
+            venueId={venue.id}
+            visibleTabs={venue.visibleTabs || []}
+            isOwner={isOwner}
+            isAppAdmin={userRole === "ADMIN"}
+            onRefresh={onRefresh}
+          />
+        </ResponsiveTabsContent>
 
-          <TabsContent value="seo" className="mt-6">
-            <VenueSEOSettings
-              venueId={venue.id}
-              venueName={venue.name}
-              venueCity={venue.city}
-              isOwner={isOwner}
-              isAppAdmin={userRole === "ADMIN"}
-            />
-          </TabsContent>
-        </Tabs>
+        <ResponsiveTabsContent value="seo" activeValue={activeTab}>
+          <VenueSEOSettings
+            venueId={venue.id}
+            venueName={venue.name}
+            venueCity={venue.city}
+            isOwner={isOwner}
+            isAppAdmin={userRole === "ADMIN"}
+          />
+        </ResponsiveTabsContent>
       </DialogContent>
     </Dialog>
   );

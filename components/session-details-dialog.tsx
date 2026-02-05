@@ -20,10 +20,12 @@ import {
   CheckCircle,
   Dumbbell,
   UserCircle,
+  ClipboardList,
 } from "lucide-react";
-import { format, parseISO, differenceInMinutes } from "date-fns";
+import { format, parseISO, differenceInMinutes, isPast } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 
 // Helper function to format exercise prescription
 function formatExercisePrescription(ex: {
@@ -218,6 +220,12 @@ export function SessionDetailsDialog({
   const canBook =
     userId && hasActiveSubscription && !session.isBooked && !isFull;
   const canCancel = userId && session.isBooked;
+
+  // Check if user can log workout (past session with workout that user attended)
+  const isPastSession = isPast(sessionStart);
+  const hasWorkout = session.workouts && session.workouts.length > 0;
+  const canLogWorkout = isPastSession && hasWorkout && session.isBooked;
+  const workoutId = hasWorkout ? session.workouts![0].workout.id : null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -518,6 +526,16 @@ export function SessionDetailsDialog({
         </div>
 
         <DialogFooter className="gap-2">
+          {/* Log Workout button for past sessions */}
+          {canLogWorkout && workoutId && (
+            <Button asChild className="flex-1">
+              <Link href={`/workouts/${workoutId}/log?sessionId=${session.id}`}>
+                <ClipboardList className="mr-2 h-4 w-4" />
+                {tWorkouts("log.title")}
+              </Link>
+            </Button>
+          )}
+
           {canBook && onBook && (
             <Button
               onClick={() => {

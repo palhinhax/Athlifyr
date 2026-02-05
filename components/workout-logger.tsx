@@ -31,6 +31,7 @@ import { BLOCK_TYPE_INFO, formatTime } from "@/types/workout";
 
 interface WorkoutLoggerProps {
   workout: WorkoutWithBlocks;
+  sessionId?: string;
 }
 
 interface ExerciseSetData {
@@ -63,7 +64,7 @@ interface BlockResultData {
   exerciseResults: ExerciseResultData[];
 }
 
-export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
+export function WorkoutLogger({ workout, sessionId }: WorkoutLoggerProps) {
   const t = useTranslations("workouts");
   const { toast } = useToast();
   const router = useRouter();
@@ -173,6 +174,7 @@ export function WorkoutLogger({ workout }: WorkoutLoggerProps) {
     try {
       const logData: CreateWorkoutLogInput = {
         workoutId: workout.id,
+        sessionId,
         notes: notes || undefined,
         feeling,
         perceivedEffort,

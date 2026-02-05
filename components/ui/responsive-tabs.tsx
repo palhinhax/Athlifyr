@@ -33,12 +33,11 @@ export function ResponsiveTabs({
   return (
     <div
       className={cn(
-        "grid w-full gap-1 rounded-md bg-muted p-1 text-muted-foreground",
-        // Mobile: 4 columns to fit icons nicely
-        // sm: all tabs in one row
-        "grid-cols-4 sm:grid-cols-7",
+        "grid w-full items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+        `grid-cols-${tabs.length}`,
         className
       )}
+      style={{ gridTemplateColumns: `repeat(${tabs.length}, minmax(0, 1fr))` }}
     >
       {tabs.map((tab) => (
         <button

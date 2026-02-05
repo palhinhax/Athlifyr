@@ -50,7 +50,7 @@ export function VenueLandingClient({
   };
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen overflow-x-hidden">
       {/* Hero Section with Video Background */}
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
         {/* Video Background */}
@@ -353,7 +353,7 @@ export function VenueLandingClient({
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative overflow-hidden"
             >
               <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-background to-muted/50 shadow-xl">
                 {/* Phone mockup header */}
@@ -441,7 +441,7 @@ export function VenueLandingClient({
               </div>
 
               {/* Decorative gradient */}
-              <div className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 blur-xl" />
+              <div className="absolute -bottom-4 right-0 -z-10 h-full w-full rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 blur-xl" />
             </motion.div>
           </div>
         </div>

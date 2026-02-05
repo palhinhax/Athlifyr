@@ -933,8 +933,7 @@
         "description": "Crediamo che tutti i professionisti dello sport meritino strumenti di qualità, indipendentemente dalle dimensioni della loro attività. La nostra missione è democratizzare la gestione sportiva.",
         "point1": "Nessun canone mensile o annuale",
         "point2": "Nessun limite di clienti o membri",
-        "point3": "Nessuna funzionalità bloccata",
-        "point4": "Solo una piccola commissione sulle transazioni di pagamento"
+        "point3": "Nessuna funzionalità bloccata"
       },
       "testimonials": {
         "title": "Cosa dicono i nostri partner",
@@ -945,7 +944,7 @@
         "subtitle": "Tutto quello che devi sapere prima di iniziare",
         "q1": {
           "question": "È davvero gratuito? Qual è la fregatura?",
-          "answer": "Sì, è 100% gratuito! Non c'è nessuna fregatura. Athlifyr è finanziato attraverso una piccola commissione sulle transazioni di pagamento elaborate dalla piattaforma (quando usi il nostro sistema di pagamento integrato). Se preferisci gestire i pagamenti esternamente, non paghi nulla."
+          "answer": "Sì, è 100% gratuito! Non c'è nessuna fregatura. Athlifyr è una piattaforma costruita per connettere le comunità fitness e aiutare i professionisti a far crescere la loro attività. Tutte le funzionalità di gestione sono completamente gratuite - nessun costo nascosto, nessun piano premium."
         },
         "q2": {
           "question": "Quanto tempo ci vuole per configurare?",
@@ -987,6 +986,16 @@
         "athletes": "Atleti nella Community",
         "sessions": "Sessioni al Mese",
         "countries": "Paesi"
+      },
+      "easyBook": {
+        "title": "Prenotazione Rapida: Condividi su Instagram",
+        "subtitle": "Dai ai tuoi follower un modo rapido per prenotare lezioni direttamente dal tuo link in bio",
+        "description": "Ottieni un link breve e condivisibile (athlifyr.com/v/tuonome/book) che puoi aggiungere alla tua bio Instagram. I visitatori possono prenotare le tue lezioni in pochi secondi - nessun account richiesto!",
+        "point1": "Link breve perfetto per bio Instagram",
+        "point2": "Nessun login richiesto per gli ospiti",
+        "point3": "Vista calendario con tutte le lezioni disponibili",
+        "point4": "Conferma istantanea della prenotazione",
+        "tryDemo": "Prova Demo"
       },
       "choosePath": {
         "title": "Scegli ciò che fa per te",

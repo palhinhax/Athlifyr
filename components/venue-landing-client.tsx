@@ -12,6 +12,10 @@ import {
   Mail,
   Eye,
   Settings2,
+  Link as LinkIcon,
+  Calendar,
+  UserPlus,
+  CalendarCheck,
 } from "lucide-react";
 import { VenueLandingFAQ } from "@/components/venue-landing-faq";
 import { VenueLandingFeatures } from "@/components/venue-landing-features";
@@ -257,6 +261,186 @@ export function VenueLandingClient({
         <VenueLandingForWho />
       </section>
 
+      {/* Easy Book Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-pink-500/10 to-purple-500/10 px-4 py-2 text-sm font-medium text-pink-600 dark:text-pink-400">
+              <Instagram className="h-4 w-4" />
+              NEW
+            </div>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              {t("easyBook.title")}
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              {t("easyBook.subtitle")}
+            </p>
+          </motion.div>
+
+          <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-2 lg:items-center">
+            {/* Left side - Description and points */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="space-y-6"
+            >
+              <p className="text-lg text-muted-foreground">
+                {t("easyBook.description")}
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  {
+                    icon: LinkIcon,
+                    text: t("easyBook.point1"),
+                    color: "text-pink-500",
+                    bg: "bg-pink-500/10",
+                  },
+                  {
+                    icon: UserPlus,
+                    text: t("easyBook.point2"),
+                    color: "text-purple-500",
+                    bg: "bg-purple-500/10",
+                  },
+                  {
+                    icon: Calendar,
+                    text: t("easyBook.point3"),
+                    color: "text-blue-500",
+                    bg: "bg-blue-500/10",
+                  },
+                  {
+                    icon: CalendarCheck,
+                    text: t("easyBook.point4"),
+                    color: "text-green-500",
+                    bg: "bg-green-500/10",
+                  },
+                ].map((item, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    viewport={{ once: true }}
+                    className="flex items-center gap-3"
+                  >
+                    <div className={`rounded-lg p-2 ${item.bg}`}>
+                      <item.icon className={`h-5 w-5 ${item.color}`} />
+                    </div>
+                    <span className="font-medium">{item.text}</span>
+                  </motion.div>
+                ))}
+              </div>
+
+              <div className="flex items-center gap-4 pt-4">
+                <div className="flex items-center gap-2 rounded-lg bg-muted px-4 py-2 font-mono text-sm">
+                  <LinkIcon className="h-4 w-4 text-muted-foreground" />
+                  athlifyr.com/v/yourname/book
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Right side - Demo card preview */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="relative"
+            >
+              <div className="overflow-hidden rounded-2xl border bg-gradient-to-br from-background to-muted/50 shadow-xl">
+                {/* Phone mockup header */}
+                <div className="flex items-center gap-2 border-b bg-muted/50 px-4 py-3">
+                  <div className="flex gap-1.5">
+                    <div className="h-2.5 w-2.5 rounded-full bg-red-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-yellow-500" />
+                    <div className="h-2.5 w-2.5 rounded-full bg-green-500" />
+                  </div>
+                  <div className="flex-1 rounded-md bg-background/50 px-3 py-1 text-center text-xs text-muted-foreground">
+                    athlifyr.com/v/crossfit-example/book
+                  </div>
+                </div>
+
+                {/* Demo content */}
+                <div className="p-6">
+                  <div className="mb-6 flex items-center gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+                      <span className="text-2xl font-bold text-primary">
+                        CF
+                      </span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold">CrossFit Example Box</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Lisbon, Portugal
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Mini calendar */}
+                  <div className="mb-4 rounded-lg border bg-card p-3">
+                    <div className="mb-2 text-sm font-medium">
+                      February 2026
+                    </div>
+                    <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                      {["M", "T", "W", "T", "F", "S", "S"].map((day, i) => (
+                        <div key={i} className="py-1 text-muted-foreground">
+                          {day}
+                        </div>
+                      ))}
+                      {[...Array(5)].map((_, i) => (
+                        <div
+                          key={i}
+                          className={`rounded py-1 ${i === 3 ? "bg-primary font-medium text-primary-foreground" : ""}`}
+                        >
+                          {i + 3}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Sample session */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between rounded-lg border bg-card p-3">
+                      <div>
+                        <p className="font-medium">WOD - CrossFit</p>
+                        <p className="text-xs text-muted-foreground">
+                          10:00 - 11:00 • 4 spots left
+                        </p>
+                      </div>
+                      <div className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground">
+                        Book
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg border bg-card p-3 opacity-60">
+                      <div>
+                        <p className="font-medium">Open Gym</p>
+                        <p className="text-xs text-muted-foreground">
+                          17:00 - 19:00 • 8 spots left
+                        </p>
+                      </div>
+                      <div className="rounded-md border px-3 py-1.5 text-sm">
+                        Book
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Decorative gradient */}
+              <div className="absolute -bottom-4 -right-4 -z-10 h-full w-full rounded-2xl bg-gradient-to-br from-pink-500/20 to-purple-500/20 blur-xl" />
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Why Free Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -275,12 +459,11 @@ export function VenueLandingClient({
                 {t("whyFree.description")}
               </p>
 
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[
                   t("whyFree.point1"),
                   t("whyFree.point2"),
                   t("whyFree.point3"),
-                  t("whyFree.point4"),
                 ].map((point, index) => (
                   <motion.div
                     key={index}

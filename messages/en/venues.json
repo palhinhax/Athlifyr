@@ -933,8 +933,7 @@
         "description": "We believe all sports professionals deserve quality tools, regardless of their business size. Our mission is to democratize sports management.",
         "point1": "No monthly or annual fees",
         "point2": "No limit on clients or members",
-        "point3": "No locked features",
-        "point4": "Only a small fee on payment transactions"
+        "point3": "No locked features"
       },
       "testimonials": {
         "title": "What our partners say",
@@ -945,7 +944,7 @@
         "subtitle": "Everything you need to know before getting started",
         "q1": {
           "question": "Is it really free? What's the catch?",
-          "answer": "Yes, it's 100% free! There's no catch. Athlifyr is funded through a small fee on payment transactions processed through the platform (when you use our integrated payment system). If you prefer to manage payments externally, you pay nothing."
+          "answer": "Yes, it's 100% free! There's no catch. Athlifyr is a platform built to connect fitness communities and help professionals grow their business. All management features are completely free - no hidden costs, no premium tiers."
         },
         "q2": {
           "question": "How long does it take to set up?",
@@ -987,6 +986,16 @@
         "athletes": "Athletes in Community",
         "sessions": "Sessions per Month",
         "countries": "Countries"
+      },
+      "easyBook": {
+        "title": "Easy Booking: Share on Instagram",
+        "subtitle": "Give your followers a quick way to book classes directly from your bio link",
+        "description": "Get a short, shareable link (athlifyr.com/v/yourname/book) that you can add to your Instagram bio. Visitors can book your classes in seconds - no account required!",
+        "point1": "Short link perfect for Instagram bio",
+        "point2": "No login required for guests",
+        "point3": "Calendar view with all available classes",
+        "point4": "Instant booking confirmation",
+        "tryDemo": "Try Demo Booking"
       },
       "choosePath": {
         "title": "Choose what works for you",

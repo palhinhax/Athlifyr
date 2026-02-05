@@ -146,18 +146,9 @@ function TabataTimerSection() {
           viewport={{ once: true }}
           className="flex flex-col items-center justify-center"
         >
-          {/* Container with explicit height to constrain the scaled WallClock layout box */}
-          <div
-            className="relative flex w-full items-center justify-center overflow-hidden"
-            style={{
-              // Heights match the scaled WallClock: 180px * scale factor
-              height: "clamp(100px, 25vw, 180px)",
-            }}
-          >
-            <div
-              className="absolute origin-center scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100"
-              style={{ transformOrigin: "center center" }}
-            >
+          {/* Container with explicit height per breakpoint to constrain the scaled WallClock */}
+          <div className="relative flex h-[110px] w-full items-center justify-center overflow-hidden sm:h-[140px] md:h-[165px] lg:h-[195px]">
+            <div className="absolute left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100">
               <WallClock
                 size="xl"
                 timerMode={{
@@ -292,7 +283,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* What is Athlifyr Section */}
-      <section id="features" className="py-20">
+      <section id="features" className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -370,7 +361,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Mobile Booking Demo */}
-      <section className="bg-muted/30 py-20">
+      <section className="bg-muted/30 py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Text Content */}
@@ -537,7 +528,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Desktop Dashboard Demo */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -746,7 +737,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* WOD Example Section */}
-      <section className="bg-muted/30 py-20">
+      <section className="bg-muted/30 py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* WOD Card Mockup */}
@@ -888,7 +879,7 @@ export function UnlimitedPresentationClient() {
       <TabataTimerSection />
 
       {/* Workout Builder Section */}
-      <section className="bg-muted/30 py-20">
+      <section className="bg-muted/30 py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Text Content */}
@@ -1066,7 +1057,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Athlete Progress Section */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <div className="grid items-center gap-12 lg:grid-cols-2">
             {/* Text Content */}
@@ -1273,7 +1264,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Events Section - HYROX Lisboa */}
-      <section className="bg-muted/30 py-20">
+      <section className="bg-muted/30 py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1457,7 +1448,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Exercise Database Section */}
-      <section className="py-20">
+      <section className="py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1540,7 +1531,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Why Free Section */}
-      <section className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 py-20">
+      <section className="bg-gradient-to-br from-primary/5 via-primary/10 to-primary/5 py-12 sm:py-16 md:py-20">
         <div className="container mx-auto px-4">
           <motion.div
             initial={{ opacity: 0, y: 30 }}
@@ -1606,7 +1597,7 @@ export function UnlimitedPresentationClient() {
       </section>
 
       {/* Final CTA */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 py-20">
+      <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 py-12 sm:py-16 md:py-20">
         <div className="absolute inset-0 opacity-20">
           <div
             className="absolute inset-0"

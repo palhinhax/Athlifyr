@@ -1,3 +1,13 @@
+# [17.0.0](https://github.com/palhinhax/Athlifyr/compare/v16.2.0...v17.0.0) (2026-02-05)
+
+### Features
+
+- **i18n:** add multilingual support for training plans ([165e17d](https://github.com/palhinhax/Athlifyr/commit/165e17d826fb486269701e8f82f210caf567af68))
+
+### BREAKING CHANGES
+
+- **i18n:** Training plans now require translations in database. Existing plans without translations will need to be migrated.
+
 # [16.2.0](https://github.com/palhinhax/Athlifyr/compare/v16.1.2...v16.2.0) (2026-02-04)
 
 ### Bug Fixes

@@ -43,16 +43,17 @@ export function UnlimitedPresentationClient() {
   return (
     <div className="min-h-screen overflow-x-hidden bg-background">
       {/* Hero Section */}
-      <section className="relative flex min-h-screen items-center justify-center overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden">
+        {/* Background Image - Palácio de Mafra */}
+        <div
+          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://www.cm-mafra.pt/cmmafra/uploads/page/image1/1084/palacio_nacional_de_mafra_10_1.jpg')",
+          }}
+        />
+        {/* Dark overlay */}
+        <div className="absolute inset-0 bg-gradient-to-br from-zinc-900/90 via-zinc-800/85 to-zinc-900/90" />
 
         <div className="container relative z-10 mx-auto px-4 text-center text-white">
           <motion.div

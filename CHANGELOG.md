@@ -1,3 +1,9 @@
+# [17.1.0](https://github.com/palhinhax/Athlifyr/compare/v17.0.0...v17.1.0) (2026-02-05)
+
+### Features
+
+- **seeds:** add portuguese trail events 2026 seeds ([557597c](https://github.com/palhinhax/Athlifyr/commit/557597c119359706d4a57fdc4a0d291b3af4c426))
+
 # [17.0.0](https://github.com/palhinhax/Athlifyr/compare/v16.2.0...v17.0.0) (2026-02-05)
 
 ### Features

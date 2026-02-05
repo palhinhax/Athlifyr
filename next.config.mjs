@@ -34,6 +34,10 @@ const nextConfig = {
         protocol: "https",
         hostname: "europemarathon.eu",
       },
+      {
+        protocol: "https",
+        hostname: "www.cm-mafra.pt",
+      },
     ],
   },
   env: {

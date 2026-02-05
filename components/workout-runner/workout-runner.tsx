@@ -255,7 +255,7 @@ export function WorkoutRunner({
         {/* WallClock Display - Timer Mode (only when clock is visible) */}
         {clockVisibility.isClockVisible && (
           <div className="flex flex-col items-center justify-center p-2 py-4 sm:p-4 sm:py-6">
-            <div className="w-full max-w-full">
+            <div className="">
               <WallClock
                 size="responsive"
                 className="mx-auto w-full max-w-[calc(100vw-2rem)] scale-[0.85] transform sm:w-auto sm:max-w-none sm:scale-100"

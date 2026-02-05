@@ -9,6 +9,7 @@ import {
   ResponsiveTabsContent,
 } from "@/components/ui/responsive-tabs";
 import { useToast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   PlusIcon,
   DumbbellIcon,
@@ -395,7 +396,6 @@ export function WorkoutsPageClient({
       {!isProAccount && (
         <ResponsiveTabsContent value="saved" activeValue={activeTab}>
           <SavedContentTab
-            userId={userId}
             savedWorkouts={savedWorkouts}
             isLoading={isLoading}
             onSaveToggle={handleSaveToggle}
@@ -435,12 +435,10 @@ export function WorkoutsPageClient({
 
 // Component for normal users to view saved workouts and plans
 function SavedContentTab({
-  userId,
   savedWorkouts,
   isLoading: workoutsLoading,
   onSaveToggle,
 }: {
-  userId: string;
   savedWorkouts: WorkoutApiResponse[];
   isLoading: boolean;
   onSaveToggle: () => void;
@@ -455,7 +453,7 @@ function SavedContentTab({
       id: string;
       name: string;
       description: string | null;
-      weeks: number;
+      weeks: Array<{ id: string }>;
       isPublic: boolean;
       createdById: string;
       isSaved?: boolean;
@@ -463,30 +461,65 @@ function SavedContentTab({
     }>
   >([]);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [savingPlanId, setSavingPlanId] = useState<string | null>(null);
+
+  const fetchSavedPlans = useCallback(async () => {
+    try {
+      const response = await fetch("/api/training-plans");
+      if (response.ok) {
+        const data = await response.json();
+        // Show only saved plans
+        const saved = (data.plans || []).filter(
+          (p: { isSaved?: boolean }) => p.isSaved
+        );
+        setSavedPlans(saved);
+      }
+    } catch {
+      toast({
+        title: tPlans("errors.loadFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setPlansLoading(false);
+    }
+  }, [tPlans, toast]);
 
   useEffect(() => {
-    const fetchSavedPlans = async () => {
-      try {
-        const response = await fetch("/api/training-plans");
-        if (response.ok) {
-          const data = await response.json();
-          // Show only saved plans
-          const saved = (data.plans || []).filter(
-            (p: { isSaved?: boolean }) => p.isSaved
-          );
-          setSavedPlans(saved);
-        }
-      } catch {
+    fetchSavedPlans();
+  }, [fetchSavedPlans]);
+
+  const handleUnsavePlan = async (e: React.MouseEvent, planId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setSavingPlanId(planId);
+    try {
+      const response = await fetch(`/api/training-plans/${planId}/save`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
         toast({
-          title: tPlans("errors.loadFailed"),
+          title: tPlans("unsaved"),
+        });
+        // Remove from local state
+        setSavedPlans((prev) => prev.filter((p) => p.id !== planId));
+        onSaveToggle();
+      } else {
+        toast({
+          title: tPlans("errors.saveFailed"),
           variant: "destructive",
         });
-      } finally {
-        setPlansLoading(false);
       }
-    };
-    fetchSavedPlans();
-  }, [userId, tPlans, toast]);
+    } catch {
+      toast({
+        title: tPlans("errors.saveFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingPlanId(null);
+    }
+  };
 
   const isLoading = contentType === "workouts" ? workoutsLoading : plansLoading;
   const hasContent = contentType === "workouts" 
@@ -556,36 +589,65 @@ function SavedContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {savedPlans.map((plan) => (
-            <Link key={plan.id} href={`/workouts/plans/${plan.id}`}>
-              <div className="group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
-                      {plan.name}
-                    </h3>
-                    {plan.description && (
-                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {plan.description}
-                      </p>
-                    )}
-                  </div>
-                  <BookmarkIcon className="h-4 w-4 fill-current text-primary" />
+            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleUnsavePlan(e, plan.id);
+                }}
+                disabled={savingPlanId === plan.id}
+                className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
+                aria-label={tPlans("unsave")}
+              >
+                <BookmarkIcon
+                  className={`h-5 w-5 fill-current text-primary transition-colors hover:text-muted-foreground ${
+                    savingPlanId === plan.id ? "animate-pulse" : ""
+                  }`}
+                />
+              </button>
+              <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
+                <div className="flex-1 pr-8">
+                  <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
+                    {plan.name}
+                  </h3>
+                  {plan.description && (
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      {plan.description}
+                    </p>
+                  )}
                 </div>
                 <div className="mt-auto pt-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarDaysIcon className="h-4 w-4" />
                     <span>
-                      {plan.weeks} {tPlans("weeksCount")}
+                      {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
                     </span>
                   </div>
                   {plan.createdBy?.name && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {tPlans("createdByLabel")} {plan.createdBy.name}
-                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={plan.createdBy.image || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {plan.createdBy.name
+                            ?.split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">
+                        {tPlans("createdByLabel")}{" "}
+                        <span className="font-medium text-foreground">
+                          {plan.createdBy.name}
+                        </span>
+                      </span>
+                    </div>
                   )}
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
       )}
@@ -616,7 +678,7 @@ function PublicContentTab({
       id: string;
       name: string;
       description: string | null;
-      weeks: number;
+      weeks: Array<{ id: string }>;
       isPublic: boolean;
       createdById: string;
       isSaved?: boolean;
@@ -624,33 +686,72 @@ function PublicContentTab({
     }>
   >([]);
   const [plansLoading, setPlansLoading] = useState(true);
+  const [savingPlanId, setSavingPlanId] = useState<string | null>(null);
+
+  const fetchPlans = useCallback(async () => {
+    try {
+      const response = await fetch("/api/training-plans");
+      if (response.ok) {
+        const data = await response.json();
+        // Show only public plans
+        const publicPlans = (data.plans || []).filter(
+          (p: {
+            isPublic: boolean;
+            createdById: string;
+          }) => p.isPublic && p.createdById !== userId
+        );
+        setPlans(publicPlans);
+      }
+    } catch {
+      toast({
+        title: tPlans("errors.loadFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setPlansLoading(false);
+    }
+  }, [userId, tPlans, toast]);
 
   useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const response = await fetch("/api/training-plans");
-        if (response.ok) {
-          const data = await response.json();
-          // Show only public plans
-          const publicPlans = (data.plans || []).filter(
-            (p: {
-              isPublic: boolean;
-              createdById: string;
-            }) => p.isPublic && p.createdById !== userId
-          );
-          setPlans(publicPlans);
-        }
-      } catch {
+    fetchPlans();
+  }, [fetchPlans]);
+
+  const handleSavePlan = async (e: React.MouseEvent, planId: string, isSaved: boolean) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    setSavingPlanId(planId);
+    try {
+      const response = await fetch(`/api/training-plans/${planId}/save`, {
+        method: isSaved ? "DELETE" : "POST",
+      });
+
+      if (response.ok) {
         toast({
-          title: tPlans("errors.loadFailed"),
+          title: isSaved ? tPlans("unsaved") : tPlans("saved"),
+        });
+        // Update local state
+        setPlans((prev) =>
+          prev.map((p) =>
+            p.id === planId ? { ...p, isSaved: !isSaved } : p
+          )
+        );
+        onSaveToggle();
+      } else {
+        toast({
+          title: tPlans("errors.saveFailed"),
           variant: "destructive",
         });
-      } finally {
-        setPlansLoading(false);
       }
-    };
-    fetchPlans();
-  }, [userId, tPlans, toast]);
+    } catch {
+      toast({
+        title: tPlans("errors.saveFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setSavingPlanId(null);
+    }
+  };
 
   // Filter content based on search
   const filteredWorkouts = publicWorkouts.filter((workout) => {
@@ -752,38 +853,67 @@ function PublicContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPlans.map((plan) => (
-            <Link key={plan.id} href={`/workouts/plans/${plan.id}`}>
-              <div className="group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
-                      {plan.name}
-                    </h3>
-                    {plan.description && (
-                      <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                        {plan.description}
-                      </p>
-                    )}
-                  </div>
-                  {plan.isSaved && (
-                    <BookmarkIcon className="h-4 w-4 fill-current text-primary" />
+            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleSavePlan(e, plan.id, !!plan.isSaved);
+                }}
+                disabled={savingPlanId === plan.id}
+                className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
+                aria-label={plan.isSaved ? tPlans("unsave") : tPlans("save")}
+              >
+                <BookmarkIcon
+                  className={`h-5 w-5 transition-colors ${
+                    plan.isSaved
+                      ? "fill-current text-primary"
+                      : "text-muted-foreground hover:text-primary"
+                  } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
+                />
+              </button>
+              <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
+                <div className="flex-1 pr-8">
+                  <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
+                    {plan.name}
+                  </h3>
+                  {plan.description && (
+                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                      {plan.description}
+                    </p>
                   )}
                 </div>
                 <div className="mt-auto pt-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <CalendarDaysIcon className="h-4 w-4" />
                     <span>
-                      {plan.weeks} {tPlans("weeksCount")}
+                      {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
                     </span>
                   </div>
                   {plan.createdBy?.name && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {tPlans("createdByLabel")} {plan.createdBy.name}
-                    </p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={plan.createdBy.image || undefined} />
+                        <AvatarFallback className="text-[10px]">
+                          {plan.createdBy.name
+                            ?.split(" ")
+                            .map((n: string) => n[0])
+                            .join("")
+                            .toUpperCase()
+                            .slice(0, 2) || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-xs text-muted-foreground">
+                        {tPlans("createdByLabel")}{" "}
+                        <span className="font-medium text-foreground">
+                          {plan.createdBy.name}
+                        </span>
+                      </span>
+                    </div>
                   )}
                 </div>
-              </div>
-            </Link>
+              </Link>
+            </div>
           ))}
         </div>
       )}

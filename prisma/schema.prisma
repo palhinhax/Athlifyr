@@ -1681,11 +1681,28 @@ model TrainingPlan {
   assignedToUsers    UserTrainingPlan[]
   assignedToSessions VenueSessionPlan[]
   savedBy            SavedTrainingPlan[]
+  translations       TrainingPlanTranslation[]
 
   @@index([createdById])
   @@index([venueId])
   @@index([isPublic])
   @@index([category])
+}
+
+// Traduções para planos de treino
+model TrainingPlanTranslation {
+  id          String   @id @default(cuid())
+  planId      String
+  language    Language // en, pt, es, fr, de, it
+  name        String   // "CrossFit Beginners - 8 Weeks"
+  description String?  @db.Text // Descrição completa do plano
+  metaTitle   String?  // SEO meta title
+  metaDescription String? @db.Text // SEO meta description
+
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, language])
+  @@index([planId])
 }
 
 // Semana dentro de um plano de treino

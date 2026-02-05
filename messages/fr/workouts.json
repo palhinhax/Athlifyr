@@ -288,6 +288,8 @@
       "myPlans": "Mes Plans",
       "publicPlans": "Plans Publics",
       "savedPlans": "Plans Enregistrés",
+      "save": "Enregistrer le plan",
+      "unsave": "Retirer des enregistrés",
       "saved": "Plan enregistré",
       "unsaved": "Plan retiré des enregistrés",
       "templates": "Modèles",

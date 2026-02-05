@@ -933,8 +933,7 @@
         "description": "Wir glauben, dass alle Sportprofis qualitativ hochwertige Tools verdienen, unabhängig von der Größe ihres Unternehmens. Unsere Mission ist es, das Sportmanagement zu demokratisieren.",
         "point1": "Keine monatlichen oder jährlichen Gebühren",
         "point2": "Keine Begrenzung der Kunden oder Mitglieder",
-        "point3": "Keine gesperrten Funktionen",
-        "point4": "Nur eine kleine Gebühr bei Zahlungstransaktionen"
+        "point3": "Keine gesperrten Funktionen"
       },
       "testimonials": {
         "title": "Was unsere Partner sagen",
@@ -945,7 +944,7 @@
         "subtitle": "Alles, was Sie wissen müssen, bevor Sie beginnen",
         "q1": {
           "question": "Ist es wirklich kostenlos? Was ist der Haken?",
-          "answer": "Ja, es ist 100% kostenlos! Es gibt keinen Haken. Athlifyr wird durch eine kleine Gebühr bei Zahlungstransaktionen finanziert, die über die Plattform abgewickelt werden (wenn Sie unser integriertes Zahlungssystem nutzen). Wenn Sie Zahlungen lieber extern verwalten, zahlen Sie nichts."
+          "answer": "Ja, es ist 100% kostenlos! Es gibt keinen Haken. Athlifyr ist eine Plattform, die entwickelt wurde, um Fitness-Communities zu verbinden und Profis beim Wachstum ihres Geschäfts zu helfen. Alle Verwaltungsfunktionen sind völlig kostenlos - keine versteckten Kosten, keine Premium-Pläne."
         },
         "q2": {
           "question": "Wie lange dauert die Einrichtung?",
@@ -987,6 +986,16 @@
         "athletes": "Athleten in der Community",
         "sessions": "Sitzungen pro Monat",
         "countries": "Länder"
+      },
+      "easyBook": {
+        "title": "Schnellbuchung: Auf Instagram teilen",
+        "subtitle": "Gib deinen Followern eine schnelle Möglichkeit, Kurse direkt über deinen Bio-Link zu buchen",
+        "description": "Erhalte einen kurzen, teilbaren Link (athlifyr.com/v/deinname/book), den du zu deiner Instagram-Bio hinzufügen kannst. Besucher können deine Kurse in Sekunden buchen - kein Konto erforderlich!",
+        "point1": "Kurzer Link perfekt für Instagram-Bio",
+        "point2": "Keine Anmeldung für Gäste erforderlich",
+        "point3": "Kalenderansicht mit allen verfügbaren Kursen",
+        "point4": "Sofortige Buchungsbestätigung",
+        "tryDemo": "Demo Ausprobieren"
       },
       "choosePath": {
         "title": "Wählen Sie, was für Sie funktioniert",

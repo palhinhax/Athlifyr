@@ -933,8 +933,7 @@
         "description": "Nous croyons que tous les professionnels du sport méritent des outils de qualité, quelle que soit la taille de leur entreprise. Notre mission est de démocratiser la gestion sportive.",
         "point1": "Pas de frais mensuels ou annuels",
         "point2": "Pas de limite de clients ou membres",
-        "point3": "Pas de fonctionnalités bloquées",
-        "point4": "Seulement une petite commission sur les transactions de paiement"
+        "point3": "Pas de fonctionnalités bloquées"
       },
       "testimonials": {
         "title": "Ce que disent nos partenaires",
@@ -945,7 +944,7 @@
         "subtitle": "Tout ce que vous devez savoir avant de commencer",
         "q1": {
           "question": "C'est vraiment gratuit ? Où est le piège ?",
-          "answer": "Oui, c'est 100% gratuit ! Il n'y a pas de piège. Athlifyr est financé par une petite commission sur les transactions de paiement traitées via la plateforme (quand vous utilisez notre système de paiement intégré). Si vous préférez gérer les paiements en externe, vous ne payez rien."
+          "answer": "Oui, c'est 100% gratuit ! Il n'y a pas de piège. Athlifyr est une plateforme construite pour connecter les communautés fitness et aider les professionnels à développer leur activité. Toutes les fonctionnalités de gestion sont entièrement gratuites - pas de coûts cachés, pas de forfaits premium."
         },
         "q2": {
           "question": "Combien de temps faut-il pour configurer ?",
@@ -987,6 +986,16 @@
         "athletes": "Athlètes dans la Communauté",
         "sessions": "Séances par Mois",
         "countries": "Pays"
+      },
+      "easyBook": {
+        "title": "Réservation Rapide : Partagez sur Instagram",
+        "subtitle": "Donnez à vos abonnés un moyen rapide de réserver des cours directement depuis votre lien bio",
+        "description": "Obtenez un lien court et partageable (athlifyr.com/v/votrenom/book) que vous pouvez ajouter à votre bio Instagram. Les visiteurs peuvent réserver vos cours en quelques secondes - sans compte requis !",
+        "point1": "Lien court parfait pour bio Instagram",
+        "point2": "Pas de connexion requise pour les invités",
+        "point3": "Vue calendrier avec tous les cours disponibles",
+        "point4": "Confirmation instantanée de la réservation",
+        "tryDemo": "Essayer la Démo"
       },
       "choosePath": {
         "title": "Choisissez ce qui vous convient",

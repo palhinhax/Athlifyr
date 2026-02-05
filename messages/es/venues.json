@@ -933,8 +933,7 @@
         "description": "Creemos que todos los profesionales del deporte merecen herramientas de calidad, independientemente del tamaño de su negocio. Nuestra misión es democratizar la gestión deportiva.",
         "point1": "Sin tarifas mensuales ni anuales",
         "point2": "Sin límite de clientes o miembros",
-        "point3": "Sin funcionalidades bloqueadas",
-        "point4": "Solo una pequeña comisión en las transacciones de pago"
+        "point3": "Sin funcionalidades bloqueadas"
       },
       "testimonials": {
         "title": "Lo que dicen nuestros socios",
@@ -945,7 +944,7 @@
         "subtitle": "Todo lo que necesitas saber antes de empezar",
         "q1": {
           "question": "¿Es realmente gratis? ¿Cuál es el truco?",
-          "answer": "Sí, ¡es 100% gratis! No hay truco. Athlifyr se financia a través de una pequeña comisión en las transacciones de pago procesadas por la plataforma (cuando usas nuestro sistema de pagos integrado). Si prefieres gestionar los pagos externamente, no pagas nada."
+          "answer": "Sí, ¡es 100% gratis! No hay truco. Athlifyr es una plataforma construida para conectar comunidades fitness y ayudar a los profesionales a hacer crecer su negocio. Todas las funciones de gestión son completamente gratuitas - sin costes ocultos, sin planes premium."
         },
         "q2": {
           "question": "¿Cuánto tiempo lleva configurarlo?",
@@ -987,6 +986,16 @@
         "athletes": "Atletas en la Comunidad",
         "sessions": "Sesiones por Mes",
         "countries": "Países"
+      },
+      "easyBook": {
+        "title": "Reserva Rápida: Comparte en Instagram",
+        "subtitle": "Da a tus seguidores una forma rápida de reservar clases directamente desde tu link en la bio",
+        "description": "Obtén un enlace corto y compartible (athlifyr.com/v/tunombre/book) que puedes añadir a tu bio de Instagram. Los visitantes pueden reservar tus clases en segundos - ¡sin necesidad de cuenta!",
+        "point1": "Enlace corto perfecto para bio de Instagram",
+        "point2": "Sin inicio de sesión obligatorio para invitados",
+        "point3": "Vista de calendario con todas las clases disponibles",
+        "point4": "Confirmación instantánea de la reserva",
+        "tryDemo": "Probar Demo"
       },
       "choosePath": {
         "title": "Elige lo que te funciona",

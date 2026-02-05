@@ -933,8 +933,7 @@
         "description": "Acreditamos que todos os profissionais do desporto merecem ferramentas de qualidade, independentemente do tamanho do seu negócio. A nossa missão é democratizar a gestão desportiva.",
         "point1": "Sem taxas mensais ou anuais",
         "point2": "Sem limite de clientes ou membros",
-        "point3": "Sem funcionalidades bloqueadas",
-        "point4": "Apenas uma pequena taxa nas transações de pagamento"
+        "point3": "Sem funcionalidades bloqueadas"
       },
       "testimonials": {
         "title": "O que dizem os nossos parceiros",
@@ -945,7 +944,7 @@
         "subtitle": "Tudo o que precisas de saber antes de começar",
         "q1": {
           "question": "É mesmo gratuito? Qual é o truque?",
-          "answer": "Sim, é 100% gratuito! Não há truque. A Athlifyr é financiada através de uma pequena taxa nas transações de pagamento processadas pela plataforma (quando usas o nosso sistema de pagamentos integrado). Se preferires gerir pagamentos externamente, não pagas nada."
+          "answer": "Sim, é 100% gratuito! Não há truque. A Athlifyr é uma plataforma criada para conectar comunidades fitness e ajudar profissionais a crescer o seu negócio. Todas as funcionalidades de gestão são completamente gratuitas - sem custos escondidos, sem planos premium."
         },
         "q2": {
           "question": "Quanto tempo demora a configurar?",
@@ -987,6 +986,16 @@
         "athletes": "Atletas na Comunidade",
         "sessions": "Sessões por Mês",
         "countries": "Países"
+      },
+      "easyBook": {
+        "title": "Reserva Rápida: Partilha no Instagram",
+        "subtitle": "Dá aos teus seguidores uma forma rápida de reservar aulas diretamente do teu link na bio",
+        "description": "Obtém um link curto e partilhável (athlifyr.com/v/teunome/book) que podes adicionar à tua bio do Instagram. Os visitantes podem reservar as tuas aulas em segundos - sem precisar de conta!",
+        "point1": "Link curto perfeito para bio do Instagram",
+        "point2": "Sem login obrigatório para convidados",
+        "point3": "Vista de calendário com todas as aulas disponíveis",
+        "point4": "Confirmação instantânea da reserva",
+        "tryDemo": "Experimentar Demo"
       },
       "choosePath": {
         "title": "Escolhe o que faz sentido para ti",

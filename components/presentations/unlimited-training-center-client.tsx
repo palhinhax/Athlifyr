@@ -134,92 +134,45 @@ function TabataTimerSection() {
   const timer = useTabataTimer(isInView);
 
   return (
-    <section ref={ref} className="bg-zinc-900 py-20">
+    <section ref={ref} className="py-16">
       <div className="container mx-auto px-4">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          {/* WallClock Display */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="flex justify-center"
-          >
-            <div className="relative">
-              <WallClock
-                size="lg"
-                timerMode={{
-                  seconds: timer.seconds,
-                  status: timer.status,
-                  phase: timer.phase,
-                  modeLabel: `TABATA x${timer.totalRounds}`,
-                  leftDisplayValue: timer.currentRound,
-                  isWarning: timer.isWarning,
-                }}
-              />
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+          viewport={{ once: true }}
+          className="flex flex-col items-center justify-center"
+        >
+          <WallClock
+            size="xl"
+            timerMode={{
+              seconds: timer.seconds,
+              status: timer.status,
+              phase: timer.phase,
+              modeLabel: `TABATA x${timer.totalRounds}`,
+              leftDisplayValue: timer.currentRound,
+              isWarning: timer.isWarning,
+            }}
+          />
 
-              {/* Restart button */}
-              {timer.status === "done" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="mt-4 flex justify-center"
-                >
-                  <Button
-                    onClick={timer.restart}
-                    variant="outline"
-                    className="gap-2 border-zinc-700 text-white hover:bg-zinc-800"
-                  >
-                    <RotateCcw className="h-4 w-4" />
-                    Reiniciar Tabata
-                  </Button>
-                </motion.div>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Text Content */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-          >
-            <Badge
-              className="mb-4 gap-1 bg-red-500/20 text-red-400"
-              variant="secondary"
+          {/* Restart button */}
+          {timer.status === "done" && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6"
             >
-              <Timer className="h-3 w-3" />
-              Timers Profissionais
-            </Badge>
-            <h2 className="mb-6 text-3xl font-bold text-white md:text-4xl">
-              Relógio de parede <span className="text-primary">digital</span>{" "}
-              incluído
-            </h2>
-            <p className="mb-8 text-lg text-zinc-400">
-              O nosso relógio LED de 7 segmentos é perfeito para o teu box.
-              Suporta TABATA, EMOM, AMRAP, For Time e muito mais. Mostra no ecrã
-              grande durante as aulas!
-            </p>
-
-            <div className="space-y-4">
-              {[
-                "TABATA, EMOM, AMRAP, For Time, Stopwatch",
-                "Contador de rondas integrado",
-                "Indicadores visuais WORK/REST",
-                "Alerta nos últimos 3 segundos",
-                "Funciona em qualquer ecrã/TV",
-              ].map((point, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-red-500/20">
-                    <Check className="h-4 w-4 text-red-400" />
-                  </div>
-                  <span className="text-zinc-300">{point}</span>
-                </div>
-              ))}
-            </div>
-          </motion.div>
-        </div>
+              <Button
+                onClick={timer.restart}
+                variant="outline"
+                className="gap-2"
+              >
+                <RotateCcw className="h-4 w-4" />
+                Reiniciar Tabata
+              </Button>
+            </motion.div>
+          )}
+        </motion.div>
       </div>
     </section>
   );
@@ -285,7 +238,8 @@ export function UnlimitedPresentationClient() {
             <p className="mx-auto mb-10 max-w-2xl text-xl text-zinc-300">
               Descobre como o{" "}
               <span className="font-bold text-primary">Athlifyr</span> pode
-              transformar a gestão do teu box e criar uma comunidade mais forte.
+              transformar a gestão do vosso espaço e criar uma comunidade mais
+              forte.
             </p>
 
             {/* CTA */}
@@ -340,7 +294,7 @@ export function UnlimitedPresentationClient() {
             </h2>
             <p className="mb-12 text-lg text-muted-foreground">
               Gestão completa, comunidade engajada e zero custos. Tudo o que
-              precisas para levar o teu box ao próximo nível.
+              precisam para levar o vosso espaço ao próximo nível.
             </p>
           </motion.div>
 
@@ -417,8 +371,8 @@ export function UnlimitedPresentationClient() {
                 Reservas em <span className="text-primary">30 segundos</span>
               </h2>
               <p className="mb-8 text-lg text-muted-foreground">
-                Os teus atletas podem reservar aulas diretamente do telemóvel.
-                Sem apps, sem complicações. Apenas um link simples que podes
+                Os vossos atletas podem reservar aulas diretamente do telemóvel.
+                Sem apps, sem complicações. Apenas um link simples que podem
                 partilhar no Instagram.
               </p>
 
@@ -900,6 +854,181 @@ export function UnlimitedPresentationClient() {
       {/* Timer Section - Tabata Demo */}
       <TabataTimerSection />
 
+      {/* Workout Builder Section */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Badge className="mb-4 gap-1" variant="secondary">
+                <Dumbbell className="h-3 w-3" />
+                Construtor de Treinos
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+                Cria WODs <span className="text-primary">estruturados</span> em
+                segundos
+              </h2>
+              <p className="mb-8 text-lg text-muted-foreground">
+                Esquece o texto plain. O nosso construtor visual permite criar
+                treinos profissionais com blocos arrastáveis, exercícios da base
+                de dados, e formatação automática.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  "Blocos visuais: AMRAP, EMOM, For Time, Tabata, Força...",
+                  "Arrasta e reordena exercícios facilmente",
+                  "500+ exercícios com vídeos demonstrativos",
+                  "Reutiliza treinos como templates",
+                  "Formatação automática e profissional",
+                ].map((point, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
+                      <Check className="h-4 w-4 text-primary" />
+                    </div>
+                    <span>{point}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Workout Builder Mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="flex justify-center"
+            >
+              <div className="w-full max-w-md space-y-4">
+                {/* AMRAP Block */}
+                <div className="overflow-hidden rounded-xl border-l-4 border-l-blue-500 bg-card shadow-lg">
+                  <div className="flex items-center justify-between border-b p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
+                        🔄 AMRAP
+                      </Badge>
+                      <span className="text-sm font-medium">20 min</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <span className="text-xs">☰</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2 p-3">
+                    {[
+                      { name: "Pull-ups", reps: "5" },
+                      { name: "Push-ups", reps: "10" },
+                      { name: "Air Squats", reps: "15" },
+                    ].map((ex, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            ☰
+                          </span>
+                          <span className="text-sm font-medium">{ex.name}</span>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          {ex.reps} reps
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Strength Block */}
+                <div className="overflow-hidden rounded-xl border-l-4 border-l-red-500 bg-card shadow-lg">
+                  <div className="flex items-center justify-between border-b p-3">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300">
+                        💪 Força
+                      </Badge>
+                    </div>
+                    <div className="flex items-center gap-1 text-muted-foreground">
+                      <span className="text-xs">☰</span>
+                    </div>
+                  </div>
+                  <div className="space-y-2 p-3">
+                    <div className="flex items-center justify-between rounded-lg bg-muted/50 px-3 py-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs text-muted-foreground">
+                          ☰
+                        </span>
+                        <span className="text-sm font-medium">Back Squat</span>
+                      </div>
+                      <Badge variant="outline" className="text-xs">
+                        5x5 @ 80%
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Add Block Button */}
+                <div className="flex flex-wrap justify-center gap-2">
+                  {[
+                    {
+                      type: "EMOM",
+                      icon: "⏱️",
+                      color: "bg-purple-100 text-purple-800",
+                    },
+                    {
+                      type: "Tabata",
+                      icon: "🎯",
+                      color: "bg-green-100 text-green-800",
+                    },
+                    {
+                      type: "For Time",
+                      icon: "⚡",
+                      color: "bg-yellow-100 text-yellow-800",
+                    },
+                  ].map((block) => (
+                    <Badge
+                      key={block.type}
+                      variant="outline"
+                      className="cursor-pointer gap-1 transition-colors hover:bg-muted"
+                    >
+                      <span>{block.icon}</span>+ {block.type}
+                    </Badge>
+                  ))}
+                </div>
+
+                {/* Comparison: Text vs Builder */}
+                <div className="mt-6 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950/30">
+                    <p className="mb-2 text-xs font-medium text-red-600 dark:text-red-400">
+                      ❌ Texto Plain
+                    </p>
+                    <div className="space-y-1 font-mono text-[10px] text-muted-foreground">
+                      <p>AMRAP 20</p>
+                      <p>5 pull ups</p>
+                      <p>10 pushups</p>
+                      <p>15 squats</p>
+                    </div>
+                  </div>
+                  <div className="rounded-xl border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950/30">
+                    <p className="mb-2 text-xs font-medium text-green-600 dark:text-green-400">
+                      ✅ Athlifyr
+                    </p>
+                    <div className="space-y-1 text-[10px]">
+                      <p>• Estrutura visual</p>
+                      <p>• Timer integrado</p>
+                      <p>• Resultados</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
       {/* Athlete Progress Section */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -921,7 +1050,7 @@ export function UnlimitedPresentationClient() {
               </h2>
               <p className="mb-8 text-lg text-muted-foreground">
                 Gráficos de progresso detalhados para cada movimento. Os atletas
-                veem a sua evolução ao longo do tempo e tu podes acompanhar o
+                veem a sua evolução ao longo do tempo e podem acompanhar o
                 desenvolvimento de toda a comunidade.
               </p>
 
@@ -1117,8 +1246,7 @@ export function UnlimitedPresentationClient() {
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
               Calendário completo de competições, trails, maratonas e eventos de
-              fitness. Os teus atletas podem encontrar e inscrever-se
-              diretamente.
+              fitness. Os vossos atletas podem descobrir novos desafios.
             </p>
           </motion.div>
 
@@ -1424,149 +1552,6 @@ export function UnlimitedPresentationClient() {
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="py-20">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mb-12 text-center"
-          >
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              Comparação com <span className="text-primary">alternativas</span>
-            </h2>
-            <p className="text-lg text-muted-foreground">
-              Vê como o Athlifyr se compara a outras soluções
-            </p>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mx-auto max-w-4xl overflow-x-auto"
-          >
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b">
-                  <th className="pb-4 pr-4"></th>
-                  <th className="pb-4 pr-4">
-                    <div className="flex items-center gap-2">
-                      <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-sm font-bold text-primary-foreground">
-                        A
-                      </div>
-                      <span className="font-bold">Athlifyr</span>
-                    </div>
-                  </th>
-                  <th className="pb-4 pr-4 text-muted-foreground">SugarWOD</th>
-                  <th className="pb-4 pr-4 text-muted-foreground">Wodify</th>
-                  <th className="pb-4 text-muted-foreground">Mindbody</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  {
-                    feature: "Preço/mês",
-                    athlifyr: "€0",
-                    sugarwod: "~€50-150",
-                    wodify: "~€100-300",
-                    mindbody: "~€150-400",
-                  },
-                  {
-                    feature: "Membros ilimitados",
-                    athlifyr: true,
-                    sugarwod: false,
-                    wodify: false,
-                    mindbody: false,
-                  },
-                  {
-                    feature: "Rede social",
-                    athlifyr: true,
-                    sugarwod: false,
-                    wodify: false,
-                    mindbody: false,
-                  },
-                  {
-                    feature: "Base exercícios",
-                    athlifyr: "500+",
-                    sugarwod: "300+",
-                    wodify: "Limitada",
-                    mindbody: "N/A",
-                  },
-                  {
-                    feature: "Multilingue (6 idiomas)",
-                    athlifyr: true,
-                    sugarwod: false,
-                    wodify: false,
-                    mindbody: false,
-                  },
-                  {
-                    feature: "Made in Portugal 🇵🇹",
-                    athlifyr: true,
-                    sugarwod: false,
-                    wodify: false,
-                    mindbody: false,
-                  },
-                ].map((row, i) => (
-                  <tr key={i} className="border-b">
-                    <td className="py-4 pr-4 font-medium">{row.feature}</td>
-                    <td className="py-4 pr-4">
-                      {typeof row.athlifyr === "boolean" ? (
-                        row.athlifyr ? (
-                          <Check className="h-5 w-5 text-green-500" />
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )
-                      ) : (
-                        <span className="font-bold text-green-500">
-                          {row.athlifyr}
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 pr-4 text-muted-foreground">
-                      {typeof row.sugarwod === "boolean" ? (
-                        row.sugarwod ? (
-                          <Check className="h-5 w-5" />
-                        ) : (
-                          "—"
-                        )
-                      ) : (
-                        row.sugarwod
-                      )}
-                    </td>
-                    <td className="py-4 pr-4 text-muted-foreground">
-                      {typeof row.wodify === "boolean" ? (
-                        row.wodify ? (
-                          <Check className="h-5 w-5" />
-                        ) : (
-                          "—"
-                        )
-                      ) : (
-                        row.wodify
-                      )}
-                    </td>
-                    <td className="py-4 text-muted-foreground">
-                      {typeof row.mindbody === "boolean" ? (
-                        row.mindbody ? (
-                          <Check className="h-5 w-5" />
-                        ) : (
-                          "—"
-                        )
-                      ) : (
-                        row.mindbody
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </motion.div>
-        </div>
-      </section>
-
       {/* Final CTA */}
       <section className="relative overflow-hidden bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 py-20">
         <div className="absolute inset-0 opacity-20">
@@ -1594,8 +1579,8 @@ export function UnlimitedPresentationClient() {
               ?
             </h2>
             <p className="mx-auto mb-8 max-w-2xl text-lg text-zinc-400">
-              Cria a tua conta gratuita em 2 minutos e começa a transformar a
-              gestão do teu box hoje.
+              Criem a vossa conta gratuita em 2 minutos e começem a transformar
+              a gestão do vosso espaço hoje.
             </p>
 
             <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">

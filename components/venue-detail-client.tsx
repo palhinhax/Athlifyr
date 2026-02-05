@@ -87,6 +87,7 @@ interface Venue {
   defaultSessionCapacity: number | null;
   defaultBookingAdvanceDays: number;
   defaultCancellationDeadlineMinutes: number;
+  requiresPlanToBook: boolean;
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
   externalPaymentInstructions: string | null;
   visibleTabs?: string[];

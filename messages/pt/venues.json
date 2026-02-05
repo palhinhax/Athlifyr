@@ -326,6 +326,16 @@
       "noServicesSelected": "Nenhum serviço selecionado",
       "openInGoogleMaps": "Abrir no Google Maps"
     },
+    "quickBook": {
+      "title": "Reserva Rápida",
+      "description": "Permite que qualquer pessoa reserve sessões diretamente através de um link curto.",
+      "bookingLink": "Link de Reserva",
+      "linkHint": "Partilha este link no Instagram ou noutros locais para reservas rápidas.",
+      "linkCopied": "Link copiado!",
+      "requirePlan": "Exigir Plano Ativo",
+      "requirePlanHint": "Quando ativo, os utilizadores precisam de uma subscrição ativa para reservar. Quando desativo, qualquer pessoa pode reservar sem plano.",
+      "guestBookingEnabled": "Reservas de convidados ativas - qualquer pessoa pode reservar sem iniciar sessão"
+    },
     "membership": {
       "title": "Associação",
       "members": "Membros",

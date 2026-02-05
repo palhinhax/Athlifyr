@@ -569,6 +569,7 @@ model Venue {
   stripeLastWebhookAt                DateTime?
   stripeOnboardingStatus             StripeOnboardingStatus  @default(NOT_STARTED)
   stripePayoutsEnabled               Boolean                 @default(false)
+  requiresPlanToBook                 Boolean                 @default(true)
   visibleTabs                        String[]                @default(["feed", "about", "plans", "sessions", "team", "clients", "subscriptions"])
   paymentIntents                     PaymentIntent[]
   posts                              Post[]
@@ -799,19 +800,21 @@ model VenueSession {
 }
 
 model VenueBooking {
-  id         String        @id @default(cuid())
-  venueId    String
-  sessionId  String
-  userId     String?
-  status     BookingStatus @default(BOOKED)
-  notes      String?
-  createdAt  DateTime      @default(now())
-  updatedAt  DateTime      @updatedAt
-  guestEmail String?
-  guestName  String?
-  session    VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user       User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue      Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  id            String        @id @default(cuid())
+  venueId       String
+  sessionId     String
+  userId        String?
+  status        BookingStatus @default(BOOKED)
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  guestEmail    String?
+  guestName     String?
+  guestPhone    String?
+  isEasyBooking Boolean       @default(false)
+  session       VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue         Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
   @@index([venueId])
   @@index([sessionId])

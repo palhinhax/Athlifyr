@@ -21,6 +21,7 @@ import { VenueDescriptionTranslations } from "@/components/venue-description-tra
 interface VenueSettingsModalProps {
   venue: {
     id: string;
+    slug: string;
     name: string;
     type: string;
     logo: string | null;
@@ -40,6 +41,7 @@ interface VenueSettingsModalProps {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
+    requiresPlanToBook: boolean;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
     externalPaymentInstructions: string | null;
     visibleTabs?: string[];

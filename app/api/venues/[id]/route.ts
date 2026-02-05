@@ -167,6 +167,7 @@ export async function PATCH(
       defaultSessionCapacity,
       defaultBookingAdvanceDays,
       defaultCancellationDeadlineMinutes,
+      requiresPlanToBook,
     } = body;
 
     // Validate sport types if provided
@@ -230,6 +231,10 @@ export async function PATCH(
         }),
         ...(defaultCancellationDeadlineMinutes !== undefined && {
           defaultCancellationDeadlineMinutes,
+        }),
+        // Booking settings
+        ...(requiresPlanToBook !== undefined && {
+          requiresPlanToBook,
         }),
       },
     });

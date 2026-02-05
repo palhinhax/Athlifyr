@@ -19,6 +19,67 @@ export interface BookingValidationResult {
 }
 
 /**
+ * Validates basic booking conditions (capacity, session exists, not already booked)
+ * Used when venue doesn't require a plan to book
+ */
+export async function validateBasicBooking(
+  userId: string,
+  venueId: string,
+  sessionId: string
+): Promise<BookingValidationResult> {
+  // 1. Get session details
+  const session = await prisma.venueSession.findUnique({
+    where: { id: sessionId },
+    include: {
+      bookings: {
+        where: {
+          status: {
+            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+          },
+        },
+      },
+    },
+  });
+
+  if (!session) {
+    return {
+      allowed: false,
+      reason: "SESSION_NOT_FOUND",
+    };
+  }
+
+  // 2. Check if already booked by this user
+  const existingBooking = await prisma.venueBooking.findFirst({
+    where: {
+      sessionId,
+      userId,
+    },
+  });
+
+  if (existingBooking && existingBooking.status === BookingStatus.BOOKED) {
+    return {
+      allowed: false,
+      reason: "ALREADY_BOOKED",
+    };
+  }
+
+  // 3. Check capacity (for classes)
+  if (session.capacity !== null) {
+    const currentBookings = session.bookings.length;
+    if (currentBookings >= session.capacity) {
+      return {
+        allowed: false,
+        reason: "SESSION_FULL",
+      };
+    }
+  }
+
+  return {
+    allowed: true,
+  };
+}
+
+/**
  * Validates if a user can book a session based on their subscription plan policy
  */
 export async function validateBooking(
@@ -26,6 +87,17 @@ export async function validateBooking(
   venueId: string,
   sessionId: string
 ): Promise<BookingValidationResult> {
+  // First, check if venue requires plan to book
+  const venue = await prisma.venue.findUnique({
+    where: { id: venueId },
+    select: { requiresPlanToBook: true },
+  });
+
+  // If venue doesn't require plan, just do basic validation
+  if (venue && !venue.requiresPlanToBook) {
+    return validateBasicBooking(userId, venueId, sessionId);
+  }
+
   // 1. Check if user is an active member
   const member = await prisma.venueMember.findUnique({
     where: {

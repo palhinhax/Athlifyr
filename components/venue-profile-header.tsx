@@ -13,6 +13,7 @@ import { VenueReviewsModal } from "@/components/venue-reviews-modal";
 interface VenueProfileHeaderProps {
   venue: {
     id: string;
+    slug: string;
     name: string;
     type: string;
     logo: string | null;
@@ -32,8 +33,10 @@ interface VenueProfileHeaderProps {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
+    requiresPlanToBook: boolean;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
     externalPaymentInstructions: string | null;
+    visibleTabs?: string[];
     members: Array<{
       id: string;
       role: string;

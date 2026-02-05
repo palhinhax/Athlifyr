@@ -326,6 +326,16 @@
       "noServicesSelected": "Keine Dienstleistungen ausgewählt",
       "openInGoogleMaps": "In Google Maps öffnen"
     },
+    "quickBook": {
+      "title": "Schnellbuchung",
+      "description": "Ermöglicht es jedem, Sitzungen direkt über einen kurzen Link zu buchen.",
+      "bookingLink": "Buchungslink",
+      "linkHint": "Teile diesen Link auf Instagram oder anderswo für schnelle Buchungen.",
+      "linkCopied": "Link kopiert!",
+      "requirePlan": "Aktiven Plan Erfordern",
+      "requirePlanHint": "Wenn aktiviert, müssen Benutzer ein aktives Abonnement haben, um zu buchen. Wenn deaktiviert, kann jeder ohne Plan buchen.",
+      "guestBookingEnabled": "Gastbuchungen aktiviert - jeder kann buchen, ohne sich anzumelden"
+    },
     "membership": {
       "title": "Mitgliedschaft",
       "members": "Mitglieder",

@@ -326,6 +326,16 @@
       "noServicesSelected": "No services selected",
       "openInGoogleMaps": "Open in Google Maps"
     },
+    "quickBook": {
+      "title": "Quick Book",
+      "description": "Allow anyone to book sessions directly via a short link.",
+      "bookingLink": "Booking Link",
+      "linkHint": "Share this link on Instagram or anywhere else for quick bookings.",
+      "linkCopied": "Link copied!",
+      "requirePlan": "Require Active Plan",
+      "requirePlanHint": "When enabled, users must have an active subscription to book. When disabled, anyone can book without a plan.",
+      "guestBookingEnabled": "Guest booking enabled - anyone can book without logging in"
+    },
     "membership": {
       "title": "Membership",
       "members": "Members",

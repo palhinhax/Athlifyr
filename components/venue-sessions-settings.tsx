@@ -7,16 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2 } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Link as LinkIcon, Copy, Check } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface VenueSessionsSettingsProps {
   venue: {
     id: string;
+    slug: string;
     services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
     defaultCancellationDeadlineMinutes: number;
+    requiresPlanToBook: boolean;
   };
   onRefresh?: () => void;
 }
@@ -57,13 +60,33 @@ export function VenueSessionsSettings({
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
   const [formData, setFormData] = useState({
     services: venue.services || [],
     defaultSessionCapacity: venue.defaultSessionCapacity?.toString() || "",
     defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
     defaultCancellationDeadlineMinutes:
       venue.defaultCancellationDeadlineMinutes.toString(),
+    requiresPlanToBook: venue.requiresPlanToBook,
   });
+
+  const bookingUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/v/${venue.slug}/book`
+      : `/v/${venue.slug}/book`;
+
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(bookingUrl);
+      setCopied(true);
+      toast({
+        title: t("quickBook.linkCopied"),
+      });
+      setTimeout(() => setCopied(false), 2000);
+    } catch (error) {
+      console.error("Failed to copy:", error);
+    }
+  };
 
   // Sync form data when venue prop changes (after router.refresh())
   useEffect(() => {
@@ -73,12 +96,14 @@ export function VenueSessionsSettings({
       defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
       defaultCancellationDeadlineMinutes:
         venue.defaultCancellationDeadlineMinutes.toString(),
+      requiresPlanToBook: venue.requiresPlanToBook,
     });
   }, [
     venue.services,
     venue.defaultSessionCapacity,
     venue.defaultBookingAdvanceDays,
     venue.defaultCancellationDeadlineMinutes,
+    venue.requiresPlanToBook,
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -113,6 +138,7 @@ export function VenueSessionsSettings({
           formData.defaultCancellationDeadlineMinutes,
           10
         ),
+        requiresPlanToBook: formData.requiresPlanToBook,
       };
 
       const response = await fetch(`/api/venues/${venue.id}`, {
@@ -140,6 +166,7 @@ export function VenueSessionsSettings({
           updatedVenue.defaultBookingAdvanceDays.toString(),
         defaultCancellationDeadlineMinutes:
           updatedVenue.defaultCancellationDeadlineMinutes.toString(),
+        requiresPlanToBook: updatedVenue.requiresPlanToBook,
       });
 
       toast({
@@ -170,6 +197,70 @@ export function VenueSessionsSettings({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Quick Book Settings */}
+      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+        <div className="space-y-1">
+          <h3 className="text-sm font-semibold">{t("quickBook.title")}</h3>
+          <p className="text-xs text-muted-foreground">
+            {t("quickBook.description")}
+          </p>
+        </div>
+
+        {/* Quick Book Link */}
+        <div className="space-y-2">
+          <Label>{t("quickBook.bookingLink")}</Label>
+          <div className="flex items-center gap-2">
+            <div className="flex flex-1 items-center gap-2 rounded-md border bg-background px-3 py-2">
+              <LinkIcon className="h-4 w-4 text-muted-foreground" />
+              <span className="flex-1 truncate text-sm">{bookingUrl}</span>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="icon"
+              onClick={handleCopyLink}
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-green-500" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {t("quickBook.linkHint")}
+          </p>
+        </div>
+
+        {/* Require Plan Toggle */}
+        <div className="flex items-center justify-between rounded-lg border bg-background p-3">
+          <div className="space-y-0.5">
+            <Label htmlFor="requiresPlanToBook" className="text-sm font-medium">
+              {t("quickBook.requirePlan")}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t("quickBook.requirePlanHint")}
+            </p>
+          </div>
+          <Switch
+            id="requiresPlanToBook"
+            checked={formData.requiresPlanToBook}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({ ...prev, requiresPlanToBook: checked }))
+            }
+            disabled={loading}
+          />
+        </div>
+
+        {!formData.requiresPlanToBook && (
+          <div className="rounded-lg border border-green-500/30 bg-green-500/10 p-3">
+            <p className="text-xs text-green-700 dark:text-green-400">
+              {t("quickBook.guestBookingEnabled")}
+            </p>
+          </div>
+        )}
+      </div>
+
       {/* Session Defaults */}
       <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
         <div className="space-y-1">

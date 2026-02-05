@@ -196,9 +196,9 @@ export function VenueSessionsSettings({
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6 overflow-x-hidden">
       {/* Quick Book Settings */}
-      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-3 sm:p-4">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold">{t("quickBook.title")}</h3>
           <p className="text-xs text-muted-foreground">
@@ -210,15 +210,18 @@ export function VenueSessionsSettings({
         <div className="space-y-2">
           <Label>{t("quickBook.bookingLink")}</Label>
           <div className="flex items-center gap-2">
-            <div className="flex flex-1 items-center gap-2 rounded-md border bg-background px-3 py-2">
-              <LinkIcon className="h-4 w-4 text-muted-foreground" />
-              <span className="flex-1 truncate text-sm">{bookingUrl}</span>
+            <div className="flex min-w-0 flex-1 items-center gap-2 rounded-md border bg-background px-2 py-2 sm:px-3">
+              <LinkIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <span className="min-w-0 flex-1 truncate text-sm">
+                {bookingUrl}
+              </span>
             </div>
             <Button
               type="button"
               variant="outline"
               size="icon"
               onClick={handleCopyLink}
+              className="shrink-0"
             >
               {copied ? (
                 <Check className="h-4 w-4 text-green-500" />
@@ -233,8 +236,8 @@ export function VenueSessionsSettings({
         </div>
 
         {/* Require Plan Toggle */}
-        <div className="flex items-center justify-between rounded-lg border bg-background p-3">
-          <div className="space-y-0.5">
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1 space-y-0.5">
             <Label htmlFor="requiresPlanToBook" className="text-sm font-medium">
               {t("quickBook.requirePlan")}
             </Label>
@@ -249,6 +252,7 @@ export function VenueSessionsSettings({
               setFormData((prev) => ({ ...prev, requiresPlanToBook: checked }))
             }
             disabled={loading}
+            className="shrink-0"
           />
         </div>
 
@@ -262,7 +266,7 @@ export function VenueSessionsSettings({
       </div>
 
       {/* Session Defaults */}
-      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-3 sm:p-4">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold">{t("sessionDefaults")}</h3>
           <p className="text-xs text-muted-foreground">
@@ -334,7 +338,7 @@ export function VenueSessionsSettings({
       </div>
 
       {/* Services Section */}
-      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+      <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-3 sm:p-4">
         <div className="space-y-1">
           <h3 className="text-sm font-semibold">{tInfo("servicesTitle")}</h3>
           <p className="text-xs text-muted-foreground">

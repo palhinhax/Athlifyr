@@ -688,7 +688,6 @@ export function UnlimitedPresentationClient() {
               <div className="space-y-4">
                 {[
                   "Base de dados com 500+ exercícios catalogados",
-                  "Vídeos demonstrativos para cada movimento",
                   "Atletas registam scores e PRs automaticamente",
                   "Leaderboard da comunidade",
                 ].map((point, index) => (

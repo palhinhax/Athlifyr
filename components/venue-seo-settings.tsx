@@ -229,21 +229,26 @@ export function VenueSEOSettings({
   const completedLanguages = getCompletionStatus();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-x-hidden">
       {/* Header with completion status */}
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+        <CardHeader className="p-4 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                 <Search className="h-5 w-5 text-primary" />
               </div>
-              <div>
-                <CardTitle>{t("seo.title")}</CardTitle>
-                <CardDescription>{t("seo.description")}</CardDescription>
+              <div className="min-w-0">
+                <CardTitle className="truncate">{t("seo.title")}</CardTitle>
+                <CardDescription className="truncate">
+                  {t("seo.description")}
+                </CardDescription>
               </div>
             </div>
-            <Badge variant={completedLanguages === 6 ? "default" : "secondary"}>
+            <Badge
+              variant={completedLanguages === 6 ? "default" : "secondary"}
+              className="shrink-0"
+            >
               {completedLanguages}/6 {t("seo.languagesCompleted")}
             </Badge>
           </div>
@@ -252,7 +257,7 @@ export function VenueSEOSettings({
 
       {/* SEO Tips */}
       <Card className="border-blue-200 bg-blue-50/50 dark:border-blue-900 dark:bg-blue-950/20">
-        <CardContent className="pt-6">
+        <CardContent className="p-4 pt-6 sm:p-6">
           <div className="flex gap-3">
             <Globe className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
             <div className="space-y-2 text-sm">
@@ -271,7 +276,7 @@ export function VenueSEOSettings({
 
       {/* Language tabs */}
       <Card>
-        <CardContent className="pt-6">
+        <CardContent className="p-3 pt-6 sm:p-6">
           <Tabs
             value={activeLanguage}
             onValueChange={(v) => setActiveLanguage(v as LanguageCode)}
@@ -318,7 +323,7 @@ export function VenueSEOSettings({
 
                 {/* Meta Title */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <Label htmlFor={`metaTitle-${lang.code}`}>
                       {t("seo.metaTitle")}
                     </Label>
@@ -360,7 +365,7 @@ export function VenueSEOSettings({
 
                 {/* Meta Description */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <Label htmlFor={`metaDescription-${lang.code}`}>
                       {t("seo.metaDescription")}
                     </Label>
@@ -409,17 +414,17 @@ export function VenueSEOSettings({
                 {/* Google Preview */}
                 <div className="space-y-2">
                   <Label>{t("seo.googlePreview")}</Label>
-                  <div className="rounded-lg border bg-white p-4 dark:bg-zinc-950">
+                  <div className="overflow-hidden rounded-lg border bg-white p-3 dark:bg-zinc-950 sm:p-4">
                     <div className="space-y-1">
-                      <p className="truncate text-lg text-blue-600 hover:underline">
+                      <p className="truncate text-base text-blue-600 hover:underline sm:text-lg">
                         {translations[lang.code].metaTitle ||
                           generateSuggestion(lang.code, "metaTitle")}
                       </p>
-                      <p className="text-sm text-green-700">
+                      <p className="truncate text-xs text-green-700 sm:text-sm">
                         athlifyr.com › venues ›{" "}
                         {venueName.toLowerCase().replace(/\s+/g, "-")}
                       </p>
-                      <p className="line-clamp-2 text-sm text-gray-600 dark:text-gray-400">
+                      <p className="line-clamp-2 text-xs text-gray-600 dark:text-gray-400 sm:text-sm">
                         {translations[lang.code].metaDescription ||
                           generateSuggestion(lang.code, "metaDescription")}
                       </p>

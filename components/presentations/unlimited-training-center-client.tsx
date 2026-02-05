@@ -22,6 +22,10 @@ import {
   Zap,
   Shield,
   Globe,
+  TrendingUp,
+  Target,
+  Flag,
+  Ticket,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -697,6 +701,384 @@ export function UnlimitedPresentationClient() {
               </div>
             </motion.div>
           </div>
+        </div>
+      </section>
+
+      {/* Athlete Progress Section */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="grid items-center gap-12 lg:grid-cols-2">
+            {/* Text Content */}
+            <motion.div
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <Badge className="mb-4 gap-1" variant="secondary">
+                <TrendingUp className="h-3 w-3" />
+                Evolução dos Atletas
+              </Badge>
+              <h2 className="mb-6 text-3xl font-bold md:text-4xl">
+                Acompanha a <span className="text-primary">evolução</span> de
+                cada atleta
+              </h2>
+              <p className="mb-8 text-lg text-muted-foreground">
+                Gráficos de progresso detalhados para cada movimento. Os atletas
+                veem a sua evolução ao longo do tempo e tu podes acompanhar o
+                desenvolvimento de toda a comunidade.
+              </p>
+
+              <div className="space-y-4">
+                {[
+                  "Gráficos de evolução por exercício",
+                  "Histórico completo de PRs",
+                  "Comparação com médias do box",
+                  "Exportar dados de performance",
+                ].map((point, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/20">
+                      <Check className="h-4 w-4 text-primary" />
+                    </div>
+                    <span>{point}</span>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+
+            {/* Progress Chart Mockup */}
+            <motion.div
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+              className="flex justify-center"
+            >
+              <div className="w-full max-w-md overflow-hidden rounded-2xl border bg-card shadow-xl">
+                {/* Header */}
+                <div className="border-b p-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold">Back Squat</h3>
+                      <p className="text-sm text-muted-foreground">
+                        Evolução últimos 6 meses
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-2xl font-bold text-primary">125 kg</p>
+                      <p className="text-xs text-green-500">+15 kg desde Jan</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Chart Mockup */}
+                <div className="p-4">
+                  <div className="relative h-48">
+                    {/* Grid lines */}
+                    <div className="absolute inset-0 flex flex-col justify-between">
+                      {[140, 130, 120, 110, 100].map((val, i) => (
+                        <div key={i} className="flex items-center">
+                          <span className="w-8 text-right text-xs text-muted-foreground">
+                            {val}
+                          </span>
+                          <div className="ml-2 flex-1 border-t border-dashed border-muted-foreground/20" />
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Chart line */}
+                    <svg
+                      className="absolute inset-0 ml-10"
+                      viewBox="0 0 300 180"
+                      preserveAspectRatio="none"
+                    >
+                      {/* Gradient fill */}
+                      <defs>
+                        <linearGradient
+                          id="chartGradient"
+                          x1="0%"
+                          y1="0%"
+                          x2="0%"
+                          y2="100%"
+                        >
+                          <stop
+                            offset="0%"
+                            stopColor="hsl(var(--primary))"
+                            stopOpacity="0.3"
+                          />
+                          <stop
+                            offset="100%"
+                            stopColor="hsl(var(--primary))"
+                            stopOpacity="0"
+                          />
+                        </linearGradient>
+                      </defs>
+
+                      {/* Area fill */}
+                      <path
+                        d="M 0 140 L 50 130 L 100 125 L 150 110 L 200 90 L 250 70 L 300 40 L 300 180 L 0 180 Z"
+                        fill="url(#chartGradient)"
+                      />
+
+                      {/* Line */}
+                      <path
+                        d="M 0 140 L 50 130 L 100 125 L 150 110 L 200 90 L 250 70 L 300 40"
+                        fill="none"
+                        stroke="hsl(var(--primary))"
+                        strokeWidth="3"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+
+                      {/* Data points */}
+                      {[
+                        [0, 140],
+                        [50, 130],
+                        [100, 125],
+                        [150, 110],
+                        [200, 90],
+                        [250, 70],
+                        [300, 40],
+                      ].map(([x, y], i) => (
+                        <circle
+                          key={i}
+                          cx={x}
+                          cy={y}
+                          r="5"
+                          fill="hsl(var(--background))"
+                          stroke="hsl(var(--primary))"
+                          strokeWidth="2"
+                        />
+                      ))}
+                    </svg>
+                  </div>
+
+                  {/* X-axis labels */}
+                  <div className="ml-10 mt-2 flex justify-between text-xs text-muted-foreground">
+                    <span>Set</span>
+                    <span>Out</span>
+                    <span>Nov</span>
+                    <span>Dez</span>
+                    <span>Jan</span>
+                    <span>Fev</span>
+                  </div>
+                </div>
+
+                {/* PR History */}
+                <div className="border-t bg-muted/30 p-4">
+                  <p className="mb-2 text-xs font-medium text-muted-foreground">
+                    Últimos PRs
+                  </p>
+                  <div className="space-y-2">
+                    {[
+                      {
+                        date: "5 Fev 2026",
+                        weight: "125 kg",
+                        badge: "NOVO PR",
+                      },
+                      { date: "15 Jan 2026", weight: "120 kg", badge: null },
+                      { date: "20 Dez 2025", weight: "117.5 kg", badge: null },
+                    ].map((pr, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <span className="text-muted-foreground">{pr.date}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold">{pr.weight}</span>
+                          {pr.badge && (
+                            <Badge className="bg-green-500/20 text-[10px] text-green-600">
+                              {pr.badge}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Events Section - HYROX Lisboa */}
+      <section className="bg-muted/30 py-20">
+        <div className="container mx-auto px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mb-12 text-center"
+          >
+            <Badge className="mb-4 gap-1" variant="secondary">
+              <Flag className="h-3 w-3" />
+              Eventos
+            </Badge>
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              Descobre <span className="text-primary">eventos</span> perto de ti
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
+              Calendário completo de competições, trails, maratonas e eventos de
+              fitness. Os teus atletas podem encontrar e inscrever-se
+              diretamente.
+            </p>
+          </motion.div>
+
+          {/* Event Card - HYROX Lisboa */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className="mx-auto max-w-4xl"
+          >
+            <div className="overflow-hidden rounded-2xl border bg-card shadow-xl">
+              {/* Event Header Image */}
+              <div className="relative h-48 bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 sm:h-64">
+                {/* HYROX Logo mockup */}
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="text-center">
+                    <span className="block text-5xl font-black tracking-tighter text-white sm:text-7xl">
+                      HYROX
+                    </span>
+                    <span className="mt-1 block text-xl font-bold text-white/80 sm:text-2xl">
+                      LISBOA 2026
+                    </span>
+                  </div>
+                </div>
+
+                {/* Featured badge */}
+                <div className="absolute left-4 top-4">
+                  <Badge className="bg-white/20 text-white backdrop-blur-sm">
+                    ⭐ Em Destaque
+                  </Badge>
+                </div>
+
+                {/* Sport type badge */}
+                <div className="absolute right-4 top-4">
+                  <Badge className="bg-black/30 text-white backdrop-blur-sm">
+                    HYROX
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Event Content */}
+              <div className="p-6">
+                <div className="mb-4 flex flex-wrap items-start justify-between gap-4">
+                  <div>
+                    <h3 className="text-2xl font-bold">HYROX Lisboa</h3>
+                    <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-4 w-4" />
+                        <span>1-3 Maio 2026</span>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        <span>FIL - Parque das Nações, Lisboa</span>
+                      </div>
+                    </div>
+                  </div>
+                  <Button className="gap-2 bg-yellow-500 text-black hover:bg-yellow-600">
+                    <Ticket className="h-4 w-4" />
+                    Ver Evento
+                  </Button>
+                </div>
+
+                {/* Description */}
+                <p className="mb-6 text-muted-foreground">
+                  A maior competição mundial de fitness chega finalmente a
+                  Portugal! 3 dias de competição na FIL com categorias para
+                  todos: Individual, Doubles e Relay. Qualificação para o World
+                  Championship em jogo!
+                </p>
+
+                {/* Event Stats */}
+                <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
+                  {[
+                    { label: "Duração", value: "3 dias" },
+                    { label: "Categorias", value: "12+" },
+                    { label: "Distância", value: "8 km run" },
+                    { label: "Estações", value: "8 workout" },
+                  ].map((stat, i) => (
+                    <div
+                      key={i}
+                      className="rounded-xl bg-muted/50 p-3 text-center"
+                    >
+                      <p className="text-lg font-bold">{stat.value}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {stat.label}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Variants Preview */}
+                <div className="rounded-xl border bg-muted/30 p-4">
+                  <p className="mb-3 text-sm font-medium">
+                    Provas Disponíveis:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      "HYROX MEN",
+                      "HYROX WOMEN",
+                      "HYROX PRO MEN",
+                      "HYROX PRO WOMEN",
+                      "DOUBLES MIXED",
+                      "DOUBLES MEN",
+                      "DOUBLES WOMEN",
+                      "RELAY MIXED",
+                    ].map((variant, i) => (
+                      <Badge key={i} variant="outline" className="text-xs">
+                        {variant}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Friends Going */}
+                <div className="mt-6 flex items-center justify-between border-t pt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="flex -space-x-2">
+                      {[
+                        "from-blue-500 to-cyan-500",
+                        "from-purple-500 to-pink-500",
+                        "from-green-500 to-emerald-500",
+                        "from-orange-500 to-red-500",
+                      ].map((color, i) => (
+                        <div
+                          key={i}
+                          className={`h-8 w-8 rounded-full border-2 border-background bg-gradient-to-br ${color}`}
+                        />
+                      ))}
+                    </div>
+                    <span className="text-sm text-muted-foreground">
+                      <strong>12 amigos</strong> vão participar
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                    <Target className="h-4 w-4" />
+                    <span>324 interessados</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* More events hint */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            transition={{ delay: 0.3 }}
+            viewport={{ once: true }}
+            className="mt-8 text-center"
+          >
+            <p className="text-muted-foreground">
+              + de <strong>200 eventos</strong> já na plataforma: Trail runs,
+              Maratonas, CrossFit Open, Throwdowns...
+            </p>
+          </motion.div>
         </div>
       </section>
 

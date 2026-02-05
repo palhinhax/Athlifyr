@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
     // Search for exercises by name (fuzzy match using contains)
     // Include global exercises and user's own exercises
-    const exercises = await prisma.strengthExercise.findMany({
+    const exercises = await prisma.exercise.findMany({
       where: {
         OR: [{ isGlobal: true }, { createdById: session.user.id }],
         ...(query && {
@@ -64,6 +64,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // Only pro users and admins can create exercises
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { isProAccount: true, role: true },
+    });
+
+    if (user?.role !== "ADMIN" && !user?.isProAccount) {
+      return NextResponse.json(
+        { error: "Pro account required to create exercises" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const validationResult = createExerciseSchema.safeParse(body);
 
@@ -80,7 +93,7 @@ export async function POST(request: Request) {
     const { name } = validationResult.data;
 
     // Check if a global exercise with similar name already exists
-    const existingExercise = await prisma.strengthExercise.findFirst({
+    const existingExercise = await prisma.exercise.findFirst({
       where: {
         isGlobal: true,
         name: { equals: name, mode: "insensitive" },
@@ -92,7 +105,7 @@ export async function POST(request: Request) {
     }
 
     // Check if user already has an exercise with this name
-    const existingUserExercise = await prisma.strengthExercise.findFirst({
+    const existingUserExercise = await prisma.exercise.findFirst({
       where: {
         createdById: session.user.id,
         name: { equals: name, mode: "insensitive" },
@@ -104,7 +117,7 @@ export async function POST(request: Request) {
     }
 
     // Create new user-specific exercise
-    const exercise = await prisma.strengthExercise.create({
+    const exercise = await prisma.exercise.create({
       data: {
         name: name.trim(),
         createdById: session.user.id,

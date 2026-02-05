@@ -3,7 +3,13 @@
 import { Link } from "@/i18n/routing";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Calendar, MapPin, Route, CheckCircle } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Route,
+  CheckCircle,
+  MessageCircle,
+} from "lucide-react";
 import { formatDateRange } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
 import { useLocale } from "next-intl";
@@ -13,6 +19,7 @@ import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 interface EventCardProps {
   event: Event & {
     variants?: EventVariant[];
+    _count?: { comments: number };
   };
   isParticipating?: boolean;
   trackingContext?: string; // Where the card is being displayed (e.g., "homepage", "events_page", "profile")
@@ -109,6 +116,16 @@ export function EventCard({
                   </div>
                 </div>
               )}
+            {event._count && event._count.comments > 0 && (
+              <div className="mt-2 flex justify-end">
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-xs font-medium">
+                    {event._count.comments}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

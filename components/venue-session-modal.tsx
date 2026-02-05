@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useState, useEffect, useCallback } from "react";
+import { useTranslations, useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -15,9 +15,29 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { SessionWorkoutSelector } from "@/components/session-workout-selector";
 import { format, parseISO, setHours, setMinutes } from "date-fns";
+
+interface StaffMember {
+  id: string;
+  role: string;
+  userId: string;
+  user: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  };
+}
 
 interface VenueSession {
   id: string;
@@ -56,10 +76,16 @@ export function VenueSessionModal({
   venueDefaults,
 }: VenueSessionModalProps) {
   const t = useTranslations("venues.sessions");
+  const tVenues = useTranslations("venues");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
   const { toast } = useToast();
 
   const [loading, setLoading] = useState(false);
+  const [selectedWorkoutIds, setSelectedWorkoutIds] = useState<string[]>([]);
+  const [selectedCoachId, setSelectedCoachId] = useState<string | null>(null);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loadingStaff, setLoadingStaff] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -73,9 +99,56 @@ export function VenueSessionModal({
     cancellationDeadlineMinutes: "30",
   });
 
+  // Fetch session workouts when editing
+  const fetchSessionWorkouts = useCallback(async () => {
+    if (!session?.id) {
+      setSelectedWorkoutIds([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `/api/venues/${venueId}/sessions/${session.id}/workouts`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setSelectedWorkoutIds(
+          data.workouts?.map((w: { id: string }) => w.id) || []
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching session workouts:", error);
+    }
+  }, [session?.id, venueId]);
+
+  // Fetch venue staff/members (only OWNER, ADMIN, COACH - not CLIENT)
+  const fetchStaff = useCallback(async () => {
+    setLoadingStaff(true);
+    try {
+      const response = await fetch(`/api/venues/${venueId}/members`);
+      if (!response.ok) throw new Error("Failed to fetch staff");
+
+      const data = await response.json();
+      // Filter to only show staff (OWNER, ADMIN, COACH) - exclude CLIENT role
+      const staffMembers = (data.members || []).filter(
+        (member: StaffMember) =>
+          member.role === "OWNER" ||
+          member.role === "ADMIN" ||
+          member.role === "COACH"
+      );
+      setStaff(staffMembers);
+    } catch (error) {
+      console.error("Error fetching staff:", error);
+      setStaff([]);
+    } finally {
+      setLoadingStaff(false);
+    }
+  }, [venueId]);
+
   // Reset form when modal opens/closes or session changes
   useEffect(() => {
     if (open) {
+      fetchStaff();
       if (session) {
         // Editing existing session - no recurring option
         const startsAt = parseISO(session.startsAt);
@@ -92,9 +165,12 @@ export function VenueSessionModal({
           bookingAdvanceDays: "4",
           cancellationDeadlineMinutes: "30",
         });
+        setSelectedCoachId(session.coachId);
+        fetchSessionWorkouts();
       } else {
         // Creating new session - use venue defaults
         const dateToUse = defaultDate || new Date();
+        setSelectedCoachId(null);
         setFormData({
           title: "",
           description: "",
@@ -110,12 +186,15 @@ export function VenueSessionModal({
             venueDefaults?.defaultCancellationDeadlineMinutes.toString() ||
             "30",
         });
+        setSelectedWorkoutIds([]);
       }
     }
   }, [
     open,
     session,
     defaultDate,
+    fetchSessionWorkouts,
+    fetchStaff,
     venueDefaults?.defaultSessionCapacity,
     venueDefaults?.defaultBookingAdvanceDays,
     venueDefaults?.defaultCancellationDeadlineMinutes,
@@ -163,6 +242,7 @@ export function VenueSessionModal({
         tags: string[];
         bookingAdvanceDays: number;
         cancellationDeadlineMinutes: number;
+        coachId?: string | null;
         isRecurring?: boolean;
         recurringWeeks?: number;
       } = {
@@ -178,6 +258,7 @@ export function VenueSessionModal({
           formData.cancellationDeadlineMinutes,
           10
         ),
+        coachId: selectedCoachId,
       };
 
       // Add recurring info only for new sessions (creates 52 weeks by default)
@@ -205,7 +286,17 @@ export function VenueSessionModal({
       }
 
       const result = await response.json();
+      const sessionId = session?.id || result.id;
       const sessionsCreated = result.count || 1;
+
+      // Save workout assignments if session exists (not for recurring bulk creation)
+      if (sessionId && !formData.isRecurring) {
+        await fetch(`/api/venues/${venueId}/sessions/${sessionId}/workouts`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ workoutIds: selectedWorkoutIds }),
+        });
+      }
 
       toast({
         title: session
@@ -345,6 +436,54 @@ export function VenueSessionModal({
             />
             <p className="text-xs text-muted-foreground">{t("tagsHint")}</p>
           </div>
+
+          {/* Professional/Coach Selection */}
+          <div className="space-y-2">
+            <Label>{t("assignedProfessional")}</Label>
+            <Select
+              value={selectedCoachId || "none"}
+              onValueChange={(value) =>
+                setSelectedCoachId(value === "none" ? null : value)
+              }
+            >
+              <SelectTrigger>
+                <SelectValue
+                  placeholder={
+                    loadingStaff ? tVenues("loading") : t("selectProfessional")
+                  }
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">{t("noCoachAssigned")}</SelectItem>
+                {staff.map((member) => (
+                  <SelectItem key={member.userId} value={member.userId}>
+                    <div className="flex items-center gap-2">
+                      <span>{member.user.name || member.user.email}</span>
+                      <span className="text-xs text-muted-foreground">
+                        ({tVenues(`roles.${member.role}`)})
+                      </span>
+                    </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {t("assignedProfessionalHint")}
+            </p>
+          </div>
+
+          {/* Workout Assignment - Only for single sessions (not recurring) */}
+          {!formData.isRecurring && (
+            <div className="space-y-4 rounded-lg border p-4">
+              <SessionWorkoutSelector
+                venueId={venueId}
+                sessionId={session?.id}
+                selectedWorkoutIds={selectedWorkoutIds}
+                onSelectionChange={setSelectedWorkoutIds}
+                locale={locale}
+              />
+            </div>
+          )}
 
           {/* Booking Rules */}
           <div className="space-y-4 rounded-lg border p-4">

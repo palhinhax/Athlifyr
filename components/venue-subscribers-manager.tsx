@@ -51,7 +51,7 @@ interface Subscription {
   id: string;
   userId: string;
   planId: string;
-  status: "ACTIVE" | "CANCELLED" | "EXPIRED";
+  status: "ACTIVE" | "PENDING" | "CANCELLED" | "EXPIRED";
   paymentStatus: "PAID" | "PENDING_PAYMENT" | "NOT_REQUIRED" | "FAILED";
   startsAt: string;
   endsAt: string | null;
@@ -112,6 +112,9 @@ export function VenueSubscribersManager({
     useState<Subscription | null>(null);
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
   const [subscriptionToCancel, setSubscriptionToCancel] =
+    useState<Subscription | null>(null);
+  const [approveDialogOpen, setApproveDialogOpen] = useState(false);
+  const [subscriptionToApprove, setSubscriptionToApprove] =
     useState<Subscription | null>(null);
 
   // Pagination
@@ -181,6 +184,13 @@ export function VenueSubscribersManager({
           <Badge variant="default" className="bg-green-500">
             <CheckCircle className="mr-1 h-3 w-3" />
             {t("status.active")}
+          </Badge>
+        );
+      case "PENDING":
+        return (
+          <Badge variant="secondary" className="bg-yellow-500 text-white">
+            <Calendar className="mr-1 h-3 w-3" />
+            {t("status.pending")}
           </Badge>
         );
       case "CANCELLED":
@@ -341,6 +351,46 @@ export function VenueSubscribersManager({
     }
   };
 
+  const handleApproveSubscription = (subscription: Subscription) => {
+    setSubscriptionToApprove(subscription);
+    setApproveDialogOpen(true);
+  };
+
+  const confirmApproveSubscription = async () => {
+    if (!subscriptionToApprove) return;
+
+    try {
+      const response = await fetch(
+        `/api/venues/${venueId}/subscriptions/${subscriptionToApprove.id}`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "ACTIVE" }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to approve subscription");
+      }
+
+      toast({
+        title: t("approved"),
+        description: t("approvedDescription"),
+      });
+
+      fetchSubscriptions();
+      setApproveDialogOpen(false);
+      setSubscriptionToApprove(null);
+    } catch (error) {
+      console.error("Error approving subscription:", error);
+      toast({
+        title: tCommon("error"),
+        description: t("approveErrorDescription"),
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -429,6 +479,17 @@ export function VenueSubscribersManager({
                         <Edit className="mr-2 h-4 w-4" />
                         {t("editSubscription")}
                       </DropdownMenuItem>
+                      {subscription.status === "PENDING" && (
+                        <DropdownMenuItem
+                          onClick={() =>
+                            handleApproveSubscription(subscription)
+                          }
+                          className="text-green-600"
+                        >
+                          <CheckCircle className="mr-2 h-4 w-4" />
+                          {t("approveSubscription")}
+                        </DropdownMenuItem>
+                      )}
                       {subscription.status === "ACTIVE" && (
                         <>
                           <DropdownMenuItem
@@ -681,6 +742,17 @@ export function VenueSubscribersManager({
                             <Edit className="mr-2 h-4 w-4" />
                             {t("editSubscription")}
                           </DropdownMenuItem>
+                          {subscription.status === "PENDING" && (
+                            <DropdownMenuItem
+                              onClick={() =>
+                                handleApproveSubscription(subscription)
+                              }
+                              className="text-green-600"
+                            >
+                              <CheckCircle className="mr-2 h-4 w-4" />
+                              {t("approveSubscription")}
+                            </DropdownMenuItem>
+                          )}
                           {subscription.status === "ACTIVE" && (
                             <>
                               <DropdownMenuItem
@@ -877,6 +949,48 @@ export function VenueSubscribersManager({
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               {t("cancelSubscription")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Approve Confirmation Dialog */}
+      <AlertDialog open={approveDialogOpen} onOpenChange={setApproveDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("approveSubscription")}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p className="mb-4">{t("approveConfirmation")}</p>
+                {subscriptionToApprove && (
+                  <div className="space-y-2 rounded-lg bg-muted p-3 text-sm">
+                    <div>
+                      <span className="font-medium">{t("user")}:</span>{" "}
+                      {subscriptionToApprove.user.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("plan")}:</span>{" "}
+                      {subscriptionToApprove.plan.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("table.price")}:</span>{" "}
+                      {formatPrice(
+                        subscriptionToApprove.plan.price,
+                        subscriptionToApprove.plan.currency
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmApproveSubscription}
+              className="bg-green-600 text-white hover:bg-green-700"
+            >
+              {t("approveSubscription")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

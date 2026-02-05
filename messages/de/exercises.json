@@ -1,21 +1,43 @@
 {
-  "title": "Übungen",
-  "description": "Erstellen und verwalten Sie Ihre benutzerdefinierten Übungen für den Einsatz im Training.",
-  "searchPlaceholder": "Übungen suchen...",
-  "createExercise": "Übung Erstellen",
-  "createFirst": "Erste Übung Erstellen",
-  "noExercises": "Keine Übungen",
-  "noExercisesDescription": "Sie haben noch keine benutzerdefinierten Übungen. Erstellen Sie Ihre erste Übung, um loszulegen.",
-  "aliases": "Auch bekannt als",
-  "global": "Global",
-  "showingResults": "{count} Übungen werden angezeigt",
-  "categories": {
-    "ALL": "Alle",
-    "CROSSFIT": "CrossFit",
-    "GYM": "Fitnessstudio",
-    "WEIGHTLIFTING": "Gewichtheben",
-    "BODYWEIGHT": "Körpergewicht",
-    "CARDIO": "Cardio",
-    "OTHER": "Andere"
+  "exercises": {
+    "title": "Übungen",
+    "description": "Erstellen und verwalten Sie Ihre benutzerdefinierten Übungen für den Einsatz im Training.",
+    "searchPlaceholder": "Übungen suchen...",
+    "createExercise": "Übung Erstellen",
+    "createFirst": "Erste Übung Erstellen",
+    "noExercises": "Keine Übungen",
+    "noExercisesDescription": "Sie haben noch keine benutzerdefinierten Übungen. Erstellen Sie Ihre erste Übung, um loszulegen.",
+    "aliases": "Auch bekannt als",
+    "global": "Global",
+    "showingResults": "{start} bis {end} von {total} Übungen werden angezeigt",
+    "previous": "Zurück",
+    "next": "Weiter",
+    "cancel": "Abbrechen",
+    "save": "Speichern",
+    "noMeasurements": "Keine Metriken",
+    "editMeasurements": "Metriken Bearbeiten",
+    "editMeasurementsDesc": "Wählen Sie aus, welche Metriken für diese Übung protokolliert werden können.",
+    "measurementsSaved": "Metriken gespeichert",
+    "measurementsSavedDesc": "Die Metrikeinstellungen der Übung wurden aktualisiert.",
+    "measurements": {
+      "hasReps": "Wiederholungen",
+      "hasWeight": "Gewicht",
+      "hasDistance": "Distanz",
+      "hasTime": "Zeit",
+      "hasCalories": "Kalorien",
+      "hasHeight": "Höhe"
+    },
+    "errors": {
+      "saveFailed": "Fehler beim Speichern der Metriken"
+    },
+    "categories": {
+      "ALL": "Alle",
+      "CROSSFIT": "CrossFit",
+      "GYM": "Fitnessstudio",
+      "WEIGHTLIFTING": "Gewichtheben",
+      "BODYWEIGHT": "Körpergewicht",
+      "CARDIO": "Cardio",
+      "OTHER": "Andere"
+    }
   }
 }

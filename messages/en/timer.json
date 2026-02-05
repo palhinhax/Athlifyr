@@ -38,7 +38,7 @@
     "startAgain": "Start Again"
   },
 
-  "settings": {
+  "timerSettings": {
     "title": "Timer Settings",
     "selectMode": "Select Timer Mode",
     "display": "Display Settings",

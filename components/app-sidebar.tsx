@@ -23,7 +23,6 @@ import {
   ShieldIcon,
   HomeIcon,
   DumbbellIcon,
-  ListChecksIcon,
 } from "lucide-react";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { cn } from "@/lib/utils";
@@ -74,12 +73,6 @@ export function AppSidebar() {
           href: "/workouts",
           icon: DumbbellIcon,
           label: t("workouts"),
-        },
-        {
-          href: "/exercises",
-          icon: ListChecksIcon,
-          label: t("exercises"),
-          adminOnly: true,
         },
         {
           href: "/chat",

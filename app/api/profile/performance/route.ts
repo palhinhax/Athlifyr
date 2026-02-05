@@ -159,7 +159,7 @@ export async function POST(request: Request) {
     } else if (data.type === "STRENGTH") {
       // STRENGTH entry
       // Verify exercise exists
-      const exercise = await prisma.strengthExercise.findUnique({
+      const exercise = await prisma.exercise.findUnique({
         where: { id: data.exerciseId },
       });
 

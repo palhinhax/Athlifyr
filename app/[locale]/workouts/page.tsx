@@ -33,5 +33,10 @@ export default async function WorkoutsPage() {
     );
   }
 
-  return <WorkoutsPageClient userId={session.user.id} />;
+  return (
+    <WorkoutsPageClient
+      userId={session.user.id}
+      isProAccount={session.user.isProAccount ?? false}
+    />
+  );
 }

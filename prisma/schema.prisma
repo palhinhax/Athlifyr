@@ -8,56 +8,63 @@ datasource db {
 }
 
 model User {
-  id                   String                @id @default(cuid())
-  name                 String?
-  email                String                @unique
-  emailVerified        DateTime?
-  image                String?
-  password             String?
-  role                 UserRole              @default(USER)
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  favoriteSports       SportType[]
-  locale               String                @default("pt")
-  isBanned             Boolean               @default(false)
-  emailNotifications   Boolean               @default(false)
-  isProAccount         Boolean               @default(false)
-  accounts             Account[]
-  comments             Comment[]
-  eventsPreferences    EventsPreferences?
-  receivedFriendships  Friendship[]          @relation("FriendshipReceiver")
-  sentFriendships      Friendship[]          @relation("FriendshipSender")
-  instagramDrafts      InstagramPostDraft[]
-  mapPreferences       MapPreferences?
-  participations       Participation[]
-  paymentIntents       PaymentIntent[]
-  posts                Post[]
-  postComments         PostComment[]
-  postLikes            PostLike[]
-  photos               ProfilePhoto[]
-  results              Result[]
-  sessions             Session[]
-  venueBookings        VenueBooking[]
-  venueMembers         VenueMember[]
-  venueOwnershipClaims VenueOwnershipClaim[]
-  venueRecommendations VenueRecommendation[]
-  venueReviews              VenueReview[]
-  venueReviewReplies        VenueReviewReply[]
-  venueSubscriptions        VenueSubscription[]
-  conversationParticipants  ConversationParticipant[]
-  messages                  Message[]
-  reportsMade               UserReport[]          @relation("ReportsMade")
-  reportsReceived           UserReport[]          @relation("ReportsReceived")
-  blocksMade                UserBlock[]           @relation("BlocksMade")
-  blocksReceived            UserBlock[]           @relation("BlocksReceived")
-  performanceEntries        UserPerformanceEntry[]
-  strengthExercises         StrengthExercise[]
-  
+  id                       String                    @id @default(cuid())
+  name                     String?
+  email                    String                    @unique
+  emailVerified            DateTime?
+  image                    String?
+  password                 String?
+  role                     UserRole                  @default(USER)
+  createdAt                DateTime                  @default(now())
+  updatedAt                DateTime                  @updatedAt
+  favoriteSports           SportType[]
+  locale                   String                    @default("pt")
+  isBanned                 Boolean                   @default(false)
+  emailNotifications       Boolean                   @default(false)
+  isProAccount             Boolean                   @default(false)
+  accounts                 Account[]
+  comments                 Comment[]
+  eventsPreferences        EventsPreferences?
+  receivedFriendships      Friendship[]              @relation("FriendshipReceiver")
+  sentFriendships          Friendship[]              @relation("FriendshipSender")
+  instagramDrafts          InstagramPostDraft[]
+  mapPreferences           MapPreferences?
+  participations           Participation[]
+  paymentIntents           PaymentIntent[]
+  posts                    Post[]
+  postComments             PostComment[]
+  postLikes                PostLike[]
+  photos                   ProfilePhoto[]
+  results                  Result[]
+  sessions                 Session[]
+  venueBookings            VenueBooking[]
+  venueMembers             VenueMember[]
+  venueOwnershipClaims     VenueOwnershipClaim[]
+  venueRecommendations     VenueRecommendation[]
+  venueReviews             VenueReview[]
+  venueReviewReplies       VenueReviewReply[]
+  venueSubscriptions       VenueSubscription[]
+  conversationParticipants ConversationParticipant[]
+  messages                 Message[]
+  reportsMade              UserReport[]              @relation("ReportsMade")
+  reportsReceived          UserReport[]              @relation("ReportsReceived")
+  blocksMade               UserBlock[]               @relation("BlocksMade")
+  blocksReceived           UserBlock[]               @relation("BlocksReceived")
+  performanceEntries       UserPerformanceEntry[]
+  exercises                Exercise[]
+
   // Workout Builder relations
-  createdWorkouts           Workout[]             @relation("CreatedWorkouts")
-  assignedWorkouts          UserWorkout[]         @relation("AssignedWorkouts")
-  workoutsAssigned          UserWorkout[]         @relation("WorkoutAssigner")
-  workoutLogs               WorkoutLog[]
+  createdWorkouts  Workout[]     @relation("CreatedWorkouts")
+  assignedWorkouts UserWorkout[] @relation("AssignedWorkouts")
+  workoutsAssigned UserWorkout[] @relation("WorkoutAssigner")
+  workoutLogs      WorkoutLog[]
+  savedWorkouts    SavedWorkout[]
+
+  // Training Plans relations
+  createdPlans          TrainingPlan[]          @relation("CreatedPlans")
+  assignedPlans         UserTrainingPlan[]      @relation("AssignedPlans")
+  plansAssigned         UserTrainingPlan[]      @relation("PlanAssigner")
+  savedTrainingPlans    SavedTrainingPlan[]
 
   @@index([email])
   @@index([name])
@@ -209,7 +216,7 @@ model EventVariant {
   description       String?
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
-  distanceKm        Int?
+  distanceKm        Float?
   startDate         DateTime?
   startTime         String?
   atrpGrade         Int?
@@ -300,24 +307,24 @@ model Participation {
 }
 
 model Result {
-  id                   String                @id @default(cuid())
-  userId               String
-  eventId              String
-  variantId            String?
-  time                 String                // Format: "HH:MM:SS" or "MM:SS"
-  timeSeconds          Int?                  // Total time in seconds for calculations
-  position             Int?                  // Overall position
-  categoryPosition     Int?                  // Position in category/age group
-  notes                String?
-  isPublic             Boolean               @default(true) // Show on public profile
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  
+  id               String   @id @default(cuid())
+  userId           String
+  eventId          String
+  variantId        String?
+  time             String // Format: "HH:MM:SS" or "MM:SS"
+  timeSeconds      Int? // Total time in seconds for calculations
+  position         Int? // Overall position
+  categoryPosition Int? // Position in category/age group
+  notes            String?
+  isPublic         Boolean  @default(true) // Show on public profile
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
   // Relations
-  event                Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  variant              EventVariant?         @relation(fields: [variantId], references: [id])
-  performanceEntry     UserPerformanceEntry? @relation("ResultPerformance")
+  event            Event                 @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  variant          EventVariant?         @relation(fields: [variantId], references: [id])
+  performanceEntry UserPerformanceEntry? @relation("ResultPerformance")
 
   @@unique([userId, eventId, variantId]) // One result per user per variant
   @@index([userId])
@@ -578,10 +585,12 @@ model Venue {
   images                             VenueImage[]
   featuredInEvents                   Event[]                 @relation("FeaturedVenue")
 
-  translations                       VenueTranslation[]
-  
+  translations VenueTranslation[]
+
   // Workout Builder relations
-  workouts                           Workout[]
+  workouts      Workout[]
+  trainingPlans TrainingPlan[]
+  sessionPlans  VenueSessionPlan[]
 
   @@index([slug])
   @@index([type])
@@ -641,18 +650,18 @@ model VenueMember {
 }
 
 model VenueOwnershipClaim {
-  id          String                    @id @default(cuid())
-  venueId     String
-  userId      String
-  status      VenueOwnershipClaimStatus @default(PENDING)
-  message     String?                   // Optional message from user explaining their claim
-  adminNotes  String?                   // Notes from admin when reviewing
-  reviewedAt  DateTime?
-  reviewedBy  String?                   // Admin who reviewed
-  createdAt   DateTime                  @default(now())
-  updatedAt   DateTime                  @updatedAt
-  user        User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue       Venue                     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  id         String                    @id @default(cuid())
+  venueId    String
+  userId     String
+  status     VenueOwnershipClaimStatus @default(PENDING)
+  message    String? // Optional message from user explaining their claim
+  adminNotes String? // Notes from admin when reviewing
+  reviewedAt DateTime?
+  reviewedBy String? // Admin who reviewed
+  createdAt  DateTime                  @default(now())
+  updatedAt  DateTime                  @updatedAt
+  user       User                      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue      Venue                     @relation(fields: [venueId], references: [id], onDelete: Cascade)
 
   @@unique([venueId, userId])
   @@index([venueId])
@@ -776,10 +785,11 @@ model VenueSession {
   bookings                    VenueBooking[]
   recurringSession            VenueRecurringSession? @relation(fields: [recurringSessionId], references: [id])
   venue                       Venue                  @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  
+
   // Workout Builder relations
-  sessionWorkouts             VenueSessionWorkout[]
-  workoutLogs                 WorkoutLog[]
+  sessionWorkouts VenueSessionWorkout[]
+  workoutLogs     WorkoutLog[]
+  sessionPlans    VenueSessionPlan[]
 
   @@index([venueId])
   @@index([type])
@@ -1145,16 +1155,16 @@ enum ContactStatus {
 
 // User reports for moderation
 model UserReport {
-  id         String           @id @default(cuid())
+  id         String       @id @default(cuid())
   reporterId String
   reportedId String
   reason     ReportReason
   details    String?
-  status     ReportStatus     @default(PENDING)
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-  reporter   User             @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
-  reported   User             @relation("ReportsReceived", fields: [reportedId], references: [id], onDelete: Cascade)
+  status     ReportStatus @default(PENDING)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+  reporter   User         @relation("ReportsMade", fields: [reporterId], references: [id], onDelete: Cascade)
+  reported   User         @relation("ReportsReceived", fields: [reportedId], references: [id], onDelete: Cascade)
 
   @@index([reporterId])
   @@index([reportedId])
@@ -1195,48 +1205,48 @@ model UserBlock {
 
 // Performance tracking models
 model UserPerformanceEntry {
-  id               String                @id @default(cuid())
-  userId           String
-  type             PerformanceEntryType
-  performedAt      DateTime              @default(now())
-  
+  id          String               @id @default(cuid())
+  userId      String
+  type        PerformanceEntryType
+  performedAt DateTime             @default(now())
+
   // Running fields
-  distanceKm       Float?
-  timeSeconds      Int?
-  elevationGainM   Int?
-  
+  distanceKm     Float?
+  timeSeconds    Int?
+  elevationGainM Int?
+
   // Strength fields
-  exerciseId       String?
-  weightKg         Float?
-  reps             Int?
-  
+  exerciseId String?
+  weightKg   Float?
+  reps       Int?
+
   // HYROX fields
-  hyroxCategory    HyroxCategory?
-  eventName        String?               // For manual entries or linked event name
-  location         String?
-  
+  hyroxCategory HyroxCategory?
+  eventName     String? // For manual entries or linked event name
+  location      String?
+
   // Event Result link (when entry comes from an official event)
-  resultId         String?               @unique
-  
+  resultId String? @unique
+
   // Workout Result link (when entry comes from a workout log)
   workoutExerciseResultId String?
-  workoutExerciseSetId    String?        @unique
-  
+  workoutExerciseSetId    String? @unique
+
   // Computed scores (persisted)
-  qualityScore     Float                 @default(0.5)
-  predictionWeight Float                 @default(0.5)
-  
-  createdAt        DateTime              @default(now())
-  updatedAt        DateTime              @updatedAt
-  
-  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
-  exercise         StrengthExercise?     @relation(fields: [exerciseId], references: [id])
-  result           Result?               @relation("ResultPerformance", fields: [resultId], references: [id], onDelete: Cascade)
-  
+  qualityScore     Float @default(0.5)
+  predictionWeight Float @default(0.5)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise Exercise? @relation(fields: [exerciseId], references: [id])
+  result   Result?   @relation("ResultPerformance", fields: [resultId], references: [id], onDelete: Cascade)
+
   // Workout Builder relations
   workoutExerciseResult WorkoutExerciseResult? @relation("WorkoutResultPerformance", fields: [workoutExerciseResultId], references: [id])
   workoutExerciseSet    WorkoutExerciseSet?    @relation("SetPerformance", fields: [workoutExerciseSetId], references: [id])
-  
+
   @@index([userId, type, performedAt])
   @@index([userId, exerciseId])
   @@index([userId, hyroxCategory])
@@ -1244,26 +1254,54 @@ model UserPerformanceEntry {
   @@index([workoutExerciseResultId])
 }
 
-model StrengthExercise {
-  id            String                  @id @default(cuid())
-  name          String
-  aliases       String[]                @default([])
-  category      ExerciseCategory        @default(OTHER)
-  createdById   String?
-  isGlobal      Boolean                 @default(false)
-  createdAt     DateTime                @default(now())
-  updatedAt     DateTime                @updatedAt
-  
-  createdBy     User?                   @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  entries       UserPerformanceEntry[]
-  
+model Exercise {
+  id          String           @id @default(cuid())
+  name        String
+  aliases     String[]         @default([])
+  category    ExerciseCategory @default(OTHER)
+  effortScore Float            @default(5.0) // 1-10 scale: effort/intensity rating
+  createdById String?
+  isGlobal    Boolean          @default(false)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  // Measurement fields - which metrics make sense for this exercise
+  hasReps     Boolean @default(true)  // repetitions (e.g., squats, push-ups)
+  hasWeight   Boolean @default(false) // weight used (e.g., deadlifts, bench press)
+  hasDistance Boolean @default(false) // distance covered (e.g., running, rowing)
+  hasTime     Boolean @default(false) // time taken/held (e.g., planks, running)
+  hasCalories Boolean @default(false) // calories burned (e.g., rowing, assault bike)
+  hasHeight   Boolean @default(false) // height (e.g., box jumps)
+
+  createdBy    User?                  @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  entries      UserPerformanceEntry[]
+  translations ExerciseTranslation[]
+
   // Workout Builder relations
-  workoutBlockExercises WorkoutBlockExercise[]
+  workoutBlockExercises  WorkoutBlockExercise[]
   workoutExerciseResults WorkoutExerciseResult[] @relation("WorkoutExerciseResults")
-  
+
   @@index([name])
   @@index([createdById])
   @@index([isGlobal])
+  @@index([effortScore])
+}
+
+model ExerciseTranslation {
+  id          String   @id @default(cuid())
+  exerciseId  String
+  language    Language
+  name        String
+  aliases     String[] @default([])
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+
+  @@unique([exerciseId, language])
+  @@index([exerciseId])
+  @@index([language])
+  @@index([name])
 }
 
 enum PerformanceEntryType {
@@ -1323,142 +1361,164 @@ enum ExerciseCategory {
 // ============================================================================
 
 model Workout {
-  id              String            @id @default(cuid())
-  name            String
-  description     String?
-  
-  createdById     String
-  venueId         String?           // Se criado para um venue específico
-  
-  estimatedTime   Int?              // Tempo estimado em minutos
-  difficulty      Int?              // 1-5 (dificuldade)
-  tags            String[]          @default([])
-  isTemplate      Boolean           @default(false)   // Pode ser reutilizado
-  isPublic        Boolean           @default(false)   // Visível para todos
-  
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-  
-  createdBy       User              @relation("CreatedWorkouts", fields: [createdById], references: [id])
-  venue           Venue?            @relation(fields: [venueId], references: [id])
+  id          String  @id @default(cuid())
+  name        String
+  description String?
+
+  createdById String
+  venueId     String? // Se criado para um venue específico
+
+  estimatedTime Int? // Tempo estimado em minutos
+  difficulty    Int? // 1-5 (dificuldade)
+  tags          String[] @default([])
+  isTemplate    Boolean  @default(false) // Pode ser reutilizado
+  isPublic      Boolean  @default(false) // Visível para todos
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy       User                  @relation("CreatedWorkouts", fields: [createdById], references: [id])
+  venue           Venue?                @relation(fields: [venueId], references: [id])
   blocks          WorkoutBlock[]
   sessionWorkouts VenueSessionWorkout[]
   userWorkouts    UserWorkout[]
   logs            WorkoutLog[]
-  
+  planWorkouts    TrainingPlanWorkout[]
+  savedBy         SavedWorkout[]
+
   @@index([createdById])
   @@index([venueId])
   @@index([isPublic])
 }
 
 model WorkoutBlock {
-  id              String                  @id @default(cuid())
-  workoutId       String
-  
-  type            WorkoutBlockType
-  name            String?                 // Nome opcional do bloco
-  orderIndex      Int                     // Ordem no treino (0, 1, 2...)
-  
+  id        String @id @default(cuid())
+  workoutId String
+
+  type       WorkoutBlockType
+  name       String? // Nome opcional do bloco
+  orderIndex Int // Ordem no treino (0, 1, 2...)
+
   // Timing (todos em segundos)
-  timeCap         Int?                    // Para AMRAP, FOR_TIME
-  workTime        Int?                    // Para EMOM (tempo de trabalho por minuto)
-  restTime        Int?                    // Descanso entre rounds/sets
-  rounds          Int?                    // Número de rounds prescritos
-  
-  notes           String?
-  
-  workout         Workout                 @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  exercises       WorkoutBlockExercise[]
-  results         WorkoutBlockResult[]
-  
+  timeCap  Int? // Para AMRAP, FOR_TIME
+  workTime Int? // Para EMOM (tempo de trabalho por minuto)
+  rounds   Int? // Número de rounds prescritos
+
+  notes String?
+
+  workout        Workout                @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  exercises      WorkoutBlockExercise[]
+  exerciseGroups ExerciseGroup[]
+  results        WorkoutBlockResult[]
+
   @@index([workoutId])
 }
 
-model WorkoutBlockExercise {
-  id              String            @id @default(cuid())
-  blockId         String
-  exerciseId      String            // FK para StrengthExercise
-  orderIndex      Int               // Ordem no bloco (0, 1, 2...)
-  
-  // Prescrição - o que o coach prescreve (Male/Rx)
-  prescribedReps      Int?
-  prescribedWeight    Float?
-  prescribedWeightUnit WeightUnit?
-  prescribedWeightPercent Float?    // % do 1RM (alternativa ao peso fixo)
-  prescribedDistance  Float?
-  prescribedDistanceUnit DistanceUnit?
-  prescribedTime      Int?          // segundos
-  prescribedCalories  Int?
-  prescribedSets      Int?          // número de sets prescritos (para STRENGTH)
-  
-  // Prescrição Female (opcionais - quando diferente de Male)
-  prescribedRepsFemale        Int?
-  prescribedWeightFemale      Float?
-  prescribedWeightUnitFemale  WeightUnit?
-  prescribedWeightPercentFemale Float?
-  prescribedDistanceFemale    Float?
-  prescribedDistanceUnitFemale DistanceUnit?
-  prescribedTimeFemale        Int?
-  prescribedCaloriesFemale    Int?
-  prescribedSetsFemale        Int?
-  
-  notes           String?           // Notas específicas do exercício
-  
-  block           WorkoutBlock      @relation(fields: [blockId], references: [id], onDelete: Cascade)
-  exercise        StrengthExercise  @relation(fields: [exerciseId], references: [id])
-  results         WorkoutExerciseResult[]
-  setPrescriptions WorkoutSetPrescription[] // Prescrições variáveis por set
-  
+// Grupo de exercícios dentro de um bloco (para mini-circuits, rounds aninhados)
+// Exemplo: "2 rounds: 10 air squats + 10 push-ups + 5 pull-ups"
+model ExerciseGroup {
+  id                String  @id @default(cuid())
+  blockId           String
+  name              String? // Nome opcional (ex: "Circuit A")
+  orderIndex        Int // Posição no bloco (intercalado com exercícios soltos)
+  rounds            Int     @default(1) // Número de rounds do grupo
+  restBetweenRounds Int? // Descanso entre rounds (segundos)
+  notes             String?
+
+  block     WorkoutBlock           @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  exercises WorkoutBlockExercise[]
+
   @@index([blockId])
+}
+
+model WorkoutBlockExercise {
+  id         String  @id @default(cuid())
+  blockId    String
+  groupId    String? // Se pertence a um grupo (opcional)
+  exerciseId String // FK para Exercise
+  orderIndex Int // Ordem no bloco/grupo (0, 1, 2...)
+
+  // Prescrição - o que o coach prescreve (Male/Rx)
+  prescribedReps          Int?
+  prescribedWeight        Float?
+  prescribedWeightUnit    WeightUnit?
+  prescribedWeightPercent Float? // % do 1RM (alternativa ao peso fixo)
+  prescribedDistance      Float?
+  prescribedDistanceUnit  DistanceUnit?
+  prescribedTime          Int? // segundos
+  prescribedCalories      Int?
+  prescribedSets          Int? // número de sets prescritos (para STRENGTH)
+
+  // Prescrição Female (opcionais - quando diferente de Male)
+  prescribedRepsFemale          Int?
+  prescribedWeightFemale        Float?
+  prescribedWeightUnitFemale    WeightUnit?
+  prescribedWeightPercentFemale Float?
+  prescribedDistanceFemale      Float?
+  prescribedDistanceUnitFemale  DistanceUnit?
+  prescribedTimeFemale          Int?
+  prescribedCaloriesFemale      Int?
+  prescribedSetsFemale          Int?
+
+  notes String? // Notas específicas do exercício
+
+  block            WorkoutBlock             @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  group            ExerciseGroup?           @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  exercise         Exercise                 @relation(fields: [exerciseId], references: [id])
+  results          WorkoutExerciseResult[]
+  setPrescriptions WorkoutSetPrescription[] // Prescrições variáveis por set
+
+  @@index([blockId])
+  @@index([groupId])
   @@index([exerciseId])
 }
 
 // Prescrição individual por set - permite diferentes reps/peso/% por set
 // Exemplo: Set 1 = 5 reps @ 65%, Set 2 = 5 reps @ 70%, Set 3 = 3 reps @ 75%
 model WorkoutSetPrescription {
-  id                    String              @id @default(cuid())
-  blockExerciseId       String
-  setNumber             Int                 // 1, 2, 3, 4...
-  
+  id              String @id @default(cuid())
+  blockExerciseId String
+  setNumber       Int // 1, 2, 3, 4...
+
   // Prescrição para este set específico - Male/Rx
-  reps                  Int?                // null = max reps
-  weight                Float?              // Peso fixo (alternativa ao %)
-  weightUnit            WeightUnit?
-  weightPercent         Float?              // % do 1RM/PR
-  time                  Int?                // Tempo em segundos
-  distance              Float?
-  distanceUnit          DistanceUnit?
-  calories              Int?
-  
+  reps          Int? // null = max reps
+  weight        Float? // Peso fixo (alternativa ao %)
+  weightUnit    WeightUnit?
+  weightPercent Float? // % do 1RM/PR
+  time          Int? // Tempo em segundos
+  distance      Float?
+  distanceUnit  DistanceUnit?
+  calories      Int?
+
   // Prescrição Female (opcionais - quando diferente de Male)
-  repsFemale            Int?
-  weightFemale          Float?
-  weightUnitFemale      WeightUnit?
-  weightPercentFemale   Float?
-  timeFemale            Int?
-  distanceFemale        Float?
-  distanceUnitFemale    DistanceUnit?
-  caloriesFemale        Int?
-  
-  notes                 String?             // Ex: "até falha técnica"
-  
-  blockExercise         WorkoutBlockExercise @relation(fields: [blockExerciseId], references: [id], onDelete: Cascade)
-  
+  repsFemale          Int?
+  weightFemale        Float?
+  weightUnitFemale    WeightUnit?
+  weightPercentFemale Float?
+  timeFemale          Int?
+  distanceFemale      Float?
+  distanceUnitFemale  DistanceUnit?
+  caloriesFemale      Int?
+
+  notes String? // Ex: "até falha técnica"
+
+  blockExercise WorkoutBlockExercise @relation(fields: [blockExerciseId], references: [id], onDelete: Cascade)
+
   @@unique([blockExerciseId, setNumber])
   @@index([blockExerciseId])
 }
 
 // Atribuição de workout a uma sessão de venue
 model VenueSessionWorkout {
-  id          String        @id @default(cuid())
-  sessionId   String
-  workoutId   String
-  assignedAt  DateTime      @default(now())
-  notes       String?       // Notas do coach para esta sessão específica
-  
-  session     VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  workout     Workout       @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(cuid())
+  sessionId  String
+  workoutId  String
+  assignedAt DateTime @default(now())
+  notes      String? // Notas do coach para esta sessão específica
+
+  session VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  workout Workout      @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
   @@unique([sessionId, workoutId])
   @@index([sessionId])
   @@index([workoutId])
@@ -1466,19 +1526,19 @@ model VenueSessionWorkout {
 
 // Atribuição de workout a um utilizador específico
 model UserWorkout {
-  id          String        @id @default(cuid())
-  userId      String
-  workoutId   String
-  assignedById String?      // Coach que atribuiu (null se auto-atribuído)
-  scheduledFor DateTime?    // Data agendada para fazer o treino
-  notes       String?       // Notas do coach
-  
-  createdAt   DateTime      @default(now())
-  
-  user        User          @relation("AssignedWorkouts", fields: [userId], references: [id], onDelete: Cascade)
-  workout     Workout       @relation(fields: [workoutId], references: [id], onDelete: Cascade)
-  assignedBy  User?         @relation("WorkoutAssigner", fields: [assignedById], references: [id])
-  
+  id           String    @id @default(cuid())
+  userId       String
+  workoutId    String
+  assignedById String? // Coach que atribuiu (null se auto-atribuído)
+  scheduledFor DateTime? // Data agendada para fazer o treino
+  notes        String? // Notas do coach
+
+  createdAt DateTime @default(now())
+
+  user       User    @relation("AssignedWorkouts", fields: [userId], references: [id], onDelete: Cascade)
+  workout    Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  assignedBy User?   @relation("WorkoutAssigner", fields: [assignedById], references: [id])
+
   @@index([userId, scheduledFor])
   @@index([workoutId])
 }
@@ -1488,77 +1548,77 @@ model UserWorkout {
 // ============================================================================
 
 model WorkoutLog {
-  id              String              @id @default(cuid())
-  userId          String
-  workoutId       String
-  sessionId       String?             // Se foi feito numa sessão de venue
-  
-  performedAt     DateTime            @default(now())
-  
+  id        String  @id @default(cuid())
+  userId    String
+  workoutId String
+  sessionId String? // Se foi feito numa sessão de venue
+
+  performedAt DateTime @default(now())
+
   // Feedback geral do treino
   notes           String?
-  feeling         Int?                // 1-5 (como te sentiste)
-  perceivedEffort Int?                // RPE 1-10
-  
-  createdAt       DateTime            @default(now())
-  updatedAt       DateTime            @updatedAt
-  
-  user            User                @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workout         Workout             @relation(fields: [workoutId], references: [id])
-  session         VenueSession?       @relation(fields: [sessionId], references: [id])
-  blockResults    WorkoutBlockResult[]
-  
+  feeling         Int? // 1-5 (como te sentiste)
+  perceivedEffort Int? // RPE 1-10
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user         User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout      Workout              @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+  session      VenueSession?        @relation(fields: [sessionId], references: [id])
+  blockResults WorkoutBlockResult[]
+
   @@index([userId, performedAt])
   @@index([workoutId])
   @@index([sessionId])
 }
 
 model WorkoutBlockResult {
-  id              String                  @id @default(cuid())
-  logId           String
-  blockId         String
-  
+  id      String @id @default(cuid())
+  logId   String
+  blockId String
+
   // Resultados específicos por tipo de bloco
-  completedRounds Int?                    // Para AMRAP - rounds completos
-  extraReps       Int?                    // Para AMRAP - reps extra após último round completo
-  completedTime   Int?                    // Para FOR_TIME - tempo total em segundos
-  completedInTime Boolean?                // Para EMOM - conseguiu completar dentro do tempo
-  
-  notes           String?
-  
+  completedRounds Int? // Para AMRAP - rounds completos
+  extraReps       Int? // Para AMRAP - reps extra após último round completo
+  completedTime   Int? // Para FOR_TIME - tempo total em segundos
+  completedInTime Boolean? // Para EMOM - conseguiu completar dentro do tempo
+
+  notes String?
+
   log             WorkoutLog              @relation(fields: [logId], references: [id], onDelete: Cascade)
   block           WorkoutBlock            @relation(fields: [blockId], references: [id])
   exerciseResults WorkoutExerciseResult[]
-  
+
   @@index([logId])
   @@index([blockId])
 }
 
 model WorkoutExerciseResult {
-  id                  String            @id @default(cuid())
-  blockResultId       String
-  blockExerciseId     String            // FK para WorkoutBlockExercise
-  exerciseId          String            // FK para StrengthExercise (denormalizado para queries)
-  
+  id              String @id @default(cuid())
+  blockResultId   String
+  blockExerciseId String // FK para WorkoutBlockExercise
+  exerciseId      String // FK para Exercise (denormalizado para queries)
+
   // O que foi realmente feito (resumo - usado quando não há sets individuais)
-  actualReps          Int?
-  actualWeight        Float?
-  actualWeightUnit    WeightUnit?
-  actualDistance      Float?
-  actualDistanceUnit  DistanceUnit?
-  actualTime          Int?              // segundos
-  actualCalories      Int?
-  
-  isPR                Boolean           @default(false)  // Calculado automaticamente
-  
-  notes               String?
-  
-  blockResult         WorkoutBlockResult    @relation(fields: [blockResultId], references: [id], onDelete: Cascade)
-  blockExercise       WorkoutBlockExercise  @relation(fields: [blockExerciseId], references: [id])
-  exercise            StrengthExercise      @relation("WorkoutExerciseResults", fields: [exerciseId], references: [id])
-  sets                WorkoutExerciseSet[]  // Múltiplos sets (para STRENGTH)
-  performanceEntries  UserPerformanceEntry[] @relation("WorkoutResultPerformance")
-  
+  actualReps         Int?
+  actualWeight       Float?
+  actualWeightUnit   WeightUnit?
+  actualDistance     Float?
+  actualDistanceUnit DistanceUnit?
+  actualTime         Int? // segundos
+  actualCalories     Int?
+
+  isPR Boolean @default(false) // Calculado automaticamente
+
+  notes String?
+
+  blockResult        WorkoutBlockResult     @relation(fields: [blockResultId], references: [id], onDelete: Cascade)
+  blockExercise      WorkoutBlockExercise   @relation(fields: [blockExerciseId], references: [id])
+  exercise           Exercise               @relation("WorkoutExerciseResults", fields: [exerciseId], references: [id])
+  sets               WorkoutExerciseSet[] // Múltiplos sets (para STRENGTH)
+  performanceEntries UserPerformanceEntry[] @relation("WorkoutResultPerformance")
+
   @@index([blockResultId])
   @@index([blockExerciseId])
   @@index([exerciseId])
@@ -1566,21 +1626,197 @@ model WorkoutExerciseResult {
 
 // Sets individuais - para exercícios de força com múltiplos sets
 model WorkoutExerciseSet {
-  id                  String                @id @default(cuid())
-  exerciseResultId    String
-  setNumber           Int                   // 1, 2, 3...
-  
-  reps                Int
-  weight              Float
-  weightUnit          WeightUnit
-  
-  isPR                Boolean               @default(false)
-  notes               String?
-  
-  exerciseResult      WorkoutExerciseResult @relation(fields: [exerciseResultId], references: [id], onDelete: Cascade)
-  performanceEntry    UserPerformanceEntry? @relation("SetPerformance")
-  
+  id               String @id @default(cuid())
+  exerciseResultId String
+  setNumber        Int // 1, 2, 3...
+
+  reps       Int
+  weight     Float
+  weightUnit WeightUnit
+
+  isPR  Boolean @default(false)
+  notes String?
+
+  exerciseResult   WorkoutExerciseResult @relation(fields: [exerciseResultId], references: [id], onDelete: Cascade)
+  performanceEntry UserPerformanceEntry? @relation("SetPerformance")
+
   @@index([exerciseResultId])
+}
+
+// ============================================================================
+// TRAINING PLANS (Planos de Treino)
+// ============================================================================
+
+// Plano de treino - coleção estruturada de workouts com progressão ao longo do tempo
+// Exemplo: "CrossFit Iniciantes - 8 Semanas", "Preparação Maratona", "Força e Hipertrofia"
+model TrainingPlan {
+  id          String  @id @default(cuid())
+  name        String // "CrossFit Iniciantes - 8 Semanas"
+  description String? // Descrição detalhada do plano
+  imageUrl    String? // Imagem de capa do plano
+
+  createdById String
+  venueId     String? // Se criado por um venue específico (null = criador independente)
+
+  duration     Int? // Duração total em semanas
+  difficulty   Int? // 1-5 (dificuldade)
+  tags         String[] @default([])
+  isTemplate   Boolean  @default(false) // Plano reutilizável
+  isPublic     Boolean  @default(false) // Visível para todos
+  isPremium    Boolean  @default(false) // Requer conta PRO para aceder
+  category     String? // "Strength", "CrossFit", "Running", "Hybrid", etc.
+  targetAudience String? // "Iniciantes", "Intermédio", "Avançado"
+
+  // Metadata de marketing
+  goals        String[] @default([]) // ["Perder peso", "Ganhar força", "Melhorar resistência"]
+  requirements String[] @default([]) // ["Barra de pull-ups", "Kettlebell", "Corda"]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  createdBy User   @relation("CreatedPlans", fields: [createdById], references: [id])
+  venue     Venue? @relation(fields: [venueId], references: [id])
+
+  weeks              TrainingPlanWeek[]
+  assignedToUsers    UserTrainingPlan[]
+  assignedToSessions VenueSessionPlan[]
+  savedBy            SavedTrainingPlan[]
+  translations       TrainingPlanTranslation[]
+
+  @@index([createdById])
+  @@index([venueId])
+  @@index([isPublic])
+  @@index([category])
+}
+
+// Traduções para planos de treino
+model TrainingPlanTranslation {
+  id          String   @id @default(cuid())
+  planId      String
+  language    Language // en, pt, es, fr, de, it
+  name        String   // "CrossFit Beginners - 8 Weeks"
+  description String?  @db.Text // Descrição completa do plano
+  metaTitle   String?  // SEO meta title
+  metaDescription String? @db.Text // SEO meta description
+
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, language])
+  @@index([planId])
+}
+
+// Semana dentro de um plano de treino
+// Exemplo: "Semana 1 - Fundamentos", "Semana 2 - Volume", etc.
+model TrainingPlanWeek {
+  id        String @id @default(cuid())
+  planId    String
+  weekNumber Int // 1, 2, 3, 4...
+  name      String? // "Fundamentos", "Teste de Volume", "Deload Week"
+  description String? // Foco da semana
+  orderIndex Int // Para reordenar semanas se necessário
+
+  plan     TrainingPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  workouts TrainingPlanWorkout[]
+
+  @@unique([planId, weekNumber])
+  @@index([planId])
+}
+
+// Workout dentro de uma semana do plano
+// Define qual workout fazer em que dia da semana
+model TrainingPlanWorkout {
+  id        String @id @default(cuid())
+  weekId    String
+  workoutId String
+  dayOfWeek Int // 0=Domingo, 1=Segunda, 2=Terça, ..., 6=Sábado
+  orderIndex Int // Ordem dentro do mesmo dia (se houver múltiplos workouts por dia)
+  notes     String? // Notas específicas para este workout nesta semana
+
+  week    TrainingPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
+  workout Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@index([weekId])
+  @@index([workoutId])
+}
+
+// Atribuição de plano de treino a um utilizador
+// Tracking de progressão do utilizador através do plano
+model UserTrainingPlan {
+  id           String    @id @default(cuid())
+  userId       String
+  planId       String
+  assignedById String? // Coach que atribuiu (null se auto-atribuído)
+  startDate    DateTime // Data de início do plano
+  endDate      DateTime? // Data prevista de fim (calculada pela duração)
+  currentWeek  Int       @default(1) // Semana atual do utilizador no plano
+  status       TrainingPlanStatus @default(ACTIVE)
+  notes        String? // Notas do coach ou do utilizador
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user       User         @relation("AssignedPlans", fields: [userId], references: [id], onDelete: Cascade)
+  plan       TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  assignedBy User?        @relation("PlanAssigner", fields: [assignedById], references: [id])
+
+  @@index([userId])
+  @@index([planId])
+  @@index([status])
+}
+
+// ============================================================================
+// SAVED WORKOUTS & TRAINING PLANS (Bookmarks)
+// ============================================================================
+
+// Permite ao utilizador guardar/bookmark workouts públicos de outros criadores
+model SavedWorkout {
+  id        String   @id @default(cuid())
+  userId    String
+  workoutId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workout Workout @relation(fields: [workoutId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workoutId])
+  @@index([userId])
+  @@index([workoutId])
+}
+
+// Permite ao utilizador guardar/bookmark planos de treino públicos de outros criadores
+model SavedTrainingPlan {
+  id        String   @id @default(cuid())
+  userId    String
+  planId    String
+  createdAt DateTime @default(now())
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, planId])
+  @@index([userId])
+  @@index([planId])
+}
+
+// Atribuição de plano de treino a uma sessão de venue
+// Permite que um venue siga um plano estruturado nas suas sessões
+model VenueSessionPlan {
+  id          String   @id @default(cuid())
+  venueId     String
+  sessionId   String
+  planId      String
+  startDate   DateTime // Quando começou a seguir o plano nesta sessão
+  currentWeek Int      @default(1)
+  notes       String?
+
+  venue   Venue        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  session VenueSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  plan    TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, planId])
+  @@index([venueId])
+  @@index([sessionId])
+  @@index([planId])
 }
 
 // ============================================================================
@@ -1588,16 +1824,23 @@ model WorkoutExerciseSet {
 // ============================================================================
 
 enum WorkoutBlockType {
-  WARMUP        // Aquecimento
-  STRENGTH      // Força (sets x reps)
-  AMRAP         // As Many Rounds As Possible
-  EMOM          // Every Minute On the Minute
-  FOR_TIME      // O mais rápido possível
-  TABATA        // 20s trabalho / 10s descanso
-  CHIPPER       // Lista de exercícios sequencial
-  REST          // Descanso
-  COOLDOWN      // Retorno à calma
-  SKILL         // Técnica/Skill work
+  WARMUP // Aquecimento
+  STRENGTH // Força (sets x reps)
+  AMRAP // As Many Rounds As Possible
+  EMOM // Every Minute On the Minute
+  FOR_TIME // O mais rápido possível
+  TABATA // 20s trabalho / 10s descanso
+  CHIPPER // Lista de exercícios sequencial
+  REST // Descanso
+  COOLDOWN // Retorno à calma
+  SKILL // Técnica/Skill work
+}
+
+enum TrainingPlanStatus {
+  ACTIVE // A seguir ativamente
+  PAUSED // Pausado temporariamente
+  COMPLETED // Concluído
+  CANCELLED // Cancelado antes de terminar
 }
 
 enum WeightUnit {

@@ -1,3 +1,158 @@
+# [17.1.0](https://github.com/palhinhax/Athlifyr/compare/v17.0.0...v17.1.0) (2026-02-05)
+
+### Features
+
+- **seeds:** add portuguese trail events 2026 seeds ([557597c](https://github.com/palhinhax/Athlifyr/commit/557597c119359706d4a57fdc4a0d291b3af4c426))
+
+# [17.0.0](https://github.com/palhinhax/Athlifyr/compare/v16.2.0...v17.0.0) (2026-02-05)
+
+### Features
+
+- **i18n:** add multilingual support for training plans ([165e17d](https://github.com/palhinhax/Athlifyr/commit/165e17d826fb486269701e8f82f210caf567af68))
+
+### BREAKING CHANGES
+
+- **i18n:** Training plans now require translations in database. Existing plans without translations will need to be migrated.
+
+# [16.2.0](https://github.com/palhinhax/Athlifyr/compare/v16.1.2...v16.2.0) (2026-02-04)
+
+### Bug Fixes
+
+- **workouts:** correct profile link URLs to use /user instead of /profile ([3dc3fdd](https://github.com/palhinhax/Athlifyr/commit/3dc3fdd48936ad37e2f2a06c29056f7abbfac3fc))
+
+### Features
+
+- **venues:** add coach assignment and workout display in session details ([f8670d5](https://github.com/palhinhax/Athlifyr/commit/f8670d5e7efcbefe8d0ca5bd61a99e7c8ca2bf05))
+- **workouts:** improve training plan detail mobile layout ([1886357](https://github.com/palhinhax/Athlifyr/commit/188635754a4ea754227b3383d564dc1404e771c1))
+
+## [16.1.2](https://github.com/palhinhax/Athlifyr/compare/v16.1.1...v16.1.2) (2026-02-04)
+
+### Bug Fixes
+
+- **workouts:** add cascade delete to WorkoutLog-Workout relation ([8049c5c](https://github.com/palhinhax/Athlifyr/commit/8049c5cbf1c99990f5527c0ee95f41270b624a73))
+
+## [16.1.1](https://github.com/palhinhax/Athlifyr/compare/v16.1.0...v16.1.1) (2026-02-02)
+
+### Bug Fixes
+
+- **workouts:** use TimeInput component for time fields in workout logger ([8cae760](https://github.com/palhinhax/Athlifyr/commit/8cae76096f0947af77cc0c3711de7b81dec59272))
+
+# [16.1.0](https://github.com/palhinhax/Athlifyr/compare/v16.0.0...v16.1.0) (2026-02-02)
+
+### Features
+
+- **workouts:** enhance time input UX and add session workout management ([2fd9fd8](https://github.com/palhinhax/Athlifyr/commit/2fd9fd889ec0c48a4cb55c555ce2c567fa8f7d3e))
+
+# [16.0.0](https://github.com/palhinhax/Athlifyr/compare/v15.9.0...v16.0.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add exercise measurement tracking and admin controls ([08b481f](https://github.com/palhinhax/Athlifyr/commit/08b481faee33b6cebf9719c6670a8d67d214921d))
+
+### BREAKING CHANGES
+
+- **workouts:** Performance entries now only created for exercises with hasWeight=true. Running, burpees, and other bodyweight exercises no longer tracked in strength performance section.
+
+# [15.9.0](https://github.com/palhinhax/Athlifyr/compare/v15.8.2...v15.9.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add responsive timer and hide/show clock option ([a80d598](https://github.com/palhinhax/Athlifyr/commit/a80d598ceabbba1b9a5298b4b9d5a250c7769bfd))
+
+## [15.8.2](https://github.com/palhinhax/Athlifyr/compare/v15.8.1...v15.8.2) (2026-02-02)
+
+### Bug Fixes
+
+- **admin:** improve mobile responsiveness for ownership claims section ([19a1ed0](https://github.com/palhinhax/Athlifyr/commit/19a1ed0b61b9fddc1f8e6545734bef3211f7c7bd))
+
+## [15.8.1](https://github.com/palhinhax/Athlifyr/compare/v15.8.0...v15.8.1) (2026-02-02)
+
+### Bug Fixes
+
+- **api:** resolve dynamic path slug conflicts preventing server start ([13856ad](https://github.com/palhinhax/Athlifyr/commit/13856ad78072288ebdf5d3f01496ded1de1752be))
+
+# [15.8.0](https://github.com/palhinhax/Athlifyr/compare/v15.7.0...v15.8.0) (2026-02-02)
+
+### Features
+
+- **admin:** add mobile responsive cards for users and reports pages ([087a38b](https://github.com/palhinhax/Athlifyr/commit/087a38ba278a23397fcc2fcb2c4df885eaf58539))
+
+# [15.7.0](https://github.com/palhinhax/Athlifyr/compare/v15.6.0...v15.7.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add save/bookmark functionality for workouts and training plans ([388b3a0](https://github.com/palhinhax/Athlifyr/commit/388b3a043295165227697095fa147314e52f3e2f))
+
+# [15.6.0](https://github.com/palhinhax/Athlifyr/compare/v15.5.0...v15.6.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add plan assignment dialog and creator info display ([8c1ccd4](https://github.com/palhinhax/Athlifyr/commit/8c1ccd4c65dfb01eec656024d0ea6f9caec63b79))
+
+# [15.5.0](https://github.com/palhinhax/Athlifyr/compare/v15.4.0...v15.5.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add training plans system for structured workout programs ([782d169](https://github.com/palhinhax/Athlifyr/commit/782d169a81447251d810e99ff3e7097eda627ddd))
+
+# [15.4.0](https://github.com/palhinhax/Athlifyr/compare/v15.3.0...v15.4.0) (2026-02-02)
+
+### Features
+
+- **workouts:** add auto-play buttons to workout blocks and improve audio alerts ([b6839c4](https://github.com/palhinhax/Athlifyr/commit/b6839c47984230309563fa4d0430c6ddd8d8d629))
+- **workouts:** refactor workout runner to modular architecture with audio controls ([237a821](https://github.com/palhinhax/Athlifyr/commit/237a821ee860c3297681d85b3f13a5cb1e58d576))
+
+# [15.3.0](https://github.com/palhinhax/Athlifyr/compare/v15.2.0...v15.3.0) (2026-02-01)
+
+### Features
+
+- **events:** add DEKA Spain events and new Portuguese trails ([03fba94](https://github.com/palhinhax/Athlifyr/commit/03fba94b366cd2f3e1cf51769fa5216cc1615b5c))
+
+# [15.2.0](https://github.com/palhinhax/Athlifyr/compare/v15.1.0...v15.2.0) (2026-01-31)
+
+### Features
+
+- add support for exercise groups in workout builder ([f7e68b8](https://github.com/palhinhax/Athlifyr/commit/f7e68b8565121ec376e9e474837b6c09ac38c5d0))
+- **workout-block-editor:** add functionality to move items up and down in the list ([bd1f18d](https://github.com/palhinhax/Athlifyr/commit/bd1f18d93508bb6cc1c79d12ef40d82cce42d01e))
+
+# [15.1.0](https://github.com/palhinhax/Athlifyr/compare/v15.0.0...v15.1.0) (2026-01-31)
+
+### Bug Fixes
+
+- **workouts:** fix workout list not showing saved workouts ([563b933](https://github.com/palhinhax/Athlifyr/commit/563b9330171abee5c0c5daf7c63bd071ca95a154)), closes [#missing-workouts](https://github.com/palhinhax/Athlifyr/issues/missing-workouts)
+
+### Features
+
+- **ui:** add configurable WallClock size to workout runner ([f72aaad](https://github.com/palhinhax/Athlifyr/commit/f72aaad5a43082dec65f4cff789490f23ea9bf16))
+- **workouts:** add workout runner page and update routing links ([088d3fe](https://github.com/palhinhax/Athlifyr/commit/088d3fe073e4c3afdf8f918d128aa6e3042e68bf))
+
+# [15.0.0](https://github.com/palhinhax/Athlifyr/compare/v14.13.3...v15.0.0) (2026-01-30)
+
+### Code Refactoring
+
+- **db:** rename StrengthExercise to Exercise and expand exercise system ([f182817](https://github.com/palhinhax/Athlifyr/commit/f182817bf66f596f3163dfbbe2a21fc103f5ad77))
+
+### Features
+
+- **exercises:** add special exercise type for rest periods in workout blocks ([a1a4004](https://github.com/palhinhax/Athlifyr/commit/a1a40049f9dbe63ea89c02407f612be781d80505))
+
+### BREAKING CHANGES
+
+- **db:** StrengthExercise renamed to Exercise. Database migration required.
+
+## [14.13.3](https://github.com/palhinhax/Athlifyr/compare/v14.13.2...v14.13.3) (2026-01-30)
+
+### Bug Fixes
+
+- **i18n:** rename timer settings namespace to avoid conflicts ([154fb81](https://github.com/palhinhax/Athlifyr/commit/154fb81cde46e06f4aef7a7c556437a1bcc40ad1))
+
+## [14.13.2](https://github.com/palhinhax/Athlifyr/compare/v14.13.1...v14.13.2) (2026-01-30)
+
+### Bug Fixes
+
+- **nav:** hide exercises link from mobile nav until feature is ready ([9b4419a](https://github.com/palhinhax/Athlifyr/commit/9b4419ab270e090c9a479126dc4ee34903c74e65))
+- **nav:** hide exercises link from mobile nav until feature is ready ([bb58e46](https://github.com/palhinhax/Athlifyr/commit/bb58e46f6af78a53a3ffe227a13bdb9cc5b9341a))
+
 ## [14.13.1](https://github.com/palhinhax/Athlifyr/compare/v14.13.0...v14.13.1) (2026-01-30)
 
 ### Bug Fixes

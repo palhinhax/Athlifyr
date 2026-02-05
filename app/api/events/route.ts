@@ -162,6 +162,9 @@ export async function GET(request: NextRequest) {
             startDate: "asc",
           },
         },
+        _count: {
+          select: { comments: true },
+        },
       },
       orderBy: search
         ? undefined

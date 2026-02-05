@@ -24,11 +24,14 @@ export async function generateMetadata({
 
 export default async function WorkoutLogPage({
   params,
+  searchParams,
 }: {
   params: { id: string };
+  searchParams: { sessionId?: string; elapsed?: string };
 }) {
   const session = await auth();
   const { id } = await Promise.resolve(params);
+  const { sessionId } = await Promise.resolve(searchParams);
 
   if (!session?.user?.id) {
     redirect("/auth/signin");
@@ -76,7 +79,7 @@ export default async function WorkoutLogPage({
 
   return (
     <div className="container py-8">
-      <WorkoutLogger workout={workout} />
+      <WorkoutLogger workout={workout} sessionId={sessionId} />
     </div>
   );
 }

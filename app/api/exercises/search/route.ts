@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ exercises: [] });
     }
 
-    const exercises = await prisma.strengthExercise.findMany({
+    const exercises = await prisma.exercise.findMany({
       where: {
         name: { contains: query, mode: "insensitive" },
       },

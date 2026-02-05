@@ -11,10 +11,69 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Clock, Users, User, Tag, CheckCircle } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Clock,
+  Users,
+  User,
+  Tag,
+  CheckCircle,
+  Dumbbell,
+  UserCircle,
+} from "lucide-react";
 import { format, parseISO, differenceInMinutes } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { useTranslations } from "next-intl";
+
+// Helper function to format exercise prescription
+function formatExercisePrescription(ex: {
+  prescribedReps: number | null;
+  prescribedWeight: number | null;
+  prescribedWeightUnit: string | null;
+  prescribedDistance: number | null;
+  prescribedDistanceUnit: string | null;
+  prescribedTime: number | null;
+  prescribedCalories: number | null;
+  prescribedSets: number | null;
+}): string {
+  const parts: string[] = [];
+
+  if (ex.prescribedSets) {
+    parts.push(`${ex.prescribedSets}x`);
+  }
+
+  if (ex.prescribedReps) {
+    parts.push(`${ex.prescribedReps}`);
+  }
+
+  if (ex.prescribedWeight) {
+    const unit = ex.prescribedWeightUnit || "kg";
+    parts.push(`@ ${ex.prescribedWeight}${unit}`);
+  }
+
+  if (ex.prescribedDistance) {
+    const unit = ex.prescribedDistanceUnit || "m";
+    parts.push(`${ex.prescribedDistance}${unit}`);
+  }
+
+  if (ex.prescribedTime) {
+    if (ex.prescribedTime >= 60) {
+      const mins = Math.floor(ex.prescribedTime / 60);
+      const secs = ex.prescribedTime % 60;
+      parts.push(
+        secs > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${mins} min`
+      );
+    } else {
+      parts.push(`${ex.prescribedTime}s`);
+    }
+  }
+
+  if (ex.prescribedCalories) {
+    parts.push(`${ex.prescribedCalories} cal`);
+  }
+
+  return parts.join(" ") || "";
+}
 
 interface SessionBooking {
   id: string;
@@ -23,6 +82,55 @@ interface SessionBooking {
     id: string;
     name: string | null;
     image: string | null;
+  };
+}
+
+interface SessionCoach {
+  id: string;
+  role: string;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
+interface WorkoutExercise {
+  id: string;
+  exerciseId: string;
+  exercise: {
+    name: string;
+  };
+  prescribedReps: number | null;
+  prescribedWeight: number | null;
+  prescribedWeightUnit: string | null;
+  prescribedDistance: number | null;
+  prescribedDistanceUnit: string | null;
+  prescribedTime: number | null;
+  prescribedCalories: number | null;
+  prescribedSets: number | null;
+  notes: string | null;
+}
+
+interface WorkoutBlock {
+  id: string;
+  type: string;
+  name: string | null;
+  rounds: number | null;
+  timeCap: number | null;
+  notes: string | null;
+  exercises: WorkoutExercise[];
+}
+
+interface SessionWorkout {
+  id: string;
+  workout: {
+    id: string;
+    name: string;
+    description: string | null;
+    estimatedTime: number | null;
+    difficulty: string | null;
+    blocks?: WorkoutBlock[];
   };
 }
 
@@ -42,6 +150,8 @@ interface VenueSession {
     id: string;
     isActive: boolean;
   } | null;
+  coach?: SessionCoach | null;
+  workouts?: SessionWorkout[];
   bookings?: SessionBooking[];
   _count: {
     bookings: number;
@@ -88,7 +198,9 @@ export function SessionDetailsDialog({
   bookingInProgress,
 }: SessionDetailsDialogProps) {
   const t = useTranslations("venues.sessions");
+  const tVenues = useTranslations("venues");
   const tBooking = useTranslations("venues.booking");
+  const tWorkouts = useTranslations("workouts");
   const dateLocale = localeMap[locale] || enUS;
 
   if (!session) return null;
@@ -195,6 +307,181 @@ export function SessionDetailsDialog({
                     <Badge key={tag} variant="outline" className="text-xs">
                       {tag}
                     </Badge>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Coach/Professional */}
+          {session.coach && (
+            <>
+              <Separator />
+              <div>
+                <h4 className="mb-2 flex items-center gap-2 font-medium">
+                  <UserCircle className="h-4 w-4" />
+                  {t("assignedProfessional")}
+                </h4>
+                <div className="flex items-center gap-3 rounded-md border p-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={session.coach.user.image || undefined}
+                      alt={session.coach.user.name || ""}
+                    />
+                    <AvatarFallback>
+                      {session.coach.user.name?.charAt(0)?.toUpperCase() || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">
+                      {session.coach.user.name || t("unknownUser")}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {tVenues(`roles.${session.coach.role}`)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Workouts */}
+          {session.workouts && session.workouts.length > 0 && (
+            <>
+              <Separator />
+              <div>
+                <h4 className="mb-2 flex items-center gap-2 font-medium">
+                  <Dumbbell className="h-4 w-4" />
+                  {t("workout")}
+                </h4>
+                <div className="space-y-3">
+                  {session.workouts.map((sw) => (
+                    <div
+                      key={sw.id}
+                      className="space-y-3 rounded-md border p-3"
+                    >
+                      {/* Workout Header */}
+                      <div className="flex items-start justify-between">
+                        <p className="text-lg font-semibold">
+                          {sw.workout.name}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          {sw.workout.estimatedTime && (
+                            <Badge variant="outline" className="text-xs">
+                              <Clock className="mr-1 h-3 w-3" />
+                              {sw.workout.estimatedTime} min
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Difficulty */}
+                      {sw.workout.difficulty && (
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <div
+                              key={i}
+                              className={`h-2 w-4 rounded-sm ${
+                                i < Number(sw.workout.difficulty)
+                                  ? "bg-primary"
+                                  : "bg-muted"
+                              }`}
+                            />
+                          ))}
+                          <span className="ml-2 text-xs text-muted-foreground">
+                            {tWorkouts(
+                              `form.difficultyLevels.${sw.workout.difficulty}`
+                            )}
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Workout Description */}
+                      {sw.workout.description && (
+                        <p className="text-sm text-muted-foreground">
+                          {sw.workout.description}
+                        </p>
+                      )}
+
+                      {/* Workout Blocks */}
+                      {sw.workout.blocks && sw.workout.blocks.length > 0 && (
+                        <div className="space-y-3 pt-2">
+                          {sw.workout.blocks.map((block) => (
+                            <div
+                              key={block.id}
+                              className="rounded-md bg-muted/50 p-3"
+                            >
+                              {/* Block Header */}
+                              <div className="mb-2 flex items-center gap-2">
+                                <Badge
+                                  variant="default"
+                                  className="text-xs font-medium"
+                                >
+                                  {block.type === "AMRAP"
+                                    ? "AMRAP"
+                                    : block.type === "FOR_TIME"
+                                      ? "For Time"
+                                      : block.type === "EMOM"
+                                        ? "EMOM"
+                                        : block.type === "TABATA"
+                                          ? "Tabata"
+                                          : block.type === "STRENGTH"
+                                            ? "Strength"
+                                            : block.type}
+                                </Badge>
+                                {block.name && (
+                                  <span className="text-sm font-medium">
+                                    {block.name}
+                                  </span>
+                                )}
+                                {block.timeCap && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({Math.floor(block.timeCap / 60)} min)
+                                  </span>
+                                )}
+                                {block.rounds && (
+                                  <span className="text-xs text-muted-foreground">
+                                    ({block.rounds}{" "}
+                                    {block.rounds === 1 ? "round" : "rounds"})
+                                  </span>
+                                )}
+                              </div>
+
+                              {/* Block Notes */}
+                              {block.notes && (
+                                <p className="mb-2 text-xs italic text-muted-foreground">
+                                  {block.notes}
+                                </p>
+                              )}
+
+                              {/* Exercises */}
+                              {block.exercises &&
+                                block.exercises.length > 0 && (
+                                  <ul className="space-y-1">
+                                    {block.exercises.map((ex) => (
+                                      <li
+                                        key={ex.id}
+                                        className="flex items-center gap-2 text-sm"
+                                      >
+                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                        <span className="font-medium">
+                                          {formatExercisePrescription(ex)}
+                                        </span>
+                                        <span>{ex.exercise.name}</span>
+                                        {ex.notes && (
+                                          <span className="text-xs text-muted-foreground">
+                                            ({ex.notes})
+                                          </span>
+                                        )}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                )}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
                   ))}
                 </div>
               </div>

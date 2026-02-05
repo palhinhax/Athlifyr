@@ -15,6 +15,7 @@
     "search": "Rechercher",
     "filter": "Filtrer",
     "close": "Fermer",
+    "done": "Terminé",
     "showMore": "Voir plus",
     "showLess": "Voir moins",
     "create": "Créer",
@@ -23,6 +24,14 @@
     "active": "Actif",
     "inactive": "Inactif",
     "changesSaved": "Modifications enregistrées"
+  },
+  "time": {
+    "hours": "Heures",
+    "minutes": "Minutes",
+    "seconds": "Secondes",
+    "h": "h",
+    "m": "m",
+    "s": "s"
   },
   "upload": {
     "uploadImage": "Télécharger une Image",

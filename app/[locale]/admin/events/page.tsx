@@ -376,7 +376,7 @@ export default function AdminEventsPage() {
             .filter((v) => v.name.trim())
             .map((v) => ({
               name: v.name,
-              distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
+              distanceKm: v.distanceKm ? parseFloat(v.distanceKm) : null,
               startDate: v.startDate || null,
               startTime: v.startTime || null,
               triathlonSegments: v.triathlonSegments

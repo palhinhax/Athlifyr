@@ -1,21 +1,43 @@
 {
-  "title": "Ejercicios",
-  "description": "Crea y gestiona tus ejercicios personalizados para usar en los entrenamientos.",
-  "searchPlaceholder": "Buscar ejercicios...",
-  "createExercise": "Crear Ejercicio",
-  "createFirst": "Crear Primer Ejercicio",
-  "noExercises": "Sin ejercicios",
-  "noExercisesDescription": "Todavía no tienes ejercicios personalizados. Crea tu primer ejercicio para comenzar.",
-  "aliases": "También conocido como",
-  "global": "Global",
-  "showingResults": "Mostrando {count} ejercicios",
-  "categories": {
-    "ALL": "Todos",
-    "CROSSFIT": "CrossFit",
-    "GYM": "Gimnasio",
-    "WEIGHTLIFTING": "Halterofilia",
-    "BODYWEIGHT": "Peso Corporal",
-    "CARDIO": "Cardio",
-    "OTHER": "Otros"
+  "exercises": {
+    "title": "Ejercicios",
+    "description": "Crea y gestiona tus ejercicios personalizados para usar en los entrenamientos.",
+    "searchPlaceholder": "Buscar ejercicios...",
+    "createExercise": "Crear Ejercicio",
+    "createFirst": "Crear Primer Ejercicio",
+    "noExercises": "Sin ejercicios",
+    "noExercisesDescription": "Todavía no tienes ejercicios personalizados. Crea tu primer ejercicio para comenzar.",
+    "aliases": "También conocido como",
+    "global": "Global",
+    "showingResults": "Mostrando {start} a {end} de {total} ejercicios",
+    "previous": "Anterior",
+    "next": "Siguiente",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "noMeasurements": "Sin métricas",
+    "editMeasurements": "Editar Métricas",
+    "editMeasurementsDesc": "Selecciona qué métricas se pueden registrar para este ejercicio.",
+    "measurementsSaved": "Métricas guardadas",
+    "measurementsSavedDesc": "La configuración de métricas del ejercicio ha sido actualizada.",
+    "measurements": {
+      "hasReps": "Repeticiones",
+      "hasWeight": "Peso",
+      "hasDistance": "Distancia",
+      "hasTime": "Tiempo",
+      "hasCalories": "Calorías",
+      "hasHeight": "Altura"
+    },
+    "errors": {
+      "saveFailed": "Error al guardar métricas"
+    },
+    "categories": {
+      "ALL": "Todos",
+      "CROSSFIT": "CrossFit",
+      "GYM": "Gimnasio",
+      "WEIGHTLIFTING": "Halterofilia",
+      "BODYWEIGHT": "Peso Corporal",
+      "CARDIO": "Cardio",
+      "OTHER": "Otros"
+    }
   }
 }

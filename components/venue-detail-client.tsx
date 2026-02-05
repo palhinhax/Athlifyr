@@ -230,6 +230,49 @@ export function VenueDetailClient({
     fetchVenue();
   };
 
+  const handleOnSiteSubscriptionRequest = async () => {
+    if (!venue || !selectedPlan) return;
+
+    try {
+      const response = await fetch(`/api/venues/${venue.id}/subscriptions`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          planId: selectedPlan.id,
+        }),
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to submit subscription request");
+      }
+
+      setCheckoutOpen(false);
+      setSelectedPlan(null);
+      setSelectedPaymentMethod(null);
+
+      // Show pending toast (not success - subscription is pending staff approval)
+      toast({
+        title: t("payment.requestSubmitted"),
+        description: t("payment.requestSubmittedDescription"),
+        variant: "default",
+      });
+
+      // Refresh venue data
+      fetchVenue();
+    } catch (error) {
+      console.error("Error submitting subscription request:", error);
+      toast({
+        title: tPlans("errors.subscribeFailed"),
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleCheckoutCancel = () => {
     setCheckoutOpen(false);
     setSelectedPlan(null);
@@ -1179,8 +1222,8 @@ export function VenueDetailClient({
                         >
                           {t("payment.back")}
                         </Button>
-                        <Button onClick={handleCheckoutSuccess}>
-                          {t("payment.confirmBooking")}
+                        <Button onClick={handleOnSiteSubscriptionRequest}>
+                          {t("payment.submitRequest")}
                         </Button>
                       </div>
                     </div>

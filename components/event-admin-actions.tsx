@@ -410,9 +410,9 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
           .map((v) => ({
             id: v.id,
             name: v.name,
-            distanceKm: v.distanceKm ? parseInt(v.distanceKm) : null,
+            distanceKm: v.distanceKm ? parseFloat(v.distanceKm) : null,
             elevationGainM: v.elevationGainM
-              ? parseInt(v.elevationGainM)
+              ? parseFloat(v.elevationGainM)
               : null,
             startDate: v.startDate || null,
             startTime: v.startTime || null,

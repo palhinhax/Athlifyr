@@ -16,11 +16,12 @@ import {
   WorkoutBlockType,
   WeightUnit,
   DistanceUnit,
-  StrengthExercise,
+  Exercise,
   User,
   Venue,
   VenueSession,
   WorkoutSetPrescription,
+  ExerciseGroup,
 } from "@prisma/client";
 
 // ============================================================================
@@ -63,11 +64,28 @@ export type WorkoutWithBlocks = Workout & {
 
 export type WorkoutBlockWithExercises = WorkoutBlock & {
   exercises: WorkoutBlockExerciseWithDetails[];
+  exerciseGroups?: ExerciseGroupWithExercises[];
+};
+
+export type ExerciseGroupWithExercises = ExerciseGroup & {
+  exercises: WorkoutBlockExerciseWithDetails[];
 };
 
 export type WorkoutBlockExerciseWithDetails = WorkoutBlockExercise & {
-  exercise: Pick<StrengthExercise, "id" | "name" | "category">;
+  exercise: Pick<
+    Exercise,
+    | "id"
+    | "name"
+    | "category"
+    | "hasReps"
+    | "hasWeight"
+    | "hasDistance"
+    | "hasTime"
+    | "hasCalories"
+    | "hasHeight"
+  >;
   setPrescriptions?: WorkoutSetPrescription[] | CreateSetPrescriptionInput[];
+  group?: Pick<ExerciseGroup, "id" | "name" | "rounds"> | null;
 };
 
 // ============================================================================
@@ -86,7 +104,7 @@ export type WorkoutBlockResultWithExercises = WorkoutBlockResult & {
 };
 
 export type WorkoutExerciseResultWithSets = WorkoutExerciseResult & {
-  exercise: Pick<StrengthExercise, "id" | "name">;
+  exercise: Pick<Exercise, "id" | "name">;
   blockExercise: Pick<
     WorkoutBlockExercise,
     "id" | "prescribedReps" | "prescribedWeight" | "prescribedWeightUnit"
@@ -116,8 +134,17 @@ export interface CreateWorkoutBlockInput {
   orderIndex: number;
   timeCap?: number;
   workTime?: number;
-  restTime?: number;
   rounds?: number;
+  notes?: string;
+  exercises: CreateWorkoutBlockExerciseInput[];
+  exerciseGroups?: CreateExerciseGroupInput[];
+}
+
+export interface CreateExerciseGroupInput {
+  name?: string;
+  orderIndex: number;
+  rounds: number;
+  restBetweenRounds?: number;
   notes?: string;
   exercises: CreateWorkoutBlockExerciseInput[];
 }
@@ -216,8 +243,18 @@ export interface WorkoutBlockState {
   name: string;
   timeCap: number | null;
   workTime: number | null;
-  restTime: number | null;
   rounds: number | null;
+  notes: string;
+  exercises: WorkoutExerciseState[];
+  exerciseGroups: ExerciseGroupState[];
+}
+
+export interface ExerciseGroupState {
+  id: string; // ID temporário para UI
+  name: string;
+  orderIndex: number;
+  rounds: number;
+  restBetweenRounds: number | null;
   notes: string;
   exercises: WorkoutExerciseState[];
 }
@@ -226,6 +263,8 @@ export interface WorkoutExerciseState {
   id: string; // ID temporário para UI
   exerciseId: string;
   exerciseName: string;
+  exerciseCategory?: string; // Category for field visibility
+  groupId?: string | null; // Reference to ExerciseGroupState for grouped exercises
   prescribedReps: number | null;
   prescribedWeight: number | null;
   prescribedWeightUnit: WeightUnit;
@@ -252,7 +291,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: boolean;
     hasRounds: boolean;
     hasWorkTime: boolean;
-    hasRestTime: boolean;
   }
 > = {
   WARMUP: {
@@ -263,7 +301,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   STRENGTH: {
     label: "Força",
@@ -273,7 +310,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: true,
   },
   AMRAP: {
     label: "AMRAP",
@@ -283,7 +319,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   EMOM: {
     label: "EMOM",
@@ -293,7 +328,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: true,
     hasWorkTime: true,
-    hasRestTime: false,
   },
   FOR_TIME: {
     label: "For Time",
@@ -303,7 +337,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: true,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   TABATA: {
     label: "Tabata",
@@ -313,7 +346,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: true,
     hasWorkTime: true,
-    hasRestTime: true,
   },
   CHIPPER: {
     label: "Chipper",
@@ -323,17 +355,15 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   REST: {
     label: "Descanso",
-    description: "Período de recuperação",
+    description: "Período de recuperação - usar exercício Rest",
     icon: "😮‍💨",
     color: "bg-gray-100 text-gray-800",
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: true,
   },
   COOLDOWN: {
     label: "Retorno à Calma",
@@ -343,7 +373,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: false,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
   SKILL: {
     label: "Skill",
@@ -353,7 +382,6 @@ export const BLOCK_TYPE_INFO: Record<
     hasTimeCap: true,
     hasRounds: false,
     hasWorkTime: false,
-    hasRestTime: false,
   },
 };
 

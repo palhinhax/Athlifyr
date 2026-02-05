@@ -254,122 +254,202 @@ export default function AdminUsersContent() {
         </Select>
       </div>
 
-      {/* Table */}
-      <div className="rounded-lg border">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="border-b bg-muted/50">
+      {/* Mobile Cards View */}
+      <div className="space-y-3 md:hidden">
+        {users.length === 0 ? (
+          <div className="rounded-lg border px-4 py-8 text-center text-muted-foreground">
+            Nenhum utilizador encontrado
+          </div>
+        ) : (
+          users.map((user) => (
+            <div
+              key={user.id}
+              className="rounded-lg border bg-card p-4 shadow-sm"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  {user.image && (
+                    <Image
+                      src={user.image}
+                      alt={user.name || "User"}
+                      width={40}
+                      height={40}
+                      className="h-10 w-10 rounded-full"
+                    />
+                  )}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate font-medium">
+                        {user.name || "Sem nome"}
+                      </span>
+                      {user.isBanned && (
+                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                          Bloqueado
+                        </span>
+                      )}
+                    </div>
+                    <p className="truncate text-sm text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                      <MoreVertical className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleChangeRole(user)}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Alterar Role
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleBanUser(user)}>
+                      <Ban className="mr-2 h-4 w-4" />
+                      {user.isBanned ? "Desbloquear" : "Bloquear"}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => handleDeleteUser(user)}
+                      className="text-destructive"
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Eliminar
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+              <div className="mt-3 flex items-center justify-between text-sm">
+                <span
+                  className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                    user.role === "ADMIN"
+                      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                      : user.role === "MOD"
+                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+                  }`}
+                >
+                  {user.role}
+                </span>
+                <span className="text-muted-foreground">
+                  {new Date(user.createdAt).toLocaleDateString("pt-PT")}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View */}
+      <div className="hidden rounded-lg border md:block">
+        <table className="w-full">
+          <thead className="border-b bg-muted/50">
+            <tr>
+              <th className="px-4 py-3 text-left text-sm font-medium">
+                Utilizador
+              </th>
+              <th className="px-4 py-3 text-left text-sm font-medium">Email</th>
+              <th className="px-4 py-3 text-left text-sm font-medium">Role</th>
+              <th className="px-4 py-3 text-left text-sm font-medium">
+                Data Registo
+              </th>
+              <th className="px-4 py-3 text-right text-sm font-medium">
+                Ações
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {users.length === 0 ? (
               <tr>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Utilizador
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Email
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Role
-                </th>
-                <th className="px-4 py-3 text-left text-sm font-medium">
-                  Data Registo
-                </th>
-                <th className="px-4 py-3 text-right text-sm font-medium">
-                  Ações
-                </th>
+                <td
+                  colSpan={5}
+                  className="px-4 py-8 text-center text-muted-foreground"
+                >
+                  Nenhum utilizador encontrado
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {users.length === 0 ? (
-                <tr>
-                  <td
-                    colSpan={5}
-                    className="px-4 py-8 text-center text-muted-foreground"
-                  >
-                    Nenhum utilizador encontrado
+            ) : (
+              users.map((user) => (
+                <tr
+                  key={user.id}
+                  className="border-b last:border-0 hover:bg-muted/50"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      {user.image && (
+                        <Image
+                          src={user.image}
+                          alt={user.name || "User"}
+                          width={32}
+                          height={32}
+                          className="h-8 w-8 rounded-full"
+                        />
+                      )}
+                      <div>
+                        <span className="font-medium">
+                          {user.name || "Sem nome"}
+                        </span>
+                        {user.isBanned && (
+                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                            Bloqueado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {user.email}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                        user.role === "ADMIN"
+                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                          : user.role === "MOD"
+                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+                      }`}
+                    >
+                      {user.role}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-sm text-muted-foreground">
+                    {new Date(user.createdAt).toLocaleDateString("pt-PT")}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem
+                          onClick={() => handleChangeRole(user)}
+                        >
+                          <Shield className="mr-2 h-4 w-4" />
+                          Alterar Role
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleBanUser(user)}>
+                          <Ban className="mr-2 h-4 w-4" />
+                          {user.isBanned ? "Desbloquear" : "Bloquear"}
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          onClick={() => handleDeleteUser(user)}
+                          className="text-destructive"
+                        >
+                          <Trash2 className="mr-2 h-4 w-4" />
+                          Eliminar
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </td>
                 </tr>
-              ) : (
-                users.map((user) => (
-                  <tr
-                    key={user.id}
-                    className="border-b last:border-0 hover:bg-muted/50"
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        {user.image && (
-                          <Image
-                            src={user.image}
-                            alt={user.name || "User"}
-                            width={32}
-                            height={32}
-                            className="h-8 w-8 rounded-full"
-                          />
-                        )}
-                        <div>
-                          <span className="font-medium">
-                            {user.name || "Sem nome"}
-                          </span>
-                          {user.isBanned && (
-                            <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                              Bloqueado
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {user.email}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                          user.role === "ADMIN"
-                            ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                            : user.role === "MOD"
-                              ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                              : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-                        }`}
-                      >
-                        {user.role}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-sm text-muted-foreground">
-                      {new Date(user.createdAt).toLocaleDateString("pt-PT")}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
-                            onClick={() => handleChangeRole(user)}
-                          >
-                            <Shield className="mr-2 h-4 w-4" />
-                            Alterar Role
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleBanUser(user)}>
-                            <Ban className="mr-2 h-4 w-4" />
-                            {user.isBanned ? "Desbloquear" : "Bloquear"}
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            onClick={() => handleDeleteUser(user)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Eliminar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
       {/* Pagination */}

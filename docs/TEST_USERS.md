@@ -1,302 +1,378 @@
-# Test Users - Athlifyr
+# 🧪 Utilizadores de Teste - Athlifyr
 
-Este documento contém informações sobre os usuários de teste criados para validação de funcionalidades e permissões.
+Este documento lista os utilizadores de teste para validar todas as funcionalidades da aplicação.
+
+> **Base de dados:** Development (ep-holy-silence-ah0owe5y)
+>
+> **Password padrão:** `Test123!` (para contas com password)
+
+---
+
+## 📊 Matriz de Funcionalidades
+
+| Utilizador   | Role          | Box Owner           | Coach               | Membro Box          | Atleta | Eventos |
+| ------------ | ------------- | ------------------- | ------------------- | ------------------- | ------ | ------- |
+| Admin Master | ADMIN         | ❌                  | ❌                  | ❌                  | ❌     | ❌      |
+| João Owner   | USER          | ✅ CrossFit Cascais | ✅                  | ✅                  | ✅     | ✅      |
+| Maria Coach  | USER          | ❌                  | ✅ CrossFit Cascais | ✅                  | ✅     | ✅      |
+| Pedro Atleta | USER          | ❌                  | ❌                  | ✅ CrossFit Cascais | ✅     | ✅      |
+| Ana Free     | USER          | ❌                  | ❌                  | ❌                  | ✅     | ✅      |
+| Carlos Multi | USER          | ✅ HYROX Lisboa     | ✅                  | ✅ (2 boxes)        | ✅     | ✅      |
+| Sofia Nova   | USER          | ❌                  | ❌                  | ❌                  | ❌     | ❌      |
+| Banned User  | USER (banned) | ❌                  | ❌                  | ❌                  | ❌     | ❌      |
+
+---
+
+## 👤 Detalhes dos Utilizadores
+
+### 1. Admin Master (Administrador)
+
+| Campo                  | Valor              |
+| ---------------------- | ------------------ |
+| **Nome**               | Admin Master       |
+| **Email**              | admin@athlifyr.com |
+| **Role**               | `ADMIN`            |
+| **Email Verificado**   | ✅ Sim             |
+| **Notificações Email** | ✅ Ativadas        |
+
+**O que testa:**
+
+- Acesso ao painel de administração (`/admin`)
+- Gestão de utilizadores (ban/unban)
+- Gestão de eventos (aprovar, editar, eliminar)
+- Gestão de venues/boxes
+- Moderação de conteúdo (comentários, posts)
+- Claims de ownership de venues
+- Relatórios e estatísticas
+
+---
+
+### 2. João Owner (Dono de Box)
+
+| Campo                   | Valor               |
+| ----------------------- | ------------------- |
+| **Nome**                | João Silva          |
+| **Email**               | joao.owner@test.com |
+| **Role**                | `USER`              |
+| **Email Verificado**    | ✅ Sim              |
+| **Notificações Email**  | ✅ Ativadas         |
+| **Desportos Favoritos** | `CROSSFIT`, `HYROX` |
+
+**Venues (Owner):**
+
+- **CrossFit Cascais** - Owner/Admin
+  - Role: `OWNER`
+  - Status: `ACTIVE`
+
+**O que testa:**
+
+- Dashboard de owner de venue
+- Gestão de membros da box (convidar, remover, alterar roles)
+- Gestão de coaches
+- Criação e gestão de sessões/aulas
+- Configuração de planos e subscrições
+- Gestão de reservas
+- Estatísticas da box
+- Configuração de pagamentos (Stripe Connect)
+- Edição de informações da venue
+
+---
+
+### 3. Maria Coach (Treinadora)
+
+| Campo                   | Valor                       |
+| ----------------------- | --------------------------- |
+| **Nome**                | Maria Santos                |
+| **Email**               | maria.coach@test.com        |
+| **Role**                | `USER`                      |
+| **Email Verificado**    | ✅ Sim                      |
+| **Notificações Email**  | ✅ Ativadas                 |
+| **Desportos Favoritos** | `CROSSFIT`, `WEIGHTLIFTING` |
+
+**Venues (Membro):**
+
+- **CrossFit Cascais**
+  - Role: `COACH`
+  - Status: `ACTIVE`
+
+**O que testa:**
+
+- Dashboard de coach
+- Visualização de aulas atribuídas
+- Gestão de presenças dos atletas
+- Check-in de membros
+- Visualização de membros da box
+- Criação de WODs/treinos (se permitido)
+- Não pode: gerir outros coaches, alterar configurações da box
+
+---
+
+### 4. Pedro Atleta (Membro de Box)
+
+| Campo                   | Valor                 |
+| ----------------------- | --------------------- |
+| **Nome**                | Pedro Costa           |
+| **Email**               | pedro.atleta@test.com |
+| **Role**                | `USER`                |
+| **Email Verificado**    | ✅ Sim                |
+| **Notificações Email**  | ✅ Ativadas           |
+| **Desportos Favoritos** | `CROSSFIT`            |
+
+**Venues (Membro):**
+
+- **CrossFit Cascais**
+  - Role: `MEMBER`
+  - Status: `ACTIVE`
+  - Subscrição: Plano Mensal (ativa)
+
+**Participações em Eventos:**
+
+- Trail Manuelino 2026 - Inscrito (Trail 32km)
+- HYROX Lisboa 2026 - Inscrito (Individual)
+
+**O que testa:**
+
+- Dashboard de membro de box
+- Reserva de aulas/sessões
+- Visualização de horários
+- Histórico de presenças
+- Gestão da subscrição
+- Cancelamento de reservas
+- Participação em eventos
+- Histórico de resultados
+- Feed social da box
+
+---
+
+### 5. Ana Free (Atleta Independente)
+
+| Campo                   | Valor                        |
+| ----------------------- | ---------------------------- |
+| **Nome**                | Ana Ferreira                 |
+| **Email**               | ana.free@test.com            |
+| **Role**                | `USER`                       |
+| **Email Verificado**    | ✅ Sim                       |
+| **Notificações Email**  | ❌ Desativadas               |
+| **Desportos Favoritos** | `TRAIL_RUNNING`, `TRIATHLON` |
+
+**Venues:** Nenhuma (atleta independente)
+
+**Participações em Eventos:**
+
+- Trail Manuelino 2026 - Inscrito (Sprint 18km)
+- Ultra Trail Serra da Estrela - Inscrito
+
+**O que testa:**
+
+- Experiência de utilizador sem box
+- Descoberta de venues/boxes
+- Pesquisa e inscrição em eventos
+- Exploração do mapa de eventos
+- Feed social público
+- Perfil público de atleta
+- Recomendação de venues
+- Pedido de adesão a boxes
+
+---
+
+### 6. Carlos Multi (Multi-Box + Owner)
+
+| Campo                   | Valor                                     |
+| ----------------------- | ----------------------------------------- |
+| **Nome**                | Carlos Rodrigues                          |
+| **Email**               | carlos.multi@test.com                     |
+| **Role**                | `USER`                                    |
+| **Email Verificado**    | ✅ Sim                                    |
+| **Notificações Email**  | ✅ Ativadas                               |
+| **Desportos Favoritos** | `CROSSFIT`, `HYROX`, `FUNCTIONAL_FITNESS` |
+
+**Venues (Owner):**
+
+- **HYROX Lisboa**
+  - Role: `OWNER`
+  - Status: `ACTIVE`
+
+**Venues (Membro):**
+
+- **CrossFit Cascais**
+  - Role: `MEMBER`
+  - Status: `ACTIVE`
+- **Box Funcional Porto**
+  - Role: `COACH`
+  - Status: `ACTIVE`
+
+**O que testa:**
+
+- Gestão de múltiplas boxes (owner + membro + coach)
+- Alternância entre contextos de venue
+- Dashboard consolidado
+- Notificações de múltiplas fontes
+- Conflitos de horários entre boxes
+- Gestão de uma box enquanto é membro/coach de outras
+
+---
+
+### 7. Sofia Nova (Utilizador Novo)
+
+| Campo                   | Valor               |
+| ----------------------- | ------------------- |
+| **Nome**                | Sofia Mendes        |
+| **Email**               | sofia.nova@test.com |
+| **Role**                | `USER`              |
+| **Email Verificado**    | ❌ Não              |
+| **Notificações Email**  | ❌ Desativadas      |
+| **Desportos Favoritos** | Nenhum selecionado  |
+
+**Venues:** Nenhuma
+**Eventos:** Nenhum
+
+**O que testa:**
+
+- Onboarding de novo utilizador
+- Fluxo de verificação de email
+- Seleção inicial de desportos favoritos
+- Recomendações personalizadas
+- Descoberta da plataforma
+- Limitações sem email verificado
+- Primeiro contacto com venues e eventos
+
+---
+
+### 8. Banned User (Utilizador Banido)
+
+| Campo                | Valor           |
+| -------------------- | --------------- |
+| **Nome**             | Banned Test     |
+| **Email**            | banned@test.com |
+| **Role**             | `USER`          |
+| **isBanned**         | ✅ `true`       |
+| **Email Verificado** | ✅ Sim          |
+
+**O que testa:**
+
+- Bloqueio de acesso à plataforma
+- Mensagem de conta suspensa
+- Impossibilidade de fazer login
+- Fluxo de recurso/contacto suporte
+
+---
+
+## 🏢 Venues de Teste
+
+### CrossFit Cascais
+
+| Campo           | Valor                                         |
+| --------------- | --------------------------------------------- |
+| **Nome**        | CrossFit Cascais                              |
+| **Tipo**        | `CROSSFIT_BOX`                                |
+| **Localização** | Cascais, Portugal                             |
+| **Owner**       | João Silva                                    |
+| **Coaches**     | Maria Santos                                  |
+| **Membros**     | Pedro Costa, Carlos Rodrigues                 |
+| **Planos**      | Mensal (€80), Trimestral (€210), Anual (€750) |
+| **Stripe**      | Configurado (test mode)                       |
+
+---
+
+### HYROX Lisboa
+
+| Campo           | Valor                       |
+| --------------- | --------------------------- |
+| **Nome**        | HYROX Training Lisboa       |
+| **Tipo**        | `HYROX_GYM`                 |
+| **Localização** | Lisboa, Portugal            |
+| **Owner**       | Carlos Rodrigues            |
+| **Coaches**     | (nenhum)                    |
+| **Membros**     | (nenhum)                    |
+| **Planos**      | Drop-in (€15), Mensal (€90) |
+| **Stripe**      | Não configurado             |
+
+---
+
+### Box Funcional Porto
+
+| Campo           | Valor                |
+| --------------- | -------------------- |
+| **Nome**        | Box Funcional Porto  |
+| **Tipo**        | `FUNCTIONAL_FITNESS` |
+| **Localização** | Porto, Portugal      |
+| **Owner**       | (outro utilizador)   |
+| **Coaches**     | Carlos Rodrigues     |
+| **Membros**     | (vários)             |
+
+---
+
+## 🎫 Eventos de Teste
+
+### Trail Manuelino 2026
+
+- **Data:** 1 Fevereiro 2026
+- **Local:** Abiul, Pombal
+- **Variantes:** Trail 32km, Sprint 18km, Mini 12km, Caminhada 12km
+- **Inscritos de teste:** Pedro Atleta (32km), Ana Free (18km)
+
+### HYROX Lisboa 2026
+
+- **Data:** 15 Março 2026
+- **Local:** Altice Arena, Lisboa
+- **Variantes:** Individual, Doubles, Relay
+- **Inscritos de teste:** Pedro Atleta (Individual)
+
+---
 
 ## 🔐 Credenciais de Acesso
 
-Todos os usuários de teste usam a mesma password para facilitar os testes: **`Test123!`**
+### Contas com Google OAuth
+
+- `joao.owner@test.com`
+- `maria.coach@test.com`
+- `carlos.multi@test.com`
+
+### Contas com Password
+
+- Todas as outras contas
+- **Password:** `Test123!`
 
 ---
 
-## 👥 Lista de Usuários de Teste
+## 📝 Notas de Teste
 
-### 1. Admin da Aplicação
+### Cenários Prioritários
 
-- **Email**: `admin@athlifyr.com`
-- **Password**: `Test123!`
-- **Role**: `ADMIN`
-- **Descrição**: Acesso total à plataforma, incluindo painel de administração
-- **Permissões**:
-  - ✅ Acesso ao painel admin (`/admin`)
-  - ✅ Gestão de eventos, venues, utilizadores
-  - ✅ Acesso a todas as funcionalidades
-  - ✅ Moderação de conteúdo
+1. **Fluxo completo de owner:** Criar venue → Configurar → Adicionar coaches → Convidar membros → Criar aulas → Gerir reservas
 
----
+2. **Fluxo de membro:** Descobrir box → Pedir adesão → Subscrever plano → Reservar aulas → Check-in
 
-### 2. Gym Owner (Proprietário)
+3. **Fluxo de evento:** Descobrir evento → Ver detalhes → Inscrever → Pagar → Receber confirmação
 
-- **Email**: `owner@testgym.com`
-- **Password**: `Test123!`
-- **Role**: `USER`
-- **Venue**: Test Gym CrossFit
-- **Venue Role**: `OWNER`
-- **Descrição**: Proprietário de um venue de teste
-- **Permissões**:
-  - ✅ Gestão completa do venue (editar, eliminar)
-  - ✅ Gestão de membros (adicionar/remover admins, coaches, clients)
-  - ✅ Gestão de planos e subscrições
-  - ✅ Gestão de sessões e bookings
-  - ✅ Ver tab "Team" com membros e subscritores
-  - ✅ Responder a reviews do venue
+4. **Fluxo social:** Criar post → Comentar → Reagir → Partilhar resultado
+
+### Edge Cases a Testar
+
+- [ ] Utilizador tenta aceder a box sem ser membro
+- [ ] Coach tenta alterar configurações da box
+- [ ] Membro tenta reservar aula lotada
+- [ ] Utilizador não verificado tenta ativar notificações
+- [ ] Owner tenta eliminar venue com membros ativos
+- [ ] Subscrição expirada - acesso a aulas
 
 ---
 
-### 3. Gym Admin (Administrador)
+## 🔄 Reset de Dados de Teste
 
-- **Email**: `admin@testgym.com`
-- **Password**: `Test123!`
-- **Role**: `USER`
-- **Venue**: Test Gym CrossFit
-- **Venue Role**: `ADMIN`
-- **Descrição**: Administrador do venue de teste
-- **Permissões**:
-  - ✅ Gestão do venue (editar, mas não eliminar)
-  - ✅ Gestão de membros (adicionar coaches e clients)
-  - ✅ Gestão de planos e subscrições
-  - ✅ Gestão de sessões e bookings
-  - ✅ Ver tab "Team" com membros e subscritores
-  - ✅ Responder a reviews do venue
-  - ❌ Não pode eliminar o venue
-  - ❌ Não pode remover o owner
-
----
-
-### 4. Gym Coach (Treinador)
-
-- **Email**: `coach@testgym.com`
-- **Password**: `Test123!`
-- **Role**: `USER`
-- **Venue**: Test Gym CrossFit
-- **Venue Role**: `COACH`
-- **Descrição**: Treinador do venue de teste
-- **Permissões**:
-  - ✅ Ver sessões agendadas
-  - ✅ Gerir bookings das suas sessões
-  - ✅ Ver membros do venue
-  - ❌ Não pode editar o venue
-  - ❌ Não pode gerir planos ou subscrições
-  - ❌ Não vê tab "Team"
-  - ❌ Não pode responder a reviews
-
----
-
-### 5. User sem Subscrição
-
-- **Email**: `user.free@test.com`
-- **Password**: `Test123!`
-- **Role**: `USER`
-- **Venue**: Test Gym CrossFit
-- **Venue Role**: `CLIENT` (não subscrito)
-- **Descrição**: Utilizador registado mas sem subscrição ativa
-- **Permissões**:
-  - ✅ Ver venue publicamente
-  - ✅ Ver eventos públicos
-  - ✅ Escrever reviews
-  - ✅ Recomendar venues
-  - ✅ Ver sessões disponíveis
-  - ❌ Não pode fazer bookings sem plano
-  - ❌ Não vê tab "Team"
-  - ❌ Acesso limitado ao feed do venue
-
----
-
-### 6. User com Subscrição
-
-- **Email**: `user.premium@test.com`
-- **Password**: `Test123!`
-- **Role**: `USER`
-- **Venue**: Test Gym CrossFit
-- **Venue Role**: `CLIENT`
-- **Subscription**: Active (Monthly Plan)
-- **Descrição**: Utilizador com subscrição ativa no venue
-- **Permissões**:
-  - ✅ Ver venue publicamente
-  - ✅ Ver eventos públicos
-  - ✅ Escrever reviews
-  - ✅ Recomendar venues
-  - ✅ Fazer bookings em sessões
-  - ✅ Acesso completo ao feed do venue
-  - ✅ Cancelar bookings
-  - ❌ Não vê tab "Team"
-  - ❌ Não pode responder a reviews
-
----
-
-## 🏢 Venue de Teste
-
-### Test Gym CrossFit
-
-- **Slug**: `test-gym-crossfit`
-- **Type**: `CROSSFIT_BOX`
-- **Location**: Lisboa, Portugal
-- **Description**: Venue de teste para validação de funcionalidades
-- **Members**:
-  - Owner: owner@testgym.com
-  - Admin: admin@testgym.com
-  - Coach: coach@testgym.com
-  - Client (Free): user.free@test.com
-  - Client (Premium): user.premium@test.com
-
-### Planos Disponíveis
-
-1. **Monthly Plan** - €50/mês
-   - Unlimited classes
-   - Active subscription: user.premium@test.com
-
----
-
-## 🧪 Como Criar os Usuários de Teste
+Para resetar os dados de teste, corre:
 
 ```bash
-# Executar o seed script de usuários de teste
-pnpm db:seed:test-users
-```
+# Usando a DB de desenvolvimento
+$env:DATABASE_URL="postgresql://neondb_owner:npg_8fFlJy2PROmb@ep-holy-silence-ah0owe5y-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
 
-Ou manualmente via Prisma Studio:
+# Reset completo
+pnpm prisma migrate reset
 
-```bash
-npx prisma studio
+# Ou apenas re-seed
+pnpm prisma db seed
 ```
 
 ---
 
-## 📋 Checklist de Testes por User
-
-### Admin da Aplicação
-
-- [ ] Login com sucesso
-- [ ] Acesso ao painel `/admin`
-- [ ] Ver todos os eventos
-- [ ] Ver todos os venues
-- [ ] Ver todos os utilizadores
-- [ ] Gestão de contactos
-- [ ] Gestão de media
-
-### Gym Owner
-
-- [ ] Login com sucesso
-- [ ] Ver venue "Test Gym CrossFit"
-- [ ] Ver tab "Team" com membros e subscritores
-- [ ] Editar informações do venue
-- [ ] Criar/editar planos
-- [ ] Criar/editar sessões
-- [ ] Responder a reviews
-- [ ] Adicionar/remover membros
-- [ ] Ver dashboard de bookings
-
-### Gym Admin
-
-- [ ] Login com sucesso
-- [ ] Ver venue "Test Gym CrossFit"
-- [ ] Ver tab "Team" com membros e subscritores
-- [ ] Editar informações do venue
-- [ ] Criar/editar planos
-- [ ] Criar/editar sessões
-- [ ] Responder a reviews
-- [ ] Adicionar coaches e clients
-- [ ] Ver dashboard de bookings
-- [ ] Não consegue eliminar o venue
-
-### Gym Coach
-
-- [ ] Login com sucesso
-- [ ] Ver venue "Test Gym CrossFit"
-- [ ] Não vê tab "Team"
-- [ ] Ver sessões onde é responsável
-- [ ] Gerir bookings das suas sessões
-- [ ] Não consegue editar o venue
-- [ ] Não consegue criar planos
-
-### User sem Subscrição
-
-- [ ] Login com sucesso
-- [ ] Ver venue "Test Gym CrossFit" publicamente
-- [ ] Não vê tab "Team"
-- [ ] Ver feed público do venue
-- [ ] Escrever review do venue
-- [ ] Recomendar venue
-- [ ] Ver sessões disponíveis
-- [ ] Não consegue fazer booking sem plano
-- [ ] Ver botão "Subscribe" nos planos
-
-### User com Subscrição
-
-- [ ] Login com sucesso
-- [ ] Ver venue "Test Gym CrossFit" publicamente
-- [ ] Não vê tab "Team"
-- [ ] Ver feed completo do venue
-- [ ] Escrever review do venue
-- [ ] Recomendar venue
-- [ ] Fazer booking em sessão
-- [ ] Ver "My Bookings"
-- [ ] Cancelar booking
-- [ ] Ver subscrição ativa
-
----
-
-## 🔄 Reset dos Usuários de Teste
-
-Para resetar os usuários de teste e recriar do zero:
-
-```bash
-# Remover dados de teste
-pnpm db:seed:test-users:reset
-
-# Recriar usuários
-pnpm db:seed:test-users
-```
-
----
-
-## 🤖 Testes Automatizados
-
-Os testes automatizados estão localizados em `/tests/e2e/test-users/`:
-
-```bash
-# Executar todos os testes de navegação
-pnpm test:e2e:users
-
-# Executar teste específico por user
-pnpm test:e2e:admin
-pnpm test:e2e:gym-owner
-pnpm test:e2e:gym-admin
-pnpm test:e2e:gym-coach
-pnpm test:e2e:user-free
-pnpm test:e2e:user-premium
-```
-
----
-
-## 📝 Notas Importantes
-
-1. **Nunca usar em produção**: Estes usuários são apenas para ambiente de desenvolvimento/staging
-2. **Password simples**: A password `Test123!` é intencionalmente simples para facilitar testes
-3. **Dados de teste**: Todos os dados criados por estes usuários devem ser claramente identificados como teste
-4. **Reset regular**: Recomenda-se resetar os dados de teste regularmente para garantir consistência
-
----
-
-## 🆘 Troubleshooting
-
-### Não consigo fazer login
-
-- Verificar se o seed script foi executado
-- Verificar se o email está correto (case-sensitive)
-- Verificar se a password é exatamente `Test123!`
-
-### Permissões não funcionam
-
-- Verificar na base de dados se o `VenueMember` foi criado
-- Verificar o role do utilizador no venue
-- Limpar cache do browser
-
-### Venue não aparece
-
-- Verificar se o venue foi criado pelo seed script
-- Verificar se o slug está correto: `test-gym-crossfit`
-- Verificar na base de dados: `npx prisma studio`
-
----
-
-**Última atualização**: 23 de Janeiro de 2026
+_Última atualização: Janeiro 2026_

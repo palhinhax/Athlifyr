@@ -15,6 +15,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -35,27 +36,48 @@ import {
   TrashIcon,
   PlayIcon,
   GlobeIcon,
+  BookmarkIcon,
+  Loader2Icon,
+  CalendarPlusIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useToast } from "@/components/ui/use-toast";
 import type { WorkoutWithBlocks } from "@/types/workout";
 import { BLOCK_TYPE_INFO } from "@/types/workout";
+import { useUserVenues } from "@/hooks/use-user-venues";
+import { AssignWorkoutToSessionsDialog } from "@/components/assign-workout-to-sessions-dialog";
 
 interface WorkoutCardProps {
-  workout: WorkoutWithBlocks;
+  workout: WorkoutWithBlocks & { isSaved?: boolean };
   onEdit?: () => void;
   onDelete?: () => void;
+  onSaveToggle?: (isSaved: boolean) => void;
   canEdit?: boolean;
+  canSave?: boolean;
 }
 
 export function WorkoutCard({
   workout,
   onEdit,
   onDelete,
+  onSaveToggle,
   canEdit = false,
+  canSave = false,
 }: WorkoutCardProps) {
   const t = useTranslations("workouts");
+  const { toast } = useToast();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showAssignDialog, setShowAssignDialog] = useState(false);
+  const [isSaved, setIsSaved] = useState(workout.isSaved || false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  // Check if user can assign workouts to sessions (OWNER, ADMIN, or COACH)
+  const { venues } = useUserVenues();
+  const canAssignToSessions = venues.some(
+    (v) => v.role === "OWNER" || v.role === "ADMIN" || v.role === "COACH"
+  );
 
   const totalExercises = workout.blocks.reduce(
     (sum, block) => sum + block.exercises.length,
@@ -67,6 +89,33 @@ export function WorkoutCard({
   const handleDelete = () => {
     setShowDeleteDialog(false);
     onDelete?.();
+  };
+
+  const handleToggleSave = async () => {
+    setIsSaving(true);
+    try {
+      const method = isSaved ? "DELETE" : "POST";
+      const response = await fetch(`/api/workouts/${workout.id}/save`, {
+        method,
+      });
+
+      if (response.ok) {
+        setIsSaved(!isSaved);
+        onSaveToggle?.(!isSaved);
+        toast({
+          title: isSaved ? t("unsaved") : t("saved"),
+        });
+      } else {
+        throw new Error("Failed to toggle save");
+      }
+    } catch {
+      toast({
+        title: t("errors.saveFailed"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -84,28 +133,62 @@ export function WorkoutCard({
                 </CardDescription>
               )}
             </div>
-            {canEdit && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
-                    <MoreVerticalIcon className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={onEdit}>
-                    <PencilIcon className="mr-2 h-4 w-4" />
-                    {t("editWorkout")}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive"
-                    onClick={() => setShowDeleteDialog(true)}
-                  >
-                    <TrashIcon className="mr-2 h-4 w-4" />
-                    {t("deleteWorkout")}
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+            <div className="flex items-center gap-1">
+              {canSave && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-mr-1 -mt-2"
+                  onClick={handleToggleSave}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <Loader2Icon className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <BookmarkIcon
+                      className={`h-4 w-4 ${isSaved ? "fill-current text-primary" : ""}`}
+                    />
+                  )}
+                </Button>
+              )}
+              {(canEdit || canAssignToSessions) && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                      <MoreVerticalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {canAssignToSessions && (
+                      <DropdownMenuItem
+                        onClick={() => setShowAssignDialog(true)}
+                      >
+                        <CalendarPlusIcon className="mr-2 h-4 w-4" />
+                        {t("assignToSessions")}
+                      </DropdownMenuItem>
+                    )}
+                    {canAssignToSessions && canEdit && (
+                      <DropdownMenuSeparator />
+                    )}
+                    {canEdit && (
+                      <>
+                        <DropdownMenuItem onClick={onEdit}>
+                          <PencilIcon className="mr-2 h-4 w-4" />
+                          {t("editWorkout")}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => setShowDeleteDialog(true)}
+                        >
+                          <TrashIcon className="mr-2 h-4 w-4" />
+                          {t("deleteWorkout")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
         </CardHeader>
 
@@ -186,11 +269,37 @@ export function WorkoutCard({
               )}
             </div>
           )}
+
+          {/* Creator info - only show for public workouts from other users */}
+          {workout.isPublic && workout.createdBy && (
+            <Link
+              href={`/user/${workout.createdBy.id}`}
+              className="flex items-center gap-2 rounded-md p-1.5 transition-colors hover:bg-muted"
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarImage src={workout.createdBy.image || undefined} />
+                <AvatarFallback className="text-[10px]">
+                  {workout.createdBy.name
+                    ?.split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2) || "?"}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs text-muted-foreground">
+                {t("createdBy")}{" "}
+                <span className="font-medium text-foreground">
+                  {workout.createdBy.name}
+                </span>
+              </span>
+            </Link>
+          )}
         </CardContent>
 
         <CardFooter className="pt-0">
           <Button asChild className="w-full">
-            <Link href={`/workouts/${workout.id}/log`}>
+            <Link href={`/workouts/${workout.id}/run`}>
               <PlayIcon className="mr-2 h-4 w-4" />
               {t("log.startWorkout")}
             </Link>
@@ -217,6 +326,13 @@ export function WorkoutCard({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <AssignWorkoutToSessionsDialog
+        open={showAssignDialog}
+        onOpenChange={setShowAssignDialog}
+        workoutId={workout.id}
+        workoutName={workout.name}
+      />
     </>
   );
 }

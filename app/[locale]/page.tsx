@@ -21,6 +21,9 @@ async function getUpcomingEvents(country: string) {
     },
     include: {
       variants: true,
+      _count: {
+        select: { comments: true },
+      },
     },
     orderBy: {
       startDate: "asc",

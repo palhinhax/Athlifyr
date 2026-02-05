@@ -38,7 +38,7 @@
     "startAgain": "Recommencer"
   },
 
-  "settings": {
+  "timerSettings": {
     "title": "Paramètres du Minuteur",
     "selectMode": "Sélectionner le Mode de Minuteur",
     "display": "Paramètres d'Affichage",

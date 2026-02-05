@@ -201,49 +201,64 @@ export function AdminOwnershipClaims({ locale }: AdminOwnershipClaimsProps) {
               {pendingClaims.map((claim) => (
                 <div
                   key={claim.id}
-                  className="flex items-start gap-4 rounded-lg border p-4"
+                  className="flex flex-col gap-4 rounded-lg border p-4 sm:flex-row sm:items-start"
                 >
-                  {/* User Avatar */}
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={claim.user.image || undefined} />
-                    <AvatarFallback>
-                      <User className="h-5 w-5" />
-                    </AvatarFallback>
-                  </Avatar>
+                  {/* Header with Avatar and Badge */}
+                  <div className="flex items-start justify-between gap-4 sm:contents">
+                    {/* User Avatar */}
+                    <Avatar className="h-10 w-10 shrink-0">
+                      <AvatarImage src={claim.user.image || undefined} />
+                      <AvatarFallback>
+                        <User className="h-5 w-5" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Badge - visible on mobile */}
+                    <Badge variant="outline" className="sm:hidden">
+                      <Clock className="mr-1 h-3 w-3" />
+                      {t("status.PENDING")}
+                    </Badge>
+                  </div>
 
                   {/* Claim Details */}
                   <div className="flex-1 space-y-2">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium">
                           {claim.user.name || claim.user.email}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="truncate text-sm text-muted-foreground">
                           {claim.user.email}
                         </p>
                       </div>
-                      <Badge variant="outline">
+                      {/* Badge - hidden on mobile */}
+                      <Badge
+                        variant="outline"
+                        className="hidden shrink-0 sm:flex"
+                      >
                         <Clock className="mr-1 h-3 w-3" />
                         {t("status.PENDING")}
                       </Badge>
                     </div>
 
                     {/* Venue Info */}
-                    <div className="flex items-center gap-2 text-sm">
-                      <Building2 className="h-4 w-4 text-muted-foreground" />
-                      <Link
-                        href={`/${locale}/venues/${claim.venue.slug}`}
-                        className="font-medium hover:text-primary hover:underline"
-                      >
-                        {claim.venue.name}
-                      </Link>
+                    <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center">
+                      <div className="flex items-center gap-2">
+                        <Building2 className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        <Link
+                          href={`/${locale}/venues/${claim.venue.slug}`}
+                          className="truncate font-medium hover:text-primary hover:underline"
+                        >
+                          {claim.venue.name}
+                        </Link>
+                      </div>
                       {claim.venue.city && (
-                        <>
-                          <MapPin className="ml-2 h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">
+                        <div className="flex items-center gap-2 pl-6 sm:pl-0">
+                          <MapPin className="h-4 w-4 shrink-0 text-muted-foreground sm:ml-2" />
+                          <span className="truncate text-muted-foreground">
                             {claim.venue.city}, {claim.venue.country}
                           </span>
-                        </>
+                        </div>
                       )}
                     </div>
 
@@ -259,19 +274,20 @@ export function AdminOwnershipClaims({ locale }: AdminOwnershipClaimsProps) {
                     )}
 
                     {/* Time and Actions */}
-                    <div className="flex items-center justify-between pt-2">
+                    <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
                       <p className="text-xs text-muted-foreground">
                         {formatDistanceToNow(new Date(claim.createdAt), {
                           addSuffix: true,
                           locale: dateLocale,
                         })}
                       </p>
-                      <div className="flex gap-2">
+                      <div className="flex w-full gap-2 sm:w-auto">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => openActionDialog(claim, "reject")}
                           disabled={processingId === claim.id}
+                          className="flex-1 sm:flex-initial"
                         >
                           <XCircle className="mr-1 h-4 w-4" />
                           {t("reject")}
@@ -280,6 +296,7 @@ export function AdminOwnershipClaims({ locale }: AdminOwnershipClaimsProps) {
                           size="sm"
                           onClick={() => openActionDialog(claim, "approve")}
                           disabled={processingId === claim.id}
+                          className="flex-1 sm:flex-initial"
                         >
                           {processingId === claim.id ? (
                             <Loader2 className="mr-1 h-4 w-4 animate-spin" />
@@ -306,14 +323,16 @@ export function AdminOwnershipClaims({ locale }: AdminOwnershipClaimsProps) {
                 {processedClaims.slice(0, 5).map((claim) => (
                   <div
                     key={claim.id}
-                    className="flex items-center justify-between rounded-md bg-muted/50 px-3 py-2 text-sm"
+                    className="flex flex-col gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm sm:flex-row sm:items-center sm:justify-between"
                   >
-                    <div className="flex items-center gap-2">
-                      <span>{claim.user.name || claim.user.email}</span>
-                      <span className="text-muted-foreground">→</span>
+                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                      <span className="truncate">
+                        {claim.user.name || claim.user.email}
+                      </span>
+                      <span className="shrink-0 text-muted-foreground">→</span>
                       <Link
                         href={`/${locale}/venues/${claim.venue.slug}`}
-                        className="hover:text-primary hover:underline"
+                        className="truncate hover:text-primary hover:underline"
                       >
                         {claim.venue.name}
                       </Link>
@@ -322,6 +341,7 @@ export function AdminOwnershipClaims({ locale }: AdminOwnershipClaimsProps) {
                       variant={
                         claim.status === "APPROVED" ? "default" : "destructive"
                       }
+                      className="w-fit shrink-0"
                     >
                       {claim.status === "APPROVED" ? (
                         <CheckCircle className="mr-1 h-3 w-3" />

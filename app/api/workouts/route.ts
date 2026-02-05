@@ -64,7 +64,6 @@ const createBlockSchema = z.object({
   orderIndex: z.number().int().min(0),
   timeCap: z.number().int().positive().optional(),
   workTime: z.number().int().positive().optional(),
-  restTime: z.number().int().positive().optional(),
   rounds: z.number().int().positive().optional(),
   notes: z.string().optional(),
   exercises: z.array(createExerciseSchema).min(0),
@@ -98,19 +97,45 @@ export async function GET(request: Request) {
     const venueId = searchParams.get("venueId");
     const isTemplate = searchParams.get("isTemplate") === "true";
     const isPublic = searchParams.get("isPublic") === "true";
+    const includeSaved = searchParams.get("includeSaved") !== "false"; // Default true
     const cursor = searchParams.get("cursor");
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
+    const search = searchParams.get("search");
 
-    // Build where clause
+    // Get user's saved workout IDs
+    const savedWorkoutIds = includeSaved
+      ? (
+          await prisma.savedWorkout.findMany({
+            where: { userId: session.user.id },
+            select: { workoutId: true },
+          })
+        ).map((s) => s.workoutId)
+      : [];
+
+    // Build where clause - include own, public, and saved workouts
+    // When venueId is provided, include venue workouts in addition to user's own and public
+    const accessConditions = [
+      { createdById: session.user.id },
+      { isPublic: true },
+      ...(savedWorkoutIds.length > 0 ? [{ id: { in: savedWorkoutIds } }] : []),
+      ...(venueId ? [{ venueId }] : []),
+    ];
+
+    const searchConditions = search
+      ? [
+          { name: { contains: search, mode: "insensitive" as const } },
+          { description: { contains: search, mode: "insensitive" as const } },
+          { tags: { has: search } },
+        ]
+      : null;
+
     const where = {
-      OR: [
-        { createdById: session.user.id },
-        { isPublic: true },
-        ...(venueId ? [{ venueId }] : []),
+      AND: [
+        { OR: accessConditions },
+        ...(searchConditions ? [{ OR: searchConditions }] : []),
+        ...(isTemplate ? [{ isTemplate: true }] : []),
+        ...(isPublic ? [{ isPublic: true }] : []),
       ],
-      ...(venueId && { venueId }),
-      ...(isTemplate && { isTemplate: true }),
-      ...(isPublic && { isPublic: true }),
     };
 
     const workouts = await prisma.workout.findMany({
@@ -141,6 +166,12 @@ export async function GET(request: Request) {
                     id: true,
                     name: true,
                     category: true,
+                    hasReps: true,
+                    hasWeight: true,
+                    hasDistance: true,
+                    hasTime: true,
+                    hasCalories: true,
+                    hasHeight: true,
                   },
                 },
                 setPrescriptions: {
@@ -165,8 +196,14 @@ export async function GET(request: Request) {
     const items = hasMore ? workouts.slice(0, -1) : workouts;
     const nextCursor = hasMore ? items[items.length - 1]?.id : null;
 
+    // Add isSaved flag to each workout
+    const itemsWithSaved = items.map((workout) => ({
+      ...workout,
+      isSaved: savedWorkoutIds.includes(workout.id),
+    }));
+
     return NextResponse.json({
-      items,
+      items: itemsWithSaved,
       nextCursor,
       hasMore,
     });
@@ -232,7 +269,7 @@ export async function POST(request: Request) {
     const uniqueExerciseIds = [...new Set(exerciseIds)];
 
     if (uniqueExerciseIds.length > 0) {
-      const exercises = await prisma.strengthExercise.findMany({
+      const exercises = await prisma.exercise.findMany({
         where: { id: { in: uniqueExerciseIds } },
         select: { id: true },
       });
@@ -267,7 +304,6 @@ export async function POST(request: Request) {
             orderIndex: block.orderIndex,
             timeCap: block.timeCap,
             workTime: block.workTime,
-            restTime: block.restTime,
             rounds: block.rounds,
             notes: block.notes,
             exercises: {
@@ -355,6 +391,12 @@ export async function POST(request: Request) {
                     id: true,
                     name: true,
                     category: true,
+                    hasReps: true,
+                    hasWeight: true,
+                    hasDistance: true,
+                    hasTime: true,
+                    hasCalories: true,
+                    hasHeight: true,
                   },
                 },
                 setPrescriptions: {

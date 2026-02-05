@@ -3,7 +3,6 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { EasyBookClient } from "@/components/easy-book/easy-book-client";
-import { headers } from "next/headers";
 
 // Fetch venue data for Easy Book
 async function getVenueForEasyBook(slug: string) {
@@ -58,9 +57,9 @@ async function getUserSubscriptionStatus(userId: string, venueId: string) {
 export async function generateMetadata({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
-  const { slug } = await params;
+  const { locale, slug } = await params;
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
@@ -82,7 +81,7 @@ export async function generateMetadata({
       title: seoTitle,
       description: seoDescription,
       type: "website",
-      url: `${baseUrl}/v/${venue.slug}/book`,
+      url: `${baseUrl}/${locale}/v/${venue.slug}/book`,
       siteName: "Athlifyr",
       images: venue.coverImage
         ? [
@@ -112,9 +111,9 @@ export async function generateMetadata({
 export default async function EasyBookPage({
   params,
 }: {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ locale: string; slug: string }>;
 }) {
-  const { slug } = await params;
+  const { locale, slug } = await params;
 
   const venue = await getVenueForEasyBook(slug);
 
@@ -137,13 +136,6 @@ export default async function EasyBookPage({
     userStatus = await getUserSubscriptionStatus(user.id, venue.id);
   }
 
-  // Get accept-language header to determine locale
-  const headersList = await headers();
-  const acceptLanguage = headersList.get("accept-language") || "en";
-  const locale = acceptLanguage.split(",")[0].split("-")[0] || "en";
-  const supportedLocales = ["en", "pt", "es", "fr", "de", "it"];
-  const finalLocale = supportedLocales.includes(locale) ? locale : "en";
-
   return (
     <EasyBookClient
       venue={{
@@ -156,7 +148,7 @@ export default async function EasyBookPage({
         country: venue.country,
         requiresPlanToBook: venue.requiresPlanToBook,
       }}
-      locale={finalLocale}
+      locale={locale}
       user={
         user
           ? {

@@ -368,6 +368,86 @@ async function main() {
     console.log(`   ✅ ${lang.toUpperCase()} translation created`);
   }
 
+  // Create recurring sessions for Monday (2ª Feira)
+  console.log("\n📅 Creating recurring sessions for Monday...");
+
+  const mondaySessions = [
+    {
+      startTime: "07:00",
+      endTime: "08:00",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "09:00",
+      endTime: "10:00",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "10:00",
+      endTime: "11:00",
+      title: "Open Box",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "16:00",
+      endTime: "17:30",
+      title: "Open Box",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "17:30",
+      endTime: "18:30",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "17:30",
+      endTime: "18:30",
+      title: "Gainz",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "18:30",
+      endTime: "19:30",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "19:30",
+      endTime: "20:30",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+    {
+      startTime: "20:30",
+      endTime: "21:30",
+      title: "WOD",
+      type: "CLASS" as const,
+    },
+  ];
+
+  for (const session of mondaySessions) {
+    await prisma.venueRecurringSession.create({
+      data: {
+        venueId: venue.id,
+        type: session.type,
+        title: session.title,
+        dayOfWeek: 1, // Monday (0 = Sunday, 1 = Monday, etc.)
+        startTime: session.startTime,
+        endTime: session.endTime,
+        isActive: true,
+        bookingAdvanceDays: 7,
+        cancellationDeadlineMinutes: 60,
+      },
+    });
+  }
+
+  console.log(
+    `   ✅ Created ${mondaySessions.length} recurring sessions for Monday`
+  );
+
   console.log("\n🎉 CrossBox Açor - Seia seeded successfully!");
 }
 

@@ -559,6 +559,7 @@ model Venue {
   coverImage                         String?
   logo                               String?
   defaultBookingAdvanceDays          Int                     @default(4)
+  defaultBookingDeadlineMinutes      Int                     @default(0) // How many minutes before session booking closes (0 = book until session starts)
   defaultCancellationDeadlineMinutes Int                     @default(30)
   defaultSessionCapacity             Int?
   commissionType                     CommissionType          @default(PERCENT)
@@ -579,6 +580,7 @@ model Venue {
   members                            VenueMember[]
   ownershipClaims                    VenueOwnershipClaim[]
   plans                              VenuePlan[]
+  includedInPlans                    VenuePlanVenue[] // Plans from other venues that include this venue
   recommendations                    VenueRecommendation[]
   recurringSessions                  VenueRecurringSession[]
   reviews                            VenueReview[]
@@ -694,7 +696,7 @@ model VenueInvite {
 
 model VenuePlan {
   id             String              @id @default(cuid())
-  venueId        String
+  venueId        String // Primary venue (owner of the plan)
   name           String
   description    String?
   price          Float?
@@ -707,9 +709,24 @@ model VenuePlan {
   paymentIntents PaymentIntent[]
   venue          Venue               @relation(fields: [venueId], references: [id], onDelete: Cascade)
   subscriptions  VenueSubscription[]
+  includedVenues VenuePlanVenue[] // Additional venues included in this plan
 
   @@index([venueId])
   @@index([isActive])
+}
+
+// Junction table for multi-venue plans
+model VenuePlanVenue {
+  id        String    @id @default(cuid())
+  planId    String
+  venueId   String
+  createdAt DateTime  @default(now())
+  plan      VenuePlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+  venue     Venue     @relation(fields: [venueId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, venueId])
+  @@index([planId])
+  @@index([venueId])
 }
 
 model VenueSubscription {
@@ -758,6 +775,7 @@ model VenueRecurringSession {
   createdAt                   DateTime       @default(now())
   updatedAt                   DateTime       @updatedAt
   bookingAdvanceDays          Int            @default(4)
+  bookingDeadlineMinutes      Int            @default(0) // How many minutes before session booking closes (0 = book until session starts)
   cancellationDeadlineMinutes Int            @default(30)
   venue                       Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
   sessions                    VenueSession[]
@@ -783,6 +801,7 @@ model VenueSession {
   updatedAt                   DateTime               @updatedAt
   recurringSessionId          String?
   bookingAdvanceDays          Int                    @default(4)
+  bookingDeadlineMinutes      Int                    @default(0) // How many minutes before session booking closes (0 = book until session starts)
   cancellationDeadlineMinutes Int                    @default(30)
   bookings                    VenueBooking[]
   recurringSession            VenueRecurringSession? @relation(fields: [recurringSessionId], references: [id])

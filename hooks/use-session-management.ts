@@ -5,11 +5,13 @@ import { useToast } from "@/components/ui/use-toast";
 interface SessionBooking {
   id: string;
   status: string;
+  guestName?: string | null;
+  guestEmail?: string | null;
   user: {
     id: string;
     name: string | null;
     image: string | null;
-  };
+  } | null;
 }
 
 interface VenueSession {

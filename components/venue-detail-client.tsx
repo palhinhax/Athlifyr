@@ -26,7 +26,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
 import { StripeCheckout } from "@/components/stripe-checkout";
-import { VenuePlanModal } from "@/components/venue-plan-modal";
+import { VenuePlanModal } from "@/components/venue-plan-modal/index";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
 import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import { VenueClientsManager } from "@/components/venue-clients-manager";
@@ -47,6 +47,7 @@ import {
   Users,
   MapPin,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import { EventLocationMap } from "@/components/event-location-map";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
@@ -86,6 +87,7 @@ interface Venue {
   services?: string[];
   defaultSessionCapacity: number | null;
   defaultBookingAdvanceDays: number;
+  defaultBookingDeadlineMinutes: number;
   defaultCancellationDeadlineMinutes: number;
   requiresPlanToBook: boolean;
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
@@ -126,6 +128,10 @@ interface Venue {
     subscriptions: number;
   };
 }
+
+// Admin tabs that are ALWAYS visible for owners/admins (cannot be hidden)
+// These are essential management tabs that must always be accessible
+const ADMIN_ONLY_TABS = ["clients", "subscriptions"];
 
 export function VenueDetailClient({
   slug,
@@ -189,6 +195,17 @@ export function VenueDetailClient({
       venue?.members.some(
         (m) =>
           m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
+      ))
+  );
+
+  // Check if user is a coach (or higher: owner/admin)
+  const isCoachOrHigher = Boolean(
+    userId &&
+    (userRole === "ADMIN" || // App admin
+      venue?.members.some(
+        (m) =>
+          m.user.id === userId &&
+          (m.role === "OWNER" || m.role === "ADMIN" || m.role === "COACH")
       ))
   );
 
@@ -402,17 +419,18 @@ export function VenueDetailClient({
   // Helper function to check if a tab is visible
   const isTabVisible = useCallback(
     (tabId: string) => {
-      // Default tabs if not configured
-      const defaultTabs = [
-        "feed",
-        "about",
-        "plans",
-        "sessions",
-        "team",
-        "clients",
-        "subscriptions",
+      // Admin tabs are ALWAYS visible for owners/admins - they cannot be hidden
+      // These are essential management tabs that must always be accessible
+      if (ADMIN_ONLY_TABS.includes(tabId)) {
+        return true; // Always visible (access is controlled by isOwnerOrAdmin check in JSX)
+      }
+
+      // For public tabs, check the visibleTabs configuration
+      const defaultTabs = ["feed", "about", "plans", "sessions", "team"];
+      const visibleTabs = venue?.visibleTabs ?? [
+        ...defaultTabs,
+        ...ADMIN_ONLY_TABS,
       ];
-      const visibleTabs = venue?.visibleTabs ?? defaultTabs;
       return visibleTabs.includes(tabId);
     },
     [venue?.visibleTabs]
@@ -421,12 +439,12 @@ export function VenueDetailClient({
   // Count visible tabs to hide TabsList when only 1 tab is visible
   const visibleTabsCount = useMemo(() => {
     const publicTabs = ["feed", "about", "plans", "sessions", "team"];
-    const adminTabs = ["clients", "subscriptions"];
 
     let count = publicTabs.filter((tab) => isTabVisible(tab)).length;
 
+    // Admin tabs are always counted for owners/admins
     if (isOwnerOrAdmin) {
-      count += adminTabs.filter((tab) => isTabVisible(tab)).length;
+      count += ADMIN_ONLY_TABS.length;
     }
 
     return count;
@@ -435,18 +453,15 @@ export function VenueDetailClient({
   // Get the first visible tab as default
   const getDefaultTab = useCallback(() => {
     const publicTabs = ["feed", "about", "plans", "sessions", "team"];
-    const adminTabs = ["clients", "subscriptions"];
 
     // Check public tabs first
     for (const tab of publicTabs) {
       if (isTabVisible(tab)) return tab;
     }
 
-    // Then admin tabs if user is owner/admin
+    // Then admin tabs if user is owner/admin (always available)
     if (isOwnerOrAdmin) {
-      for (const tab of adminTabs) {
-        if (isTabVisible(tab)) return tab;
-      }
+      return ADMIN_ONLY_TABS[0];
     }
 
     return "feed"; // Fallback
@@ -531,7 +546,8 @@ export function VenueDetailClient({
                     <span className="hidden sm:inline">{t("tabs.team")}</span>
                   </TabsTrigger>
                 )}
-                {isOwnerOrAdmin && isTabVisible("clients") && (
+                {/* Admin tabs - ALWAYS visible for owners/admins */}
+                {isOwnerOrAdmin && (
                   <TabsTrigger
                     value="clients"
                     className="flex-1 gap-2 md:flex-initial"
@@ -542,7 +558,7 @@ export function VenueDetailClient({
                     </span>
                   </TabsTrigger>
                 )}
-                {isOwnerOrAdmin && isTabVisible("subscriptions") && (
+                {isOwnerOrAdmin && (
                   <TabsTrigger
                     value="subscriptions"
                     className="flex-1 gap-2 md:flex-initial"
@@ -562,10 +578,12 @@ export function VenueDetailClient({
             <TabsContent value="feed">
               <VenueFeed
                 venueId={venue.id}
+                venueName={venue.name}
                 userId={userId}
                 userName={userName}
                 userImage={userImage}
                 isMember={isMember}
+                isOwner={isOwnerOrAdmin}
               />
             </TabsContent>
           )}
@@ -903,40 +921,116 @@ export function VenueDetailClient({
                         </p>
                       )}
 
-                      {/* Check if user has active subscription */}
-                      {plan.subscriptions && plan.subscriptions.length > 0 ? (
-                        <div className="space-y-3">
-                          <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                            <CheckCircle className="h-5 w-5" />
-                            <span className="font-medium">
-                              {tPlans("subscribed")}
-                            </span>
-                          </div>
-                          {plan.subscriptions[0].endsAt && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Calendar className="h-4 w-4" />
-                              <span>
-                                {tPlans("validUntil")}:{" "}
-                                {new Date(
-                                  plan.subscriptions[0].endsAt
-                                ).toLocaleDateString(locale, {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </span>
+                      {/* Check if user has active or scheduled subscription */}
+                      {(() => {
+                        if (
+                          !plan.subscriptions ||
+                          plan.subscriptions.length === 0
+                        ) {
+                          // No subscription - show subscribe button
+                          return (
+                            <Button
+                              className="w-full"
+                              onClick={() => handleSubscribeClick(plan)}
+                              disabled={!userId || !plan.price}
+                            >
+                              {tPlans("subscribe")}
+                            </Button>
+                          );
+                        }
+
+                        const now = new Date();
+                        // Find active subscription (already started and not ended)
+                        const activeSubscription = plan.subscriptions.find(
+                          (sub: {
+                            startsAt: string;
+                            endsAt: string | null;
+                          }) => {
+                            const startsAt = new Date(sub.startsAt);
+                            const endsAt = sub.endsAt
+                              ? new Date(sub.endsAt)
+                              : null;
+                            return (
+                              startsAt <= now && (!endsAt || endsAt >= now)
+                            );
+                          }
+                        );
+
+                        // Find scheduled subscription (starts in the future)
+                        const scheduledSubscription = plan.subscriptions.find(
+                          (sub: { startsAt: string }) => {
+                            const startsAt = new Date(sub.startsAt);
+                            return startsAt > now;
+                          }
+                        );
+
+                        if (activeSubscription) {
+                          // Show active subscription
+                          return (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+                                <CheckCircle className="h-5 w-5" />
+                                <span className="font-medium">
+                                  {tPlans("subscribed")}
+                                </span>
+                              </div>
+                              {activeSubscription.endsAt && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Calendar className="h-4 w-4" />
+                                  <span>
+                                    {tPlans("validUntil")}:{" "}
+                                    {new Date(
+                                      activeSubscription.endsAt
+                                    ).toLocaleDateString(locale, {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    })}
+                                  </span>
+                                </div>
+                              )}
                             </div>
-                          )}
-                        </div>
-                      ) : (
-                        <Button
-                          className="w-full"
-                          onClick={() => handleSubscribeClick(plan)}
-                          disabled={!userId || !plan.price}
-                        >
-                          {tPlans("subscribe")}
-                        </Button>
-                      )}
+                          );
+                        }
+
+                        if (scheduledSubscription) {
+                          // Show scheduled subscription
+                          return (
+                            <div className="space-y-3">
+                              <div className="flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+                                <Clock className="h-5 w-5" />
+                                <span className="font-medium">
+                                  {tPlans("scheduled")}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Calendar className="h-4 w-4" />
+                                <span>
+                                  {tPlans("startsOn")}:{" "}
+                                  {new Date(
+                                    scheduledSubscription.startsAt
+                                  ).toLocaleDateString(locale, {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Fallback - should not happen
+                        return (
+                          <Button
+                            className="w-full"
+                            onClick={() => handleSubscribeClick(plan)}
+                            disabled={!userId || !plan.price}
+                          >
+                            {tPlans("subscribe")}
+                          </Button>
+                        );
+                      })()}
                     </div>
                   ))}
                 </div>
@@ -957,9 +1051,12 @@ export function VenueDetailClient({
                     plan.subscriptions.some((sub) => sub.status === "ACTIVE")
                 )}
                 isOwnerOrAdmin={isOwnerOrAdmin}
+                canEditSessions={isCoachOrHigher}
                 venueDefaults={{
                   defaultSessionCapacity: venue.defaultSessionCapacity,
                   defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays,
+                  defaultBookingDeadlineMinutes:
+                    venue.defaultBookingDeadlineMinutes,
                   defaultCancellationDeadlineMinutes:
                     venue.defaultCancellationDeadlineMinutes,
                 }}
@@ -1009,15 +1106,15 @@ export function VenueDetailClient({
             </TabsContent>
           )}
 
-          {/* Clients Tab (Only for Owners/Admins - shows clients) */}
-          {isOwnerOrAdmin && isTabVisible("clients") && (
+          {/* Clients Tab (Only for Owners/Admins - ALWAYS available) */}
+          {isOwnerOrAdmin && (
             <TabsContent value="clients" className="space-y-4">
               <VenueClientsManager venueId={venue.id} locale={locale} />
             </TabsContent>
           )}
 
-          {/* Subscriptions Tab (Only for Owners/Admins) */}
-          {isOwnerOrAdmin && isTabVisible("subscriptions") && (
+          {/* Subscriptions Tab (Only for Owners/Admins - ALWAYS available) */}
+          {isOwnerOrAdmin && (
             <TabsContent value="subscriptions" className="space-y-4">
               <VenueSubscribersManager
                 venueId={venue.id}
@@ -1117,15 +1214,13 @@ export function VenueDetailClient({
                         {t("payment.chooseMethod")}
                       </p>
                       <div className="grid gap-4 md:grid-cols-2">
-                        {/* In-App Payment Option */}
-                        <button
-                          onClick={() => {
-                            setSelectedPaymentMethod("IN_APP");
-                          }}
-                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
-                        >
+                        {/* In-App Payment Option - Coming Soon */}
+                        <div className="relative flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-muted bg-muted/30 p-6 opacity-60">
+                          <span className="absolute right-2 top-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                            {t("payment.comingSoon")}
+                          </span>
                           <svg
-                            className="mb-3 h-12 w-12 text-primary"
+                            className="mb-3 h-12 w-12 text-muted-foreground"
                             fill="none"
                             stroke="currentColor"
                             viewBox="0 0 24 24"
@@ -1137,13 +1232,13 @@ export function VenueDetailClient({
                               d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                             />
                           </svg>
-                          <h3 className="mb-2 font-semibold">
+                          <h3 className="mb-2 font-semibold text-muted-foreground">
                             {t("payment.inApp")}
                           </h3>
                           <p className="text-center text-xs text-muted-foreground">
                             {t("payment.inAppDescription")}
                           </p>
-                        </button>
+                        </div>
 
                         {/* On-Site Payment Option */}
                         <button

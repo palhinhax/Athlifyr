@@ -21,6 +21,7 @@ async function getVenueForEasyBook(slug: string) {
       country: true,
       requiresPlanToBook: true,
       defaultBookingAdvanceDays: true,
+      defaultBookingDeadlineMinutes: true,
       defaultCancellationDeadlineMinutes: true,
     },
   });
@@ -29,15 +30,50 @@ async function getVenueForEasyBook(slug: string) {
 }
 
 // Check if logged-in user has active subscription at this venue
+// This includes direct subscriptions AND multi-venue plans that include this venue
 async function getUserSubscriptionStatus(userId: string, venueId: string) {
-  const subscription = await prisma.venueSubscription.findFirst({
+  const now = new Date();
+
+  // 1. Check direct subscription to this venue
+  const directSubscription = await prisma.venueSubscription.findFirst({
     where: {
       venueId,
       userId,
       status: "ACTIVE",
       paymentStatus: "PAID",
+      startsAt: {
+        lte: now, // Subscription must have already started
+      },
+      OR: [
+        { endsAt: null }, // No end date (ongoing)
+        { endsAt: { gt: now } }, // Or end date is in the future
+      ],
     },
   });
+
+  let hasActiveSubscription = !!directSubscription;
+
+  // 2. If no direct subscription, check for multi-venue plans that include this venue
+  if (!hasActiveSubscription) {
+    const multiVenueAccess = await prisma.venuePlanVenue.findFirst({
+      where: {
+        venueId: venueId,
+        plan: {
+          subscriptions: {
+            some: {
+              userId: userId,
+              status: "ACTIVE",
+              paymentStatus: "PAID",
+              startsAt: { lte: now },
+              OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+            },
+          },
+        },
+      },
+    });
+
+    hasActiveSubscription = !!multiVenueAccess;
+  }
 
   const member = await prisma.venueMember.findUnique({
     where: {
@@ -49,7 +85,7 @@ async function getUserSubscriptionStatus(userId: string, venueId: string) {
   });
 
   return {
-    hasActiveSubscription: !!subscription,
+    hasActiveSubscription,
     isMember: !!member && member.status === "ACTIVE",
   };
 }

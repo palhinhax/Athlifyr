@@ -34,6 +34,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { FeaturedEventCard } from "@/components/featured-event-card";
+import type { SportType, EventVariant } from "@prisma/client";
 
 interface Comment {
   id: string;
@@ -44,6 +46,22 @@ interface Comment {
     name: string | null;
     image: string | null;
   };
+}
+
+// Extended event data for shared events
+interface SharedEventData {
+  id: string;
+  title: string;
+  slug: string;
+  description?: string | null;
+  startDate?: string | Date;
+  endDate?: string | Date | null;
+  city?: string;
+  country?: string;
+  imageUrl?: string | null;
+  isFeatured?: boolean;
+  sportTypes?: SportType[];
+  variants?: Pick<EventVariant, "id" | "name" | "distanceKm">[];
 }
 
 interface PostCardProps {
@@ -58,10 +76,7 @@ interface PostCardProps {
       name: string | null;
       image: string | null;
     };
-    event?: {
-      title: string;
-      slug: string;
-    } | null;
+    event?: SharedEventData | null;
     venue?: {
       id: string;
       name: string;
@@ -77,7 +92,6 @@ interface PostCardProps {
   onPostDeleted?: (postId: string) => void;
   hideVenueBadge?: boolean; // Hide venue badge when inside venue feed
 }
-
 export function PostCard({
   post,
   currentUserId,
@@ -394,13 +408,30 @@ export function PostCard({
 
         {/* Media (Image or Video) */}
         {post.imageUrl && (
-          <div className="relative max-h-[850px] w-full overflow-hidden bg-gradient-to-br from-muted/50 to-muted">
+          <div
+            className={`relative w-full overflow-hidden ${
+              post.mediaType === "video"
+                ? "flex items-center justify-center bg-black"
+                : "max-h-[850px] bg-gradient-to-br from-muted/50 to-muted"
+            }`}
+          >
             {post.mediaType === "video" ? (
               <video
                 src={post.imageUrl}
-                controls
-                className="h-auto max-h-[850px] w-full object-contain"
-                preload="metadata"
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="max-h-[850px] w-auto max-w-full cursor-pointer"
+                preload="auto"
+                onClick={(e) => {
+                  const video = e.currentTarget;
+                  if (video.paused) {
+                    video.play();
+                  } else {
+                    video.pause();
+                  }
+                }}
               />
             ) : !imageError ? (
               <Image
@@ -421,6 +452,34 @@ export function PostCard({
                 <p className="text-sm">Imagem não disponível</p>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Shared Event Card - Show when post has full event data */}
+        {post.event && post.event.city && post.event.sportTypes && (
+          <div className="px-4 pb-3">
+            <FeaturedEventCard
+              event={{
+                id: post.event.id,
+                title: post.event.title,
+                slug: post.event.slug,
+                description: post.event.description,
+                startDate: post.event.startDate || new Date(),
+                endDate: post.event.endDate,
+                city: post.event.city,
+                country: post.event.country || "",
+                imageUrl: post.event.imageUrl,
+                isFeatured: post.event.isFeatured,
+                sportTypes: post.event.sportTypes,
+                variants: post.event.variants,
+              }}
+              showDescription={false}
+              showStats={false}
+              showVariants={true}
+              showFriendsGoing={false}
+              linkToEvent={true}
+              className="border-none shadow-none"
+            />
           </div>
         )}
 

@@ -33,8 +33,11 @@ export function useSessionBooking({
       NOT_A_MEMBER: tBooking("notAllowed"),
       MEMBER_NOT_ACTIVE: tBooking("notAllowed"),
       SESSION_NOT_FOUND: tBooking("error"),
+      SESSION_ALREADY_STARTED: tBooking("sessionAlreadyStarted"),
+      BOOKING_DEADLINE_PASSED: tBooking("bookingDeadlinePassed"),
       LIMIT_REACHED: tBooking("limitReached"),
       OUTSIDE_TIME_WINDOW: tBooking("outsideTimeWindow"),
+      SUBSCRIPTION_NOT_STARTED: tBooking("subscriptionNotStarted"),
     };
     return errorMap[reason] || tBooking("error");
   };

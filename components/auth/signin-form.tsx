@@ -16,15 +16,90 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Eye, EyeOff, LogIn, Loader2 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  LogIn,
+  Loader2,
+  Crown,
+  Dumbbell,
+  Users,
+} from "lucide-react";
 
-export function SignInForm() {
+// Demo users for quick login
+const DEMO_USERS = {
+  owner: {
+    email: "tiago@acor.pt",
+    name: "Tiago Amaro",
+    role: "Owner",
+    icon: Crown,
+  },
+  coach: {
+    email: "duarte@acor.pt",
+    name: "Duarte Covas",
+    role: "Coach",
+    icon: Dumbbell,
+  },
+  athlete: {
+    email: "bruno@acor.pt",
+    name: "Bruno Costa",
+    role: "Atleta",
+    icon: Users,
+  },
+};
+
+const DEMO_PASSWORD = "Test123!";
+
+interface SignInFormProps {
+  showDemoUsers?: boolean;
+}
+
+export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+
+  const handleDemoLogin = async (userKey: keyof typeof DEMO_USERS) => {
+    setDemoLoading(userKey);
+    const user = DEMO_USERS[userKey];
+
+    try {
+      const result = await signIn("credentials", {
+        email: user.email,
+        password: DEMO_PASSWORD,
+        redirect: false,
+      });
+
+      if (result?.error) {
+        toast({
+          title: "Erro ao fazer login",
+          description: "Não foi possível entrar com esta conta de demo",
+          variant: "destructive",
+        });
+      } else {
+        // Clear cached data so it refreshes after login
+        sessionStorage.removeItem("activeVenues");
+        toast({
+          title: `Bem-vindo, ${user.name}!`,
+          description: `A entrar como ${user.role}...`,
+        });
+        router.push("/");
+        router.refresh();
+      }
+    } catch {
+      toast({
+        title: "Erro",
+        description: "Algo correu mal. Tenta novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDemoLoading(null);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,6 +119,8 @@ export function SignInForm() {
           variant: "destructive",
         });
       } else {
+        // Clear cached data so it refreshes after login
+        sessionStorage.removeItem("activeVenues");
         toast({
           title: "Login efetuado",
           description: "Bem-vindo de volta!",
@@ -85,6 +162,60 @@ export function SignInForm() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {/* Demo Users Quick Login */}
+        {showDemoUsers && (
+          <>
+            <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4">
+              <p className="mb-3 text-center text-sm font-medium text-primary">
+                🚀 Acesso Rápido Demo
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                {(
+                  Object.entries(DEMO_USERS) as [
+                    keyof typeof DEMO_USERS,
+                    (typeof DEMO_USERS)[keyof typeof DEMO_USERS],
+                  ][]
+                ).map(([key, user]) => {
+                  const Icon = user.icon;
+                  return (
+                    <Button
+                      key={key}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDemoLogin(key)}
+                      disabled={isLoading || demoLoading !== null}
+                      className="flex h-auto flex-col gap-1 py-3"
+                    >
+                      {demoLoading === key ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Icon className="h-4 w-4" />
+                      )}
+                      <span className="text-xs font-medium">{user.role}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Password:{" "}
+                <code className="rounded bg-muted px-1">Test123!</code>
+              </p>
+            </div>
+
+            <div className="relative">
+              <div className="absolute inset-0 flex items-center">
+                <span className="w-full border-t" />
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-background px-2 text-muted-foreground">
+                  Ou usa as tuas credenciais
+                </span>
+              </div>
+            </div>
+          </>
+        )}
+
         <Button
           type="button"
           variant="outline"

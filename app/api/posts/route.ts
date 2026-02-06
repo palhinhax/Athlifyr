@@ -144,6 +144,22 @@ export async function GET(request: NextRequest) {
             id: true,
             title: true,
             slug: true,
+            description: true,
+            startDate: true,
+            endDate: true,
+            city: true,
+            country: true,
+            imageUrl: true,
+            isFeatured: true,
+            sportTypes: true,
+            variants: {
+              select: {
+                id: true,
+                name: true,
+                distanceKm: true,
+              },
+              take: 6,
+            },
           },
         },
         venue: {

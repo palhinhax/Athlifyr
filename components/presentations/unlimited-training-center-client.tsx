@@ -24,15 +24,14 @@ import {
   Shield,
   Globe,
   TrendingUp,
-  Target,
   Flag,
-  Ticket,
   RotateCcw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { WallClock } from "@/components/wall-clock/wall-clock";
+import { HyroxEventCardDemo } from "@/components/featured-event-card";
 import Link from "next/link";
 
 // Tabata timer hook
@@ -1366,141 +1365,7 @@ export function UnlimitedPresentationClient() {
             viewport={{ once: true }}
             className="mx-auto max-w-4xl"
           >
-            <div className="overflow-hidden rounded-2xl border bg-card shadow-xl">
-              {/* Event Header Image */}
-              <div className="relative h-48 bg-gradient-to-br from-yellow-500 via-amber-500 to-yellow-600 sm:h-64">
-                {/* HYROX Logo mockup */}
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <span className="block text-5xl font-black tracking-tighter text-white sm:text-7xl">
-                      HYROX
-                    </span>
-                    <span className="mt-1 block text-xl font-bold text-white/80 sm:text-2xl">
-                      LISBOA 2026
-                    </span>
-                  </div>
-                </div>
-
-                {/* Featured badge */}
-                <div className="absolute left-4 top-4">
-                  <Badge className="bg-white/20 text-white backdrop-blur-sm">
-                    ⭐ Em Destaque
-                  </Badge>
-                </div>
-
-                {/* Sport type badge */}
-                <div className="absolute right-4 top-4">
-                  <Badge className="bg-black/30 text-white backdrop-blur-sm">
-                    HYROX
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Event Content */}
-              <div className="p-4 sm:p-6">
-                <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between sm:gap-4">
-                  <div className="min-w-0">
-                    <h3 className="text-xl font-bold sm:text-2xl">
-                      HYROX Lisboa
-                    </h3>
-                    <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 sm:text-sm">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4 shrink-0" />
-                        <span>1-3 Maio 2026</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <MapPin className="h-4 w-4 shrink-0" />
-                        <span className="truncate">FIL, Lisboa</span>
-                      </div>
-                    </div>
-                  </div>
-                  <Button className="w-full gap-2 bg-yellow-500 text-black hover:bg-yellow-600 sm:w-auto">
-                    <Ticket className="h-4 w-4" />
-                    Ver Evento
-                  </Button>
-                </div>
-
-                {/* Description */}
-                <p className="mb-6 text-sm text-muted-foreground sm:text-base">
-                  A maior competição mundial de fitness chega finalmente a
-                  Portugal! 3 dias de competição na FIL com categorias para
-                  todos: Individual, Doubles e Relay.
-                </p>
-
-                {/* Event Stats */}
-                <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
-                  {[
-                    { label: "Duração", value: "3 dias" },
-                    { label: "Categorias", value: "12+" },
-                    { label: "Corrida", value: "8 km" },
-                    { label: "Estações", value: "8" },
-                  ].map((stat, i) => (
-                    <div
-                      key={i}
-                      className="rounded-xl bg-muted/50 p-2 text-center sm:p-3"
-                    >
-                      <p className="text-base font-bold sm:text-lg">
-                        {stat.value}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground sm:text-xs">
-                        {stat.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Variants Preview */}
-                <div className="rounded-xl border bg-muted/30 p-3 sm:p-4">
-                  <p className="mb-3 text-sm font-medium">
-                    Provas Disponíveis:
-                  </p>
-                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                    {[
-                      "HYROX MEN",
-                      "HYROX WOMEN",
-                      "PRO MEN",
-                      "PRO WOMEN",
-                      "DOUBLES",
-                      "RELAY",
-                    ].map((variant, i) => (
-                      <Badge
-                        key={i}
-                        variant="outline"
-                        className="text-[10px] sm:text-xs"
-                      >
-                        {variant}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Friends Going */}
-                <div className="mt-6 flex flex-col gap-3 border-t pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2">
-                      {[
-                        "from-blue-500 to-cyan-500",
-                        "from-purple-500 to-pink-500",
-                        "from-green-500 to-emerald-500",
-                        "from-orange-500 to-red-500",
-                      ].map((color, i) => (
-                        <div
-                          key={i}
-                          className={`h-7 w-7 rounded-full border-2 border-background bg-gradient-to-br sm:h-8 sm:w-8 ${color}`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-xs text-muted-foreground sm:text-sm">
-                      <strong>12 amigos</strong> vão participar
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground sm:text-sm">
-                    <Target className="h-4 w-4 shrink-0" />
-                    <span>324 interessados</span>
-                  </div>
-                </div>
-              </div>
-            </div>
+            <HyroxEventCardDemo />
           </motion.div>
 
           {/* More events hint */}
@@ -1537,7 +1402,7 @@ export function UnlimitedPresentationClient() {
             </h2>
             <p className="mx-auto max-w-2xl text-base text-muted-foreground sm:text-lg">
               Todos os movimentos de CrossFit, Weightlifting, Gymnastics e mais.
-              Em português, com vídeos e instruções.
+              Em português.
             </p>
           </motion.div>
 

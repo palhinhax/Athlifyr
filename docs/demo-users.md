@@ -36,18 +36,14 @@ Este documento descreve os utilizadores criados para a demo da CrossBox Açor.
 
 ## 🏃 Atletas / Clientes
 
-| Email              | Nome              | Modalidades     | Notas |
-| ------------------ | ----------------- | --------------- | ----- |
-| `ana@acor.pt`      | Ana Ferreira      | CrossFit        |       |
-| `bruno@acor.pt`    | Bruno Costa       | CrossFit, HYROX |       |
-| `carla@acor.pt`    | Carla Mendes      | HYROX           |       |
-| `daniel@acor.pt`   | Daniel Rodrigues  | CrossFit        |       |
-| `eva@acor.pt`      | Eva Santos        | CrossFit, HYROX |       |
-| `filipe@acor.pt`   | Filipe Martins    | CrossFit        |       |
-| `gabriela@acor.pt` | Gabriela Oliveira | HYROX           |       |
-| `hugo@acor.pt`     | Hugo Almeida      | CrossFit, HYROX |       |
-| `ines@acor.pt`     | Inês Pereira      | CrossFit        |       |
-| `joao@acor.pt`     | João Nunes        | CrossFit, HYROX |       |
+| Email            | Nome             | Modalidades     | Notas |
+| ---------------- | ---------------- | --------------- | ----- |
+| `ana@acor.pt`    | Ana Ferreira     | CrossFit        |       |
+| `bruno@acor.pt`  | Bruno Costa      | CrossFit, HYROX |       |
+| `carla@acor.pt`  | Carla Mendes     | HYROX           |       |
+| `daniel@acor.pt` | Daniel Rodrigues | CrossFit        |       |
+| `eva@acor.pt`    | Eva Santos       | CrossFit, HYROX |       |
+| `filipe@acor.pt` | Filipe Martins   | CrossFit        |       |
 
 ---
 

@@ -28,10 +28,6 @@ export interface VenuePlanPolicy {
   advanceBookingHours?: number; // e.g., 24 hours
   allowCancellation?: boolean;
   cancellationHours?: number; // Must cancel X hours before
-
-  // Trial period
-  hasTrialPeriod?: boolean;
-  trialDays?: number;
 }
 
 // Helper function to calculate end date based on duration
@@ -81,6 +77,4 @@ export const DEFAULT_PLAN_POLICY: VenuePlanPolicy = {
   advanceBookingHours: 0,
   allowCancellation: true,
   cancellationHours: 24,
-  hasTrialPeriod: false,
-  trialDays: 0,
 };

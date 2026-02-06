@@ -96,3 +96,68 @@ export async function PATCH(
     );
   }
 }
+
+// DELETE - Delete subscription (owner/admin only)
+export async function DELETE(
+  request: Request,
+  { params }: { params: Promise<{ id: string; subscriptionId: string }> }
+) {
+  try {
+    const session = await auth();
+
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id: venueId, subscriptionId } = await params;
+
+    // Check if user is owner or admin of this venue
+    const member = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId: session.user.id,
+        },
+      },
+    });
+
+    // Also check if user is app admin
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    });
+
+    const isOwnerOrAdmin =
+      member && (member.role === "OWNER" || member.role === "ADMIN");
+    const isAppAdmin = user?.role === "ADMIN";
+
+    if (!isOwnerOrAdmin && !isAppAdmin) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    // Verify subscription belongs to this venue
+    const existingSubscription = await prisma.venueSubscription.findUnique({
+      where: { id: subscriptionId },
+    });
+
+    if (!existingSubscription || existingSubscription.venueId !== venueId) {
+      return NextResponse.json(
+        { error: "Subscription not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete subscription
+    await prisma.venueSubscription.delete({
+      where: { id: subscriptionId },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting subscription:", error);
+    return NextResponse.json(
+      { error: "Failed to delete subscription" },
+      { status: 500 }
+    );
+  }
+}

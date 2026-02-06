@@ -6,6 +6,19 @@ import { useToast } from "@/components/ui/use-toast";
 interface SessionBooking {
   id: string;
   status: string;
+  guestName?: string | null;
+  guestEmail?: string | null;
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  } | null;
+}
+
+interface SessionCoach {
+  id: string;
+  role: string;
+  userId: string;
   user: {
     id: string;
     name: string | null;
@@ -23,6 +36,7 @@ interface VenueSession {
   endsAt: string;
   capacity: number | null;
   coachId: string | null;
+  coach?: SessionCoach | null;
   tags: string[];
   recurringSessionId: string | null;
   recurringSession?: {

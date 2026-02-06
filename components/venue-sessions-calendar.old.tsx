@@ -98,6 +98,7 @@ interface VenueSessionsCalendarProps {
   venueDefaults?: {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
+    defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
   };
 }

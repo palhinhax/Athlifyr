@@ -263,6 +263,38 @@
     @apply flex flex-wrap gap-2;
   }
 
+  /* Markdown content styling within SSR description */
+  .venue-ssr-content .prose ul {
+    @apply my-3 list-disc space-y-1 pl-4;
+    display: block;
+  }
+
+  .venue-ssr-content .prose ul li {
+    @apply text-muted-foreground;
+  }
+
+  .venue-ssr-content .prose h2,
+  .venue-ssr-content .prose h3,
+  .venue-ssr-content .prose h4 {
+    @apply text-foreground;
+  }
+
+  .venue-ssr-content .prose strong {
+    @apply font-semibold text-foreground;
+  }
+
+  .venue-ssr-content .prose em {
+    @apply italic;
+  }
+
+  .venue-ssr-content .prose a {
+    @apply text-primary underline-offset-4 hover:underline;
+  }
+
+  .venue-ssr-content .prose p {
+    @apply text-muted-foreground;
+  }
+
   /* Fallback content styling - VISIBLE when venue has incomplete data */
   .venue-ssr-fallback {
     @apply mb-6 rounded-lg border bg-card p-6;

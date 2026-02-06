@@ -32,9 +32,59 @@ export async function GET(request: NextRequest) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
 
-      const fuzzyEvents = await prisma.$queryRaw<{ id: string }[]>`
-        SELECT DISTINCT e.id,
-          GREATEST(
+      try {
+        // Try to use pg_trgm similarity function for fuzzy search
+        const fuzzyEvents = await prisma.$queryRaw<{ id: string }[]>`
+          SELECT DISTINCT e.id,
+            GREATEST(
+              similarity(
+                LOWER(
+                  translate(
+                    e.title,
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(
+                  translate(
+                    e.city,
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(e.slug),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(
+                  translate(
+                    COALESCE(et.title, ''),
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(
+                  translate(
+                    COALESCE(et.city, ''),
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              )
+            ) AS max_similarity
+          FROM "Event" e
+          LEFT JOIN "EventTranslation" et ON e.id = et."eventId"
+          WHERE
             similarity(
               LOWER(
                 translate(
@@ -44,8 +94,8 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(
                 translate(
                   e.city,
@@ -54,12 +104,12 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(e.slug),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(
                 translate(
                   COALESCE(et.title, ''),
@@ -68,8 +118,8 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(
                 translate(
                   COALESCE(et.city, ''),
@@ -78,59 +128,41 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            )
-          ) AS max_similarity
-        FROM "Event" e
-        LEFT JOIN "EventTranslation" et ON e.id = et."eventId"
-        WHERE
-          similarity(
-            LOWER(
-              translate(
-                e.title,
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(
-              translate(
-                e.city,
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(e.slug),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(
-              translate(
-                COALESCE(et.title, ''),
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(
-              translate(
-                COALESCE(et.city, ''),
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-        ORDER BY max_similarity DESC
-      `;
+            ) > 0.2
+          ORDER BY max_similarity DESC
+        `;
 
-      fuzzyEventIds = fuzzyEvents.map((e) => e.id);
+        fuzzyEventIds = fuzzyEvents.map((e) => e.id);
+      } catch {
+        // Fallback to simple ILIKE search if pg_trgm extension is not available
+        console.log(
+          "pg_trgm extension not available, using simple ILIKE search for events"
+        );
+        const searchPattern = `%${search}%`;
+        const simpleEvents = await prisma.$queryRaw<
+          { id: string; sort_order: number }[]
+        >`
+          SELECT DISTINCT e.id,
+            CASE 
+              WHEN e.title ILIKE ${searchPattern} THEN 1
+              WHEN e.slug ILIKE ${searchPattern} THEN 2
+              WHEN e.city ILIKE ${searchPattern} THEN 3
+              WHEN et.title ILIKE ${searchPattern} THEN 4
+              WHEN et.city ILIKE ${searchPattern} THEN 5
+              ELSE 6
+            END AS sort_order
+          FROM "Event" e
+          LEFT JOIN "EventTranslation" et ON e.id = et."eventId"
+          WHERE
+            e.title ILIKE ${searchPattern}
+            OR e.slug ILIKE ${searchPattern}
+            OR e.city ILIKE ${searchPattern}
+            OR et.title ILIKE ${searchPattern}
+            OR et.city ILIKE ${searchPattern}
+          ORDER BY sort_order
+        `;
+        fuzzyEventIds = simpleEvents.map((e) => e.id);
+      }
 
       if (fuzzyEventIds.length > 0) {
         where.id = { in: fuzzyEventIds };

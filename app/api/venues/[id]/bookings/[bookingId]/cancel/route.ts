@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus } from "@prisma/client";
+import { validateCancellation } from "@/lib/venues/booking-validation";
 
 // POST - Cancel booking
 export async function POST(
@@ -17,11 +18,11 @@ export async function POST(
 
     const { id: venueId, bookingId } = await params;
 
-    // Find booking
+    // Find booking to check venue ownership
     const booking = await prisma.venueBooking.findUnique({
       where: { id: bookingId },
-      include: {
-        session: true,
+      select: {
+        venueId: true,
       },
     });
 
@@ -34,30 +35,29 @@ export async function POST(
       return NextResponse.json({ error: "Invalid venue" }, { status: 400 });
     }
 
-    // Check if user owns the booking
-    if (booking.userId !== session.user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    // Validate cancellation using plan policy
+    const validation = await validateCancellation(session.user.id, bookingId);
 
-    // Check if booking can be cancelled
-    if (booking.status === BookingStatus.CANCELLED) {
-      return NextResponse.json(
-        { error: "Booking is already cancelled" },
-        { status: 400 }
-      );
-    }
+    if (!validation.allowed) {
+      // Map validation reasons to user-friendly error messages
+      const errorMessages: Record<string, string> = {
+        BOOKING_NOT_FOUND: "Booking not found",
+        NOT_BOOKING_OWNER: "You can only cancel your own bookings",
+        ALREADY_CANCELLED: "Booking is already cancelled",
+        ALREADY_ATTENDED: "Cannot cancel attended session",
+        SESSION_ALREADY_STARTED:
+          "Cannot cancel session that has already started",
+        CANCELLATION_NOT_ALLOWED: "Your plan does not allow cancellations",
+        CANCELLATION_DEADLINE_PASSED: `Must cancel at least ${validation.minimumHours} hours before the session`,
+      };
 
-    if (booking.status === BookingStatus.ATTENDED) {
       return NextResponse.json(
-        { error: "Cannot cancel attended session" },
-        { status: 400 }
-      );
-    }
-
-    // Check if session has already started
-    if (booking.session.startsAt < new Date()) {
-      return NextResponse.json(
-        { error: "Cannot cancel session that has already started" },
+        {
+          error:
+            errorMessages[validation.reason || ""] || "Cannot cancel booking",
+          reason: validation.reason,
+          minimumHours: validation.minimumHours,
+        },
         { status: 400 }
       );
     }

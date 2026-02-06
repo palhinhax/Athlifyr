@@ -261,30 +261,28 @@ export function PublicProfileHeader({
           <div className="flex flex-wrap items-center justify-center gap-2 md:justify-start">
             {isLoggedIn && (
               <>
-                {/* Message button - only show if they are friends */}
-                {friendshipStatus === "friends" && (
-                  <>
-                    {/* Desktop: Open chat widget */}
-                    <Button
-                      variant="outline"
-                      onClick={() => setShowChatWidget(true)}
-                      className="hidden gap-2 md:inline-flex"
-                    >
+                {/* Message button - always show for logged in users */}
+                <>
+                  {/* Desktop: Open chat widget */}
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowChatWidget(true)}
+                    className="hidden gap-2 md:inline-flex"
+                  >
+                    <MessageCircleIcon className="h-4 w-4" />
+                    Mensagem
+                  </Button>
+                  {/* Mobile: Navigate to chat page */}
+                  <Link
+                    href={`/chat?startWith=${user.id}`}
+                    className="md:hidden"
+                  >
+                    <Button variant="outline" className="gap-2">
                       <MessageCircleIcon className="h-4 w-4" />
                       Mensagem
                     </Button>
-                    {/* Mobile: Navigate to chat page */}
-                    <Link
-                      href={`/chat?startWith=${user.id}`}
-                      className="md:hidden"
-                    >
-                      <Button variant="outline" className="gap-2">
-                        <MessageCircleIcon className="h-4 w-4" />
-                        Mensagem
-                      </Button>
-                    </Link>
-                  </>
-                )}
+                  </Link>
+                </>
 
                 {friendshipStatus === "friends" ? (
                   <Button
@@ -388,7 +386,7 @@ export function PublicProfileHeader({
       </div>
 
       {/* Chat Widget - Desktop only */}
-      {showChatWidget && friendshipStatus === "friends" && (
+      {showChatWidget && (
         <ChatWidget
           recipientId={user.id}
           recipientName={user.name}

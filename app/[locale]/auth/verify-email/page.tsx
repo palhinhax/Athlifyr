@@ -3,6 +3,7 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getTranslations } from "next-intl/server";
+import { AuthVideoBackground } from "@/components/auth/auth-video-background";
 
 interface PageProps {
   params: Promise<{ locale: string }>;
@@ -26,7 +27,7 @@ export default async function VerifyEmailPage({
     | undefined;
 
   return (
-    <div className="container mx-auto flex min-h-[calc(100vh-200px)] items-center justify-center px-4 py-12">
+    <AuthVideoBackground>
       <Card className="w-full max-w-md p-8">
         <div className="text-center">
           {isSuccess ? (
@@ -97,6 +98,6 @@ export default async function VerifyEmailPage({
           )}
         </div>
       </Card>
-    </div>
+    </AuthVideoBackground>
   );
 }

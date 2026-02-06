@@ -6,6 +6,9 @@
     "metaDescription": "Explore all sports events. Find races, competitions and challenges near you.",
     "viewMap": "View Map",
     "viewList": "View List",
+    "viewEvent": "View Event",
+    "availableVariants": "Available Races",
+    "friendsParticipating": "friends are participating",
     "upcoming": "Upcoming Events",
     "featured": "Featured",
     "allEvents": "All Events",
@@ -250,6 +253,9 @@
       "clearFilters": "Clear Filters",
       "resultsCount": "{count} events found",
       "noResults": "No events found with current filters"
-    }
+    },
+    "viewEvent": "View Event",
+    "availableVariants": "Available Variants",
+    "friendsParticipating": "friends participating"
   }
 }

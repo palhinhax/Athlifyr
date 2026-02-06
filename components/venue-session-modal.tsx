@@ -56,12 +56,14 @@ interface VenueSessionModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   venueId: string;
+  userId?: string; // Current user ID for "Assign to me" feature
   session?: VenueSession | null;
   defaultDate?: Date;
   onSuccess: () => void;
   venueDefaults?: {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
+    defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
   };
 }
@@ -70,6 +72,7 @@ export function VenueSessionModal({
   open,
   onOpenChange,
   venueId,
+  userId,
   session,
   defaultDate,
   onSuccess,
@@ -440,33 +443,51 @@ export function VenueSessionModal({
           {/* Professional/Coach Selection */}
           <div className="space-y-2">
             <Label>{t("assignedProfessional")}</Label>
-            <Select
-              value={selectedCoachId || "none"}
-              onValueChange={(value) =>
-                setSelectedCoachId(value === "none" ? null : value)
-              }
-            >
-              <SelectTrigger>
-                <SelectValue
-                  placeholder={
-                    loadingStaff ? tVenues("loading") : t("selectProfessional")
-                  }
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">{t("noCoachAssigned")}</SelectItem>
-                {staff.map((member) => (
-                  <SelectItem key={member.userId} value={member.userId}>
-                    <div className="flex items-center gap-2">
-                      <span>{member.user.name || member.user.email}</span>
-                      <span className="text-xs text-muted-foreground">
-                        ({tVenues(`roles.${member.role}`)})
-                      </span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select
+                value={selectedCoachId || "none"}
+                onValueChange={(value) =>
+                  setSelectedCoachId(value === "none" ? null : value)
+                }
+              >
+                <SelectTrigger className="flex-1">
+                  <SelectValue
+                    placeholder={
+                      loadingStaff
+                        ? tVenues("loading")
+                        : t("selectProfessional")
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">{t("noCoachAssigned")}</SelectItem>
+                  {staff.map((member) => (
+                    <SelectItem key={member.userId} value={member.userId}>
+                      <div className="flex items-center gap-2">
+                        <span>{member.user.name || member.user.email}</span>
+                        <span className="text-xs text-muted-foreground">
+                          ({tVenues(`roles.${member.role}`)})
+                        </span>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {/* Assign to me shortcut - only show if user is in staff list and not already selected */}
+              {userId &&
+                !selectedCoachId &&
+                staff.some((member) => member.userId === userId) && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedCoachId(userId)}
+                    className="whitespace-nowrap"
+                  >
+                    {t("assignToMe")}
+                  </Button>
+                )}
+            </div>
             <p className="text-xs text-muted-foreground">
               {t("assignedProfessionalHint")}
             </p>

@@ -39,6 +39,7 @@ export async function POST(
         {
           error: "Booking not allowed",
           reason: validation.reason,
+          minimumHours: validation.minimumHours,
         },
         { status: 400 }
       );

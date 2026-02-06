@@ -30,26 +30,44 @@ export function ActiveVenuesBar() {
   const pathname = usePathname();
   const [activeVenues, setActiveVenues] = useState<ActiveVenue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasFetched, setHasFetched] = useState(false);
 
   useEffect(() => {
     async function fetchActiveVenues() {
       try {
+        // Try to get cached data first for faster initial render
+        const cached = sessionStorage.getItem("activeVenues");
+        if (cached && !hasFetched) {
+          try {
+            const parsedCache = JSON.parse(cached);
+            if (Array.isArray(parsedCache) && parsedCache.length > 0) {
+              setActiveVenues(parsedCache);
+              setIsLoading(false);
+            }
+          } catch {
+            // Ignore parse errors
+          }
+        }
+
         const response = await fetch("/api/user/active-venues", {
           credentials: "include",
         });
         if (response.ok) {
           const data = await response.json();
           setActiveVenues(data);
+          // Cache the result
+          sessionStorage.setItem("activeVenues", JSON.stringify(data));
         }
       } catch (error) {
         console.error("Failed to fetch active venues:", error);
       } finally {
         setIsLoading(false);
+        setHasFetched(true);
       }
     }
 
     fetchActiveVenues();
-  }, []);
+  }, [hasFetched]);
 
   // Check if we should hide on current path
   const shouldHide = HIDDEN_ON_PATHS.some((path) => pathname.includes(path));

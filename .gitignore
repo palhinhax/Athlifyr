@@ -47,3 +47,5 @@ next-env.d.ts
 # pnpm
 pnpm-workspace.yaml
 components/workouts-page-client.tsx
+_.env.demo
+_.env.dev

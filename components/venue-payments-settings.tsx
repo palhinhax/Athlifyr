@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+// import { Badge } from "@/components/ui/badge"; // Temporarily unused - Stripe disabled
 import {
   Card,
   CardContent,
@@ -15,11 +15,12 @@ import { Label } from "@/components/ui/label";
 // import { Textarea } from "@/components/ui/textarea";
 import {
   AlertCircle,
-  CheckCircle2,
-  CreditCard,
-  ExternalLink,
+  // CheckCircle2, // Temporarily unused - Stripe disabled
+  Construction,
+  // CreditCard, // Temporarily unused - Stripe disabled
+  // ExternalLink, // Temporarily unused - Stripe disabled
   Loader2,
-  RefreshCw,
+  // RefreshCw, // Temporarily unused - Stripe disabled
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
@@ -54,8 +55,9 @@ export function VenuePaymentsSettings({
     isOwner || userRole === "ADMIN" || userRole === "SUPER_ADMIN";
 
   const [loading, setLoading] = useState(true);
-  const [activating, setActivating] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  // Temporarily disabled - Stripe coming soon
+  // const [activating, setActivating] = useState(false);
+  // const [refreshing, setRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<PaymentStatus | null>(null);
   const [paymentMode, setPaymentMode] = useState<
@@ -76,7 +78,7 @@ export function VenuePaymentsSettings({
       console.error("Error fetching Stripe status:", error);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      // setRefreshing(false); // Temporarily disabled - Stripe coming soon
     }
   }, [venueId]);
 
@@ -88,6 +90,8 @@ export function VenuePaymentsSettings({
     }
   }, [canManagePayments, fetchStripeStatus]);
 
+  // Temporarily disabled - Stripe coming soon
+  /*
   const handleActivateStripe = async () => {
     setActivating(true);
     try {
@@ -175,6 +179,7 @@ export function VenuePaymentsSettings({
     setRefreshing(true);
     await fetchStripeStatus();
   };
+  */
 
   const handleSavePaymentMode = async () => {
     setSaving(true);
@@ -231,6 +236,26 @@ export function VenuePaymentsSettings({
   }
 
   const renderStripeStatus = () => {
+    // Temporarily disabled - show "Coming Soon" message
+    return (
+      <Card>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Construction className="h-5 w-5 text-amber-500" />
+            <CardTitle>{t("comingSoon")}</CardTitle>
+          </div>
+          <CardDescription>{t("comingSoonDescription")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button disabled className="cursor-not-allowed opacity-50">
+            {t("activateStripe")}
+          </Button>
+        </CardContent>
+      </Card>
+    );
+
+    // Original implementation - uncomment when Stripe is ready
+    /*
     if (!status || status.onboardingStatus === "NOT_STARTED") {
       return (
         <Card>
@@ -256,7 +281,9 @@ export function VenuePaymentsSettings({
         </Card>
       );
     }
+    */
 
+    /*
     if (
       status.onboardingStatus === "PENDING" ||
       !status.chargesEnabled ||
@@ -379,6 +406,7 @@ export function VenuePaymentsSettings({
         </Card>
       );
     }
+    */
   };
 
   return (

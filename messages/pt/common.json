@@ -23,7 +23,11 @@
     "searching": "A pesquisar",
     "active": "Ativo",
     "inactive": "Inativo",
-    "changesSaved": "Alterações guardadas"
+    "changesSaved": "Alterações guardadas",
+    "guest": "Convidado",
+    "optional": "opcional",
+    "noResults": "Nenhum resultado encontrado",
+    "typeToSearch": "Escreve para pesquisar..."
   },
   "time": {
     "hours": "Horas",

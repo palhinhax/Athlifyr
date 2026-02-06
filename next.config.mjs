@@ -38,6 +38,14 @@ const nextConfig = {
         protocol: "https",
         hostname: "www.cm-mafra.pt",
       },
+      {
+        protocol: "https",
+        hostname: "www.aldeiasdoxisto.pt",
+      },
+      {
+        protocol: "https",
+        hostname: "radiosintonia.pt",
+      },
     ],
   },
   env: {

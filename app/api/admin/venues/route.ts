@@ -15,9 +15,33 @@ export async function GET() {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        members: {
+          where: {
+            role: "OWNER",
+            status: "ACTIVE",
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            },
+          },
+        },
+      },
     });
 
-    return NextResponse.json(venues);
+    // Transform to include owner info at top level for easier access
+    const venuesWithOwner = venues.map((venue) => ({
+      ...venue,
+      owner: venue.members[0]?.user || null,
+    }));
+
+    return NextResponse.json(venuesWithOwner);
   } catch (error) {
     console.error("Error fetching venues:", error);
     return NextResponse.json(

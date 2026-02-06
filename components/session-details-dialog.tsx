@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -21,11 +22,13 @@ import {
   Dumbbell,
   UserCircle,
   ClipboardList,
+  UserPlus,
 } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isPast } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AddParticipantDialog } from "@/components/add-participant-dialog";
 
 // Helper function to format exercise prescription
 function formatExercisePrescription(ex: {
@@ -182,6 +185,7 @@ interface SessionDetailsDialogProps {
   onCancel?: (sessionId: string) => void;
   onEdit?: (session: VenueSession) => void;
   onDelete?: (session: VenueSession) => void;
+  onParticipantAdded?: () => void;
   bookingInProgress?: string | null;
 }
 
@@ -197,8 +201,10 @@ export function SessionDetailsDialog({
   onCancel,
   onEdit,
   onDelete,
+  onParticipantAdded,
   bookingInProgress,
 }: SessionDetailsDialogProps) {
+  const [addParticipantOpen, setAddParticipantOpen] = useState(false);
   const t = useTranslations("venues.sessions");
   const tVenues = useTranslations("venues");
   const tBooking = useTranslations("venues.booking");
@@ -503,7 +509,17 @@ export function SessionDetailsDialog({
               <>
                 <Separator />
                 <div>
-                  <h4 className="mb-2 font-medium">{t("bookings")}</h4>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="font-medium">{t("bookings")}</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddParticipantOpen(true)}
+                    >
+                      <UserPlus className="mr-1 h-4 w-4" />
+                      {t("addParticipant")}
+                    </Button>
+                  </div>
                   <div className="space-y-2">
                     {session.bookings.map((booking) => (
                       <div
@@ -523,7 +539,45 @@ export function SessionDetailsDialog({
                 </div>
               </>
             )}
+
+          {/* Add Participant button when no bookings yet (owner view) */}
+          {isOwnerOrAdmin &&
+            (!session.bookings || session.bookings.length === 0) && (
+              <>
+                <Separator />
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h4 className="font-medium">{t("bookings")}</h4>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setAddParticipantOpen(true)}
+                    >
+                      <UserPlus className="mr-1 h-4 w-4" />
+                      {t("addParticipant")}
+                    </Button>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    {t("noBookingsYet")}
+                  </p>
+                </div>
+              </>
+            )}
         </div>
+
+        {/* Add Participant Dialog */}
+        {isOwnerOrAdmin && (
+          <AddParticipantDialog
+            open={addParticipantOpen}
+            onOpenChange={setAddParticipantOpen}
+            venueId={session.venueId}
+            sessionId={session.id}
+            onSuccess={() => {
+              setAddParticipantOpen(false);
+              onParticipantAdded?.();
+            }}
+          />
+        )}
 
         <DialogFooter className="gap-2">
           {/* Log Workout button for past sessions */}

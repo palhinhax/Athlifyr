@@ -15,7 +15,7 @@ import { PrismaClient, WorkoutBlockType, WeightUnit } from "@prisma/client";
 const prisma = new PrismaClient();
 
 // ID do criador fornecido
-const CREATOR_ID = "cmke7xg1a0003mp6z0vc2ywzg";
+const CREATOR_ID = "cmlat692g0000hv0ng924c7w3";
 
 async function main() {
   console.log("💪 Iniciando seed do Plano de Treino Body Sculpt & Tone...\n");

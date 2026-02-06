@@ -113,7 +113,10 @@ export function VenueProfileHeader({
         {/* Venue Name and Type - Overlaid at bottom of cover, positioned to right of logo */}
         <div className="container absolute bottom-0 left-0 right-0 px-4 pb-6 sm:px-6 sm:pb-8">
           <div className="mx-auto flex items-end gap-4 md:gap-6">
-            {/* Spacer for logo (logo will be positioned here via the profile container) */}
+            {/* Spacer for logo - invisible element that takes up the same space as the logo */}
+            {venue.logo && (
+              <div className="h-16 w-32 shrink-0 md:h-20 md:w-40" />
+            )}
             {/* Name and Badge */}
             <div className="flex-1">
               <h1 className="mb-2 text-2xl font-bold text-white drop-shadow-lg [text-shadow:_-2px_-2px_0_#000,_2px_-2px_0_#000,_-2px_2px_0_#000,_2px_2px_0_#000,_-2px_0_0_#000,_2px_0_0_#000,_0_-2px_0_#000,_0_2px_0_#000,_0_0_12px_rgba(0,0,0,0.9)] md:text-3xl lg:text-4xl">
@@ -123,17 +126,18 @@ export function VenueProfileHeader({
                 <span className="inline-flex items-center rounded-full bg-white/95 px-3 py-1 text-sm font-medium text-primary shadow-lg backdrop-blur-sm">
                   {tTypes(venue.type)}
                 </span>
+                {/* Service tags - hidden on mobile to prevent layout issues */}
                 {hasServices &&
                   venue.services!.slice(0, 4).map((service) => (
                     <span
                       key={service}
-                      className="inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm"
+                      className="hidden items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm sm:inline-flex"
                     >
                       {tServices(service)}
                     </span>
                   ))}
                 {hasServices && venue.services!.length > 4 && (
-                  <span className="inline-flex items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm">
+                  <span className="hidden items-center rounded-full bg-black/40 px-2.5 py-0.5 text-xs font-medium text-white shadow backdrop-blur-sm sm:inline-flex">
                     +{venue.services!.length - 4}
                   </span>
                 )}

@@ -38,6 +38,7 @@ model User {
   results                  Result[]
   sessions                 Session[]
   venueBookings            VenueBooking[]
+  venueBookingsAddedByMe   VenueBooking[]            @relation("StaffAddedBookings")
   venueMembers             VenueMember[]
   venueOwnershipClaims     VenueOwnershipClaim[]
   venueRecommendations     VenueRecommendation[]
@@ -812,9 +813,12 @@ model VenueBooking {
   guestName     String?
   guestPhone    String?
   isEasyBooking Boolean       @default(false)
+  addedByStaff  Boolean       @default(false)
+  addedByUserId String?
   session       VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue         Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  addedByUser   User?         @relation("StaffAddedBookings", fields: [addedByUserId], references: [id], onDelete: SetNull)
 
   @@index([venueId])
   @@index([sessionId])

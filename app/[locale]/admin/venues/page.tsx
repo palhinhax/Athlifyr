@@ -63,6 +63,12 @@ interface Venue {
   commissionType: "PERCENT" | "FIXED";
   commissionValue: number;
   createdAt: string;
+  owner: {
+    id: string;
+    name: string | null;
+    email: string | null;
+    image: string | null;
+  } | null;
 }
 
 interface User {
@@ -320,6 +326,42 @@ export default function AdminVenuesPage() {
       toast({
         title: "Erro",
         description: "Erro ao definir owner",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleRemoveOwner = async () => {
+    if (!selectedVenue) return;
+
+    if (!confirm("Tens a certeza que queres remover o owner desta venue?"))
+      return;
+
+    setIsSubmitting(true);
+    try {
+      const response = await fetch(
+        `/api/admin/venues/${selectedVenue.id}/remove-owner`,
+        {
+          method: "POST",
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to remove owner");
+
+      toast({
+        title: "Sucesso",
+        description: "Owner removido com sucesso",
+      });
+
+      setIsOwnerDialogOpen(false);
+      fetchVenues();
+    } catch (error) {
+      console.error("Error removing owner:", error);
+      toast({
+        title: "Erro",
+        description: "Erro ao remover owner",
         variant: "destructive",
       });
     } finally {
@@ -597,15 +639,61 @@ export default function AdminVenuesPage() {
         <Dialog open={isOwnerDialogOpen} onOpenChange={setIsOwnerDialogOpen}>
           <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle>Definir Owner</DialogTitle>
+              <DialogTitle>Gerir Owner</DialogTitle>
               <DialogDescription>
-                Procurar e definir o proprietário para {selectedVenue?.name}
+                Ver, definir ou remover o proprietário para{" "}
+                {selectedVenue?.name}
               </DialogDescription>
             </DialogHeader>
 
             <div className="space-y-4">
+              {/* Current Owner Section */}
+              {selectedVenue?.owner && (
+                <div className="rounded-md border bg-muted/50 p-4">
+                  <p className="mb-2 text-sm font-medium">Owner Atual:</p>
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {selectedVenue.owner.image ? (
+                        <img
+                          src={selectedVenue.owner.image}
+                          alt={selectedVenue.owner.name || "User"}
+                          className="h-10 w-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+                          {selectedVenue.owner.name?.[0] ||
+                            selectedVenue.owner.email?.[0] ||
+                            "?"}
+                        </div>
+                      )}
+                      <div>
+                        <p className="font-medium">
+                          {selectedVenue.owner.name || "Sem nome"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          {selectedVenue.owner.email}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => handleRemoveOwner()}
+                      disabled={isSubmitting}
+                    >
+                      <Trash2 className="mr-1 h-4 w-4" />
+                      Remover
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="userSearch">Procurar Utilizador</Label>
+                <Label htmlFor="userSearch">
+                  {selectedVenue?.owner
+                    ? "Substituir Owner"
+                    : "Procurar Utilizador"}
+                </Label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
@@ -884,6 +972,26 @@ export default function AdminVenuesPage() {
                           ? "Percentagem"
                           : "Valor fixo"}
                       </p>
+                    </div>
+                  </div>
+                  {/* Owner Info */}
+                  <div className="mt-2 flex items-center gap-2 rounded-md border bg-muted/50 p-2">
+                    <UserPlus className="h-4 w-4 text-muted-foreground" />
+                    <div className="flex-1 text-xs">
+                      {venue.owner ? (
+                        <>
+                          <p className="font-medium">
+                            Owner: {venue.owner.name || "Sem nome"}
+                          </p>
+                          <p className="text-muted-foreground">
+                            {venue.owner.email}
+                          </p>
+                        </>
+                      ) : (
+                        <p className="text-muted-foreground">
+                          Sem owner definido
+                        </p>
+                      )}
                     </div>
                   </div>
                 </div>

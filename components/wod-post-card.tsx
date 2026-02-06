@@ -464,7 +464,7 @@ export function WodPostCard({
               <p className="truncate text-sm font-semibold">{workout.name}</p>
               {workout.estimatedTime && (
                 <p className="text-xs text-muted-foreground">
-                  ~{Math.floor(workout.estimatedTime / 60)} min
+                  ~{workout.estimatedTime} min
                 </p>
               )}
             </div>

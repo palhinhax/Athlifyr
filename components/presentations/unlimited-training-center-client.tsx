@@ -147,7 +147,7 @@ function TabataTimerSection() {
           className="flex flex-col items-center justify-center"
         >
           {/* Container with explicit height per breakpoint to constrain the scaled WallClock */}
-          <div className="relative flex h-[110px] w-full items-center justify-center overflow-hidden sm:h-[140px] md:h-[165px] lg:h-[195px]">
+          <div className="relative flex h-[120px] w-full items-center justify-center sm:h-[150px] md:h-[180px] lg:h-[210px]">
             <div className="absolute left-1/2 top-1/2 origin-center -translate-x-1/2 -translate-y-1/2 scale-[0.55] sm:scale-75 md:scale-90 lg:scale-100">
               <WallClock
                 size="xl"
@@ -301,7 +301,7 @@ export function UnlimitedPresentationClient() {
               precisa
             </h2>
             <p className="mb-12 text-lg text-muted-foreground">
-              Gestão completa, comunidade engajada e zero custos. Tudo o que
+              Gestão completa, comunidade ativa e zero custos. Tudo o que
               precisam para levar o vosso espaço ao próximo nível.
             </p>
           </motion.div>
@@ -602,9 +602,9 @@ export function UnlimitedPresentationClient() {
                 </div>
 
                 {/* Main Content */}
-                <div className="flex-1 p-6">
+                <div className="flex-1 p-3 sm:p-4 md:p-6">
                   {/* Stats */}
-                  <div className="mb-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  <div className="mb-4 grid gap-3 sm:mb-6 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
                     {[
                       {
                         label: "Membros Ativos",
@@ -633,20 +633,20 @@ export function UnlimitedPresentationClient() {
                     ].map((stat, i) => (
                       <div
                         key={i}
-                        className="rounded-xl border bg-card p-4 shadow-sm"
+                        className="rounded-lg border bg-card p-3 shadow-sm sm:rounded-xl sm:p-4"
                       >
                         <div className="flex items-center justify-between">
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] text-muted-foreground sm:text-xs">
                             {stat.label}
                           </span>
-                          <stat.icon className="h-4 w-4 text-muted-foreground" />
+                          <stat.icon className="h-3 w-3 text-muted-foreground sm:h-4 sm:w-4" />
                         </div>
-                        <div className="mt-2 flex items-baseline gap-2">
-                          <span className="text-2xl font-bold">
+                        <div className="mt-1.5 flex items-baseline gap-1.5 sm:mt-2 sm:gap-2">
+                          <span className="text-xl font-bold sm:text-2xl">
                             {stat.value}
                           </span>
                           {stat.change && (
-                            <span className="text-xs text-green-500">
+                            <span className="text-[10px] text-green-500 sm:text-xs">
                               {stat.change}
                             </span>
                           )}
@@ -656,77 +656,149 @@ export function UnlimitedPresentationClient() {
                   </div>
 
                   {/* Sessions Table Preview */}
-                  <div className="rounded-xl border bg-card shadow-sm">
-                    <div className="border-b p-4">
-                      <h3 className="font-semibold">Sessões de Hoje</h3>
+                  <div className="rounded-lg border bg-card shadow-sm sm:rounded-xl">
+                    <div className="border-b p-3 sm:p-4">
+                      <h3 className="text-sm font-semibold sm:text-base">
+                        Sessões de Hoje
+                      </h3>
                     </div>
-                    <div className="overflow-x-auto p-4">
-                      <table className="w-full min-w-[400px] text-sm">
-                        <thead>
-                          <tr className="text-left text-muted-foreground">
-                            <th className="pb-3">Hora</th>
-                            <th className="pb-3">Tipo</th>
-                            <th className="hidden pb-3 sm:table-cell">Coach</th>
-                            <th className="pb-3">Ocupação</th>
-                            <th className="pb-3">Estado</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {[
-                            {
-                              time: "07:00",
-                              type: "WOD",
-                              coach: "Coach João",
-                              spots: "12/15",
-                              status: "Concluído",
-                            },
-                            {
-                              time: "09:30",
-                              type: "WOD",
-                              coach: "Coach Ana",
-                              spots: "7/15",
-                              status: "A decorrer",
-                            },
-                            {
-                              time: "12:00",
-                              type: "Open Gym",
-                              coach: "—",
-                              spots: "8/20",
-                              status: "Próxima",
-                            },
-                            {
-                              time: "18:30",
-                              type: "WOD",
-                              coach: "Coach João",
-                              spots: "13/15",
-                              status: "Próxima",
-                            },
-                          ].map((row, i) => (
-                            <tr key={i} className="border-t">
-                              <td className="py-3 font-medium">{row.time}</td>
-                              <td className="py-3">{row.type}</td>
-                              <td className="hidden py-3 sm:table-cell">
-                                {row.coach}
-                              </td>
-                              <td className="py-3">{row.spots}</td>
-                              <td className="py-3">
-                                <Badge
-                                  variant={
-                                    row.status === "Concluído"
-                                      ? "secondary"
-                                      : row.status === "A decorrer"
-                                        ? "default"
-                                        : "outline"
-                                  }
-                                  className="whitespace-nowrap text-xs"
-                                >
-                                  {row.status}
-                                </Badge>
-                              </td>
+                    <div className="p-3 sm:p-4">
+                      {/* Mobile: Card layout */}
+                      <div className="space-y-3 sm:hidden">
+                        {[
+                          {
+                            time: "07:00",
+                            type: "WOD",
+                            coach: "Coach João",
+                            spots: "12/15",
+                            status: "Concluído",
+                          },
+                          {
+                            time: "09:30",
+                            type: "WOD",
+                            coach: "Coach Ana",
+                            spots: "7/15",
+                            status: "A decorrer",
+                          },
+                          {
+                            time: "12:00",
+                            type: "Open Gym",
+                            coach: "—",
+                            spots: "8/20",
+                            status: "Próxima",
+                          },
+                          {
+                            time: "18:30",
+                            type: "WOD",
+                            coach: "Coach João",
+                            spots: "13/15",
+                            status: "Próxima",
+                          },
+                        ].map((row, i) => (
+                          <div
+                            key={i}
+                            className="flex items-center justify-between rounded-lg border p-3"
+                          >
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-semibold">
+                                  {row.time}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {row.type}
+                                </span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {row.spots}
+                              </span>
+                            </div>
+                            <Badge
+                              variant={
+                                row.status === "Concluído"
+                                  ? "secondary"
+                                  : row.status === "A decorrer"
+                                    ? "default"
+                                    : "outline"
+                              }
+                              className="whitespace-nowrap text-xs"
+                            >
+                              {row.status}
+                            </Badge>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Desktop/Tablet: Table layout */}
+                      <div className="hidden sm:block">
+                        <table className="w-full text-sm">
+                          <thead>
+                            <tr className="text-left text-muted-foreground">
+                              <th className="pb-3">Hora</th>
+                              <th className="pb-3">Tipo</th>
+                              <th className="hidden pb-3 md:table-cell">
+                                Coach
+                              </th>
+                              <th className="pb-3">Ocupação</th>
+                              <th className="pb-3">Estado</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                          </thead>
+                          <tbody>
+                            {[
+                              {
+                                time: "07:00",
+                                type: "WOD",
+                                coach: "Coach João",
+                                spots: "12/15",
+                                status: "Concluído",
+                              },
+                              {
+                                time: "09:30",
+                                type: "WOD",
+                                coach: "Coach Ana",
+                                spots: "7/15",
+                                status: "A decorrer",
+                              },
+                              {
+                                time: "12:00",
+                                type: "Open Gym",
+                                coach: "—",
+                                spots: "8/20",
+                                status: "Próxima",
+                              },
+                              {
+                                time: "18:30",
+                                type: "WOD",
+                                coach: "Coach João",
+                                spots: "13/15",
+                                status: "Próxima",
+                              },
+                            ].map((row, i) => (
+                              <tr key={i} className="border-t">
+                                <td className="py-3 font-medium">{row.time}</td>
+                                <td className="py-3">{row.type}</td>
+                                <td className="hidden py-3 md:table-cell">
+                                  {row.coach}
+                                </td>
+                                <td className="py-3">{row.spots}</td>
+                                <td className="py-3">
+                                  <Badge
+                                    variant={
+                                      row.status === "Concluído"
+                                        ? "secondary"
+                                        : row.status === "A decorrer"
+                                          ? "default"
+                                          : "outline"
+                                    }
+                                    className="whitespace-nowrap text-xs"
+                                  >
+                                    {row.status}
+                                  </Badge>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
                     </div>
                   </div>
                 </div>

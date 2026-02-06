@@ -120,9 +120,7 @@ export function ShareEventDialog({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          content:
-            message.trim() ||
-            t("defaultMessage", { eventTitle: selectedEvent.title }),
+          content: message.trim(),
           eventId: selectedEvent.id,
           venueId: venueId,
           isPublic: false, // Venue posts are private to the venue feed

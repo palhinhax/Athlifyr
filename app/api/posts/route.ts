@@ -11,6 +11,12 @@ const createPostSchema = z.object({
   eventId: z.string().cuid().optional(),
   venueId: z.string().cuid().optional(),
   isPublic: z.boolean().default(false), // Public posts appear in main feed, private posts only in venue/event
+  // WOD Post fields
+  workoutId: z.string().cuid().optional(),
+  sessionId: z.string().cuid().optional(),
+  postType: z
+    .enum(["STANDARD", "WOD", "EVENT", "ACHIEVEMENT"])
+    .default("STANDARD"),
 });
 
 // POST /api/posts - Create a new post
@@ -52,6 +58,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // If workoutId provided (WOD post), verify the workout exists and user has access
+    if (validatedData.workoutId) {
+      const workout = await prisma.workout.findFirst({
+        where: {
+          id: validatedData.workoutId,
+          OR: [
+            { createdById: session.user.id },
+            { isPublic: true },
+            { venueId: validatedData.venueId },
+          ],
+        },
+      });
+
+      if (!workout) {
+        return NextResponse.json(
+          { error: "Workout not found or access denied" },
+          { status: 404 }
+        );
+      }
+    }
+
     const post = await prisma.post.create({
       data: {
         userId: session.user.id,
@@ -61,6 +88,9 @@ export async function POST(request: NextRequest) {
         eventId: validatedData.eventId,
         venueId: validatedData.venueId,
         isPublic: validatedData.isPublic, // Allow public/private control
+        workoutId: validatedData.workoutId,
+        sessionId: validatedData.sessionId,
+        postType: validatedData.postType,
       },
       include: {
         user: {
@@ -82,8 +112,48 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             slug: true,
+            logo: true,
+            coverImage: true,
           },
         },
+        workout: validatedData.workoutId
+          ? {
+              select: {
+                id: true,
+                name: true,
+                description: true,
+                estimatedTime: true,
+                difficulty: true,
+                blocks: {
+                  orderBy: { orderIndex: "asc" },
+                  select: {
+                    id: true,
+                    type: true,
+                    name: true,
+                    timeCap: true,
+                    rounds: true,
+                    workTime: true,
+                    notes: true,
+                    exercises: {
+                      orderBy: { orderIndex: "asc" },
+                      select: {
+                        id: true,
+                        prescribedReps: true,
+                        prescribedWeight: true,
+                        prescribedWeightFemale: true,
+                        exercise: {
+                          select: {
+                            id: true,
+                            name: true,
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+            }
+          : undefined,
       },
     });
 
@@ -167,6 +237,45 @@ export async function GET(request: NextRequest) {
             id: true,
             name: true,
             slug: true,
+          },
+        },
+        workout: {
+          select: {
+            id: true,
+            name: true,
+            description: true,
+            estimatedTime: true,
+            difficulty: true,
+            blocks: {
+              orderBy: { orderIndex: "asc" },
+              select: {
+                id: true,
+                type: true,
+                name: true,
+                timeCap: true,
+                rounds: true,
+                workTime: true,
+                notes: true,
+                exercises: {
+                  orderBy: { orderIndex: "asc" },
+                  select: {
+                    id: true,
+                    prescribedReps: true,
+                    prescribedWeight: true,
+                    prescribedWeightFemale: true,
+                    prescribedDistance: true,
+                    prescribedTime: true,
+                    notes: true,
+                    exercise: {
+                      select: {
+                        id: true,
+                        name: true,
+                      },
+                    },
+                  },
+                },
+              },
+            },
           },
         },
         _count: {

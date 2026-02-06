@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { canManageVenue, isVenueOwner } from "@/lib/venues/authorization";
 import { Currency } from "@prisma/client";
 
 // GET - List plans for a venue
@@ -23,6 +23,19 @@ export async function GET(
             subscriptions: {
               where: {
                 status: "ACTIVE",
+              },
+            },
+          },
+        },
+        includedVenues: {
+          include: {
+            venue: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                city: true,
+                logo: true,
               },
             },
           },
@@ -64,8 +77,15 @@ export async function POST(
     }
 
     const body = await request.json();
-    const { name, description, price, currency, policy, paymentProvider } =
-      body;
+    const {
+      name,
+      description,
+      price,
+      currency,
+      policy,
+      paymentProvider,
+      includedVenueIds,
+    } = body;
 
     // Validate required fields
     if (!name) {
@@ -97,9 +117,25 @@ export async function POST(
       return NextResponse.json({ error: "Venue not found" }, { status: 404 });
     }
 
+    // If includedVenueIds provided, verify user is OWNER of all included venues
+    if (includedVenueIds && includedVenueIds.length > 0) {
+      for (const includedVenueId of includedVenueIds) {
+        const isOwner = await isVenueOwner(session.user.id, includedVenueId);
+        if (!isOwner) {
+          return NextResponse.json(
+            {
+              error:
+                "You must be owner of all venues you want to include in this plan",
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
     // Payment mode is now managed at venue level - no need for plan-level validation
 
-    // Create plan
+    // Create plan with included venues
     const plan = await prisma.venuePlan.create({
       data: {
         venueId,
@@ -109,6 +145,29 @@ export async function POST(
         currency: currency || Currency.EUR,
         // paymentProvider removed - now managed at venue level
         policy: policy || null,
+        ...(includedVenueIds &&
+          includedVenueIds.length > 0 && {
+            includedVenues: {
+              create: includedVenueIds.map((vId: string) => ({
+                venueId: vId,
+              })),
+            },
+          }),
+      },
+      include: {
+        includedVenues: {
+          include: {
+            venue: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                city: true,
+                logo: true,
+              },
+            },
+          },
+        },
       },
     });
 

@@ -56,7 +56,8 @@ export function ChatWidget({
     };
 
     initConversation();
-  }, [recipientId, status, session?.user, createConversation]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [recipientId, status, session?.user?.id]);
 
   // Use React Query for messages
   const {

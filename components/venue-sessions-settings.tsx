@@ -18,6 +18,7 @@ interface VenueSessionsSettingsProps {
     services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
+    defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
     requiresPlanToBook: boolean;
   };
@@ -65,6 +66,8 @@ export function VenueSessionsSettings({
     services: venue.services || [],
     defaultSessionCapacity: venue.defaultSessionCapacity?.toString() || "",
     defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
+    defaultBookingDeadlineMinutes:
+      venue.defaultBookingDeadlineMinutes.toString(),
     defaultCancellationDeadlineMinutes:
       venue.defaultCancellationDeadlineMinutes.toString(),
     requiresPlanToBook: venue.requiresPlanToBook,
@@ -94,6 +97,8 @@ export function VenueSessionsSettings({
       services: venue.services || [],
       defaultSessionCapacity: venue.defaultSessionCapacity?.toString() || "",
       defaultBookingAdvanceDays: venue.defaultBookingAdvanceDays.toString(),
+      defaultBookingDeadlineMinutes:
+        venue.defaultBookingDeadlineMinutes.toString(),
       defaultCancellationDeadlineMinutes:
         venue.defaultCancellationDeadlineMinutes.toString(),
       requiresPlanToBook: venue.requiresPlanToBook,
@@ -102,6 +107,7 @@ export function VenueSessionsSettings({
     venue.services,
     venue.defaultSessionCapacity,
     venue.defaultBookingAdvanceDays,
+    venue.defaultBookingDeadlineMinutes,
     venue.defaultCancellationDeadlineMinutes,
     venue.requiresPlanToBook,
   ]);
@@ -134,6 +140,10 @@ export function VenueSessionsSettings({
           formData.defaultBookingAdvanceDays,
           10
         ),
+        defaultBookingDeadlineMinutes: parseInt(
+          formData.defaultBookingDeadlineMinutes,
+          10
+        ),
         defaultCancellationDeadlineMinutes: parseInt(
           formData.defaultCancellationDeadlineMinutes,
           10
@@ -164,6 +174,8 @@ export function VenueSessionsSettings({
           updatedVenue.defaultSessionCapacity?.toString() || "",
         defaultBookingAdvanceDays:
           updatedVenue.defaultBookingAdvanceDays.toString(),
+        defaultBookingDeadlineMinutes:
+          updatedVenue.defaultBookingDeadlineMinutes.toString(),
         defaultCancellationDeadlineMinutes:
           updatedVenue.defaultCancellationDeadlineMinutes.toString(),
         requiresPlanToBook: updatedVenue.requiresPlanToBook,
@@ -312,6 +324,26 @@ export function VenueSessionsSettings({
             />
             <p className="text-xs text-muted-foreground">
               {tInfo("defaultBookingAdvanceHint")}
+            </p>
+          </div>
+
+          {/* Default Booking Deadline Minutes */}
+          <div className="space-y-2">
+            <Label htmlFor="defaultBookingDeadlineMinutes">
+              {tInfo("defaultBookingDeadline")}
+            </Label>
+            <Input
+              id="defaultBookingDeadlineMinutes"
+              name="defaultBookingDeadlineMinutes"
+              type="number"
+              min="0"
+              value={formData.defaultBookingDeadlineMinutes}
+              onChange={handleInputChange}
+              required
+              disabled={loading}
+            />
+            <p className="text-xs text-muted-foreground">
+              {tInfo("defaultBookingDeadlineHint")}
             </p>
           </div>
 

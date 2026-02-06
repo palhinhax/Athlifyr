@@ -54,12 +54,16 @@ export async function GET(
             isActive: true,
             createdAt: true,
             updatedAt: true,
-            // Include user's subscription if logged in
+            // Include user's subscriptions if logged in
             subscriptions: currentUserId
               ? {
                   where: {
                     userId: currentUserId,
                     status: "ACTIVE",
+                    OR: [
+                      { endsAt: null },
+                      { endsAt: { gte: new Date() } }, // Must not have ended
+                    ],
                   },
                   select: {
                     id: true,
@@ -69,7 +73,8 @@ export async function GET(
                     endsAt: true,
                     createdAt: true,
                   },
-                  take: 1,
+                  orderBy: { startsAt: "asc" },
+                  take: 2, // Get current active + next scheduled
                 }
               : false,
           },
@@ -166,6 +171,7 @@ export async function PATCH(
       services,
       defaultSessionCapacity,
       defaultBookingAdvanceDays,
+      defaultBookingDeadlineMinutes,
       defaultCancellationDeadlineMinutes,
       requiresPlanToBook,
     } = body;
@@ -228,6 +234,9 @@ export async function PATCH(
         }),
         ...(defaultBookingAdvanceDays !== undefined && {
           defaultBookingAdvanceDays,
+        }),
+        ...(defaultBookingDeadlineMinutes !== undefined && {
+          defaultBookingDeadlineMinutes,
         }),
         ...(defaultCancellationDeadlineMinutes !== undefined && {
           defaultCancellationDeadlineMinutes,

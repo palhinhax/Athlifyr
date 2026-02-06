@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 
-// GET - Search members of a venue by name or email
+// GET - Search members and subscribers of a venue by name or email
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -31,7 +31,7 @@ export async function GET(
       return NextResponse.json({ members: [] });
     }
 
-    // Search for members with active subscriptions
+    // Search for venue members (OWNER, ADMIN, COACH, CLIENT roles)
     const members = await prisma.venueMember.findMany({
       where: {
         venueId,
@@ -62,7 +62,7 @@ export async function GET(
           },
         },
       },
-      take: 10, // Limit results
+      take: 10,
       orderBy: {
         user: {
           name: "asc",
@@ -70,13 +70,82 @@ export async function GET(
       },
     });
 
-    // Transform to return user data directly
-    const users = members.map((member) => ({
-      id: member.user.id,
-      name: member.user.name,
-      email: member.user.email,
-      image: member.user.image,
-    }));
+    // Also search for users with active subscriptions to venue plans
+    const subscribers = await prisma.venueSubscription.findMany({
+      where: {
+        plan: {
+          venueId,
+        },
+        status: "ACTIVE",
+        user: {
+          OR: [
+            {
+              name: {
+                contains: query,
+                mode: "insensitive",
+              },
+            },
+            {
+              email: {
+                contains: query,
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+          },
+        },
+      },
+      take: 10,
+      orderBy: {
+        user: {
+          name: "asc",
+        },
+      },
+    });
+
+    // Combine and deduplicate results
+    const userMap = new Map<
+      string,
+      { id: string; name: string | null; email: string; image: string | null }
+    >();
+
+    // Add venue members
+    for (const member of members) {
+      userMap.set(member.user.id, {
+        id: member.user.id,
+        name: member.user.name,
+        email: member.user.email,
+        image: member.user.image,
+      });
+    }
+
+    // Add subscribers (won't overwrite if already exists)
+    for (const subscription of subscribers) {
+      if (!userMap.has(subscription.user.id)) {
+        userMap.set(subscription.user.id, {
+          id: subscription.user.id,
+          name: subscription.user.name,
+          email: subscription.user.email,
+          image: subscription.user.image,
+        });
+      }
+    }
+
+    // Convert to array and sort by name
+    const users = Array.from(userMap.values()).sort((a, b) => {
+      const nameA = a.name || a.email;
+      const nameB = b.name || b.email;
+      return nameA.localeCompare(nameB);
+    });
 
     return NextResponse.json({ members: users });
   } catch (error) {

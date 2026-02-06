@@ -35,9 +35,11 @@ import {
   UserPlus,
   Search,
   DollarSign,
+  Power,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { AdminOwnershipClaims } from "@/components/admin-ownership-claims";
+import { Badge } from "@/components/ui/badge";
 
 // Local type definitions instead of importing from Prisma
 type VenueType =
@@ -62,6 +64,7 @@ interface Venue {
   longitude: number | null;
   commissionType: "PERCENT" | "FIXED";
   commissionValue: number;
+  isActive: boolean;
   createdAt: string;
   owner: {
     id: string;
@@ -251,6 +254,40 @@ export default function AdminVenuesPage() {
       toast({
         title: "Erro",
         description: "Erro ao eliminar venue",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleActive = async (venue: Venue) => {
+    const newStatus = !venue.isActive;
+    const action = newStatus ? "ativar" : "desativar";
+
+    if (
+      !confirm(`Tens a certeza que queres ${action} o venue "${venue.name}"?`)
+    )
+      return;
+
+    try {
+      const response = await fetch(`/api/admin/venues/${venue.id}/status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isActive: newStatus }),
+      });
+
+      if (!response.ok) throw new Error(`Failed to ${action} venue`);
+
+      toast({
+        title: "Sucesso",
+        description: `Venue ${newStatus ? "ativado" : "desativado"} com sucesso`,
+      });
+
+      fetchVenues();
+    } catch (error) {
+      console.error("Error toggling venue status:", error);
+      toast({
+        title: "Erro",
+        description: `Erro ao ${action} venue`,
         variant: "destructive",
       });
     }
@@ -884,21 +921,42 @@ export default function AdminVenuesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {venues.map((venue) => (
-            <Card key={venue.id} className="relative">
+            <Card
+              key={venue.id}
+              className={`relative ${!venue.isActive ? "opacity-60" : ""}`}
+            >
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-start justify-between gap-2">
                   <div className="min-w-0 flex-1">
-                    <Link
-                      href={`/${locale}/venues/${venue.slug}`}
-                      className="truncate text-lg font-semibold hover:text-primary hover:underline"
-                    >
-                      {venue.name}
-                    </Link>
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/${locale}/venues/${venue.slug}`}
+                        className="truncate text-lg font-semibold hover:text-primary hover:underline"
+                      >
+                        {venue.name}
+                      </Link>
+                      <Badge
+                        variant={venue.isActive ? "default" : "secondary"}
+                        className={`shrink-0 ${venue.isActive ? "bg-green-500 hover:bg-green-600" : "bg-gray-400"}`}
+                      >
+                        {venue.isActive ? "Ativo" : "Inativo"}
+                      </Badge>
+                    </div>
                     <p className="text-sm text-muted-foreground">
                       {venueTypeLabels[venue.type]}
                     </p>
                   </div>
                   <div className="flex shrink-0 gap-1">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleToggleActive(venue)}
+                      title={venue.isActive ? "Desativar" : "Ativar"}
+                    >
+                      <Power
+                        className={`h-4 w-4 ${venue.isActive ? "text-green-500" : "text-gray-400"}`}
+                      />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="sm"

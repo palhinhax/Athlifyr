@@ -112,6 +112,7 @@ export default async function FeedPage({
       },
       event: {
         select: {
+          id: true,
           title: true,
           slug: true,
         },
@@ -291,11 +292,12 @@ export default async function FeedPage({
                         id: postData.id,
                         content: postData.content,
                         imageUrl: postData.imageUrl,
+                        mediaType: postData.mediaType,
                         createdAt: activity.date,
                         userId: postData.userId,
                         user: postData.user,
                         event: postData.event,
-                        venue: postData.venue, // ✅ ADDED - venue data
+                        venue: postData.venue,
                         likesCount: postData._count.likes,
                         isLikedByUser: postData.likes.length > 0,
                         commentsCount: postData._count.comments,

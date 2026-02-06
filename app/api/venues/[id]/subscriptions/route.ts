@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  calculatePlanEndDate,
+  type VenuePlanPolicy,
+  DEFAULT_PLAN_POLICY,
+} from "@/types/venue-plan";
 // PaymentProvider removed - now using PaymentsProvider at venue level
 
 // GET - Fetch all subscriptions for a venue (owner/admin only)
@@ -165,6 +170,25 @@ export async function POST(
         });
       }
 
+      // Calculate start and end dates
+      const subscriptionStartsAt = startsAt ? new Date(startsAt) : new Date();
+      let subscriptionEndsAt: Date | null = null;
+
+      if (endsAt) {
+        subscriptionEndsAt = new Date(endsAt);
+      } else {
+        // Auto-calculate end date based on plan policy
+        const planPolicy = plan.policy as VenuePlanPolicy | null;
+        const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
+        const durationValue =
+          planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
+        subscriptionEndsAt = calculatePlanEndDate(
+          subscriptionStartsAt,
+          duration,
+          durationValue
+        );
+      }
+
       // Create manual subscription
       const subscription = await prisma.venueSubscription.create({
         data: {
@@ -176,8 +200,8 @@ export async function POST(
           paymentMethod: "Manual", // Use paymentMethod instead of paymentProvider
           activatedByUserId: session.user.id, // Track who activated it
           activatedAt: new Date(),
-          startsAt: startsAt ? new Date(startsAt) : new Date(),
-          endsAt: endsAt ? new Date(endsAt) : null,
+          startsAt: subscriptionStartsAt,
+          endsAt: subscriptionEndsAt,
         },
         include: {
           user: {

@@ -20,6 +20,25 @@ interface ActiveVenue {
 // Pages where the venues bar should be hidden
 const HIDDEN_ON_PATHS = ["/chat"];
 
+// Helper to safely access sessionStorage (only on client)
+function getFromSessionStorage(key: string): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return sessionStorage.getItem(key);
+  } catch {
+    return null;
+  }
+}
+
+function setToSessionStorage(key: string, value: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    sessionStorage.setItem(key, value);
+  } catch {
+    // Ignore storage errors
+  }
+}
+
 /**
  * Active Venues Bar
  * Shows a quick access bar to venues where the user has an active subscription
@@ -30,25 +49,26 @@ export function ActiveVenuesBar() {
   const pathname = usePathname();
   const [activeVenues, setActiveVenues] = useState<ActiveVenue[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [hasFetched, setHasFetched] = useState(false);
 
+  // Load cached data on mount and fetch fresh data
   useEffect(() => {
+    // First, try to load from cache for instant display
+    const cached = getFromSessionStorage("activeVenues");
+    if (cached) {
+      try {
+        const parsedCache = JSON.parse(cached);
+        if (Array.isArray(parsedCache) && parsedCache.length > 0) {
+          setActiveVenues(parsedCache);
+          setIsLoading(false);
+        }
+      } catch {
+        // Ignore parse errors
+      }
+    }
+
+    // Always fetch fresh data (to handle login/logout and updates)
     async function fetchActiveVenues() {
       try {
-        // Try to get cached data first for faster initial render
-        const cached = sessionStorage.getItem("activeVenues");
-        if (cached && !hasFetched) {
-          try {
-            const parsedCache = JSON.parse(cached);
-            if (Array.isArray(parsedCache) && parsedCache.length > 0) {
-              setActiveVenues(parsedCache);
-              setIsLoading(false);
-            }
-          } catch {
-            // Ignore parse errors
-          }
-        }
-
         const response = await fetch("/api/user/active-venues", {
           credentials: "include",
         });
@@ -56,18 +76,21 @@ export function ActiveVenuesBar() {
           const data = await response.json();
           setActiveVenues(data);
           // Cache the result
-          sessionStorage.setItem("activeVenues", JSON.stringify(data));
+          setToSessionStorage("activeVenues", JSON.stringify(data));
+        } else {
+          // If unauthorized or error, clear the data
+          setActiveVenues([]);
+          sessionStorage.removeItem("activeVenues");
         }
       } catch (error) {
         console.error("Failed to fetch active venues:", error);
       } finally {
         setIsLoading(false);
-        setHasFetched(true);
       }
     }
 
     fetchActiveVenues();
-  }, [hasFetched]);
+  }, [pathname]); // Re-fetch when pathname changes (navigation)
 
   // Check if we should hide on current path
   const shouldHide = HIDDEN_ON_PATHS.some((path) => pathname.includes(path));

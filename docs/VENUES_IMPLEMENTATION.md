@@ -63,13 +63,26 @@ Plans control access, pricing, and enforce booking limits through JSON policy:
 
 ```typescript
 {
+  // Access Limits
   maxBookingsPerDay: 1,           // Limit bookings per day
   maxBookingsPerWeek: 3,          // Limit bookings per week
+  maxBookingsPerMonth: 10,        // Limit bookings per month
   maxActiveBookings: 5,           // Limit future bookings
+
+  // Time Restrictions
   allowedStartTimeFrom: "18:00",  // Time window restrictions
   allowedStartTimeTo: "22:00",    // Time window restrictions
-  allowedWeekdays: [1,2,3,4,5],  // Monday-Friday only
-  allowedServiceTypes: ["CLASS"]  // CLASS or APPOINTMENT
+  allowedWeekdays: [1,2,3,4,5],   // Monday-Friday only (number format)
+  allowedDays: ["MONDAY", "TUESDAY"], // Alternative string format
+  allowedServiceTypes: ["CLASS"],  // CLASS or APPOINTMENT
+
+  // Advance Booking
+  requiresAdvanceBooking: true,   // Must book X hours in advance
+  advanceBookingHours: 24,        // Minimum hours before session
+
+  // Cancellation Policy
+  allowCancellation: true,        // Whether cancellation is allowed
+  cancellationHours: 24           // Must cancel X hours before session
 }
 ```
 
@@ -90,12 +103,23 @@ Comprehensive validation enforces all plan policies:
 - ✅ Capacity limits (for classes)
 - ✅ Daily booking limits
 - ✅ Weekly booking limits
+- ✅ **Monthly booking limits**
 - ✅ Time window restrictions
-- ✅ Weekday restrictions
+- ✅ Weekday restrictions (both formats)
 - ✅ Service type restrictions
 - ✅ Prevents duplicate bookings
+- ✅ **Advance booking requirements**
 
-### 7. Invite & Join System
+### 7. Cancellation Validation
+
+Cancellation policy enforcement:
+
+- ✅ Check if plan allows cancellation
+- ✅ Check cancellation deadline (hours before session)
+- ✅ Prevent cancellation of attended sessions
+- ✅ Prevent cancellation of already started sessions
+
+### 8. Invite & Join System
 
 - **Invites**: Owners/admins invite staff (admin/coach) via token
 - **Join Requests**: Users request to join as clients

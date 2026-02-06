@@ -52,6 +52,7 @@ interface VenueSettingsModalProps {
     services?: string[];
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
+    defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
     requiresPlanToBook: boolean;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";

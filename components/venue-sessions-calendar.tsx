@@ -27,9 +27,11 @@ interface VenueSessionsCalendarProps {
   userId?: string;
   hasActiveSubscription?: boolean;
   isOwnerOrAdmin?: boolean;
+  canEditSessions?: boolean; // Coach or higher can edit sessions
   venueDefaults?: {
     defaultSessionCapacity: number | null;
     defaultBookingAdvanceDays: number;
+    defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
   };
 }
@@ -49,6 +51,7 @@ export function VenueSessionsCalendar({
   userId,
   hasActiveSubscription = false,
   isOwnerOrAdmin = false,
+  canEditSessions = false,
   venueDefaults,
 }: VenueSessionsCalendarProps) {
   const t = useTranslations("venues.sessions");
@@ -146,8 +149,8 @@ export function VenueSessionsCalendar({
 
   return (
     <div className="space-y-4">
-      {/* Create Session Button (Owner/Admin) */}
-      {isOwnerOrAdmin && (
+      {/* Create Session Button (Coach or higher can edit sessions) */}
+      {canEditSessions && (
         <div className="flex flex-wrap justify-end gap-2">
           <Button
             variant="outline"
@@ -199,6 +202,7 @@ export function VenueSessionsCalendar({
                 userId={userId}
                 hasActiveSubscription={hasActiveSubscription}
                 isOwnerOrAdmin={isOwnerOrAdmin}
+                canEditSessions={canEditSessions}
                 onBook={handleBookSession}
                 onCancel={handleCancelBooking}
                 onEdit={openEditSessionModal}
@@ -216,6 +220,7 @@ export function VenueSessionsCalendar({
         open={sessionModalOpen}
         onOpenChange={setSessionModalOpen}
         venueId={venueId}
+        userId={userId}
         session={sessionToEdit}
         defaultDate={defaultSessionDate}
         onSuccess={fetchSessions}
@@ -231,10 +236,12 @@ export function VenueSessionsCalendar({
         userId={userId}
         hasActiveSubscription={hasActiveSubscription}
         isOwnerOrAdmin={isOwnerOrAdmin}
+        canEditSessions={canEditSessions}
         onBook={handleBookSession}
         onCancel={handleCancelBooking}
         onEdit={openEditSessionModal}
         onDelete={handleDeleteSession}
+        onParticipantAdded={fetchSessions}
         bookingInProgress={bookingInProgress}
       />
 

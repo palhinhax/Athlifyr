@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import Link from "next/link";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -41,6 +42,8 @@ import {
   Edit,
   RefreshCw,
   Ban,
+  Trash2,
+  Clock,
 } from "lucide-react";
 import { format } from "date-fns";
 import { pt, enUS, es, fr, de, it } from "date-fns/locale";
@@ -116,6 +119,9 @@ export function VenueSubscribersManager({
   const [approveDialogOpen, setApproveDialogOpen] = useState(false);
   const [subscriptionToApprove, setSubscriptionToApprove] =
     useState<Subscription | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [subscriptionToDelete, setSubscriptionToDelete] =
+    useState<Subscription | null>(null);
 
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
@@ -177,13 +183,46 @@ export function VenueSubscribersManager({
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
+  // Calculate effective status based on dates
+  const getEffectiveStatus = (subscription: Subscription): string => {
+    const now = new Date();
+    const startsAt = new Date(subscription.startsAt);
+    const endsAt = subscription.endsAt ? new Date(subscription.endsAt) : null;
+
+    // If status is ACTIVE, check if it's actually active based on dates
+    if (subscription.status === "ACTIVE") {
+      // Subscription hasn't started yet
+      if (startsAt > now) {
+        return "SCHEDULED";
+      }
+      // Subscription has expired
+      if (endsAt && endsAt < now) {
+        return "EXPIRED";
+      }
+      // Subscription is truly active
+      return "ACTIVE";
+    }
+
+    // For other statuses, return as-is
+    return subscription.status;
+  };
+
+  const getStatusBadge = (subscription: Subscription) => {
+    const effectiveStatus = getEffectiveStatus(subscription);
+
+    switch (effectiveStatus) {
       case "ACTIVE":
         return (
           <Badge variant="default" className="bg-green-500">
             <CheckCircle className="mr-1 h-3 w-3" />
             {t("status.active")}
+          </Badge>
+        );
+      case "SCHEDULED":
+        return (
+          <Badge variant="secondary" className="bg-blue-500 text-white">
+            <Clock className="mr-1 h-3 w-3" />
+            {t("status.scheduled")}
           </Badge>
         );
       case "PENDING":
@@ -208,7 +247,7 @@ export function VenueSubscribersManager({
           </Badge>
         );
       default:
-        return <Badge variant="outline">{status}</Badge>;
+        return <Badge variant="outline">{effectiveStatus}</Badge>;
     }
   };
 
@@ -391,6 +430,44 @@ export function VenueSubscribersManager({
     }
   };
 
+  const handleDeleteSubscription = (subscription: Subscription) => {
+    setSubscriptionToDelete(subscription);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteSubscription = async () => {
+    if (!subscriptionToDelete) return;
+
+    try {
+      const response = await fetch(
+        `/api/venues/${venueId}/subscriptions/${subscriptionToDelete.id}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete subscription");
+      }
+
+      toast({
+        title: t("deleted"),
+        description: t("deletedDescription"),
+      });
+
+      fetchSubscriptions();
+      setDeleteDialogOpen(false);
+      setSubscriptionToDelete(null);
+    } catch (error) {
+      console.error("Error deleting subscription:", error);
+      toast({
+        title: tCommon("error"),
+        description: t("deleteErrorDescription"),
+        variant: "destructive",
+      });
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-12">
@@ -442,7 +519,10 @@ export function VenueSubscribersManager({
               >
                 {/* User Info */}
                 <div className="mb-4 flex items-start justify-between">
-                  <div className="flex items-center gap-3">
+                  <Link
+                    href={`/${locale}/user/${subscription.user.id}`}
+                    className="flex items-center gap-3 transition-opacity hover:opacity-80"
+                  >
                     <div className="relative h-12 w-12 overflow-hidden rounded-full bg-muted">
                       {subscription.user.image ? (
                         <Image
@@ -458,14 +538,14 @@ export function VenueSubscribersManager({
                       )}
                     </div>
                     <div>
-                      <div className="font-semibold">
+                      <div className="font-semibold hover:underline">
                         {subscription.user.name}
                       </div>
                       <div className="text-sm text-muted-foreground">
                         {subscription.user.email}
                       </div>
                     </div>
-                  </div>
+                  </Link>
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="icon">
@@ -529,7 +609,7 @@ export function VenueSubscribersManager({
                     <span className="text-sm text-muted-foreground">
                       {t("table.status")}:
                     </span>
-                    {getStatusBadge(subscription.status)}
+                    {getStatusBadge(subscription)}
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground">
@@ -668,7 +748,10 @@ export function VenueSubscribersManager({
                 {paginatedSubscriptions.map((subscription) => (
                   <TableRow key={subscription.id}>
                     <TableCell>
-                      <div className="flex items-center gap-3">
+                      <Link
+                        href={`/${locale}/user/${subscription.user.id}`}
+                        className="flex items-center gap-3 transition-opacity hover:opacity-80"
+                      >
                         <div className="relative h-10 w-10 overflow-hidden rounded-full bg-muted">
                           {subscription.user.image ? (
                             <Image
@@ -684,21 +767,21 @@ export function VenueSubscribersManager({
                           )}
                         </div>
                         <div>
-                          <div className="font-medium">
+                          <div className="font-medium hover:underline">
                             {subscription.user.name}
                           </div>
                           <div className="text-sm text-muted-foreground">
                             {subscription.user.email}
                           </div>
                         </div>
-                      </div>
+                      </Link>
                     </TableCell>
                     <TableCell>
                       <div className="font-medium">
                         {subscription.plan.name}
                       </div>
                     </TableCell>
-                    <TableCell>{getStatusBadge(subscription.status)}</TableCell>
+                    <TableCell>{getStatusBadge(subscription)}</TableCell>
                     <TableCell>
                       {getPaymentStatusBadge(subscription.paymentStatus)}
                     </TableCell>
@@ -774,6 +857,15 @@ export function VenueSubscribersManager({
                               </DropdownMenuItem>
                             </>
                           )}
+                          <DropdownMenuItem
+                            onClick={() =>
+                              handleDeleteSubscription(subscription)
+                            }
+                            className="text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            {t("deleteSubscription")}
+                          </DropdownMenuItem>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -991,6 +1083,45 @@ export function VenueSubscribersManager({
               className="bg-green-600 text-white hover:bg-green-700"
             >
               {t("approveSubscription")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("deleteSubscription")}</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div>
+                <p className="mb-4">{t("deleteConfirmation")}</p>
+                {subscriptionToDelete && (
+                  <div className="space-y-2 rounded-lg bg-muted p-3 text-sm">
+                    <div>
+                      <span className="font-medium">{t("user")}:</span>{" "}
+                      {subscriptionToDelete.user.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("plan")}:</span>{" "}
+                      {subscriptionToDelete.plan.name}
+                    </div>
+                    <div>
+                      <span className="font-medium">{t("status.label")}:</span>{" "}
+                      {subscriptionToDelete.status}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDeleteSubscription}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {t("deleteSubscription")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

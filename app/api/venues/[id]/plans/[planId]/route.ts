@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { canManageVenue, isVenueOwner } from "@/lib/venues/authorization";
 import { Currency } from "@prisma/client";
 
 // PUT - Update plan
@@ -37,8 +37,15 @@ export async function PUT(
     }
 
     const body = await request.json();
-    const { name, description, price, currency, policy, paymentProvider } =
-      body;
+    const {
+      name,
+      description,
+      price,
+      currency,
+      policy,
+      paymentProvider,
+      includedVenueIds,
+    } = body;
 
     // Validate currency if provided
     if (currency && !Object.values(Currency).includes(currency)) {
@@ -56,20 +63,72 @@ export async function PUT(
       }
     }
 
-    // Update plan
-    const plan = await prisma.venuePlan.update({
-      where: {
-        id: planId,
-      },
-      data: {
-        ...(name && { name }),
-        ...(description !== undefined && { description }),
-        ...(price !== undefined && { price }),
-        ...(currency && { currency }),
-        ...(paymentProvider && { paymentProvider }),
-        ...(policy !== undefined && { policy }),
-        ...(body.isActive !== undefined && { isActive: body.isActive }),
-      },
+    // If includedVenueIds provided, verify user is OWNER of all included venues
+    if (includedVenueIds !== undefined) {
+      for (const includedVenueId of includedVenueIds || []) {
+        const isOwner = await isVenueOwner(session.user.id, includedVenueId);
+        if (!isOwner) {
+          return NextResponse.json(
+            {
+              error:
+                "You must be owner of all venues you want to include in this plan",
+            },
+            { status: 403 }
+          );
+        }
+      }
+    }
+
+    // Update plan with transaction to handle included venues
+    const plan = await prisma.$transaction(async (tx) => {
+      // If includedVenueIds is provided, update the junction table
+      if (includedVenueIds !== undefined) {
+        // Delete existing included venues
+        await tx.venuePlanVenue.deleteMany({
+          where: { planId },
+        });
+
+        // Create new included venues
+        if (includedVenueIds.length > 0) {
+          await tx.venuePlanVenue.createMany({
+            data: includedVenueIds.map((vId: string) => ({
+              planId,
+              venueId: vId,
+            })),
+          });
+        }
+      }
+
+      // Update plan
+      return tx.venuePlan.update({
+        where: {
+          id: planId,
+        },
+        data: {
+          ...(name && { name }),
+          ...(description !== undefined && { description }),
+          ...(price !== undefined && { price }),
+          ...(currency && { currency }),
+          ...(paymentProvider && { paymentProvider }),
+          ...(policy !== undefined && { policy }),
+          ...(body.isActive !== undefined && { isActive: body.isActive }),
+        },
+        include: {
+          includedVenues: {
+            include: {
+              venue: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  city: true,
+                  logo: true,
+                },
+              },
+            },
+          },
+        },
+      });
     });
 
     return NextResponse.json(plan);

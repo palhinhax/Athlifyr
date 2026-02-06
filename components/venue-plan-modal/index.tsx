@@ -19,6 +19,17 @@ import { PolicyDurationForm } from "./policy-duration-form";
 import { PolicyLimitsForm } from "./policy-limits-form";
 import { PolicyScheduleForm } from "./policy-schedule-form";
 import { PolicyAdvancedForm } from "./policy-advanced-form";
+import { IncludedVenuesForm } from "./included-venues-form";
+
+interface IncludedVenue {
+  venue: {
+    id: string;
+    name: string;
+    slug: string;
+    city: string | null;
+    logo: string | null;
+  };
+}
 
 interface VenuePlanModalProps {
   open: boolean;
@@ -31,6 +42,7 @@ interface VenuePlanModalProps {
     price: number | null;
     currency: string;
     policy?: VenuePlanPolicy | null;
+    includedVenues?: IncludedVenue[];
   } | null;
   onSuccess: () => void;
 }
@@ -58,6 +70,9 @@ export function VenuePlanModal({
     plan?.policy || DEFAULT_PLAN_POLICY
   );
 
+  const [includedVenueIds, setIncludedVenueIds] = useState<string[]>(
+    plan?.includedVenues?.map((iv) => iv.venue.id) || []
+  );
   // Update form data when plan changes (for editing different plans)
   useEffect(() => {
     if (open) {
@@ -69,6 +84,7 @@ export function VenuePlanModal({
         // paymentProvider removed - now managed at venue level
       });
       setPolicy(plan?.policy || DEFAULT_PLAN_POLICY);
+      setIncludedVenueIds(plan?.includedVenues?.map((iv) => iv.venue.id) || []);
     }
   }, [plan, open]);
 
@@ -95,6 +111,7 @@ export function VenuePlanModal({
           currency: formData.currency,
           // paymentProvider removed - now managed at venue level
           policy: policy,
+          includedVenueIds: includedVenueIds,
         }),
       });
 
@@ -102,7 +119,6 @@ export function VenuePlanModal({
         const data = await response.json();
         throw new Error(data.error || "Failed to save plan");
       }
-
       toast({
         title: plan ? t("planUpdated") : t("planCreated"),
         description: plan
@@ -135,9 +151,10 @@ export function VenuePlanModal({
 
         <form onSubmit={handleSubmit}>
           <Tabs defaultValue="basic" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
+            <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="basic">{t("basicInfo")}</TabsTrigger>
               <TabsTrigger value="policy">{t("accessPolicy")}</TabsTrigger>
+              <TabsTrigger value="venues">{t("multiVenue")}</TabsTrigger>
             </TabsList>
 
             <TabsContent value="basic" className="space-y-4 py-4">
@@ -152,6 +169,14 @@ export function VenuePlanModal({
               <PolicyLimitsForm policy={policy} onPolicyChange={setPolicy} />
               <PolicyScheduleForm policy={policy} onPolicyChange={setPolicy} />
               <PolicyAdvancedForm policy={policy} onPolicyChange={setPolicy} />
+            </TabsContent>
+
+            <TabsContent value="venues" className="space-y-4 py-4">
+              <IncludedVenuesForm
+                currentVenueId={venueId}
+                selectedVenueIds={includedVenueIds}
+                onSelectedVenueIdsChange={setIncludedVenueIds}
+              />
             </TabsContent>
           </Tabs>
 

@@ -3,6 +3,11 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
+import {
+  calculatePlanEndDate,
+  type VenuePlanPolicy,
+  DEFAULT_PLAN_POLICY,
+} from "@/types/venue-plan";
 
 // Desabilitar parsing do body para webhooks
 export const runtime = "nodejs";
@@ -134,6 +139,14 @@ async function handlePaymentIntentSucceeded(
         },
       });
     } else {
+      // Calculate start and end dates based on plan policy
+      const startDate = new Date();
+      const planPolicy = paymentIntent.plan?.policy as VenuePlanPolicy | null;
+      const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
+      const durationValue =
+        planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
+      const endDate = calculatePlanEndDate(startDate, duration, durationValue);
+
       // Criar nova subscrição
       await prisma.venueSubscription.create({
         data: {
@@ -145,6 +158,8 @@ async function handlePaymentIntentSucceeded(
           paymentConfirmedAt: new Date(),
           paymentAmount: paymentIntent.amount,
           paymentMethod: "Stripe",
+          startsAt: startDate,
+          endsAt: endDate,
         },
       });
 

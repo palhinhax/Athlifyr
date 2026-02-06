@@ -6,6 +6,9 @@
     "metaDescription": "Erkunden Sie alle Sportveranstaltungen. Finden Sie Rennen, Wettbewerbe und Herausforderungen in Ihrer Nähe.",
     "viewMap": "Karte Anzeigen",
     "viewList": "Liste Anzeigen",
+    "viewEvent": "Veranstaltung Anzeigen",
+    "availableVariants": "Verfügbare Rennen",
+    "friendsParticipating": "Freunde nehmen teil",
     "upcoming": "Bevorstehende Veranstaltungen",
     "featured": "Hervorgehoben",
     "allEvents": "Alle Veranstaltungen",
@@ -250,6 +253,9 @@
       "clearFilters": "Filter Löschen",
       "resultsCount": "{count} Events gefunden",
       "noResults": "Keine Events mit aktuellen Filtern gefunden"
-    }
+    },
+    "viewEvent": "Event Ansehen",
+    "availableVariants": "Verfügbare Varianten",
+    "friendsParticipating": "Freunde nehmen teil"
   }
 }

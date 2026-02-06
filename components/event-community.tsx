@@ -51,6 +51,7 @@ export function EventCommunity({
               post={{
                 ...post,
                 event: {
+                  id: eventId,
                   title: eventTitle,
                   slug: eventSlug,
                 },

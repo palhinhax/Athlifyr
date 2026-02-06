@@ -23,12 +23,21 @@ import {
   UserCircle,
   ClipboardList,
   UserPlus,
+  X,
+  Loader2,
+  CalendarClock,
+  XCircle,
 } from "lucide-react";
 import { format, parseISO, differenceInMinutes, isPast } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AddParticipantDialog } from "@/components/add-participant-dialog";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  getBookingTimeStatus,
+  formatTimeUntilBookable,
+} from "@/lib/venues/booking-status";
 
 // Helper function to format exercise prescription
 function formatExercisePrescription(ex: {
@@ -83,11 +92,13 @@ function formatExercisePrescription(ex: {
 interface SessionBooking {
   id: string;
   status: string;
+  guestName?: string | null;
+  guestEmail?: string | null;
   user: {
     id: string;
     name: string | null;
     image: string | null;
-  };
+  } | null;
 }
 
 interface SessionCoach {
@@ -162,6 +173,9 @@ interface VenueSession {
     bookings: number;
   };
   isBooked?: boolean;
+  bookingAdvanceDays?: number;
+  bookingDeadlineMinutes?: number;
+  cancellationDeadlineMinutes?: number;
 }
 
 const localeMap: Record<string, Locale> = {
@@ -181,6 +195,7 @@ interface SessionDetailsDialogProps {
   userId?: string;
   hasActiveSubscription?: boolean;
   isOwnerOrAdmin?: boolean;
+  canEditSessions?: boolean; // Coach or higher can edit sessions
   onBook?: (sessionId: string) => void;
   onCancel?: (sessionId: string) => void;
   onEdit?: (session: VenueSession) => void;
@@ -197,6 +212,7 @@ export function SessionDetailsDialog({
   userId,
   hasActiveSubscription = false,
   isOwnerOrAdmin = false,
+  canEditSessions = false,
   onBook,
   onCancel,
   onEdit,
@@ -205,11 +221,58 @@ export function SessionDetailsDialog({
   bookingInProgress,
 }: SessionDetailsDialogProps) {
   const [addParticipantOpen, setAddParticipantOpen] = useState(false);
+  const [removingParticipant, setRemovingParticipant] = useState<string | null>(
+    null
+  );
+  const { toast } = useToast();
   const t = useTranslations("venues.sessions");
   const tVenues = useTranslations("venues");
   const tBooking = useTranslations("venues.booking");
   const tWorkouts = useTranslations("workouts");
+  const tCommon = useTranslations("common");
   const dateLocale = localeMap[locale] || enUS;
+
+  // Handle removing a participant
+  const handleRemoveParticipant = async (bookingId: string) => {
+    if (!session) return;
+
+    setRemovingParticipant(bookingId);
+    try {
+      const response = await fetch(
+        `/api/venues/${session.venueId}/sessions/${session.id}/remove-participant`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ bookingId }),
+        }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to remove participant");
+      }
+
+      toast({
+        title: t("participantRemoved"),
+        description: t("participantRemovedDescription"),
+      });
+
+      // Refresh the session data
+      onParticipantAdded?.();
+    } catch (error) {
+      console.error("Error removing participant:", error);
+      toast({
+        title: tCommon("error"),
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to remove participant",
+        variant: "destructive",
+      });
+    } finally {
+      setRemovingParticipant(null);
+    }
+  };
 
   if (!session) return null;
 
@@ -223,9 +286,32 @@ export function SessionDetailsDialog({
     ? session.capacity - session._count.bookings
     : null;
 
+  // Get booking time status with proper defaults
+  const bookingTimeStatus = getBookingTimeStatus({
+    sessionStartsAt: session.startsAt,
+    bookingAdvanceDays: session.bookingAdvanceDays ?? 4,
+    bookingDeadlineMinutes: session.bookingDeadlineMinutes ?? 0,
+    cancellationDeadlineMinutes: session.cancellationDeadlineMinutes ?? 30,
+    isBooked: session.isBooked,
+  });
+
+  // Determine if user can book/cancel based on time AND other conditions
   const canBook =
-    userId && hasActiveSubscription && !session.isBooked && !isFull;
-  const canCancel = userId && session.isBooked;
+    userId &&
+    hasActiveSubscription &&
+    !session.isBooked &&
+    !isFull &&
+    bookingTimeStatus.canBook;
+  const canCancel = userId && session.isBooked && bookingTimeStatus.canCancel;
+
+  // Format time until bookable for display
+  const timeUntilBookableText = bookingTimeStatus.timeUntilBookable
+    ? formatTimeUntilBookable(bookingTimeStatus.timeUntilBookable, {
+        days: (count) => t("daysCount", { count }),
+        hours: (count) => t("hoursCount", { count }),
+        minutes: (count) => t("minutesCount", { count }),
+      })
+    : "";
 
   // Check if user can log workout (past session with workout that user attended)
   const isPastSession = isPast(sessionStart);
@@ -502,8 +588,8 @@ export function SessionDetailsDialog({
             </>
           )}
 
-          {/* Bookings (owner view) */}
-          {isOwnerOrAdmin &&
+          {/* Bookings (coach/admin view) */}
+          {canEditSessions &&
             session.bookings &&
             session.bookings.length > 0 && (
               <>
@@ -527,12 +613,27 @@ export function SessionDetailsDialog({
                         className="flex items-center gap-2 rounded-md border p-2"
                       >
                         <User className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">
-                          {booking.user.name || "Unknown User"}
+                        <span className="flex-1 text-sm">
+                          {booking.user?.name ||
+                            booking.guestName ||
+                            "Unknown User"}
                         </span>
-                        <Badge variant="outline" className="ml-auto text-xs">
+                        <Badge variant="outline" className="text-xs">
                           {booking.status}
                         </Badge>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                          onClick={() => handleRemoveParticipant(booking.id)}
+                          disabled={removingParticipant === booking.id}
+                        >
+                          {removingParticipant === booking.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
+                        </Button>
                       </div>
                     ))}
                   </div>
@@ -540,8 +641,8 @@ export function SessionDetailsDialog({
               </>
             )}
 
-          {/* Add Participant button when no bookings yet (owner view) */}
-          {isOwnerOrAdmin &&
+          {/* Add Participant button when no bookings yet (coach/admin view) */}
+          {canEditSessions &&
             (!session.bookings || session.bookings.length === 0) && (
               <>
                 <Separator />
@@ -566,7 +667,7 @@ export function SessionDetailsDialog({
         </div>
 
         {/* Add Participant Dialog */}
-        {isOwnerOrAdmin && (
+        {canEditSessions && (
           <AddParticipantDialog
             open={addParticipantOpen}
             onOpenChange={setAddParticipantOpen}
@@ -579,7 +680,38 @@ export function SessionDetailsDialog({
           />
         )}
 
-        <DialogFooter className="gap-2">
+        <DialogFooter className="flex-col gap-2 sm:flex-row">
+          {/* Show booking status message when user can't book due to time constraints */}
+          {userId &&
+            hasActiveSubscription &&
+            !session.isBooked &&
+            !isFull &&
+            !bookingTimeStatus.canBook && (
+              <div className="flex w-full items-center justify-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground sm:w-auto sm:flex-1">
+                <CalendarClock className="h-4 w-4 flex-shrink-0" />
+                <span>
+                  {bookingTimeStatus.isPast
+                    ? t("sessionPast")
+                    : bookingTimeStatus.isNotYetBookable
+                      ? t("bookingAvailableIn", { time: timeUntilBookableText })
+                      : bookingTimeStatus.isTooLateToBook
+                        ? t("bookingClosed")
+                        : null}
+                </span>
+              </div>
+            )}
+
+          {/* Show cancellation closed message */}
+          {userId &&
+            session.isBooked &&
+            !bookingTimeStatus.canCancel &&
+            !bookingTimeStatus.isPast && (
+              <div className="flex w-full items-center justify-center gap-2 rounded-md bg-muted px-3 py-2 text-sm text-muted-foreground sm:w-auto sm:flex-1">
+                <XCircle className="h-4 w-4 flex-shrink-0" />
+                <span>{t("cancellationClosed")}</span>
+              </div>
+            )}
+
           {/* Log Workout button for past sessions */}
           {canLogWorkout && workoutId && (
             <Button asChild className="flex-1">
@@ -618,7 +750,7 @@ export function SessionDetailsDialog({
             </Button>
           )}
 
-          {isOwnerOrAdmin && (
+          {canEditSessions && (
             <>
               <Button
                 variant="outline"
@@ -629,15 +761,17 @@ export function SessionDetailsDialog({
               >
                 {t("editSession")}
               </Button>
-              <Button
-                variant="destructive"
-                onClick={() => {
-                  onDelete?.(session);
-                  onOpenChange(false);
-                }}
-              >
-                {t("deleteSession")}
-              </Button>
+              {isOwnerOrAdmin && (
+                <Button
+                  variant="destructive"
+                  onClick={() => {
+                    onDelete?.(session);
+                    onOpenChange(false);
+                  }}
+                >
+                  {t("deleteSession")}
+                </Button>
+              )}
             </>
           )}
         </DialogFooter>

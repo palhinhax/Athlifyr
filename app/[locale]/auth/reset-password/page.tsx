@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import { Metadata } from "next";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { AuthVideoBackground } from "@/components/auth/auth-video-background";
 
 export const metadata: Metadata = {
   title: "Alterar Password - Athlifyr",
@@ -13,10 +14,10 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="container flex min-h-screen items-center justify-center py-10">
+    <AuthVideoBackground>
       <Suspense fallback={<div>A carregar...</div>}>
         <ResetPasswordContent />
       </Suspense>
-    </div>
+    </AuthVideoBackground>
   );
 }

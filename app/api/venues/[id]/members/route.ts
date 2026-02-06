@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { canManageSessions } from "@/lib/venues/authorization";
 
 // GET - List members of a venue
 export async function GET(
@@ -17,8 +17,8 @@ export async function GET(
 
     const { id: venueId } = await params;
 
-    // Check if user has access to view members
-    const authResult = await canManageVenue(session.user.id, venueId);
+    // Check if user has access to view members (coach or higher can view staff list)
+    const authResult = await canManageSessions(session.user.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

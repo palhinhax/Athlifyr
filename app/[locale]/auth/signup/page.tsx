@@ -1,4 +1,5 @@
 import { SignUpForm } from "@/components/auth/signup-form";
+import { AuthVideoBackground } from "@/components/auth/auth-video-background";
 
 export const metadata = {
   title: "Criar Conta - Athlifyr",
@@ -7,8 +8,8 @@ export const metadata = {
 
 export default function SignUpPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
+    <AuthVideoBackground>
       <SignUpForm />
-    </div>
+    </AuthVideoBackground>
   );
 }

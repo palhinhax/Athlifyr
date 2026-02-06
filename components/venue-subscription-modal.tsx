@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useTranslations } from "next-intl";
-import { addDays, addMonths, addYears } from "date-fns";
 import {
   Dialog,
   DialogContent,
@@ -23,6 +22,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import {
+  calculatePlanEndDate,
+  type VenuePlanPolicy,
+  DEFAULT_PLAN_POLICY,
+} from "@/types/venue-plan";
 
 interface User {
   id: string;
@@ -119,35 +123,15 @@ export function VenueSubscriptionModal({
 
     try {
       const startDate = new Date(startsAt);
-      const policy = selectedPlan.policy as {
-        duration?: { value: number; unit: string };
-      };
+      const policy = selectedPlan.policy as VenuePlanPolicy | null;
 
-      if (policy?.duration) {
-        const { value, unit } = policy.duration;
-        let endDate: Date;
+      // Use plan policy or defaults
+      const duration = policy?.duration || DEFAULT_PLAN_POLICY.duration;
+      const durationValue =
+        policy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
 
-        switch (unit) {
-          case "days":
-            endDate = addDays(startDate, value);
-            break;
-          case "months":
-            endDate = addMonths(startDate, value);
-            break;
-          case "years":
-            endDate = addYears(startDate, value);
-            break;
-          default:
-            // Default to 1 month
-            endDate = addMonths(startDate, 1);
-        }
-
-        setEndsAt(endDate.toISOString().split("T")[0]);
-      } else {
-        // No duration specified, default to 1 month
-        const endDate = addMonths(startDate, 1);
-        setEndsAt(endDate.toISOString().split("T")[0]);
-      }
+      const endDate = calculatePlanEndDate(startDate, duration, durationValue);
+      setEndsAt(endDate.toISOString().split("T")[0]);
     } catch (error) {
       console.error("Error calculating end date:", error);
     }

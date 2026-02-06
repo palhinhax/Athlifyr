@@ -6,6 +6,9 @@
     "metaDescription": "Explora todos los eventos deportivos. Encuentra carreras, competiciones y desafíos cerca de ti.",
     "viewMap": "Ver Mapa",
     "viewList": "Ver Lista",
+    "viewEvent": "Ver Evento",
+    "availableVariants": "Pruebas Disponibles",
+    "friendsParticipating": "amigos participarán",
     "upcoming": "Próximos Eventos",
     "featured": "Destacados",
     "allEvents": "Todos los Eventos",
@@ -250,6 +253,9 @@
       "clearFilters": "Limpiar Filtros",
       "resultsCount": "{count} eventos encontrados",
       "noResults": "No se encontraron eventos con los filtros actuales"
-    }
+    },
+    "viewEvent": "Ver Evento",
+    "availableVariants": "Pruebas Disponibles",
+    "friendsParticipating": "amigos participarán"
   }
 }

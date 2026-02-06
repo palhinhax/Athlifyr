@@ -61,13 +61,17 @@ export async function GET() {
     });
 
     // 2. Fetch active subscriptions with venue details
+    const now = new Date();
     const activeSubscriptions = await prisma.venueSubscription.findMany({
       where: {
         userId: session.user.id,
         status: "ACTIVE",
+        startsAt: {
+          lte: now, // Subscription must have already started
+        },
         OR: [
           { endsAt: null }, // No end date (ongoing)
-          { endsAt: { gte: new Date() } }, // Ends in the future
+          { endsAt: { gte: now } }, // Ends in the future
         ],
       },
       include: {
@@ -116,6 +120,77 @@ export async function GET() {
         }
       }
     });
+
+    // 3. Fetch venues included in multi-venue plans from active subscriptions
+    const subscriptionPlanIds = activeSubscriptions.map((s) => s.planId);
+
+    if (subscriptionPlanIds.length > 0) {
+      const includedVenues = await prisma.venuePlanVenue.findMany({
+        where: {
+          planId: { in: subscriptionPlanIds },
+        },
+        include: {
+          venue: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              logo: true,
+              isActive: true,
+            },
+          },
+          plan: {
+            select: {
+              id: true,
+              // Get the subscription end date for this plan
+              subscriptions: {
+                where: {
+                  userId: session.user.id,
+                  status: "ACTIVE",
+                  startsAt: { lte: now },
+                  OR: [{ endsAt: null }, { endsAt: { gte: now } }],
+                },
+                select: {
+                  endsAt: true,
+                },
+                take: 1,
+              },
+            },
+          },
+        },
+      });
+
+      // Add included venues to the map
+      includedVenues.forEach((pv) => {
+        if (!pv.venue.isActive) return;
+
+        const venueId = pv.venue.id;
+        const existing = venueMap.get(venueId);
+        const subscriptionEndsAt = pv.plan.subscriptions[0]?.endsAt || null;
+
+        if (!existing) {
+          venueMap.set(venueId, {
+            id: pv.venue.id,
+            name: pv.venue.name,
+            slug: pv.venue.slug,
+            imageUrl: pv.venue.logo,
+            role: null, // User has access via multi-venue plan, not as member
+            subscriptionEndsAt: subscriptionEndsAt,
+          });
+        } else {
+          // Update end date if this subscription lasts longer
+          const existingEndDate = existing.subscriptionEndsAt?.getTime() || 0;
+          const currentEndDate = subscriptionEndsAt?.getTime() || Infinity;
+
+          if (currentEndDate > existingEndDate) {
+            venueMap.set(venueId, {
+              ...existing,
+              subscriptionEndsAt: subscriptionEndsAt,
+            });
+          }
+        }
+      });
+    }
 
     const activeVenues: ActiveVenue[] = Array.from(venueMap.values());
 

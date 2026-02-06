@@ -16,6 +16,65 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+/**
+ * Simple markdown to HTML converter for server-side rendering
+ * Supports: headings, bold, italic, lists, links, line breaks
+ * This keeps SSR content clean while being SEO-friendly
+ */
+function markdownToHtml(markdown: string): string {
+  if (!markdown) return "";
+
+  let html = markdown
+    // Escape HTML entities first
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    // Headers (must be at start of line)
+    .replace(
+      /^### (.+)$/gm,
+      '<h4 class="text-base font-semibold mt-4 mb-2">$1</h4>'
+    )
+    .replace(
+      /^## (.+)$/gm,
+      '<h3 class="text-lg font-semibold mt-5 mb-2">$1</h3>'
+    )
+    .replace(/^# (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+    // Bold and italic
+    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    // Unordered lists (- item)
+    .replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>')
+    // Links [text](url)
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>'
+    )
+    // Line breaks
+    .replace(/\n\n/g, '</p><p class="mt-3">')
+    .replace(/\n/g, "<br />");
+
+  // Wrap list items in ul
+  if (html.includes("<li")) {
+    html = html.replace(
+      /(<li[^>]*>.*?<\/li>)+/g,
+      '<ul class="list-disc space-y-1 my-3">$&</ul>'
+    );
+  }
+
+  // Wrap in paragraph
+  html = `<p>${html}</p>`;
+
+  // Clean up empty paragraphs
+  html = html.replace(/<p>\s*<\/p>/g, "");
+  html = html.replace(/<p>\s*<(h[2-4])/g, "<$1");
+  html = html.replace(/<\/(h[2-4])>\s*<\/p>/g, "</$1>");
+  html = html.replace(/<p>\s*<ul/g, "<ul");
+  html = html.replace(/<\/ul>\s*<\/p>/g, "</ul>");
+
+  return html;
+}
+
 // WhatsApp icon component
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -498,10 +557,10 @@ export function VenueSSRContent({
             className="prose prose-sm dark:prose-invert max-w-none"
             itemProp="description"
           >
-            {/* Render full description for crawlers and initial page load */}
+            {/* Render markdown as HTML for crawlers and initial page load */}
             <div
               dangerouslySetInnerHTML={{
-                __html: description.replace(/\n/g, "<br />"),
+                __html: markdownToHtml(description),
               }}
             />
           </div>

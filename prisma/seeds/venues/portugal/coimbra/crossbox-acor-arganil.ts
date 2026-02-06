@@ -334,7 +334,15 @@ async function main() {
       isActive: true,
       coverImage: CROSSBOX_ACOR_COVER,
       logo: null,
-      visibleTabs: ["feed", "about", "plans", "sessions", "team"],
+      visibleTabs: [
+        "feed",
+        "about",
+        "plans",
+        "sessions",
+        "team",
+        "clients",
+        "subscriptions",
+      ],
     },
   });
 

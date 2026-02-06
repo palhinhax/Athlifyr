@@ -6,6 +6,9 @@
     "metaDescription": "Esplora tutti gli eventi sportivi. Trova gare, competizioni e sfide vicino a te.",
     "viewMap": "Vedi Mappa",
     "viewList": "Vedi Lista",
+    "viewEvent": "Vedi Evento",
+    "availableVariants": "Gare Disponibili",
+    "friendsParticipating": "amici parteciperanno",
     "upcoming": "Prossimi Eventi",
     "featured": "In Evidenza",
     "allEvents": "Tutti gli Eventi",
@@ -250,6 +253,9 @@
       "clearFilters": "Cancella Filtri",
       "resultsCount": "{count} eventi trovati",
       "noResults": "Nessun evento trovato con i filtri attuali"
-    }
+    },
+    "viewEvent": "Vedi Evento",
+    "availableVariants": "Gare Disponibili",
+    "friendsParticipating": "amici parteciperanno"
   }
 }

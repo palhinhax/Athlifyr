@@ -204,6 +204,15 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
+    // Check if session is in the past - cannot delete past sessions
+    const now = new Date();
+    if (new Date(existingSession.startsAt) < now) {
+      return NextResponse.json(
+        { error: "Cannot delete past sessions" },
+        { status: 400 }
+      );
+    }
+
     // If deleteRecurring is true, delete the recurring template and all future sessions
     if (deleteRecurring && existingSession.recurringSessionId) {
       // Count active bookings in all future sessions of this recurring

@@ -3,14 +3,33 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { PostCard } from "@/components/post-card";
 import { CreatePost } from "@/components/create-post";
-import { Loader2, Globe } from "lucide-react";
+import { ShareEventDialog } from "@/components/share-event-dialog";
+import { Loader2, Globe, Calendar } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/ui/badge";
-import type { Post, User, Event, Venue } from "@prisma/client";
+import { Button } from "@/components/ui/button";
+import type { Post, User, Event, Venue, EventVariant } from "@prisma/client";
 
 type PostWithDetails = Post & {
   user: Pick<User, "id" | "name" | "image">;
-  event: Pick<Event, "title" | "slug"> | null;
+  event:
+    | (Pick<
+        Event,
+        | "id"
+        | "title"
+        | "slug"
+        | "description"
+        | "startDate"
+        | "endDate"
+        | "city"
+        | "country"
+        | "imageUrl"
+        | "isFeatured"
+        | "sportTypes"
+      > & {
+        variants?: Pick<EventVariant, "id" | "name" | "distanceKm">[];
+      })
+    | null;
   venue: Pick<Venue, "id" | "name" | "slug"> | null;
   _count: {
     likes: number;
@@ -31,21 +50,26 @@ interface PaginationInfo {
 
 interface VenueFeedProps {
   venueId: string;
+  venueName?: string;
   userId?: string;
   userName?: string | null;
   userImage?: string | null;
   isMember: boolean;
+  isOwner?: boolean;
 }
 
 export function VenueFeed({
   venueId,
+  venueName = "",
   userId,
   userName,
   userImage,
   isMember,
+  isOwner = false,
 }: VenueFeedProps) {
   const t = useTranslations("feed");
   const tVenue = useTranslations("venues.posts");
+  const tShareEvent = useTranslations("venues.shareEvent");
   const [posts, setPosts] = useState<PostWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -157,6 +181,20 @@ export function VenueFeed({
 
   return (
     <div className="space-y-6">
+      {/* Share Event Button - Only for owners */}
+      {isOwner && userId && (
+        <ShareEventDialog
+          venueId={venueId}
+          venueName={venueName}
+          onEventShared={() => fetchPosts(1)}
+        >
+          <Button variant="outline" className="w-full gap-2">
+            <Calendar className="h-4 w-4" />
+            {tShareEvent("buttonLabel")}
+          </Button>
+        </ShareEventDialog>
+      )}
+
       {/* Create Post - Only for members */}
       {isMember && userId && (
         <CreatePost
@@ -200,6 +238,7 @@ export function VenueFeed({
                   id: post.id,
                   content: post.content,
                   imageUrl: post.imageUrl,
+                  mediaType: post.mediaType,
                   createdAt: post.createdAt,
                   userId: post.userId,
                   user: post.user,

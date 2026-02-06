@@ -5,11 +5,28 @@ import { PostCard } from "@/components/post-card";
 import { CreatePost } from "@/components/create-post";
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import type { Post, User, Event, Venue } from "@prisma/client";
+import type { Post, User, Event, Venue, EventVariant } from "@prisma/client";
 
 type PostWithDetails = Post & {
   user: Pick<User, "id" | "name" | "image">;
-  event: Pick<Event, "title" | "slug"> | null;
+  event:
+    | (Pick<
+        Event,
+        | "id"
+        | "title"
+        | "slug"
+        | "description"
+        | "startDate"
+        | "endDate"
+        | "city"
+        | "country"
+        | "imageUrl"
+        | "isFeatured"
+        | "sportTypes"
+      > & {
+        variants?: Pick<EventVariant, "id" | "name" | "distanceKm">[];
+      })
+    | null;
   venue: Pick<Venue, "id" | "name" | "slug"> | null;
   _count: {
     likes: number;

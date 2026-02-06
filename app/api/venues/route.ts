@@ -37,9 +37,48 @@ export async function GET(request: NextRequest) {
         .normalize("NFD")
         .replace(/[\u0300-\u036f]/g, "");
 
-      const fuzzyVenues = await prisma.$queryRaw<{ id: string }[]>`
-        SELECT DISTINCT v.id,
-          GREATEST(
+      try {
+        // Try fuzzy search with pg_trgm extension
+        const fuzzyVenues = await prisma.$queryRaw<{ id: string }[]>`
+          SELECT DISTINCT v.id,
+            GREATEST(
+              similarity(
+                LOWER(
+                  translate(
+                    v.name,
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(
+                  translate(
+                    COALESCE(v.description, ''),
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(
+                  translate(
+                    v.city,
+                    'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
+                    'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
+                  )
+                ),
+                ${normalizedSearch}
+              ),
+              similarity(
+                LOWER(v.slug),
+                ${normalizedSearch}
+              )
+            ) AS max_similarity
+          FROM "Venue" v
+          WHERE
             similarity(
               LOWER(
                 translate(
@@ -49,8 +88,8 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(
                 translate(
                   COALESCE(v.description, ''),
@@ -59,8 +98,8 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(
                 translate(
                   v.city,
@@ -69,52 +108,41 @@ export async function GET(request: NextRequest) {
                 )
               ),
               ${normalizedSearch}
-            ),
-            similarity(
+            ) > 0.2
+            OR similarity(
               LOWER(v.slug),
               ${normalizedSearch}
-            )
-          ) AS max_similarity
-        FROM "Venue" v
-        WHERE
-          similarity(
-            LOWER(
-              translate(
-                v.name,
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(
-              translate(
-                COALESCE(v.description, ''),
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(
-              translate(
-                v.city,
-                'áàâãäåāăąÁÀÂÃÄÅĀĂĄéèêëēĕėęěÉÈÊËĒĔĖĘĚíìîïĩīĭİÍÌÎÏĨĪĬıóòôõöōŏőÓÒÔÕÖŌŎŐúùûüũūŭůÚÙÛÜŨŪŬŮçÇñÑ',
-                'aaaaaaaaaAAAAAAAAAeeeeeeeeeEEEEEEEEEiiiiiiiIIIIIIIioooooooOOOOOOOuuuuuuuuUUUUUUUUcCnN'
-              )
-            ),
-            ${normalizedSearch}
-          ) > 0.2
-          OR similarity(
-            LOWER(v.slug),
-            ${normalizedSearch}
-          ) > 0.2
-        ORDER BY max_similarity DESC
-      `;
+            ) > 0.2
+          ORDER BY max_similarity DESC
+        `;
 
-      fuzzyVenueIds = fuzzyVenues.map((v) => v.id);
+        fuzzyVenueIds = fuzzyVenues.map((v) => v.id);
+      } catch {
+        // Fallback to simple ILIKE search if pg_trgm extension is not available
+        console.log(
+          "pg_trgm extension not available, using simple ILIKE search"
+        );
+        const searchPattern = `%${search}%`;
+        const simpleVenues = await prisma.$queryRaw<
+          { id: string; sort_order: number }[]
+        >`
+          SELECT DISTINCT v.id,
+            CASE 
+              WHEN v.name ILIKE ${searchPattern} THEN 1
+              WHEN v.slug ILIKE ${searchPattern} THEN 2
+              WHEN v.city ILIKE ${searchPattern} THEN 3
+              ELSE 4
+            END AS sort_order
+          FROM "Venue" v
+          WHERE
+            v.name ILIKE ${searchPattern}
+            OR v.slug ILIKE ${searchPattern}
+            OR v.city ILIKE ${searchPattern}
+            OR v.description ILIKE ${searchPattern}
+          ORDER BY sort_order
+        `;
+        fuzzyVenueIds = simpleVenues.map((v) => v.id);
+      }
 
       if (fuzzyVenueIds.length > 0) {
         where.id = { in: fuzzyVenueIds };

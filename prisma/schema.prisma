@@ -363,9 +363,14 @@ model Post {
   isAutoPost Boolean       @default(false)
   venueId    String?
   isPublic   Boolean       @default(false)
+  // WOD Post fields
+  workoutId  String?       // Reference to workout for WOD posts
+  sessionId  String?       // Reference to venue session (optional context)
+  postType   PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
   event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  workout    Workout?      @relation(fields: [workoutId], references: [id], onDelete: SetNull)
   comments   PostComment[]
   likes      PostLike[]
 
@@ -374,6 +379,8 @@ model Post {
   @@index([venueId])
   @@index([createdAt])
   @@index([isPublic])
+  @@index([workoutId])
+  @@index([postType])
 }
 
 model PostComment {
@@ -1411,6 +1418,7 @@ model Workout {
   logs            WorkoutLog[]
   planWorkouts    TrainingPlanWorkout[]
   savedBy         SavedWorkout[]
+  posts           Post[]                // Posts that feature this workout (WOD posts)
 
   @@index([createdById])
   @@index([venueId])
@@ -1860,6 +1868,13 @@ enum WorkoutBlockType {
   REST // Descanso
   COOLDOWN // Retorno à calma
   SKILL // Técnica/Skill work
+}
+
+enum PostType {
+  STANDARD // Regular text/media post
+  WOD // Workout of the Day post
+  EVENT // Event-related post
+  ACHIEVEMENT // Achievement/PR post
 }
 
 enum TrainingPlanStatus {

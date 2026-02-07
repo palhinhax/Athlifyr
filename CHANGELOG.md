@@ -1,3 +1,10 @@
+## [17.3.1](https://github.com/palhinhax/Athlifyr/compare/v17.3.0...v17.3.1) (2026-02-07)
+
+### Bug Fixes
+
+- **ui:** prevent horizontal scroll in active venues bar on mobile ([97e8d1b](https://github.com/palhinhax/Athlifyr/commit/97e8d1bf65763379cc502d8e576c8bc73e6b78c6))
+- **ui:** prevent horizontal scroll on mobile and add NextAuth trustHost ([95929e0](https://github.com/palhinhax/Athlifyr/commit/95929e065d4097ac82606cd4aadb84c3b9d979f2))
+
 # [17.3.0](https://github.com/palhinhax/Athlifyr/compare/v17.2.0...v17.3.0) (2026-02-07)
 
 ### Features

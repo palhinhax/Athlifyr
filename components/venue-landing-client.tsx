@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
   ArrowRight,
-  ChevronDown,
   Instagram,
   Mail,
   Eye,
@@ -41,13 +40,6 @@ export function VenueLandingClient({
       });
     }
   }, []);
-
-  const scrollToContent = () => {
-    const element = document.getElementById("features");
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
-  };
 
   return (
     <div className="min-h-screen overflow-x-hidden">
@@ -101,16 +93,6 @@ export function VenueLandingClient({
                 </Link>
               </Button>
             </div>
-          </motion.div>
-
-          {/* Scroll indicator */}
-          <motion.div
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 cursor-pointer"
-            animate={{ y: [0, 10, 0] }}
-            transition={{ repeat: Infinity, duration: 2 }}
-            onClick={scrollToContent}
-          >
-            <ChevronDown className="h-8 w-8 text-white/70" />
           </motion.div>
         </div>
       </section>

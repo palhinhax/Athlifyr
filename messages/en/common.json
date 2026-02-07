@@ -27,7 +27,8 @@
     "guest": "Guest",
     "optional": "optional",
     "noResults": "No results found",
-    "typeToSearch": "Type to search..."
+    "typeToSearch": "Type to search...",
+    "interested": "interested"
   },
   "time": {
     "hours": "Hours",
@@ -179,6 +180,5 @@
       "title": "Message Sent! 🎉",
       "description": "Thanks for reaching out! We'll reply to your email as soon as possible."
     }
-  },
-  "interested": "interested"
+  }
 }

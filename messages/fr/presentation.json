@@ -1,0 +1,161 @@
+{
+  "presentation": {
+    "meta": {
+      "title": "Athlifyr pour Votre Salle | Présentation",
+      "description": "Découvrez comment Athlifyr peut transformer la gestion de votre salle. Plateforme gratuite de gestion et communauté."
+    },
+    "hero": {
+      "badge": "Présentation Exclusive",
+      "title": "Votre Salle",
+      "subtitle": "avec Athlifyr",
+      "description": "Découvrez comment Athlifyr peut transformer la gestion de votre espace et créer une communauté plus forte.",
+      "cta": "Voir la Démo",
+      "free": "100% Gratuit"
+    },
+    "whatIs": {
+      "badge": "Qu'est-ce qu'Athlifyr ?",
+      "title": "La plateforme dont votre centre d'entraînement a besoin",
+      "description": "Gestion complète, communauté active et zéro coût. Tout ce dont vous avez besoin pour amener votre espace au niveau supérieur.",
+      "scheduling": "Planning",
+      "schedulingDesc": "Séances, WODs et réservations automatiques",
+      "community": "Communauté",
+      "communityDesc": "Fil social et interaction entre athlètes",
+      "exercises": "500+ Exercices",
+      "exercisesDesc": "Base de données complète multilingue",
+      "easyBook": "Easy Book",
+      "easyBookDesc": "Réservations en 30 secondes via lien"
+    },
+    "mobileBooking": {
+      "badge": "Vue Mobile",
+      "title": "Réservations en {seconds} secondes",
+      "seconds": "30",
+      "description": "Vos athlètes peuvent réserver des cours directement depuis leur téléphone. Pas d'apps, pas de complications. Juste un simple lien à partager sur les réseaux sociaux.",
+      "point1": "Lien unique : athlifyr.com/v/.../book",
+      "point2": "Fonctionne sur tout téléphone",
+      "point3": "Pas d'installation d'app nécessaire",
+      "phoneName": "Votre Salle",
+      "phoneLocation": "Votre ville",
+      "dayMon": "Lun",
+      "dayTue": "Mar",
+      "dayWed": "Mer",
+      "dayThu": "Jeu",
+      "dayFri": "Ven",
+      "spots": "{count} places",
+      "full": "Complet",
+      "book": "Réserver"
+    },
+    "desktop": {
+      "badge": "Vue Bureau",
+      "title": "Tableau de Bord de Gestion Complet",
+      "description": "Contrôlez tout depuis votre ordinateur. Séances, membres, abonnements, statistiques - tout en un seul endroit.",
+      "url": "athlifyr.com/v/votre-salle",
+      "venueName": "Votre Salle",
+      "venueAbbr": "VS",
+      "dashboard": "Tableau de bord",
+      "sessions": "Séances",
+      "members": "Membres",
+      "plans": "Abonnements",
+      "feed": "Fil",
+      "settings": "Paramètres",
+      "activeMembers": "Membres Actifs",
+      "sessionsToday": "Séances Aujourd'hui",
+      "bookingsToday": "Réservations Aujourd'hui",
+      "occupancyRate": "Taux d'Occupation",
+      "todaySessions": "Séances d'Aujourd'hui",
+      "time": "Heure",
+      "type": "Type",
+      "coach": "Coach",
+      "occupancy": "Occupation",
+      "status": "Statut",
+      "completed": "Terminé",
+      "ongoing": "En cours",
+      "next": "Prochaine",
+      "coachA": "Coach A",
+      "coachB": "Coach B"
+    },
+    "wod": {
+      "badge": "WODs & Entraînements",
+      "title": "Publiez le WOD du jour en secondes",
+      "description": "Créez des WODs rapidement en utilisant notre base de données de 500+ exercices. Les athlètes peuvent voir, commenter et enregistrer leurs résultats.",
+      "point1": "500+ exercices catalogués",
+      "point2": "Les athlètes enregistrent scores et PRs",
+      "point3": "Leaderboard de la communauté",
+      "postedAgo": "il y a 2 heures • WOD du jour",
+      "rxNote": "Rx : Kipping autorisé",
+      "scaleNote": "Scale : Ring rows, knee push-ups",
+      "score": "Score",
+      "commentUser": "@athlete_1",
+      "commentText": "12 tours + 8 reps 💪🔥"
+    },
+    "timer": {
+      "title": "Minuteries Professionnelles",
+      "description": "Minuteries intégrées pour tous les types d'entraînement : Tabata, EMOM, AMRAP, For Time et plus.",
+      "restart": "Redémarrer Tabata"
+    },
+    "workoutBuilder": {
+      "badge": "Constructeur d'Entraînements",
+      "title": "Créez des WODs structurés en secondes",
+      "description": "Oubliez le texte brut. Notre constructeur visuel vous permet de créer des entraînements professionnels avec des blocs glissables, des exercices de la base de données et un formatage automatique.",
+      "point1": "Blocs visuels : AMRAP, EMOM, For Time...",
+      "point2": "Glissez et réorganisez les exercices",
+      "point3": "500+ exercices avec vidéos",
+      "point4": "Réutilisez les entraînements comme modèles",
+      "point5": "Formatage automatique",
+      "strength": "Force",
+      "plainText": "Texte Brut",
+      "athlifyr": "Athlifyr",
+      "visualStructure": "Structure visuelle",
+      "integratedTimer": "Minuterie intégrée",
+      "results": "Résultats"
+    },
+    "athleteProgress": {
+      "badge": "Évolution des Athlètes",
+      "title": "Suivez l'évolution de chaque athlète",
+      "description": "Graphiques de progression détaillés pour chaque mouvement. Les athlètes voient leur évolution au fil du temps et peuvent suivre le développement de toute la communauté.",
+      "point1": "Graphiques d'évolution par exercice",
+      "point2": "Historique complet des PRs",
+      "point3": "Comparaison avec les moyennes de la salle",
+      "point4": "Exporter les données de performance",
+      "last6Months": "6 derniers mois",
+      "lastPRs": "Derniers PRs",
+      "newPR": "NOUVEAU PR",
+      "monthSep": "Sep",
+      "monthOct": "Oct",
+      "monthNov": "Nov",
+      "monthDec": "Déc",
+      "monthJan": "Jan",
+      "monthFeb": "Fév"
+    },
+    "events": {
+      "badge": "Événements",
+      "title": "Découvrez des événements près de chez vous",
+      "description": "Calendrier complet de compétitions, trails, marathons et événements fitness. Vos athlètes peuvent découvrir de nouveaux défis.",
+      "moreEvents": "+ de 200 événements déjà sur la plateforme : Trail runs, Marathons, CrossFit Open, Throwdowns..."
+    },
+    "exerciseDb": {
+      "badge": "Base de Données d'Exercices",
+      "title": "500+ exercices catalogués",
+      "description": "Tous les mouvements de CrossFit, Haltérophilie, Gymnastique et plus. Support multilingue."
+    },
+    "whyFree": {
+      "badge": "100% Gratuit",
+      "title": "Pourquoi Athlifyr est-il gratuit ?",
+      "description": "Nous croyons que toutes les salles méritent des outils de qualité.",
+      "noLimits": "Sans Limites",
+      "noLimitsDesc": "Membres, séances et réservations illimités",
+      "noCosts": "Sans Frais",
+      "noCostsDesc": "Zéro mensualités, zéro frais cachés",
+      "forever": "Pour Toujours",
+      "foreverDesc": "Le cœur de la plateforme reste gratuit"
+    },
+    "cta": {
+      "title": "Prêt à commencer ?",
+      "description": "Créez votre compte gratuit en 2 minutes et commencez à transformer la gestion de votre espace dès aujourd'hui.",
+      "button": "Commencer Gratuitement",
+      "questions": "Des questions ? Contactez-nous :"
+    },
+    "footer": {
+      "copyright": "© 2026 Athlifyr. Fait avec ❤️ au Portugal 🇵🇹"
+    }
+  }
+}

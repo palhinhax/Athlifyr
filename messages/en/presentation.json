@@ -1,0 +1,161 @@
+{
+  "presentation": {
+    "meta": {
+      "title": "Athlifyr for Your Venue | Presentation",
+      "description": "Discover how Athlifyr can transform your venue management. Free platform for management and community building."
+    },
+    "hero": {
+      "badge": "Exclusive Presentation",
+      "title": "Your Venue",
+      "subtitle": "with Athlifyr",
+      "description": "Discover how Athlifyr can transform the management of your space and build a stronger community.",
+      "cta": "Watch Demo",
+      "free": "100% Free"
+    },
+    "whatIs": {
+      "badge": "What is Athlifyr?",
+      "title": "The platform your training center needs",
+      "description": "Complete management, active community, and zero costs. Everything you need to take your space to the next level.",
+      "scheduling": "Scheduling",
+      "schedulingDesc": "Sessions, WODs, and automatic bookings",
+      "community": "Community",
+      "communityDesc": "Social feed and athlete interaction",
+      "exercises": "500+ Exercises",
+      "exercisesDesc": "Complete multi-language database",
+      "easyBook": "Easy Book",
+      "easyBookDesc": "Bookings in 30 seconds via link"
+    },
+    "mobileBooking": {
+      "badge": "Mobile View",
+      "title": "Bookings in {seconds} seconds",
+      "seconds": "30",
+      "description": "Your athletes can book classes directly from their phone. No apps, no hassle. Just a simple link you can share on social media.",
+      "point1": "Unique link: athlifyr.com/v/.../book",
+      "point2": "Works on any phone",
+      "point3": "No app installation needed",
+      "phoneName": "Your Venue",
+      "phoneLocation": "Your city",
+      "dayMon": "Mon",
+      "dayTue": "Tue",
+      "dayWed": "Wed",
+      "dayThu": "Thu",
+      "dayFri": "Fri",
+      "spots": "{count} spots",
+      "full": "Full",
+      "book": "Book"
+    },
+    "desktop": {
+      "badge": "Desktop View",
+      "title": "Complete Management Dashboard",
+      "description": "Control everything from your computer. Sessions, members, plans, statistics - all in one place.",
+      "url": "athlifyr.com/v/your-venue",
+      "venueName": "Your Venue",
+      "venueAbbr": "YV",
+      "dashboard": "Dashboard",
+      "sessions": "Sessions",
+      "members": "Members",
+      "plans": "Plans",
+      "feed": "Feed",
+      "settings": "Settings",
+      "activeMembers": "Active Members",
+      "sessionsToday": "Sessions Today",
+      "bookingsToday": "Bookings Today",
+      "occupancyRate": "Occupancy Rate",
+      "todaySessions": "Today's Sessions",
+      "time": "Time",
+      "type": "Type",
+      "coach": "Coach",
+      "occupancy": "Occupancy",
+      "status": "Status",
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "next": "Next",
+      "coachA": "Coach A",
+      "coachB": "Coach B"
+    },
+    "wod": {
+      "badge": "WODs & Workouts",
+      "title": "Publish the WOD of the day in seconds",
+      "description": "Create WODs quickly using our database of 500+ exercises. Athletes can view, comment, and log their results.",
+      "point1": "500+ catalogued exercises",
+      "point2": "Athletes log scores and PRs",
+      "point3": "Community leaderboard",
+      "postedAgo": "2 hours ago • WOD of the day",
+      "rxNote": "Rx: Kipping allowed",
+      "scaleNote": "Scale: Ring rows, knee push-ups",
+      "score": "Score",
+      "commentUser": "@athlete_1",
+      "commentText": "12 rounds + 8 reps 💪🔥"
+    },
+    "timer": {
+      "title": "Professional Timers",
+      "description": "Integrated timers for all training types: Tabata, EMOM, AMRAP, For Time, and more.",
+      "restart": "Restart Tabata"
+    },
+    "workoutBuilder": {
+      "badge": "Workout Builder",
+      "title": "Create structured WODs in seconds",
+      "description": "Forget plain text. Our visual builder lets you create professional workouts with draggable blocks, database exercises, and automatic formatting.",
+      "point1": "Visual blocks: AMRAP, EMOM, For Time...",
+      "point2": "Drag and reorder exercises",
+      "point3": "500+ exercises with videos",
+      "point4": "Reuse workouts as templates",
+      "point5": "Automatic formatting",
+      "strength": "Strength",
+      "plainText": "Plain Text",
+      "athlifyr": "Athlifyr",
+      "visualStructure": "Visual structure",
+      "integratedTimer": "Integrated timer",
+      "results": "Results"
+    },
+    "athleteProgress": {
+      "badge": "Athlete Progress",
+      "title": "Track each athlete's progress",
+      "description": "Detailed progress charts for each movement. Athletes see their evolution over time and can follow the development of the entire community.",
+      "point1": "Progress charts per exercise",
+      "point2": "Complete PR history",
+      "point3": "Comparison with gym averages",
+      "point4": "Export performance data",
+      "last6Months": "Last 6 months",
+      "lastPRs": "Latest PRs",
+      "newPR": "NEW PR",
+      "monthSep": "Sep",
+      "monthOct": "Oct",
+      "monthNov": "Nov",
+      "monthDec": "Dec",
+      "monthJan": "Jan",
+      "monthFeb": "Feb"
+    },
+    "events": {
+      "badge": "Events",
+      "title": "Discover events near you",
+      "description": "Complete calendar of competitions, trails, marathons, and fitness events. Your athletes can discover new challenges.",
+      "moreEvents": "+ 200 events already on the platform: Trail runs, Marathons, CrossFit Open, Throwdowns..."
+    },
+    "exerciseDb": {
+      "badge": "Exercise Database",
+      "title": "500+ catalogued exercises",
+      "description": "All CrossFit, Weightlifting, Gymnastics movements and more. Multi-language support."
+    },
+    "whyFree": {
+      "badge": "100% Free",
+      "title": "Why is Athlifyr free?",
+      "description": "We believe every gym deserves quality tools.",
+      "noLimits": "No Limits",
+      "noLimitsDesc": "Unlimited members, sessions, and bookings",
+      "noCosts": "No Costs",
+      "noCostsDesc": "Zero monthly fees, zero hidden charges",
+      "forever": "Forever",
+      "foreverDesc": "The core platform remains free"
+    },
+    "cta": {
+      "title": "Ready to get started?",
+      "description": "Create your free account in 2 minutes and start transforming your space management today.",
+      "button": "Start Free",
+      "questions": "Questions? Contact us:"
+    },
+    "footer": {
+      "copyright": "© 2026 Athlifyr. Made with ❤️ in Portugal 🇵🇹"
+    }
+  }
+}

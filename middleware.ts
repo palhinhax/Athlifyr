@@ -43,8 +43,26 @@ export default function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const userAgent = request.headers.get("user-agent");
 
-  // Skip middleware for sitemap.xml and robots.txt (SEO files at root)
-  if (pathname === "/sitemap.xml" || pathname === "/robots.txt") {
+  // Skip middleware for static assets served from /public
+  // Handle both /videos/... and /[locale]/videos/... paths
+  const videoMatch = pathname.match(/^(?:\/[a-z]{2})?\/videos\//i);
+  if (videoMatch || /\.(mp4|webm)$/i.test(pathname)) {
+    // If locale prefix is present, rewrite to strip it
+    const localeVideoMatch = pathname.match(/^\/[a-z]{2}(\/videos\/.+)$/i);
+    if (localeVideoMatch) {
+      const url = request.nextUrl.clone();
+      url.pathname = localeVideoMatch[1];
+      return NextResponse.rewrite(url);
+    }
+    return NextResponse.next();
+  }
+
+  // Skip middleware for sitemap.xml, robots.txt, and webmanifest (root-level files)
+  if (
+    pathname === "/sitemap.xml" ||
+    pathname === "/robots.txt" ||
+    pathname === "/site.webmanifest"
+  ) {
     return NextResponse.next();
   }
 
@@ -57,8 +75,9 @@ export default function middleware(request: NextRequest) {
   const isStaticAsset =
     request.nextUrl.pathname.startsWith("/_next") ||
     request.nextUrl.pathname.startsWith("/static") ||
+    request.nextUrl.pathname.startsWith("/videos") ||
     request.nextUrl.pathname.match(
-      /\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2)$/i
+      /\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|mp4|webm)$/i
     );
 
   // If maintenance mode is enabled and not accessing allowed pages
@@ -148,6 +167,6 @@ export default function middleware(request: NextRequest) {
 export const config = {
   // Match all pathnames except static files and API routes
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2)).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|site\\.webmanifest|videos|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|mp4|webm)).*)",
   ],
 };

@@ -1,0 +1,161 @@
+{
+  "presentation": {
+    "meta": {
+      "title": "Athlifyr para Tu Gimnasio | Presentación",
+      "description": "Descubre cómo Athlifyr puede transformar la gestión de tu gimnasio. Plataforma gratuita de gestión y comunidad."
+    },
+    "hero": {
+      "badge": "Presentación Exclusiva",
+      "title": "Tu Gimnasio",
+      "subtitle": "con Athlifyr",
+      "description": "Descubre cómo Athlifyr puede transformar la gestión de tu espacio y crear una comunidad más fuerte.",
+      "cta": "Ver Demostración",
+      "free": "100% Gratis"
+    },
+    "whatIs": {
+      "badge": "¿Qué es Athlifyr?",
+      "title": "La plataforma que tu centro de entrenamiento necesita",
+      "description": "Gestión completa, comunidad activa y cero costes. Todo lo que necesitas para llevar tu espacio al siguiente nivel.",
+      "scheduling": "Programación",
+      "schedulingDesc": "Sesiones, WODs y reservas automáticas",
+      "community": "Comunidad",
+      "communityDesc": "Feed social e interacción entre atletas",
+      "exercises": "500+ Ejercicios",
+      "exercisesDesc": "Base de datos completa multilingüe",
+      "easyBook": "Easy Book",
+      "easyBookDesc": "Reservas en 30 segundos por enlace"
+    },
+    "mobileBooking": {
+      "badge": "Vista Móvil",
+      "title": "Reservas en {seconds} segundos",
+      "seconds": "30",
+      "description": "Tus atletas pueden reservar clases directamente desde el móvil. Sin apps, sin complicaciones. Solo un enlace simple que puedes compartir en redes sociales.",
+      "point1": "Enlace único: athlifyr.com/v/.../book",
+      "point2": "Funciona en cualquier móvil",
+      "point3": "Sin necesidad de instalar app",
+      "phoneName": "Tu Gimnasio",
+      "phoneLocation": "Tu ciudad",
+      "dayMon": "Lun",
+      "dayTue": "Mar",
+      "dayWed": "Mié",
+      "dayThu": "Jue",
+      "dayFri": "Vie",
+      "spots": "{count} plazas",
+      "full": "Completo",
+      "book": "Reservar"
+    },
+    "desktop": {
+      "badge": "Vista Escritorio",
+      "title": "Dashboard de Gestión Completa",
+      "description": "Controla todo desde tu ordenador. Sesiones, miembros, planes, estadísticas - todo en un solo lugar.",
+      "url": "athlifyr.com/v/tu-gimnasio",
+      "venueName": "Tu Gimnasio",
+      "venueAbbr": "TG",
+      "dashboard": "Dashboard",
+      "sessions": "Sesiones",
+      "members": "Miembros",
+      "plans": "Planes",
+      "feed": "Feed",
+      "settings": "Ajustes",
+      "activeMembers": "Miembros Activos",
+      "sessionsToday": "Sesiones Hoy",
+      "bookingsToday": "Reservas Hoy",
+      "occupancyRate": "Tasa Ocupación",
+      "todaySessions": "Sesiones de Hoy",
+      "time": "Hora",
+      "type": "Tipo",
+      "coach": "Entrenador",
+      "occupancy": "Ocupación",
+      "status": "Estado",
+      "completed": "Completado",
+      "ongoing": "En curso",
+      "next": "Próxima",
+      "coachA": "Entrenador A",
+      "coachB": "Entrenador B"
+    },
+    "wod": {
+      "badge": "WODs y Entrenamientos",
+      "title": "Publica el WOD del día en segundos",
+      "description": "Crea WODs rápidamente usando nuestra base de datos de 500+ ejercicios. Los atletas pueden ver, comentar y registrar sus resultados.",
+      "point1": "500+ ejercicios catalogados",
+      "point2": "Atletas registran scores y PRs",
+      "point3": "Leaderboard de la comunidad",
+      "postedAgo": "hace 2 horas • WOD del día",
+      "rxNote": "Rx: Kipping permitido",
+      "scaleNote": "Scale: Ring rows, knee push-ups",
+      "score": "Score",
+      "commentUser": "@atleta_1",
+      "commentText": "12 rondas + 8 reps 💪🔥"
+    },
+    "timer": {
+      "title": "Temporizadores Profesionales",
+      "description": "Temporizadores integrados para todos los tipos de entrenamiento: Tabata, EMOM, AMRAP, For Time y más.",
+      "restart": "Reiniciar Tabata"
+    },
+    "workoutBuilder": {
+      "badge": "Constructor de Entrenamientos",
+      "title": "Crea WODs estructurados en segundos",
+      "description": "Olvida el texto plano. Nuestro constructor visual te permite crear entrenamientos profesionales con bloques arrastrables, ejercicios de la base de datos y formato automático.",
+      "point1": "Bloques visuales: AMRAP, EMOM, For Time...",
+      "point2": "Arrastra y reordena ejercicios",
+      "point3": "500+ ejercicios con vídeos",
+      "point4": "Reutiliza entrenamientos como templates",
+      "point5": "Formato automático",
+      "strength": "Fuerza",
+      "plainText": "Texto Plano",
+      "athlifyr": "Athlifyr",
+      "visualStructure": "Estructura visual",
+      "integratedTimer": "Timer integrado",
+      "results": "Resultados"
+    },
+    "athleteProgress": {
+      "badge": "Evolución de Atletas",
+      "title": "Sigue la evolución de cada atleta",
+      "description": "Gráficos de progreso detallados para cada movimiento. Los atletas ven su evolución a lo largo del tiempo y pueden seguir el desarrollo de toda la comunidad.",
+      "point1": "Gráficos de evolución por ejercicio",
+      "point2": "Historial completo de PRs",
+      "point3": "Comparación con medias del gimnasio",
+      "point4": "Exportar datos de rendimiento",
+      "last6Months": "Últimos 6 meses",
+      "lastPRs": "Últimos PRs",
+      "newPR": "NUEVO PR",
+      "monthSep": "Sep",
+      "monthOct": "Oct",
+      "monthNov": "Nov",
+      "monthDec": "Dic",
+      "monthJan": "Ene",
+      "monthFeb": "Feb"
+    },
+    "events": {
+      "badge": "Eventos",
+      "title": "Descubre eventos cerca de ti",
+      "description": "Calendario completo de competiciones, trails, maratones y eventos de fitness. Tus atletas pueden descubrir nuevos desafíos.",
+      "moreEvents": "+ de 200 eventos ya en la plataforma: Trail runs, Maratones, CrossFit Open, Throwdowns..."
+    },
+    "exerciseDb": {
+      "badge": "Base de Datos de Ejercicios",
+      "title": "500+ ejercicios catalogados",
+      "description": "Todos los movimientos de CrossFit, Weightlifting, Gymnastics y más. Soporte multilingüe."
+    },
+    "whyFree": {
+      "badge": "100% Gratuito",
+      "title": "¿Por qué Athlifyr es gratis?",
+      "description": "Creemos que todos los gimnasios merecen herramientas de calidad.",
+      "noLimits": "Sin Límites",
+      "noLimitsDesc": "Miembros, sesiones y reservas ilimitadas",
+      "noCosts": "Sin Costes",
+      "noCostsDesc": "Cero mensualidades, cero cargos ocultos",
+      "forever": "Para Siempre",
+      "foreverDesc": "El core de la plataforma permanece gratis"
+    },
+    "cta": {
+      "title": "¿Listo para empezar?",
+      "description": "Crea tu cuenta gratuita en 2 minutos y empieza a transformar la gestión de tu espacio hoy.",
+      "button": "Empezar Gratis",
+      "questions": "¿Preguntas? Contáctanos:"
+    },
+    "footer": {
+      "copyright": "© 2026 Athlifyr. Hecho con ❤️ en Portugal 🇵🇹"
+    }
+  }
+}

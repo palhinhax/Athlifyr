@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 const createExerciseSchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
@@ -64,15 +65,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Only pro users and admins can create exercises
+    // Only venue staff and admins can create exercises
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { isProAccount: true, role: true },
+      select: { role: true },
     });
 
-    if (user?.role !== "ADMIN" && !user?.isProAccount) {
+    const isStaff = await isVenueStaff(session.user.id);
+
+    if (user?.role !== "ADMIN" && !isStaff) {
       return NextResponse.json(
-        { error: "Pro account required to create exercises" },
+        { error: "Venue staff role required to create exercises" },
         { status: 403 }
       );
     }

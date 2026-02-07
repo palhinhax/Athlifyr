@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "pageTitle": "O Meu Horário",
+    "pageDescription": "Consulta as tuas aulas e sessões atribuídas em todos os espaços",
+    "title": "O Meu Horário",
+    "description": "As tuas aulas e sessões atribuídas nos espaços onde és coach ou profissional.",
+    "today": "Hoje",
+    "noSessionsThisDay": "Sem sessões atribuídas neste dia",
+    "todaySessions": "Tens {count, plural, one {# sessão} other {# sessões}} hoje",
+    "participants": "participantes",
+    "workout": "treino",
+    "workouts": "treinos",
+    "bookedParticipants": "Participantes inscritos",
+    "guest": "Convidado",
+    "full": "Lotado",
+    "spotsLeft": "{count, plural, one {# vaga} other {# vagas}}",
+    "mySchedule": "O Meu Horário",
+    "editSession": "Editar sessão"
+  }
+}

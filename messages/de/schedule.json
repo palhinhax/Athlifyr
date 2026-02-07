@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "pageTitle": "Mein Stundenplan",
+    "pageDescription": "Deine zugewiesenen Kurse und Sitzungen in allen Standorten anzeigen",
+    "title": "Mein Stundenplan",
+    "description": "Deine zugewiesenen Kurse und Sitzungen in allen Standorten, in denen du Trainer oder Fachkraft bist.",
+    "today": "Heute",
+    "noSessionsThisDay": "Keine zugewiesenen Sitzungen an diesem Tag",
+    "todaySessions": "Du hast heute {count, plural, one {# Sitzung} other {# Sitzungen}}",
+    "participants": "Teilnehmer",
+    "workout": "Training",
+    "workouts": "Trainings",
+    "bookedParticipants": "Gebuchte Teilnehmer",
+    "guest": "Gast",
+    "full": "Voll",
+    "spotsLeft": "{count, plural, one {# Platz frei} other {# Plätze frei}}",
+    "mySchedule": "Mein Stundenplan",
+    "editSession": "Sitzung bearbeiten"
+  }
+}

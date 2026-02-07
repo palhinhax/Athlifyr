@@ -172,19 +172,10 @@ export function VenueSessionCard({
           >
             {session.title}
           </h4>
-          <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs text-muted-foreground">
-            <Clock className="h-3 w-3 flex-shrink-0" />
-            <span>
-              {format(sessionStart, "HH:mm", { locale: dateLocale })} -{" "}
-              {format(sessionEnd, "HH:mm", { locale: dateLocale })}
-            </span>
-            <span className="mx-0.5">•</span>
-            <span>{t("minute", { count: duration })}</span>
-          </div>
         </div>
 
         {/* Badges */}
-        <div className="flex flex-col items-end gap-1">
+        <div className="flex items-end gap-1">
           {session.type === "CLASS" ? (
             <Badge variant="secondary" className="text-xs">
               {t("class")}
@@ -197,7 +188,7 @@ export function VenueSessionCard({
           )}
 
           {session.isBooked && (
-            <Badge variant="default" className="text-xs">
+            <Badge variant="success" className="text-xs">
               <CheckCircle className="mr-1 h-3 w-3" />
               {t("booked")}
             </Badge>
@@ -205,28 +196,17 @@ export function VenueSessionCard({
         </div>
       </div>
 
-      {/* Capacity and Coach row */}
-      <div className="mb-2 flex items-center justify-between gap-2">
-        {/* Capacity */}
-        {session.capacity ? (
-          <div className="flex items-center gap-1 text-xs">
-            <Users className="h-3 w-3 text-muted-foreground" />
-            <span className="text-muted-foreground">
-              {session._count.bookings} / {session.capacity}
-            </span>
-            {isFull ? (
-              <Badge variant="destructive" className="ml-1 text-xs">
-                {t("full")}
-              </Badge>
-            ) : spotsLeft !== null && spotsLeft <= 3 ? (
-              <span className="ml-1 text-xs text-orange-600">
-                {t("spotsLeft", { count: spotsLeft })}
-              </span>
-            ) : null}
-          </div>
-        ) : (
-          <div />
-        )}
+      {/* Time + Coach row */}
+      <div className="mb-2 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="flex items-center gap-x-1 text-xs text-muted-foreground">
+          <Clock className="h-3 w-3 flex-shrink-0" />
+          <span>
+            {format(sessionStart, "HH:mm", { locale: dateLocale })} -{" "}
+            {format(sessionEnd, "HH:mm", { locale: dateLocale })}
+          </span>
+          <span className="mx-0.5">•</span>
+          <span>{t("minute", { count: duration })}</span>
+        </div>
 
         {/* Coach */}
         {session.coach && (
@@ -247,6 +227,28 @@ export function VenueSessionCard({
             </span>
           </div>
         )}
+      </div>
+
+      {/* Capacity row */}
+      <div className="mb-2 flex items-center gap-2">
+        {/* Capacity */}
+        {session.capacity ? (
+          <div className="flex items-center gap-1 text-xs">
+            <Users className="h-3 w-3 text-muted-foreground" />
+            <span className="text-muted-foreground">
+              {session._count.bookings} / {session.capacity}
+            </span>
+            {isFull ? (
+              <Badge variant="destructive" className="ml-1 text-xs">
+                {t("full")}
+              </Badge>
+            ) : spotsLeft !== null && spotsLeft <= 3 ? (
+              <span className="ml-1 text-xs text-orange-600">
+                {t("spotsLeft", { count: spotsLeft })}
+              </span>
+            ) : null}
+          </div>
+        ) : null}
       </div>
 
       {/* Actions */}

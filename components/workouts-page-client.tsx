@@ -29,7 +29,7 @@ import type { UserTrainingPlanWithDetails } from "@/types/training-plan";
 
 interface WorkoutsPageClientProps {
   userId: string;
-  isProAccount?: boolean;
+  isStaff?: boolean;
 }
 
 interface WorkoutApiResponse extends WorkoutWithBlocks {
@@ -40,7 +40,7 @@ interface WorkoutApiResponse extends WorkoutWithBlocks {
 
 export function WorkoutsPageClient({
   userId,
-  isProAccount = false,
+  isStaff = false,
 }: WorkoutsPageClientProps) {
   const t = useTranslations("workouts");
   const { toast } = useToast();
@@ -57,7 +57,7 @@ export function WorkoutsPageClient({
   const [editingWorkout, setEditingWorkout] =
     useState<WorkoutWithBlocks | null>(null);
   const [activeTab, setActiveTab] = useState(
-    isProAccount ? "my-workouts" : "saved"
+    isStaff ? "my-workouts" : "saved"
   );
 
   const fetchWorkouts = useCallback(async () => {
@@ -98,7 +98,7 @@ export function WorkoutsPageClient({
 
   // Fetch assigned training plans (for normal users)
   const fetchAssignedPlans = useCallback(async () => {
-    if (isProAccount) return; // Pro users don't need this
+    if (isStaff) return; // Pro users don't need this
     
     try {
       setIsLoadingAssigned(true);
@@ -112,7 +112,7 @@ export function WorkoutsPageClient({
     } finally {
       setIsLoadingAssigned(false);
     }
-  }, [isProAccount]);
+  }, [isStaff]);
 
   useEffect(() => {
     fetchWorkouts();
@@ -172,7 +172,7 @@ export function WorkoutsPageClient({
   };
 
   // Pro users can use the workout builder
-  if (showBuilder && isProAccount) {
+  if (showBuilder && isStaff) {
     return (
       <div className="container py-8">
         <WorkoutBuilder
@@ -256,7 +256,7 @@ export function WorkoutsPageClient({
     },
   ];
 
-  const tabs = isProAccount ? proTabs : normalTabs;
+  const tabs = isStaff ? proTabs : normalTabs;
 
   return (
     <div className="container py-8">
@@ -264,10 +264,10 @@ export function WorkoutsPageClient({
         <div>
           <h1 className="text-3xl font-bold">{t("title")}</h1>
           <p className="text-muted-foreground">
-            {isProAccount ? t("subtitle") : t("subtitleBasic")}
+            {isStaff ? t("subtitle") : t("subtitleBasic")}
           </p>
         </div>
-        {isProAccount && (
+        {isStaff && (
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href="/workouts/plans">
@@ -290,7 +290,7 @@ export function WorkoutsPageClient({
       />
 
       {/* PRO USER: My Workouts Tab */}
-      {isProAccount && (
+      {isStaff && (
         <ResponsiveTabsContent value="my-workouts" activeValue={activeTab}>
           {isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -361,7 +361,7 @@ export function WorkoutsPageClient({
       )}
 
       {/* PRO USER: Public Workouts Tab */}
-      {isProAccount && (
+      {isStaff && (
         <ResponsiveTabsContent value="public" activeValue={activeTab}>
           {isLoading ? (
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -393,7 +393,7 @@ export function WorkoutsPageClient({
       )}
 
       {/* NORMAL USER: Saved Tab (Saved Workouts + Saved Plans) */}
-      {!isProAccount && (
+      {!isStaff && (
         <ResponsiveTabsContent value="saved" activeValue={activeTab}>
           <SavedContentTab
             savedWorkouts={savedWorkouts}
@@ -404,7 +404,7 @@ export function WorkoutsPageClient({
       )}
 
       {/* NORMAL USER: Assigned Plans Tab */}
-      {!isProAccount && (
+      {!isStaff && (
         <ResponsiveTabsContent value="assigned" activeValue={activeTab}>
           <AssignedPlansTab
             assignedPlans={assignedPlans}
@@ -414,7 +414,7 @@ export function WorkoutsPageClient({
       )}
 
       {/* NORMAL USER: Public Tab (Discover workouts and plans) */}
-      {!isProAccount && (
+      {!isStaff && (
         <ResponsiveTabsContent value="public" activeValue={activeTab}>
           <PublicContentTab
             userId={userId}

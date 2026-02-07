@@ -415,6 +415,7 @@
       "title": "Sessioni",
       "class": "Lezione",
       "appointment": "Appuntamento",
+      "booking": "Prenotazione...",
       "bookSession": "Prenota",
       "cancelBooking": "Annulla",
       "confirmCancel": "Conferma Annullamento",
@@ -587,7 +588,8 @@
       "cancelBookingWarning": "Sei sicuro di voler annullare questa prenotazione? Questa azione non può essere annullata.",
       "no": "No",
       "yes": "Sì, Annulla",
-      "book": "Prenota"
+      "book": "Prenota",
+      "cancel": "Annulla"
     },
     "loading": "Caricamento...",
     "loadMore": "Carica Altro",

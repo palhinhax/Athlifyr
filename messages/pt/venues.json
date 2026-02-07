@@ -415,6 +415,7 @@
       "title": "Sessões",
       "class": "Aula",
       "appointment": "Marcação",
+      "booking": "A reservar...",
       "bookSession": "Reservar",
       "cancelBooking": "Cancelar Reserva",
       "confirmCancel": "Confirmar Cancelamento",
@@ -587,7 +588,8 @@
       "no": "Não",
       "yes": "Sim, Cancelar",
       "cancelBooking": "Cancelar Reserva",
-      "book": "Reservar"
+      "book": "Reservar",
+      "cancel": "Cancelar"
     },
     "loading": "A carregar...",
     "loadMore": "Carregar Mais",

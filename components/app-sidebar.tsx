@@ -23,8 +23,10 @@ import {
   ShieldIcon,
   HomeIcon,
   DumbbellIcon,
+  CalendarClockIcon,
 } from "lucide-react";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
+import { useIsVenueStaff } from "@/hooks/use-is-venue-staff";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -33,7 +35,7 @@ interface NavItem {
   label: string;
   badge?: number;
   adminOnly?: boolean;
-  proOnly?: boolean;
+  staffOnly?: boolean;
   authOnly?: boolean;
   publicOnly?: boolean;
 }
@@ -44,6 +46,7 @@ export function AppSidebar() {
   const t = useTranslations("nav");
   const [isCollapsed, setIsCollapsed] = useState(true);
   const { unreadCount } = useChatNotifications({ enabled: !!session });
+  const { isStaff } = useIsVenueStaff();
 
   // Navigation items - different based on auth state
   const navItems: NavItem[] = session
@@ -73,6 +76,12 @@ export function AppSidebar() {
           href: "/workouts",
           icon: DumbbellIcon,
           label: t("workouts"),
+        },
+        {
+          href: "/my-schedule",
+          icon: CalendarClockIcon,
+          label: t("mySchedule"),
+          staffOnly: true,
         },
         {
           href: "/chat",
@@ -108,7 +117,7 @@ export function AppSidebar() {
 
   const filteredNavItems = navItems.filter((item) => {
     if (item.adminOnly && session?.user?.role !== "ADMIN") return false;
-    if (item.proOnly && !session?.user?.isProAccount) return false;
+    if (item.staffOnly && !isStaff) return false;
     return true;
   });
 

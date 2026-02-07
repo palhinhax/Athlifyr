@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "pageTitle": "Il Mio Programma",
+    "pageDescription": "Visualizza le tue lezioni e sessioni assegnate in tutte le sedi",
+    "title": "Il Mio Programma",
+    "description": "Le tue lezioni e sessioni assegnate nelle sedi dove sei allenatore o professionista.",
+    "today": "Oggi",
+    "noSessionsThisDay": "Nessuna sessione assegnata in questo giorno",
+    "todaySessions": "Hai {count, plural, one {# sessione} other {# sessioni}} oggi",
+    "participants": "partecipanti",
+    "workout": "allenamento",
+    "workouts": "allenamenti",
+    "bookedParticipants": "Partecipanti prenotati",
+    "guest": "Ospite",
+    "full": "Pieno",
+    "spotsLeft": "{count, plural, one {# posto libero} other {# posti liberi}}",
+    "mySchedule": "Il Mio Programma",
+    "editSession": "Modifica sessione"
+  }
+}

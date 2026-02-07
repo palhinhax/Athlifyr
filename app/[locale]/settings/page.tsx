@@ -30,7 +30,6 @@ export default async function SettingsPage({
       favoriteSports: true,
       emailVerified: true,
       emailNotifications: true,
-      isProAccount: true,
     },
   });
 

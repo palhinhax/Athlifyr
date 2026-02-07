@@ -226,7 +226,6 @@ export function SessionDetailsDialog({
   );
   const { toast } = useToast();
   const t = useTranslations("venues.sessions");
-  const tVenues = useTranslations("venues");
   const tBooking = useTranslations("venues.booking");
   const tWorkouts = useTranslations("workouts");
   const tCommon = useTranslations("common");
@@ -330,7 +329,7 @@ export function SessionDetailsDialog({
                 {format(sessionStart, "PPP", { locale: dateLocale })}
               </DialogDescription>
             </div>
-            <div className="me-5 flex flex-col gap-1">
+            <div className="me-5 flex gap-1">
               {session.type === "CLASS" ? (
                 <Badge variant="secondary">{t("class")}</Badge>
               ) : (
@@ -340,7 +339,7 @@ export function SessionDetailsDialog({
                 </Badge>
               )}
               {session.isBooked && (
-                <Badge variant="default">
+                <Badge variant="success">
                   <CheckCircle className="mr-1 h-3 w-3" />
                   {t("booked")}
                 </Badge>
@@ -435,9 +434,6 @@ export function SessionDetailsDialog({
                   <div>
                     <p className="font-medium">
                       {session.coach.user.name || t("unknownUser")}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {tVenues(`roles.${session.coach.role}`)}
                     </p>
                   </div>
                 </div>

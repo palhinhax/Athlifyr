@@ -415,6 +415,7 @@
       "title": "Sitzungen",
       "class": "Kurs",
       "appointment": "Termin",
+      "booking": "Buche...",
       "bookSession": "Buchen",
       "cancelBooking": "Stornieren",
       "confirmCancel": "Stornierung Bestätigen",
@@ -587,7 +588,8 @@
       "cancelBookingWarning": "Sind Sie sicher, dass Sie diese Buchung stornieren möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "no": "Nein",
       "yes": "Ja, Stornieren",
-      "book": "Buchen"
+      "book": "Buchen",
+      "cancel": "Stornieren"
     },
     "loading": "Wird geladen...",
     "loadMore": "Mehr Laden",

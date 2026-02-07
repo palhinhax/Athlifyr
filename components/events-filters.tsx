@@ -303,7 +303,7 @@ export function EventsFilters({
         <Filter className="mr-2 h-4 w-4" />
         {t("eventsPage.filters.title")}
         {activeFiltersCount > 0 && (
-          <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
+          <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-xs text-accent-foreground">
             {activeFiltersCount}
           </span>
         )}

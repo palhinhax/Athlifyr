@@ -89,7 +89,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
     return (
       <div className="mb-12 mt-12">
         <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-          <Camera className="h-6 w-6 text-primary" />
+          <Camera className="h-6 w-6 text-p-golden" />
           Galeria
         </h2>
         <div className="flex justify-center py-12">
@@ -107,7 +107,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
     <div className="mb-12 mt-12">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-2xl font-bold">
-          <Camera className="h-6 w-6 text-primary" />
+          <Camera className="h-6 w-6 text-p-golden" />
           Galeria ({photos.length})
         </h2>
       </div>

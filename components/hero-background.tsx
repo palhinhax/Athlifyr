@@ -71,7 +71,7 @@ export function HeroBackground({
           </div>
         </>
       ) : (
-        <div className="absolute inset-0 z-0 bg-gradient-to-r from-primary/20 to-primary/10" />
+        <div className="absolute inset-0 z-0 bg-gradient-to-br from-primary/20 via-p-golden/10 to-p-info/10" />
       )}
 
       {/* Content */}

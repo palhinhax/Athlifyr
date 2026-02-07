@@ -78,7 +78,7 @@ export function WorkoutHistory({ userId }: WorkoutHistoryProps) {
             <div className="flex items-center justify-between">
               <CardTitle className="text-lg">{log.workout.name}</CardTitle>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CalendarIcon className="h-4 w-4" />
+                <CalendarIcon className="h-4 w-4 text-p-info" />
                 {formatDate(log.performedAt)}
               </div>
             </div>

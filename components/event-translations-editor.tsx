@@ -49,7 +49,7 @@ export function EventTranslationsEditor({
   return (
     <div className="grid gap-4 rounded-lg border p-4">
       <div className="flex items-center gap-2">
-        <Globe className="h-5 w-5 text-primary" />
+        <Globe className="h-5 w-5 text-p-info" />
         <h4 className="font-medium">{t("translationsTitle")}</h4>
         {isLoading && (
           <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />

@@ -480,7 +480,7 @@ export function SessionDetailsDialog({
                               key={i}
                               className={`h-2 w-4 rounded-sm ${
                                 i < Number(sw.workout.difficulty)
-                                  ? "bg-primary"
+                                  ? "bg-p-brand"
                                   : "bg-muted"
                               }`}
                             />
@@ -560,7 +560,7 @@ export function SessionDetailsDialog({
                                         key={ex.id}
                                         className="flex items-center gap-2 text-sm"
                                       >
-                                        <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
                                         <span className="font-medium">
                                           {formatExercisePrescription(ex)}
                                         </span>

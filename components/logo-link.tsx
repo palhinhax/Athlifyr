@@ -14,7 +14,7 @@ export function LogoLink() {
   return (
     <Link
       href="/"
-      className="text-2xl font-bold transition-opacity hover:opacity-80"
+      className="bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-2xl font-bold text-transparent transition-opacity hover:opacity-80"
       onClick={handleLogoClick}
     >
       Athlifyr

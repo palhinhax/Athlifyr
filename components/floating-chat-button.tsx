@@ -47,7 +47,7 @@ export function FloatingChatButton() {
       >
         <div className="overflow-hidden rounded-2xl border bg-background shadow-2xl">
           {/* Header */}
-          <div className="bg-gradient-to-r from-primary to-primary/80 px-4 py-3 text-primary-foreground">
+          <div className="bg-gradient-to-r from-accent to-accent/80 px-4 py-3 text-accent-foreground">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20">
@@ -55,7 +55,7 @@ export function FloatingChatButton() {
                 </div>
                 <div>
                   <h3 className="font-semibold">{t("contact.title")}</h3>
-                  <p className="text-xs text-primary-foreground/80">
+                  <p className="text-xs text-accent-foreground/80">
                     {t("contact.footer.responseTime")}{" "}
                     {t("contact.footer.hours")}
                   </p>
@@ -64,7 +64,7 @@ export function FloatingChatButton() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8 text-primary-foreground hover:bg-white/20"
+                className="h-8 w-8 text-accent-foreground hover:bg-white/20"
                 onClick={handleClose}
               >
                 <X className="h-4 w-4" />
@@ -89,7 +89,7 @@ export function FloatingChatButton() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
+          "fixed bottom-4 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 sm:bottom-6 sm:right-6 sm:h-14 sm:w-14",
           isOpen && "rotate-90 bg-muted text-muted-foreground"
         )}
         aria-label={isOpen ? t("common.close") : t("contact.title")}

@@ -666,9 +666,9 @@ export function VenueDetailClient({
                     {venue.phone && (
                       <a
                         href={`tel:${venue.phone}`}
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-brand/10 text-p-brand">
                           <Phone className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -682,9 +682,9 @@ export function VenueDetailClient({
                     {venue.email && (
                       <a
                         href={`mailto:${venue.email}`}
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-info hover:bg-p-info/5"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-info/10 text-p-info">
                           <Mail className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -698,9 +698,9 @@ export function VenueDetailClient({
                         href={venue.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-primary hover:bg-primary/5"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-golden hover:bg-p-golden/5"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-golden/10 text-p-golden">
                           <Globe className="h-5 w-5" />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -721,9 +721,9 @@ export function VenueDetailClient({
                         href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-pink-500 hover:bg-pink-500/5"
+                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
                       >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 via-pink-500/20 to-orange-500/20 text-pink-500">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-p-brand/20 via-p-golden/20 to-p-info/20 text-p-brand">
                           <Instagram className="h-5 w-5" />
                         </div>
                         <div className="min-w-0">
@@ -767,7 +767,7 @@ export function VenueDetailClient({
                 <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
                   <div className="p-6">
                     <h2 className="mb-3 flex items-center gap-2 text-2xl font-semibold">
-                      <MapPin className="h-5 w-5 text-primary" />
+                      <MapPin className="h-5 w-5 text-red-500" />
                       {tInfo("location")}
                     </h2>
                     {venue.address && (
@@ -915,7 +915,7 @@ export function VenueDetailClient({
                             </span>
                           </div>
                           {plan.policy.maxTotalBookings && (
-                            <div className="text-xs font-medium text-primary">
+                            <div className="text-xs font-medium text-p-info">
                               • {plan.policy.maxTotalBookings}{" "}
                               {plan.policy.maxTotalBookings === 1
                                 ? tPolicy("sessionSingular")
@@ -1178,7 +1178,7 @@ export function VenueDetailClient({
                               </span>
                             </div>
                             {cvIsExhausted ? (
-                              <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                              <div className="flex items-center gap-1 text-p-golden">
                                 <AlertCircle className="h-4 w-4" />
                                 <span className="text-xs font-medium">
                                   {tPlans("packExhausted")}
@@ -1393,7 +1393,7 @@ export function VenueDetailClient({
                       <div className="grid gap-4 md:grid-cols-2">
                         {/* In-App Payment Option - Coming Soon */}
                         <div className="relative flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-muted bg-muted/30 p-6 opacity-60">
-                          <span className="absolute right-2 top-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                          <span className="absolute right-2 top-2 rounded-full bg-p-golden/10 px-2 py-0.5 text-xs font-medium text-p-golden">
                             {t("payment.comingSoon")}
                           </span>
                           <svg

@@ -216,7 +216,7 @@ export function AppSidebar() {
       {/* Desktop Sidebar */}
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden border-r bg-background transition-all duration-300 ease-in-out md:block",
+          "fixed inset-y-0 left-0 z-30 hidden border-r border-border/60 bg-background/95 backdrop-blur-md transition-all duration-300 ease-in-out md:block",
           isCollapsed ? "w-[72px]" : "w-64"
         )}
       >

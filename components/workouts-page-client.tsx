@@ -318,7 +318,7 @@ export function WorkoutsPageClient({
               {myWorkouts.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="flex items-center gap-2 text-lg font-semibold">
-                    <DumbbellIcon className="h-5 w-5" />
+                    <DumbbellIcon className="h-5 w-5 text-p-brand" />
                     {t("createdByMe")}
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -339,7 +339,7 @@ export function WorkoutsPageClient({
               {savedWorkouts.length > 0 && (
                 <div className="space-y-4">
                   <h3 className="flex items-center gap-2 text-lg font-semibold">
-                    <BookmarkIcon className="h-5 w-5" />
+                    <BookmarkIcon className="h-5 w-5 text-p-golden" />
                     {t("savedWorkouts")}
                   </h3>
                   <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -589,7 +589,7 @@ function SavedContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {savedPlans.map((plan) => (
-            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
+            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md">
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -601,14 +601,14 @@ function SavedContentTab({
                 aria-label={tPlans("unsave")}
               >
                 <BookmarkIcon
-                  className={`h-5 w-5 fill-current text-primary transition-colors hover:text-muted-foreground ${
+                  className={`h-5 w-5 fill-current text-accent transition-colors hover:text-muted-foreground ${
                     savingPlanId === plan.id ? "animate-pulse" : ""
                   }`}
                 />
               </button>
               <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
                 <div className="flex-1 pr-8">
-                  <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
+                  <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
                     {plan.name}
                   </h3>
                   {plan.description && (
@@ -619,7 +619,7 @@ function SavedContentTab({
                 </div>
                 <div className="mt-auto pt-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDaysIcon className="h-4 w-4" />
+                    <CalendarDaysIcon className="h-4 w-4 text-p-info" />
                     <span>
                       {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
                     </span>
@@ -853,7 +853,7 @@ function PublicContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPlans.map((plan) => (
-            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
+            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md">
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -867,14 +867,14 @@ function PublicContentTab({
                 <BookmarkIcon
                   className={`h-5 w-5 transition-colors ${
                     plan.isSaved
-                      ? "fill-current text-primary"
-                      : "text-muted-foreground hover:text-primary"
+                      ? "fill-current text-accent"
+                      : "text-muted-foreground hover:text-accent"
                   } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
                 />
               </button>
               <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
                 <div className="flex-1 pr-8">
-                  <h3 className="line-clamp-1 font-semibold group-hover:text-primary">
+                  <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
                     {plan.name}
                   </h3>
                   {plan.description && (
@@ -885,7 +885,7 @@ function PublicContentTab({
                 </div>
                 <div className="mt-auto pt-4">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDaysIcon className="h-4 w-4" />
+                    <CalendarDaysIcon className="h-4 w-4 text-p-info" />
                     <span>
                       {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
                     </span>
@@ -945,7 +945,7 @@ function AssignedPlansTab({
   if (assignedPlans.length === 0) {
     return (
       <div className="rounded-lg border border-dashed p-12 text-center">
-        <UserCheckIcon className="mx-auto h-12 w-12 text-muted-foreground/50" />
+        <UserCheckIcon className="mx-auto h-12 w-12 text-p-info/50" />
         <p className="mt-4 text-lg font-medium">{tPlans("noAssignedPlans")}</p>
         <p className="mt-1 text-sm text-muted-foreground">
           {tPlans("noAssignedPlansDescription")}
@@ -958,16 +958,16 @@ function AssignedPlansTab({
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {assignedPlans.map((userPlan) => (
         <Link key={userPlan.id} href={`/workouts/plans/${userPlan.plan.id}`}>
-          <div className="group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:bg-muted/50">
+          <div className="group flex h-full cursor-pointer flex-col rounded-lg border p-4 transition-colors hover:border-p-info/30 hover:bg-muted/50 hover:shadow-md">
             <div className="flex items-start justify-between">
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <UserCheckIcon className="h-4 w-4 text-primary" />
-                  <span className="text-xs font-medium text-primary">
+                  <UserCheckIcon className="h-4 w-4 text-p-info" />
+                  <span className="text-xs font-medium text-p-info">
                     {t("plans.assignedToYou")}
                   </span>
                 </div>
-                <h3 className="mt-2 line-clamp-1 font-semibold group-hover:text-primary">
+                <h3 className="mt-2 line-clamp-1 font-semibold group-hover:text-accent">
                   {userPlan.plan.name}
                 </h3>
                 {userPlan.plan.description && (
@@ -979,7 +979,7 @@ function AssignedPlansTab({
             </div>
             <div className="mt-auto pt-4">
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <CalendarDaysIcon className="h-4 w-4" />
+                <CalendarDaysIcon className="h-4 w-4 text-p-info" />
                 <span>
                   {userPlan.plan.weeks?.length || 0} {tPlans("weeksCount")}
                 </span>

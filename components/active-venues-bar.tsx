@@ -123,7 +123,7 @@ export function ActiveVenuesBar() {
                 key={venue.id}
                 href={`/venues/${venue.slug}`}
                 className={cn(
-                  "group flex items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-all hover:border-primary hover:bg-primary/5",
+                  "group flex items-center gap-2 rounded-md border bg-background px-3 py-1.5 text-sm font-medium transition-all hover:border-indigo-500 hover:bg-indigo-500/5",
                   "whitespace-nowrap"
                 )}
               >
@@ -139,8 +139,8 @@ export function ActiveVenuesBar() {
                     />
                   </div>
                 ) : (
-                  <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <Building2 className="h-3.5 w-3.5 text-primary" />
+                  <div className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-indigo-500/10">
+                    <Building2 className="h-3.5 w-3.5 text-p-brand" />
                   </div>
                 )}
 

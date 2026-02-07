@@ -290,7 +290,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         <div className="mt-8">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-accent" />
             </div>
           ) : error ? (
             <div className="py-12 text-center text-destructive">

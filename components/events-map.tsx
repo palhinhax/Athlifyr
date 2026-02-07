@@ -26,7 +26,7 @@ const MapComponent = dynamic(() => import("./events-map-client"), {
   ssr: false,
   loading: () => (
     <div className="flex h-full min-h-[600px] items-center justify-center rounded-lg border bg-muted">
-      <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <Loader2 className="h-8 w-8 animate-spin text-accent" />
     </div>
   ),
 });

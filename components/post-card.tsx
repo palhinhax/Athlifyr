@@ -332,7 +332,7 @@ export function PostCard({
                   <span>•</span>
                   <Link
                     href={`/events/${post.event.slug}`}
-                    className="truncate hover:text-primary hover:underline"
+                    className="truncate hover:text-accent hover:underline"
                   >
                     {post.event.title}
                   </Link>
@@ -507,7 +507,7 @@ export function PostCard({
           </button>
           <button
             onClick={handleToggleComments}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-primary"
+            className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-p-info"
           >
             <MessageCircle className="h-5 w-5" />
             <span>{commentsCount}</span>

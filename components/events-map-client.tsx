@@ -270,7 +270,7 @@ export default function EventsMapClient({
     <div className="relative h-full w-full overflow-hidden rounded-lg">
       {loading && (
         <div className="absolute inset-0 z-[1000] flex items-center justify-center bg-background/50">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
       )}
 

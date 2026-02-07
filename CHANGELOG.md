@@ -1,3 +1,9 @@
+# [17.3.0](https://github.com/palhinhax/Athlifyr/compare/v17.2.0...v17.3.0) (2026-02-07)
+
+### Features
+
+- add seed for Santa Maria Trail - SMAT 2026 event with multilingual support and variants ([c42cf66](https://github.com/palhinhax/Athlifyr/commit/c42cf6614ac639f5db3fbe07cd6d651aabd725b3))
+
 # [17.2.0](https://github.com/palhinhax/Athlifyr/compare/v17.1.0...v17.2.0) (2026-02-06)
 
 ### Bug Fixes

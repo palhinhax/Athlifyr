@@ -295,7 +295,10 @@ export function PostCard({
       <Card className="overflow-hidden">
         {/* Header */}
         <div className="flex items-center gap-3 p-4 pb-3">
-          <div className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+          <Link
+            href={`/user/${post.userId}`}
+            className="relative h-10 w-10 flex-shrink-0 overflow-hidden rounded-full bg-muted"
+          >
             {post.user.image ? (
               <Image
                 src={post.user.image}
@@ -309,9 +312,14 @@ export function PostCard({
                 {post.user.name?.[0]?.toUpperCase() || "U"}
               </div>
             )}
-          </div>
+          </Link>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{post.user.name}</p>
+            <Link
+              href={`/user/${post.userId}`}
+              className="truncate font-semibold hover:underline"
+            >
+              {post.user.name}
+            </Link>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span className="whitespace-nowrap">
                 {formatDistanceToNow(createdAt, {

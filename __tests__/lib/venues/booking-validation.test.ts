@@ -17,6 +17,7 @@ jest.mock("@/lib/prisma", () => ({
     },
     venueSubscription: {
       findFirst: jest.fn(),
+      findMany: jest.fn(),
     },
     venuePlanVenue: {
       findMany: jest.fn(),
@@ -47,6 +48,24 @@ describe("booking-validation", () => {
     const sessionId = "session-1";
 
     it("should reject booking if user is not a member", async () => {
+      // Set up a direct subscription so membership check is reached
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          venueId: "venue-1",
+          userId: "user-1",
+          status: "ACTIVE",
+          startsAt: new Date("2025-01-01"),
+          endsAt: null,
+          createdAt: new Date("2025-01-01"),
+          plan: {
+            id: "plan-1",
+            venueId: "venue-1",
+            policy: {},
+          },
+        },
+      ]);
+      (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -56,6 +75,24 @@ describe("booking-validation", () => {
     });
 
     it("should reject booking if member is not active", async () => {
+      // Set up a direct subscription so membership check is reached
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          venueId: "venue-1",
+          userId: "user-1",
+          status: "ACTIVE",
+          startsAt: new Date("2025-01-01"),
+          endsAt: null,
+          createdAt: new Date("2025-01-01"),
+          plan: {
+            id: "plan-1",
+            venueId: "venue-1",
+            policy: {},
+          },
+        },
+      ]);
+      (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
         id: "member-1",
         status: MemberStatus.SUSPENDED,
@@ -72,7 +109,7 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue(null);
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -86,14 +123,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy: {},
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy: {},
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -110,14 +149,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy: {},
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy: {},
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -140,8 +181,8 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      // First call returns null (subscription has future start date, not matching the query)
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue(null);
+      // First call returns empty (subscription has future start date, not matching the query)
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -158,8 +199,8 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      // Subscription is expired so findFirst returns null (doesn't match OR condition)
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue(null);
+      // Subscription is expired so findMany returns empty (doesn't match OR condition)
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
 
       const result = await validateBooking(userId, venueId, sessionId);
@@ -173,14 +214,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy: {},
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy: {},
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -204,14 +247,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy: {},
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy: {},
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -236,14 +281,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy,
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy,
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -269,14 +316,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy,
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy,
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -300,14 +349,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy: {},
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy: {},
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -336,14 +387,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy,
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy,
+          },
         },
-      });
+      ]);
       // Session starts in 2 hours (less than 24 hours required)
       const sessionStart = new Date();
       sessionStart.setHours(sessionStart.getHours() + 2);
@@ -375,14 +428,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy,
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy,
+          },
         },
-      });
+      ]);
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
         id: sessionId,
         type: SessionType.CLASS,
@@ -400,6 +455,148 @@ describe("booking-validation", () => {
       expect(result.reason).toBe("MAX_BOOKINGS_PER_MONTH_REACHED");
     });
 
+    it("should reject booking if max total bookings reached (drop-in/pack)", async () => {
+      const policy: PlanPolicy = {
+        maxTotalBookings: 5, // Pack of 5
+      };
+
+      (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
+        requiresPlanToBook: true,
+      });
+      (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
+        id: "member-1",
+        status: MemberStatus.ACTIVE,
+      });
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          startsAt: new Date("2026-01-01T00:00:00Z"),
+          endsAt: null,
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+          plan: {
+            id: "plan-1",
+            venueId: "venue-1",
+            policy,
+          },
+        },
+      ]);
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: SessionType.CLASS,
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
+      // Return no included venues
+      (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Already used all 5 sessions (linked bookings=5, legacy bookings=0)
+      (prisma.venueBooking.count as jest.Mock)
+        .mockResolvedValueOnce(5) // linked bookings in findUsableSubscription
+        .mockResolvedValueOnce(0); // legacy bookings in findUsableSubscription
+
+      const result = await validateBooking(userId, venueId, sessionId);
+
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBe("MAX_TOTAL_BOOKINGS_REACHED");
+    });
+
+    it("should allow booking if max total bookings not yet reached", async () => {
+      const policy: PlanPolicy = {
+        maxTotalBookings: 5, // Pack of 5
+      };
+
+      (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
+        requiresPlanToBook: true,
+      });
+      (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
+        id: "member-1",
+        status: MemberStatus.ACTIVE,
+      });
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          startsAt: new Date("2026-01-01T00:00:00Z"),
+          endsAt: null,
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+          plan: {
+            id: "plan-1",
+            venueId: "venue-1",
+            policy,
+          },
+        },
+      ]);
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: SessionType.CLASS,
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
+      // Return no included venues
+      (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Used 3 out of 5 sessions (linked bookings=3, legacy bookings=0)
+      (prisma.venueBooking.count as jest.Mock)
+        .mockResolvedValueOnce(3) // linked bookings in findUsableSubscription
+        .mockResolvedValueOnce(0) // legacy bookings in findUsableSubscription
+        .mockResolvedValueOnce(3) // linked bookings in final maxTotalBookings check
+        .mockResolvedValueOnce(0); // legacy bookings in final maxTotalBookings check
+
+      const result = await validateBooking(userId, venueId, sessionId);
+
+      expect(result.allowed).toBe(true);
+    });
+
+    it("should reject booking for drop-in plan after single use", async () => {
+      const policy: PlanPolicy = {
+        maxTotalBookings: 1, // Drop-in = 1 session only
+      };
+
+      (prisma.venue.findUnique as jest.Mock).mockResolvedValue({
+        requiresPlanToBook: true,
+      });
+      (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
+        id: "member-1",
+        status: MemberStatus.ACTIVE,
+      });
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          startsAt: new Date("2026-01-01T00:00:00Z"),
+          endsAt: null,
+          createdAt: new Date("2026-01-01T00:00:00Z"),
+          plan: {
+            id: "plan-1",
+            venueId: "venue-1",
+            policy,
+          },
+        },
+      ]);
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: SessionType.CLASS,
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
+      // Return no included venues
+      (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Already used 1 session (drop-in limit) (linked=1, legacy=0)
+      (prisma.venueBooking.count as jest.Mock)
+        .mockResolvedValueOnce(1) // linked bookings in findUsableSubscription
+        .mockResolvedValueOnce(0); // legacy bookings in findUsableSubscription
+
+      const result = await validateBooking(userId, venueId, sessionId);
+
+      expect(result.allowed).toBe(false);
+      expect(result.reason).toBe("MAX_TOTAL_BOOKINGS_REACHED");
+    });
+
     it("should reject booking if allowed day restriction not met (string format)", async () => {
       const policy: PlanPolicy = {
         allowedDays: ["MONDAY", "WEDNESDAY", "FRIDAY"], // Only Mon, Wed, Fri
@@ -412,14 +609,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.ACTIVE,
       });
-      (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
-        id: "sub-1",
-        status: "ACTIVE",
-        plan: {
-          id: "plan-1",
-          policy,
+      (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([
+        {
+          id: "sub-1",
+          status: "ACTIVE",
+          plan: {
+            id: "plan-1",
+            policy,
+          },
         },
-      });
+      ]);
       // June 15, 2026 is a Monday - wait, let me check
       // Actually, June 15, 2026 is a Monday, so let's use June 16 (Tuesday)
       (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({

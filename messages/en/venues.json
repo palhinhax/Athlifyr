@@ -409,7 +409,12 @@
       "paymentBoth": "User Choice (In-App or On-Site)",
       "reactivate": "Reactivate",
       "reactivateConfirmTitle": "Reactivate Plan?",
-      "reactivateConfirmDescription": "Are you sure you want to reactivate this plan? It will become available for new subscriptions."
+      "reactivateConfirmDescription": "Are you sure you want to reactivate this plan? It will become available for new subscriptions.",
+      "packExhausted": "Pack exhausted",
+      "sessionsUsed": "{used} of {total} sessions used",
+      "resubscribe": "Subscribe again",
+      "crossVenueTitle": "Subscriptions from other venues",
+      "fromVenue": "Plan from {venue}"
     },
     "sessions": {
       "title": "Sessions",
@@ -579,6 +584,7 @@
       "outsideTimeWindow": "Outside allowed time window",
       "advanceBookingRequired": "Must book at least {hours} hours in advance",
       "maxBookingsPerMonthReached": "Monthly booking limit reached",
+      "maxTotalBookingsReached": "All sessions in your pack have been used",
       "cancellationNotAllowed": "Your plan does not allow cancellations",
       "cancellationDeadlinePassed": "Must cancel at least {hours} hours before the session",
       "confirmCancel": "Cancel Booking",
@@ -710,7 +716,8 @@
         "pending": "Pending",
         "cancelled": "Cancelled",
         "expired": "Expired",
-        "scheduled": "Scheduled"
+        "scheduled": "Scheduled",
+        "completed": "Completed"
       },
       "paymentStatus": {
         "label": "Payment Status",
@@ -768,6 +775,8 @@
       "maxBookingsPerDay": "Max Visits per Day",
       "maxBookingsPerWeek": "Max Visits per Week",
       "maxBookingsPerMonth": "Max Visits per Month",
+      "maxTotalBookings": "Total Sessions (Pack)",
+      "maxTotalBookingsHint": "Total sessions allowed for the entire subscription. E.g.: 1 = drop-in, 5 = pack of 5 classes. Leave empty for unlimited.",
       "unlimited": "Unlimited",
       "timeRestrictions": "Time Restrictions",
       "allowedDays": "Allowed Days",
@@ -787,7 +796,9 @@
         "FRIDAY": "Friday",
         "SATURDAY": "Saturday",
         "SUNDAY": "Sunday"
-      }
+      },
+      "sessionSingular": "session included",
+      "sessionsPlural": "sessions included"
     },
     "posts": {
       "sharePost": "Share something about the venue...",

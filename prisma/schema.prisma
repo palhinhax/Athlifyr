@@ -753,9 +753,10 @@ model VenueSubscription {
   endsAt             DateTime?
   createdAt          DateTime      @default(now())
   updatedAt          DateTime      @updatedAt
-  plan               VenuePlan     @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user               User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue              Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  plan               VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue              Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings           VenueBooking[]
 
   @@index([venueId])
   @@index([userId])
@@ -827,28 +828,31 @@ model VenueSession {
 }
 
 model VenueBooking {
-  id            String        @id @default(cuid())
-  venueId       String
-  sessionId     String
-  userId        String?
-  status        BookingStatus @default(BOOKED)
-  notes         String?
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-  guestEmail    String?
-  guestName     String?
-  guestPhone    String?
-  isEasyBooking Boolean       @default(false)
-  addedByStaff  Boolean       @default(false)
-  addedByUserId String?
-  session       VenueSession  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue         Venue         @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  addedByUser   User?         @relation("StaffAddedBookings", fields: [addedByUserId], references: [id], onDelete: SetNull)
+  id             String             @id @default(cuid())
+  venueId        String
+  sessionId      String
+  userId         String?
+  subscriptionId String?
+  status         BookingStatus      @default(BOOKED)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  guestEmail     String?
+  guestName      String?
+  guestPhone     String?
+  isEasyBooking  Boolean            @default(false)
+  addedByStaff   Boolean            @default(false)
+  addedByUserId  String?
+  session        VenueSession       @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user           User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue          Venue              @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  subscription   VenueSubscription? @relation(fields: [subscriptionId], references: [id], onDelete: SetNull)
+  addedByUser    User?              @relation("StaffAddedBookings", fields: [addedByUserId], references: [id], onDelete: SetNull)
 
   @@index([venueId])
   @@index([sessionId])
   @@index([userId])
+  @@index([subscriptionId])
   @@index([status])
   @@index([createdAt])
 }

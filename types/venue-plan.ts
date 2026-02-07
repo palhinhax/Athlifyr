@@ -17,6 +17,7 @@ export interface VenuePlanPolicy {
   maxBookingsPerDay?: number; // null = unlimited
   maxBookingsPerWeek?: number; // null = unlimited
   maxBookingsPerMonth?: number; // null = unlimited
+  maxTotalBookings?: number; // Total bookings allowed for entire subscription (e.g., drop-in=1, pack 5=5)
 
   // Time Restrictions
   allowedDays?: string[]; // ["MONDAY", "TUESDAY", ...] null = all days
@@ -70,6 +71,7 @@ export const DEFAULT_PLAN_POLICY: VenuePlanPolicy = {
   maxBookingsPerDay: undefined,
   maxBookingsPerWeek: undefined,
   maxBookingsPerMonth: undefined,
+  maxTotalBookings: undefined,
   allowedDays: undefined,
   allowedStartTimeFrom: undefined,
   allowedStartTimeTo: undefined,

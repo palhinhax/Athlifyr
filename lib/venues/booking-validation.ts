@@ -17,6 +17,7 @@ export interface PlanPolicy {
   maxBookingsPerDay?: number;
   maxBookingsPerWeek?: number;
   maxBookingsPerMonth?: number;
+  maxTotalBookings?: number; // Total bookings allowed for entire subscription (drop-in, packs)
   maxActiveBookings?: number;
 
   // Time Restrictions
@@ -42,6 +43,7 @@ export interface BookingValidationResult {
   allowed: boolean;
   reason?: string;
   minimumHours?: number; // For advance booking requirement
+  subscriptionId?: string; // The subscription that authorized this booking
 }
 
 export interface CancellationValidationResult {
@@ -150,41 +152,88 @@ export async function validateBooking(
     return validateBasicBooking(userId, venueId, sessionId);
   }
 
-  // 1. Check if user is an active member
-  const member = await prisma.venueMember.findUnique({
-    where: {
-      venueId_userId: {
-        venueId,
-        userId,
-      },
-    },
-  });
-
-  if (!member) {
-    return {
-      allowed: false,
-      reason: "NOT_A_MEMBER",
-    };
-  }
-
-  if (member.status !== MemberStatus.ACTIVE) {
-    return {
-      allowed: false,
-      reason: "MEMBER_NOT_ACTIVE",
-    };
-  }
-
-  // 2. Check if user has an active subscription with payment confirmed
+  // 1. Check if user has an active subscription (direct or cross-venue)
   // The subscription must have already started (startsAt <= now) and not expired (endsAt is null or > now)
   const now = new Date();
 
-  // First, check direct subscription to this venue
-  let subscription = await prisma.venueSubscription.findFirst({
+  // Helper: find a usable subscription from a list
+  // Prefers non-exhausted subscriptions, but returns an exhausted one as fallback
+  // so that the specific MAX_TOTAL_BOOKINGS_REACHED error can be returned
+  type SubscriptionWithPlan = Awaited<
+    ReturnType<
+      typeof prisma.venueSubscription.findMany<{ include: { plan: true } }>
+    >
+  >[number];
+
+  const findUsableSubscription = async (
+    subscriptions: SubscriptionWithPlan[]
+  ) => {
+    let exhaustedFallback: SubscriptionWithPlan | null = null;
+
+    for (const sub of subscriptions) {
+      if (!sub) continue;
+      const subPolicy = (sub.plan.policy as PlanPolicy) || {};
+      if (subPolicy.maxTotalBookings) {
+        // Count bookings explicitly linked to this subscription
+        const linkedBookings = await prisma.venueBooking.count({
+          where: {
+            subscriptionId: sub.id,
+            status: {
+              in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+            },
+          },
+        });
+
+        // Also count legacy bookings (subscriptionId is null) within
+        // this subscription's time window across all covered venues
+        const includedVenues = await prisma.venuePlanVenue.findMany({
+          where: { planId: sub.plan.id },
+          select: { venueId: true },
+        });
+        const allVenueIds = [
+          sub.plan.venueId,
+          ...includedVenues.map((pv) => pv.venueId),
+        ];
+
+        const legacyBookings = await prisma.venueBooking.count({
+          where: {
+            userId,
+            subscriptionId: null,
+            venueId: { in: allVenueIds },
+            status: {
+              in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+            },
+            createdAt: {
+              gte: sub.createdAt,
+              ...(sub.endsAt ? { lte: sub.endsAt } : {}),
+            },
+          },
+        });
+
+        const totalBookings = linkedBookings + legacyBookings;
+
+        if (totalBookings >= subPolicy.maxTotalBookings) {
+          // This pack is exhausted, keep as fallback but try the next one
+          if (!exhaustedFallback) {
+            exhaustedFallback = sub;
+          }
+          continue;
+        }
+      }
+      return sub;
+    }
+    // Return exhausted subscription as fallback so MAX_TOTAL_BOOKINGS_REACHED can be reported
+    return exhaustedFallback;
+  };
+
+  // First, check direct subscriptions to this venue
+  let subscription: SubscriptionWithPlan | null = null;
+
+  const directSubscriptions = await prisma.venueSubscription.findMany({
     where: {
       venueId,
       userId,
       status: "ACTIVE",
-      paymentStatus: "PAID", // Must be paid to book
       startsAt: {
         lte: now, // Subscription must have already started
       },
@@ -196,9 +245,12 @@ export async function validateBooking(
     include: {
       plan: true,
     },
+    orderBy: { createdAt: "desc" }, // Newest first (most recent purchase)
   });
 
-  // If no direct subscription, check if user has a subscription to a plan that includes this venue
+  subscription = await findUsableSubscription(directSubscriptions);
+
+  // If no usable direct subscription, check if user has a subscription to a plan that includes this venue
   if (!subscription) {
     // Find plans that include this venue
     const plansIncludingVenue = await prisma.venuePlanVenue.findMany({
@@ -211,11 +263,10 @@ export async function validateBooking(
     });
 
     if (plansIncludingVenue.length > 0) {
-      subscription = await prisma.venueSubscription.findFirst({
+      const indirectSubscriptions = await prisma.venueSubscription.findMany({
         where: {
           userId,
           status: "ACTIVE",
-          paymentStatus: "PAID",
           planId: {
             in: plansIncludingVenue.map((p) => p.planId),
           },
@@ -230,7 +281,10 @@ export async function validateBooking(
         include: {
           plan: true,
         },
+        orderBy: { createdAt: "desc" },
       });
+
+      subscription = await findUsableSubscription(indirectSubscriptions);
     }
   }
 
@@ -240,6 +294,35 @@ export async function validateBooking(
       reason: "NO_ACTIVE_SUBSCRIPTION",
     };
   }
+
+  // 2. For direct subscriptions (same venue), verify membership
+  // Cross-venue subscriptions (plan from another venue that includes this one) skip membership check
+  const isDirectSubscription = subscription.venueId === venueId;
+  if (isDirectSubscription) {
+    const member = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: {
+          venueId,
+          userId,
+        },
+      },
+    });
+
+    if (!member) {
+      return {
+        allowed: false,
+        reason: "NOT_A_MEMBER",
+      };
+    }
+
+    if (member.status !== MemberStatus.ACTIVE) {
+      return {
+        allowed: false,
+        reason: "MEMBER_NOT_ACTIVE",
+      };
+    }
+  }
+
   // 3. Get session details
   const session = await prisma.venueSession.findUnique({
     where: { id: sessionId },
@@ -472,6 +555,54 @@ export async function validateBooking(
     }
   }
 
+  // Check max total bookings for entire subscription (drop-in, packs)
+  if (policy.maxTotalBookings) {
+    // Count bookings explicitly linked to this subscription
+    const linkedBookings = await prisma.venueBooking.count({
+      where: {
+        subscriptionId: subscription.id,
+        status: {
+          in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+        },
+      },
+    });
+
+    // Also count legacy bookings (subscriptionId is null) within
+    // this subscription's time window across all covered venues
+    const includedVenues = await prisma.venuePlanVenue.findMany({
+      where: { planId: subscription.plan.id },
+      select: { venueId: true },
+    });
+    const allVenueIds = [
+      subscription.plan.venueId,
+      ...includedVenues.map((pv) => pv.venueId),
+    ];
+
+    const legacyBookings = await prisma.venueBooking.count({
+      where: {
+        userId,
+        subscriptionId: null,
+        venueId: { in: allVenueIds },
+        status: {
+          in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+        },
+        createdAt: {
+          gte: subscription.createdAt,
+          ...(subscription.endsAt ? { lte: subscription.endsAt } : {}),
+        },
+      },
+    });
+
+    const totalBookings = linkedBookings + legacyBookings;
+
+    if (totalBookings >= policy.maxTotalBookings) {
+      return {
+        allowed: false,
+        reason: "MAX_TOTAL_BOOKINGS_REACHED",
+      };
+    }
+  }
+
   // Check advance booking requirement
   if (policy.requiresAdvanceBooking && policy.advanceBookingHours) {
     const now = new Date();
@@ -489,6 +620,7 @@ export async function validateBooking(
   // All validations passed
   return {
     allowed: true,
+    subscriptionId: subscription.id,
   };
 }
 

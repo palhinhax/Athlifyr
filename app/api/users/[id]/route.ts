@@ -50,11 +50,6 @@ export async function GET(
             },
           },
         },
-        comments: {
-          select: {
-            id: true,
-          },
-        },
         results: {
           select: {
             id: true,
@@ -123,7 +118,6 @@ export async function GET(
         upcomingEvents: upcomingEvents.length,
         pastEvents: pastEvents.length,
         friendsCount,
-        commentsCount: user.comments.length,
       },
       participations: user.participations.map((p) => ({
         id: p.id,

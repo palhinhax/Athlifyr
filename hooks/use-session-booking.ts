@@ -22,7 +22,7 @@ export function useSessionBooking({
     null
   );
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
-  const [sessionToCancel, setSessionToCancel] = useState<string | null>(null);
+  const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
 
   // Get booking error message
   const getBookingErrorMessage = (reason: string): string => {
@@ -38,6 +38,10 @@ export function useSessionBooking({
       LIMIT_REACHED: tBooking("limitReached"),
       OUTSIDE_TIME_WINDOW: tBooking("outsideTimeWindow"),
       SUBSCRIPTION_NOT_STARTED: tBooking("subscriptionNotStarted"),
+      MAX_BOOKINGS_PER_DAY_REACHED: tBooking("limitReached"),
+      MAX_BOOKINGS_PER_WEEK_REACHED: tBooking("limitReached"),
+      MAX_BOOKINGS_PER_MONTH_REACHED: tBooking("maxBookingsPerMonthReached"),
+      MAX_TOTAL_BOOKINGS_REACHED: tBooking("maxTotalBookingsReached"),
     };
     return errorMap[reason] || tBooking("error");
   };
@@ -88,18 +92,18 @@ export function useSessionBooking({
   };
 
   // Open cancel dialog
-  const handleCancelBooking = (sessionId: string) => {
-    setSessionToCancel(sessionId);
+  const handleCancelBooking = (bookingId: string) => {
+    setBookingToCancel(bookingId);
     setCancelDialogOpen(true);
   };
 
   // Confirm cancel booking
   const confirmCancelBooking = async () => {
-    if (!sessionToCancel) return;
+    if (!bookingToCancel) return;
 
     try {
       const response = await fetch(
-        `/api/venues/${venueId}/sessions/${sessionToCancel}/cancel`,
+        `/api/venues/${venueId}/bookings/${bookingToCancel}/cancel`,
         { method: "POST" }
       );
 
@@ -108,7 +112,7 @@ export function useSessionBooking({
       }
 
       toast({
-        title: t("cancellationSuccess"),
+        title: t("bookingCancelled"),
         variant: "default",
       });
 
@@ -122,7 +126,7 @@ export function useSessionBooking({
       });
     } finally {
       setCancelDialogOpen(false);
-      setSessionToCancel(null);
+      setBookingToCancel(null);
     }
   };
 

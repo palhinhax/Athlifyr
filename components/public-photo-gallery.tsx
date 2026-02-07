@@ -87,7 +87,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
 
   if (isLoading) {
     return (
-      <div className="mt-12">
+      <div className="mb-12 mt-12">
         <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
           <Camera className="h-6 w-6 text-primary" />
           Galeria
@@ -104,7 +104,7 @@ export function PublicPhotoGallery({ userId }: PublicPhotoGalleryProps) {
   }
 
   return (
-    <div className="mt-12">
+    <div className="mb-12 mt-12">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="flex items-center gap-2 text-2xl font-bold">
           <Camera className="h-6 w-6 text-primary" />

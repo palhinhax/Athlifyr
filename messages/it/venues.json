@@ -409,7 +409,12 @@
       "paymentBoth": "Scelta dell'Utente (App o in Sede)",
       "reactivate": "Riattiva",
       "reactivateConfirmTitle": "Riattivare il Piano?",
-      "reactivateConfirmDescription": "Sei sicuro di voler riattivare questo piano? Sarà disponibile per nuovi abbonamenti."
+      "reactivateConfirmDescription": "Sei sicuro di voler riattivare questo piano? Sarà disponibile per nuovi abbonamenti.",
+      "packExhausted": "Pacchetto esaurito",
+      "sessionsUsed": "{used} di {total} sessioni utilizzate",
+      "resubscribe": "Iscriviti di nuovo",
+      "crossVenueTitle": "Abbonamenti da altri spazi",
+      "fromVenue": "Piano di {venue}"
     },
     "sessions": {
       "title": "Sessioni",
@@ -579,6 +584,7 @@
       "outsideTimeWindow": "Fuori dalla finestra temporale consentita",
       "advanceBookingRequired": "Devi prenotare con almeno {hours} ore di anticipo",
       "maxBookingsPerMonthReached": "Limite mensile di prenotazioni raggiunto",
+      "maxTotalBookingsReached": "Tutte le sessioni del tuo pacchetto sono state utilizzate",
       "cancellationNotAllowed": "Il tuo piano non consente cancellazioni",
       "cancellationDeadlinePassed": "Devi annullare con almeno {hours} ore di anticipo",
       "confirmCancel": "Annulla Prenotazione",
@@ -710,7 +716,8 @@
         "pending": "In Attesa",
         "cancelled": "Annullato",
         "expired": "Scaduto",
-        "scheduled": "Programmato"
+        "scheduled": "Programmato",
+        "completed": "Completato"
       },
       "paymentStatus": {
         "label": "Stato Pagamento",
@@ -768,6 +775,8 @@
       "maxBookingsPerDay": "Max. Visite al Giorno",
       "maxBookingsPerWeek": "Max. Visite alla Settimana",
       "maxBookingsPerMonth": "Max. Visite al Mese",
+      "maxTotalBookings": "Sessioni Totali (Pacchetto)",
+      "maxTotalBookingsHint": "Totale sessioni consentite per l'intera iscrizione. Es.: 1 = drop-in, 5 = pacchetto da 5 lezioni. Lascia vuoto per illimitato.",
       "unlimited": "Illimitato",
       "timeRestrictions": "Restrizioni Orarie",
       "allowedDays": "Giorni Consentiti",
@@ -787,7 +796,9 @@
         "FRIDAY": "Venerdì",
         "SATURDAY": "Sabato",
         "SUNDAY": "Domenica"
-      }
+      },
+      "sessionSingular": "sessione inclusa",
+      "sessionsPlural": "sessioni incluse"
     },
     "posts": {
       "sharePost": "Condividi qualcosa sul luogo...",

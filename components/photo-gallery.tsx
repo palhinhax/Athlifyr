@@ -220,7 +220,7 @@ export function PhotoGallery() {
   if (!session?.user) return null;
 
   return (
-    <div className="mt-12">
+    <div className="mb-12 mt-12">
       <input
         ref={fileInputRef}
         type="file"

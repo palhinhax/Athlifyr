@@ -409,7 +409,12 @@
       "paymentBoth": "Choix de l'Utilisateur (App ou sur Place)",
       "reactivate": "Réactiver",
       "reactivateConfirmTitle": "Réactiver le Forfait ?",
-      "reactivateConfirmDescription": "Êtes-vous sûr de vouloir réactiver ce forfait ? Il sera disponible pour de nouveaux abonnements."
+      "reactivateConfirmDescription": "Êtes-vous sûr de vouloir réactiver ce forfait ? Il sera disponible pour de nouveaux abonnements.",
+      "packExhausted": "Pack épuisé",
+      "sessionsUsed": "{used} sur {total} séances utilisées",
+      "resubscribe": "Se réabonner",
+      "crossVenueTitle": "Abonnements d'autres espaces",
+      "fromVenue": "Forfait de {venue}"
     },
     "sessions": {
       "title": "Séances",
@@ -579,6 +584,7 @@
       "outsideTimeWindow": "En dehors de la période autorisée",
       "advanceBookingRequired": "Vous devez réserver au moins {hours} heures à l'avance",
       "maxBookingsPerMonthReached": "Limite mensuelle de réservations atteinte",
+      "maxTotalBookingsReached": "Toutes les séances de votre pack ont été utilisées",
       "cancellationNotAllowed": "Votre forfait ne permet pas les annulations",
       "cancellationDeadlinePassed": "Vous devez annuler au moins {hours} heures avant la séance",
       "confirmCancel": "Annuler la Réservation",
@@ -710,7 +716,8 @@
         "pending": "En Attente",
         "cancelled": "Annulé",
         "expired": "Expiré",
-        "scheduled": "Programmé"
+        "scheduled": "Programmé",
+        "completed": "Terminé"
       },
       "paymentStatus": {
         "label": "Statut du Paiement",
@@ -768,6 +775,8 @@
       "maxBookingsPerDay": "Max. Visites par Jour",
       "maxBookingsPerWeek": "Max. Visites par Semaine",
       "maxBookingsPerMonth": "Max. Visites par Mois",
+      "maxTotalBookings": "Total de Séances (Pack)",
+      "maxTotalBookingsHint": "Total de séances autorisées pour toute la souscription. Ex. : 1 = drop-in, 5 = pack de 5 cours. Laissez vide pour illimité.",
       "unlimited": "Illimité",
       "timeRestrictions": "Restrictions Horaires",
       "allowedDays": "Jours Autorisés",
@@ -787,7 +796,9 @@
         "FRIDAY": "Vendredi",
         "SATURDAY": "Samedi",
         "SUNDAY": "Dimanche"
-      }
+      },
+      "sessionSingular": "séance incluse",
+      "sessionsPlural": "séances incluses"
     },
     "posts": {
       "sharePost": "Partagez quelque chose sur le lieu...",

@@ -97,6 +97,18 @@ export async function POST(
       },
     });
 
+    // Mark any other ACTIVE subscriptions for the same plan+user as COMPLETED
+    // This handles the case where an exhausted pack wasn't properly completed
+    await prisma.venueSubscription.updateMany({
+      where: {
+        userId: subscription.userId,
+        planId: subscription.planId,
+        status: "ACTIVE",
+        id: { not: subscriptionId },
+      },
+      data: { status: "COMPLETED" },
+    });
+
     return NextResponse.json(updatedSubscription);
   } catch (error) {
     console.error("Error marking subscription as paid:", error);

@@ -924,6 +924,218 @@ async function main() {
   );
 
   // ============================================================================
+  // 9. RUI DROPIN (Utilizador Drop-in - 1 sessão)
+  // ============================================================================
+  console.log("\n👤 Criando Rui Drop-in...");
+  const ruiDropin = await prisma.user.upsert({
+    where: { email: "rui.dropin@test.com" },
+    update: {
+      name: "Rui Oliveira",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+    create: {
+      email: "rui.dropin@test.com",
+      name: "Rui Oliveira",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+  });
+  console.log(`   ✅ Rui Drop-in criado: ${ruiDropin.email}`);
+
+  // ============================================================================
+  // 10. INÊS PACK (Utilizadora Pack 5 Aulas)
+  // ============================================================================
+  console.log("👤 Criando Inês Pack...");
+  const inesPack = await prisma.user.upsert({
+    where: { email: "ines.pack@test.com" },
+    update: {
+      name: "Inês Martins",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+    create: {
+      email: "ines.pack@test.com",
+      name: "Inês Martins",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+  });
+  console.log(`   ✅ Inês Pack criada: ${inesPack.email}`);
+
+  // Rui Drop-in - CLIENT no CrossFit Cascais
+  await prisma.venueMember.upsert({
+    where: {
+      venueId_userId: { venueId: crossfitCascais.id, userId: ruiDropin.id },
+    },
+    update: {
+      role: VenueRole.CLIENT,
+      status: MemberStatus.ACTIVE,
+      joinedAt: new Date(),
+    },
+    create: {
+      venueId: crossfitCascais.id,
+      userId: ruiDropin.id,
+      role: VenueRole.CLIENT,
+      status: MemberStatus.ACTIVE,
+      joinedAt: new Date(),
+    },
+  });
+  console.log("   ✅ Rui Oliveira -> CrossFit Cascais (CLIENT - Drop-in)");
+
+  // Inês Pack - CLIENT no CrossFit Cascais
+  await prisma.venueMember.upsert({
+    where: {
+      venueId_userId: { venueId: crossfitCascais.id, userId: inesPack.id },
+    },
+    update: {
+      role: VenueRole.CLIENT,
+      status: MemberStatus.ACTIVE,
+      joinedAt: new Date(),
+    },
+    create: {
+      venueId: crossfitCascais.id,
+      userId: inesPack.id,
+      role: VenueRole.CLIENT,
+      status: MemberStatus.ACTIVE,
+      joinedAt: new Date(),
+    },
+  });
+  console.log("   ✅ Inês Martins -> CrossFit Cascais (CLIENT - Pack 5)");
+
+  // ============================================================================
+  // PLANOS DROP-IN E PACK 5 AULAS (CrossFit Cascais)
+  // ============================================================================
+  console.log("\n🎟️ Criando Planos Drop-in e Pack 5 Aulas...\n");
+
+  // Drop-in CrossFit Cascais (1 sessão total)
+  const planDropin = await prisma.venuePlan.upsert({
+    where: { id: "plan-crossfit-cascais-dropin" },
+    update: {
+      name: "Drop-in",
+      description: "Aula avulsa - experimenta uma sessão sem compromisso",
+      price: 12.0,
+      currency: "EUR",
+      isActive: true,
+      policy: {
+        duration: "ONE_TIME",
+        maxTotalBookings: 1,
+      },
+    },
+    create: {
+      id: "plan-crossfit-cascais-dropin",
+      venueId: crossfitCascais.id,
+      name: "Drop-in",
+      description: "Aula avulsa - experimenta uma sessão sem compromisso",
+      price: 12.0,
+      currency: "EUR",
+      isActive: true,
+      policy: {
+        duration: "ONE_TIME",
+        maxTotalBookings: 1,
+      },
+    },
+  });
+  console.log("   ✅ Plano Drop-in CrossFit Cascais criado (1 sessão, 12€)");
+
+  // Pack 5 Aulas CrossFit Cascais (5 sessões totais)
+  const planPack5 = await prisma.venuePlan.upsert({
+    where: { id: "plan-crossfit-cascais-pack5" },
+    update: {
+      name: "Pack 5 Aulas",
+      description: "Pack de 5 aulas - usa quando quiseres, sem limite de tempo",
+      price: 50.0,
+      currency: "EUR",
+      isActive: true,
+      policy: {
+        duration: "ONE_TIME",
+        maxTotalBookings: 5,
+      },
+    },
+    create: {
+      id: "plan-crossfit-cascais-pack5",
+      venueId: crossfitCascais.id,
+      name: "Pack 5 Aulas",
+      description: "Pack de 5 aulas - usa quando quiseres, sem limite de tempo",
+      price: 50.0,
+      currency: "EUR",
+      isActive: true,
+      policy: {
+        duration: "ONE_TIME",
+        maxTotalBookings: 5,
+      },
+    },
+  });
+  console.log(
+    "   ✅ Plano Pack 5 Aulas CrossFit Cascais criado (5 sessões, 50€)"
+  );
+
+  // ============================================================================
+  // SUBSCRIÇÕES DROP-IN E PACK 5 AULAS
+  // ============================================================================
+  console.log("\n📋 Criando Subscrições Drop-in e Pack 5...\n");
+
+  // Subscrição Drop-in para Rui
+  await prisma.venueSubscription.upsert({
+    where: { id: "sub-rui-crossfit-cascais-dropin" },
+    update: {
+      status: "ACTIVE",
+      paymentStatus: "PAID",
+      startsAt: startsAt,
+      endsAt: null, // ONE_TIME - sem expiração
+    },
+    create: {
+      id: "sub-rui-crossfit-cascais-dropin",
+      venueId: crossfitCascais.id,
+      userId: ruiDropin.id,
+      planId: planDropin.id,
+      status: "ACTIVE",
+      paymentStatus: "PAID",
+      startsAt: startsAt,
+      endsAt: null, // ONE_TIME - sem expiração
+    },
+  });
+  console.log(
+    "   ✅ Subscrição Drop-in para Rui Oliveira criada (1 sessão disponível)"
+  );
+
+  // Subscrição Pack 5 para Inês
+  await prisma.venueSubscription.upsert({
+    where: { id: "sub-ines-crossfit-cascais-pack5" },
+    update: {
+      status: "ACTIVE",
+      paymentStatus: "PAID",
+      startsAt: startsAt,
+      endsAt: null, // ONE_TIME - sem expiração
+    },
+    create: {
+      id: "sub-ines-crossfit-cascais-pack5",
+      venueId: crossfitCascais.id,
+      userId: inesPack.id,
+      planId: planPack5.id,
+      status: "ACTIVE",
+      paymentStatus: "PAID",
+      startsAt: startsAt,
+      endsAt: null, // ONE_TIME - sem expiração
+    },
+  });
+  console.log(
+    "   ✅ Subscrição Pack 5 Aulas para Inês Martins criada (5 sessões disponíveis)"
+  );
+
+  // ============================================================================
   // RESUMO FINAL
   // ============================================================================
   console.log("\n" + "=".repeat(60));
@@ -939,6 +1151,8 @@ async function main() {
   console.log("   6. carlos.multi@test.com (Multi-Box + Owner)");
   console.log("   7. sofia.nova@test.com (Novo - Email não verificado)");
   console.log("   8. banned@test.com (Banido)");
+  console.log("   9. rui.dropin@test.com (Drop-in - 1 sessão)");
+  console.log("   10. ines.pack@test.com (Pack 5 Aulas - 5 sessões)");
   console.log("\n🏢 VENUES CRIADOS:");
   console.log("   - CrossFit Cascais (crossfit-cascais)");
   console.log("   - HYROX Training Lisboa (hyrox-training-lisboa)");
@@ -946,6 +1160,8 @@ async function main() {
   console.log("\n💰 PLANOS:");
   console.log("   - Plano Mensal CrossFit (ilimitado)");
   console.log("   - Plano Limitado CrossFit (max 1 aula/dia)");
+  console.log("   - Drop-in CrossFit (1 sessão total - 12€)");
+  console.log("   - Pack 5 Aulas CrossFit (5 sessões totais - 50€)");
   console.log("\n🔑 PASSWORD PADRÃO: Test123!");
   console.log("=".repeat(60) + "\n");
 }

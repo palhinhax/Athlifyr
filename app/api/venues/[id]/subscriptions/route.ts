@@ -296,12 +296,70 @@ export async function POST(
     });
 
     if (existingSubscription) {
-      return NextResponse.json(
-        {
-          error: "Already have an active or pending subscription to this plan",
-        },
-        { status: 400 }
-      );
+      // Check if this is a pack/drop-in plan with maxTotalBookings
+      // If the pack is exhausted, mark the old subscription as COMPLETED and allow re-subscription
+      const existingPlan = await prisma.venuePlan.findUnique({
+        where: { id: planId },
+      });
+      const existingPolicy =
+        (existingPlan?.policy as unknown as VenuePlanPolicy) || {};
+
+      if (
+        existingPolicy.maxTotalBookings &&
+        existingSubscription.status === "ACTIVE"
+      ) {
+        const totalBookingsUsed = await prisma.venueBooking.count({
+          where: {
+            userId: session.user.id,
+            status: { in: ["BOOKED", "ATTENDED"] },
+            createdAt: {
+              gte: existingSubscription.createdAt,
+              ...(existingSubscription.endsAt
+                ? { lte: existingSubscription.endsAt }
+                : {}),
+            },
+            // Count bookings at the subscription's venue AND any included venues
+            OR: [
+              { venueId },
+              {
+                venueId: {
+                  in: await prisma.venuePlanVenue
+                    .findMany({
+                      where: { planId },
+                      select: { venueId: true },
+                    })
+                    .then((pv) => pv.map((p) => p.venueId)),
+                },
+              },
+            ],
+          },
+        });
+
+        if (totalBookingsUsed >= existingPolicy.maxTotalBookings) {
+          // Pack is exhausted — mark old subscription as COMPLETED
+          await prisma.venueSubscription.update({
+            where: { id: existingSubscription.id },
+            data: { status: "COMPLETED" },
+          });
+          // Allow re-subscription to continue
+        } else {
+          return NextResponse.json(
+            {
+              error:
+                "Already have an active or pending subscription to this plan",
+            },
+            { status: 400 }
+          );
+        }
+      } else {
+        return NextResponse.json(
+          {
+            error:
+              "Already have an active or pending subscription to this plan",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Determine payment status and subscription status based on venue's payment mode

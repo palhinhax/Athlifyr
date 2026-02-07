@@ -54,7 +54,7 @@ interface Subscription {
   id: string;
   userId: string;
   planId: string;
-  status: "ACTIVE" | "PENDING" | "CANCELLED" | "EXPIRED";
+  status: "ACTIVE" | "PENDING" | "CANCELLED" | "EXPIRED" | "COMPLETED";
   paymentStatus: "PAID" | "PENDING_PAYMENT" | "NOT_REQUIRED" | "FAILED";
   startsAt: string;
   endsAt: string | null;
@@ -246,6 +246,13 @@ export function VenueSubscribersManager({
             {t("status.expired")}
           </Badge>
         );
+      case "COMPLETED":
+        return (
+          <Badge variant="secondary" className="bg-slate-500 text-white">
+            <CheckCircle className="mr-1 h-3 w-3" />
+            {t("status.completed")}
+          </Badge>
+        );
       default:
         return <Badge variant="outline">{effectiveStatus}</Badge>;
     }
@@ -404,7 +411,7 @@ export function VenueSubscribersManager({
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "ACTIVE" }),
+          body: JSON.stringify({ status: "ACTIVE", paymentStatus: "PAID" }),
         }
       );
 

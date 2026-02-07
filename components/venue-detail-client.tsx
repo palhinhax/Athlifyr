@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
+import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -48,6 +49,7 @@ import {
   MapPin,
   ExternalLink,
   Clock,
+  AlertCircle,
 } from "lucide-react";
 import { EventLocationMap } from "@/components/event-location-map";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
@@ -113,6 +115,15 @@ interface Venue {
     // paymentProvider removed - now managed at venue level via venue.paymentMode
     policy?: VenuePlanPolicy | null;
     isActive: boolean;
+    includedVenues?: Array<{
+      venue: {
+        id: string;
+        name: string;
+        slug: string;
+        city: string | null;
+        logo: string | null;
+      };
+    }>;
     subscriptions?: Array<{
       id: string;
       status: string;
@@ -120,6 +131,7 @@ interface Venue {
       startsAt: string;
       endsAt: string | null;
       createdAt: string;
+      totalBookingsUsed?: number;
     }>;
   }>;
   _count: {
@@ -127,6 +139,30 @@ interface Venue {
     bookings: number;
     subscriptions: number;
   };
+  crossVenueSubscriptions?: Array<{
+    id: string;
+    status: string;
+    paymentStatus: string;
+    startsAt: string;
+    endsAt: string | null;
+    createdAt: string;
+    totalBookingsUsed?: number;
+    plan: {
+      id: string;
+      name: string;
+      description: string | null;
+      price: number;
+      currency: string;
+      policy?: VenuePlanPolicy | null;
+      venue: {
+        id: string;
+        name: string;
+        slug: string;
+        city: string | null;
+        logo: string | null;
+      };
+    };
+  }>;
 }
 
 // Admin tabs that are ALWAYS visible for owners/admins (cannot be hidden)
@@ -181,6 +217,15 @@ export function VenueDetailClient({
     price: number | null;
     currency: string;
     policy?: VenuePlanPolicy | null;
+    includedVenues?: Array<{
+      venue: {
+        id: string;
+        name: string;
+        slug: string;
+        city: string | null;
+        logo: string | null;
+      };
+    }>;
   } | null>(null);
   const [deletePlanId, setDeletePlanId] = useState<string | null>(null);
   const [deleteAlertOpen, setDeleteAlertOpen] = useState(false);
@@ -869,43 +914,50 @@ export function VenueDetailClient({
                                 )}
                             </span>
                           </div>
-                          {plan.policy.duration !== "ONE_TIME" &&
-                            (plan.policy.maxBookingsPerDay ||
-                              plan.policy.maxBookingsPerWeek ||
-                              plan.policy.maxBookingsPerMonth) && (
-                              <div className="text-xs text-muted-foreground">
-                                {plan.policy.maxBookingsPerDay && (
-                                  <div>
-                                    • Max {plan.policy.maxBookingsPerDay}{" "}
-                                    {tPolicy("maxBookingsPerDay")
-                                      .toLowerCase()
-                                      .split(" ")
-                                      .slice(1)
-                                      .join(" ")}
-                                  </div>
-                                )}
-                                {plan.policy.maxBookingsPerWeek && (
-                                  <div>
-                                    • Max {plan.policy.maxBookingsPerWeek}{" "}
-                                    {tPolicy("maxBookingsPerWeek")
-                                      .toLowerCase()
-                                      .split(" ")
-                                      .slice(1)
-                                      .join(" ")}
-                                  </div>
-                                )}
-                                {plan.policy.maxBookingsPerMonth && (
-                                  <div>
-                                    • Max {plan.policy.maxBookingsPerMonth}{" "}
-                                    {tPolicy("maxBookingsPerMonth")
-                                      .toLowerCase()
-                                      .split(" ")
-                                      .slice(1)
-                                      .join(" ")}
-                                  </div>
-                                )}
-                              </div>
-                            )}
+                          {plan.policy.maxTotalBookings && (
+                            <div className="text-xs font-medium text-primary">
+                              • {plan.policy.maxTotalBookings}{" "}
+                              {plan.policy.maxTotalBookings === 1
+                                ? tPolicy("sessionSingular")
+                                : tPolicy("sessionsPlural")}
+                            </div>
+                          )}
+                          {(plan.policy.maxBookingsPerDay ||
+                            plan.policy.maxBookingsPerWeek ||
+                            plan.policy.maxBookingsPerMonth) && (
+                            <div className="text-xs text-muted-foreground">
+                              {plan.policy.maxBookingsPerDay && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerDay}{" "}
+                                  {tPolicy("maxBookingsPerDay")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                              {plan.policy.maxBookingsPerWeek && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerWeek}{" "}
+                                  {tPolicy("maxBookingsPerWeek")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                              {plan.policy.maxBookingsPerMonth && (
+                                <div>
+                                  • Max {plan.policy.maxBookingsPerMonth}{" "}
+                                  {tPolicy("maxBookingsPerMonth")
+                                    .toLowerCase()
+                                    .split(" ")
+                                    .slice(1)
+                                    .join(" ")}
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
 
@@ -940,8 +992,8 @@ export function VenueDetailClient({
                         }
 
                         const now = new Date();
-                        // Find active subscription (already started and not ended)
-                        const activeSubscription = plan.subscriptions.find(
+                        // Find all active subscriptions (already started and not ended)
+                        const activeSubscriptions = plan.subscriptions.filter(
                           (sub: {
                             startsAt: string;
                             endsAt: string | null;
@@ -956,6 +1008,18 @@ export function VenueDetailClient({
                           }
                         );
 
+                        // Prefer the non-exhausted subscription over an exhausted one
+                        const policy = plan.policy;
+                        const maxTotal = policy?.maxTotalBookings;
+
+                        const activeSubscription =
+                          maxTotal && maxTotal > 0
+                            ? (activeSubscriptions.find(
+                                (sub: { totalBookingsUsed?: number }) =>
+                                  (sub.totalBookingsUsed ?? 0) < maxTotal
+                              ) ?? activeSubscriptions[0])
+                            : activeSubscriptions[0];
+
                         // Find scheduled subscription (starts in the future)
                         const scheduledSubscription = plan.subscriptions.find(
                           (sub: { startsAt: string }) => {
@@ -965,6 +1029,45 @@ export function VenueDetailClient({
                         );
 
                         if (activeSubscription) {
+                          // Check if this is an exhausted pack/drop-in
+                          const used =
+                            (
+                              activeSubscription as {
+                                totalBookingsUsed?: number;
+                              }
+                            ).totalBookingsUsed ?? 0;
+                          const isExhausted =
+                            maxTotal && maxTotal > 0 && used >= maxTotal;
+
+                          if (isExhausted) {
+                            // Pack/drop-in exhausted - allow re-subscribe
+                            return (
+                              <div className="space-y-3">
+                                <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+                                  <AlertCircle className="h-5 w-5" />
+                                  <div className="flex flex-col">
+                                    <span className="font-medium">
+                                      {tPlans("packExhausted")}
+                                    </span>
+                                    <span className="text-xs">
+                                      {tPlans("sessionsUsed", {
+                                        used: String(used),
+                                        total: String(maxTotal),
+                                      })}
+                                    </span>
+                                  </div>
+                                </div>
+                                <Button
+                                  className="w-full"
+                                  onClick={() => handleSubscribeClick(plan)}
+                                  disabled={!userId || !plan.price}
+                                >
+                                  {tPlans("resubscribe")}
+                                </Button>
+                              </div>
+                            );
+                          }
+
                           // Show active subscription
                           return (
                             <div className="space-y-3">
@@ -974,6 +1077,16 @@ export function VenueDetailClient({
                                   {tPlans("subscribed")}
                                 </span>
                               </div>
+                              {maxTotal && maxTotal > 0 && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <span>
+                                    {tPlans("sessionsUsed", {
+                                      used: String(used),
+                                      total: String(maxTotal),
+                                    })}
+                                  </span>
+                                </div>
+                              )}
                               {activeSubscription.endsAt && (
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                   <Calendar className="h-4 w-4" />
@@ -1035,6 +1148,64 @@ export function VenueDetailClient({
                   ))}
                 </div>
               )}
+
+              {/* Cross-venue subscriptions: show plans from other venues that cover this venue */}
+              {venue.crossVenueSubscriptions &&
+                venue.crossVenueSubscriptions.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <h3 className="text-sm font-medium text-muted-foreground">
+                      {tPlans("crossVenueTitle")}
+                    </h3>
+                    {venue.crossVenueSubscriptions.map((sub) => {
+                      const cvPolicy = sub.plan
+                        .policy as VenuePlanPolicy | null;
+                      const cvMaxTotal = cvPolicy?.maxTotalBookings;
+                      const cvUsed = sub.totalBookingsUsed ?? 0;
+                      const cvIsExhausted =
+                        cvMaxTotal && cvMaxTotal > 0 && cvUsed >= cvMaxTotal;
+
+                      return (
+                        <div key={sub.id} className="rounded-lg border p-4">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex flex-col gap-1">
+                              <span className="font-medium">
+                                {sub.plan.name}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {tPlans("fromVenue", {
+                                  venue: sub.plan.venue.name,
+                                })}
+                              </span>
+                            </div>
+                            {cvIsExhausted ? (
+                              <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                                <AlertCircle className="h-4 w-4" />
+                                <span className="text-xs font-medium">
+                                  {tPlans("packExhausted")}
+                                </span>
+                              </div>
+                            ) : (
+                              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
+                                <CheckCircle className="h-4 w-4" />
+                                <span className="text-xs font-medium">
+                                  {tPlans("subscribed")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          {cvMaxTotal && cvMaxTotal > 0 && (
+                            <div className="mt-2 text-xs text-muted-foreground">
+                              {tPlans("sessionsUsed", {
+                                used: String(cvUsed),
+                                total: String(cvMaxTotal),
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
             </TabsContent>
           )}
 
@@ -1045,11 +1216,16 @@ export function VenueDetailClient({
                 venueId={venue.id}
                 locale={locale}
                 userId={userId}
-                hasActiveSubscription={venue.plans.some(
-                  (plan) =>
-                    plan.subscriptions &&
-                    plan.subscriptions.some((sub) => sub.status === "ACTIVE")
-                )}
+                hasActiveSubscription={
+                  venue.plans.some(
+                    (plan) =>
+                      plan.subscriptions &&
+                      plan.subscriptions.some((sub) => sub.status === "ACTIVE")
+                  ) ||
+                  (venue.crossVenueSubscriptions ?? []).some(
+                    (sub) => sub.status === "ACTIVE"
+                  )
+                }
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 canEditSessions={isCoachOrHigher}
                 venueDefaults={{
@@ -1074,9 +1250,10 @@ export function VenueDetailClient({
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {venue.members.map((member) => (
-                    <div
+                    <Link
                       key={member.id}
-                      className="rounded-lg border bg-card p-4"
+                      href={`/user/${member.user.id}`}
+                      className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent"
                     >
                       <div className="flex items-center gap-3">
                         {member.user.image ? (
@@ -1099,7 +1276,7 @@ export function VenueDetailClient({
                           </p>
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   ))}
                 </div>
               )}

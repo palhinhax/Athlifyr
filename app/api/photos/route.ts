@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const createPhotoSchema = z.object({
   imageUrl: z.string().url(),
-  caption: z.string().max(500).optional(),
+  caption: z.string().max(500).nullable().optional(),
 });
 
 // GET /api/photos - Get user's photos

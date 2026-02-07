@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations, useLocale } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -398,15 +399,22 @@ export function WodPostCard({
       <Card className="overflow-hidden">
         {/* Header with user info */}
         <div className="flex items-center gap-3 p-4 pb-3">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            {post.user.image ? (
-              <AvatarImage src={post.user.image} alt={post.user.name || ""} />
-            ) : (
-              <AvatarFallback>{userInitials}</AvatarFallback>
-            )}
-          </Avatar>
+          <Link href={`/user/${post.userId}`}>
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              {post.user.image ? (
+                <AvatarImage src={post.user.image} alt={post.user.name || ""} />
+              ) : (
+                <AvatarFallback>{userInitials}</AvatarFallback>
+              )}
+            </Avatar>
+          </Link>
           <div className="min-w-0 flex-1">
-            <p className="truncate font-semibold">{post.user.name}</p>
+            <Link
+              href={`/user/${post.userId}`}
+              className="truncate font-semibold hover:underline"
+            >
+              {post.user.name}
+            </Link>
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
               <span className="whitespace-nowrap">
                 {formatDistanceToNow(createdAt, {

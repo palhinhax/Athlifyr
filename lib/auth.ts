@@ -9,6 +9,7 @@ import type { UserRole } from "@prisma/client";
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma) as Adapter,
+  trustHost: true,
   session: {
     strategy: "jwt",
   },

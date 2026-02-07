@@ -1,3 +1,43 @@
+## [17.3.1](https://github.com/palhinhax/Athlifyr/compare/v17.3.0...v17.3.1) (2026-02-07)
+
+### Bug Fixes
+
+- **ui:** prevent horizontal scroll in active venues bar on mobile ([97e8d1b](https://github.com/palhinhax/Athlifyr/commit/97e8d1bf65763379cc502d8e576c8bc73e6b78c6))
+- **ui:** prevent horizontal scroll on mobile and add NextAuth trustHost ([95929e0](https://github.com/palhinhax/Athlifyr/commit/95929e065d4097ac82606cd4aadb84c3b9d979f2))
+
+# [17.3.0](https://github.com/palhinhax/Athlifyr/compare/v17.2.0...v17.3.0) (2026-02-07)
+
+### Features
+
+- add seed for Santa Maria Trail - SMAT 2026 event with multilingual support and variants ([c42cf66](https://github.com/palhinhax/Athlifyr/commit/c42cf6614ac639f5db3fbe07cd6d651aabd725b3))
+
+# [17.2.0](https://github.com/palhinhax/Athlifyr/compare/v17.1.0...v17.2.0) (2026-02-06)
+
+### Bug Fixes
+
+- **presentations:** move page to [locale] folder for proper routing ([2cd1072](https://github.com/palhinhax/Athlifyr/commit/2cd10721d6b9cef8bc6855956be4d0d5ff918166))
+- **presentations:** remove redundant point from athlete progress section ([00ac115](https://github.com/palhinhax/Athlifyr/commit/00ac115e6d055ebc3a01cbcd3b4c842e62e579e1))
+- **routes:** exclude /v/\* paths from locale middleware ([816f6bb](https://github.com/palhinhax/Athlifyr/commit/816f6bbd813ea4afba4fce3d16ef64b1ed1782b0))
+- **ui:** display workout estimated time correctly in WOD posts ([4107ba3](https://github.com/palhinhax/Athlifyr/commit/4107ba3b5cf616b30b5e94d16a6f9b1bd7b14717))
+- **ui:** improve mobile responsiveness in venue settings and landing page ([44e4eff](https://github.com/palhinhax/Athlifyr/commit/44e4effea5c81b43edf5884cc68db9cd912a45f1))
+- **ui:** improve responsive layout for venue SEO settings modal ([0fd4d0e](https://github.com/palhinhax/Athlifyr/commit/0fd4d0e9e5db429116aabf9c9c13e83cc09fa32a))
+- **ui:** improve responsive layout for venue sessions settings modal ([595b5d8](https://github.com/palhinhax/Athlifyr/commit/595b5d87e3a458351892009bea7eac158a9fc2e2))
+- **ui:** improve unlimited training center presentation layout and localization ([87b07bb](https://github.com/palhinhax/Athlifyr/commit/87b07bbb5229a5676508a5096637d755544bc647))
+- **ui:** prevent horizontal scroll on venue landing mobile view ([007c3f3](https://github.com/palhinhax/Athlifyr/commit/007c3f346881fa1a5ff9fa7605e0df5b5707a474))
+
+### Features
+
+- **presentations:** add athlete progress chart and HYROX Lisboa event sections ([55a8b73](https://github.com/palhinhax/Athlifyr/commit/55a8b733dc76697397edc8d45c0711735c312308))
+- **presentations:** add dedicated presentation page for Unlimited Training Center ([0a45581](https://github.com/palhinhax/Athlifyr/commit/0a455819be05f64a08b71d91392ac6b1957bee3c))
+- **presentations:** add Palácio de Mafra background to hero section ([f3fefc7](https://github.com/palhinhax/Athlifyr/commit/f3fefc7bc10db4cc6e83fb194ef991aaec5db60b))
+- **presentations:** add WallClock Tabata demo section ([9fda7ca](https://github.com/palhinhax/Athlifyr/commit/9fda7caaa20d67a6ef4f64bbac73f28a11e264d3))
+- **presentations:** update Tabata timer section layout and add workout builder section ([3e7f28c](https://github.com/palhinhax/Athlifyr/commit/3e7f28c888100f36d4e115bec5dc9e6dbc7999ee))
+- **profile:** add past sessions with workout logging ([6989a92](https://github.com/palhinhax/Athlifyr/commit/6989a923c20c00879b8aeb8021d78ecbe181a4b0))
+- **venues:** add coach session management, booking validation, share events and multi-venue support ([48d75ba](https://github.com/palhinhax/Athlifyr/commit/48d75ba88076805a7dff02ef853794115417ca45))
+- **venues:** add Quick Book feature for guest and public bookings ([61de2ff](https://github.com/palhinhax/Athlifyr/commit/61de2ff032612a9a30d4434633454dc67be51a41))
+- **venues:** add WOD posting feature with feed width improvements ([7f4e100](https://github.com/palhinhax/Athlifyr/commit/7f4e10009f3acb79dfc92b19935b50b0c04ab646))
+- **venues:** update landing page with Easy Book section and remove Stripe fees ([d002cc6](https://github.com/palhinhax/Athlifyr/commit/d002cc69dcca800ec738dea437c6499ede6264f8))
+
 # [17.1.0](https://github.com/palhinhax/Athlifyr/compare/v17.0.0...v17.1.0) (2026-02-05)
 
 ### Features

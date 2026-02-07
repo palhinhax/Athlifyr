@@ -594,6 +594,7 @@
       "cancelBookingWarning": "Sei sicuro di voler annullare questa prenotazione? Questa azione non può essere annullata.",
       "no": "No",
       "yes": "Sì, Annulla",
+      "cancelling": "Annullamento...",
       "book": "Prenota",
       "cancel": "Annulla"
     },

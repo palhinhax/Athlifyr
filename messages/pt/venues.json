@@ -593,6 +593,7 @@
       "cancelBookingWarning": "Tens a certeza que queres cancelar esta reserva? Esta ação não pode ser revertida.",
       "no": "Não",
       "yes": "Sim, Cancelar",
+      "cancelling": "A cancelar...",
       "cancelBooking": "Cancelar Reserva",
       "book": "Reservar",
       "cancel": "Cancelar"

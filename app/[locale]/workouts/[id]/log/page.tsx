@@ -77,9 +77,36 @@ export default async function WorkoutLogPage({
     notFound();
   }
 
+  // Fetch existing log for this workout+session (or just workout if no session)
+  const existingLog = await prisma.workoutLog.findFirst({
+    where: {
+      userId: session.user.id,
+      workoutId: id,
+      ...(sessionId ? { sessionId } : {}),
+    },
+    orderBy: { performedAt: "desc" },
+    include: {
+      blockResults: {
+        include: {
+          exerciseResults: {
+            include: {
+              sets: {
+                orderBy: { setNumber: "asc" },
+              },
+            },
+          },
+        },
+      },
+    },
+  });
+
   return (
     <div className="container py-8">
-      <WorkoutLogger workout={workout} sessionId={sessionId} />
+      <WorkoutLogger
+        workout={workout}
+        sessionId={sessionId}
+        existingLog={existingLog}
+      />
     </div>
   );
 }

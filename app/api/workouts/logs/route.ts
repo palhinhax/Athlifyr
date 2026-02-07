@@ -44,6 +44,7 @@ const createBlockResultSchema = z.object({
 const createLogSchema = z.object({
   workoutId: z.string().min(1),
   sessionId: z.string().optional(),
+  existingLogId: z.string().optional(), // If updating, the ID of the log to replace
   performedAt: z.string().datetime().optional(),
   notes: z.string().optional(),
   feeling: z.number().int().min(1).max(5).optional(),
@@ -201,6 +202,44 @@ export async function POST(request: Request) {
           { error: "Session not found" },
           { status: 404 }
         );
+      }
+    }
+
+    // If updating an existing log, delete the old one first (cascade deletes related data)
+    if (data.existingLogId) {
+      const existingLog = await prisma.workoutLog.findFirst({
+        where: {
+          id: data.existingLogId,
+          userId: session.user.id, // Ensure user owns the log
+        },
+      });
+
+      if (existingLog) {
+        // Delete associated performance entries first
+        await prisma.userPerformanceEntry.deleteMany({
+          where: {
+            userId: session.user.id,
+            OR: [
+              {
+                workoutExerciseSet: {
+                  exerciseResult: {
+                    blockResult: { logId: existingLog.id },
+                  },
+                },
+              },
+              {
+                workoutExerciseResult: {
+                  blockResult: { logId: existingLog.id },
+                },
+              },
+            ],
+          },
+        });
+
+        // Delete the old log (cascades to block results, exercise results, sets)
+        await prisma.workoutLog.delete({
+          where: { id: existingLog.id },
+        });
       }
     }
 

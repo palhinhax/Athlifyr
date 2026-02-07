@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { VenueDetailClient } from "@/components/venue-detail-client";
@@ -25,7 +26,8 @@ interface VenueTranslation {
 }
 
 // Fetch venue data directly from database for SSR
-async function getVenueData(slug: string) {
+// Wrapped in React cache() to deduplicate across generateMetadata + page render
+const getVenueData = cache(async (slug: string) => {
   const venue = await prisma.venue.findFirst({
     where: {
       OR: [{ id: slug }, { slug: slug }],
@@ -56,7 +58,7 @@ async function getVenueData(slug: string) {
   });
 
   return venue;
-}
+});
 
 export async function generateMetadata({
   params,
@@ -225,6 +227,9 @@ export default async function VenueDetailPage({
       venue.city ||
       venue.services.length > 0);
 
+  // Pre-resolved translated description to pass to client (avoids extra /seo API call)
+  const translatedDescription = translation?.description || null;
+
   return (
     <>
       {/* JSON-LD Structured Data - Essential for SEO */}
@@ -253,6 +258,7 @@ export default async function VenueDetailPage({
           userName={session?.user?.name}
           userImage={session?.user?.image}
           userRole={session?.user?.role}
+          initialTranslatedDescription={translatedDescription}
         />
       </Suspense>
     </>

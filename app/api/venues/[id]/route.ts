@@ -106,25 +106,68 @@ export async function GET(
       return NextResponse.json({ error: "Venue not found" }, { status: 404 });
     }
 
+    // Run enrichment queries in parallel instead of sequentially (N+1 fix)
+    interface PlanPolicy {
+      maxTotalBookings?: number;
+    }
+    interface SubscriptionData {
+      id: string;
+      startsAt: Date;
+      endsAt: Date | null;
+      createdAt: Date;
+      totalBookingsUsed?: number;
+    }
+    interface PlanData {
+      id: string;
+      policy: PlanPolicy | null;
+      subscriptions: SubscriptionData[] | false;
+    }
+
+    // Batch: get all plan venue mappings and unique subscribers count in parallel
+    const [allPlanVenues, uniqueSubscriberCount, plansIncludingThisVenue] =
+      await Promise.all([
+        // Get all venue mappings for all plans at once (instead of per-plan)
+        prisma.venuePlanVenue.findMany({
+          where: {
+            planId: {
+              in: venue.plans.map((p) => p.id),
+            },
+          },
+          select: { planId: true, venueId: true },
+        }),
+        // Count unique subscribers
+        prisma.venueSubscription
+          .findMany({
+            where: { venueId: venue.id, status: "ACTIVE" },
+            select: { userId: true },
+            distinct: ["userId"],
+          })
+          .then((subs) => subs.length),
+        // Find plans from other venues that include this venue
+        prisma.venuePlanVenue.findMany({
+          where: { venueId: venue.id },
+          select: { planId: true },
+        }),
+      ]);
+
+    // Build a map of planId -> venueIds for quick lookup
+    const planVenueMap = new Map<string, string[]>();
+    for (const pv of allPlanVenues) {
+      const existing = planVenueMap.get(pv.planId) || [];
+      existing.push(pv.venueId);
+      planVenueMap.set(pv.planId, existing);
+    }
+
     // Enrich subscriptions with totalBookingsUsed for pack/drop-in plans
     if (currentUserId) {
-      interface PlanPolicy {
-        maxTotalBookings?: number;
-      }
-      interface SubscriptionData {
-        id: string;
-        startsAt: Date;
-        endsAt: Date | null;
-        createdAt: Date;
-        totalBookingsUsed?: number;
-      }
-      interface PlanData {
-        id: string;
-        policy: PlanPolicy | null;
-        subscriptions: SubscriptionData[] | false;
-      }
-
       const plansWithTotalBookings = venue.plans as unknown as PlanData[];
+
+      // Collect all subscription IDs that need booking counts
+      const subsNeedingCounts: Array<{
+        sub: SubscriptionData;
+        allVenueIds: string[];
+      }> = [];
+
       for (const plan of plansWithTotalBookings) {
         const policy = plan.policy as PlanPolicy | null;
         if (
@@ -132,46 +175,50 @@ export async function GET(
           plan.subscriptions &&
           Array.isArray(plan.subscriptions)
         ) {
-          // Get all venue IDs covered by this plan (for legacy fallback)
-          const includedVenues = await prisma.venuePlanVenue.findMany({
-            where: { planId: plan.id },
-            select: { venueId: true },
-          });
-          const allVenueIds = [
-            venue.id,
-            ...includedVenues.map((pv) => pv.venueId),
-          ];
+          const includedVenueIds = planVenueMap.get(plan.id) || [];
+          const allVenueIds = [venue.id, ...includedVenueIds];
 
           for (const sub of plan.subscriptions) {
-            // Count bookings explicitly linked to this subscription
-            const linkedBookings = await prisma.venueBooking.count({
-              where: {
-                subscriptionId: sub.id,
-                status: { in: ["BOOKED", "ATTENDED"] },
-              },
-            });
-
-            // Also count legacy bookings (subscriptionId is null)
-            const legacyBookings = await prisma.venueBooking.count({
-              where: {
-                userId: currentUserId,
-                subscriptionId: null,
-                venueId: { in: allVenueIds },
-                status: { in: ["BOOKED", "ATTENDED"] },
-                createdAt: {
-                  gte: sub.createdAt,
-                  ...(sub.endsAt ? { lte: sub.endsAt } : {}),
-                },
-              },
-            });
-
-            sub.totalBookingsUsed = linkedBookings + legacyBookings;
+            subsNeedingCounts.push({ sub, allVenueIds });
           }
+        }
+      }
+
+      // Batch all booking count queries in parallel
+      if (subsNeedingCounts.length > 0) {
+        const countResults = await Promise.all(
+          subsNeedingCounts.map(async ({ sub, allVenueIds }) => {
+            const [linked, legacy] = await Promise.all([
+              prisma.venueBooking.count({
+                where: {
+                  subscriptionId: sub.id,
+                  status: { in: ["BOOKED", "ATTENDED"] },
+                },
+              }),
+              prisma.venueBooking.count({
+                where: {
+                  userId: currentUserId,
+                  subscriptionId: null,
+                  venueId: { in: allVenueIds },
+                  status: { in: ["BOOKED", "ATTENDED"] },
+                  createdAt: {
+                    gte: sub.createdAt,
+                    ...(sub.endsAt ? { lte: sub.endsAt } : {}),
+                  },
+                },
+              }),
+            ]);
+            return { sub, total: linked + legacy };
+          })
+        );
+
+        for (const { sub, total } of countResults) {
+          sub.totalBookingsUsed = total;
         }
       }
     }
 
-    // Fetch cross-venue subscriptions: plans from OTHER venues that include THIS venue
+    // Fetch cross-venue subscriptions in parallel
     let crossVenueSubscriptions: {
       id: string;
       status: string;
@@ -197,123 +244,112 @@ export async function GET(
       };
     }[] = [];
 
-    if (currentUserId) {
-      // Find plans from other venues that include this venue
-      const plansIncludingThisVenue = await prisma.venuePlanVenue.findMany({
-        where: { venueId: venue.id },
-        select: { planId: true },
-      });
+    if (currentUserId && plansIncludingThisVenue.length > 0) {
+      const planIds = plansIncludingThisVenue.map((pv) => pv.planId);
 
-      if (plansIncludingThisVenue.length > 0) {
-        const planIds = plansIncludingThisVenue.map((pv) => pv.planId);
-
-        // Get the user's active subscriptions on those plans
-        const crossSubs = await prisma.venueSubscription.findMany({
-          where: {
-            userId: currentUserId,
-            planId: { in: planIds },
-            status: "ACTIVE",
-            OR: [{ endsAt: null }, { endsAt: { gte: new Date() } }],
-          },
-          select: {
-            id: true,
-            status: true,
-            paymentStatus: true,
-            startsAt: true,
-            endsAt: true,
-            createdAt: true,
-            plan: {
-              select: {
-                id: true,
-                name: true,
-                description: true,
-                price: true,
-                currency: true,
-                policy: true,
-                venue: {
-                  select: {
-                    id: true,
-                    name: true,
-                    slug: true,
-                    city: true,
-                    logo: true,
-                  },
+      const crossSubs = await prisma.venueSubscription.findMany({
+        where: {
+          userId: currentUserId,
+          planId: { in: planIds },
+          status: "ACTIVE",
+          OR: [{ endsAt: null }, { endsAt: { gte: new Date() } }],
+        },
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          startsAt: true,
+          endsAt: true,
+          createdAt: true,
+          plan: {
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              currency: true,
+              policy: true,
+              venue: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  city: true,
+                  logo: true,
                 },
               },
             },
           },
-          orderBy: { createdAt: "desc" },
-          take: 5,
+        },
+        orderBy: { createdAt: "desc" },
+        take: 5,
+      });
+
+      // Enrich cross-venue subscriptions with totalBookingsUsed in parallel
+      if (crossSubs.length > 0) {
+        // Get all plan venue mappings for cross-subs at once
+        const crossPlanIds = [...new Set(crossSubs.map((s) => s.plan.id))];
+        const crossPlanVenues = await prisma.venuePlanVenue.findMany({
+          where: { planId: { in: crossPlanIds } },
+          select: { planId: true, venueId: true },
         });
 
-        // Enrich cross-venue subscriptions with totalBookingsUsed
-        for (const sub of crossSubs) {
-          const policy = sub.plan.policy as {
-            maxTotalBookings?: number;
-          } | null;
-          if (policy?.maxTotalBookings) {
-            // Count bookings explicitly linked to this subscription
-            const linkedBookings = await prisma.venueBooking.count({
-              where: {
-                subscriptionId: sub.id,
-                status: { in: ["BOOKED", "ATTENDED"] },
-              },
-            });
+        const crossPlanVenueMap = new Map<string, string[]>();
+        for (const pv of crossPlanVenues) {
+          const existing = crossPlanVenueMap.get(pv.planId) || [];
+          existing.push(pv.venueId);
+          crossPlanVenueMap.set(pv.planId, existing);
+        }
 
-            // Also count legacy bookings (subscriptionId is null)
-            const includedVenues = await prisma.venuePlanVenue.findMany({
-              where: { planId: sub.plan.id },
-              select: { venueId: true },
-            });
-            const homeVenueId = sub.plan.venue.id;
-            const allVenueIds = [
-              homeVenueId,
-              ...includedVenues.map((pv) => pv.venueId),
-            ];
+        await Promise.all(
+          crossSubs.map(async (sub) => {
+            const policy = sub.plan.policy as {
+              maxTotalBookings?: number;
+            } | null;
+            if (!policy?.maxTotalBookings) return;
 
-            const legacyBookings = await prisma.venueBooking.count({
-              where: {
-                userId: currentUserId,
-                subscriptionId: null,
-                venueId: { in: allVenueIds },
-                status: { in: ["BOOKED", "ATTENDED"] },
-                createdAt: {
-                  gte: sub.createdAt,
-                  ...(sub.endsAt ? { lte: sub.endsAt } : {}),
+            const includedVenueIds = crossPlanVenueMap.get(sub.plan.id) || [];
+            const allVenueIds = [sub.plan.venue.id, ...includedVenueIds];
+
+            const [linked, legacy] = await Promise.all([
+              prisma.venueBooking.count({
+                where: {
+                  subscriptionId: sub.id,
+                  status: { in: ["BOOKED", "ATTENDED"] },
                 },
-              },
-            });
+              }),
+              prisma.venueBooking.count({
+                where: {
+                  userId: currentUserId,
+                  subscriptionId: null,
+                  venueId: { in: allVenueIds },
+                  status: { in: ["BOOKED", "ATTENDED"] },
+                  createdAt: {
+                    gte: sub.createdAt,
+                    ...(sub.endsAt ? { lte: sub.endsAt } : {}),
+                  },
+                },
+              }),
+            ]);
 
             (
               sub as typeof sub & { totalBookingsUsed?: number }
-            ).totalBookingsUsed = linkedBookings + legacyBookings;
-          }
-        }
+            ).totalBookingsUsed = linked + legacy;
+          })
+        );
 
         crossVenueSubscriptions = crossSubs as typeof crossVenueSubscriptions;
       }
     }
 
-    // Count unique active subscribers (users with at least one active subscription)
-    const uniqueSubscribers = await prisma.venueSubscription.findMany({
-      where: {
-        venueId: venue.id,
-        status: "ACTIVE",
-      },
-      select: {
-        userId: true,
-      },
-      distinct: ["userId"],
-    });
-
-    // Add unique subscriber count to venue response
+    // Build final response
     const venueWithUniqueCount = {
       ...venue,
       crossVenueSubscriptions,
       _count: {
         ...(venue as { _count?: { sessions: number; bookings: number } })
           ._count,
-        subscriptions: uniqueSubscribers.length,
+        subscriptions: uniqueSubscriberCount,
       },
     };
 

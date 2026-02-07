@@ -209,7 +209,8 @@
       "noLogs": "Ainda não tens registos de treinos",
       "viewDetails": "Ver detalhes",
       "performedAt": "Realizado em",
-      "duration": "Duração"
+      "duration": "Duração",
+      "loadMore": "Carregar mais"
     },
 
     "runner": {
@@ -276,7 +277,8 @@
       "created": "Treino criado com sucesso",
       "updated": "Treino atualizado com sucesso",
       "deleted": "Treino apagado com sucesso",
-      "logged": "Treino registado com sucesso"
+      "logged": "Treino registado com sucesso",
+      "logUpdated": "Registo de treino atualizado com sucesso"
     },
 
     "plans": {

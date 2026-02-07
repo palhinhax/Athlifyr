@@ -2,17 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useTranslations } from "next-intl";
-import Image from "next/image";
-import { Link } from "@/i18n/routing";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,47 +16,17 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { VenueProfileHeader } from "@/components/venue-profile-header";
 import { VenueFeed } from "@/components/venue-feed";
-import { StripeCheckout } from "@/components/stripe-checkout";
 import { VenuePlanModal } from "@/components/venue-plan-modal/index";
 import { VenueSubscribersManager } from "@/components/venue-subscribers-manager";
 import { VenueSessionsCalendar } from "@/components/venue-sessions-calendar";
 import { VenueClientsManager } from "@/components/venue-clients-manager";
-import { CollapsibleDescription } from "@/components/collapsible-description";
-import { VenueGallery } from "@/components/venue-gallery";
 import { VenueOwnershipClaimButton } from "@/components/venue-ownership-claim-button";
-import {
-  Trash2,
-  CheckCircle,
-  Calendar,
-  Phone,
-  Mail,
-  Globe,
-  Instagram,
-  Home,
-  Info,
-  CreditCard,
-  Users,
-  MapPin,
-  ExternalLink,
-  Clock,
-  AlertCircle,
-} from "lucide-react";
-import { EventLocationMap } from "@/components/event-location-map";
+import { VenueAboutTab } from "@/components/venue-about-tab";
+import { VenuePlansTab } from "@/components/venue-plans-tab";
+import { VenueTeamTab } from "@/components/venue-team-tab";
+import { VenueCheckoutDialog } from "@/components/venue-checkout-dialog";
+import { Calendar, Home, Info, CreditCard, Users } from "lucide-react";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
-
-// WhatsApp icon component
-function WhatsAppIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="currentColor"
-      className={className}
-    >
-      <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
-    </svg>
-  );
-}
 
 interface Venue {
   id: string;
@@ -176,6 +136,7 @@ export function VenueDetailClient({
   userName,
   userImage,
   userRole,
+  initialTranslatedDescription,
 }: {
   slug: string;
   locale: string;
@@ -183,19 +144,17 @@ export function VenueDetailClient({
   userName?: string | null;
   userImage?: string | null;
   userRole?: string;
+  initialTranslatedDescription?: string | null;
 }) {
   const t = useTranslations("venues");
-  const tRoles = useTranslations("venues.roles");
-  const tInfo = useTranslations("venues.info");
   const tPlans = useTranslations("venues.plans");
-  const tPolicy = useTranslations("venues.plan");
   const tCommon = useTranslations("common");
   const { toast } = useToast();
 
   const [venue, setVenue] = useState<Venue | null>(null);
   const [translatedDescription, setTranslatedDescription] = useState<
     string | null
-  >(null);
+  >(initialTranslatedDescription ?? null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedPlan, setSelectedPlan] = useState<{
@@ -420,31 +379,30 @@ export function VenueDetailClient({
       const data = await response.json();
       setVenue(data);
 
-      // Fetch translations for the venue description
-      try {
-        const translationsResponse = await fetch(`/api/venues/${slug}/seo`);
-        if (translationsResponse.ok) {
-          const translationsData = await translationsResponse.json();
-          const translation = translationsData.translations?.find(
-            (t: { language: string; description?: string }) =>
-              t.language === locale
-          );
-          if (translation?.description) {
-            setTranslatedDescription(translation.description);
-          } else {
-            setTranslatedDescription(null);
+      // Only fetch translations if we don't already have one from SSR
+      if (!translatedDescription) {
+        try {
+          const translationsResponse = await fetch(`/api/venues/${slug}/seo`);
+          if (translationsResponse.ok) {
+            const translationsData = await translationsResponse.json();
+            const translation = translationsData.translations?.find(
+              (t: { language: string; description?: string }) =>
+                t.language === locale
+            );
+            if (translation?.description) {
+              setTranslatedDescription(translation.description);
+            }
           }
+        } catch {
+          // If translations fetch fails, use the default description
         }
-      } catch {
-        // If translations fetch fails, use the default description
-        setTranslatedDescription(null);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load venue");
     } finally {
       setLoading(false);
     }
-  }, [slug, locale]);
+  }, [slug, locale, translatedDescription]);
 
   useEffect(() => {
     fetchVenue();
@@ -636,576 +594,34 @@ export function VenueDetailClient({
           {/* About Tab */}
           {isTabVisible("about") && (
             <TabsContent value="about" className="space-y-6">
-              {/* Description - only show if venue has description */}
-              {(translatedDescription || venue.description) && (
-                <div className="rounded-lg border bg-card p-6">
-                  <h2 className="mb-4 text-2xl font-semibold">
-                    {tInfo("description")}
-                  </h2>
-                  <CollapsibleDescription
-                    description={
-                      translatedDescription || venue.description || ""
-                    }
-                  />
-                </div>
-              )}
-
-              {/* Venue Photo Gallery */}
-              <VenueGallery venueId={venue.id} isOwner={isOwnerOrAdmin} />
-
-              {/* Contact Information */}
-              {(venue.phone ||
-                venue.email ||
-                venue.website ||
-                venue.instagram) && (
-                <div className="rounded-lg border bg-card p-6">
-                  <h2 className="mb-4 text-2xl font-semibold">
-                    {tInfo("contactInformation")}
-                  </h2>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    {venue.phone && (
-                      <a
-                        href={`tel:${venue.phone}`}
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-brand/10 text-p-brand">
-                          <Phone className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            {tInfo("phone")}
-                          </p>
-                          <p className="truncate font-medium">{venue.phone}</p>
-                        </div>
-                      </a>
-                    )}
-                    {venue.email && (
-                      <a
-                        href={`mailto:${venue.email}`}
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-info hover:bg-p-info/5"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-info/10 text-p-info">
-                          <Mail className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">Email</p>
-                          <p className="truncate font-medium">{venue.email}</p>
-                        </div>
-                      </a>
-                    )}
-                    {venue.website && (
-                      <a
-                        href={venue.website}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-golden hover:bg-p-golden/5"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-golden/10 text-p-golden">
-                          <Globe className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-muted-foreground">
-                            {tInfo("website")}
-                          </p>
-                          <p className="flex items-center gap-1 truncate font-medium">
-                            {venue.website
-                              .replace(/^https?:\/\//, "")
-                              .replace(/\/$/, "")}
-                            <ExternalLink className="h-3 w-3 shrink-0 opacity-50" />
-                          </p>
-                        </div>
-                      </a>
-                    )}
-                    {venue.instagram && (
-                      <a
-                        href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-p-brand/20 via-p-golden/20 to-p-info/20 text-p-brand">
-                          <Instagram className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            Instagram
-                          </p>
-                          <p className="truncate font-medium">
-                            @{venue.instagram.replace("@", "")}
-                          </p>
-                        </div>
-                      </a>
-                    )}
-                    {venue.whatsapp && (
-                      <a
-                        href={`https://wa.me/${venue.whatsapp.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-green-500 hover:bg-green-500/5"
-                      >
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-500/20 text-green-500">
-                          <WhatsAppIcon className="h-5 w-5" />
-                        </div>
-                        <div className="min-w-0">
-                          <p className="text-xs text-muted-foreground">
-                            WhatsApp
-                          </p>
-                          <p className="truncate font-medium">
-                            {venue.whatsapp}
-                          </p>
-                        </div>
-                      </a>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Location Information with Map */}
-              {(venue.address ||
-                venue.city ||
-                (venue.latitude && venue.longitude)) && (
-                <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
-                  <div className="p-6">
-                    <h2 className="mb-3 flex items-center gap-2 text-2xl font-semibold">
-                      <MapPin className="h-5 w-5 text-red-500" />
-                      {tInfo("location")}
-                    </h2>
-                    {venue.address && (
-                      <p className="text-muted-foreground">{venue.address}</p>
-                    )}
-                    {venue.city && (
-                      <p className="text-muted-foreground">
-                        {venue.city}, {venue.country}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Map */}
-                  {venue.latitude && venue.longitude && (
-                    <>
-                      <div className="relative aspect-[16/9] w-full">
-                        <EventLocationMap
-                          latitude={venue.latitude}
-                          longitude={venue.longitude}
-                          title={venue.name}
-                          venueServices={venue.services}
-                          zoom={13}
-                        />
-                      </div>
-                      <div className="p-4">
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${venue.latitude},${venue.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                        >
-                          <ExternalLink className="h-4 w-4" />
-                          {tInfo("openInGoogleMaps")}
-                        </a>
-                      </div>
-                    </>
-                  )}
-                </div>
-              )}
-
-              {/* {!userId && (
-                <div className="rounded-lg bg-muted p-6">
-                  <p className="mb-4 text-sm">{t("signInToJoin")}</p>
-                  <Button>{t("signIn")}</Button>
-                </div>
-              )} */}
+              <VenueAboutTab
+                venue={venue}
+                translatedDescription={translatedDescription}
+                isOwnerOrAdmin={isOwnerOrAdmin}
+              />
             </TabsContent>
           )}
 
           {/* Plans Tab */}
           {isTabVisible("plans") && (
             <TabsContent value="plans" className="space-y-6">
-              {isOwnerOrAdmin && (
-                <div className="flex justify-end">
-                  <Button
-                    onClick={() => {
-                      setEditingPlan(null);
-                      setPlanModalOpen(true);
-                    }}
-                  >
-                    {tPlans("createPlan")}
-                  </Button>
-                </div>
-              )}
-
-              {venue.plans.length === 0 ? (
-                <div className="rounded-lg border border-dashed p-12 text-center">
-                  <p className="text-muted-foreground">
-                    {t("noPlansAvailable")}
-                  </p>
-                  {isOwnerOrAdmin && (
-                    <p className="mt-2 text-sm text-muted-foreground">
-                      {tPlans("createFirstPlan")}
-                    </p>
-                  )}
-                </div>
-              ) : (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                  {venue.plans.map((plan) => (
-                    <div
-                      key={plan.id}
-                      className={`rounded-lg border bg-card p-6 ${
-                        !plan.isActive ? "opacity-60" : ""
-                      }`}
-                    >
-                      <div className="mb-2 flex items-start justify-between">
-                        <div className="flex flex-col gap-1">
-                          <h3 className="text-xl font-semibold">{plan.name}</h3>
-                          {!plan.isActive && (
-                            <span className="inline-flex w-fit rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
-                              Inactive
-                            </span>
-                          )}
-                        </div>
-                        {isOwnerOrAdmin && (
-                          <div className="flex gap-1">
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setEditingPlan(plan);
-                                setPlanModalOpen(true);
-                              }}
-                            >
-                              {tPlans("edit")}
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() =>
-                                handleTogglePlanActiveClick(plan.id)
-                              }
-                              className={
-                                plan.isActive
-                                  ? "text-destructive hover:text-destructive"
-                                  : "text-green-600 hover:text-green-700"
-                              }
-                            >
-                              {plan.isActive ? (
-                                <Trash2 className="h-4 w-4" />
-                              ) : (
-                                <span className="text-xs">Reactivate</span>
-                              )}
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                      {plan.description && (
-                        <p className="mb-4 text-sm text-muted-foreground">
-                          {plan.description}
-                        </p>
-                      )}
-
-                      {/* Plan Policy Info */}
-                      {plan.policy && (
-                        <div className="mb-4 space-y-2 rounded-lg bg-muted/30 p-3 text-sm">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-muted-foreground" />
-                            <span className="font-medium">
-                              {tPolicy(`durationType.${plan.policy.duration}`)}
-                              {plan.policy.durationValue &&
-                                plan.policy.durationValue > 1 && (
-                                  <span> ({plan.policy.durationValue}x)</span>
-                                )}
-                            </span>
-                          </div>
-                          {plan.policy.maxTotalBookings && (
-                            <div className="text-xs font-medium text-p-info">
-                              • {plan.policy.maxTotalBookings}{" "}
-                              {plan.policy.maxTotalBookings === 1
-                                ? tPolicy("sessionSingular")
-                                : tPolicy("sessionsPlural")}
-                            </div>
-                          )}
-                          {(plan.policy.maxBookingsPerDay ||
-                            plan.policy.maxBookingsPerWeek ||
-                            plan.policy.maxBookingsPerMonth) && (
-                            <div className="text-xs text-muted-foreground">
-                              {plan.policy.maxBookingsPerDay && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerDay}{" "}
-                                  {tPolicy("maxBookingsPerDay")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                              {plan.policy.maxBookingsPerWeek && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerWeek}{" "}
-                                  {tPolicy("maxBookingsPerWeek")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                              {plan.policy.maxBookingsPerMonth && (
-                                <div>
-                                  • Max {plan.policy.maxBookingsPerMonth}{" "}
-                                  {tPolicy("maxBookingsPerMonth")
-                                    .toLowerCase()
-                                    .split(" ")
-                                    .slice(1)
-                                    .join(" ")}
-                                </div>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      {plan.price && (
-                        <p className="mb-4 text-2xl font-bold">
-                          {plan.price} {plan.currency}
-                          {plan.policy?.duration !== "ONE_TIME" && (
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {" "}
-                              / {tPlans("perMonth")}
-                            </span>
-                          )}
-                        </p>
-                      )}
-
-                      {/* Check if user has active or scheduled subscription */}
-                      {(() => {
-                        if (
-                          !plan.subscriptions ||
-                          plan.subscriptions.length === 0
-                        ) {
-                          // No subscription - show subscribe button
-                          return (
-                            <Button
-                              className="w-full"
-                              onClick={() => handleSubscribeClick(plan)}
-                              disabled={!userId || !plan.price}
-                            >
-                              {tPlans("subscribe")}
-                            </Button>
-                          );
-                        }
-
-                        const now = new Date();
-                        // Find all active subscriptions (already started and not ended)
-                        const activeSubscriptions = plan.subscriptions.filter(
-                          (sub: {
-                            startsAt: string;
-                            endsAt: string | null;
-                          }) => {
-                            const startsAt = new Date(sub.startsAt);
-                            const endsAt = sub.endsAt
-                              ? new Date(sub.endsAt)
-                              : null;
-                            return (
-                              startsAt <= now && (!endsAt || endsAt >= now)
-                            );
-                          }
-                        );
-
-                        // Prefer the non-exhausted subscription over an exhausted one
-                        const policy = plan.policy;
-                        const maxTotal = policy?.maxTotalBookings;
-
-                        const activeSubscription =
-                          maxTotal && maxTotal > 0
-                            ? (activeSubscriptions.find(
-                                (sub: { totalBookingsUsed?: number }) =>
-                                  (sub.totalBookingsUsed ?? 0) < maxTotal
-                              ) ?? activeSubscriptions[0])
-                            : activeSubscriptions[0];
-
-                        // Find scheduled subscription (starts in the future)
-                        const scheduledSubscription = plan.subscriptions.find(
-                          (sub: { startsAt: string }) => {
-                            const startsAt = new Date(sub.startsAt);
-                            return startsAt > now;
-                          }
-                        );
-
-                        if (activeSubscription) {
-                          // Check if this is an exhausted pack/drop-in
-                          const used =
-                            (
-                              activeSubscription as {
-                                totalBookingsUsed?: number;
-                              }
-                            ).totalBookingsUsed ?? 0;
-                          const isExhausted =
-                            maxTotal && maxTotal > 0 && used >= maxTotal;
-
-                          if (isExhausted) {
-                            // Pack/drop-in exhausted - allow re-subscribe
-                            return (
-                              <div className="space-y-3">
-                                <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
-                                  <AlertCircle className="h-5 w-5" />
-                                  <div className="flex flex-col">
-                                    <span className="font-medium">
-                                      {tPlans("packExhausted")}
-                                    </span>
-                                    <span className="text-xs">
-                                      {tPlans("sessionsUsed", {
-                                        used: String(used),
-                                        total: String(maxTotal),
-                                      })}
-                                    </span>
-                                  </div>
-                                </div>
-                                <Button
-                                  className="w-full"
-                                  onClick={() => handleSubscribeClick(plan)}
-                                  disabled={!userId || !plan.price}
-                                >
-                                  {tPlans("resubscribe")}
-                                </Button>
-                              </div>
-                            );
-                          }
-
-                          // Show active subscription
-                          return (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-                                <CheckCircle className="h-5 w-5" />
-                                <span className="font-medium">
-                                  {tPlans("subscribed")}
-                                </span>
-                              </div>
-                              {maxTotal && maxTotal > 0 && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <span>
-                                    {tPlans("sessionsUsed", {
-                                      used: String(used),
-                                      total: String(maxTotal),
-                                    })}
-                                  </span>
-                                </div>
-                              )}
-                              {activeSubscription.endsAt && (
-                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                  <Calendar className="h-4 w-4" />
-                                  <span>
-                                    {tPlans("validUntil")}:{" "}
-                                    {new Date(
-                                      activeSubscription.endsAt
-                                    ).toLocaleDateString(locale, {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    })}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
-                          );
-                        }
-
-                        if (scheduledSubscription) {
-                          // Show scheduled subscription
-                          return (
-                            <div className="space-y-3">
-                              <div className="flex items-center gap-2 rounded-lg bg-blue-50 p-3 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-                                <Clock className="h-5 w-5" />
-                                <span className="font-medium">
-                                  {tPlans("scheduled")}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                <Calendar className="h-4 w-4" />
-                                <span>
-                                  {tPlans("startsOn")}:{" "}
-                                  {new Date(
-                                    scheduledSubscription.startsAt
-                                  ).toLocaleDateString(locale, {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        }
-
-                        // Fallback - should not happen
-                        return (
-                          <Button
-                            className="w-full"
-                            onClick={() => handleSubscribeClick(plan)}
-                            disabled={!userId || !plan.price}
-                          >
-                            {tPlans("subscribe")}
-                          </Button>
-                        );
-                      })()}
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Cross-venue subscriptions: show plans from other venues that cover this venue */}
-              {venue.crossVenueSubscriptions &&
-                venue.crossVenueSubscriptions.length > 0 && (
-                  <div className="mt-6 space-y-3">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      {tPlans("crossVenueTitle")}
-                    </h3>
-                    {venue.crossVenueSubscriptions.map((sub) => {
-                      const cvPolicy = sub.plan
-                        .policy as VenuePlanPolicy | null;
-                      const cvMaxTotal = cvPolicy?.maxTotalBookings;
-                      const cvUsed = sub.totalBookingsUsed ?? 0;
-                      const cvIsExhausted =
-                        cvMaxTotal && cvMaxTotal > 0 && cvUsed >= cvMaxTotal;
-
-                      return (
-                        <div key={sub.id} className="rounded-lg border p-4">
-                          <div className="flex items-center justify-between gap-2">
-                            <div className="flex flex-col gap-1">
-                              <span className="font-medium">
-                                {sub.plan.name}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {tPlans("fromVenue", {
-                                  venue: sub.plan.venue.name,
-                                })}
-                              </span>
-                            </div>
-                            {cvIsExhausted ? (
-                              <div className="flex items-center gap-1 text-p-golden">
-                                <AlertCircle className="h-4 w-4" />
-                                <span className="text-xs font-medium">
-                                  {tPlans("packExhausted")}
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="flex items-center gap-1 text-green-600 dark:text-green-400">
-                                <CheckCircle className="h-4 w-4" />
-                                <span className="text-xs font-medium">
-                                  {tPlans("subscribed")}
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                          {cvMaxTotal && cvMaxTotal > 0 && (
-                            <div className="mt-2 text-xs text-muted-foreground">
-                              {tPlans("sessionsUsed", {
-                                used: String(cvUsed),
-                                total: String(cvMaxTotal),
-                              })}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
+              <VenuePlansTab
+                plans={venue.plans}
+                crossVenueSubscriptions={venue.crossVenueSubscriptions}
+                locale={locale}
+                userId={userId}
+                isOwnerOrAdmin={isOwnerOrAdmin}
+                onSubscribeClick={handleSubscribeClick}
+                onCreatePlan={() => {
+                  setEditingPlan(null);
+                  setPlanModalOpen(true);
+                }}
+                onEditPlan={(plan) => {
+                  setEditingPlan(plan);
+                  setPlanModalOpen(true);
+                }}
+                onTogglePlanActive={handleTogglePlanActiveClick}
+              />
             </TabsContent>
           )}
 
@@ -1243,43 +659,7 @@ export function VenueDetailClient({
           {/* Team Tab (Public - shows staff: owners, admins, coaches) */}
           {isTabVisible("team") && (
             <TabsContent value="team" className="space-y-4">
-              {venue.members.length === 0 ? (
-                <div className="rounded-lg border border-dashed p-12 text-center">
-                  <p className="text-muted-foreground">{t("noTeamMembers")}</p>
-                </div>
-              ) : (
-                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                  {venue.members.map((member) => (
-                    <Link
-                      key={member.id}
-                      href={`/user/${member.user.id}`}
-                      className="rounded-lg border bg-card p-4 transition-colors hover:bg-accent"
-                    >
-                      <div className="flex items-center gap-3">
-                        {member.user.image ? (
-                          <Image
-                            src={member.user.image}
-                            alt={member.user.name || "User"}
-                            width={48}
-                            height={48}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary text-primary-foreground">
-                            {member.user.name?.[0] || "?"}
-                          </div>
-                        )}
-                        <div>
-                          <p className="font-medium">{member.user.name}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {tRoles(member.role)}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
+              <VenueTeamTab members={venue.members} />
             </TabsContent>
           )}
 
@@ -1317,196 +697,19 @@ export function VenueDetailClient({
       </div>
 
       {/* Checkout Dialog */}
-      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>{tPlans("subscribe")}</DialogTitle>
-            <DialogDescription>
-              {selectedPlan && (
-                <>
-                  {tPlans("subscribeTo")} {selectedPlan.name} -{" "}
-                  {selectedPlan.price} {selectedPlan.currency} /{" "}
-                  {tPlans("perMonth")}
-                </>
-              )}
-            </DialogDescription>
-          </DialogHeader>
-          {selectedPlan && venue && (
-            <>
-              {/* EXTERNAL: On-site payment only */}
-              {venue.paymentMode === "EXTERNAL" && (
-                <div className="space-y-4">
-                  <div className="rounded-lg border border-muted bg-muted/50 p-6">
-                    <h3 className="mb-3 text-lg font-semibold">
-                      {t("payment.onSiteTitle")}
-                    </h3>
-                    <p className="mb-4 text-sm text-muted-foreground">
-                      {t("payment.onSiteInstructions")}
-                    </p>
-                    <div className="space-y-3">
-                      <p className="text-sm font-medium">
-                        {t("payment.onSiteSteps")}
-                      </p>
-                      <ol className="ml-4 list-decimal space-y-2 text-sm text-muted-foreground">
-                        <li>{t("payment.onSiteStep1")}</li>
-                        <li>{t("payment.onSiteStep2")}</li>
-                        <li>{t("payment.onSiteStep3")}</li>
-                      </ol>
-                      <p className="mt-4 text-xs text-muted-foreground">
-                        {t("payment.onSiteNote")}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" onClick={handleCheckoutCancel}>
-                      {t("payment.goBack")}
-                    </Button>
-                    <Button onClick={handleCheckoutCancel}>
-                      {t("payment.confirmOnSite")}
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* IN_APP: Stripe checkout only */}
-              {venue.paymentMode === "IN_APP" && (
-                <StripeCheckout
-                  venueId={venue.id}
-                  venueName={venue.name}
-                  planId={selectedPlan.id}
-                  planName={selectedPlan.name}
-                  price={selectedPlan.price}
-                  currency={selectedPlan.currency}
-                  onSuccess={handleCheckoutSuccess}
-                  onCancel={handleCheckoutCancel}
-                />
-              )}
-
-              {/* MIXED: Choice between in-app and on-site */}
-              {venue.paymentMode === "MIXED" && (
-                <div className="space-y-4">
-                  {!selectedPaymentMethod ? (
-                    <>
-                      <p className="text-sm text-muted-foreground">
-                        {t("payment.chooseMethod")}
-                      </p>
-                      <div className="grid gap-4 md:grid-cols-2">
-                        {/* In-App Payment Option - Coming Soon */}
-                        <div className="relative flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-muted bg-muted/30 p-6 opacity-60">
-                          <span className="absolute right-2 top-2 rounded-full bg-p-golden/10 px-2 py-0.5 text-xs font-medium text-p-golden">
-                            {t("payment.comingSoon")}
-                          </span>
-                          <svg
-                            className="mb-3 h-12 w-12 text-muted-foreground"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
-                            />
-                          </svg>
-                          <h3 className="mb-2 font-semibold text-muted-foreground">
-                            {t("payment.inApp")}
-                          </h3>
-                          <p className="text-center text-xs text-muted-foreground">
-                            {t("payment.inAppDescription")}
-                          </p>
-                        </div>
-
-                        {/* On-Site Payment Option */}
-                        <button
-                          onClick={() => {
-                            setSelectedPaymentMethod("EXTERNAL");
-                          }}
-                          className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
-                        >
-                          <svg
-                            className="mb-3 h-12 w-12 text-primary"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"
-                            />
-                          </svg>
-                          <h3 className="mb-2 font-semibold">
-                            {t("payment.external")}
-                          </h3>
-                          <p className="text-center text-xs text-muted-foreground">
-                            {t("payment.externalDescription")}
-                          </p>
-                        </button>
-                      </div>
-                      <div className="flex justify-end">
-                        <Button
-                          variant="outline"
-                          onClick={handleCheckoutCancel}
-                        >
-                          {t("payment.cancel")}
-                        </Button>
-                      </div>
-                    </>
-                  ) : selectedPaymentMethod === "IN_APP" ? (
-                    <StripeCheckout
-                      venueId={venue.id}
-                      venueName={venue.name}
-                      planId={selectedPlan.id}
-                      planName={selectedPlan.name}
-                      price={selectedPlan.price}
-                      currency={selectedPlan.currency}
-                      onSuccess={handleCheckoutSuccess}
-                      onCancel={() => {
-                        setSelectedPaymentMethod(null);
-                        handleCheckoutCancel();
-                      }}
-                    />
-                  ) : (
-                    <div className="space-y-4">
-                      <div className="rounded-lg border border-muted bg-muted/50 p-6">
-                        <h3 className="mb-3 text-lg font-semibold">
-                          {t("payment.onSiteTitle")}
-                        </h3>
-                        <p className="mb-4 text-sm text-muted-foreground">
-                          {t("payment.onSiteInstructions")}
-                        </p>
-                        <div className="space-y-3">
-                          <p className="text-sm font-medium">
-                            {t("payment.onSiteSteps")}
-                          </p>
-                          <ol className="ml-4 list-decimal space-y-2 text-sm text-muted-foreground">
-                            <li>{t("payment.onSiteStep1")}</li>
-                            <li>{t("payment.onSiteStep2")}</li>
-                            <li>{t("payment.onSiteStep3")}</li>
-                          </ol>
-                        </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <Button
-                          variant="outline"
-                          onClick={() => setSelectedPaymentMethod(null)}
-                        >
-                          {t("payment.back")}
-                        </Button>
-                        <Button onClick={handleOnSiteSubscriptionRequest}>
-                          {t("payment.submitRequest")}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+      <VenueCheckoutDialog
+        open={checkoutOpen}
+        onOpenChange={setCheckoutOpen}
+        venueId={venue.id}
+        venueName={venue.name}
+        paymentMode={venue.paymentMode}
+        selectedPlan={selectedPlan}
+        selectedPaymentMethod={selectedPaymentMethod}
+        onPaymentMethodSelect={setSelectedPaymentMethod}
+        onSuccess={handleCheckoutSuccess}
+        onCancel={handleCheckoutCancel}
+        onOnSiteRequest={handleOnSiteSubscriptionRequest}
+      />
 
       {/* Plan Management Modal */}
       <VenuePlanModal

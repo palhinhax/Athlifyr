@@ -209,7 +209,8 @@
       "noLogs": "Du hast noch keine Training-Protokolle",
       "viewDetails": "Details ansehen",
       "performedAt": "Durchgeführt am",
-      "duration": "Dauer"
+      "duration": "Dauer",
+      "loadMore": "Mehr laden"
     },
 
     "runner": {
@@ -276,7 +277,8 @@
       "created": "Training erfolgreich erstellt",
       "updated": "Training erfolgreich aktualisiert",
       "deleted": "Training erfolgreich gelöscht",
-      "logged": "Training erfolgreich protokolliert"
+      "logged": "Training erfolgreich protokolliert",
+      "logUpdated": "Trainingsprotokoll erfolgreich aktualisiert"
     },
 
     "plans": {

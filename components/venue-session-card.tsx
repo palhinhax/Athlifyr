@@ -92,7 +92,7 @@ export interface VenueSessionCardProps {
   canEditSessions?: boolean; // Coach or higher can edit sessions
   isCompact?: boolean;
   onBook?: (sessionId: string) => void;
-  onCancel?: (sessionId: string) => void;
+  onCancel?: (bookingId: string, sessionId?: string) => void;
   onEdit?: (session: VenueSession) => void;
   onDelete?: (session: VenueSession) => void;
   onClick?: (session: VenueSession) => void;
@@ -308,7 +308,7 @@ export function VenueSessionCard({
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCancel(session.userBookingId!);
+                onCancel(session.userBookingId!, session.id);
               }}
               className="flex-1 text-xs"
             >

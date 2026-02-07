@@ -209,7 +209,8 @@
       "noLogs": "You don't have any workout logs yet",
       "viewDetails": "View details",
       "performedAt": "Performed on",
-      "duration": "Duration"
+      "duration": "Duration",
+      "loadMore": "Load more"
     },
 
     "runner": {
@@ -276,7 +277,8 @@
       "created": "Workout created successfully",
       "updated": "Workout updated successfully",
       "deleted": "Workout deleted successfully",
-      "logged": "Workout logged successfully"
+      "logged": "Workout logged successfully",
+      "logUpdated": "Workout log updated successfully"
     },
 
     "plans": {

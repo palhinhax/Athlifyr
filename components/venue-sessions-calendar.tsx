@@ -77,17 +77,25 @@ export function VenueSessionsCalendar({
   }, [currentDate]);
 
   // Custom hooks for data and actions
-  const { sessions, loading, fetchSessions, getSessionsForDay, sessionsByDay } =
-    useVenueSessions({
-      venueId,
-      userId,
-      monthStart,
-      monthEnd,
-    });
+  const {
+    sessions,
+    loading,
+    fetchSessions,
+    getSessionsForDay,
+    sessionsByDay,
+    optimisticBook,
+    optimisticCancelBooking,
+  } = useVenueSessions({
+    venueId,
+    userId,
+    monthStart,
+    monthEnd,
+  });
 
   const {
     bookingInProgress,
     cancelDialogOpen,
+    cancelInProgress,
     setCancelDialogOpen,
     handleBookSession,
     handleCancelBooking,
@@ -96,6 +104,8 @@ export function VenueSessionsCalendar({
     venueId,
     userId,
     onSuccess: fetchSessions,
+    optimisticBook,
+    optimisticCancelBooking,
   });
 
   const {
@@ -261,7 +271,7 @@ export function VenueSessionsCalendar({
         open={cancelDialogOpen}
         onOpenChange={setCancelDialogOpen}
         onConfirm={confirmCancelBooking}
-        isCancelling={false}
+        isCancelling={cancelInProgress}
       />
 
       {/* Bulk Workout Assignment Dialog */}

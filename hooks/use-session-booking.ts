@@ -6,12 +6,16 @@ interface UseSessionBookingParams {
   venueId: string;
   userId?: string;
   onSuccess: () => void;
+  optimisticBook?: (sessionId: string, bookingId: string) => void;
+  optimisticCancelBooking?: (sessionId: string) => void;
 }
 
 export function useSessionBooking({
   venueId,
   userId,
   onSuccess,
+  optimisticBook,
+  optimisticCancelBooking,
 }: UseSessionBookingParams) {
   const t = useTranslations("venues.sessions");
   const tBooking = useTranslations("venues.booking");
@@ -22,7 +26,9 @@ export function useSessionBooking({
     null
   );
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
+  const [cancelInProgress, setCancelInProgress] = useState(false);
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null);
+  const [sessionToCancel, setSessionToCancel] = useState<string | null>(null);
 
   // Get booking error message
   const getBookingErrorMessage = (reason: string): string => {
@@ -71,11 +77,19 @@ export function useSessionBooking({
         throw new Error(errorMessage);
       }
 
+      const booking = await response.json();
+
+      // Optimistically update the UI immediately
+      if (optimisticBook) {
+        optimisticBook(sessionId, booking.id);
+      }
+
       toast({
         title: t("bookingSuccess"),
         variant: "default",
       });
 
+      // Background refresh to sync all data
       onSuccess();
     } catch (error) {
       console.error("Error booking session:", error);
@@ -92,8 +106,9 @@ export function useSessionBooking({
   };
 
   // Open cancel dialog
-  const handleCancelBooking = (bookingId: string) => {
+  const handleCancelBooking = (bookingId: string, sessionId?: string) => {
     setBookingToCancel(bookingId);
+    setSessionToCancel(sessionId ?? null);
     setCancelDialogOpen(true);
   };
 
@@ -101,6 +116,7 @@ export function useSessionBooking({
   const confirmCancelBooking = async () => {
     if (!bookingToCancel) return;
 
+    setCancelInProgress(true);
     try {
       const response = await fetch(
         `/api/venues/${venueId}/bookings/${bookingToCancel}/cancel`,
@@ -111,11 +127,17 @@ export function useSessionBooking({
         throw new Error("Failed to cancel booking");
       }
 
+      // Optimistically update the UI immediately
+      if (optimisticCancelBooking && sessionToCancel) {
+        optimisticCancelBooking(sessionToCancel);
+      }
+
       toast({
         title: t("bookingCancelled"),
         variant: "default",
       });
 
+      // Background refresh to sync all data
       onSuccess();
     } catch (error) {
       console.error("Error cancelling booking:", error);
@@ -125,14 +147,17 @@ export function useSessionBooking({
         variant: "destructive",
       });
     } finally {
+      setCancelInProgress(false);
       setCancelDialogOpen(false);
       setBookingToCancel(null);
+      setSessionToCancel(null);
     }
   };
 
   return {
     bookingInProgress,
     cancelDialogOpen,
+    cancelInProgress,
     setCancelDialogOpen,
     handleBookSession,
     handleCancelBooking,

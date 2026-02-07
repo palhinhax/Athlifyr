@@ -198,7 +198,7 @@ interface SessionDetailsDialogProps {
   isOwnerOrAdmin?: boolean;
   canEditSessions?: boolean; // Coach or higher can edit sessions
   onBook?: (sessionId: string) => void;
-  onCancel?: (sessionId: string) => void;
+  onCancel?: (bookingId: string, sessionId?: string) => void;
   onEdit?: (session: VenueSession) => void;
   onDelete?: (session: VenueSession) => void;
   onParticipantAdded?: () => void;
@@ -738,7 +738,7 @@ export function SessionDetailsDialog({
             <Button
               variant="outline"
               onClick={() => {
-                onCancel(session.userBookingId!);
+                onCancel(session.userBookingId!, session.id);
                 onOpenChange(false);
               }}
               className="flex-1"

@@ -594,6 +594,7 @@
       "cancelBookingWarning": "¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.",
       "no": "No",
       "yes": "Sí, Cancelar",
+      "cancelling": "Cancelando...",
       "book": "Reservar",
       "cancel": "Cancelar"
     },

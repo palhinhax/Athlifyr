@@ -23,8 +23,8 @@ export async function POST(
     const validation = await validateBooking(userId, venueId, sessionId);
 
     if (!validation.allowed) {
-      // Track booking failure
-      await trackServerEvent(
+      // Track booking failure (fire-and-forget, don't block the response)
+      trackServerEvent(
         ANALYTICS_EVENTS.BOOKING_FAILED,
         {
           venueId,
@@ -33,7 +33,7 @@ export async function POST(
           reason: validation.reason || "validation_failed",
         },
         session.user.email
-      );
+      ).catch(() => {});
 
       return NextResponse.json(
         {
@@ -102,8 +102,8 @@ export async function POST(
       });
     }
 
-    // Track successful booking
-    await trackServerEvent(
+    // Track successful booking (fire-and-forget, don't block the response)
+    trackServerEvent(
       ANALYTICS_EVENTS.BOOKING_COMPLETED,
       {
         venueId,
@@ -112,7 +112,7 @@ export async function POST(
         venueName: booking.session.venue.name,
       },
       session.user.email
-    );
+    ).catch(() => {});
 
     return NextResponse.json(booking, { status: 201 });
   } catch (error) {
@@ -173,8 +173,8 @@ export async function DELETE(
       data: { status: "CANCELLED" },
     });
 
-    // Track cancellation
-    await trackServerEvent(
+    // Track cancellation (fire-and-forget, don't block the response)
+    trackServerEvent(
       ANALYTICS_EVENTS.BOOKING_CANCELLED,
       {
         venueId,
@@ -183,7 +183,7 @@ export async function DELETE(
         bookingId: booking.id,
       },
       session.user.email
-    );
+    ).catch(() => {});
 
     return NextResponse.json({ success: true });
   } catch (error) {

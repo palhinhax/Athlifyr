@@ -83,46 +83,50 @@ export function useVenueSessions({
       params.set("from", fetchStartISO);
       params.set("to", fetchEndISO);
 
-      const response = await fetch(
+      // Fetch sessions and user bookings in parallel
+      const sessionsPromise = fetch(
         `/api/venues/${venueId}/sessions?${params.toString()}`
       );
+      const bookingsPromise = userId
+        ? fetch(`/api/venues/${venueId}/bookings/user`)
+        : null;
 
-      if (!response.ok) {
+      const [sessionsResponse, bookingsResponse] = await Promise.all([
+        sessionsPromise,
+        bookingsPromise,
+      ]);
+
+      if (!sessionsResponse.ok) {
         throw new Error("Failed to fetch sessions");
       }
 
-      const data = await response.json();
+      const data = await sessionsResponse.json();
 
-      // Check user bookings
+      // Check user bookings (already fetched in parallel)
       let sessionsWithBookingStatus = data.sessions;
-      if (userId) {
-        const bookingsResponse = await fetch(
-          `/api/venues/${venueId}/bookings/user`
+      if (userId && bookingsResponse && bookingsResponse.ok) {
+        const bookingsData = await bookingsResponse.json();
+        const activeBookings = bookingsData.bookings.filter(
+          (b: { status: string }) =>
+            b.status === "BOOKED" || b.status === "ATTENDED"
         );
-        if (bookingsResponse.ok) {
-          const bookingsData = await bookingsResponse.json();
-          const activeBookings = bookingsData.bookings.filter(
-            (b: { status: string }) =>
-              b.status === "BOOKED" || b.status === "ATTENDED"
-          );
-          const bookedSessionIds = new Set(
-            activeBookings.map((b: { sessionId: string }) => b.sessionId)
-          );
-          // Map sessionId → bookingId for cancel operations
-          const sessionBookingMap = new Map<string, string>(
-            activeBookings.map((b: { id: string; sessionId: string }) => [
-              b.sessionId,
-              b.id,
-            ])
-          );
-          sessionsWithBookingStatus = data.sessions.map(
-            (session: VenueSession) => ({
-              ...session,
-              isBooked: bookedSessionIds.has(session.id),
-              userBookingId: sessionBookingMap.get(session.id),
-            })
-          );
-        }
+        const bookedSessionIds = new Set(
+          activeBookings.map((b: { sessionId: string }) => b.sessionId)
+        );
+        // Map sessionId → bookingId for cancel operations
+        const sessionBookingMap = new Map<string, string>(
+          activeBookings.map((b: { id: string; sessionId: string }) => [
+            b.sessionId,
+            b.id,
+          ])
+        );
+        sessionsWithBookingStatus = data.sessions.map(
+          (session: VenueSession) => ({
+            ...session,
+            isBooked: bookedSessionIds.has(session.id),
+            userBookingId: sessionBookingMap.get(session.id),
+          })
+        );
       }
 
       setSessions(sessionsWithBookingStatus);
@@ -163,11 +167,44 @@ export function useVenueSessions({
     return map;
   }, [sessions]);
 
+  // Optimistically update a session's booking status without refetching
+  const optimisticBook = useCallback((sessionId: string, bookingId: string) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId
+          ? {
+              ...s,
+              isBooked: true,
+              userBookingId: bookingId,
+              _count: { bookings: s._count.bookings + 1 },
+            }
+          : s
+      )
+    );
+  }, []);
+
+  const optimisticCancelBooking = useCallback((sessionId: string) => {
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === sessionId
+          ? {
+              ...s,
+              isBooked: false,
+              userBookingId: undefined,
+              _count: { bookings: Math.max(0, s._count.bookings - 1) },
+            }
+          : s
+      )
+    );
+  }, []);
+
   return {
     sessions,
     loading,
     fetchSessions,
     getSessionsForDay,
     sessionsByDay,
+    optimisticBook,
+    optimisticCancelBooking,
   };
 }

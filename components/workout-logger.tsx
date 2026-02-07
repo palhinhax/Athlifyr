@@ -25,13 +25,30 @@ import {
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { WeightUnit, DistanceUnit } from "@prisma/client";
-import type { WorkoutWithBlocks, CreateWorkoutLogInput } from "@/types/workout";
+import type { WorkoutWithBlocks } from "@/types/workout";
 import { TimeInput } from "@/components/time-input";
 import { BLOCK_TYPE_INFO, formatTime } from "@/types/workout";
+import type { Prisma } from "@prisma/client";
+
+// Type for the existing log passed from the server
+type ExistingWorkoutLog = Prisma.WorkoutLogGetPayload<{
+  include: {
+    blockResults: {
+      include: {
+        exerciseResults: {
+          include: {
+            sets: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 interface WorkoutLoggerProps {
   workout: WorkoutWithBlocks;
   sessionId?: string;
+  existingLog?: ExistingWorkoutLog | null;
 }
 
 interface ExerciseSetData {
@@ -64,31 +81,76 @@ interface BlockResultData {
   exerciseResults: ExerciseResultData[];
 }
 
-export function WorkoutLogger({ workout, sessionId }: WorkoutLoggerProps) {
+export function WorkoutLogger({
+  workout,
+  sessionId,
+  existingLog,
+}: WorkoutLoggerProps) {
   const t = useTranslations("workouts");
   const { toast } = useToast();
   const router = useRouter();
 
-  // Form state
-  const [notes, setNotes] = useState("");
-  const [feeling, setFeeling] = useState<number | undefined>();
-  const [perceivedEffort, setPerceivedEffort] = useState<number | undefined>();
+  // Form state - pre-populate from existing log if available
+  const [notes, setNotes] = useState(existingLog?.notes ?? "");
+  const [feeling, setFeeling] = useState<number | undefined>(
+    existingLog?.feeling ?? undefined
+  );
+  const [perceivedEffort, setPerceivedEffort] = useState<number | undefined>(
+    existingLog?.perceivedEffort ?? undefined
+  );
   const [blockResults, setBlockResults] = useState<BlockResultData[]>(
-    workout.blocks.map((block) => ({
-      blockId: block.id,
-      completedRounds: undefined,
-      extraReps: undefined,
-      completedTime: undefined,
-      notes: undefined,
-      exerciseResults: block.exercises.map((ex) => ({
-        blockExerciseId: ex.id,
-        exerciseId: ex.exercise.id,
-        actualReps: ex.prescribedReps || undefined,
-        actualWeight: ex.prescribedWeight || undefined,
-        actualWeightUnit: ex.prescribedWeightUnit || undefined,
-        sets: [],
-      })),
-    }))
+    workout.blocks.map((block) => {
+      // Find existing block result for this block
+      const existingBlockResult = existingLog?.blockResults.find(
+        (br) => br.blockId === block.id
+      );
+
+      return {
+        blockId: block.id,
+        completedRounds: existingBlockResult?.completedRounds ?? undefined,
+        extraReps: existingBlockResult?.extraReps ?? undefined,
+        completedTime: existingBlockResult?.completedTime ?? undefined,
+        notes: existingBlockResult?.notes ?? undefined,
+        exerciseResults: block.exercises.map((ex) => {
+          // Find existing exercise result for this exercise
+          const existingExResult = existingBlockResult?.exerciseResults.find(
+            (er) => er.blockExerciseId === ex.id
+          );
+
+          if (existingExResult) {
+            return {
+              blockExerciseId: ex.id,
+              exerciseId: ex.exercise.id,
+              actualReps: existingExResult.actualReps ?? undefined,
+              actualWeight: existingExResult.actualWeight ?? undefined,
+              actualWeightUnit: existingExResult.actualWeightUnit ?? undefined,
+              actualTime: existingExResult.actualTime ?? undefined,
+              actualDistance: existingExResult.actualDistance ?? undefined,
+              actualDistanceUnit:
+                existingExResult.actualDistanceUnit ?? undefined,
+              actualCalories: existingExResult.actualCalories ?? undefined,
+              sets: existingExResult.sets.map((s) => ({
+                setNumber: s.setNumber,
+                reps: s.reps,
+                weight: s.weight,
+                weightUnit: s.weightUnit,
+                notes: s.notes ?? undefined,
+              })),
+            };
+          }
+
+          // No existing data - use prescribed defaults
+          return {
+            blockExerciseId: ex.id,
+            exerciseId: ex.exercise.id,
+            actualReps: ex.prescribedReps || undefined,
+            actualWeight: ex.prescribedWeight || undefined,
+            actualWeightUnit: ex.prescribedWeightUnit || undefined,
+            sets: [],
+          };
+        }),
+      };
+    })
   );
 
   const [isSaving, setIsSaving] = useState(false);
@@ -172,9 +234,10 @@ export function WorkoutLogger({ workout, sessionId }: WorkoutLoggerProps) {
     setIsSaving(true);
 
     try {
-      const logData: CreateWorkoutLogInput = {
+      const logData = {
         workoutId: workout.id,
         sessionId,
+        existingLogId: existingLog?.id,
         notes: notes || undefined,
         feeling,
         perceivedEffort,
@@ -212,7 +275,7 @@ export function WorkoutLogger({ workout, sessionId }: WorkoutLoggerProps) {
       const data = await response.json();
 
       toast({
-        title: t("success.logged"),
+        title: existingLog ? t("success.logUpdated") : t("success.logged"),
         description:
           data.performanceEntriesCreated > 0
             ? t("log.performanceEntriesCreated", {

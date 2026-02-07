@@ -594,6 +594,7 @@
       "cancelBookingWarning": "Are you sure you want to cancel this booking? This action cannot be undone.",
       "no": "No",
       "yes": "Yes, Cancel",
+      "cancelling": "Cancelling...",
       "book": "Book",
       "cancel": "Cancel"
     },

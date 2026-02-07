@@ -81,6 +81,16 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Prevent horizontal scroll on mobile */
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
 }
 
 @layer utilities {

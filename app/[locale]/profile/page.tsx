@@ -59,11 +59,6 @@ export default async function ProfilePage({ params }: PageProps) {
           },
         },
       },
-      comments: {
-        select: {
-          id: true,
-        },
-      },
       results: {
         select: {
           id: true,
@@ -206,7 +201,6 @@ export default async function ProfilePage({ params }: PageProps) {
             upcomingEvents: upcomingEvents.length,
             pastEvents: pastEvents.length,
             friendsCount,
-            commentsCount: user.comments.length,
           }}
           participations={user.participations.map((p) => ({
             id: p.id,

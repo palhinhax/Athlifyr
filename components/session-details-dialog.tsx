@@ -173,6 +173,7 @@ interface VenueSession {
     bookings: number;
   };
   isBooked?: boolean;
+  userBookingId?: string;
   bookingAdvanceDays?: number;
   bookingDeadlineMinutes?: number;
   cancellationDeadlineMinutes?: number;
@@ -733,11 +734,11 @@ export function SessionDetailsDialog({
             </Button>
           )}
 
-          {canCancel && onCancel && (
+          {canCancel && onCancel && session.userBookingId && (
             <Button
               variant="outline"
               onClick={() => {
-                onCancel(session.id);
+                onCancel(session.userBookingId!);
                 onOpenChange(false);
               }}
               className="flex-1"

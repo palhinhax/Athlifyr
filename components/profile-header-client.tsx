@@ -48,7 +48,6 @@ interface ProfileHeaderClientProps {
     upcomingEvents: number;
     pastEvents: number;
     friendsCount: number;
-    commentsCount: number;
   };
   participations: EventParticipation[];
   sessionBookings?: VenueSessionBooking[];

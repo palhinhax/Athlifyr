@@ -48,6 +48,7 @@ interface VenueSession {
     bookings: number;
   };
   isBooked?: boolean;
+  userBookingId?: string;
 }
 
 interface UseVenueSessionsParams {
@@ -100,18 +101,25 @@ export function useVenueSessions({
         );
         if (bookingsResponse.ok) {
           const bookingsData = await bookingsResponse.json();
+          const activeBookings = bookingsData.bookings.filter(
+            (b: { status: string }) =>
+              b.status === "BOOKED" || b.status === "ATTENDED"
+          );
           const bookedSessionIds = new Set(
-            bookingsData.bookings
-              .filter(
-                (b: { status: string }) =>
-                  b.status === "BOOKED" || b.status === "ATTENDED"
-              )
-              .map((b: { sessionId: string }) => b.sessionId)
+            activeBookings.map((b: { sessionId: string }) => b.sessionId)
+          );
+          // Map sessionId → bookingId for cancel operations
+          const sessionBookingMap = new Map<string, string>(
+            activeBookings.map((b: { id: string; sessionId: string }) => [
+              b.sessionId,
+              b.id,
+            ])
           );
           sessionsWithBookingStatus = data.sessions.map(
             (session: VenueSession) => ({
               ...session,
               isBooked: bookedSessionIds.has(session.id),
+              userBookingId: sessionBookingMap.get(session.id),
             })
           );
         }

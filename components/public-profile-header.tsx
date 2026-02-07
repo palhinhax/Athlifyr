@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   UserPlus,
   Check,
-  Clock,
   UserMinus,
   X,
   MessageCircleIcon,
@@ -46,7 +45,6 @@ interface PublicProfileHeaderProps {
     upcomingEvents: number;
     pastEvents: number;
     friendsCount: number;
-    commentsCount: number;
   };
   friendshipStatus: string | null;
   friendshipId: string | undefined;
@@ -198,6 +196,41 @@ export function PublicProfileHeader({
     }
   };
 
+  const cancelFriendRequest = async () => {
+    if (!friendshipId) return;
+
+    setIsLoading(true);
+    try {
+      const res = await fetch(`/api/friends/${friendshipId}`, {
+        method: "DELETE",
+      });
+
+      if (res.ok) {
+        toast({
+          title: "Pedido cancelado",
+          description: "O pedido de amizade foi cancelado.",
+        });
+        setFriendshipStatus(null);
+        setFriendshipId(undefined);
+        router.refresh();
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro",
+          description: "Não foi possível cancelar o pedido.",
+        });
+      }
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Algo correu mal. Tenta novamente.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleBlockUser = async () => {
     setIsBlocking(true);
     try {
@@ -295,9 +328,14 @@ export function PublicProfileHeader({
                     Remover Amigo
                   </Button>
                 ) : friendshipStatus === "request_sent" ? (
-                  <Button variant="outline" disabled className="gap-2">
-                    <Clock className="h-4 w-4" />
-                    Pedido Enviado
+                  <Button
+                    variant="outline"
+                    onClick={cancelFriendRequest}
+                    disabled={isLoading}
+                    className="gap-2"
+                  >
+                    <X className="h-4 w-4" />
+                    Cancelar Pedido
                   </Button>
                 ) : friendshipStatus === "request_received" ? (
                   <div className="flex gap-2">
@@ -375,12 +413,6 @@ export function PublicProfileHeader({
               {stats.friendsCount}
             </div>
             <div className="text-sm text-muted-foreground">Amigos</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-primary">
-              {stats.commentsCount}
-            </div>
-            <div className="text-sm text-muted-foreground">Comentários</div>
           </div>
         </div>
       </div>

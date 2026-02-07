@@ -83,7 +83,7 @@ export function ProfileUpcomingSessions({
 
     try {
       const response = await fetch(
-        `/api/venues/${bookingToCancel.session.venue.id}/sessions/${bookingToCancel.session.id}/cancel`,
+        `/api/venues/${bookingToCancel.session.venue.id}/bookings/${bookingToCancel.id}/cancel`,
         {
           method: "POST",
         }

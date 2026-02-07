@@ -62,6 +62,7 @@ export async function POST(
         },
         data: {
           status: "BOOKED",
+          subscriptionId: validation.subscriptionId ?? null,
         },
         include: {
           session: {
@@ -84,6 +85,7 @@ export async function POST(
           sessionId,
           userId,
           status: "BOOKED",
+          subscriptionId: validation.subscriptionId ?? null,
         },
         include: {
           session: {

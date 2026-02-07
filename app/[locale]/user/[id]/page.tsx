@@ -144,11 +144,6 @@ export default async function UserProfilePage({ params }: PageProps) {
           },
         },
       },
-      comments: {
-        select: {
-          id: true,
-        },
-      },
       results: {
         select: {
           id: true,
@@ -234,7 +229,6 @@ export default async function UserProfilePage({ params }: PageProps) {
             upcomingEvents: upcomingEvents.length,
             pastEvents: pastEvents.length,
             friendsCount,
-            commentsCount: user.comments.length,
           }}
           friendshipStatus={friendshipStatus}
           friendshipId={friendshipId}

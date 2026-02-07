@@ -409,7 +409,12 @@
       "paymentBoth": "Benutzerauswahl (App oder vor Ort)",
       "reactivate": "Reaktivieren",
       "reactivateConfirmTitle": "Plan Reaktivieren?",
-      "reactivateConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan reaktivieren möchten? Er wird für neue Abonnements verfügbar sein."
+      "reactivateConfirmDescription": "Sind Sie sicher, dass Sie diesen Plan reaktivieren möchten? Er wird für neue Abonnements verfügbar sein.",
+      "packExhausted": "Paket aufgebraucht",
+      "sessionsUsed": "{used} von {total} Sitzungen verwendet",
+      "resubscribe": "Erneut abonnieren",
+      "crossVenueTitle": "Abonnements von anderen Standorten",
+      "fromVenue": "Plan von {venue}"
     },
     "sessions": {
       "title": "Sitzungen",
@@ -579,6 +584,7 @@
       "outsideTimeWindow": "Außerhalb des zulässigen Zeitfensters",
       "advanceBookingRequired": "Buchung muss mindestens {hours} Stunden im Voraus erfolgen",
       "maxBookingsPerMonthReached": "Monatliches Buchungslimit erreicht",
+      "maxTotalBookingsReached": "Alle Sitzungen Ihres Pakets wurden verwendet",
       "cancellationNotAllowed": "Ihr Tarif erlaubt keine Stornierungen",
       "cancellationDeadlinePassed": "Stornierung muss mindestens {hours} Stunden vorher erfolgen",
       "confirmCancel": "Buchung Stornieren",
@@ -710,7 +716,8 @@
         "pending": "Ausstehend",
         "cancelled": "Storniert",
         "expired": "Abgelaufen",
-        "scheduled": "Geplant"
+        "scheduled": "Geplant",
+        "completed": "Abgeschlossen"
       },
       "paymentStatus": {
         "label": "Zahlungsstatus",
@@ -768,6 +775,8 @@
       "maxBookingsPerDay": "Max. Besuche pro Tag",
       "maxBookingsPerWeek": "Max. Besuche pro Woche",
       "maxBookingsPerMonth": "Max. Besuche pro Monat",
+      "maxTotalBookings": "Gesamte Sitzungen (Paket)",
+      "maxTotalBookingsHint": "Gesamte erlaubte Sitzungen für das gesamte Abonnement. Z.B.: 1 = Drop-in, 5 = 5er-Paket. Leer lassen für unbegrenzt.",
       "unlimited": "Unbegrenzt",
       "timeRestrictions": "Zeitbeschränkungen",
       "allowedDays": "Erlaubte Tage",
@@ -787,7 +796,9 @@
         "FRIDAY": "Freitag",
         "SATURDAY": "Samstag",
         "SUNDAY": "Sonntag"
-      }
+      },
+      "sessionSingular": "Sitzung enthalten",
+      "sessionsPlural": "Sitzungen enthalten"
     },
     "posts": {
       "sharePost": "Teilen Sie etwas über den Ort...",

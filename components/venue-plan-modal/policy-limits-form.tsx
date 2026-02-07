@@ -19,6 +19,30 @@ export function PolicyLimitsForm({
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-medium">{tPolicy("accessLimits")}</h3>
+
+      {/* Total bookings for subscription (drop-in / packs) */}
+      <div className="space-y-2">
+        <Label htmlFor="maxTotal">{tPolicy("maxTotalBookings")}</Label>
+        <Input
+          id="maxTotal"
+          type="number"
+          min="0"
+          value={policy.maxTotalBookings || ""}
+          onChange={(e) =>
+            onPolicyChange({
+              ...policy,
+              maxTotalBookings: e.target.value
+                ? parseInt(e.target.value)
+                : undefined,
+            })
+          }
+          placeholder={tPolicy("unlimited")}
+        />
+        <p className="text-xs text-muted-foreground">
+          {tPolicy("maxTotalBookingsHint")}
+        </p>
+      </div>
+
       <div className="grid grid-cols-3 gap-4">
         <div className="space-y-2">
           <Label htmlFor="maxPerDay">{tPolicy("maxBookingsPerDay")}</Label>

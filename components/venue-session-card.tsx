@@ -68,6 +68,7 @@ interface VenueSession {
     bookings: number;
   };
   isBooked?: boolean;
+  userBookingId?: string;
   bookingAdvanceDays?: number;
   bookingDeadlineMinutes?: number;
   cancellationDeadlineMinutes?: number;
@@ -301,13 +302,13 @@ export function VenueSessionCard({
             </Button>
           )}
 
-          {canCancel && onCancel && (
+          {canCancel && onCancel && session.userBookingId && (
             <Button
               variant="outline"
               size="sm"
               onClick={(e) => {
                 e.stopPropagation();
-                onCancel(session.id);
+                onCancel(session.userBookingId!);
               }}
               className="flex-1 text-xs"
             >

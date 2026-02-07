@@ -114,6 +114,23 @@ export interface AuthorizationResult {
 }
 
 /**
+ * Check if user is staff (OWNER, ADMIN, or COACH) at any venue.
+ * Used to gate professional features like exercises, workouts, and training plans.
+ */
+export async function isVenueStaff(userId: string): Promise<boolean> {
+  const membership = await prisma.venueMember.findFirst({
+    where: {
+      userId,
+      status: MemberStatus.ACTIVE,
+      role: { in: [VenueRole.OWNER, VenueRole.ADMIN, VenueRole.COACH] },
+    },
+    select: { id: true },
+  });
+
+  return membership !== null;
+}
+
+/**
  * Check if user can manage venue (owner or admin only)
  * Also allows app-level admins to manage any venue
  */

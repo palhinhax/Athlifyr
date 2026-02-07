@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import { ExercisesPageClient } from "@/components/exercises-page-client";
 import { Language } from "@prisma/client";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 export const dynamic = "force-dynamic";
 
@@ -18,19 +19,21 @@ export default async function ExercisesPage({
     redirect("/auth/signin");
   }
 
-  // Check if user is admin (always has access) or has pro account
+  // Check if user is admin (always has access) or is venue staff
   const user = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { isProAccount: true, role: true },
+    select: { role: true },
   });
 
-  // Admins always have access, non-admins need pro account
-  if (user?.role !== "ADMIN" && !user?.isProAccount) {
+  const isStaff = await isVenueStaff(session.user.id);
+
+  // Admins always have access, non-admins need to be venue staff
+  if (user?.role !== "ADMIN" && !isStaff) {
     redirect("/settings");
   }
 
-  // Only pro users and admins can create exercises
-  const canCreate = user?.role === "ADMIN" || user?.isProAccount === true;
+  // Only staff and admins can create exercises
+  const canCreate = user?.role === "ADMIN" || isStaff;
 
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: "exercises" });

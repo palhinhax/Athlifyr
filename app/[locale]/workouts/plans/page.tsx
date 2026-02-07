@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import { TrainingPlansPageClient } from "@/components/training-plans";
 import { redirect } from "@/i18n/routing";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 export async function generateMetadata({
   params,
@@ -32,8 +33,9 @@ export default async function TrainingPlansPage({
     return null;
   }
 
-  // Only Pro users can access training plans page
-  if (!session.user.isProAccount) {
+  // Only venue staff can access training plans page
+  const isStaff = await isVenueStaff(session.user.id);
+  if (!isStaff) {
     redirect({ href: "/workouts", locale });
     return null;
   }

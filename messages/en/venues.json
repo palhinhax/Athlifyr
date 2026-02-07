@@ -415,6 +415,7 @@
       "title": "Sessions",
       "class": "Class",
       "appointment": "Appointment",
+      "booking": "Booking...",
       "bookSession": "Book",
       "cancelBooking": "Cancel Booking",
       "confirmCancel": "Confirm Cancellation",
@@ -587,7 +588,8 @@
       "cancelBookingWarning": "Are you sure you want to cancel this booking? This action cannot be undone.",
       "no": "No",
       "yes": "Yes, Cancel",
-      "book": "Book"
+      "book": "Book",
+      "cancel": "Cancel"
     },
     "loading": "Loading...",
     "loadMore": "Load More",

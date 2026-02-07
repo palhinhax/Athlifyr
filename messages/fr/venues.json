@@ -415,6 +415,7 @@
       "title": "Séances",
       "class": "Cours",
       "appointment": "Rendez-vous",
+      "booking": "Réservation...",
       "bookSession": "Réserver",
       "cancelBooking": "Annuler",
       "confirmCancel": "Confirmer l'Annulation",
@@ -587,7 +588,8 @@
       "cancelBookingWarning": "Êtes-vous sûr de vouloir annuler cette réservation ? Cette action ne peut pas être annulée.",
       "no": "Non",
       "yes": "Oui, Annuler",
-      "book": "Réserver"
+      "book": "Réserver",
+      "cancel": "Annuler"
     },
     "loading": "Chargement...",
     "loadMore": "Charger Plus",

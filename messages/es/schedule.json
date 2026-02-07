@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "pageTitle": "Mi Horario",
+    "pageDescription": "Consulta tus clases y sesiones asignadas en todos los centros",
+    "title": "Mi Horario",
+    "description": "Tus clases y sesiones asignadas en los centros donde eres entrenador o profesional.",
+    "today": "Hoy",
+    "noSessionsThisDay": "Sin sesiones asignadas en este día",
+    "todaySessions": "Tienes {count, plural, one {# sesión} other {# sesiones}} hoy",
+    "participants": "participantes",
+    "workout": "entrenamiento",
+    "workouts": "entrenamientos",
+    "bookedParticipants": "Participantes inscritos",
+    "guest": "Invitado",
+    "full": "Completo",
+    "spotsLeft": "{count, plural, one {# plaza libre} other {# plazas libres}}",
+    "mySchedule": "Mi Horario",
+    "editSession": "Editar sesión"
+  }
+}

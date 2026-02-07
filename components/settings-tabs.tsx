@@ -13,7 +13,6 @@ import {
   Bell,
   Settings,
   Palette,
-  Briefcase,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -22,7 +21,6 @@ import { LanguageSelector } from "@/components/language-selector";
 import { AccountDataActions } from "@/components/account-data-actions";
 import { SubscriptionsHistory } from "@/components/subscriptions-history";
 import { NotificationSettings } from "@/components/notification-settings";
-import { ProAccountSettings } from "@/components/pro-account-settings";
 import { ThemeSelector } from "@/components/theme-selector";
 import type { SportType } from "@prisma/client";
 
@@ -36,7 +34,6 @@ interface SettingsTabsProps {
     favoriteSports: SportType[];
     emailVerified: Date | null;
     emailNotifications: boolean;
-    isProAccount: boolean;
   };
   locale: string;
 }
@@ -185,15 +182,6 @@ export function SettingsTabs({ user, locale }: SettingsTabsProps) {
             {t("themeDescription")}
           </p>
           <ThemeSelector />
-        </Card>
-
-        {/* Pro Account Settings */}
-        <Card className="p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
-            <Briefcase className="h-5 w-5" />
-            {t("proAccount.title")}
-          </h2>
-          <ProAccountSettings isProAccountEnabled={user.isProAccount} />
         </Card>
       </TabsContent>
 

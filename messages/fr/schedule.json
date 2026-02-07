@@ -1,0 +1,20 @@
+{
+  "schedule": {
+    "pageTitle": "Mon Emploi du Temps",
+    "pageDescription": "Consultez vos cours et séances assignés dans tous les établissements",
+    "title": "Mon Emploi du Temps",
+    "description": "Vos cours et séances assignés dans les établissements où vous êtes coach ou professionnel.",
+    "today": "Aujourd'hui",
+    "noSessionsThisDay": "Aucune séance assignée ce jour",
+    "todaySessions": "Vous avez {count, plural, one {# séance} other {# séances}} aujourd'hui",
+    "participants": "participants",
+    "workout": "entraînement",
+    "workouts": "entraînements",
+    "bookedParticipants": "Participants inscrits",
+    "guest": "Invité",
+    "full": "Complet",
+    "spotsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
+    "mySchedule": "Mon Emploi du Temps",
+    "editSession": "Modifier la séance"
+  }
+}

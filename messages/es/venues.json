@@ -415,6 +415,7 @@
       "title": "Sesiones",
       "class": "Clase",
       "appointment": "Cita",
+      "booking": "Reservando...",
       "bookSession": "Reservar",
       "cancelBooking": "Cancelar Reserva",
       "confirmCancel": "Confirmar Cancelación",
@@ -587,7 +588,8 @@
       "cancelBookingWarning": "¿Estás seguro de que quieres cancelar esta reserva? Esta acción no se puede deshacer.",
       "no": "No",
       "yes": "Sí, Cancelar",
-      "book": "Reservar"
+      "book": "Reservar",
+      "cancel": "Cancelar"
     },
     "loading": "Cargando...",
     "loadMore": "Cargar Más",

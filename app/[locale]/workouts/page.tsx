@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import { WorkoutsPageClient } from "@/components/workouts-page-client";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 export async function generateMetadata({
   params,
@@ -33,10 +34,7 @@ export default async function WorkoutsPage() {
     );
   }
 
-  return (
-    <WorkoutsPageClient
-      userId={session.user.id}
-      isProAccount={session.user.isProAccount ?? false}
-    />
-  );
+  const isStaff = await isVenueStaff(session.user.id);
+
+  return <WorkoutsPageClient userId={session.user.id} isStaff={isStaff} />;
 }

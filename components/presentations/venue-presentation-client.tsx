@@ -215,7 +215,7 @@ export function VenuePresentationClient() {
             className="hidden h-full w-full object-cover md:block"
           >
             <source
-              src="/videos/presentation/hero-desktop.mp4"
+              src="/videos/presentation/hero-mobile.mp4"
               type="video/mp4"
             />
           </video>

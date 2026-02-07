@@ -214,10 +214,7 @@ export function VenuePresentationClient() {
             preload="auto"
             className="hidden h-full w-full object-cover md:block"
           >
-            <source
-              src="/videos/presentation/hero-mobile.mp4"
-              type="video/mp4"
-            />
+            <source src="/promo/crossfit-workout.mp4" type="video/mp4" />
           </video>
           {/* Mobile video (portrait) */}
           <video
@@ -228,10 +225,7 @@ export function VenuePresentationClient() {
             preload="auto"
             className="block h-full w-full object-cover md:hidden"
           >
-            <source
-              src="/videos/presentation/hero-mobile.mp4"
-              type="video/mp4"
-            />
+            <source src="/promo/crossfit-workout.mp4" type="video/mp4" />
           </video>
           {/* Dark overlay for text readability */}
           <div className="absolute inset-0 bg-black/60" />

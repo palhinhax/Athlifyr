@@ -1,3 +1,11 @@
+# [17.4.0](https://github.com/palhinhax/Athlifyr/compare/v17.3.1...v17.4.0) (2026-02-07)
+
+### Features
+
+- add maxTotalBookings to subscription policies and implement booking validation ([2404ecc](https://github.com/palhinhax/Athlifyr/commit/2404ecc427d0cfae05bd3b1ff32a4a9bd4377516))
+- **schedule:** add My Schedule with edit/delete/add participant actions ([ab83faf](https://github.com/palhinhax/Athlifyr/commit/ab83faf09fc8b1402029ffed3f9eed1414174808))
+- **ui:** implement centralized color palette system ([75e08f0](https://github.com/palhinhax/Athlifyr/commit/75e08f0b2d0cb744173d9b75648360ea5606df27))
+
 ## [17.3.1](https://github.com/palhinhax/Athlifyr/compare/v17.3.0...v17.3.1) (2026-02-07)
 
 ### Bug Fixes

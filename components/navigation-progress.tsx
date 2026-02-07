@@ -73,10 +73,10 @@ export function NavigationProgress() {
       aria-valuenow={progress}
     >
       <div
-        className="h-full bg-gradient-to-r from-primary via-primary/80 to-primary shadow-lg shadow-primary/50 transition-all duration-500 ease-out"
+        className="h-full bg-gradient-to-r from-accent via-accent/80 to-accent shadow-lg shadow-accent/50 transition-all duration-500 ease-out"
         style={{
           width: `${progress}%`,
-          boxShadow: `0 0 10px 2px rgba(0, 0, 0, 0.1)`,
+          boxShadow: `0 0 10px 2px hsl(var(--accent) / 0.3)`,
         }}
       />
     </div>

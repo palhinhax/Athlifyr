@@ -139,9 +139,9 @@ export function GlobalSearch() {
       case "event":
         return <Calendar className="h-4 w-4 text-primary" />;
       case "venue":
-        return <MapPin className="h-4 w-4 text-green-500" />;
+        return <MapPin className="h-4 w-4 text-p-brand" />;
       case "user":
-        return <User className="h-4 w-4 text-blue-500" />;
+        return <User className="h-4 w-4 text-p-info" />;
     }
   };
 
@@ -253,7 +253,7 @@ export function GlobalSearch() {
                     {result.type === "user" ? (
                       <Avatar className="h-10 w-10 shrink-0">
                         <AvatarImage src={result.image || undefined} />
-                        <AvatarFallback className="bg-blue-500/10 text-blue-500">
+                        <AvatarFallback className="bg-p-info/10 text-p-info">
                           {result.title?.charAt(0)?.toUpperCase() || "U"}
                         </AvatarFallback>
                       </Avatar>

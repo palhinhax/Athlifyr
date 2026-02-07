@@ -126,7 +126,7 @@ export function EventComments({
     <div className="space-y-8">
       {/* Header */}
       <div className="flex items-center gap-2">
-        <MessageCircle className="h-6 w-6 text-primary" />
+        <MessageCircle className="h-6 w-6 text-p-info" />
         <h2 className="text-2xl font-bold">
           Discussion ({comments.length}{" "}
           {comments.length === 1 ? "comment" : "comments"})
@@ -155,7 +155,7 @@ export function EventComments({
                 value={newComment}
                 onChange={(e) => setNewComment(e.target.value)}
                 placeholder="Share your thoughts about this event..."
-                className="min-h-[100px] w-full rounded-lg border bg-background p-4 focus:outline-none focus:ring-2 focus:ring-primary"
+                className="min-h-[100px] w-full rounded-lg border bg-background p-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isSubmitting}
               />
             </div>

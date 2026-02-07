@@ -66,7 +66,7 @@ export function MobileNav() {
           />
 
           {/* Menu */}
-          <div className="fixed inset-x-0 top-16 z-50 border-b bg-background p-4 shadow-lg">
+          <div className="fixed inset-x-0 top-16 z-50 border-b border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur-md">
             <nav className="flex flex-col gap-1">
               {/* Main Navigation - All with icons */}
               {session ? (

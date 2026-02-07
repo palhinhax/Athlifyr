@@ -131,19 +131,19 @@ export function EventVariantsList({
       {uniqueDistances.length > 0 && (
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-2">
-            <Route className="h-5 w-5 text-primary" />
+            <Route className="h-5 w-5 text-p-brand" />
             <span className="text-sm font-medium text-muted-foreground">
               {labels.distances}:
             </span>
             {uniqueDistances.length === 1 ? (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary">
+              <span className="inline-flex items-center gap-1 rounded-full bg-p-brand/10 px-3 py-1 text-sm font-medium text-p-brand">
                 {uniqueDistances[0]} km
               </span>
             ) : (
               uniqueDistances.map((distance) => (
                 <span
                   key={distance}
-                  className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-3 py-1 text-sm font-medium text-primary"
+                  className="inline-flex items-center gap-1 rounded-full bg-p-brand/10 px-3 py-1 text-sm font-medium text-p-brand"
                 >
                   {distance} km
                 </span>
@@ -258,7 +258,7 @@ export function EventVariantsList({
                           key={phase.id}
                           className={`flex items-center justify-between gap-2 text-xs sm:text-sm ${
                             isActive
-                              ? "font-semibold text-primary"
+                              ? "font-semibold text-accent"
                               : hasEnded
                                 ? "text-muted-foreground/50 line-through"
                                 : "text-muted-foreground"

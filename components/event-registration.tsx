@@ -246,8 +246,8 @@ export function EventRegistration({
 
           {/* Current Participation Status */}
           {userParticipation && (
-            <div className="rounded-md bg-primary/10 p-3 text-sm">
-              <div className="mb-1 flex items-center gap-2 font-medium text-primary">
+            <div className="rounded-md bg-p-brand/10 p-3 text-sm">
+              <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
                 <Check className="h-4 w-4" />
                 {t("registered")}
               </div>

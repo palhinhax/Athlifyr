@@ -471,7 +471,7 @@ export function FriendsSection() {
                   {pendingRequests.map((request) => (
                     <Card
                       key={request.id}
-                      className="flex items-center gap-4 p-4"
+                      className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap sm:gap-4"
                     >
                       <Link
                         href={`/user/${request.sender.id}`}
@@ -502,12 +502,12 @@ export function FriendsSection() {
                           {request.sender.email}
                         </p>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex w-full gap-2 sm:w-auto">
                         <Button
                           size="sm"
                           onClick={() => respondToRequest(request.id, "accept")}
                           disabled={isLoading}
-                          className="gap-1"
+                          className="flex-1 gap-1 sm:flex-none"
                         >
                           <Check className="h-4 w-4" />
                           Aceitar
@@ -517,7 +517,7 @@ export function FriendsSection() {
                           variant="outline"
                           onClick={() => respondToRequest(request.id, "reject")}
                           disabled={isLoading}
-                          className="gap-1"
+                          className="flex-1 gap-1 sm:flex-none"
                         >
                           <X className="h-4 w-4" />
                           Rejeitar
@@ -545,7 +545,7 @@ export function FriendsSection() {
                   {sentRequests.map((request) => (
                     <Card
                       key={request.id}
-                      className="flex items-center gap-4 p-4"
+                      className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap sm:gap-4"
                     >
                       <Link
                         href={`/user/${request.receiver.id}`}
@@ -576,7 +576,7 @@ export function FriendsSection() {
                           {request.receiver.email}
                         </p>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:justify-end">
                         <span className="flex items-center gap-1 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />A aguardar resposta
                         </span>
@@ -639,7 +639,10 @@ export function FriendsSection() {
             ) : (
               <div className="space-y-3">
                 {searchResults.map((user) => (
-                  <Card key={user.id} className="flex items-center gap-4 p-4">
+                  <Card
+                    key={user.id}
+                    className="flex flex-wrap items-center gap-3 p-4 sm:flex-nowrap sm:gap-4"
+                  >
                     <Link
                       href={`/user/${user.id}`}
                       className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-full bg-muted transition-opacity hover:opacity-80"
@@ -669,39 +672,41 @@ export function FriendsSection() {
                         {user.email}
                       </p>
                     </div>
-                    {user.friendshipStatus === "friends" ? (
-                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Check className="h-4 w-4 text-green-500" />
-                        Amigos
-                      </span>
-                    ) : user.friendshipStatus === "request_sent" ? (
-                      <span className="flex items-center gap-1 text-sm text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        Pedido enviado
-                      </span>
-                    ) : user.friendshipStatus === "request_received" ? (
-                      <div className="flex gap-2">
+                    <div className="flex w-full items-center justify-end sm:w-auto">
+                      {user.friendshipStatus === "friends" ? (
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Check className="h-4 w-4 text-green-500" />
+                          Amigos
+                        </span>
+                      ) : user.friendshipStatus === "request_sent" ? (
+                        <span className="flex items-center gap-1 text-sm text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          Pedido enviado
+                        </span>
+                      ) : user.friendshipStatus === "request_received" ? (
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={() =>
+                              respondToRequest(user.friendshipId!, "accept")
+                            }
+                            disabled={isLoading}
+                          >
+                            <Check className="mr-1 h-4 w-4" />
+                            Aceitar
+                          </Button>
+                        </div>
+                      ) : (
                         <Button
                           size="sm"
-                          onClick={() =>
-                            respondToRequest(user.friendshipId!, "accept")
-                          }
+                          onClick={() => sendFriendRequest(user.id)}
                           disabled={isLoading}
                         >
-                          <Check className="mr-1 h-4 w-4" />
-                          Aceitar
+                          <UserPlus className="mr-1 h-4 w-4" />
+                          Adicionar
                         </Button>
-                      </div>
-                    ) : (
-                      <Button
-                        size="sm"
-                        onClick={() => sendFriendRequest(user.id)}
-                        disabled={isLoading}
-                      >
-                        <UserPlus className="mr-1 h-4 w-4" />
-                        Adicionar
-                      </Button>
-                    )}
+                      )}
+                    </div>
                   </Card>
                 ))}
               </div>

@@ -49,12 +49,12 @@ interface ExercisesPageClientProps {
 }
 
 const categoryColors: Record<ExerciseCategory, string> = {
-  CROSSFIT: "bg-orange-500/10 text-orange-500 border-orange-500/20",
-  GYM: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  WEIGHTLIFTING: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-  BODYWEIGHT: "bg-green-500/10 text-green-500 border-green-500/20",
-  CARDIO: "bg-red-500/10 text-red-500 border-red-500/20",
-  OTHER: "bg-gray-500/10 text-gray-500 border-gray-500/20",
+  CROSSFIT: "bg-p-brand/10 text-p-brand border-p-brand/20",
+  GYM: "bg-p-info/10 text-p-info border-p-info/20",
+  WEIGHTLIFTING: "bg-primary/10 text-primary border-primary/20",
+  BODYWEIGHT: "bg-p-golden/10 text-p-golden border-p-golden/20",
+  CARDIO: "bg-destructive/10 text-destructive border-destructive/20",
+  OTHER: "bg-muted text-muted-foreground border-muted",
 };
 
 export function ExercisesPageClient({
@@ -221,7 +221,7 @@ export function ExercisesPageClient({
                 return (
                   <Card
                     key={exercise.id}
-                    className="cursor-pointer transition-colors hover:border-primary/50"
+                    className="cursor-pointer transition-colors hover:border-emerald-500/50"
                   >
                     <CardHeader className="pb-2">
                       <div className="flex items-start justify-between">

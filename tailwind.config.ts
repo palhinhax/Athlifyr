@@ -59,6 +59,11 @@ const config: Config = {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        // Palette colors — change in globals.css to swap the entire site palette
+        "p-brand": "hsl(var(--p-brand))",
+        "p-golden": "hsl(var(--p-golden))",
+        "p-highlight": "hsl(var(--p-highlight))",
+        "p-info": "hsl(var(--p-info))",
       },
       borderRadius: {
         lg: "var(--radius)",

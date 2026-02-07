@@ -120,7 +120,7 @@ export function WorkoutCard({
 
   return (
     <>
-      <Card className="flex flex-col">
+      <Card className="flex flex-col transition-colors hover:border-accent/30 hover:shadow-md">
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="flex-1">
@@ -146,7 +146,7 @@ export function WorkoutCard({
                     <Loader2Icon className="h-4 w-4 animate-spin" />
                   ) : (
                     <BookmarkIcon
-                      className={`h-4 w-4 ${isSaved ? "fill-current text-primary" : ""}`}
+                      className={`h-4 w-4 ${isSaved ? "fill-current text-accent" : ""}`}
                     />
                   )}
                 </Button>
@@ -217,12 +217,12 @@ export function WorkoutCard({
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             {workout.estimatedTime && (
               <div className="flex items-center gap-1">
-                <ClockIcon className="h-4 w-4" />
+                <ClockIcon className="h-4 w-4 text-p-info" />
                 <span>{workout.estimatedTime} min</span>
               </div>
             )}
             <div className="flex items-center gap-1">
-              <DumbbellIcon className="h-4 w-4" />
+              <DumbbellIcon className="h-4 w-4 text-p-brand" />
               <span>
                 {totalExercises}{" "}
                 {totalExercises === 1
@@ -232,7 +232,7 @@ export function WorkoutCard({
             </div>
             {workout.isPublic && (
               <div className="flex items-center gap-1">
-                <GlobeIcon className="h-4 w-4" />
+                <GlobeIcon className="h-4 w-4 text-p-golden" />
               </div>
             )}
           </div>
@@ -240,14 +240,22 @@ export function WorkoutCard({
           {/* Difficulty */}
           {workout.difficulty && (
             <div className="flex items-center gap-1">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 w-4 rounded-sm ${
-                    i < workout.difficulty! ? "bg-primary" : "bg-muted"
-                  }`}
-                />
-              ))}
+              {Array.from({ length: 5 }).map((_, i) => {
+                const difficultyColor =
+                  workout.difficulty! <= 2
+                    ? "bg-p-brand"
+                    : workout.difficulty! <= 3
+                      ? "bg-p-golden"
+                      : "bg-destructive";
+                return (
+                  <div
+                    key={i}
+                    className={`h-2 w-4 rounded-sm ${
+                      i < workout.difficulty! ? difficultyColor : "bg-muted"
+                    }`}
+                  />
+                );
+              })}
               <span className="ml-2 text-xs text-muted-foreground">
                 {t(`form.difficultyLevels.${workout.difficulty}`)}
               </span>
@@ -298,7 +306,10 @@ export function WorkoutCard({
         </CardContent>
 
         <CardFooter className="pt-0">
-          <Button asChild className="w-full">
+          <Button
+            asChild
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+          >
             <Link href={`/workouts/${workout.id}/run`}>
               <PlayIcon className="mr-2 h-4 w-4" />
               {t("log.startWorkout")}

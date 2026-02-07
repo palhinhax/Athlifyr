@@ -29,7 +29,7 @@ export function SportBadge({
   return (
     <div
       className={cn(
-        "inline-flex items-center rounded-full bg-primary font-medium text-primary-foreground",
+        "inline-flex items-center rounded-full bg-accent font-medium text-accent-foreground",
         sizeClasses[size],
         className
       )}

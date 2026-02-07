@@ -52,7 +52,7 @@ export function EventCard({
       className="block"
     >
       <Card
-        className={`overflow-hidden transition-shadow hover:shadow-lg ${
+        className={`overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 ${
           isParticipating ? "ring-2 ring-green-500" : ""
         }`}
       >

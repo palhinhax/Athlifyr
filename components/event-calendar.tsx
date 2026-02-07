@@ -274,9 +274,9 @@ export function EventCalendar({
                               className={cn(
                                 "h-1.5 w-1.5 rounded-full",
                                 item.type === "session"
-                                  ? "bg-blue-500"
+                                  ? "bg-p-info"
                                   : isPast(day)
-                                    ? "bg-green-500"
+                                    ? "bg-p-golden"
                                     : "bg-primary"
                               )}
                             />
@@ -327,7 +327,7 @@ export function EventCalendar({
                       <div
                         className={cn(
                           "rounded-md border p-2 transition-colors hover:bg-muted",
-                          isPastEvent && "border-green-500/30 bg-green-500/5"
+                          isPastEvent && "border-p-golden/30 bg-p-golden/5"
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -353,7 +353,7 @@ export function EventCalendar({
                             className={cn(
                               "shrink-0 rounded-full px-2 py-0.5 text-xs font-medium",
                               isPastEvent
-                                ? "bg-green-500/10 text-green-600"
+                                ? "bg-p-golden/10 text-p-golden"
                                 : "bg-primary/10 text-primary"
                             )}
                           >
@@ -379,7 +379,7 @@ export function EventCalendar({
                       <div
                         className={cn(
                           "rounded-md border p-2 transition-colors hover:bg-muted",
-                          "border-blue-500/30 bg-blue-500/5"
+                          "border-p-info/30 bg-p-info/5"
                         )}
                       >
                         <div className="flex items-start justify-between gap-2">
@@ -399,7 +399,7 @@ export function EventCalendar({
                                 ` • ${b.session.venue.city}`}
                             </p>
                           </div>
-                          <span className="shrink-0 rounded-full bg-blue-500/10 px-2 py-0.5 text-xs font-medium text-blue-600">
+                          <span className="shrink-0 rounded-full bg-p-info/10 px-2 py-0.5 text-xs font-medium text-p-info">
                             {t("booked")}
                           </span>
                         </div>
@@ -422,11 +422,11 @@ export function EventCalendar({
             <span>{t("going")}</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded-full bg-green-500" />
+            <div className="h-2 w-2 rounded-full bg-p-golden" />
             <span>{t("went")}</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="h-2 w-2 rounded-full bg-blue-500" />
+            <div className="h-2 w-2 rounded-full bg-p-info" />
             <span>{t("booked")}</span>
           </div>
         </div>

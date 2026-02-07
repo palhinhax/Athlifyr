@@ -108,7 +108,7 @@ export function EventSidebar({ event, weather }: EventSidebarProps) {
             <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
               <div className="p-4">
                 <h3 className="mb-3 flex items-center gap-2 font-semibold">
-                  <MapPin className="h-5 w-5 text-primary" />
+                  <MapPin className="h-5 w-5 text-red-500" />
                   {t("locationTitle")}
                 </h3>
               </div>

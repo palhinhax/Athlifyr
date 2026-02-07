@@ -77,8 +77,8 @@ export function EventVariantTechnicalData({
 
         {cutoffTimeHours && (
           <div className="flex items-center gap-3">
-            <div className="rounded-lg bg-blue-500/10 p-3">
-              <Clock className="h-5 w-5 text-blue-600 dark:text-blue-500" />
+            <div className="rounded-lg bg-p-info/10 p-3">
+              <Clock className="h-5 w-5 text-p-info" />
             </div>
             <div>
               <div className="text-sm text-muted-foreground">Tempo Limite</div>

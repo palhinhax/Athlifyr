@@ -79,22 +79,26 @@ export function ProfileHeaderClient({
 
         {/* Stats */}
         <div className="grid grid-cols-3 gap-3 sm:flex sm:gap-6">
-          <div className="rounded-lg bg-primary/10 px-4 py-3 text-center">
-            <div className="text-2xl font-bold text-primary">
+          <div className="rounded-lg bg-accent/10 px-4 py-3 text-center">
+            <div className="text-2xl font-bold text-accent">
               {stats.upcomingEvents}
             </div>
             <div className="text-xs text-muted-foreground sm:text-sm">
               {t("upcomingEvents")}
             </div>
           </div>
-          <div className="rounded-lg bg-muted px-4 py-3 text-center">
-            <div className="text-2xl font-bold">{stats.pastEvents}</div>
+          <div className="rounded-lg bg-p-info/10 px-4 py-3 text-center">
+            <div className="text-2xl font-bold text-p-info">
+              {stats.pastEvents}
+            </div>
             <div className="text-xs text-muted-foreground sm:text-sm">
               {t("pastEvents")}
             </div>
           </div>
-          <div className="rounded-lg bg-muted px-4 py-3 text-center">
-            <div className="text-2xl font-bold">{stats.friendsCount}</div>
+          <div className="rounded-lg bg-p-golden/10 px-4 py-3 text-center">
+            <div className="text-2xl font-bold text-p-golden">
+              {stats.friendsCount}
+            </div>
             <div className="text-xs text-muted-foreground sm:text-sm">
               {t("friends")}
             </div>

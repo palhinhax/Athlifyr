@@ -61,17 +61,22 @@ export default async function Home({
   return (
     <div className="min-h-screen">
       {/* Hero */}
-      <section className="container mx-auto px-4 py-8 text-center md:py-20">
-        <h1 className="text-2xl font-bold tracking-tight sm:text-4xl md:text-6xl">
-          {t("heroTitle")}
-          <br />
-          <span className="text-primary">{t("heroTitleHighlight")}</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-lg md:mt-6 md:text-xl">
-          {t("heroDescription")}
-          <br />
-          {t("heroDescriptionCountry", { country: userCountry })}
-        </p>
+      <section className="relative overflow-hidden">
+        <div className="to-accent/3 absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent" />
+        <div className="container relative mx-auto px-4 py-8 text-center md:py-20">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-4xl md:text-6xl">
+            {t("heroTitle")}
+            <br />
+            <span className="bg-gradient-to-r from-accent to-accent/70 bg-clip-text text-transparent">
+              {t("heroTitleHighlight")}
+            </span>
+          </h1>
+          <p className="mx-auto mt-4 max-w-2xl text-sm text-muted-foreground sm:text-lg md:mt-6 md:text-xl">
+            {t("heroDescription")}
+            <br />
+            {t("heroDescriptionCountry", { country: userCountry })}
+          </p>
+        </div>
       </section>
 
       {/* Upcoming Events */}

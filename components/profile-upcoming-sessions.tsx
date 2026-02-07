@@ -123,7 +123,7 @@ export function ProfileUpcomingSessions({
     <>
       <div className="mb-12">
         <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-          <Clock className="h-6 w-6 text-primary" />
+          <Clock className="h-6 w-6 text-p-golden" />
           {t("upcomingSessionsCount", { count: bookings.length })}
         </h2>
         <div className="grid gap-4 md:grid-cols-2">

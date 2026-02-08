@@ -63,28 +63,38 @@ export function WorkoutsPageClient({
   const fetchWorkouts = useCallback(async () => {
     try {
       setIsLoading(true);
-      // Fetch all workouts (user's own + public + saved)
-      const response = await fetch("/api/workouts");
-      if (response.ok) {
+      // Fetch all workouts with pagination (user's own + public + saved)
+      const allWorkouts: WorkoutApiResponse[] = [];
+      let cursor: string | null = null;
+      let hasMore = true;
+
+      while (hasMore) {
+        const params = new URLSearchParams({ limit: "50" });
+        if (cursor) params.set("cursor", cursor);
+
+        const response = await fetch(`/api/workouts?${params.toString()}`);
+        if (!response.ok) break;
+
         const data = await response.json();
-        const allWorkouts: WorkoutApiResponse[] = data.items || [];
-
-        // Separate workouts into categories
-        // My workouts: created by me
-        setMyWorkouts(allWorkouts.filter((w) => w.createdById === userId));
-
-        // Saved workouts: not created by me but saved
-        setSavedWorkouts(
-          allWorkouts.filter((w) => w.createdById !== userId && w.isSaved)
-        );
-
-        // Public workouts: not created by me and not saved (for discovery)
-        setPublicWorkouts(
-          allWorkouts.filter(
-            (w) => w.createdById !== userId && w.isPublic && !w.isSaved
-          )
-        );
+        const items: WorkoutApiResponse[] = data.items || [];
+        allWorkouts.push(...items);
+        hasMore = data.hasMore ?? false;
+        cursor = data.nextCursor ?? null;
       }
+
+      // Separate workouts into categories
+      // My workouts: created by me
+      setMyWorkouts(allWorkouts.filter((w) => w.createdById === userId));
+
+      // Saved workouts: not created by me but saved
+      setSavedWorkouts(
+        allWorkouts.filter((w) => w.isSaved)
+      );
+
+      // Public workouts: all public workouts not yet saved (for discovery)
+      setPublicWorkouts(
+        allWorkouts.filter((w) => w.isPublic && !w.isSaved)
+      );
     } catch (error) {
       console.error("Failed to fetch workouts:", error);
       toast({
@@ -657,7 +667,7 @@ function SavedContentTab({
 
 // Component for normal users to discover public workouts and plans
 function PublicContentTab({
-  userId,
+  userId: _userId,
   publicWorkouts,
   isLoading: workoutsLoading,
   onSaveToggle,
@@ -693,12 +703,12 @@ function PublicContentTab({
       const response = await fetch("/api/training-plans");
       if (response.ok) {
         const data = await response.json();
-        // Show only public plans
+        // Show all public plans
         const publicPlans = (data.plans || []).filter(
           (p: {
             isPublic: boolean;
             createdById: string;
-          }) => p.isPublic && p.createdById !== userId
+          }) => p.isPublic
         );
         setPlans(publicPlans);
       }
@@ -710,7 +720,7 @@ function PublicContentTab({
     } finally {
       setPlansLoading(false);
     }
-  }, [userId, tPlans, toast]);
+  }, [tPlans, toast]);
 
   useEffect(() => {
     fetchPlans();

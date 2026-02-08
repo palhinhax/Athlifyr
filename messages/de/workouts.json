@@ -53,6 +53,12 @@
       "extreme": "Extrem"
     },
 
+    "preview": {
+      "title": "Workout-Vorschau",
+      "download": "Herunterladen",
+      "share": "Teilen"
+    },
+
     "form": {
       "name": "Trainingsname",
       "namePlaceholder": "z.B. WOD Montag",

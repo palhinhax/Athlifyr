@@ -67,6 +67,16 @@ describe("booking-validation", () => {
       ]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue(null);
+      // Session must exist and be in the future for membership check to be reached
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: "CLASS",
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookingDeadlineMinutes: 0,
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -97,6 +107,16 @@ describe("booking-validation", () => {
         id: "member-1",
         status: MemberStatus.SUSPENDED,
       });
+      // Session must exist and be in the future for membership check to be reached
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: "CLASS",
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookingDeadlineMinutes: 0,
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -111,6 +131,16 @@ describe("booking-validation", () => {
       });
       (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Session must exist and be in the future for subscription check to be reached
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: "CLASS",
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookingDeadlineMinutes: 0,
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -164,8 +194,10 @@ describe("booking-validation", () => {
         type: SessionType.CLASS,
         capacity: 10,
         startsAt: pastDate,
+        bookingDeadlineMinutes: 0,
         bookings: [],
       });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -184,6 +216,16 @@ describe("booking-validation", () => {
       // First call returns empty (subscription has future start date, not matching the query)
       (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Session must exist and be in the future for subscription check to be reached
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: SessionType.CLASS,
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookingDeadlineMinutes: 0,
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 
@@ -202,6 +244,16 @@ describe("booking-validation", () => {
       // Subscription is expired so findMany returns empty (doesn't match OR condition)
       (prisma.venueSubscription.findMany as jest.Mock).mockResolvedValue([]);
       (prisma.venuePlanVenue.findMany as jest.Mock).mockResolvedValue([]);
+      // Session must exist and be in the future for subscription check to be reached
+      (prisma.venueSession.findUnique as jest.Mock).mockResolvedValue({
+        id: sessionId,
+        type: SessionType.CLASS,
+        capacity: 10,
+        startsAt: new Date("2026-06-15T10:00:00Z"),
+        bookingDeadlineMinutes: 0,
+        bookings: [],
+      });
+      (prisma.venueBooking.findFirst as jest.Mock).mockResolvedValue(null);
 
       const result = await validateBooking(userId, venueId, sessionId);
 

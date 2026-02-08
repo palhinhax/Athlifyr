@@ -81,6 +81,7 @@ export default function AdminEventsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showIncompleteOnly, setShowIncompleteOnly] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -147,6 +148,10 @@ export default function AdminEventsPage() {
           params.append("search", searchQuery.trim());
         }
 
+        if (showIncompleteOnly) {
+          params.append("incompleteOnly", "true");
+        }
+
         const res = await fetch(`/api/admin/events?${params}`);
         if (res.ok) {
           const data = await res.json();
@@ -168,7 +173,7 @@ export default function AdminEventsPage() {
     if (session?.user?.role === "ADMIN") {
       fetchEvents();
     }
-  }, [session, currentPage, searchQuery, PAGE_SIZE]);
+  }, [session, currentPage, searchQuery, showIncompleteOnly, PAGE_SIZE]);
 
   const handleInputChange = (
     e: React.ChangeEvent<
@@ -448,6 +453,19 @@ export default function AdminEventsPage() {
             <h1 className="text-3xl font-bold">Gerir Eventos</h1>
             <p className="text-muted-foreground">
               {totalCount} {totalCount === 1 ? "evento" : "eventos"} no total
+              {(() => {
+                const incompleteCount = events.filter(
+                  (e) => getMissingFields(e).length > 0
+                ).length;
+                if (incompleteCount > 0) {
+                  return (
+                    <span className="ml-2 text-amber-600 dark:text-amber-400">
+                      • {incompleteCount} com campos em falta
+                    </span>
+                  );
+                }
+                return null;
+              })()}
             </p>
           </div>
 
@@ -840,8 +858,8 @@ export default function AdminEventsPage() {
           </Dialog>
         </div>
 
-        {/* Search */}
-        <div className="mb-6">
+        {/* Search and Filters */}
+        <div className="mb-6 space-y-3">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -850,6 +868,26 @@ export default function AdminEventsPage() {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10"
             />
+          </div>
+
+          {/* Incomplete Events Filter */}
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              id="show-incomplete"
+              checked={showIncompleteOnly}
+              onChange={(e) => {
+                setShowIncompleteOnly(e.target.checked);
+                setCurrentPage(1); // Reset to first page when filter changes
+              }}
+              className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+            />
+            <label
+              htmlFor="show-incomplete"
+              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+            >
+              Mostrar apenas eventos com campos em falta
+            </label>
           </div>
         </div>
 

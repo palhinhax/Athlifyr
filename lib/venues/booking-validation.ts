@@ -650,6 +650,11 @@ export async function validateCancellation(
   userId: string,
   bookingId: string
 ): Promise<CancellationValidationResult> {
+  console.log("[validateCancellation] Starting validation", {
+    userId,
+    bookingId,
+  });
+
   // Get booking with session and subscription details
   const booking = await prisma.venueBooking.findUnique({
     where: { id: bookingId },
@@ -659,14 +664,29 @@ export async function validateCancellation(
   });
 
   if (!booking) {
+    console.warn("[validateCancellation] Booking not found", { bookingId });
     return {
       allowed: false,
       reason: "BOOKING_NOT_FOUND",
     };
   }
 
+  console.log("[validateCancellation] Booking details", {
+    bookingId,
+    bookingUserId: booking.userId,
+    requestUserId: userId,
+    status: booking.status,
+    sessionStartsAt: booking.session.startsAt,
+    venueId: booking.venueId,
+  });
+
   // Check if booking belongs to user
   if (booking.userId !== userId) {
+    console.warn("[validateCancellation] User is not booking owner", {
+      bookingId,
+      bookingUserId: booking.userId,
+      requestUserId: userId,
+    });
     return {
       allowed: false,
       reason: "NOT_BOOKING_OWNER",
@@ -675,6 +695,10 @@ export async function validateCancellation(
 
   // Check if booking is already cancelled
   if (booking.status === BookingStatus.CANCELLED) {
+    console.warn("[validateCancellation] Booking already cancelled", {
+      bookingId,
+      status: booking.status,
+    });
     return {
       allowed: false,
       reason: "ALREADY_CANCELLED",
@@ -683,6 +707,10 @@ export async function validateCancellation(
 
   // Check if session already happened
   if (booking.status === BookingStatus.ATTENDED) {
+    console.warn("[validateCancellation] Session already attended", {
+      bookingId,
+      status: booking.status,
+    });
     return {
       allowed: false,
       reason: "ALREADY_ATTENDED",
@@ -690,7 +718,13 @@ export async function validateCancellation(
   }
 
   // Check if session has already started
-  if (booking.session.startsAt < new Date()) {
+  const now = new Date();
+  if (booking.session.startsAt < now) {
+    console.warn("[validateCancellation] Session already started", {
+      bookingId,
+      sessionStartsAt: booking.session.startsAt,
+      currentTime: now,
+    });
     return {
       allowed: false,
       reason: "SESSION_ALREADY_STARTED",
@@ -709,8 +743,19 @@ export async function validateCancellation(
     },
   });
 
+  console.log("[validateCancellation] Subscription check", {
+    bookingId,
+    hasSubscription: !!subscription,
+    subscriptionId: subscription?.id,
+    planId: subscription?.plan?.id,
+  });
+
   // If no subscription, allow cancellation (basic user)
   if (!subscription) {
+    console.log(
+      "[validateCancellation] No subscription - allowing cancellation",
+      { bookingId }
+    );
     return {
       allowed: true,
     };
@@ -719,8 +764,20 @@ export async function validateCancellation(
   // Apply plan cancellation policy
   const policy = (subscription.plan.policy as PlanPolicy) || {};
 
+  console.log("[validateCancellation] Plan policy", {
+    bookingId,
+    planId: subscription.plan.id,
+    allowCancellation: policy.allowCancellation,
+    cancellationHours: policy.cancellationHours,
+  });
+
   // Check if cancellation is allowed by plan
   if (policy.allowCancellation === false) {
+    console.warn("[validateCancellation] Plan does not allow cancellation", {
+      bookingId,
+      planId: subscription.plan.id,
+      planName: subscription.plan.name,
+    });
     return {
       allowed: false,
       reason: "CANCELLATION_NOT_ALLOWED",
@@ -729,10 +786,22 @@ export async function validateCancellation(
 
   // Check cancellation deadline
   if (policy.cancellationHours && policy.cancellationHours > 0) {
-    const now = new Date();
     const hoursUntilSession = differenceInHours(booking.session.startsAt, now);
 
+    console.log("[validateCancellation] Checking cancellation deadline", {
+      bookingId,
+      sessionStartsAt: booking.session.startsAt,
+      currentTime: now,
+      hoursUntilSession,
+      requiredHours: policy.cancellationHours,
+    });
+
     if (hoursUntilSession < policy.cancellationHours) {
+      console.warn("[validateCancellation] Cancellation deadline passed", {
+        bookingId,
+        hoursUntilSession,
+        requiredHours: policy.cancellationHours,
+      });
       return {
         allowed: false,
         reason: "CANCELLATION_DEADLINE_PASSED",
@@ -742,6 +811,7 @@ export async function validateCancellation(
   }
 
   // All validations passed
+  console.log("[validateCancellation] All validations passed", { bookingId });
   return {
     allowed: true,
   };

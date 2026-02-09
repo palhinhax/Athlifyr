@@ -695,6 +695,51 @@ This agent specification contains:
 
 ## **GitHub Copilot must NEVER create event seeds without complete SEO metadata.**
 
+## No Invented/Fake Images in Markdown Descriptions (CRITICAL)
+
+**MANDATORY**: NEVER insert invented, placeholder, or stock photo URLs (e.g., Unsplash, Pexels, Placeholder.com) inside markdown description fields in seed files.
+
+### Rules
+
+1. **NEVER add `![...](https://...)` image markdown** inside `description` fields of event translations
+2. **NEVER invent image URLs** — no Unsplash, Pexels, stock photo, or any fabricated image links
+3. **`imageUrl` on the Event model** can be set to `""` or `null` — images are uploaded separately via the admin UI
+4. **Descriptions are TEXT ONLY** — use markdown formatting (`#`, `**bold**`, lists, emojis 🏔️🏃) but NO images
+5. **If the regulation/source material includes real image URLs**, do NOT embed them in descriptions either — they go in `imageUrl` or are uploaded via admin
+
+### Why This Matters
+
+- Invented URLs lead to broken images in production
+- Stock photo URLs may violate copyright or change/expire
+- Event images are managed through the admin upload system, not hardcoded in descriptions
+- Descriptions should be clean text content optimized for readability and SEO
+
+### ❌ BAD (DO NOT DO THIS):
+
+```markdown
+**🏃 Event Name 2026**
+
+![Event Photo](https://images.unsplash.com/photo-abc123?w=1200)
+
+## Available Races
+
+...
+```
+
+### ✅ GOOD:
+
+```markdown
+**🏃 Event Name 2026**
+
+---
+
+## Available Races
+
+...
+```
+
+**GitHub Copilot must NEVER insert image markdown (`![](url)`) in seed description fields.**
+
 ## Pricing Phases Structure (CRITICAL)
 
 **MANDATORY**: Pricing phases in event seeds MUST be linked to the **eventId**, NOT the variantId.

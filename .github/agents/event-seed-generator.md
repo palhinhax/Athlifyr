@@ -26,6 +26,10 @@ Portuguese (pt-PT), English (en), Spanish (es), French (fr), German (de), Italia
 
 `imageUrl` MUST be `""` or `null` - NEVER actual paths
 
+### 2.1 No Images in Markdown Descriptions (CRITICAL)
+
+**NEVER insert `![...](url)` image markdown inside description fields.** No Unsplash, Pexels, stock photos, or any invented/fabricated image URLs. Descriptions are TEXT ONLY — use `#` headers, `**bold**`, lists, emojis (🏔️🏃) but absolutely NO image markdown. Event images are managed via admin upload, not embedded in seed descriptions.
+
 ### 3. Markdown & Emojis
 
 Use `#` headers, `**bold**`, lists, emojis (🏔️🏃) for appealing descriptions
@@ -202,5 +206,5 @@ RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, SWIMMING, O
 
 ## Quick Rules
 
-✅ 6 languages | European PT | imageUrl:"" | Markdown+emojis | UTC dates | Separate upserts | eventId for pricing
-❌ No Brazilian PT | No nested creates | No delete() | No variantId pricing | No lang string literals
+✅ 6 languages | European PT | imageUrl:"" | Markdown+emojis | UTC dates | Separate upserts | eventId for pricing | NO images in descriptions
+❌ No Brazilian PT | No nested creates | No delete() | No variantId pricing | No lang string literals | No ![](url) in descriptions

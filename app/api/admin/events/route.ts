@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     // Incomplete events filter - only show events with missing required fields
     if (incompleteOnly) {
       where.OR = [
+        { imageUrl: null },
+        { imageUrl: "" }, // Empty string
         { latitude: null },
         { longitude: null },
         { googleMapsUrl: null },

@@ -6,13 +6,25 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Loader2 } from "lucide-react";
 import type { LatLngBounds } from "leaflet";
-import type { MapEvent } from "./events-map";
+import type { SportType } from "@prisma/client";
 import type { MapFilters } from "./map-filters";
 import {
   getSportIcon,
   getSportColors,
   getPrimarySport,
 } from "@/lib/sport-config";
+
+export interface MapEvent {
+  id: string;
+  title: string;
+  slug: string;
+  sportTypes: SportType[];
+  startDate: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  imageUrl: string | null;
+}
 
 interface EventsMapClientProps {
   initialCenter?: [number, number];
@@ -42,34 +54,21 @@ export default function EventsMapClient({
   const mapBoundsRef = useRef<LatLngBounds | null>(null);
   const filtersRef = useRef(filters);
 
-  // Keep filtersRef in sync
+  // Keep refs in sync
   useEffect(() => {
     filtersRef.current = filters;
   }, [filters]);
 
+  // Sync prop filters to state (for when parent changes dates/sports)
+  useEffect(() => {
+    if (initialFilters) {
+      setFilters(initialFilters);
+    }
+  }, [initialFilters]);
+
   // Mount gate to avoid double initialization
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  // Listen for filter changes from MapFilters component
-  useEffect(() => {
-    const handleFiltersChange = (event: Event) => {
-      const customEvent = event as CustomEvent<MapFilters>;
-      setFilters(customEvent.detail);
-    };
-
-    window.addEventListener(
-      "mapFiltersChange",
-      handleFiltersChange as EventListener
-    );
-
-    return () => {
-      window.removeEventListener(
-        "mapFiltersChange",
-        handleFiltersChange as EventListener
-      );
-    };
   }, []);
 
   // Fetch events for the current bounds (stable function using ref for filters)
@@ -88,6 +87,14 @@ export default function EventsMapClient({
 
         if (currentFilters?.sports?.length) {
           params.append("sportTypes", currentFilters.sports.join(","));
+        }
+
+        // Date range from filters (passed by parent component)
+        if (currentFilters?.startDate) {
+          params.append("startDate", currentFilters.startDate);
+        }
+        if (currentFilters?.endDate) {
+          params.append("endDate", currentFilters.endDate);
         }
         if (currentFilters?.dateRange) {
           params.append("dateRange", currentFilters.dateRange);

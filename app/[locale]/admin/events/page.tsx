@@ -53,6 +53,9 @@ interface Event {
 function getMissingFields(event: Event): string[] {
   const missing: string[] = [];
 
+  if (!event.imageUrl || event.imageUrl.trim().length === 0) {
+    missing.push("Foto");
+  }
   if (!event.latitude || !event.longitude) {
     missing.push("Coordenadas");
   }

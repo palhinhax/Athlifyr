@@ -167,6 +167,7 @@
     "filters": {
       "title": "Filters",
       "locationFilter": "Location Filter",
+      "dateRange": "Date Range",
       "resultsCount": "{count} events found",
       "noResults": "No events found with current filters",
       "searchPlaceholder": "Search events...",

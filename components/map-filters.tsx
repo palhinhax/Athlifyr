@@ -1,16 +1,9 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Filter, X, Loader2 } from "lucide-react";
 import { SportType } from "@prisma/client";
@@ -25,11 +18,14 @@ interface MapFiltersProps {
 export interface MapFilters {
   sports: SportType[];
   dateRange: string | null;
+  startDate?: string | null;
+  endDate?: string | null;
 }
 
 const SPORT_TYPES: SportType[] = [
   "RUNNING",
   "TRAIL",
+  "WALKING",
   "HYROX",
   "CROSSFIT",
   "OCR",
@@ -50,21 +46,34 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
   const panelRef = useRef<HTMLDivElement>(null);
 
   const [selectedSports, setSelectedSports] = useState<SportType[]>([]);
-  const [dateRange, setDateRange] = useState<string>("all");
+
+  // Date range defaults for saved preferences
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const defaultEndDate = useMemo(() => {
+    const d = new Date(today);
+    d.setMonth(d.getMonth() + 2);
+    return d;
+  }, [today]);
+
+  const [dateStart, setDateStart] = useState<Date>(today);
+  const [dateEnd, setDateEnd] = useState<Date>(defaultEndDate);
+
+  // Check if date range is non-default
+  const isDateRangeCustom = useMemo(() => {
+    const startDiff = Math.abs(dateStart.getTime() - today.getTime());
+    const endDiff = Math.abs(dateEnd.getTime() - defaultEndDate.getTime());
+    // Allow 1 day tolerance
+    return startDiff > 86400000 || endDiff > 86400000;
+  }, [dateStart, dateEnd, today, defaultEndDate]);
 
   // Close panel when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement;
-
-      // Don't close if clicking on Select dropdown items (Radix UI portals)
-      if (
-        target.closest('[role="listbox"]') ||
-        target.closest("[data-radix-select-viewport]")
-      ) {
-        return;
-      }
-
       if (
         panelRef.current &&
         !panelRef.current.contains(event.target as Node)
@@ -88,20 +97,43 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
       try {
         setLoading(true);
 
+        const applyPreferences = (prefs: {
+          sports?: SportType[];
+          dateRange?: string;
+          startDate?: string;
+          endDate?: string;
+        }) => {
+          const sports = prefs.sports || [];
+          setSelectedSports(sports);
+
+          // Load date range from saved preferences
+          const start = prefs.startDate ? new Date(prefs.startDate) : today;
+          const end = prefs.endDate ? new Date(prefs.endDate) : defaultEndDate;
+          setDateStart(start);
+          setDateEnd(end);
+
+          onFiltersChange({
+            sports,
+            dateRange: null,
+            startDate: start.toISOString(),
+            endDate: end.toISOString(),
+          });
+        };
+
         if (userId) {
           // Load from database for authenticated users
           const response = await fetch("/api/map/preferences");
           if (response.ok) {
             const data = await response.json();
             if (data.preferences) {
-              const sports = data.preferences.sports || [];
-              const range = data.preferences.dateRange || "all";
-              setSelectedSports(sports);
-              setDateRange(range);
-              // Notify parent of loaded filters
+              applyPreferences(data.preferences);
+            } else {
+              // No saved preferences, apply defaults
               onFiltersChange({
-                sports,
-                dateRange: range === "all" ? null : range,
+                sports: [],
+                dateRange: null,
+                startDate: today.toISOString(),
+                endDate: defaultEndDate.toISOString(),
               });
             }
           }
@@ -114,14 +146,14 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
           if (response.ok) {
             const data = await response.json();
             if (data.preferences) {
-              const sports = data.preferences.sports || [];
-              const range = data.preferences.dateRange || "all";
-              setSelectedSports(sports);
-              setDateRange(range);
-              // Notify parent of loaded filters
+              applyPreferences(data.preferences);
+            } else {
+              // No saved preferences, apply defaults
               onFiltersChange({
-                sports,
-                dateRange: range === "all" ? null : range,
+                sports: [],
+                dateRange: null,
+                startDate: today.toISOString(),
+                endDate: defaultEndDate.toISOString(),
               });
             }
           }
@@ -134,7 +166,8 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
     };
 
     loadPreferences();
-  }, [userId, onFiltersChange]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId]);
 
   const savePreferences = async () => {
     try {
@@ -142,7 +175,9 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
 
       const filters: MapFilters = {
         sports: selectedSports,
-        dateRange: dateRange === "all" ? null : dateRange,
+        dateRange: null,
+        startDate: dateStart.toISOString(),
+        endDate: dateEnd.toISOString(),
       };
 
       if (userId) {
@@ -176,11 +211,14 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
 
   const clearFilters = async () => {
     setSelectedSports([]);
-    setDateRange("all");
+    setDateStart(today);
+    setDateEnd(defaultEndDate);
 
     const filters: MapFilters = {
       sports: [],
       dateRange: null,
+      startDate: today.toISOString(),
+      endDate: defaultEndDate.toISOString(),
     };
 
     try {
@@ -215,7 +253,7 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
   };
 
   const activeFiltersCount =
-    (selectedSports.length > 0 ? 1 : 0) + (dateRange !== "all" ? 1 : 0);
+    (selectedSports.length > 0 ? 1 : 0) + (isDateRangeCustom ? 1 : 0);
 
   if (loading) {
     return (
@@ -247,7 +285,7 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
 
       {/* Filters Panel */}
       {isOpen && (
-        <Card className="mt-2 w-80 p-4 shadow-xl">
+        <Card className="mt-2 w-96 p-4 shadow-xl">
           <div className="mb-4 flex items-center justify-between">
             <h3 className="font-semibold">{t("map.filters.title")}</h3>
             <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
@@ -280,31 +318,6 @@ export function MapFilters({ userId, onFiltersChange }: MapFiltersProps) {
                 </div>
               ))}
             </div>
-          </div>
-
-          {/* Date Range Filter */}
-          <div className="mb-4">
-            <h4 className="mb-2 text-sm font-medium">
-              {t("map.filters.dateRange")}
-            </h4>
-            <Select value={dateRange} onValueChange={setDateRange}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="z-[1002]">
-                <SelectItem value="all">{t("map.filters.allDates")}</SelectItem>
-                <SelectItem value="7d">{t("map.filters.next7Days")}</SelectItem>
-                <SelectItem value="30d">
-                  {t("map.filters.next30Days")}
-                </SelectItem>
-                <SelectItem value="3m">
-                  {t("map.filters.next3Months")}
-                </SelectItem>
-                <SelectItem value="6m">
-                  {t("map.filters.next6Months")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
           </div>
 
           {/* Actions */}

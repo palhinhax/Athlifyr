@@ -53,6 +53,12 @@
       "extreme": "Extrême"
     },
 
+    "preview": {
+      "title": "Aperçu de l'entraînement",
+      "download": "Télécharger",
+      "share": "Partager"
+    },
+
     "form": {
       "name": "Nom de l'Entraînement",
       "namePlaceholder": "Ex: WOD Lundi",

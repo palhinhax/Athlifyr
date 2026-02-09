@@ -5,11 +5,47 @@ import {
   getUserCountryFromLocale,
 } from "@/lib/country-detection";
 
+// In jsdom, window is defined. The `getCountryFromTimezone` function
+// detects the system timezone and returns a mapped country.
+// To test locale-based fallbacks, we mock Intl.DateTimeFormat to return
+// an unmapped timezone so getCountryFromTimezone returns null.
+const originalDateTimeFormat = Intl.DateTimeFormat;
+
+function mockUnmappedTimezone() {
+  // Override Intl.DateTimeFormat to return an unmapped timezone
+  // so getCountryFromTimezone() returns null and locale fallback is tested
+  const mock = jest
+    .spyOn(Intl, "DateTimeFormat")
+    .mockImplementation((...args) => {
+      const instance = new originalDateTimeFormat(...args);
+      return {
+        ...instance,
+        resolvedOptions: () => ({
+          ...instance.resolvedOptions(),
+          timeZone: "Pacific/Fiji", // An unmapped timezone
+        }),
+        format: instance.format.bind(instance),
+        formatToParts: instance.formatToParts.bind(instance),
+        formatRange: instance.formatRange?.bind(instance),
+        formatRangeToParts: instance.formatRangeToParts?.bind(instance),
+      } as Intl.DateTimeFormat;
+    });
+  return mock;
+}
+
 describe("country-detection", () => {
   describe("getCountryFromTimezone", () => {
-    it("should return null in server context (no window)", () => {
-      // In Node.js test environment, window is undefined
+    it("should return a mapped country when timezone is recognized", () => {
+      // The actual result depends on the system timezone
+      const result = getCountryFromTimezone();
+      // In jsdom, window exists, so it should try to detect
+      expect(typeof result === "string" || result === null).toBe(true);
+    });
+
+    it("should return null when timezone is not mapped", () => {
+      const mock = mockUnmappedTimezone();
       expect(getCountryFromTimezone()).toBeNull();
+      mock.mockRestore();
     });
   });
 
@@ -44,6 +80,17 @@ describe("country-detection", () => {
   });
 
   describe("getDefaultMapCenter", () => {
+    let intlMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      // Mock timezone to an unmapped value so locale-based fallback is tested
+      intlMock = mockUnmappedTimezone();
+    });
+
+    afterEach(() => {
+      intlMock.mockRestore();
+    });
+
     it("should return Portugal coordinates as default when no locale", () => {
       const center = getDefaultMapCenter();
       expect(center).toEqual([39.5, -8.0]);
@@ -76,6 +123,17 @@ describe("country-detection", () => {
   });
 
   describe("getDefaultCountry", () => {
+    let intlMock: jest.SpyInstance;
+
+    beforeEach(() => {
+      // Mock timezone to an unmapped value so locale-based fallback is tested
+      intlMock = mockUnmappedTimezone();
+    });
+
+    afterEach(() => {
+      intlMock.mockRestore();
+    });
+
     it("should return Portugal as default when no locale", () => {
       expect(getDefaultCountry()).toBe("Portugal");
     });

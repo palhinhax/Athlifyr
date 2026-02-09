@@ -1,9 +1,9 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
@@ -11,6 +11,7 @@ import type { Event, EventVariant } from "@prisma/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HeroBackground } from "@/components/hero-background";
+import { DateRangeSlider } from "@/components/date-range-slider";
 import dynamic from "next/dynamic";
 
 // Event hero images
@@ -51,6 +52,7 @@ interface PaginationInfo {
 
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
+  const locale = useLocale();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
@@ -76,6 +78,33 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     hasMore: false,
   });
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Date range slider state for map view
+  const today = useMemo(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }, []);
+
+  const sliderMaxDate = useMemo(() => {
+    const d = new Date(today);
+    d.setFullYear(d.getFullYear() + 1);
+    return d;
+  }, [today]);
+
+  const defaultEndDate = useMemo(() => {
+    const d = new Date(today);
+    d.setMonth(d.getMonth() + 2);
+    return d;
+  }, [today]);
+
+  const [mapDateStart, setMapDateStart] = useState<Date>(today);
+  const [mapDateEnd, setMapDateEnd] = useState<Date>(defaultEndDate);
+
+  const handleMapDateRangeChange = useCallback((start: Date, end: Date) => {
+    setMapDateStart(start);
+    setMapDateEnd(end);
+  }, []);
 
   // Random hero image (client-side only to avoid hydration mismatch)
   const [heroImage, setHeroImage] = useState<string | null>(null);
@@ -308,13 +337,30 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               </p>
             </div>
           ) : viewMode === "map" ? (
-            <div className="h-[600px] overflow-hidden rounded-lg border">
-              <EventsMapClient
-                filters={{
-                  sports: filters.sports,
-                  dateRange: null, // Map doesn't use date range filtering yet
-                }}
-              />
+            <div className="space-y-4">
+              {/* Date Range Slider */}
+              <div className="rounded-lg border bg-card p-4">
+                <DateRangeSlider
+                  minDate={today}
+                  maxDate={sliderMaxDate}
+                  startDate={mapDateStart}
+                  endDate={mapDateEnd}
+                  onChange={handleMapDateRangeChange}
+                  locale={locale}
+                  label={t("filters.dateRange")}
+                />
+              </div>
+              {/* Map */}
+              <div className="h-[600px] overflow-hidden rounded-lg border">
+                <EventsMapClient
+                  filters={{
+                    sports: filters.sports,
+                    dateRange: null,
+                    startDate: mapDateStart.toISOString(),
+                    endDate: mapDateEnd.toISOString(),
+                  }}
+                />
+              </div>
             </div>
           ) : (
             <>

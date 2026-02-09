@@ -167,6 +167,7 @@
     "filters": {
       "title": "Filtros",
       "locationFilter": "Filtro de Ubicación",
+      "dateRange": "Rango de Fechas",
       "resultsCount": "{count} eventos encontrados",
       "noResults": "No se encontraron eventos con los filtros actuales",
       "searchPlaceholder": "Buscar eventos...",

@@ -18,6 +18,7 @@ const mapEventsSchema = z.object({
   sportType: z.string().optional(),
   sportTypes: z.string().optional(), // Multiple sports, comma-separated
   startDate: z.string().optional(),
+  endDate: z.string().optional(),
   dateRange: z.string().optional(), // "7d", "30d", "3m", "6m"
 });
 
@@ -39,15 +40,27 @@ export async function GET(request: NextRequest) {
       sportType: searchParams.get("sportType") ?? undefined,
       sportTypes: searchParams.get("sportTypes") ?? undefined,
       startDate: searchParams.get("startDate") ?? undefined,
+      endDate: searchParams.get("endDate") ?? undefined,
       dateRange: searchParams.get("dateRange") ?? undefined,
     });
 
     // Calculate date range
-    let minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // Default: last 7 days
-    let maxDate: Date | undefined = undefined;
+    // Default: today to 2 months from now
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    let minDate = now;
+    let maxDate: Date | undefined = new Date(
+      now.getTime() + 60 * 24 * 60 * 60 * 1000
+    );
 
-    if (params.dateRange) {
-      const now = new Date();
+    // Priority: explicit startDate/endDate > dateRange preset
+    if (params.startDate && params.endDate) {
+      minDate = new Date(params.startDate);
+      maxDate = new Date(params.endDate);
+    } else if (params.startDate) {
+      minDate = new Date(params.startDate);
+      maxDate = undefined;
+    } else if (params.dateRange) {
       switch (params.dateRange) {
         case "7d":
           minDate = now;
@@ -66,7 +79,8 @@ export async function GET(request: NextRequest) {
           maxDate = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
           break;
         default:
-          minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+          // Keep the default: today to 2 months
+          break;
       }
     }
 
@@ -144,13 +158,6 @@ export async function GET(request: NextRequest) {
     ) {
       where.sportTypes = {
         has: params.sportType as SportType,
-      };
-    }
-
-    // Filtro por data
-    if (params.startDate) {
-      where.startDate = {
-        gte: new Date(params.startDate),
       };
     }
 

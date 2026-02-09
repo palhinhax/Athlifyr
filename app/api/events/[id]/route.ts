@@ -40,43 +40,63 @@ async function handleTranslations(
   eventId: string,
   translations: TranslationInput[]
 ) {
+  // Fetch existing translations to compare
+  const existingTranslations = await prisma.eventTranslation.findMany({
+    where: { eventId },
+  });
+
+  const existingMap = new Map(existingTranslations.map((t) => [t.language, t]));
+
   for (const t of translations) {
+    const existing = existingMap.get(t.language);
+
     // Only save if there's content
     if (!t.title?.trim() && !t.description?.trim()) {
       // Delete if exists but now empty
-      await prisma.eventTranslation.deleteMany({
-        where: {
-          eventId: eventId,
-          language: t.language,
-        },
-      });
+      if (existing) {
+        await prisma.eventTranslation.delete({
+          where: { id: existing.id },
+        });
+      }
       continue;
     }
 
-    await prisma.eventTranslation.upsert({
-      where: {
-        eventId_language: {
+    // Check if translation actually changed
+    const hasChanged =
+      !existing ||
+      existing.title !== (t.title || "") ||
+      existing.description !== (t.description || "") ||
+      existing.city !== (t.city || null) ||
+      existing.metaTitle !== (t.metaTitle || null) ||
+      existing.metaDescription !== (t.metaDescription || null);
+
+    // Only upsert if changed
+    if (hasChanged) {
+      await prisma.eventTranslation.upsert({
+        where: {
+          eventId_language: {
+            eventId: eventId,
+            language: t.language,
+          },
+        },
+        update: {
+          title: t.title || "",
+          description: t.description || "",
+          city: t.city || null,
+          metaTitle: t.metaTitle || null,
+          metaDescription: t.metaDescription || null,
+        },
+        create: {
           eventId: eventId,
           language: t.language,
+          title: t.title || "",
+          description: t.description || "",
+          city: t.city || null,
+          metaTitle: t.metaTitle || null,
+          metaDescription: t.metaDescription || null,
         },
-      },
-      update: {
-        title: t.title || "",
-        description: t.description || "",
-        city: t.city || null,
-        metaTitle: t.metaTitle || null,
-        metaDescription: t.metaDescription || null,
-      },
-      create: {
-        eventId: eventId,
-        language: t.language,
-        title: t.title || "",
-        description: t.description || "",
-        city: t.city || null,
-        metaTitle: t.metaTitle || null,
-        metaDescription: t.metaDescription || null,
-      },
-    });
+      });
+    }
   }
 }
 
@@ -207,38 +227,129 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     // Handle variants if provided
     if (variants && Array.isArray(variants)) {
-      // Delete existing variants (this also deletes variant translations due to cascade)
-      await prisma.eventVariant.deleteMany({
+      // Get existing variant IDs to identify which ones to delete
+      const existingVariants = await prisma.eventVariant.findMany({
         where: { eventId: id },
+        select: { id: true },
       });
 
-      // Create new variants with their translations
+      const variantIdsInRequest = variants
+        .filter((v) => v.id)
+        .map((v) => v.id as string);
+
+      // Delete variants that are no longer in the request
+      const variantsToDelete = existingVariants
+        .filter((v) => !variantIdsInRequest.includes(v.id))
+        .map((v) => v.id);
+
+      if (variantsToDelete.length > 0) {
+        await prisma.eventVariant.deleteMany({
+          where: { id: { in: variantsToDelete } },
+        });
+      }
+
+      // Upsert variants (update existing, create new)
       if (variants.length > 0) {
         for (const v of variants as VariantInput[]) {
-          const createdVariant = await prisma.eventVariant.create({
-            data: {
-              eventId: id,
-              name: v.name,
-              distanceKm: v.distanceKm || null,
-              elevationGainM: v.elevationGainM || null,
-              price: v.price || null,
-              startDate: v.startDate ? new Date(v.startDate) : null,
-              startTime: v.startTime || null,
-            },
-          });
+          let variant;
 
-          // Create variant translations if provided
-          if (v.translations && Array.isArray(v.translations)) {
-            for (const t of v.translations) {
-              if (t.name?.trim() || t.description?.trim()) {
-                await prisma.eventVariantTranslation.create({
+          if (v.id) {
+            // Fetch existing variant to check if changed
+            const existingVariant = await prisma.eventVariant.findUnique({
+              where: { id: v.id },
+            });
+
+            if (existingVariant) {
+              // Compare values to detect changes
+              const hasChanged =
+                existingVariant.name !== v.name ||
+                existingVariant.distanceKm !== (v.distanceKm || null) ||
+                existingVariant.elevationGainM !== (v.elevationGainM || null) ||
+                existingVariant.price !== (v.price || null) ||
+                (v.startDate &&
+                  existingVariant.startDate?.getTime() !==
+                    new Date(v.startDate).getTime()) ||
+                existingVariant.startTime !== (v.startTime || null);
+
+              if (hasChanged) {
+                // Update existing variant only if changed
+                variant = await prisma.eventVariant.update({
+                  where: { id: v.id },
                   data: {
-                    variantId: createdVariant.id,
-                    language: t.language,
-                    name: t.name || "",
-                    description: t.description || null,
+                    name: v.name,
+                    distanceKm: v.distanceKm || null,
+                    elevationGainM: v.elevationGainM || null,
+                    price: v.price || null,
+                    startDate: v.startDate ? new Date(v.startDate) : null,
+                    startTime: v.startTime || null,
                   },
                 });
+              } else {
+                // No changes, use existing variant
+                variant = existingVariant;
+              }
+            } else {
+              // Variant not found, skip
+              continue;
+            }
+          } else {
+            // Create new variant
+            variant = await prisma.eventVariant.create({
+              data: {
+                eventId: id,
+                name: v.name,
+                distanceKm: v.distanceKm || null,
+                elevationGainM: v.elevationGainM || null,
+                price: v.price || null,
+                startDate: v.startDate ? new Date(v.startDate) : null,
+                startTime: v.startTime || null,
+              },
+            });
+          }
+
+          // Upsert variant translations if provided
+          if (v.translations && Array.isArray(v.translations)) {
+            // Fetch existing translations for comparison
+            const existingVarTranslations =
+              await prisma.eventVariantTranslation.findMany({
+                where: { variantId: variant.id },
+              });
+
+            const existingVarMap = new Map(
+              existingVarTranslations.map((t) => [t.language, t])
+            );
+
+            for (const t of v.translations) {
+              if (t.name?.trim() || t.description?.trim()) {
+                const existing = existingVarMap.get(t.language);
+
+                // Check if translation actually changed
+                const hasChanged =
+                  !existing ||
+                  existing.name !== (t.name || "") ||
+                  existing.description !== (t.description || null);
+
+                // Only upsert if changed
+                if (hasChanged) {
+                  await prisma.eventVariantTranslation.upsert({
+                    where: {
+                      variantId_language: {
+                        variantId: variant.id,
+                        language: t.language,
+                      },
+                    },
+                    update: {
+                      name: t.name || "",
+                      description: t.description || null,
+                    },
+                    create: {
+                      variantId: variant.id,
+                      language: t.language,
+                      name: t.name || "",
+                      description: t.description || null,
+                    },
+                  });
+                }
               }
             }
           }

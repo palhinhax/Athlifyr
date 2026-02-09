@@ -53,6 +53,12 @@
       "extreme": "Extreme"
     },
 
+    "preview": {
+      "title": "Preview Workout",
+      "download": "Download",
+      "share": "Share"
+    },
+
     "form": {
       "name": "Workout Name",
       "namePlaceholder": "E.g.: Monday WOD",

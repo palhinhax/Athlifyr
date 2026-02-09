@@ -39,6 +39,7 @@ import {
   BookmarkIcon,
   Loader2Icon,
   CalendarPlusIcon,
+  EyeIcon,
 } from "lucide-react";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
@@ -48,6 +49,7 @@ import type { WorkoutWithBlocks } from "@/types/workout";
 import { BLOCK_TYPE_INFO } from "@/types/workout";
 import { useUserVenues } from "@/hooks/use-user-venues";
 import { AssignWorkoutToSessionsDialog } from "@/components/assign-workout-to-sessions-dialog";
+import { WorkoutPreviewDialog } from "@/components/workout-preview-dialog";
 
 interface WorkoutCardProps {
   workout: WorkoutWithBlocks & { isSaved?: boolean };
@@ -134,6 +136,16 @@ export function WorkoutCard({
               )}
             </div>
             <div className="flex items-center gap-1">
+              <WorkoutPreviewDialog workout={workout}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="-mt-2"
+                  title={t("preview.title")}
+                >
+                  <EyeIcon className="h-4 w-4" />
+                </Button>
+              </WorkoutPreviewDialog>
               {canSave && (
                 <Button
                   variant="ghost"

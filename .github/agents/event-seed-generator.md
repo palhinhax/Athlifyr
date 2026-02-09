@@ -26,6 +26,10 @@ Portuguese (pt-PT), English (en), Spanish (es), French (fr), German (de), Italia
 
 `imageUrl` MUST be `""` or `null` - NEVER actual paths
 
+### 2.1 No Images in Markdown Descriptions (CRITICAL)
+
+**NEVER insert `![...](url)` image markdown inside description fields.** No Unsplash, Pexels, stock photos, or any invented/fabricated image URLs. Descriptions are TEXT ONLY — use `#` headers, `**bold**`, lists, emojis (🏔️🏃) but absolutely NO image markdown. Event images are managed via admin upload, not embedded in seed descriptions.
+
 ### 3. Markdown & Emojis
 
 Use `#` headers, `**bold**`, lists, emojis (🏔️🏃) for appealing descriptions
@@ -38,9 +42,11 @@ Use `#` headers, `**bold**`, lists, emojis (🏔️🏃) for appealing descripti
 
 1. ❌ NEVER `delete()` operations
 2. ❌ NEVER nested `create` in upsert - unsafe on shared DB
-3. ✅ ALWAYS separate upsert for each relation
-4. ✅ Use composite unique keys: `eventId_language`, `eventId_slug`, `variantId_language`
-5. Execute: `pnpm tsx prisma/seeds/<event-slug>.ts`
+3. ❌ NEVER use `eventId_slug` or `slug` in variants (removed from schema)
+4. ✅ ALWAYS separate upsert for each relation
+5. ✅ Use composite unique keys: `eventId_language`, `variantId_language`
+6. ✅ Use helper functions: `findOrCreateVariant`, `findOrCreatePricingPhase`
+7. Execute: `pnpm tsx prisma/seeds/<event-slug>.ts`
 
 **Pattern Example:**
 
@@ -65,13 +71,40 @@ for (const lang of ["pt", "en", "es", "fr", "de", "it"]) {
   });
 }
 
-// 3. Upsert variants with stable slug
-const variant = await prisma.eventVariant.upsert({
-  where: { eventId_slug: { eventId: event.id, slug: "v-slug" } },
-  update: {
-    /* fields */
-  },
-  create: { eventId: event.id, slug: "v-slug" /* fields */ },
+// 3. Upsert variants with helper function
+const findOrCreateVariant = async (variantData: {
+  name: string;
+  distanceKm: number;
+  elevationGainM?: number;
+  startTime: string;
+  maxParticipants?: number;
+  price?: number;
+  currency?: Currency;
+}) => {
+  const existing = await prisma.eventVariant.findFirst({
+    where: { eventId: event.id, name: variantData.name },
+  });
+
+  if (existing) {
+    return await prisma.eventVariant.update({
+      where: { id: existing.id },
+      data: variantData,
+    });
+  } else {
+    return await prisma.eventVariant.create({
+      data: { eventId: event.id, ...variantData },
+    });
+  }
+};
+
+const variant = await findOrCreateVariant({
+  name: "Trail 42km",
+  distanceKm: 42,
+  elevationGainM: 2000,
+  startTime: "08:00",
+  maxParticipants: 500,
+  price: 35.0,
+  currency: Currency.EUR,
 });
 
 // 4. Upsert variant translations
@@ -83,7 +116,16 @@ const variant = await prisma.eventVariant.upsert({
 **ALWAYS use `eventId` (NOT `variantId`) - frontend queries by eventId**
 
 ```typescript
-const findOrCreatePricingPhase = async (name: string, data: any) => {
+const findOrCreatePricingPhase = async (
+  name: string,
+  data: {
+    startDate: Date;
+    endDate: Date;
+    price: number;
+    currency: Currency;
+    note: string | null;
+  }
+) => {
   const existing = await prisma.pricingPhase.findFirst({
     where: { eventId: event.id, name },
   });
@@ -101,6 +143,13 @@ const findOrCreatePricingPhase = async (name: string, data: any) => {
 };
 
 // Include variant info in name: "Ultra Trail 45km - Early Bird"
+await findOrCreatePricingPhase("Trail 42km - Early Bird", {
+  startDate: new Date("2026-01-01T00:00:00.000Z"),
+  endDate: new Date("2026-02-28T23:59:59.000Z"),
+  price: 30.0,
+  currency: Currency.EUR,
+  note: "Desconto early bird",
+});
 ```
 
 ### 6. Required Imports
@@ -117,9 +166,9 @@ import { PrismaClient, SportType, Language, Currency } from "@prisma/client";
 
 **Translations (6 langs):** title, description (MD), city, metaTitle, metaDescription
 
-**Variants:** name, slug, distanceKm (int), elevationGainM (int), elevationLossM (int), startDate, startTime, maxParticipants (int), cutoffTimeHours (float), itraPoints (int), atrpGrade (1-5), mountainLevel (1-3)
+**Variants:** name, distanceKm (int), elevationGainM (int), elevationLossM (int), startDate, startTime, maxParticipants (int), cutoffTimeHours (float), itraPoints (int), atrpGrade (1-5), mountainLevel (1-3)
 
-**PricingPhases:** name, startDate, endDate, price (decimal), currency, discountPercent (int), note
+**PricingPhases:** name, startDate, endDate, price (decimal), currency, note
 
 **FAQs (optional, SEO):** order (int), question, answer + translations (ALL 6 langs)
 
@@ -157,5 +206,5 @@ RUNNING, TRAIL, HYROX, CROSSFIT, OCR, BTT, CYCLING, SURF, TRIATHLON, SWIMMING, O
 
 ## Quick Rules
 
-✅ 6 languages | European PT | imageUrl:"" | Markdown+emojis | UTC dates | Separate upserts | eventId for pricing
-❌ No Brazilian PT | No nested creates | No delete() | No variantId pricing | No lang string literals
+✅ 6 languages | European PT | imageUrl:"" | Markdown+emojis | UTC dates | Separate upserts | eventId for pricing | NO images in descriptions
+❌ No Brazilian PT | No nested creates | No delete() | No variantId pricing | No lang string literals | No ![](url) in descriptions

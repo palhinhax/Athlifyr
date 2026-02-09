@@ -15,11 +15,25 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
+    const incompleteOnly = searchParams.get("incompleteOnly") === "true";
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "12");
 
     // Build where clause - NO date filter for admin (show all events)
     const where: Prisma.EventWhereInput = {};
+
+    // Incomplete events filter - only show events with missing required fields
+    if (incompleteOnly) {
+      where.OR = [
+        { imageUrl: null },
+        { imageUrl: "" }, // Empty string
+        { latitude: null },
+        { longitude: null },
+        { googleMapsUrl: null },
+        { externalUrl: null },
+        { description: "" }, // Empty string for non-nullable field
+      ];
+    }
 
     // Search filter - optimized for performance
     if (search) {

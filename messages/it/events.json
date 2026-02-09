@@ -40,6 +40,7 @@
     "filters": {
       "title": "Filtri",
       "locationFilter": "Filtro Posizione",
+      "dateRange": "Intervallo di Date",
       "resultsCount": "{count} eventi trovati",
       "noResults": "Nessun evento trovato con i filtri attuali",
       "searchPlaceholder": "Cerca eventi...",

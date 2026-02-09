@@ -338,7 +338,9 @@
       "linkCopied": "Link copiato!",
       "requirePlan": "Richiedi Piano Attivo",
       "requirePlanHint": "Quando attivo, gli utenti devono avere un abbonamento attivo per prenotare. Quando disattivo, chiunque può prenotare senza un piano.",
-      "guestBookingEnabled": "Prenotazioni ospiti attivate - chiunque può prenotare senza effettuare l'accesso"
+      "guestBookingEnabled": "Prenotazioni ospiti attivate - chiunque può prenotare senza effettuare l'accesso",
+      "enableTrialBooking": "Consenti prenotazione lezione di prova",
+      "enableTrialBookingHint": "Quando abilitato, i nuovi utenti possono richiedere una lezione di prova. Le richieste di prova richiedono l'approvazione del proprietario."
     },
     "membership": {
       "title": "Iscrizione",
@@ -1117,6 +1119,29 @@
       "errorTitle": "Errore durante la condivisione",
       "errorDescription": "Non è stato possibile condividere l'evento. Riprova.",
       "buttonLabel": "Condividi Evento"
+    },
+    "trialBooking": {
+      "title": "Lezione di Prova",
+      "bookTrial": "Prenota Lezione di Prova",
+      "requestSent": "Richiesta di lezione di prova inviata!",
+      "requestPending": "Richiesta di lezione di prova in sospeso",
+      "requestDescription": "La tua richiesta di lezione di prova è stata inviata al proprietario della palestra. Sarai notificato una volta approvata.",
+      "notEligible": "Non idoneo per lezione di prova",
+      "alreadyHasBooking": "Hai già avuto una lezione in questa palestra",
+      "notEnabled": "Le lezioni di prova non sono disponibili in questa palestra",
+      "pendingRequests": "Richieste di Prova in Sospeso",
+      "noPendingRequests": "Nessuna richiesta di lezione di prova in sospeso",
+      "requestFrom": "Richiesta da {name}",
+      "requestedOn": "Richiesta il {date}",
+      "requestedFor": "Richiesta per il {date} alle {time}",
+      "accept": "Accetta",
+      "reject": "Rifiuta",
+      "accepted": "Lezione di prova accettata",
+      "rejected": "Lezione di prova rifiutata",
+      "acceptSuccess": "Richiesta di lezione di prova accettata con successo",
+      "rejectSuccess": "Richiesta di lezione di prova rifiutata con successo",
+      "acceptError": "Impossibile accettare la richiesta di lezione di prova",
+      "rejectError": "Impossibile rifiutare la richiesta di lezione di prova"
     }
   }
 }

@@ -338,7 +338,9 @@
       "linkCopied": "Lien copié !",
       "requirePlan": "Exiger un Plan Actif",
       "requirePlanHint": "Lorsqu'activé, les utilisateurs doivent avoir un abonnement actif pour réserver. Lorsque désactivé, n'importe qui peut réserver sans plan.",
-      "guestBookingEnabled": "Réservations invités activées - n'importe qui peut réserver sans se connecter"
+      "guestBookingEnabled": "Réservations invités activées - n'importe qui peut réserver sans se connecter",
+      "enableTrialBooking": "Autoriser la réservation de cours d'essai",
+      "enableTrialBookingHint": "Lorsque activé, les nouveaux utilisateurs peuvent demander un cours d'essai. Les demandes d'essai nécessitent l'approbation du propriétaire."
     },
     "membership": {
       "title": "Adhésion",
@@ -1117,6 +1119,29 @@
       "errorTitle": "Erreur de partage",
       "errorDescription": "Impossible de partager l'événement. Réessaie.",
       "buttonLabel": "Partager un Événement"
+    },
+    "trialBooking": {
+      "title": "Cours d'Essai",
+      "bookTrial": "Réserver un Cours d'Essai",
+      "requestSent": "Demande de cours d'essai envoyée !",
+      "requestPending": "Demande de cours d'essai en attente",
+      "requestDescription": "Votre demande de cours d'essai a été envoyée au propriétaire de la salle. Vous serez notifié une fois qu'elle sera approuvée.",
+      "notEligible": "Non éligible pour un cours d'essai",
+      "alreadyHasBooking": "Vous avez déjà eu un cours dans cette salle",
+      "notEnabled": "Les cours d'essai ne sont pas disponibles dans cette salle",
+      "pendingRequests": "Demandes d'Essai en Attente",
+      "noPendingRequests": "Aucune demande de cours d'essai en attente",
+      "requestFrom": "Demande de {name}",
+      "requestedOn": "Demandé le {date}",
+      "requestedFor": "Demandé pour le {date} à {time}",
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "accepted": "Cours d'essai accepté",
+      "rejected": "Cours d'essai refusé",
+      "acceptSuccess": "Demande de cours d'essai acceptée avec succès",
+      "rejectSuccess": "Demande de cours d'essai refusée avec succès",
+      "acceptError": "Échec de l'acceptation de la demande de cours d'essai",
+      "rejectError": "Échec du refus de la demande de cours d'essai"
     }
   }
 }

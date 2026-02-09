@@ -338,7 +338,9 @@
       "linkCopied": "Link kopiert!",
       "requirePlan": "Aktiven Plan Erfordern",
       "requirePlanHint": "Wenn aktiviert, müssen Benutzer ein aktives Abonnement haben, um zu buchen. Wenn deaktiviert, kann jeder ohne Plan buchen.",
-      "guestBookingEnabled": "Gastbuchungen aktiviert - jeder kann buchen, ohne sich anzumelden"
+      "guestBookingEnabled": "Gastbuchungen aktiviert - jeder kann buchen, ohne sich anzumelden",
+      "enableTrialBooking": "Probestundenbuchung zulassen",
+      "enableTrialBookingHint": "Wenn aktiviert, können neue Benutzer eine Probestunde anfordern. Probeanfragen erfordern die Genehmigung des Eigentümers."
     },
     "membership": {
       "title": "Mitgliedschaft",
@@ -1117,6 +1119,29 @@
       "errorTitle": "Fehler beim Teilen",
       "errorDescription": "Das Event konnte nicht geteilt werden. Bitte versuche es erneut.",
       "buttonLabel": "Event Teilen"
+    },
+    "trialBooking": {
+      "title": "Probestunde",
+      "bookTrial": "Probestunde buchen",
+      "requestSent": "Probestundenanfrage gesendet!",
+      "requestPending": "Probestundenanfrage ausstehend",
+      "requestDescription": "Ihre Probestundenanfrage wurde an den Eigentümer des Studios gesendet. Sie werden benachrichtigt, sobald sie genehmigt wurde.",
+      "notEligible": "Nicht für Probestunde berechtigt",
+      "alreadyHasBooking": "Sie hatten bereits eine Stunde in diesem Studio",
+      "notEnabled": "Probestunden sind in diesem Studio nicht verfügbar",
+      "pendingRequests": "Ausstehende Probeanfragen",
+      "noPendingRequests": "Keine ausstehenden Probestundenanfragen",
+      "requestFrom": "Anfrage von {name}",
+      "requestedOn": "Angefordert am {date}",
+      "requestedFor": "Angefordert für {date} um {time}",
+      "accept": "Annehmen",
+      "reject": "Ablehnen",
+      "accepted": "Probestunde angenommen",
+      "rejected": "Probestunde abgelehnt",
+      "acceptSuccess": "Probestundenanfrage erfolgreich angenommen",
+      "rejectSuccess": "Probestundenanfrage erfolgreich abgelehnt",
+      "acceptError": "Fehler beim Annehmen der Probestundenanfrage",
+      "rejectError": "Fehler beim Ablehnen der Probestundenanfrage"
     }
   }
 }

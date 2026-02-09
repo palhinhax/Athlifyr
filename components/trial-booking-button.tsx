@@ -19,7 +19,6 @@ interface TrialBookingButtonProps {
   venueName: string;
   userId?: string;
   enableTrialBooking: boolean;
-  onSuccess?: () => void;
 }
 
 export function TrialBookingButton({
@@ -27,7 +26,6 @@ export function TrialBookingButton({
   venueName,
   userId,
   enableTrialBooking,
-  onSuccess: _onSuccess,
 }: TrialBookingButtonProps) {
   const t = useTranslations("venues.trialBooking");
   const tCommon = useTranslations("common");

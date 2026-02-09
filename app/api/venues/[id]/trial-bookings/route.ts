@@ -69,7 +69,12 @@ export async function POST(
         bookings: {
           where: {
             status: {
-              in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
+              // Count both confirmed bookings and pending trial requests
+              in: [
+                BookingStatus.BOOKED,
+                BookingStatus.ATTENDED,
+                BookingStatus.PENDING,
+              ],
             },
           },
         },
@@ -88,7 +93,7 @@ export async function POST(
       );
     }
 
-    // Check capacity
+    // Check capacity (including pending trial bookings)
     if (
       venueSession.capacity !== null &&
       venueSession.bookings.length >= venueSession.capacity

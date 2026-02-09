@@ -78,7 +78,12 @@ describe("POST /api/venues/[id]/bookings/[bookingId]/cancel — cancel booking b
     expect(body.error).toBe("Booking not found");
     expect(prisma.venueBooking.findUnique).toHaveBeenCalledWith({
       where: { id: bookingId },
-      select: { venueId: true },
+      select: {
+        venueId: true,
+        userId: true,
+        status: true,
+        sessionId: true,
+      },
     });
   });
 

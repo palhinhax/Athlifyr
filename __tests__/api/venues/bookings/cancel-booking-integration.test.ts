@@ -38,13 +38,62 @@ describe("Booking Cancellation Integration Tests", () => {
   const testUserId = "integration-test-user-1";
   const testUserEmail = "integration@test.com";
 
+  // Create test user before all tests
+  beforeAll(async () => {
+    await prisma.user.upsert({
+      where: { id: testUserId },
+      update: {},
+      create: {
+        id: testUserId,
+        email: testUserEmail,
+        name: "Integration Test User",
+      },
+    });
+  });
+
+  // Clean up test user after all tests
+  afterAll(async () => {
+    await prisma.user
+      .delete({
+        where: { id: testUserId },
+      })
+      .catch(() => {
+        // Ignore if already deleted
+      });
+  });
+
   beforeEach(() => {
     mockAuth.mockResolvedValue({
       user: { id: testUserId, email: testUserEmail },
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    // Clean up all test data to prevent unique constraint violations
+    // Order matters due to foreign key constraints
+    await prisma.venueBooking.deleteMany({
+      where: { userId: testUserId },
+    });
+    await prisma.venueSession.deleteMany({
+      where: { venue: { createdByUserId: testUserId } },
+    });
+    await prisma.venueSubscription.deleteMany({
+      where: {
+        OR: [
+          { userId: testUserId },
+          { venue: { createdByUserId: testUserId } },
+        ],
+      },
+    });
+    await prisma.venuePlanVenue.deleteMany({
+      where: { venue: { createdByUserId: testUserId } },
+    });
+    await prisma.venuePlan.deleteMany({
+      where: { venue: { createdByUserId: testUserId } },
+    });
+    await prisma.venue.deleteMany({
+      where: { createdByUserId: testUserId },
+    });
     jest.clearAllMocks();
   });
 

@@ -217,16 +217,18 @@ describe("POST /api/venues/[id]/bookings/[bookingId]/cancel — cancel booking b
     (bookingValidation.validateCancellation as jest.Mock).mockResolvedValue({
       allowed: false,
       reason: "CANCELLATION_DEADLINE_PASSED",
-      minimumHours: 24,
+      minimumMinutes: 30,
     });
 
     const res = await POST(makeRequest(), makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(400);
-    expect(body.error).toBe("Must cancel at least 24 hours before the session");
+    expect(body.error).toBe(
+      "Must cancel at least 30 minutes before the session"
+    );
     expect(body.reason).toBe("CANCELLATION_DEADLINE_PASSED");
-    expect(body.minimumHours).toBe(24);
+    expect(body.minimumMinutes).toBe(30);
   });
 
   it("returns 400 with generic error for unknown validation failure", async () => {

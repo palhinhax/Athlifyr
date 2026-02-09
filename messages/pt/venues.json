@@ -338,7 +338,9 @@
       "linkCopied": "Link copiado!",
       "requirePlan": "Exigir Plano Ativo",
       "requirePlanHint": "Quando ativo, os utilizadores precisam de uma subscrição ativa para reservar. Quando desativo, qualquer pessoa pode reservar sem plano.",
-      "guestBookingEnabled": "Reservas de convidados ativas - qualquer pessoa pode reservar sem iniciar sessão"
+      "guestBookingEnabled": "Reservas de convidados ativas - qualquer pessoa pode reservar sem iniciar sessão",
+      "enableTrialBooking": "Permitir marcação de aula experimental",
+      "enableTrialBookingHint": "Quando ativado, novos utilizadores podem pedir uma aula experimental. Os pedidos experimentais requerem aprovação do proprietário."
     },
     "membership": {
       "title": "Associação",
@@ -597,6 +599,29 @@
       "cancelBooking": "Cancelar Reserva",
       "book": "Reservar",
       "cancel": "Cancelar"
+    },
+    "trialBooking": {
+      "title": "Aula Experimental",
+      "bookTrial": "Marcar Aula Experimental",
+      "requestSent": "Pedido de aula experimental enviado!",
+      "requestPending": "Pedido de aula experimental pendente",
+      "requestDescription": "O teu pedido de aula experimental foi enviado ao proprietário do venue. Serás notificado assim que for aprovado.",
+      "notEligible": "Não elegível para aula experimental",
+      "alreadyHasBooking": "Já tiveste uma aula neste venue",
+      "notEnabled": "As aulas experimentais não estão disponíveis neste venue",
+      "pendingRequests": "Pedidos de Aula Experimental Pendentes",
+      "noPendingRequests": "Sem pedidos de aula experimental pendentes",
+      "requestFrom": "Pedido de {name}",
+      "requestedOn": "Pedido a {date}",
+      "requestedFor": "Pedido para {date} às {time}",
+      "accept": "Aceitar",
+      "reject": "Recusar",
+      "accepted": "Aula experimental aceite",
+      "rejected": "Aula experimental recusada",
+      "acceptSuccess": "Pedido de aula experimental aceite com sucesso",
+      "rejectSuccess": "Pedido de aula experimental recusado com sucesso",
+      "acceptError": "Falha ao aceitar pedido de aula experimental",
+      "rejectError": "Falha ao recusar pedido de aula experimental"
     },
     "loading": "A carregar...",
     "loadMore": "Carregar Mais",

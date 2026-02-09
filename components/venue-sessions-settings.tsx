@@ -21,6 +21,7 @@ interface VenueSessionsSettingsProps {
     defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
     requiresPlanToBook: boolean;
+    enableTrialBooking?: boolean;
   };
   onRefresh?: () => void;
 }
@@ -71,6 +72,7 @@ export function VenueSessionsSettings({
     defaultCancellationDeadlineMinutes:
       venue.defaultCancellationDeadlineMinutes.toString(),
     requiresPlanToBook: venue.requiresPlanToBook,
+    enableTrialBooking: venue.enableTrialBooking ?? false,
   });
 
   const bookingUrl =
@@ -102,6 +104,7 @@ export function VenueSessionsSettings({
       defaultCancellationDeadlineMinutes:
         venue.defaultCancellationDeadlineMinutes.toString(),
       requiresPlanToBook: venue.requiresPlanToBook,
+      enableTrialBooking: venue.enableTrialBooking ?? false,
     });
   }, [
     venue.services,
@@ -110,6 +113,7 @@ export function VenueSessionsSettings({
     venue.defaultBookingDeadlineMinutes,
     venue.defaultCancellationDeadlineMinutes,
     venue.requiresPlanToBook,
+    venue.enableTrialBooking,
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -149,6 +153,7 @@ export function VenueSessionsSettings({
           10
         ),
         requiresPlanToBook: formData.requiresPlanToBook,
+        enableTrialBooking: formData.enableTrialBooking,
       };
 
       const response = await fetch(`/api/venues/${venue.id}`, {
@@ -179,6 +184,7 @@ export function VenueSessionsSettings({
         defaultCancellationDeadlineMinutes:
           updatedVenue.defaultCancellationDeadlineMinutes.toString(),
         requiresPlanToBook: updatedVenue.requiresPlanToBook,
+        enableTrialBooking: updatedVenue.enableTrialBooking ?? false,
       });
 
       toast({
@@ -262,6 +268,27 @@ export function VenueSessionsSettings({
             checked={formData.requiresPlanToBook}
             onCheckedChange={(checked) =>
               setFormData((prev) => ({ ...prev, requiresPlanToBook: checked }))
+            }
+            disabled={loading}
+            className="shrink-0"
+          />
+        </div>
+
+        {/* Enable Trial Booking Toggle */}
+        <div className="flex items-center justify-between gap-3 rounded-lg border bg-background p-3">
+          <div className="min-w-0 flex-1 space-y-0.5">
+            <Label htmlFor="enableTrialBooking" className="text-sm font-medium">
+              {t("quickBook.enableTrialBooking")}
+            </Label>
+            <p className="text-xs text-muted-foreground">
+              {t("quickBook.enableTrialBookingHint")}
+            </p>
+          </div>
+          <Switch
+            id="enableTrialBooking"
+            checked={formData.enableTrialBooking}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({ ...prev, enableTrialBooking: checked }))
             }
             disabled={loading}
             className="shrink-0"

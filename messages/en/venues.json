@@ -338,7 +338,9 @@
       "linkCopied": "Link copied!",
       "requirePlan": "Require Active Plan",
       "requirePlanHint": "When enabled, users must have an active subscription to book. When disabled, anyone can book without a plan.",
-      "guestBookingEnabled": "Guest booking enabled - anyone can book without logging in"
+      "guestBookingEnabled": "Guest booking enabled - anyone can book without logging in",
+      "enableTrialBooking": "Allow trial class booking",
+      "enableTrialBookingHint": "When enabled, new users can request a trial class. Trial requests require owner approval."
     },
     "membership": {
       "title": "Membership",
@@ -597,6 +599,29 @@
       "cancelling": "Cancelling...",
       "book": "Book",
       "cancel": "Cancel"
+    },
+    "trialBooking": {
+      "title": "Trial Class",
+      "bookTrial": "Book Trial Class",
+      "requestSent": "Trial class request sent!",
+      "requestPending": "Trial class request pending",
+      "requestDescription": "Your trial class request has been sent to the venue owner. You'll be notified once it's approved.",
+      "notEligible": "Not eligible for trial class",
+      "alreadyHasBooking": "You've already had a class at this venue",
+      "notEnabled": "Trial classes are not available at this venue",
+      "pendingRequests": "Pending Trial Requests",
+      "noPendingRequests": "No pending trial class requests",
+      "requestFrom": "Request from {name}",
+      "requestedOn": "Requested on {date}",
+      "requestedFor": "Requested for {date} at {time}",
+      "accept": "Accept",
+      "reject": "Reject",
+      "accepted": "Trial class accepted",
+      "rejected": "Trial class rejected",
+      "acceptSuccess": "Trial class request accepted successfully",
+      "rejectSuccess": "Trial class request rejected successfully",
+      "acceptError": "Failed to accept trial class request",
+      "rejectError": "Failed to reject trial class request"
     },
     "loading": "Loading...",
     "loadMore": "Load More",

@@ -65,6 +65,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const session = await prisma.venueSession.create({
         data: {
           venueId: venue.id,
+          title: "Test Class",
           startsAt: new Date("2027-12-31T10:00:00Z"), // Far future
           endsAt: new Date("2027-12-31T11:00:00Z"),
           capacity: 10,
@@ -133,6 +134,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const session = await prisma.venueSession.create({
         data: {
           venueId: venue1.id,
+          title: "Test Class",
           startsAt: new Date("2027-12-31T10:00:00Z"),
           endsAt: new Date("2027-12-31T11:00:00Z"),
           type: "CLASS",
@@ -188,6 +190,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const pastSession = await prisma.venueSession.create({
         data: {
           venueId: venue.id,
+          title: "Past Class",
           startsAt: new Date("2020-01-01T10:00:00Z"), // Past date
           endsAt: new Date("2020-01-01T11:00:00Z"),
           type: "CLASS",
@@ -237,6 +240,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const session = await prisma.venueSession.create({
         data: {
           venueId: venue.id,
+          title: "Test Class",
           startsAt: new Date("2027-12-31T10:00:00Z"),
           endsAt: new Date("2027-12-31T11:00:00Z"),
           type: "CLASS",
@@ -290,6 +294,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const session = await prisma.venueSession.create({
         data: {
           venueId: venue.id,
+          title: "Test Class",
           startsAt: new Date("2027-12-31T10:00:00Z"),
           endsAt: new Date("2027-12-31T11:00:00Z"),
           type: "CLASS",
@@ -333,7 +338,6 @@ describe("Booking Cancellation Integration Tests", () => {
           venueId: venue.id,
           name: "No Cancel Plan",
           description: "Plan that does not allow cancellations",
-          durationDays: 30,
           price: 50,
           currency: "EUR",
           policy: {
@@ -356,6 +360,7 @@ describe("Booking Cancellation Integration Tests", () => {
       const session = await prisma.venueSession.create({
         data: {
           venueId: venue.id,
+          title: "Policy Test Class",
           startsAt: new Date("2027-06-15T10:00:00Z"),
           endsAt: new Date("2027-06-15T11:00:00Z"),
           type: "CLASS",

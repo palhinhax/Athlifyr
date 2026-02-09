@@ -49,7 +49,7 @@ export interface BookingValidationResult {
 export interface CancellationValidationResult {
   allowed: boolean;
   reason?: string;
-  minimumHours?: number; // For cancellation deadline
+  minimumMinutes?: number; // For cancellation deadline (from session)
 }
 
 /**
@@ -784,28 +784,34 @@ export async function validateCancellation(
     };
   }
 
-  // Check cancellation deadline
-  if (policy.cancellationHours && policy.cancellationHours > 0) {
-    const hoursUntilSession = differenceInHours(booking.session.startsAt, now);
+  // Check cancellation deadline from session
+  const cancellationDeadlineMinutes =
+    booking.session.cancellationDeadlineMinutes ?? 30;
+
+  if (cancellationDeadlineMinutes > 0) {
+    const minutesUntilSession = differenceInMinutes(
+      booking.session.startsAt,
+      now
+    );
 
     console.log("[validateCancellation] Checking cancellation deadline", {
       bookingId,
       sessionStartsAt: booking.session.startsAt,
       currentTime: now,
-      hoursUntilSession,
-      requiredHours: policy.cancellationHours,
+      minutesUntilSession,
+      requiredMinutes: cancellationDeadlineMinutes,
     });
 
-    if (hoursUntilSession < policy.cancellationHours) {
+    if (minutesUntilSession < cancellationDeadlineMinutes) {
       console.warn("[validateCancellation] Cancellation deadline passed", {
         bookingId,
-        hoursUntilSession,
-        requiredHours: policy.cancellationHours,
+        minutesUntilSession,
+        requiredMinutes: cancellationDeadlineMinutes,
       });
       return {
         allowed: false,
         reason: "CANCELLATION_DEADLINE_PASSED",
-        minimumHours: policy.cancellationHours,
+        minimumMinutes: cancellationDeadlineMinutes,
       };
     }
   }

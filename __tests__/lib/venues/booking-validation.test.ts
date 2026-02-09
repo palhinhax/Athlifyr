@@ -751,12 +751,11 @@ describe("booking-validation", () => {
     it("should reject cancellation if past cancellation deadline", async () => {
       const policy: PlanPolicy = {
         allowCancellation: true,
-        cancellationHours: 24, // 24 hours before
       };
 
-      // Session in 2 hours (less than 24 hours required)
+      // Session in 20 minutes (less than 30 minutes default)
       const sessionStart = new Date();
-      sessionStart.setHours(sessionStart.getHours() + 2);
+      sessionStart.setMinutes(sessionStart.getMinutes() + 20);
 
       (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue({
         id: bookingId,
@@ -765,6 +764,7 @@ describe("booking-validation", () => {
         venueId: "venue-1",
         session: {
           startsAt: sessionStart,
+          cancellationDeadlineMinutes: 30,
         },
       });
       (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
@@ -780,18 +780,17 @@ describe("booking-validation", () => {
 
       expect(result.allowed).toBe(false);
       expect(result.reason).toBe("CANCELLATION_DEADLINE_PASSED");
-      expect(result.minimumHours).toBe(24);
+      expect(result.minimumMinutes).toBe(30);
     });
 
     it("should allow cancellation when all validations pass", async () => {
       const policy: PlanPolicy = {
         allowCancellation: true,
-        cancellationHours: 24,
       };
 
-      // Session in 48 hours (more than 24 hours required)
+      // Session in 60 minutes (more than 30 minutes required)
       const sessionStart = new Date();
-      sessionStart.setHours(sessionStart.getHours() + 48);
+      sessionStart.setMinutes(sessionStart.getMinutes() + 60);
 
       (prisma.venueBooking.findUnique as jest.Mock).mockResolvedValue({
         id: bookingId,
@@ -800,6 +799,7 @@ describe("booking-validation", () => {
         venueId: "venue-1",
         session: {
           startsAt: sessionStart,
+          cancellationDeadlineMinutes: 30,
         },
       });
       (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({

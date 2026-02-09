@@ -76,6 +76,25 @@ export function ProfileUpcomingSessions({
     setCancelDialogOpen(true);
   };
 
+  // Map API cancellation reason to translation key
+  const getCancellationErrorMessage = (
+    reason: string,
+    minimumMinutes?: number
+  ): string => {
+    const reasonMap: Record<string, string> = {
+      BOOKING_NOT_FOUND: tVenues("error"),
+      NOT_BOOKING_OWNER: tVenues("notBookingOwner"),
+      ALREADY_CANCELLED: tVenues("alreadyCancelled"),
+      ALREADY_ATTENDED: tVenues("alreadyAttended"),
+      SESSION_ALREADY_STARTED: tVenues("sessionAlreadyStarted"),
+      CANCELLATION_NOT_ALLOWED: tVenues("cancellationNotAllowed"),
+      CANCELLATION_DEADLINE_PASSED: tVenues("cancellationDeadlinePassed", {
+        minutes: minimumMinutes ?? 0,
+      }),
+    };
+    return reasonMap[reason] || tVenues("error");
+  };
+
   const handleCancelBooking = async () => {
     if (!bookingToCancel) return;
 
@@ -90,7 +109,12 @@ export function ProfileUpcomingSessions({
       );
 
       if (!response.ok) {
-        throw new Error("Failed to cancel booking");
+        const data = await response.json();
+        const errorMessage = getCancellationErrorMessage(
+          data.reason,
+          data.minimumMinutes
+        );
+        throw new Error(errorMessage);
       }
 
       toast({

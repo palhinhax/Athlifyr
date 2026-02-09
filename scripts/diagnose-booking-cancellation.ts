@@ -66,8 +66,10 @@ async function diagnoseBookingCancellation(bookingId: string, userId?: string) {
   console.log(`   - Venue: ${booking.session.venue.name} (${booking.venueId})`);
   console.log(`   - Session starts: ${booking.session.startsAt.toISOString()}`);
   console.log(`   - Session ID: ${booking.sessionId}`);
-  console.log(`   - User: ${booking.user.name} (${booking.userId})`);
-  console.log(`   - User email: ${booking.user.email}`);
+  console.log(
+    `   - User: ${booking.user?.name || "Guest"} (${booking.userId || "N/A"})`
+  );
+  console.log(`   - User email: ${booking.user?.email || "N/A"}`);
   console.log();
 
   // 2. Check ownership
@@ -121,6 +123,17 @@ async function diagnoseBookingCancellation(bookingId: string, userId?: string) {
 
   // 5. Check subscription and plan policy
   console.log("🎫 STEP 5: Checking subscription and cancellation policy...");
+
+  if (!booking.userId) {
+    console.log("✅ Guest booking (no user ID)");
+    console.log("   User can cancel freely (no plan restrictions)");
+    console.log();
+    console.log("=".repeat(80));
+    console.log("✅ CANCELLATION SHOULD BE ALLOWED");
+    console.log("=".repeat(80));
+    return;
+  }
+
   const subscription = await prisma.venueSubscription.findFirst({
     where: {
       venueId: booking.venueId,
@@ -144,6 +157,14 @@ async function diagnoseBookingCancellation(bookingId: string, userId?: string) {
 
   console.log("📝 Active subscription found:");
   console.log(`   - Subscription ID: ${subscription.id}`);
+  if (!subscription.plan) {
+    console.log("⚠️ Plan data not loaded, cannot check policy");
+    console.log();
+    console.log("=".repeat(80));
+    console.log("✅ CANCELLATION SHOULD BE ALLOWED (no plan to check)");
+    console.log("=".repeat(80));
+    return;
+  }
   console.log(`   - Plan: ${subscription.plan.name} (${subscription.plan.id})`);
   console.log(`   - Status: ${subscription.status}`);
   console.log(`   - Starts: ${subscription.startsAt?.toISOString()}`);

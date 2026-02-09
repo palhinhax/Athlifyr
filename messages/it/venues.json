@@ -1126,6 +1126,7 @@
       "requestSent": "Richiesta di lezione di prova inviata!",
       "requestPending": "Richiesta di lezione di prova in sospeso",
       "requestDescription": "La tua richiesta di lezione di prova è stata inviata al proprietario della palestra. Sarai notificato una volta approvata.",
+      "selectSessionPrompt": "Per prenotare la tua lezione di prova, seleziona una sessione dal calendario qui sotto. Una volta selezionata una sessione, la tua richiesta verrà inviata a {venueName} per l'approvazione.",
       "notEligible": "Non idoneo per lezione di prova",
       "alreadyHasBooking": "Hai già avuto una lezione in questa palestra",
       "notEnabled": "Le lezioni di prova non sono disponibili in questa palestra",

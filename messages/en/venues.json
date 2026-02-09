@@ -606,6 +606,7 @@
       "requestSent": "Trial class request sent!",
       "requestPending": "Trial class request pending",
       "requestDescription": "Your trial class request has been sent to the venue owner. You'll be notified once it's approved.",
+      "selectSessionPrompt": "To book your trial class, please select a session from the calendar below. Once you select a session, your request will be sent to {venueName} for approval.",
       "notEligible": "Not eligible for trial class",
       "alreadyHasBooking": "You've already had a class at this venue",
       "notEnabled": "Trial classes are not available at this venue",

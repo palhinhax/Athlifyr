@@ -1,6 +1,7 @@
 # Trial Class Booking Feature - Implementation Guide
 
 ## Overview
+
 This feature allows venues to offer trial classes to new users. A trial class is a one-time opportunity for users who have never booked at a venue to request a trial session, which requires owner approval.
 
 ## Core Business Rules
@@ -42,7 +43,7 @@ model Venue {
 model VenueBooking {
   // ... existing fields
   bookingType BookingType @default(NORMAL)  // NEW
-  
+
   @@index([bookingType])  // NEW
 }
 ```
@@ -50,9 +51,11 @@ model VenueBooking {
 ## Backend API Routes
 
 ### 1. Create Trial Booking Request
+
 **POST** `/api/venues/:venueId/trial-bookings`
 
 Request Body:
+
 ```json
 {
   "sessionId": "session_id_here"
@@ -60,25 +63,31 @@ Request Body:
 ```
 
 Validations:
+
 - User must be authenticated
 - `enableTrialBooking` must be `true` on the venue
 - User must have NO existing bookings (TRIAL or NORMAL) at this venue
 - Session must exist, not be full, and not have started
 
 Response (201):
+
 ```json
 {
   "message": "Trial booking request created successfully",
-  "booking": { /* booking object */ }
+  "booking": {
+    /* booking object */
+  }
 }
 ```
 
 ### 2. Get Pending Trial Requests (Owner/Admin Only)
+
 **GET** `/api/venues/:venueId/trial-bookings?status=PENDING`
 
 Authorization: Must be venue owner or admin
 
 Response (200):
+
 ```json
 {
   "trialBookings": [
@@ -103,27 +112,34 @@ Response (200):
 ```
 
 ### 3. Accept Trial Request
+
 **POST** `/api/trial-bookings/:bookingId/accept`
 
 Authorization: Must be venue owner or admin
 
 Actions:
+
 - Changes booking `status` from `PENDING` to `BOOKED`
 - Session slot becomes occupied
 - User becomes ineligible for future trial requests at this venue
 
 Response (200):
+
 ```json
 {
   "message": "Trial booking accepted successfully",
-  "booking": { /* updated booking object */ }
+  "booking": {
+    /* updated booking object */
+  }
 }
 ```
 
 ### 4. Reject Trial Request
+
 **POST** `/api/trial-bookings/:bookingId/reject`
 
 Request Body (optional):
+
 ```json
 {
   "reason": "Optional rejection reason"
@@ -133,26 +149,32 @@ Request Body (optional):
 Authorization: Must be venue owner or admin
 
 Actions:
+
 - Changes booking `status` from `PENDING` to `REJECTED`
 - Session slot remains available
 - Request is removed from pending list
 
 Response (200):
+
 ```json
 {
   "message": "Trial booking rejected successfully",
-  "booking": { /* updated booking object */ }
+  "booking": {
+    /* updated booking object */
+  }
 }
 ```
 
 ## Frontend Components
 
 ### 1. TrialBookingButton
+
 **Location**: `components/trial-booking-button.tsx`
 
 **Purpose**: Displays a "Book Trial Class" button on the public venue page for eligible users
 
 **Props**:
+
 ```typescript
 interface TrialBookingButtonProps {
   venueId: string;
@@ -164,6 +186,7 @@ interface TrialBookingButtonProps {
 ```
 
 **Behavior**:
+
 - Automatically checks user eligibility on mount
 - Only renders if:
   - `enableTrialBooking === true`
@@ -172,6 +195,7 @@ interface TrialBookingButtonProps {
 - Opens a dialog to guide user through trial booking request
 
 **Integration Example**:
+
 ```tsx
 import { TrialBookingButton } from "@/components/trial-booking-button";
 
@@ -183,15 +207,17 @@ import { TrialBookingButton } from "@/components/trial-booking-button";
   onSuccess={() => {
     // Refresh venue data or show success message
   }}
-/>
+/>;
 ```
 
 ### 2. TrialBookingRequestsPanel
+
 **Location**: `components/trial-booking-requests-panel.tsx`
 
 **Purpose**: Displays pending trial booking requests for venue owners/admins
 
 **Props**:
+
 ```typescript
 interface TrialBookingRequestsPanelProps {
   venueId: string;
@@ -201,41 +227,48 @@ interface TrialBookingRequestsPanelProps {
 ```
 
 **Behavior**:
+
 - Fetches pending trial requests on mount
 - Only renders if there are pending requests
 - Allows owner/admin to accept or reject each request
 - Automatically refreshes list after action
 
 **Integration Example**:
+
 ```tsx
 import { TrialBookingRequestsPanel } from "@/components/trial-booking-requests-panel";
 
 // In owner/admin view, above the sessions calendar:
-{isOwnerOrAdmin && (
-  <TrialBookingRequestsPanel
-    venueId={venue.id}
-    locale={locale}
-    onRequestHandled={() => {
-      // Refresh sessions or bookings
-      refreshSessions();
-    }}
-  />
-)}
+{
+  isOwnerOrAdmin && (
+    <TrialBookingRequestsPanel
+      venueId={venue.id}
+      locale={locale}
+      onRequestHandled={() => {
+        // Refresh sessions or bookings
+        refreshSessions();
+      }}
+    />
+  );
+}
 ```
 
 ## Venue Settings Integration
 
 The `enableTrialBooking` toggle is already integrated in:
+
 - **Component**: `components/venue-sessions-settings.tsx`
 - **Location**: In the "Quick Book" section, below "Require Active Plan"
 
 **Translation Keys**:
+
 - Label: `venues.quickBook.enableTrialBooking`
 - Hint: `venues.quickBook.enableTrialBookingHint`
 
 ## Translations
 
 All translations are available in 6 languages:
+
 - English (en)
 - Portuguese (pt)
 - Spanish (es)
@@ -246,6 +279,7 @@ All translations are available in 6 languages:
 **Translation Namespace**: `venues.trialBooking`
 
 **Available Keys**:
+
 - `title`: "Trial Class"
 - `bookTrial`: "Book Trial Class"
 - `requestSent`: "Trial class request sent!"
@@ -271,43 +305,52 @@ All translations are available in 6 languages:
 ## Integration Points
 
 ### Public Venue Page
+
 **File**: `app/[locale]/venues/[slug]/page.tsx` or `components/venue-detail-client.tsx`
 
 **Suggested Location**: Near the top of the page, alongside other primary actions (e.g., "Join", "Subscribe")
 
 **Code Addition**:
+
 ```tsx
-{venue.enableTrialBooking && session?.user && (
-  <TrialBookingButton
-    venueId={venue.id}
-    venueName={venue.name}
-    userId={session.user.id}
-    enableTrialBooking={venue.enableTrialBooking}
-  />
-)}
+{
+  venue.enableTrialBooking && session?.user && (
+    <TrialBookingButton
+      venueId={venue.id}
+      venueName={venue.name}
+      userId={session.user.id}
+      enableTrialBooking={venue.enableTrialBooking}
+    />
+  );
+}
 ```
 
 ### Owner Dashboard / Sessions Calendar
+
 **File**: `components/venue-sessions-calendar.tsx`
 
 **Suggested Location**: Above the calendar, before the "Add Session" button
 
 **Code Addition**:
+
 ```tsx
-{isOwnerOrAdmin && (
-  <TrialBookingRequestsPanel
-    venueId={venueId}
-    locale={locale}
-    onRequestHandled={() => {
-      fetchSessions(); // Refresh sessions after handling request
-    }}
-  />
-)}
+{
+  isOwnerOrAdmin && (
+    <TrialBookingRequestsPanel
+      venueId={venueId}
+      locale={locale}
+      onRequestHandled={() => {
+        fetchSessions(); // Refresh sessions after handling request
+      }}
+    />
+  );
+}
 ```
 
 ## Testing Checklist
 
 ### Backend
+
 - [ ] Trial booking creation validates `enableTrialBooking === true`
 - [ ] Trial booking creation validates user has no prior bookings
 - [ ] Trial booking creation checks session availability and capacity
@@ -317,6 +360,7 @@ All translations are available in 6 languages:
 - [ ] Non-owners cannot accept/reject trial requests (403 error)
 
 ### Frontend
+
 - [ ] Trial booking button only shows for eligible users
 - [ ] Trial booking button does not show if user has bookings
 - [ ] Trial booking button does not show if feature is disabled
@@ -327,6 +371,7 @@ All translations are available in 6 languages:
 - [ ] Venue settings toggle works correctly
 
 ### Translations
+
 - [ ] All 6 languages have complete translations
 - [ ] Translation keys are used correctly in components
 - [ ] Date formatting respects locale
@@ -334,15 +379,19 @@ All translations are available in 6 languages:
 ## Migration Instructions
 
 1. **Run Database Migration**:
+
    ```bash
    npx prisma migrate deploy
    ```
+
    Or for development:
+
    ```bash
    npx prisma migrate dev
    ```
 
 2. **Generate Prisma Client**:
+
    ```bash
    npx prisma generate
    ```
@@ -371,6 +420,7 @@ All translations are available in 6 languages:
 ## Future Enhancements
 
 Possible improvements for future iterations:
+
 1. **Email Notifications**: Notify users when trial request is accepted/rejected
 2. **Rejection Reasons**: Allow owners to provide custom rejection reasons
 3. **Trial Booking History**: Show rejected/accepted history to owners
@@ -382,6 +432,7 @@ Possible improvements for future iterations:
 ## Support
 
 For questions or issues with this feature:
+
 - Check API error responses for detailed error messages
 - Review browser console for frontend errors
 - Check server logs for backend errors

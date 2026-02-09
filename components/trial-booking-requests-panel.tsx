@@ -8,7 +8,17 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
+import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { Check, X, Loader2, GraduationCap } from "lucide-react";
+
+const localeMap: Record<string, Locale> = {
+  pt: pt,
+  en: enUS,
+  es: es,
+  fr: fr,
+  de: de,
+  it: it,
+};
 
 interface TrialBookingRequest {
   id: string;
@@ -62,6 +72,7 @@ export function TrialBookingRequestsPanel({
 
   useEffect(() => {
     fetchRequests();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [venueId]);
 
   const handleAccept = async (bookingId: string) => {
@@ -172,6 +183,7 @@ export function TrialBookingRequestsPanel({
           const sessionDate = new Date(request.session.startsAt);
           const requestDate = new Date(request.createdAt);
           const isProcessing = processingId === request.id;
+          const dateLocale = localeMap[locale] || enUS;
 
           return (
             <div
@@ -192,17 +204,19 @@ export function TrialBookingRequestsPanel({
 
               <div className="flex-1 space-y-1">
                 <p className="text-sm font-medium">
-                  {t("requestFrom", { name: request.user.name || request.user.email })}
+                  {t("requestFrom", {
+                    name: request.user.name || request.user.email || "User",
+                  })}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {t("requestedFor", {
-                    date: format(sessionDate, "PPP", { locale: require(`date-fns/locale/${locale}`).default }),
-                    time: format(sessionDate, "p", { locale: require(`date-fns/locale/${locale}`).default }),
+                    date: format(sessionDate, "PPP", { locale: dateLocale }),
+                    time: format(sessionDate, "p", { locale: dateLocale }),
                   })}
                 </p>
                 <p className="text-xs text-muted-foreground">
                   {t("requestedOn", {
-                    date: format(requestDate, "PPP", { locale: require(`date-fns/locale/${locale}`).default }),
+                    date: format(requestDate, "PPP", { locale: dateLocale }),
                   })}
                 </p>
                 {request.session.title && (

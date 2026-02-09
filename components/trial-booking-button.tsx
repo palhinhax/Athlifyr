@@ -27,9 +27,10 @@ export function TrialBookingButton({
   venueName,
   userId,
   enableTrialBooking,
-  onSuccess,
+  onSuccess: _onSuccess,
 }: TrialBookingButtonProps) {
   const t = useTranslations("venues.trialBooking");
+  const tCommon = useTranslations("common");
   const { toast } = useToast();
   const [isEligible, setIsEligible] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
@@ -54,7 +55,8 @@ export function TrialBookingButton({
           const data = await response.json();
           // User is eligible if they have NO bookings at this venue
           setIsEligible(
-            !data.bookings || (Array.isArray(data.bookings) && data.bookings.length === 0)
+            !data.bookings ||
+              (Array.isArray(data.bookings) && data.bookings.length === 0)
           );
         } else {
           setIsEligible(false);
@@ -84,6 +86,7 @@ export function TrialBookingButton({
   };
 
   const handleRequestTrial = async () => {
+    setSubmitting(true);
     // This will open the session selection dialog
     // For now, we'll just show a message
     toast({
@@ -91,15 +94,12 @@ export function TrialBookingButton({
       description: t("requestDescription"),
     });
     setDialogOpen(false);
+    setSubmitting(false);
   };
 
   return (
     <>
-      <Button
-        onClick={handleOpenDialog}
-        variant="outline"
-        className="gap-2"
-      >
+      <Button onClick={handleOpenDialog} variant="outline" className="gap-2">
         <GraduationCap className="h-4 w-4" />
         {t("bookTrial")}
       </Button>
@@ -108,15 +108,12 @@ export function TrialBookingButton({
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{t("title")}</DialogTitle>
-            <DialogDescription>
-              {t("requestDescription")}
-            </DialogDescription>
+            <DialogDescription>{t("requestDescription")}</DialogDescription>
           </DialogHeader>
-          
+
           <div className="py-4">
             <p className="text-sm text-muted-foreground">
-              To book your trial class, please select a session from the calendar below. 
-              Once you select a session, your request will be sent to {venueName} for approval.
+              {t("selectSessionPrompt", { venueName })}
             </p>
           </div>
 
@@ -126,12 +123,9 @@ export function TrialBookingButton({
               onClick={() => setDialogOpen(false)}
               disabled={submitting}
             >
-              Cancel
+              {tCommon("cancel")}
             </Button>
-            <Button
-              onClick={handleRequestTrial}
-              disabled={submitting}
-            >
+            <Button onClick={handleRequestTrial} disabled={submitting}>
               {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {t("bookTrial")}
             </Button>

@@ -44,10 +44,7 @@ export async function POST(
     });
 
     if (!booking) {
-      return NextResponse.json(
-        { error: "Booking not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
     if (booking.bookingType !== BookingType.TRIAL) {

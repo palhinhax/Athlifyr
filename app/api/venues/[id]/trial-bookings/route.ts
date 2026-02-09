@@ -77,10 +77,7 @@ export async function POST(
     });
 
     if (!venueSession) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Session not found" }, { status: 404 });
     }
 
     // Check if session has already started
@@ -96,10 +93,7 @@ export async function POST(
       venueSession.capacity !== null &&
       venueSession.bookings.length >= venueSession.capacity
     ) {
-      return NextResponse.json(
-        { error: "Session is full" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Session is full" }, { status: 400 });
     }
 
     // 4. Check if user already has a trial booking request for this session

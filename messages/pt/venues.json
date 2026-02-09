@@ -606,6 +606,7 @@
       "requestSent": "Pedido de aula experimental enviado!",
       "requestPending": "Pedido de aula experimental pendente",
       "requestDescription": "O teu pedido de aula experimental foi enviado ao proprietário do venue. Serás notificado assim que for aprovado.",
+      "selectSessionPrompt": "Para marcar a tua aula experimental, por favor seleciona uma sessão do calendário abaixo. Assim que selecionares uma sessão, o teu pedido será enviado a {venueName} para aprovação.",
       "notEligible": "Não elegível para aula experimental",
       "alreadyHasBooking": "Já tiveste uma aula neste venue",
       "notEnabled": "As aulas experimentais não estão disponíveis neste venue",

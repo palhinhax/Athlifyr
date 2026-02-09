@@ -2,6 +2,7 @@
 CREATE TYPE "BookingType" AS ENUM ('NORMAL', 'TRIAL');
 
 -- AlterEnum
+-- Note: PENDING and REJECTED are added at the end to maintain existing ordering
 ALTER TYPE "BookingStatus" ADD VALUE 'PENDING';
 ALTER TYPE "BookingStatus" ADD VALUE 'REJECTED';
 

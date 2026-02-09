@@ -1126,6 +1126,7 @@
       "requestSent": "¡Solicitud de clase de prueba enviada!",
       "requestPending": "Solicitud de clase de prueba pendiente",
       "requestDescription": "Tu solicitud de clase de prueba ha sido enviada al propietario del local. Se te notificará una vez que sea aprobada.",
+      "selectSessionPrompt": "Para reservar tu clase de prueba, selecciona una sesión del calendario a continuación. Una vez que selecciones una sesión, tu solicitud se enviará a {venueName} para su aprobación.",
       "notEligible": "No elegible para clase de prueba",
       "alreadyHasBooking": "Ya has tenido una clase en este local",
       "notEnabled": "Las clases de prueba no están disponibles en este local",

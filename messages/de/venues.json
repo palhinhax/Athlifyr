@@ -1126,6 +1126,7 @@
       "requestSent": "Probestundenanfrage gesendet!",
       "requestPending": "Probestundenanfrage ausstehend",
       "requestDescription": "Ihre Probestundenanfrage wurde an den Eigentümer des Studios gesendet. Sie werden benachrichtigt, sobald sie genehmigt wurde.",
+      "selectSessionPrompt": "Um Ihre Probestunde zu buchen, wählen Sie bitte eine Session aus dem Kalender unten aus. Sobald Sie eine Session ausgewählt haben, wird Ihre Anfrage zur Genehmigung an {venueName} gesendet.",
       "notEligible": "Nicht für Probestunde berechtigt",
       "alreadyHasBooking": "Sie hatten bereits eine Stunde in diesem Studio",
       "notEnabled": "Probestunden sind in diesem Studio nicht verfügbar",

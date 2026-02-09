@@ -51,10 +51,7 @@ export async function POST(
     });
 
     if (!booking) {
-      return NextResponse.json(
-        { error: "Booking not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
     }
 
     if (booking.bookingType !== BookingType.TRIAL) {
@@ -86,20 +83,23 @@ export async function POST(
     // 3. Check if session has already started
     if (booking.session.startsAt <= new Date()) {
       return NextResponse.json(
-        { error: "Cannot accept booking for a session that has already started" },
+        {
+          error: "Cannot accept booking for a session that has already started",
+        },
         { status: 400 }
       );
     }
 
-    // 4. Check capacity
+    // 4. Check capacity (exclude the current pending booking from count)
+    const confirmedBookingsCount = booking.session.bookings.filter(
+      (b) => b.id !== bookingId
+    ).length;
+
     if (
       booking.session.capacity !== null &&
-      booking.session.bookings.length >= booking.session.capacity
+      confirmedBookingsCount >= booking.session.capacity
     ) {
-      return NextResponse.json(
-        { error: "Session is full" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Session is full" }, { status: 400 });
     }
 
     // 5. Accept the booking by changing status to BOOKED

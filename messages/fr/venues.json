@@ -1126,6 +1126,7 @@
       "requestSent": "Demande de cours d'essai envoyée !",
       "requestPending": "Demande de cours d'essai en attente",
       "requestDescription": "Votre demande de cours d'essai a été envoyée au propriétaire de la salle. Vous serez notifié une fois qu'elle sera approuvée.",
+      "selectSessionPrompt": "Pour réserver votre cours d'essai, veuillez sélectionner une session dans le calendrier ci-dessous. Une fois que vous aurez sélectionné une session, votre demande sera envoyée à {venueName} pour approbation.",
       "notEligible": "Non éligible pour un cours d'essai",
       "alreadyHasBooking": "Vous avez déjà eu un cours dans cette salle",
       "notEnabled": "Les cours d'essai ne sont pas disponibles dans cette salle",

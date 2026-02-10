@@ -25,6 +25,7 @@ import { VenueAboutTab } from "@/components/venue-about-tab";
 import { VenuePlansTab } from "@/components/venue-plans-tab";
 import { VenueTeamTab } from "@/components/venue-team-tab";
 import { VenueCheckoutDialog } from "@/components/venue-checkout-dialog";
+import { TrialBookingButton } from "@/components/trial-booking-button";
 import { Calendar, Home, Info, CreditCard, Users } from "lucide-react";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
 
@@ -54,6 +55,7 @@ interface Venue {
   requiresPlanToBook: boolean;
   paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
   externalPaymentInstructions: string | null;
+  enableTrialBooking: boolean;
   visibleTabs?: string[];
   members: Array<{
     id: string;
@@ -496,6 +498,19 @@ export function VenueDetailClient({
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-6">
+        {/* Trial Booking Button - Centered above tabs */}
+        {venue.enableTrialBooking && userId && !isMember && (
+          <div className="mb-4 flex justify-center">
+            <TrialBookingButton
+              venueId={venue.id}
+              venueName={venue.name}
+              userId={userId}
+              enableTrialBooking={venue.enableTrialBooking}
+              locale={locale}
+            />
+          </div>
+        )}
+
         {/* Tabs */}
         <Tabs defaultValue={getDefaultTab()} className="w-full">
           {/* Hide TabsList when only 1 tab is visible */}

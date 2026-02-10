@@ -55,6 +55,7 @@ interface VenueSettingsModalProps {
     defaultBookingDeadlineMinutes: number;
     defaultCancellationDeadlineMinutes: number;
     requiresPlanToBook: boolean;
+    enableTrialBooking?: boolean;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
     externalPaymentInstructions: string | null;
     visibleTabs?: string[];

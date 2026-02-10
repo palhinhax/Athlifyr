@@ -1,16 +1,16 @@
 # Athlifyr Mobile App
 
-React Native mobile application for Athlifyr built with Expo.
+React Native mobile application for Athlifyr built with Expo Router.
 
 ## 📱 Tech Stack
 
-- **Framework**: Expo SDK with TypeScript
-- **Navigation**: Expo Router + React Navigation
+- **Framework**: Expo SDK 54 with TypeScript
+- **Navigation**: Expo Router (file-based routing)
 - **API Client**: Axios with React Query
 - **Internationalization**: i18next (6 languages: en, pt, es, fr, de, it)
 - **State Management**: Zustand
 - **Authentication**: Expo Secure Store
-- **Maps**: React Native Maps
+- **Icons**: Lucide React Native
 - **Styling**: React Native StyleSheet (theme-based)
 
 ## 🚀 Getting Started
@@ -18,7 +18,7 @@ React Native mobile application for Athlifyr built with Expo.
 ### Prerequisites
 
 - Node.js 18+
-- npm or pnpm
+- npm (comes with Node.js)
 - Expo CLI
 - iOS Simulator (macOS) or Android Emulator
 
@@ -36,21 +36,24 @@ cd mobile
 npm install
 ```
 
-3. Create `.env` file from example:
-
-```bash
-cp .env.example .env
-```
-
-4. Update `.env` with your API URL:
+3. The `.env` file is already configured with:
 
 ```
 EXPO_PUBLIC_API_URL=http://localhost:3000
 ```
 
+For Android emulator, update to: `http://10.0.2.2:3000`
+
 ### Running the App
 
-Start the development server:
+1. **Start the Next.js backend** (in the root directory):
+
+```bash
+cd ..
+pnpm dev
+```
+
+2. **Start the mobile app** (in the mobile directory):
 
 ```bash
 npx expo start
@@ -66,125 +69,167 @@ Then:
 
 ```
 mobile/
+├── app/                  # Expo Router app directory
+│   ├── (tabs)/           # Tab navigation layout
+│   │   ├── index.tsx     # Events screen (default)
+│   │   ├── venues.tsx    # Venues screen
+│   │   ├── search.tsx    # Search screen
+│   │   ├── profile.tsx   # Profile screen
+│   │   └── _layout.tsx   # Tab layout configuration
+│   └── _layout.tsx       # Root layout
 ├── src/
 │   ├── components/       # Reusable UI components
+│   │   └── EventCard.tsx # Event card component
 │   ├── lib/              # Utilities, API client, helpers
 │   │   ├── api.ts        # Axios instance with interceptors
 │   │   ├── i18n.ts       # i18next configuration
 │   │   └── auth-store.ts # Authentication state management
-│   ├── hooks/            # Custom React hooks
 │   ├── types/            # TypeScript type definitions
+│   │   └── index.ts      # Event, Venue, User types
 │   ├── constants/        # App constants (theme, sports, etc.)
 │   │   ├── theme.ts      # Theme configuration
 │   │   └── index.ts      # General constants
 │   └── locales/          # Translation files
-│       ├── en/
-│       ├── pt/
-│       ├── es/
-│       ├── fr/
-│       ├── de/
-│       └── it/
-├── App.tsx               # Entry point
+│       ├── en/common.json
+│       ├── pt/common.json
+│       ├── es/common.json
+│       ├── fr/common.json
+│       ├── de/common.json
+│       └── it/common.json
+├── App.tsx               # Expo Router entry point
 ├── package.json
-└── .env.example          # Environment variables template
+└── .env                  # Environment variables
 ```
+
+## ✨ Features
+
+### Events Screen (Default)
+
+The Events screen is the default page when the app opens, featuring:
+
+- **Event List**: Browse all upcoming events with infinite scroll
+- **Search**: Real-time search with debouncing
+- **Event Cards**: Display event image, title, date, location, and variants
+- **Pull to Refresh**: Refresh the events list
+- **API Integration**: Connects to the same Next.js API as the web app
+
+### Navigation
+
+The app uses a bottom tab navigation with:
+
+1. **Events** (default) - Browse and search events
+2. **Venues** - Coming soon
+3. **Search** - Coming soon
+4. **Profile** - Coming soon
 
 ## 🌍 Internationalization
 
-The app supports 6 languages out of the box:
+The app supports 6 languages:
 
 - 🇬🇧 English (en)
-- 🇵🇹 Portuguese - European (pt-PT)
+- 🇵🇹 Portuguese (pt)
 - 🇪🇸 Spanish (es)
 - 🇫🇷 French (fr)
 - 🇩🇪 German (de)
 - 🇮🇹 Italian (it)
 
-Language is auto-detected from device settings and can be changed in app settings.
-
-## 🔐 Authentication
-
-Authentication uses JWT tokens stored securely with Expo Secure Store:
-
-- Access token for API requests
-- Refresh token for token rotation
-- Automatic token refresh on 401 responses
+Language is auto-detected from device settings and persisted using AsyncStorage.
 
 ## 🎨 Theming
 
-The app uses a centralized theme configuration (`src/constants/theme.ts`) matching the web app's design:
+Theme configuration in `src/constants/theme.ts` matches the web app's design system:
 
-- Colors (primary, secondary, semantic)
-- Typography (font sizes, weights, line heights)
-- Spacing system
-- Border radius
-- Shadows
+- **Colors**: Primary, secondary, background, text, borders
+- **Typography**: Font sizes, weights, line heights
+- **Spacing**: Consistent spacing scale (xs, sm, md, lg, xl)
+- **Border Radius**: Consistent border radius scale
+- **Shadows**: Platform-specific elevation/shadows
 
 ## 🔧 API Integration
 
-API client is configured in `src/lib/api.ts` with:
+The mobile app uses the **same API** as the Next.js web app:
 
-- Base URL from environment variables
-- Request interceptor for auth tokens
-- Response interceptor for error handling
-- Automatic token refresh on 401
+- **Base URL**: Configured via `EXPO_PUBLIC_API_URL`
+- **Endpoints**: `/api/events`, `/api/venues`, etc.
+- **Request Interceptor**: Adds auth tokens automatically
+- **Response Interceptor**: Handles 401 errors and token refresh
+
+Example API call:
+```typescript
+const response = await api.get<EventsResponse>('/events?page=1&pageSize=20');
+```
 
 ## 📝 Type Safety
 
-Full TypeScript support with type definitions in `src/types/`:
+Full TypeScript support with shared types:
 
-- User, Event, Venue models
-- API response types
-- Filter types
-- Navigation types
+- `Event` - Event model with variants, triathlon segments
+- `EventVariant` - Event distance/variant options
+- `Venue` - Venue model
+- `User` - User model
+- API response types with pagination
 
-## 🧪 Development
+## 🧪 Development Tips
 
-### Environment Variables
+### Hot Reloading
 
-Copy `.env.example` to `.env` and configure:
+Expo provides fast refresh - changes to components will hot reload instantly.
 
-```
-EXPO_PUBLIC_API_URL=http://localhost:3000
-```
+### Network Debugging
 
-Note: Use `http://10.0.2.2:3000` for Android emulator to access localhost.
+To see API requests:
 
-### Running Backend
+1. Shake device/simulator to open dev menu
+2. Select "Debug Remote JS"
+3. Open Chrome DevTools Network tab
 
-Make sure the Next.js backend is running:
+### Clear Cache
+
+If you encounter issues:
 
 ```bash
-cd ..
-pnpm dev
+npx expo start -c
 ```
+
+## 🐛 Troubleshooting
+
+**Android emulator can't reach localhost:**
+- Update `.env` to use `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`
+
+**Metro bundler issues:**
+- Clear cache: `npx expo start -c`
+- Reset node_modules: `rm -rf node_modules && npm install`
+
+**Module resolution errors:**
+- Ensure `@` paths are configured in `tsconfig.json`
+- Restart Metro bundler
 
 ## 📦 Building for Production
 
-### iOS
+### EAS Build (Recommended)
+
+```bash
+npm install -g eas-cli
+eas build --platform ios
+eas build --platform android
+```
+
+### Classic Build
 
 ```bash
 npx expo build:ios
-```
-
-### Android
-
-```bash
 npx expo build:android
 ```
 
 ## 📚 Learn More
 
+- [Expo Router Documentation](https://docs.expo.dev/router/introduction/)
 - [Expo Documentation](https://docs.expo.dev/)
 - [React Native Documentation](https://reactnative.dev/)
-- [React Navigation](https://reactnavigation.org/)
-- [Expo Router](https://expo.github.io/router/docs/)
 
 ## 🤝 Contributing
 
-Follow the main project's contributing guidelines and ensure:
-
-- All translations are provided for all 6 languages
-- Code follows TypeScript best practices
-- Components are modular and under 200 lines
-- Conventional commit messages are used
+- All translations should be provided for all 6 languages
+- Follow TypeScript best practices
+- Keep components modular and under 200 lines
+- Use conventional commit messages

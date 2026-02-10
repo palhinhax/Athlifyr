@@ -174,30 +174,55 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// GET /api/posts?eventId=xxx or ?userId=xxx or ?venueId=xxx - Get posts with pagination
+// GET /api/posts?eventId=xxx or ?userId=xxx or ?venueId=xxx or ?feed=true - Get posts with pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get("eventId");
     const userId = searchParams.get("userId");
     const venueId = searchParams.get("venueId");
+    const feed = searchParams.get("feed"); // Main feed: only public posts + user's event posts
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
-    const where: { eventId?: string; userId?: string; venueId?: string } = {};
-    if (eventId) where.eventId = eventId;
-    if (userId) where.userId = userId;
-    if (venueId) where.venueId = venueId;
+    // Get session to check likes
+    const session = await auth();
+    const currentUserId = session?.user?.id;
+
+    // Build where clause
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let where: Record<string, any> = {};
+
+    if (feed === "true" && currentUserId) {
+      // Main feed: public posts + posts from events user participates in
+      const userParticipations = await prisma.participation.findMany({
+        where: { userId: currentUserId, status: "going" },
+        select: { eventId: true },
+      });
+      const participatingEventIds = userParticipations.map((p) => p.eventId);
+
+      where = {
+        OR: [
+          { isPublic: true },
+          ...(participatingEventIds.length > 0
+            ? [{ eventId: { in: participatingEventIds } }]
+            : []),
+        ],
+      };
+    } else if (feed === "true") {
+      // Not logged in: only public posts
+      where = { isPublic: true };
+    } else {
+      if (eventId) where.eventId = eventId;
+      if (userId) where.userId = userId;
+      if (venueId) where.venueId = venueId;
+    }
 
     // Calculate skip for pagination
     const skip = (page - 1) * pageSize;
 
     // Get total count for pagination metadata
     const totalCount = await prisma.post.count({ where });
-
-    // Get session to check likes
-    const session = await auth();
-    const currentUserId = session?.user?.id;
 
     const posts = await prisma.post.findMany({
       where,

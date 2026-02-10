@@ -92,6 +92,7 @@ function formatExercisePrescription(ex: {
 interface SessionBooking {
   id: string;
   status: string;
+  bookingType?: string;
   guestName?: string | null;
   guestEmail?: string | null;
   user: {

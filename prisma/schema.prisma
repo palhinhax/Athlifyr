@@ -1,10 +1,12 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm]
 }
 
 model User {
@@ -579,6 +581,7 @@ model Venue {
   stripeOnboardingStatus             StripeOnboardingStatus  @default(NOT_STARTED)
   stripePayoutsEnabled               Boolean                 @default(false)
   requiresPlanToBook                 Boolean                 @default(true)
+  enableTrialBooking                 Boolean                 @default(false)
   visibleTabs                        String[]                @default(["feed", "about", "plans", "sessions", "team", "clients", "subscriptions"])
   paymentIntents                     PaymentIntent[]
   posts                              Post[]
@@ -834,6 +837,7 @@ model VenueBooking {
   userId         String?
   subscriptionId String?
   status         BookingStatus      @default(BOOKED)
+  bookingType    BookingType        @default(NORMAL)
   notes          String?
   createdAt      DateTime           @default(now())
   updatedAt      DateTime           @updatedAt
@@ -855,6 +859,7 @@ model VenueBooking {
   @@index([subscriptionId])
   @@index([status])
   @@index([createdAt])
+  @@index([bookingType])
 }
 
 model PaymentIntent {
@@ -1118,11 +1123,18 @@ enum SessionType {
   APPOINTMENT
 }
 
+enum BookingType {
+  NORMAL
+  TRIAL
+}
+
 enum BookingStatus {
+  PENDING
   BOOKED
   CANCELLED
   NO_SHOW
   ATTENDED
+  REJECTED
 }
 
 enum PaymentMode {

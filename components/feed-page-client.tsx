@@ -81,6 +81,7 @@ export function FeedPageClient({
         const params = new URLSearchParams();
         params.append("page", page.toString());
         params.append("pageSize", "10");
+        params.append("feed", "true");
 
         const response = await fetch(`/api/posts?${params}`);
         if (!response.ok) {

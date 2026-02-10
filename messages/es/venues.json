@@ -338,7 +338,9 @@
       "linkCopied": "¡Enlace copiado!",
       "requirePlan": "Requerir Plan Activo",
       "requirePlanHint": "Cuando está activo, los usuarios deben tener una suscripción activa para reservar. Cuando está desactivado, cualquiera puede reservar sin un plan.",
-      "guestBookingEnabled": "Reservas de invitados activadas - cualquiera puede reservar sin iniciar sesión"
+      "guestBookingEnabled": "Reservas de invitados activadas - cualquiera puede reservar sin iniciar sesión",
+      "enableTrialBooking": "Permitir reserva de clase de prueba",
+      "enableTrialBookingHint": "Cuando está activado, los nuevos usuarios pueden solicitar una clase de prueba. Las solicitudes de prueba requieren la aprobación del propietario."
     },
     "membership": {
       "title": "Membresía",
@@ -1120,6 +1122,44 @@
       "errorTitle": "Error al compartir",
       "errorDescription": "No se pudo compartir el evento. Inténtalo de nuevo.",
       "buttonLabel": "Compartir Evento"
+    },
+    "trialBooking": {
+      "title": "Clase de Prueba",
+      "bookTrial": "Reservar Clase de Prueba",
+      "dialogDescription": "Selecciona una sesión para solicitar tu clase de prueba en {venueName}. Tu solicitud se enviará al propietario para su aprobación.",
+      "requestSent": "¡Solicitud de clase de prueba enviada!",
+      "requestPending": "Solicitud de clase de prueba pendiente",
+      "requestDescription": "Tu solicitud de clase de prueba ha sido enviada al propietario del local. Se te notificará una vez que sea aprobada.",
+      "selectSessionPrompt": "Para reservar tu clase de prueba, selecciona una sesión del calendario a continuación. Una vez que selecciones una sesión, tu solicitud se enviará a {venueName} para su aprobación.",
+      "notEligible": "No elegible para clase de prueba",
+      "alreadyHasBooking": "Ya has tenido una clase en este local",
+      "notEnabled": "Las clases de prueba no están disponibles en este local",
+      "pendingRequests": "Solicitudes de Prueba Pendientes",
+      "noPendingRequests": "No hay solicitudes de clase de prueba pendientes",
+      "requestFrom": "Solicitud de {name}",
+      "requestedOn": "Solicitada el {date}",
+      "requestedFor": "Solicitada para el {date} a las {time}",
+      "accept": "Aceptar",
+      "reject": "Rechazar",
+      "accepted": "Clase de prueba aceptada",
+      "rejected": "Clase de prueba rechazada",
+      "acceptSuccess": "Solicitud de clase de prueba aceptada con éxito",
+      "rejectSuccess": "Solicitud de clase de prueba rechazada con éxito",
+      "acceptError": "Error al aceptar la solicitud de clase de prueba",
+      "rejectError": "Error al rechazar la solicitud de clase de prueba",
+      "noSessionsForDay": "No hay sesiones disponibles este día",
+      "sessionFull": "Llena",
+      "confirmSession": "Has seleccionado: {title} el {date} a las {time}. Tu solicitud se enviará para aprobación.",
+      "sendRequest": "Enviar Solicitud",
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mié",
+        "thu": "Jue",
+        "fri": "Vie",
+        "sat": "Sáb",
+        "sun": "Dom"
+      }
     }
   }
 }

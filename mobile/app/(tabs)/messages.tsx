@@ -169,14 +169,14 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: theme.typography.sizes.lg,
+    fontSize: theme.typography.fontSize.lg,
     fontWeight: "600",
     color: theme.colors.text,
     marginBottom: 8,
     textAlign: "center",
   },
   emptyDescription: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
     textAlign: "center",
     marginBottom: 24,
@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   },
   retryButtonText: {
     color: theme.colors.white,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
   },
   newConversationButton: {
@@ -206,7 +206,7 @@ const styles = StyleSheet.create({
   },
   newConversationButtonText: {
     color: theme.colors.white,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
   },
 });

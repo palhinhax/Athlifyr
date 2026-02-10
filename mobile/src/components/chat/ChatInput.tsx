@@ -91,7 +91,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.text,
     maxHeight: 100,
   },

@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarText: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
     color: theme.colors.text,
   },
@@ -127,18 +127,18 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   userName: {
-    fontSize: theme.typography.sizes.base,
+    fontSize: theme.typography.fontSize.base,
     fontWeight: "600",
     color: theme.colors.text,
     flex: 1,
     marginRight: 8,
   },
   timestamp: {
-    fontSize: theme.typography.sizes.xs,
+    fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textSecondary,
   },
   lastMessage: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
   },
 });

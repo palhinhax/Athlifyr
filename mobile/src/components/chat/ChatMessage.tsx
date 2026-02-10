@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   avatarText: {
-    fontSize: theme.typography.sizes.xs,
+    fontSize: theme.typography.fontSize.xs,
     fontWeight: "600",
     color: theme.colors.text,
   },
@@ -127,7 +127,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 4,
   },
   messageText: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     lineHeight: 20,
   },
   ownMessageText: {

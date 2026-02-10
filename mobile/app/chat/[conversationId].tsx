@@ -244,7 +244,7 @@ const styles = StyleSheet.create({
   },
   connectionText: {
     color: theme.colors.white,
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     fontWeight: "500",
   },
   messagesList: {
@@ -257,19 +257,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   emptyText: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
     textAlign: "center",
   },
   errorText: {
-    fontSize: theme.typography.sizes.lg,
+    fontSize: theme.typography.fontSize.lg,
     fontWeight: "600",
     color: theme.colors.text,
     marginBottom: 8,
     textAlign: "center",
   },
   errorDescription: {
-    fontSize: theme.typography.sizes.sm,
+    fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
     textAlign: "center",
   },

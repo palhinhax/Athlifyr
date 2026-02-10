@@ -1,4 +1,10 @@
-import { View, Text, StyleSheet, Linking, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Linking,
+  TouchableOpacity,
+} from "react-native";
 import { MapPin, Navigation } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 
@@ -27,7 +33,8 @@ export function EventLocationMap({
   };
 
   // Static map image URL (using Google Maps Static API or Mapbox)
-  const staticMapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+0ea5e9(${longitude},${latitude})/${longitude},${latitude},14,0/600x300@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`;
+  // Commented out for now - not currently used in the UI
+  // const staticMapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+0ea5e9(${longitude},${latitude})/${longitude},${latitude},14,0/600x300@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`;
 
   return (
     <View style={styles.container}>

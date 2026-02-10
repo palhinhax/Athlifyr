@@ -11,13 +11,7 @@ import {
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  Calendar,
-  ExternalLink,
-  ArrowLeft,
-  Share2,
-} from "lucide-react-native";
-import { useTranslation } from "react-i18next";
+import { Calendar, ExternalLink, ArrowLeft, Share2 } from "lucide-react-native";
 import Markdown from "react-native-markdown-display";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";

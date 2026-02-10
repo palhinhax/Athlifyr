@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendChatMessageNotification } from "@/lib/push-notifications";
 
 // GET - Get message history for a conversation
 export async function GET(
@@ -145,6 +146,48 @@ export async function POST(
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
+
+    // Send push notifications to other participants (async, don't await)
+    prisma.conversationParticipant
+      .findMany({
+        where: {
+          conversationId,
+          userId: { not: session.user.id }, // Exclude sender
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              pushNotificationsEnabled: true,
+            },
+          },
+        },
+      })
+      .then((participants) => {
+        // Send notification to each participant
+        participants.forEach((participant) => {
+          if (participant.user.pushNotificationsEnabled) {
+            sendChatMessageNotification({
+              recipientUserId: participant.userId,
+              senderName: session.user.name || "Someone",
+              messageContent: content.trim(),
+              conversationId,
+              messageId: message.id,
+            }).catch((error) => {
+              console.error(
+                `Failed to send push notification to user ${participant.userId}:`,
+                error
+              );
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error(
+          "Failed to fetch participants for push notification:",
+          error
+        );
+      });
 
     return NextResponse.json({ message });
   } catch (error) {

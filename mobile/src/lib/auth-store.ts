@@ -4,6 +4,7 @@ import { api } from "./api";
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
+const PUSH_TOKEN_KEY = "push-token";
 
 interface User {
   id: string;
@@ -18,10 +19,12 @@ interface AuthState {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  pushToken: string | null;
 
   // Actions
   setUser: (user: User | null) => void;
   setToken: (token: string | null) => void;
+  setPushToken: (pushToken: string | null) => void;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   loadStoredAuth: () => Promise<void>;
@@ -33,6 +36,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   token: null,
   isLoading: true,
   isAuthenticated: false,
+  pushToken: null,
 
   setUser: (user) => set({ user, isAuthenticated: !!user }),
 
@@ -43,6 +47,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await SecureStore.deleteItemAsync(TOKEN_KEY);
     }
     set({ token, isAuthenticated: !!token });
+  },
+
+  setPushToken: async (pushToken) => {
+    if (pushToken) {
+      await SecureStore.setItemAsync(PUSH_TOKEN_KEY, pushToken);
+    } else {
+      await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
+    }
+    set({ pushToken });
   },
 
   login: async (email: string, password: string) => {

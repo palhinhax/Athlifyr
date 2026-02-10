@@ -180,5 +180,25 @@
       "title": "Message Sent! 🎉",
       "description": "Thanks for reaching out! We'll reply to your email as soon as possible."
     }
+  },
+  "notifications": {
+    "notifications": "Notifications",
+    "pending": "pending",
+    "noNotifications": "No notifications",
+    "trialRequests": "Trial Class Requests",
+    "trialRequestDescription": "Manage trial class requests from your venues",
+    "trialAcceptedTitle": "Trial class accepted by {venue}",
+    "trialRejectedTitle": "Trial class declined by {venue}",
+    "friendRequestFrom": "Friend request from {name}",
+    "venueInviteFrom": "Invitation from {venue}",
+    "wantsToBeYourFriend": "Wants to be your friend",
+    "invitedAsRole": "Invited as {role}",
+    "friendAccepted": "Friend request accepted",
+    "friendRejected": "Friend request declined",
+    "inviteAccepted": "Invitation accepted",
+    "inviteDeclined": "Invitation declined",
+    "actionError": "An error occurred",
+    "decline": "Decline",
+    "viewAll": "View all notifications"
   }
 }

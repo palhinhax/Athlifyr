@@ -1,5 +1,9 @@
 {
   "permissions": {
-    "allow": ["WebFetch(domain:localhost)", "Bash(ls:*)"]
+    "allow": [
+      "WebFetch(domain:localhost)",
+      "Bash(ls:*)",
+      "Bash(npm install:*)"
+    ]
   }
 }

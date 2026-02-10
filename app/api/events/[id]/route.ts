@@ -100,15 +100,34 @@ async function handleTranslations(
   }
 }
 
-// GET - Get event by ID
+// GET - Get event by ID or slug
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    const event = await prisma.event.findUnique({
-      where: { id },
+    // Try to find by ID first (UUID format), then by slug
+    const isUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        id
+      );
+
+    const event = await prisma.event.findFirst({
+      where: isUUID ? { id } : { slug: id },
       include: {
-        variants: true,
+        variants: {
+          include: {
+            triathlonSegments: {
+              orderBy: { order: "asc" },
+            },
+          },
+          orderBy: { startDate: "asc" },
+        },
+        faqs: {
+          orderBy: { order: "asc" },
+        },
+        _count: {
+          select: { comments: true },
+        },
       },
     });
 

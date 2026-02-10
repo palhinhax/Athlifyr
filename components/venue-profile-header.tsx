@@ -37,6 +37,7 @@ interface VenueProfileHeaderProps {
     requiresPlanToBook: boolean;
     paymentMode: "IN_APP" | "EXTERNAL" | "MIXED";
     externalPaymentInstructions: string | null;
+    enableTrialBooking: boolean;
     visibleTabs?: string[];
     members: Array<{
       id: string;

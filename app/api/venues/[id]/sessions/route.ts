@@ -116,6 +116,7 @@ export async function GET(
           select: {
             id: true,
             status: true,
+            bookingType: true,
             guestName: true,
             guestEmail: true,
             user: {

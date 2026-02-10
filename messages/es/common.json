@@ -180,5 +180,25 @@
       "title": "¡Mensaje Enviado! 🎉",
       "description": "¡Gracias por contactarnos! Te responderemos por email lo antes posible."
     }
+  },
+  "notifications": {
+    "notifications": "Notificaciones",
+    "pending": "pendientes",
+    "noNotifications": "Sin notificaciones",
+    "trialRequests": "Solicitudes de Clase de Prueba",
+    "trialRequestDescription": "Gestiona las solicitudes de clase de prueba de tus espacios",
+    "trialAcceptedTitle": "Clase de prueba aceptada por {venue}",
+    "trialRejectedTitle": "Clase de prueba rechazada por {venue}",
+    "friendRequestFrom": "Solicitud de amistad de {name}",
+    "venueInviteFrom": "Invitación de {venue}",
+    "wantsToBeYourFriend": "Quiere ser tu amigo",
+    "invitedAsRole": "Invitado como {role}",
+    "friendAccepted": "Solicitud de amistad aceptada",
+    "friendRejected": "Solicitud de amistad rechazada",
+    "inviteAccepted": "Invitación aceptada",
+    "inviteDeclined": "Invitación rechazada",
+    "actionError": "Ha ocurrido un error",
+    "decline": "Rechazar",
+    "viewAll": "Ver todas las notificaciones"
   }
 }

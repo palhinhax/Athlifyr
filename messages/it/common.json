@@ -180,5 +180,25 @@
       "title": "Messaggio Inviato! 🎉",
       "description": "Grazie per averci contattato! Ti risponderemo via email il prima possibile."
     }
+  },
+  "notifications": {
+    "notifications": "Notifiche",
+    "pending": "in sospeso",
+    "noNotifications": "Nessuna notifica",
+    "trialRequests": "Richieste di Lezione di Prova",
+    "trialRequestDescription": "Gestisci le richieste di lezione di prova dei tuoi spazi",
+    "trialAcceptedTitle": "Lezione di prova accettata da {venue}",
+    "trialRejectedTitle": "Lezione di prova rifiutata da {venue}",
+    "friendRequestFrom": "Richiesta di amicizia da {name}",
+    "venueInviteFrom": "Invito da {venue}",
+    "wantsToBeYourFriend": "Vuole essere tuo amico",
+    "invitedAsRole": "Invitato come {role}",
+    "friendAccepted": "Richiesta di amicizia accettata",
+    "friendRejected": "Richiesta di amicizia rifiutata",
+    "inviteAccepted": "Invito accettato",
+    "inviteDeclined": "Invito rifiutato",
+    "actionError": "Si è verificato un errore",
+    "decline": "Rifiuta",
+    "viewAll": "Vedi tutte le notifiche"
   }
 }

@@ -19,11 +19,13 @@ import {
   HomeIcon,
   Building2Icon,
   Dumbbell,
+  Bell,
 } from "lucide-react";
 import { GlobalSearch } from "./global-search";
 // import { WallClock } from "./wall-clock"; // TODO: Temporarily hidden
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { useIsVenueStaff } from "@/hooks/use-is-venue-staff";
+import { useNotifications } from "@/hooks/use-notifications";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -32,6 +34,11 @@ export function MobileNav() {
   const t = useTranslations("nav");
   const { unreadCount } = useChatNotifications({ enabled: !!session });
   const { isStaff } = useIsVenueStaff();
+  const { pendingCount: notificationsPendingCount } = useNotifications({
+    enabled: !!session,
+  });
+
+  const totalBadgeCount = unreadCount + notificationsPendingCount;
 
   const closeMenu = () => setIsOpen(false);
 
@@ -53,8 +60,14 @@ export function MobileNav() {
         size="icon"
         onClick={() => setIsOpen(!isOpen)}
         aria-label={isOpen ? t("closeMenu") : t("openMenu")}
+        className="relative"
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+        {!isOpen && totalBadgeCount > 0 && (
+          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+            {totalBadgeCount > 9 ? "9+" : totalBadgeCount}
+          </span>
+        )}
       </Button>
 
       {isOpen && (
@@ -92,6 +105,22 @@ export function MobileNav() {
                     {unreadCount > 0 && (
                       <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
                         {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Link>
+
+                  <Link
+                    href="/notifications"
+                    onClick={closeMenu}
+                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Bell className="h-4 w-4" />
+                      {t("notifications")}
+                    </div>
+                    {notificationsPendingCount > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
+                        {notificationsPendingCount > 9 ? "9+" : notificationsPendingCount}
                       </span>
                     )}
                   </Link>

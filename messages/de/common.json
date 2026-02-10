@@ -180,5 +180,25 @@
       "title": "Nachricht Gesendet! 🎉",
       "description": "Danke für deine Nachricht! Wir antworten dir so schnell wie möglich per E-Mail."
     }
+  },
+  "notifications": {
+    "notifications": "Benachrichtigungen",
+    "pending": "ausstehend",
+    "noNotifications": "Keine Benachrichtigungen",
+    "trialRequests": "Probestunden-Anfragen",
+    "trialRequestDescription": "Verwalte die Probestunden-Anfragen deiner Räumlichkeiten",
+    "trialAcceptedTitle": "Probestunde akzeptiert von {venue}",
+    "trialRejectedTitle": "Probestunde abgelehnt von {venue}",
+    "friendRequestFrom": "Freundschaftsanfrage von {name}",
+    "venueInviteFrom": "Einladung von {venue}",
+    "wantsToBeYourFriend": "Möchte dein Freund sein",
+    "invitedAsRole": "Eingeladen als {role}",
+    "friendAccepted": "Freundschaftsanfrage angenommen",
+    "friendRejected": "Freundschaftsanfrage abgelehnt",
+    "inviteAccepted": "Einladung angenommen",
+    "inviteDeclined": "Einladung abgelehnt",
+    "actionError": "Ein Fehler ist aufgetreten",
+    "decline": "Ablehnen",
+    "viewAll": "Alle Benachrichtigungen anzeigen"
   }
 }

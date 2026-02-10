@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Calendar, MapPin, User, Dumbbell, Activity } from "lucide-react-native";
+import { Calendar, MapPin, User, MessageCircle, Activity } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -79,7 +79,15 @@ export default function TabLayout() {
         name="exercises"
         options={{
           title: t("navigation.exercises"),
-          tabBarIcon: ({ color, size }) => <Dumbbell color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
+          href: null, // Hide from tabs but keep route available
+        }}
+      />
+      <Tabs.Screen
+        name="messages"
+        options={{
+          title: t("navigation.messages"),
+          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
         }}
       />
       <Tabs.Screen

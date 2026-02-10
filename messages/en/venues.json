@@ -587,8 +587,11 @@
       "advanceBookingRequired": "Must book at least {hours} hours in advance",
       "maxBookingsPerMonthReached": "Monthly booking limit reached",
       "maxTotalBookingsReached": "All sessions in your pack have been used",
+      "alreadyCancelled": "This booking has already been cancelled",
+      "alreadyAttended": "Cannot cancel an attended session",
+      "notBookingOwner": "You can only cancel your own bookings",
       "cancellationNotAllowed": "Your plan does not allow cancellations",
-      "cancellationDeadlinePassed": "Must cancel at least {hours} hours before the session",
+      "cancellationDeadlinePassed": "Must cancel at least {minutes} minutes before the session",
       "confirmCancel": "Cancel Booking",
       "confirmCancelDescription": "Are you sure you want to cancel this booking?",
       "cancelBooking": "Cancel Booking",
@@ -603,6 +606,7 @@
     "trialBooking": {
       "title": "Trial Class",
       "bookTrial": "Book Trial Class",
+      "dialogDescription": "Select a session to request your trial class at {venueName}. Your request will be sent to the owner for approval.",
       "requestSent": "Trial class request sent!",
       "requestPending": "Trial class request pending",
       "requestDescription": "Your trial class request has been sent to the venue owner. You'll be notified once it's approved.",
@@ -622,7 +626,20 @@
       "acceptSuccess": "Trial class request accepted successfully",
       "rejectSuccess": "Trial class request rejected successfully",
       "acceptError": "Failed to accept trial class request",
-      "rejectError": "Failed to reject trial class request"
+      "rejectError": "Failed to reject trial class request",
+      "noSessionsForDay": "No sessions available on this day",
+      "sessionFull": "Full",
+      "confirmSession": "You selected: {title} on {date} at {time}. Your request will be sent for approval.",
+      "sendRequest": "Send Request",
+      "days": {
+        "mon": "Mon",
+        "tue": "Tue",
+        "wed": "Wed",
+        "thu": "Thu",
+        "fri": "Fri",
+        "sat": "Sat",
+        "sun": "Sun"
+      }
     },
     "loading": "Loading...",
     "loadMore": "Load More",

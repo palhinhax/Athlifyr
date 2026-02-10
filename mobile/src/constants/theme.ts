@@ -1,55 +1,67 @@
-// Colors matching the web app theme
-export const colors = {
-  // Primary colors
-  primary: {
-    50: "#f0f9ff",
-    100: "#e0f2fe",
-    200: "#bae6fd",
-    300: "#7dd3fc",
-    400: "#38bdf8",
-    500: "#0ea5e9",
-    600: "#0284c7",
-    700: "#0369a1",
-    800: "#075985",
-    900: "#0c4a6e",
-  },
+// Color palettes (for shade access)
+export const primaryPalette = {
+  50: "#fef3e8",
+  100: "#fde3c9",
+  200: "#f9c48f",
+  300: "#f5a455",
+  400: "#ef8d35",
+  500: "#e57b2a",
+  600: "#c96621",
+  700: "#a5501a",
+  800: "#823d15",
+  900: "#5e2c10",
+};
 
-  // Secondary colors
-  secondary: {
-    50: "#f8fafc",
-    100: "#f1f5f9",
-    200: "#e2e8f0",
-    300: "#cbd5e1",
-    400: "#94a3b8",
-    500: "#64748b",
-    600: "#475569",
-    700: "#334155",
-    800: "#1e293b",
-    900: "#0f172a",
-  },
+export const secondaryPalette = {
+  50: "#f8f9fa",
+  100: "#f3f5f6",
+  200: "#e2e5e9",
+  300: "#c8cdd4",
+  400: "#8d95a1",
+  500: "#67717e",
+  600: "#4b5563",
+  700: "#374151",
+  800: "#1f252e",
+  900: "#131820",
+};
+
+// Colors matching the web app theme (synced with globals.css)
+export const colors = {
+  // Primary & secondary — from CSS --p-brand: 26 78% 53%
+  primary: "#e57b2a",
+  primaryLight: "#fde3c9",
+  primaryDark: "#a5501a",
+  secondary: "#67717e",
+  secondaryLight: "#f3f5f6",
+  secondaryDark: "#1f252e",
+
+  // Accent — from CSS --p-golden: 41 89% 65%
+  accent: "#f5c356",
+  accentForeground: "#131820",
 
   // Semantic colors
   success: "#10b981",
   warning: "#f59e0b",
-  error: "#ef4444",
-  info: "#3b82f6",
+  error: "#ef4343",
+  info: "#aadeee",
 
-  // UI colors
+  // UI colors — from CSS :root variables
   background: "#ffffff",
-  foreground: "#0f172a",
-  muted: "#f1f5f9",
-  mutedForeground: "#64748b",
-  border: "#e2e8f0",
+  backgroundSecondary: "#f3f5f6",
+  foreground: "#131820",
+  surface: "#ffffff",
+  muted: "#f3f5f6",
+  mutedForeground: "#67717e",
+  border: "#e2e5e9",
   card: "#ffffff",
-  cardForeground: "#0f172a",
+  cardForeground: "#131820",
+  white: "#ffffff",
 
   // Text colors
-  text: {
-    primary: "#0f172a",
-    secondary: "#475569",
-    tertiary: "#94a3b8",
-    inverse: "#ffffff",
-  },
+  text: "#131820",
+  textSecondary: "#4b5563",
+  textTertiary: "#8d95a1",
+  textInverse: "#ffffff",
 };
 
 // Typography

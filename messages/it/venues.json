@@ -587,8 +587,11 @@
       "advanceBookingRequired": "Devi prenotare con almeno {hours} ore di anticipo",
       "maxBookingsPerMonthReached": "Limite mensile di prenotazioni raggiunto",
       "maxTotalBookingsReached": "Tutte le sessioni del tuo pacchetto sono state utilizzate",
+      "alreadyCancelled": "Questa prenotazione è già stata annullata",
+      "alreadyAttended": "Non è possibile annullare una sessione già frequentata",
+      "notBookingOwner": "Puoi annullare solo le tue prenotazioni",
       "cancellationNotAllowed": "Il tuo piano non consente cancellazioni",
-      "cancellationDeadlinePassed": "Devi annullare con almeno {hours} ore di anticipo",
+      "cancellationDeadlinePassed": "Devi annullare con almeno {minutes} minuti di anticipo",
       "confirmCancel": "Annulla Prenotazione",
       "confirmCancelDescription": "Sei sicuro di voler annullare questa prenotazione?",
       "cancelBooking": "Annulla Prenotazione",
@@ -1123,6 +1126,7 @@
     "trialBooking": {
       "title": "Lezione di Prova",
       "bookTrial": "Prenota Lezione di Prova",
+      "dialogDescription": "Seleziona una sessione per richiedere la tua lezione di prova presso {venueName}. La tua richiesta verrà inviata al proprietario per l'approvazione.",
       "requestSent": "Richiesta di lezione di prova inviata!",
       "requestPending": "Richiesta di lezione di prova in sospeso",
       "requestDescription": "La tua richiesta di lezione di prova è stata inviata al proprietario della palestra. Sarai notificato una volta approvata.",
@@ -1142,7 +1146,20 @@
       "acceptSuccess": "Richiesta di lezione di prova accettata con successo",
       "rejectSuccess": "Richiesta di lezione di prova rifiutata con successo",
       "acceptError": "Impossibile accettare la richiesta di lezione di prova",
-      "rejectError": "Impossibile rifiutare la richiesta di lezione di prova"
+      "rejectError": "Impossibile rifiutare la richiesta di lezione di prova",
+      "noSessionsForDay": "Nessuna sessione disponibile in questo giorno",
+      "sessionFull": "Piena",
+      "confirmSession": "Hai selezionato: {title} il {date} alle {time}. La tua richiesta verrà inviata per l'approvazione.",
+      "sendRequest": "Invia Richiesta",
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Gio",
+        "fri": "Ven",
+        "sat": "Sab",
+        "sun": "Dom"
+      }
     }
   }
 }

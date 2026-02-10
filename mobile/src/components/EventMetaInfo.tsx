@@ -1,0 +1,106 @@
+import { View, Text, StyleSheet } from "react-native";
+import { Calendar, MapPin, Users } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
+import { theme } from "@/src/constants/theme";
+import { formatDateRange } from "@/src/lib/event-utils";
+
+interface EventMetaInfoProps {
+  startDate: string | Date;
+  endDate: string | Date | null;
+  city: string;
+  country: string;
+  friendsGoingCount?: number;
+}
+
+export function EventMetaInfo({
+  startDate,
+  endDate,
+  city,
+  country,
+  friendsGoingCount = 0,
+}: EventMetaInfoProps) {
+  const { i18n } = useTranslation();
+
+  return (
+    <View style={styles.container}>
+      {/* Date */}
+      <View style={styles.metaRow}>
+        <View style={styles.iconContainer}>
+          <Calendar size={20} color={theme.colors.primary} />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.label}>Date</Text>
+          <Text style={styles.value}>
+            {formatDateRange(startDate, endDate, i18n.language)}
+          </Text>
+        </View>
+      </View>
+
+      {/* Location */}
+      <View style={styles.metaRow}>
+        <View style={styles.iconContainer}>
+          <MapPin size={20} color={theme.colors.primary} />
+        </View>
+        <View style={styles.textContainer}>
+          <Text style={styles.label}>Location</Text>
+          <Text style={styles.value}>
+            {city}, {country}
+          </Text>
+        </View>
+      </View>
+
+      {/* Friends Going */}
+      {friendsGoingCount > 0 && (
+        <View style={styles.metaRow}>
+          <View style={styles.iconContainer}>
+            <Users size={20} color={theme.colors.primary} />
+          </View>
+          <View style={styles.textContainer}>
+            <Text style={styles.label}>Friends Going</Text>
+            <Text style={styles.value}>
+              {friendsGoingCount} {friendsGoingCount === 1 ? "friend" : "friends"}
+            </Text>
+          </View>
+        </View>
+      )}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.xl,
+    padding: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    gap: theme.spacing.md,
+    ...theme.shadows.sm,
+  },
+  metaRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.md,
+  },
+  iconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: theme.borderRadius.lg,
+    backgroundColor: theme.colors.primaryLight,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  textContainer: {
+    flex: 1,
+    gap: 2,
+  },
+  label: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    fontWeight: "500",
+  },
+  value: {
+    fontSize: 16,
+    color: theme.colors.text,
+    fontWeight: "600",
+  },
+});

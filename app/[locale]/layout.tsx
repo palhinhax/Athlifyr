@@ -27,6 +27,7 @@ import { LogoLink } from "@/components/logo-link";
 import { GlobalSearch } from "@/components/global-search";
 import { UserNav } from "@/components/user-nav";
 import { MobileNav } from "@/components/mobile-nav";
+import { NotificationBell } from "@/components/notification-bell";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -197,6 +198,7 @@ export default async function RootLayout({
 
                       {/* User Nav - Desktop */}
                       <div className="hidden items-center gap-2 md:flex">
+                        <NotificationBell />
                         <UserNav />
                       </div>
 

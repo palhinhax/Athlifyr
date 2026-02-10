@@ -587,8 +587,11 @@
       "advanceBookingRequired": "Debes reservar con al menos {hours} horas de antelación",
       "maxBookingsPerMonthReached": "Límite mensual de reservas alcanzado",
       "maxTotalBookingsReached": "Todas las sesiones de tu pack han sido utilizadas",
+      "alreadyCancelled": "Esta reserva ya ha sido cancelada",
+      "alreadyAttended": "No se puede cancelar una sesión ya asistida",
+      "notBookingOwner": "Solo puedes cancelar tus propias reservas",
       "cancellationNotAllowed": "Tu plan no permite cancelaciones",
-      "cancellationDeadlinePassed": "Debes cancelar con al menos {hours} horas de antelación",
+      "cancellationDeadlinePassed": "Debes cancelar con al menos {minutes} minutos de antelación",
       "confirmCancel": "Cancelar Reserva",
       "confirmCancelDescription": "¿Estás seguro de que quieres cancelar esta reserva?",
       "cancelBooking": "Cancelar Reserva",
@@ -1123,6 +1126,7 @@
     "trialBooking": {
       "title": "Clase de Prueba",
       "bookTrial": "Reservar Clase de Prueba",
+      "dialogDescription": "Selecciona una sesión para solicitar tu clase de prueba en {venueName}. Tu solicitud se enviará al propietario para su aprobación.",
       "requestSent": "¡Solicitud de clase de prueba enviada!",
       "requestPending": "Solicitud de clase de prueba pendiente",
       "requestDescription": "Tu solicitud de clase de prueba ha sido enviada al propietario del local. Se te notificará una vez que sea aprobada.",
@@ -1142,7 +1146,20 @@
       "acceptSuccess": "Solicitud de clase de prueba aceptada con éxito",
       "rejectSuccess": "Solicitud de clase de prueba rechazada con éxito",
       "acceptError": "Error al aceptar la solicitud de clase de prueba",
-      "rejectError": "Error al rechazar la solicitud de clase de prueba"
+      "rejectError": "Error al rechazar la solicitud de clase de prueba",
+      "noSessionsForDay": "No hay sesiones disponibles este día",
+      "sessionFull": "Llena",
+      "confirmSession": "Has seleccionado: {title} el {date} a las {time}. Tu solicitud se enviará para aprobación.",
+      "sendRequest": "Enviar Solicitud",
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mié",
+        "thu": "Jue",
+        "fri": "Vie",
+        "sat": "Sáb",
+        "sun": "Dom"
+      }
     }
   }
 }

@@ -112,6 +112,25 @@ export function useSessionBooking({
     setCancelDialogOpen(true);
   };
 
+  // Map API cancellation reason to translation key
+  const getCancellationErrorMessage = (
+    reason: string,
+    minimumMinutes?: number
+  ): string => {
+    const reasonMap: Record<string, string> = {
+      BOOKING_NOT_FOUND: tBooking("error"),
+      NOT_BOOKING_OWNER: tBooking("notBookingOwner"),
+      ALREADY_CANCELLED: tBooking("alreadyCancelled"),
+      ALREADY_ATTENDED: tBooking("alreadyAttended"),
+      SESSION_ALREADY_STARTED: tBooking("sessionAlreadyStarted"),
+      CANCELLATION_NOT_ALLOWED: tBooking("cancellationNotAllowed"),
+      CANCELLATION_DEADLINE_PASSED: tBooking("cancellationDeadlinePassed", {
+        minutes: minimumMinutes ?? 0,
+      }),
+    };
+    return reasonMap[reason] || tBooking("error");
+  };
+
   // Confirm cancel booking
   const confirmCancelBooking = async () => {
     if (!bookingToCancel) return;
@@ -124,7 +143,12 @@ export function useSessionBooking({
       );
 
       if (!response.ok) {
-        throw new Error("Failed to cancel booking");
+        const data = await response.json();
+        const errorMessage = getCancellationErrorMessage(
+          data.reason,
+          data.minimumMinutes
+        );
+        throw new Error(errorMessage);
       }
 
       // Optimistically update the UI immediately
@@ -143,7 +167,7 @@ export function useSessionBooking({
       console.error("Error cancelling booking:", error);
       toast({
         title: tCommon("error"),
-        description: tBooking("error"),
+        description: error instanceof Error ? error.message : tBooking("error"),
         variant: "destructive",
       });
     } finally {

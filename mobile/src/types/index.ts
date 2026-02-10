@@ -17,18 +17,21 @@ export interface Event {
   title: string;
   description: string;
   startDate: string;
-  endDate?: string;
-  location: string;
-  latitude?: number;
-  longitude?: number;
-  image?: string;
-  organizerId: string;
-  organizer?: User;
-  sport: string;
-  maxParticipants?: number;
-  currentParticipants: number;
-  status: "DRAFT" | "PUBLISHED" | "CANCELLED" | "COMPLETED";
+  endDate?: string | null;
+  city: string;
+  country: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
+  imageUrl?: string | null;
+  externalUrl?: string | null;
+  stravaRouteEmbed?: string | null;
+  sportTypes: string[];
   variants?: EventVariant[];
+  faqs?: EventFAQ[];
+  _count?: {
+    comments: number;
+  };
   createdAt: string;
   updatedAt: string;
 }
@@ -37,11 +40,27 @@ export interface EventVariant {
   id: string;
   eventId: string;
   name: string;
-  description?: string;
-  distance?: number;
-  price: number;
-  maxParticipants?: number;
-  currentParticipants: number;
+  distanceKm?: number | null;
+  startDate?: string | null;
+  startTime?: string | null;
+  triathlonSegments?: TriathlonSegment[];
+}
+
+export interface TriathlonSegment {
+  id: string;
+  variantId: string;
+  segmentType: string;
+  distanceKm: number;
+  terrainType: string;
+  order: number;
+}
+
+export interface EventFAQ {
+  id: string;
+  eventId: string;
+  question: string;
+  answer: string;
+  order: number;
 }
 
 // Venue types

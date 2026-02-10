@@ -80,7 +80,7 @@ export async function POST(
         venueId,
         userId,
         reason: validation.reason,
-        minimumHours: validation.minimumHours,
+        minimumMinutes: validation.minimumMinutes,
         bookingStatus: booking.status,
       });
 
@@ -93,7 +93,7 @@ export async function POST(
         SESSION_ALREADY_STARTED:
           "Cannot cancel session that has already started",
         CANCELLATION_NOT_ALLOWED: "Your plan does not allow cancellations",
-        CANCELLATION_DEADLINE_PASSED: `Must cancel at least ${validation.minimumHours} hours before the session`,
+        CANCELLATION_DEADLINE_PASSED: `Must cancel at least ${validation.minimumMinutes} minutes before the session`,
       };
 
       return NextResponse.json(
@@ -101,7 +101,7 @@ export async function POST(
           error:
             errorMessages[validation.reason || ""] || "Cannot cancel booking",
           reason: validation.reason,
-          minimumHours: validation.minimumHours,
+          minimumMinutes: validation.minimumMinutes,
         },
         { status: 400 }
       );

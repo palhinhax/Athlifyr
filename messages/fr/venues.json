@@ -587,8 +587,11 @@
       "advanceBookingRequired": "Vous devez réserver au moins {hours} heures à l'avance",
       "maxBookingsPerMonthReached": "Limite mensuelle de réservations atteinte",
       "maxTotalBookingsReached": "Toutes les séances de votre pack ont été utilisées",
+      "alreadyCancelled": "Cette réservation a déjà été annulée",
+      "alreadyAttended": "Impossible d'annuler une séance déjà suivie",
+      "notBookingOwner": "Vous ne pouvez annuler que vos propres réservations",
       "cancellationNotAllowed": "Votre forfait ne permet pas les annulations",
-      "cancellationDeadlinePassed": "Vous devez annuler au moins {hours} heures avant la séance",
+      "cancellationDeadlinePassed": "Vous devez annuler au moins {minutes} minutes avant la séance",
       "confirmCancel": "Annuler la Réservation",
       "confirmCancelDescription": "Êtes-vous sûr de vouloir annuler cette réservation ?",
       "cancelBooking": "Annuler la Réservation",
@@ -1123,6 +1126,7 @@
     "trialBooking": {
       "title": "Cours d'Essai",
       "bookTrial": "Réserver un Cours d'Essai",
+      "dialogDescription": "Sélectionnez une session pour demander votre cours d'essai chez {venueName}. Votre demande sera envoyée au propriétaire pour approbation.",
       "requestSent": "Demande de cours d'essai envoyée !",
       "requestPending": "Demande de cours d'essai en attente",
       "requestDescription": "Votre demande de cours d'essai a été envoyée au propriétaire de la salle. Vous serez notifié une fois qu'elle sera approuvée.",
@@ -1142,7 +1146,20 @@
       "acceptSuccess": "Demande de cours d'essai acceptée avec succès",
       "rejectSuccess": "Demande de cours d'essai refusée avec succès",
       "acceptError": "Échec de l'acceptation de la demande de cours d'essai",
-      "rejectError": "Échec du refus de la demande de cours d'essai"
+      "rejectError": "Échec du refus de la demande de cours d'essai",
+      "noSessionsForDay": "Aucune session disponible ce jour",
+      "sessionFull": "Complète",
+      "confirmSession": "Vous avez sélectionné : {title} le {date} à {time}. Votre demande sera envoyée pour approbation.",
+      "sendRequest": "Envoyer la Demande",
+      "days": {
+        "mon": "Lun",
+        "tue": "Mar",
+        "wed": "Mer",
+        "thu": "Jeu",
+        "fri": "Ven",
+        "sat": "Sam",
+        "sun": "Dim"
+      }
     }
   }
 }

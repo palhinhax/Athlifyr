@@ -587,8 +587,11 @@
       "advanceBookingRequired": "Buchung muss mindestens {hours} Stunden im Voraus erfolgen",
       "maxBookingsPerMonthReached": "Monatliches Buchungslimit erreicht",
       "maxTotalBookingsReached": "Alle Sitzungen Ihres Pakets wurden verwendet",
+      "alreadyCancelled": "Diese Buchung wurde bereits storniert",
+      "alreadyAttended": "Eine besuchte Sitzung kann nicht storniert werden",
+      "notBookingOwner": "Sie können nur Ihre eigenen Buchungen stornieren",
       "cancellationNotAllowed": "Ihr Tarif erlaubt keine Stornierungen",
-      "cancellationDeadlinePassed": "Stornierung muss mindestens {hours} Stunden vorher erfolgen",
+      "cancellationDeadlinePassed": "Stornierung muss mindestens {minutes} Minuten vorher erfolgen",
       "confirmCancel": "Buchung Stornieren",
       "confirmCancelDescription": "Sind Sie sicher, dass Sie diese Buchung stornieren möchten?",
       "cancelBooking": "Buchung Stornieren",
@@ -1123,12 +1126,13 @@
     "trialBooking": {
       "title": "Probestunde",
       "bookTrial": "Probestunde buchen",
+      "dialogDescription": "Wähle eine Session aus, um deine Probestunde bei {venueName} anzufragen. Deine Anfrage wird dem Eigentümer zur Genehmigung gesendet.",
       "requestSent": "Probestundenanfrage gesendet!",
       "requestPending": "Probestundenanfrage ausstehend",
-      "requestDescription": "Ihre Probestundenanfrage wurde an den Eigentümer des Studios gesendet. Sie werden benachrichtigt, sobald sie genehmigt wurde.",
-      "selectSessionPrompt": "Um Ihre Probestunde zu buchen, wählen Sie bitte eine Session aus dem Kalender unten aus. Sobald Sie eine Session ausgewählt haben, wird Ihre Anfrage zur Genehmigung an {venueName} gesendet.",
+      "requestDescription": "Deine Probestundenanfrage wurde an den Eigentümer des Studios gesendet. Du wirst benachrichtigt, sobald sie genehmigt wurde.",
+      "selectSessionPrompt": "Um deine Probestunde zu buchen, wähle bitte eine Session aus dem Kalender unten aus. Sobald du eine Session ausgewählt hast, wird deine Anfrage zur Genehmigung an {venueName} gesendet.",
       "notEligible": "Nicht für Probestunde berechtigt",
-      "alreadyHasBooking": "Sie hatten bereits eine Stunde in diesem Studio",
+      "alreadyHasBooking": "Du hattest bereits eine Stunde in diesem Studio",
       "notEnabled": "Probestunden sind in diesem Studio nicht verfügbar",
       "pendingRequests": "Ausstehende Probeanfragen",
       "noPendingRequests": "Keine ausstehenden Probestundenanfragen",
@@ -1142,7 +1146,20 @@
       "acceptSuccess": "Probestundenanfrage erfolgreich angenommen",
       "rejectSuccess": "Probestundenanfrage erfolgreich abgelehnt",
       "acceptError": "Fehler beim Annehmen der Probestundenanfrage",
-      "rejectError": "Fehler beim Ablehnen der Probestundenanfrage"
+      "rejectError": "Fehler beim Ablehnen der Probestundenanfrage",
+      "noSessionsForDay": "Keine Sessions an diesem Tag verfügbar",
+      "sessionFull": "Voll",
+      "confirmSession": "Du hast ausgewählt: {title} am {date} um {time}. Deine Anfrage wird zur Genehmigung gesendet.",
+      "sendRequest": "Anfrage senden",
+      "days": {
+        "mon": "Mo",
+        "tue": "Di",
+        "wed": "Mi",
+        "thu": "Do",
+        "fri": "Fr",
+        "sat": "Sa",
+        "sun": "So"
+      }
     }
   }
 }

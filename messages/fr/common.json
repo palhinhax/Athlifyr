@@ -186,7 +186,7 @@
     "pending": "en attente",
     "noNotifications": "Aucune notification",
     "trialRequests": "Demandes de Cours d'Essai",
-    "trialRequestDescription": "Gérez les demandes de cours d'essai de vos espaces",
+    "emptyDescription": "Tes notifications apparaîtront ici",
     "trialAcceptedTitle": "Cours d'essai accepté par {venue}",
     "trialRejectedTitle": "Cours d'essai refusé par {venue}",
     "friendRequestFrom": "Demande d'amitié de {name}",

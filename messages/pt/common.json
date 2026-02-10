@@ -186,7 +186,7 @@
     "pending": "pendentes",
     "noNotifications": "Sem notificações",
     "trialRequests": "Pedidos de Aula Experimental",
-    "trialRequestDescription": "Gere os pedidos de aula experimental dos teus espaços",
+    "emptyDescription": "As tuas notificações aparecerão aqui",
     "trialAcceptedTitle": "Aula experimental aceite por {venue}",
     "trialRejectedTitle": "Aula experimental recusada por {venue}",
     "friendRequestFrom": "Pedido de amizade de {name}",

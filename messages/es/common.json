@@ -186,7 +186,7 @@
     "pending": "pendientes",
     "noNotifications": "Sin notificaciones",
     "trialRequests": "Solicitudes de Clase de Prueba",
-    "trialRequestDescription": "Gestiona las solicitudes de clase de prueba de tus espacios",
+    "emptyDescription": "Tus notificaciones aparecerán aquí",
     "trialAcceptedTitle": "Clase de prueba aceptada por {venue}",
     "trialRejectedTitle": "Clase de prueba rechazada por {venue}",
     "friendRequestFrom": "Solicitud de amistad de {name}",

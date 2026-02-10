@@ -2,14 +2,16 @@
 
 import { useEffect, useRef, useState, useMemo } from "react";
 import { usePathname } from "next/navigation";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import {
   getSportIcon,
   getSportColors,
   getPrimarySport,
 } from "@/lib/sport-config";
 import { createVenueMarkerHtml } from "@/lib/venue-icons";
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
 interface EventLocationMapClientProps {
   latitude: number;
@@ -31,7 +33,7 @@ export default function EventLocationMapClient({
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
+  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
 
   // Generate stable unique key for this map instance (changes with pathname to force remount)
   const mapKey = useMemo(
@@ -55,51 +57,41 @@ export default function EventLocationMapClient({
       mapInstanceRef.current = null;
     }
 
-    const map = L.map(mapContainerRef.current, {
-      center: [latitude, longitude],
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [longitude, latitude],
       zoom: zoom,
-      scrollWheelZoom: false,
+      scrollZoom: false,
+      accessToken: MAPBOX_TOKEN,
     });
 
     mapInstanceRef.current = map;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    // Use venue services icon if provided, otherwise use sport types
-    let customIcon: L.DivIcon;
+    // Create marker element
+    const markerEl = document.createElement("div");
+    markerEl.className = "custom-marker";
 
     if (venueServices && venueServices.length > 0) {
-      // Use venue-specific icon based on services
-      customIcon = L.divIcon({
-        html: createVenueMarkerHtml(venueServices),
-        className: "custom-marker",
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40],
-      });
+      markerEl.innerHTML = createVenueMarkerHtml(venueServices);
     } else {
-      // Use sport-based icon for events
       const primarySport = getPrimarySport(sportTypes);
       const icon = getSportIcon(primarySport);
       const colors = getSportColors(primarySport);
 
-      customIcon = L.divIcon({
-        html: `<div style="width:40px;height:40px;background:${colors.gradient};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px ${colors.shadow};border:3px solid white;"><span style="font-size:20px;transform:rotate(45deg);display:block;">${icon}</span></div>`,
-        className: "custom-marker",
-        iconSize: [40, 40],
-        iconAnchor: [20, 40],
-        popupAnchor: [0, -40],
-      });
+      markerEl.innerHTML = `<div style="width:40px;height:40px;background:${colors.gradient};border-radius:50% 50% 50% 0;transform:rotate(-45deg);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 12px ${colors.shadow};border:3px solid white;"><span style="font-size:20px;transform:rotate(45deg);display:block;">${icon}</span></div>`;
     }
 
-    L.marker([latitude, longitude], { icon: customIcon })
-      .addTo(map)
-      .bindPopup(
-        `<div class="text-center"><h3 class="font-semibold">${title}</h3></div>`
-      );
+    const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+      `<div class="text-center"><h3 class="font-semibold">${title}</h3></div>`
+    );
+
+    new mapboxgl.Marker({ element: markerEl })
+      .setLngLat([longitude, latitude])
+      .setPopup(popup)
+      .addTo(map);
 
     return () => {
       if (mapInstanceRef.current) {

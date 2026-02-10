@@ -186,7 +186,7 @@
     "pending": "pending",
     "noNotifications": "No notifications",
     "trialRequests": "Trial Class Requests",
-    "trialRequestDescription": "Manage trial class requests from your venues",
+    "emptyDescription": "Your notifications will appear here",
     "trialAcceptedTitle": "Trial class accepted by {venue}",
     "trialRejectedTitle": "Trial class declined by {venue}",
     "friendRequestFrom": "Friend request from {name}",

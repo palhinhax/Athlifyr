@@ -186,7 +186,7 @@
     "pending": "in sospeso",
     "noNotifications": "Nessuna notifica",
     "trialRequests": "Richieste di Lezione di Prova",
-    "trialRequestDescription": "Gestisci le richieste di lezione di prova dei tuoi spazi",
+    "emptyDescription": "Le tue notifiche appariranno qui",
     "trialAcceptedTitle": "Lezione di prova accettata da {venue}",
     "trialRejectedTitle": "Lezione di prova rifiutata da {venue}",
     "friendRequestFrom": "Richiesta di amicizia da {name}",

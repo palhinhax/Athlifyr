@@ -358,9 +358,7 @@ export default function NotificationsPage() {
             <p className="text-base font-medium">
               {tNotifications("noNotifications")}
             </p>
-            <p className="mt-1 text-sm">
-              {tNotifications("trialRequestDescription")}
-            </p>
+            <p className="mt-1 text-sm">{tNotifications("emptyDescription")}</p>
           </div>
         ) : (
           notifications.map((notification) => (

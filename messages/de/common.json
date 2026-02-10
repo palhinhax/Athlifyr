@@ -186,7 +186,7 @@
     "pending": "ausstehend",
     "noNotifications": "Keine Benachrichtigungen",
     "trialRequests": "Probestunden-Anfragen",
-    "trialRequestDescription": "Verwalte die Probestunden-Anfragen deiner Räumlichkeiten",
+    "emptyDescription": "Deine Benachrichtigungen erscheinen hier",
     "trialAcceptedTitle": "Probestunde akzeptiert von {venue}",
     "trialRejectedTitle": "Probestunde abgelehnt von {venue}",
     "friendRequestFrom": "Freundschaftsanfrage von {name}",

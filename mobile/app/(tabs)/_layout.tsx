@@ -76,18 +76,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="exercises"
-        options={{
-          title: t("navigation.exercises"),
-          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
-          href: null, // Hide from tabs but keep route available
-        }}
-      />
-      <Tabs.Screen
         name="messages"
         options={{
           title: t("navigation.messages"),
           tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
+        name="exercises"
+        options={{
+          href: null, // Hide from tabs but keep route available for future use
         }}
       />
       <Tabs.Screen

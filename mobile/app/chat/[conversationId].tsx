@@ -25,6 +25,9 @@ type MessageItem =
   | { type: "message"; data: Message }
   | { type: "date"; data: Date };
 
+// Delay before auto-scrolling to allow layout to settle
+const SCROLL_DELAY_MS = 100;
+
 export default function ChatScreen() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -53,7 +56,7 @@ export default function ChatScreen() {
     if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
-      }, 100);
+      }, SCROLL_DELAY_MS);
     }
   }, [messages.length]);
 

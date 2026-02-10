@@ -11,6 +11,10 @@ import {
   type Conversation,
 } from "../api/chat";
 
+// Default polling interval for new messages (in milliseconds)
+// Can be overridden per-component via options
+const DEFAULT_POLLING_INTERVAL = 2000; // 2 seconds
+
 /**
  * Hook for fetching conversations list
  */
@@ -33,7 +37,7 @@ export function useChatMessages(
     enabled?: boolean;
   }
 ) {
-  const { pollingInterval = 2000, enabled = true } = options || {};
+  const { pollingInterval = DEFAULT_POLLING_INTERVAL, enabled = true } = options || {};
   const queryClient = useQueryClient();
   const lastMessageIdRef = useRef<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);

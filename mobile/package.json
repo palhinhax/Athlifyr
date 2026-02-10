@@ -43,6 +43,7 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^25.2.2",
     "@types/react": "~19.1.0",
     "babel-preset-expo": "^54.0.10",

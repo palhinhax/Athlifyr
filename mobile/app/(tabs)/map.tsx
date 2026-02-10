@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import Mapbox from "@rnmapbox/maps";
+import type { Feature } from "geojson";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import type { Event } from "@/src/types";
@@ -29,21 +30,29 @@ interface EventsResponse {
 
 interface EventGeoJSON {
   type: "FeatureCollection";
-  features: Array<{
-    type: "Feature";
-    id: string;
-    geometry: {
-      type: "Point";
-      coordinates: [number, number]; // [longitude, latitude]
-    };
-    properties: {
+  features: Array<Feature<
+    { type: "Point"; coordinates: [number, number] },
+    {
       id: string;
       title: string;
       city: string;
       startDate: string;
       slug: string;
-    };
-  }>;
+    }
+  >>;
+}
+
+// Type for Mapbox onPress event
+interface MapboxOnPressEvent {
+  features: Feature[];
+  coordinates: {
+    latitude: number;
+    longitude: number;
+  };
+  point: {
+    x: number;
+    y: number;
+  };
 }
 
 export default function EventsMapScreen() {
@@ -123,8 +132,8 @@ export default function EventsMapScreen() {
   }, [fetchEvents]);
 
   const handleMarkerPress = useCallback(
-    (feature: any) => {
-      const eventSlug = feature.properties?.slug;
+    (feature: Feature) => {
+      const eventSlug = feature.properties?.slug as string | undefined;
       if (eventSlug) {
         router.push(`/events/${eventSlug}`);
       }
@@ -181,9 +190,9 @@ export default function EventsMapScreen() {
               cluster={true}
               clusterRadius={50}
               clusterMaxZoomLevel={14}
-              onPress={(feature) => {
-                if (feature.features && feature.features.length > 0) {
-                  handleMarkerPress(feature.features[0]);
+              onPress={(event: MapboxOnPressEvent) => {
+                if (event.features && event.features.length > 0) {
+                  handleMarkerPress(event.features[0]);
                 }
               }}
             >

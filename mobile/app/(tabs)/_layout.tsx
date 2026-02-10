@@ -1,5 +1,5 @@
 import { Tabs } from "expo-router";
-import { Calendar, MapPin, User, Dumbbell, Activity } from "lucide-react-native";
+import { Calendar, MapPin, User, Dumbbell, Activity, Map } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -46,6 +46,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Calendar color={color} size={size} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: t("navigation.map"),
+          tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
         }}
       />
       <Tabs.Screen

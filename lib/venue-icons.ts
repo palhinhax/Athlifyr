@@ -167,7 +167,7 @@ export function getVenueIconPath(services?: string[] | null): string {
 }
 
 /**
- * Create a Leaflet-compatible HTML string for a venue marker
+ * Create an HTML string for a venue marker (used with Mapbox GL JS custom markers)
  * @param services - Array of services the venue offers
  * @param size - Size of the marker (default: 40, small: 28, large: 48)
  */

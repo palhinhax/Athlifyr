@@ -36,13 +36,40 @@ cd mobile
 npm install
 ```
 
-3. The `.env` file is already configured with:
+3. **Configure environment variables**:
 
+Copy the `.env.example` to `.env`:
+
+```bash
+cp .env.example .env
 ```
+
+Update the `.env` file with your configuration:
+
+```env
+# API Configuration
 EXPO_PUBLIC_API_URL=http://localhost:3000
+
+# For Android emulator, use:
+# EXPO_PUBLIC_API_URL=http://10.0.2.2:3000
+
+# Google OAuth Configuration (required for Google Sign-In)
+EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID=your_web_client_id.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID=your_android_client_id.apps.googleusercontent.com
+EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID=your_ios_client_id.apps.googleusercontent.com
 ```
 
-For Android emulator, update to: `http://10.0.2.2:3000`
+**Getting Google OAuth credentials:**
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Enable **Google+ API** (or Google Sign-In API)
+4. Go to **Credentials** → **Create Credentials** → **OAuth 2.0 Client ID**
+5. Create three OAuth clients:
+   - **Web application** (for web client ID)
+   - **Android** (for Android client ID, use package name from `app.json`)
+   - **iOS** (for iOS client ID, use bundle identifier from `app.json`)
+6. Copy the client IDs to your `.env` file
 
 ### Running the App
 
@@ -155,8 +182,9 @@ The mobile app uses the **same API** as the Next.js web app:
 - **Response Interceptor**: Handles 401 errors and token refresh
 
 Example API call:
+
 ```typescript
-const response = await api.get<EventsResponse>('/events?page=1&pageSize=20');
+const response = await api.get<EventsResponse>("/events?page=1&pageSize=20");
 ```
 
 ## 📝 Type Safety
@@ -194,13 +222,16 @@ npx expo start -c
 ## 🐛 Troubleshooting
 
 **Android emulator can't reach localhost:**
+
 - Update `.env` to use `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`
 
 **Metro bundler issues:**
+
 - Clear cache: `npx expo start -c`
 - Reset node_modules: `rm -rf node_modules && npm install`
 
 **Module resolution errors:**
+
 - Ensure `@` paths are configured in `tsconfig.json`
 - Restart Metro bundler
 

@@ -1,12 +1,15 @@
 import jwt from "jsonwebtoken";
 import type { UserRole } from "@prisma/client";
 
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET || "";
+const JWT_SECRET = process.env.NEXTAUTH_SECRET || process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = "7d"; // 7 days
 const REFRESH_TOKEN_EXPIRES_IN = "30d"; // 30 days
 
-if (!JWT_SECRET) {
-  throw new Error("JWT_SECRET or NEXTAUTH_SECRET is not defined");
+function getJWTSecret(): string {
+  if (!JWT_SECRET) {
+    throw new Error("JWT_SECRET or NEXTAUTH_SECRET is not defined");
+  }
+  return JWT_SECRET;
 }
 
 export interface JWTPayload {
@@ -22,7 +25,7 @@ export function generateAccessToken(payload: Omit<JWTPayload, "type">) {
       ...payload,
       type: "access",
     },
-    JWT_SECRET,
+    getJWTSecret(),
     { expiresIn: JWT_EXPIRES_IN }
   );
 }
@@ -33,14 +36,14 @@ export function generateRefreshToken(payload: Omit<JWTPayload, "type">) {
       ...payload,
       type: "refresh",
     },
-    JWT_SECRET,
+    getJWTSecret(),
     { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
   );
 }
 
 export function verifyToken(token: string): JWTPayload {
   try {
-    return jwt.verify(token, JWT_SECRET) as JWTPayload;
+    return jwt.verify(token, getJWTSecret()) as JWTPayload;
   } catch {
     throw new Error("Invalid or expired token");
   }

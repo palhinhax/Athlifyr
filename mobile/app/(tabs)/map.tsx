@@ -60,6 +60,7 @@ export default function EventsMapScreen() {
   const router = useRouter();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [geoJsonData, setGeoJsonData] = useState<EventGeoJSON>({
     type: "FeatureCollection",
     features: [],
@@ -69,7 +70,11 @@ export default function EventsMapScreen() {
     try {
       setLoading(true);
 
-      // Fetch all events (we can optimize with pagination later)
+      // Fetch up to 100 events for map display
+      // Note: For production with many events, consider:
+      // - Using React Query for caching
+      // - Implementing viewport-based fetching
+      // - Server-side filtering by map bounds
       const response = await api.get<EventsResponse>("/events?pageSize=100");
       const allEvents = response.data.events;
 
@@ -116,6 +121,7 @@ export default function EventsMapScreen() {
       };
 
       setGeoJsonData(geoJson);
+      setHasLoaded(true);
     } catch (error) {
       console.error("Error fetching events:", error);
       Alert.alert(
@@ -128,8 +134,11 @@ export default function EventsMapScreen() {
   }, [t]);
 
   useEffect(() => {
-    fetchEvents();
-  }, [fetchEvents]);
+    // Only fetch once on initial mount
+    if (!hasLoaded) {
+      fetchEvents();
+    }
+  }, [fetchEvents, hasLoaded]);
 
   const handleMarkerPress = useCallback(
     (feature: Feature) => {

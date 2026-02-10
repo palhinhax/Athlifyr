@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useMemo } from "react";
 import {
   View,
   Text,
@@ -12,11 +12,18 @@ import {
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { ArrowLeft } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
+import { isSameDay, startOfDay } from "date-fns";
 import { useChatMessages, useConversations } from "@/src/hooks/useChat";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { ChatMessage } from "@/src/components/chat/ChatMessage";
 import { ChatInput } from "@/src/components/chat/ChatInput";
+import { DateSeparator } from "@/src/components/chat/DateSeparator";
 import { theme } from "@/src/constants/theme";
+import type { Message } from "@/src/api/chat";
+
+type MessageItem =
+  | { type: "message"; data: Message }
+  | { type: "date"; data: Date };
 
 export default function ChatScreen() {
   const { t } = useTranslation();
@@ -49,6 +56,26 @@ export default function ChatScreen() {
       }, 100);
     }
   }, [messages.length]);
+
+  // Group messages with date separators
+  const messageItems = useMemo<MessageItem[]>(() => {
+    const items: MessageItem[] = [];
+    let lastDate: Date | null = null;
+
+    messages.forEach((message) => {
+      const messageDate = startOfDay(new Date(message.createdAt));
+
+      // Add date separator if date changed
+      if (!lastDate || !isSameDay(lastDate, messageDate)) {
+        items.push({ type: "date", data: messageDate });
+        lastDate = messageDate;
+      }
+
+      items.push({ type: "message", data: message });
+    });
+
+    return items;
+  }, [messages]);
 
   const handleSendMessage = async (content: string) => {
     if (!user || !conversationId) return;
@@ -192,14 +219,23 @@ export default function ChatScreen() {
       ) : (
         <FlatList
           ref={flatListRef}
-          data={messages}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <ChatMessage
-              message={item}
-              isOwnMessage={item.senderId === user.id}
-            />
-          )}
+          data={messageItems}
+          keyExtractor={(item, index) =>
+            item.type === "message"
+              ? item.data.id
+              : `date-${item.data.getTime()}-${index}`
+          }
+          renderItem={({ item }) => {
+            if (item.type === "date") {
+              return <DateSeparator date={item.data} />;
+            }
+            return (
+              <ChatMessage
+                message={item.data}
+                isOwnMessage={item.data.senderId === user.id}
+              />
+            );
+          }}
           contentContainerStyle={styles.messagesList}
           onContentSizeChange={() =>
             flatListRef.current?.scrollToEnd({ animated: false })

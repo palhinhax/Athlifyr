@@ -73,13 +73,27 @@ mobile/
 │   ├── (tabs)/           # Tab navigation layout
 │   │   ├── index.tsx     # Events screen (default)
 │   │   ├── venues.tsx    # Venues screen
-│   │   ├── search.tsx    # Search screen
+│   │   ├── feed.tsx      # Activity feed
+│   │   ├── messages.tsx  # Conversations list
 │   │   ├── profile.tsx   # Profile screen
 │   │   └── _layout.tsx   # Tab layout configuration
+│   ├── chat/
+│   │   └── [conversationId].tsx # Chat detail screen
+│   ├── events/
+│   │   └── [slug].tsx    # Event detail screen
 │   └── _layout.tsx       # Root layout
 ├── src/
+│   ├── api/              # API client functions
+│   │   └── chat.ts       # Chat API calls
 │   ├── components/       # Reusable UI components
+│   │   ├── chat/         # Chat-specific components
+│   │   │   ├── ChatMessage.tsx
+│   │   │   ├── ChatInput.tsx
+│   │   │   ├── ConversationListItem.tsx
+│   │   │   └── DateSeparator.tsx
 │   │   └── EventCard.tsx # Event card component
+│   ├── hooks/            # Custom React hooks
+│   │   └── useChat.ts    # Chat hooks (useConversations, useChatMessages, etc.)
 │   ├── lib/              # Utilities, API client, helpers
 │   │   ├── api.ts        # Axios instance with interceptors
 │   │   ├── i18n.ts       # i18next configuration
@@ -89,7 +103,7 @@ mobile/
 │   ├── constants/        # App constants (theme, sports, etc.)
 │   │   ├── theme.ts      # Theme configuration
 │   │   └── index.ts      # General constants
-│   └── locales/          # Translation files
+│   └── locales/          # Translation files (including chat translations)
 │       ├── en/common.json
 │       ├── pt/common.json
 │       ├── es/common.json
@@ -102,6 +116,26 @@ mobile/
 ```
 
 ## ✨ Features
+
+### Chat / Messages
+
+Real-time messaging feature that matches the web app's chat experience:
+
+- **Conversations List**: View all active conversations with last message preview
+- **Real-time Updates**: Automatic polling for new messages (2-second interval)
+- **Message Display**: 
+  - Own vs other user message styling
+  - User avatars
+  - Timestamps
+  - Date separators
+- **Optimistic UI**: Messages appear instantly with server confirmation
+- **Keyboard Handling**: Proper keyboard avoidance for seamless typing
+- **Pull to Refresh**: Refresh conversations list
+- **Empty States**: Helpful prompts when no conversations exist
+- **Connection Status**: Visual indicator when connecting
+- **Auto-scroll**: Automatically scrolls to latest message
+
+**Navigation**: Access via Messages tab in bottom navigation
 
 ### Events Screen (Default)
 
@@ -118,9 +152,10 @@ The Events screen is the default page when the app opens, featuring:
 The app uses a bottom tab navigation with:
 
 1. **Events** (default) - Browse and search events
-2. **Venues** - Coming soon
-3. **Search** - Coming soon
-4. **Profile** - Coming soon
+2. **Venues** - Browse training venues
+3. **Feed** - Activity feed and social features (center tab)
+4. **Messages** - 1:1 direct messaging
+5. **Profile** - User profile and settings
 
 ## 🌍 Internationalization
 

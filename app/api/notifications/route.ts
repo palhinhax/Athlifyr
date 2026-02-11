@@ -1,10 +1,13 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BookingType, BookingStatus } from "@prisma/client";
+import {
+  markNotificationAsRead,
+  markAllNotificationsAsRead,
+} from "@/lib/notifications";
 
-// GET - Get all pending notifications for the current user
-export async function GET() {
+// GET - Get all notifications for the current user
+export async function GET(request: Request) {
   try {
     const session = await auth();
 
@@ -13,41 +16,42 @@ export async function GET() {
     }
 
     const userId = session.user.id;
-    const userEmail = session.user.email;
+    const { searchParams } = new URL(request.url);
+    const unreadOnly = searchParams.get("unreadOnly") === "true";
+    const limit = parseInt(searchParams.get("limit") ?? "50", 10);
 
-    // Run all queries in parallel
-    const [
-      trialBookingNotifications,
-      trialResponseNotifications,
-      friendRequestNotifications,
-      venueInviteNotifications,
-    ] = await Promise.all([
-      // 1. Trial booking requests (for venue owners/admins)
-      getTrialBookingNotifications(userId),
-      // 2. Trial booking responses (for users who requested a trial)
-      getTrialResponseNotifications(userId),
-      // 3. Friend requests received
-      getFriendRequestNotifications(userId),
-      // 4. Venue staff invitations
-      getVenueInviteNotifications(userId, userEmail),
-    ]);
+    // Query notifications from the database
+    const notifications = await prisma.notification.findMany({
+      where: {
+        userId,
+        ...(unreadOnly && { read: false }),
+      },
+      orderBy: { createdAt: "desc" },
+      take: limit,
+    });
 
-    const notifications = [
-      ...trialBookingNotifications,
-      ...trialResponseNotifications,
-      ...friendRequestNotifications,
-      ...venueInviteNotifications,
-    ].sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    // Count unread notifications
+    const unreadCount = await prisma.notification.count({
+      where: {
+        userId,
+        read: false,
+      },
+    });
 
-    // pendingCount only includes actionable items (not informational responses)
-    const pendingCount = notifications.filter(
-      (n) => n.type !== "TRIAL_RESPONSE"
-    ).length;
-
-    return NextResponse.json({ notifications, pendingCount });
+    return NextResponse.json({
+      notifications: notifications.map((n) => ({
+        id: n.id,
+        type: n.type,
+        title: n.title,
+        body: n.body,
+        data: n.data,
+        read: n.read,
+        createdAt: n.createdAt,
+      })),
+      unreadCount,
+      // Keep pendingCount for backward compatibility
+      pendingCount: unreadCount,
+    });
   } catch (error) {
     console.error("Error fetching notifications:", error);
     return NextResponse.json(
@@ -57,174 +61,44 @@ export async function GET() {
   }
 }
 
-// Trial booking requests across all managed venues
-async function getTrialBookingNotifications(userId: string) {
-  const managedVenues = await prisma.venueMember.findMany({
-    where: {
-      userId,
-      status: "ACTIVE",
-      role: { in: ["OWNER", "ADMIN"] },
-    },
-    select: {
-      venueId: true,
-      venue: {
-        select: {
-          enableTrialBooking: true,
-        },
-      },
-    },
-  });
+// POST - Mark notifications as read
+export async function POST(request: Request) {
+  try {
+    const session = await auth();
 
-  const venueIds = managedVenues
-    .filter(
-      (mv: { venue: { enableTrialBooking: boolean } }) =>
-        mv.venue.enableTrialBooking
-    )
-    .map((mv: { venueId: string }) => mv.venueId);
+    if (!session?.user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
 
-  if (venueIds.length === 0) return [];
+    const userId = session.user.id;
+    const body = await request.json();
+    const { notificationId, markAll } = body;
 
-  const bookings = await prisma.venueBooking.findMany({
-    where: {
-      venueId: { in: venueIds },
-      bookingType: BookingType.TRIAL,
-      status: BookingStatus.PENDING,
-    },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true, image: true },
-      },
-      venue: {
-        select: { id: true, name: true, slug: true, logo: true },
-      },
-      session: {
-        select: { id: true, title: true, startsAt: true, endsAt: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
+    if (markAll) {
+      const count = await markAllNotificationsAsRead(userId);
+      return NextResponse.json({ success: true, markedCount: count });
+    }
 
-  return bookings.map((booking) => ({
-    id: booking.id,
-    type: "TRIAL_REQUEST" as const,
-    userName: booking.user?.name ?? null,
-    userImage: booking.user?.image ?? null,
-    venueName: booking.venue.name,
-    venueSlug: booking.venue.slug,
-    sessionTitle: booking.session.title,
-    sessionStartsAt: booking.session.startsAt,
-    createdAt: booking.createdAt,
-  }));
-}
+    if (notificationId) {
+      const success = await markNotificationAsRead(notificationId, userId);
+      if (!success) {
+        return NextResponse.json(
+          { error: "Notification not found" },
+          { status: 404 }
+        );
+      }
+      return NextResponse.json({ success: true });
+    }
 
-// Trial booking responses for users who requested a trial (accepted/rejected in the last 7 days)
-async function getTrialResponseNotifications(userId: string) {
-  const sevenDaysAgo = new Date();
-  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-
-  const responses = await prisma.venueBooking.findMany({
-    where: {
-      userId,
-      bookingType: BookingType.TRIAL,
-      status: { in: [BookingStatus.BOOKED, BookingStatus.REJECTED] },
-      updatedAt: { gte: sevenDaysAgo },
-    },
-    include: {
-      venue: {
-        select: { id: true, name: true, slug: true, logo: true },
-      },
-      session: {
-        select: { id: true, title: true, startsAt: true, endsAt: true },
-      },
-    },
-    orderBy: { updatedAt: "desc" },
-    take: 20,
-  });
-
-  return responses.map((booking) => ({
-    id: booking.id,
-    type: "TRIAL_RESPONSE" as const,
-    userName: null,
-    userImage: booking.venue.logo,
-    venueName: booking.venue.name,
-    venueSlug: booking.venue.slug,
-    responseStatus: booking.status as "BOOKED" | "REJECTED",
-    sessionTitle: booking.session.title,
-    sessionStartsAt: booking.session.startsAt,
-    createdAt: booking.updatedAt,
-  }));
-}
-
-// Pending friend requests received by the user
-async function getFriendRequestNotifications(userId: string) {
-  const friendRequests = await prisma.friendship.findMany({
-    where: {
-      receiverId: userId,
-      status: "PENDING",
-    },
-    include: {
-      sender: {
-        select: { id: true, name: true, email: true, image: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
-
-  return friendRequests.map((fr) => ({
-    id: fr.id,
-    type: "FRIEND_REQUEST" as const,
-    userName: fr.sender.name,
-    userImage: fr.sender.image,
-    venueName: null,
-    venueSlug: null,
-    sessionTitle: null,
-    sessionStartsAt: null,
-    createdAt: fr.createdAt,
-  }));
-}
-
-// Pending venue staff invitations for the user
-async function getVenueInviteNotifications(
-  userId: string,
-  userEmail: string | null | undefined
-) {
-  const whereConditions = [];
-
-  // Match by userId
-  whereConditions.push({ invitedUserId: userId });
-
-  // Match by email
-  if (userEmail) {
-    whereConditions.push({ invitedEmail: userEmail });
+    return NextResponse.json(
+      { error: "Missing notificationId or markAll" },
+      { status: 400 }
+    );
+  } catch (error) {
+    console.error("Error marking notifications as read:", error);
+    return NextResponse.json(
+      { error: "Internal server error" },
+      { status: 500 }
+    );
   }
-
-  const invites = await prisma.venueInvite.findMany({
-    where: {
-      OR: whereConditions,
-      status: "PENDING",
-      expiresAt: { gt: new Date() },
-    },
-    include: {
-      venue: {
-        select: { id: true, name: true, slug: true, logo: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 20,
-  });
-
-  return invites.map((invite) => ({
-    id: invite.id,
-    type: "VENUE_INVITE" as const,
-    userName: null,
-    userImage: null,
-    venueName: invite.venue.name,
-    venueSlug: invite.venue.slug,
-    role: invite.role,
-    sessionTitle: null,
-    sessionStartsAt: null,
-    createdAt: invite.createdAt,
-  }));
 }

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus, BookingType } from "@prisma/client";
+import { notifyTrialRejected } from "@/lib/notifications";
 
 // POST - Reject a trial booking request
 export async function POST(
@@ -99,10 +100,24 @@ export async function POST(
           select: {
             name: true,
             slug: true,
+            logo: true,
           },
         },
       },
     });
+
+    // Notify the user that their trial was rejected
+    if (updatedBooking.user) {
+      notifyTrialRejected({
+        userId: updatedBooking.user.id,
+        venueName: updatedBooking.venue.name,
+        venueSlug: updatedBooking.venue.slug,
+        venueLogo: updatedBooking.venue.logo,
+        sessionTitle: updatedBooking.session.title,
+      }).catch((error) => {
+        console.error("Error sending trial rejected notification:", error);
+      });
+    }
 
     return NextResponse.json(
       {

@@ -50,9 +50,7 @@ export function EventFAQ({ items }: EventFAQProps) {
                 )}
               </View>
 
-              {isExpanded && (
-                <Text style={styles.answer}>{item.answer}</Text>
-              )}
+              {isExpanded && <Text style={styles.answer}>{item.answer}</Text>}
             </TouchableOpacity>
           );
         })}

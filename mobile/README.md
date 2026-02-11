@@ -123,7 +123,7 @@ Real-time messaging feature that matches the web app's chat experience:
 
 - **Conversations List**: View all active conversations with last message preview
 - **Real-time Updates**: Automatic polling for new messages (2-second interval)
-- **Message Display**: 
+- **Message Display**:
   - Own vs other user message styling
   - User avatars
   - Timestamps
@@ -190,8 +190,9 @@ The mobile app uses the **same API** as the Next.js web app:
 - **Response Interceptor**: Handles 401 errors and token refresh
 
 Example API call:
+
 ```typescript
-const response = await api.get<EventsResponse>('/events?page=1&pageSize=20');
+const response = await api.get<EventsResponse>("/events?page=1&pageSize=20");
 ```
 
 ## 📝 Type Safety
@@ -229,13 +230,16 @@ npx expo start -c
 ## 🐛 Troubleshooting
 
 **Android emulator can't reach localhost:**
+
 - Update `.env` to use `EXPO_PUBLIC_API_URL=http://10.0.2.2:3000`
 
 **Metro bundler issues:**
+
 - Clear cache: `npx expo start -c`
 - Reset node_modules: `rm -rf node_modules && npm install`
 
 **Module resolution errors:**
+
 - Ensure `@` paths are configured in `tsconfig.json`
 - Restart Metro bundler
 

@@ -29,17 +29,13 @@ function EmptyFeed() {
         <MessageSquare size={48} color={theme.colors.textTertiary} />
       </View>
       <Text style={styles.emptyTitle}>{t("feed.emptyTitle")}</Text>
-      <Text style={styles.emptyDescription}>
-        {t("feed.emptyDescription")}
-      </Text>
+      <Text style={styles.emptyDescription}>{t("feed.emptyDescription")}</Text>
       <TouchableOpacity
         style={styles.exploreButton}
         onPress={() => router.push("/(tabs)")}
         activeOpacity={0.8}
       >
-        <Text style={styles.exploreButtonText}>
-          {t("feed.exploreEvents")}
-        </Text>
+        <Text style={styles.exploreButtonText}>{t("feed.exploreEvents")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -57,9 +53,7 @@ function GuestFeed() {
         <Activity size={48} color={theme.colors.primary} />
       </View>
       <Text style={styles.emptyTitle}>{t("feed.title")}</Text>
-      <Text style={styles.emptyDescription}>
-        {t("feed.signInRequired")}
-      </Text>
+      <Text style={styles.emptyDescription}>{t("feed.signInRequired")}</Text>
       <TouchableOpacity
         style={styles.exploreButton}
         onPress={() => router.push("/login")}
@@ -106,9 +100,7 @@ export default function FeedScreen() {
     );
   }
 
-  const renderPost = ({ item }: { item: FeedPost }) => (
-    <PostCard post={item} />
-  );
+  const renderPost = ({ item }: { item: FeedPost }) => <PostCard post={item} />;
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

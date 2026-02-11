@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { notifyFriendAccepted } from "@/lib/notifications";
 
 // PATCH /api/friends/[id] - Accept or reject friend request
 export async function PATCH(
@@ -66,6 +67,23 @@ export async function PATCH(
         },
       },
     });
+
+    // Send notification to original sender if accepted
+    if (action === "accept") {
+      const accepter = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true, image: true },
+      });
+
+      notifyFriendAccepted({
+        receiverUserId: friendship.senderId,
+        accepterUserId: session.user.id,
+        accepterName: accepter?.name || "Someone",
+        accepterImage: accepter?.image,
+      }).catch((error) => {
+        console.error("Error sending friend accepted notification:", error);
+      });
+    }
 
     return NextResponse.json(updated);
   } catch (error) {

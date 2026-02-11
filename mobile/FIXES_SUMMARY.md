@@ -3,10 +3,12 @@
 ## 🔧 Problema 1: Botão "Voltar" na Página de Evento
 
 ### O Problema
+
 O botão de voltar não estava a aparecer quando o utilizador estava na página de detalhes do evento.
 
 ### A Solução
-1. **Configuração do Layout Principal** ([app/_layout.tsx](app/_layout.tsx))
+
+1. **Configuração do Layout Principal** ([app/\_layout.tsx](app/_layout.tsx))
    - Adicionado `screenOptions` com `headerShown: true` por defeito
    - Adicionada animação `slide_from_right` para melhor UX
    - Removida configuração que bloqueava o header nas páginas de eventos
@@ -17,6 +19,7 @@ O botão de voltar não estava a aparecer quando o utilizador estava na página 
    - Aplicadas as mesmas melhorias ao botão de partilha para consistência
 
 ### Resultado
+
 ✅ Botão de voltar agora está sempre visível no topo da página
 ✅ Fundo semi-transparente escuro torna o ícone branco sempre legível
 ✅ Sombra adiciona profundidade e torna o botão mais fácil de identificar
@@ -42,16 +45,20 @@ O botão de voltar não estava a aparecer quando o utilizador estava na página 
 ## 👤 Problema 2: Página de Perfil
 
 ### Verificação
+
 A página de perfil já está **100% completa** e funcional!
 
 ### Funcionalidades Implementadas
+
 ✅ **Vista de Convidado (Não autenticado)**
+
 - Ícone de utilizador grande
 - Título "Iniciar Sessão"
 - Descrição
 - Botão para fazer login
 
 ✅ **Vista Autenticada (Com login)**
+
 - **Header do Perfil**
   - Avatar (foto ou placeholder)
   - Nome completo
@@ -60,21 +67,25 @@ A página de perfil já está **100% completa** e funcional!
   - Botão de editar perfil
 
 ✅ **Secção de Preferências**
-  - 🌐 Idioma
-  - 🔔 Notificações
+
+- 🌐 Idioma
+- 🔔 Notificações
 
 ✅ **Secção de Suporte**
-  - ❓ Centro de Ajuda
-  - 🛡️ Política de Privacidade
-  - 📄 Termos de Serviço
-  - ℹ️ Versão da App (1.0.0)
+
+- ❓ Centro de Ajuda
+- 🛡️ Política de Privacidade
+- 📄 Termos de Serviço
+- ℹ️ Versão da App (1.0.0)
 
 ✅ **Logout**
-  - Botão de sair (vermelho)
-  - Confirmação antes de fazer logout
-  - Limpa a sessão do utilizador
+
+- Botão de sair (vermelho)
+- Confirmação antes de fazer logout
+- Limpa a sessão do utilizador
 
 ### Design
+
 - Cards com cantos arredondados
 - Sombras subtis
 - Ícones coloridos
@@ -83,6 +94,7 @@ A página de perfil já está **100% completa** e funcional!
 - Safe area para notch/status bar
 
 ### Integração
+
 - Usa `useAuthStore` para gestão de autenticação
 - Loading state enquanto carrega dados
 - Guest view quando não autenticado
@@ -92,7 +104,8 @@ A página de perfil já está **100% completa** e funcional!
 
 ## 📁 Arquivos Modificados
 
-### 1. [app/_layout.tsx](app/_layout.tsx)
+### 1. [app/\_layout.tsx](app/_layout.tsx)
+
 ```tsx
 // Antes
 <Stack>
@@ -113,6 +126,7 @@ A página de perfil já está **100% completa** e funcional!
 ```
 
 ### 2. [app/events/[slug].tsx](app/events/[slug].tsx)
+
 ```tsx
 // Antes
 backButton: {
@@ -127,7 +141,8 @@ backButton: {
 }
 ```
 
-### 3. [app/(tabs)/profile.tsx](app/(tabs)/profile.tsx)
+### 3. [app/(tabs)/profile.tsx](<app/(tabs)/profile.tsx>)
+
 ✅ Já estava completo! Nenhuma alteração necessária.
 
 ---
@@ -135,6 +150,7 @@ backButton: {
 ## 🎯 Estado Atual
 
 ### ✅ Completo
+
 - Página de eventos (lista)
 - Página de detalhes do evento
 - Componentes de evento (EventCard, EventMetaInfo, etc.)
@@ -144,6 +160,7 @@ backButton: {
 - **Botão de voltar funcionando**
 
 ### 🔮 Pode Adicionar Depois
+
 - [ ] Implementar funcionalidade de partilha (handleShare)
 - [ ] Página de edição de perfil
 - [ ] Seletor de idioma
@@ -181,10 +198,12 @@ npx expo start
 ## 💯 Resumo
 
 ### Antes
+
 ❌ Botão de voltar não aparecia ou não era visível
 ❓ Estado da página de perfil desconhecido
 
 ### Depois
+
 ✅ Botão de voltar sempre visível e funcional
 ✅ Página de perfil 100% completa e funcional
 ✅ Melhor UX com animações e sombras

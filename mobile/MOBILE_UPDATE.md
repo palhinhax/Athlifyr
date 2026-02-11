@@ -5,6 +5,7 @@ Os cards de eventos e a página de detalhes do mobile estão agora **iguais ao N
 ## ✅ O Que Foi Atualizado
 
 ### 1. **EventCard Component** - Igual ao Web
+
 O card de eventos agora tem o mesmo visual do Next.js:
 
 - ✅ **SportBadges** com ícones e traduções
@@ -16,6 +17,7 @@ O card de eventos agora tem o mesmo visual do Next.js:
 - ✅ **Border verde** quando o user está participando
 
 ### 2. **Página de Detalhes** - `/events/[slug]`
+
 Página de detalhes completa com:
 
 - ✅ **Header transparente** com botão voltar
@@ -29,32 +31,38 @@ Página de detalhes completa com:
 ### 3. **Componentes Criados**
 
 #### `SportBadge.tsx`
+
 ```tsx
 <SportBadge sportType="RUNNING" size="md" />
 ```
+
 - Mostra ícone emoji + nome traduzido
 - Tamanhos: sm, md, lg
 - Cores do tema
 
 #### `event-utils.ts`
+
 Funções de utilidade:
+
 - `formatDateRange()` - Formata ranges de datas igual ao web
 - `formatDate()` - Formata datas
 - `getSportIcon()` - Retorna emoji do desporto
 - `sportTypeIcons` - Mapa de ícones
 
 ### 4. **API Update**
+
 Endpoint `GET /api/events/[id]` agora aceita **slug ou ID**:
 
 ```typescript
 // Ambos funcionam:
-GET /api/events/corrida-lisboa-2026  // slug
-GET /api/events/uuid-123-456         // id
+GET / api / events / corrida - lisboa - 2026; // slug
+GET / api / events / uuid - 123 - 456; // id
 ```
 
 ## 📱 Como Usar
 
 ### Ver Lista de Eventos
+
 ```bash
 cd mobile
 npx expo start
@@ -64,6 +72,7 @@ npx expo start
 A página principal (Events) mostra todos os eventos com os cards atualizados.
 
 ### Ver Detalhes de um Evento
+
 1. Toque num card de evento
 2. Abre a página de detalhes com todas as informações
 3. Scroll para ver variantes, descrição, etc.
@@ -72,6 +81,7 @@ A página principal (Events) mostra todos os eventos com os cards atualizados.
 ## 🎨 Design Matching
 
 ### EventCard
+
 ```
 ┌─────────────────────────┐
 │  Imagem (192px)         │
@@ -86,6 +96,7 @@ A página principal (Events) mostra todos os eventos com os cards atualizados.
 ```
 
 ### Event Detail Page
+
 ```
 ┌─────────────────────────┐
 │ [← Back]                │  ← Transparent header
@@ -116,6 +127,7 @@ A página principal (Events) mostra todos os eventos com os cards atualizados.
 ## 🌍 Traduções
 
 Adicionadas traduções de desportos:
+
 - `sports.RUNNING` = "Running"
 - `sports.TRAIL` = "Trail"
 - `sports.HYROX` = "HYROX"
@@ -139,6 +151,7 @@ mobile/
 ## 🔄 API Changes
 
 `app/api/events/[id]/route.ts`:
+
 - Agora aceita slug ou UUID
 - Retorna variantes com triathlon segments
 - Inclui contador de comentários

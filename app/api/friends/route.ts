@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
+import { notifyFriendRequest } from "@/lib/notifications";
 
 // GET /api/friends - Get user's friends and pending requests
 export async function GET(request: Request) {
@@ -188,6 +189,22 @@ export async function POST(request: Request) {
           },
         },
       },
+    });
+
+    // Get sender info for notification
+    const sender = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { name: true, image: true },
+    });
+
+    // Send notification to receiver
+    notifyFriendRequest({
+      receiverUserId: userId,
+      senderUserId: session.user.id,
+      senderName: sender?.name || "Someone",
+      senderImage: sender?.image,
+    }).catch((error) => {
+      console.error("Error sending friend request notification:", error);
     });
 
     return NextResponse.json(friendship);

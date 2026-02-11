@@ -26,9 +26,7 @@ export function EventVariantsList({ variants }: EventVariantsListProps) {
           <View key={variant.id} style={styles.variantCard}>
             <View style={styles.variantHeader}>
               <Text style={styles.variantName}>
-                {variant.distanceKm
-                  ? `${variant.distanceKm} km`
-                  : variant.name}
+                {variant.distanceKm ? `${variant.distanceKm} km` : variant.name}
               </Text>
             </View>
 

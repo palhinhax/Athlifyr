@@ -44,7 +44,10 @@ export async function GET() {
 
     // Only check venues with trial booking enabled
     const venueIds = managedVenues
-      .filter((mv: { venue: { enableTrialBooking: boolean } }) => mv.venue.enableTrialBooking)
+      .filter(
+        (mv: { venue: { enableTrialBooking: boolean } }) =>
+          mv.venue.enableTrialBooking
+      )
       .map((mv: { venueId: string }) => mv.venueId);
 
     if (venueIds.length === 0) {

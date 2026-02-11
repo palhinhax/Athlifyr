@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Language } from "@prisma/client";
-import { sendEventDateChangeNotification } from "@/lib/push-notifications";
+import { notifyEventDateChange } from "@/lib/notifications";
 
 interface RouteParams {
   params: Promise<{
@@ -257,7 +257,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
       if (dateChanged) {
         // Send notification asynchronously (don't wait for it to complete)
-        sendEventDateChangeNotification({
+        notifyEventDateChange({
           eventId: id,
           eventTitle: updatedEvent.title,
           eventSlug: updatedEvent.slug,

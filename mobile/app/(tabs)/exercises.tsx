@@ -40,9 +40,7 @@ export default function ExercisesScreen() {
         {/* Add Exercise Button */}
         <TouchableOpacity style={styles.addButton} activeOpacity={0.8}>
           <Plus size={20} color={theme.colors.white} />
-          <Text style={styles.addButtonText}>
-            {t("exercises.addExercise")}
-          </Text>
+          <Text style={styles.addButtonText}>{t("exercises.addExercise")}</Text>
         </TouchableOpacity>
 
         {/* Empty State */}

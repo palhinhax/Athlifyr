@@ -9,10 +9,7 @@ export async function GET(request: NextRequest) {
     const token = extractTokenFromHeader(authHeader);
 
     if (!token) {
-      return NextResponse.json(
-        { error: "No token provided" },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "No token provided" }, { status: 401 });
     }
 
     // Verify token

@@ -1,5 +1,11 @@
 import { Tabs } from "expo-router";
-import { Calendar, MapPin, User, MessageCircle, Activity } from "lucide-react-native";
+import {
+  Calendar,
+  MapPin,
+  User,
+  MessageCircle,
+  Activity,
+} from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -11,13 +17,10 @@ export default function TabLayout() {
   const insets = useSafeAreaInsets();
 
   // Calculate tab bar height with safe area
-  const tabBarHeight = Platform.OS === "ios"
-    ? 88
-    : 68 + insets.bottom;
+  const tabBarHeight = Platform.OS === "ios" ? 88 : 68 + insets.bottom;
 
-  const tabBarPaddingBottom = Platform.OS === "ios"
-    ? 24
-    : Math.max(8, insets.bottom);
+  const tabBarPaddingBottom =
+    Platform.OS === "ios" ? 24 : Math.max(8, insets.bottom);
 
   return (
     <Tabs
@@ -79,7 +82,9 @@ export default function TabLayout() {
         name="messages"
         options={{
           title: t("navigation.messages"),
-          tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => (
+            <MessageCircle color={color} size={size} />
+          ),
         }}
       />
       <Tabs.Screen

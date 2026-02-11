@@ -28,7 +28,9 @@ export function ChatMessage({ message, isOwnMessage }: ChatMessageProps) {
     <View
       style={[
         styles.container,
-        isOwnMessage ? styles.ownMessageContainer : styles.otherMessageContainer,
+        isOwnMessage
+          ? styles.ownMessageContainer
+          : styles.otherMessageContainer,
       ]}
     >
       {/* Avatar - only show for other user's messages */}

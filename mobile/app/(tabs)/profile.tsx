@@ -44,9 +44,7 @@ function GuestView() {
         onPress={() => router.push("/login")}
         activeOpacity={0.8}
       >
-        <Text style={styles.signInButtonText}>
-          {t("profile.signInButton")}
-        </Text>
+        <Text style={styles.signInButtonText}>{t("profile.signInButton")}</Text>
       </TouchableOpacity>
     </View>
   );
@@ -193,9 +191,7 @@ export default function ProfileScreen() {
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
             <Trophy size={20} color={theme.colors.primary} />
-            <Text style={styles.sectionTitle}>
-              {t("profile.performance")}
-            </Text>
+            <Text style={styles.sectionTitle}>{t("profile.performance")}</Text>
           </View>
 
           {/* Sport Tabs */}
@@ -346,10 +342,7 @@ export default function ProfileScreen() {
             <Text style={styles.galleryEmptyText}>
               Partilha momentos dos teus treinos!
             </Text>
-            <TouchableOpacity
-              style={styles.galleryButton}
-              activeOpacity={0.7}
-            >
+            <TouchableOpacity style={styles.galleryButton} activeOpacity={0.7}>
               <ImagePlus size={16} color={theme.colors.text} />
               <Text style={styles.galleryButtonText}>Publicar Foto</Text>
             </TouchableOpacity>

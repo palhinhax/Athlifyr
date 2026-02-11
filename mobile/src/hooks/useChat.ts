@@ -37,7 +37,8 @@ export function useChatMessages(
     enabled?: boolean;
   }
 ) {
-  const { pollingInterval = DEFAULT_POLLING_INTERVAL, enabled = true } = options || {};
+  const { pollingInterval = DEFAULT_POLLING_INTERVAL, enabled = true } =
+    options || {};
   const queryClient = useQueryClient();
   const lastMessageIdRef = useRef<string | null>(null);
   const [isPolling, setIsPolling] = useState(false);

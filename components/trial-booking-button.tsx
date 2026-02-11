@@ -239,7 +239,10 @@ export function TrialBookingButton({
     // Fill remaining days to complete the grid (up to 42 = 6 rows × 7 days)
     while (days.length % 7 !== 0) {
       days.push({
-        date: addDays(monthEndDate, days.length - adjustedStart - monthEndDate.getDate() + 1),
+        date: addDays(
+          monthEndDate,
+          days.length - adjustedStart - monthEndDate.getDate() + 1
+        ),
         isCurrentMonth: false,
       });
     }
@@ -401,9 +404,7 @@ export function TrialBookingButton({
                           type="button"
                           disabled={isFull}
                           onClick={() =>
-                            setSelectedSessionId(
-                              isSelected ? null : session.id
-                            )
+                            setSelectedSessionId(isSelected ? null : session.id)
                           }
                           className={cn(
                             "flex w-full items-center gap-3 rounded-lg border p-3 text-left transition-colors",
@@ -416,7 +417,7 @@ export function TrialBookingButton({
                         >
                           <div className="flex-1 space-y-1">
                             <div className="flex items-center gap-2">
-                              <span className="font-medium text-sm">
+                              <span className="text-sm font-medium">
                                 {session.title}
                               </span>
                               {isSelected && (
@@ -426,8 +427,10 @@ export function TrialBookingButton({
                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                               <span className="flex items-center gap-1">
                                 <Clock className="h-3 w-3" />
-                                {format(new Date(session.startsAt), "HH:mm")} -{" "}
-                                {format(new Date(session.endsAt), "HH:mm")}
+                                {format(
+                                  new Date(session.startsAt),
+                                  "HH:mm"
+                                )} - {format(new Date(session.endsAt), "HH:mm")}
                               </span>
                               {session.capacity !== null && (
                                 <span className="flex items-center gap-1">
@@ -456,15 +459,10 @@ export function TrialBookingButton({
                 <p className="text-sm text-green-800 dark:text-green-200">
                   {t("confirmSession", {
                     title: selectedSession.title,
-                    date: format(
-                      new Date(selectedSession.startsAt),
-                      "d MMMM",
-                      { locale: dateLocale }
-                    ),
-                    time: format(
-                      new Date(selectedSession.startsAt),
-                      "HH:mm"
-                    ),
+                    date: format(new Date(selectedSession.startsAt), "d MMMM", {
+                      locale: dateLocale,
+                    }),
+                    time: format(new Date(selectedSession.startsAt), "HH:mm"),
                   })}
                 </p>
               </div>

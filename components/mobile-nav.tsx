@@ -120,7 +120,9 @@ export function MobileNav() {
                     </div>
                     {notificationsPendingCount > 0 && (
                       <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
-                        {notificationsPendingCount > 9 ? "9+" : notificationsPendingCount}
+                        {notificationsPendingCount > 9
+                          ? "9+"
+                          : notificationsPendingCount}
                       </span>
                     )}
                   </Link>

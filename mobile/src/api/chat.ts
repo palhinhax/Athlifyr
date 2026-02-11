@@ -54,7 +54,9 @@ export async function fetchConversations(): Promise<Conversation[]> {
 /**
  * Fetch messages for a specific conversation
  */
-export async function fetchMessages(conversationId: string): Promise<Message[]> {
+export async function fetchMessages(
+  conversationId: string
+): Promise<Message[]> {
   const response = await api.get<{ messages: Message[] }>(
     `/chat/conversations/${conversationId}/messages`
   );

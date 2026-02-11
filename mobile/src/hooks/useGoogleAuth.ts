@@ -17,9 +17,9 @@ export function useGoogleAuth() {
   // Use makeRedirectUri to automatically generate the correct redirect URI
   // This works with both Expo Go and standalone builds
   const redirectUri = "athlifyr://";
-  
+
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-  
+
   // Debug
   console.log("Google Auth Config:", {
     redirectUri,
@@ -67,11 +67,14 @@ export function useGoogleAuth() {
 
   useEffect(() => {
     console.log("Google Auth Response:", response);
-    
+
     if (response?.type === "success") {
       const { authentication } = response;
-      console.log("Google Auth Success! Access Token:", authentication?.accessToken?.substring(0, 20) + "...");
-      
+      console.log(
+        "Google Auth Success! Access Token:",
+        authentication?.accessToken?.substring(0, 20) + "..."
+      );
+
       if (authentication?.accessToken) {
         handleGoogleToken(authentication.accessToken);
       }

@@ -1,7 +1,8 @@
 import axios from "axios";
 import * as SecureStore from "expo-secure-store";
 
-export const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+export const API_URL =
+  process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 const TOKEN_KEY = "auth-token";
 

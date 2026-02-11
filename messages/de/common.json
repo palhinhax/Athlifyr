@@ -199,6 +199,7 @@
     "inviteDeclined": "Einladung abgelehnt",
     "actionError": "Ein Fehler ist aufgetreten",
     "decline": "Ablehnen",
-    "viewAll": "Alle Benachrichtigungen anzeigen"
+    "viewAll": "Alle Benachrichtigungen anzeigen",
+    "markAllRead": "Alle als gelesen markieren"
   }
 }

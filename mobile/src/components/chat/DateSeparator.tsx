@@ -9,7 +9,7 @@ interface DateSeparatorProps {
 
 export function DateSeparator({ date }: DateSeparatorProps) {
   const dateObj = new Date(date);
-  
+
   const getDateLabel = () => {
     if (isToday(dateObj)) {
       return "Today";

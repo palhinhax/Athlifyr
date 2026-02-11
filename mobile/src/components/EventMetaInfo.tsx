@@ -58,7 +58,8 @@ export function EventMetaInfo({
           <View style={styles.textContainer}>
             <Text style={styles.label}>Friends Going</Text>
             <Text style={styles.value}>
-              {friendsGoingCount} {friendsGoingCount === 1 ? "friend" : "friends"}
+              {friendsGoingCount}{" "}
+              {friendsGoingCount === 1 ? "friend" : "friends"}
             </Text>
           </View>
         </View>

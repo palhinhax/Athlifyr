@@ -19,6 +19,10 @@ interface PushNotificationData {
   type?: string;
   conversationId?: string;
   messageId?: string;
+  eventId?: string;
+  eventSlug?: string;
+  oldDate?: string;
+  newDate?: string;
   screen?: string;
   route?: string;
 }
@@ -85,6 +89,17 @@ export function usePushNotifications() {
           importance: Notifications.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: "#FF231F7C",
+          sound: "default",
+          enableVibrate: true,
+        });
+
+        // Event updates channel for date changes, cancellations, etc.
+        await Notifications.setNotificationChannelAsync("event-updates", {
+          name: "Event Updates",
+          description: "Notifications about events you're attending",
+          importance: Notifications.AndroidImportance.HIGH,
+          vibrationPattern: [0, 250, 250, 250],
+          lightColor: "#4F46E5",
           sound: "default",
           enableVibrate: true,
         });
@@ -182,6 +197,9 @@ export function usePushNotifications() {
       // Navigate based on notification data
       if (data.type === "chat_message" && data.conversationId) {
         router.push(`/chat/${data.conversationId}`);
+      } else if (data.type === "event_date_change" && data.eventSlug) {
+        // Navigate to event page when event date change notification is tapped
+        router.push(`/events/${data.eventSlug}`);
       } else if (data.route) {
         router.push(data.route);
       }

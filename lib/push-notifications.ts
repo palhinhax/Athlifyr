@@ -200,3 +200,69 @@ export async function sendChatMessageNotification(params: {
     channelId: "chat-messages",
   });
 }
+
+/**
+ * Send event date change notification to all participating users
+ */
+export async function sendEventDateChangeNotification(params: {
+  eventId: string;
+  eventTitle: string;
+  eventSlug: string;
+  oldDate: Date;
+  newDate: Date;
+}): Promise<{ success: boolean; totalSent: number; totalFailed: number }> {
+  const { eventId, eventTitle, eventSlug, oldDate, newDate } = params;
+
+  // Get all users participating in this event
+  const participations = await prisma.participation.findMany({
+    where: {
+      eventId,
+      status: "going",
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  if (participations.length === 0) {
+    console.log(`No participants found for event ${eventId}`);
+    return { success: true, totalSent: 0, totalFailed: 0 };
+  }
+
+  const userIds = participations.map((p) => p.userId);
+
+  // Format dates for display
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("pt-PT", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
+  };
+
+  const oldDateStr = formatDate(oldDate);
+  const newDateStr = formatDate(newDate);
+
+  // Send notifications to all participants
+  const result = await sendPushNotificationToUsers(userIds, {
+    title: "📅 Event Date Changed",
+    body: `The event "${eventTitle}" has been rescheduled from ${oldDateStr} to ${newDateStr}`,
+    data: {
+      type: "event_date_change",
+      eventId,
+      eventSlug,
+      oldDate: oldDate.toISOString(),
+      newDate: newDate.toISOString(),
+      screen: "event",
+      route: `/events/${eventSlug}`,
+    },
+    sound: "default",
+    channelId: "event-updates",
+  });
+
+  console.log(
+    `Event date change notification for "${eventTitle}": ${result.totalSent} sent, ${result.totalFailed} failed`
+  );
+
+  return result;
+}

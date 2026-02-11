@@ -4,7 +4,7 @@ import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/src/lib/auth-store";
-import { api } from "@/src/api/client";
+import { api } from "@/src/lib/api";
 
 // Configure notification behavior
 Notifications.setNotificationHandler({

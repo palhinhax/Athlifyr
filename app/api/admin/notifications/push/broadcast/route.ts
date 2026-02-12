@@ -1,6 +1,20 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import webpush from "web-push";
+
+// Configure web-push with VAPID details
+if (
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+  process.env.VAPID_PRIVATE_KEY &&
+  process.env.VAPID_SUBJECT
+) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 const EXPO_PUSH_ENDPOINT = "https://exp.host/--/api/v2/push/send";
 const CHUNK_SIZE = 100;
@@ -64,6 +78,8 @@ export async function POST(request: Request) {
         id: true,
         token: true,
         userId: true,
+        platform: true,
+        deviceId: true,
       },
     });
 
@@ -94,62 +110,52 @@ export async function POST(request: Request) {
     const uniqueUserIds = new Set(tokens.map((t) => t.userId));
     const usersTargeted = uniqueUserIds.size;
 
-    // Build Expo messages
-    const messages = tokens.map((t) => ({
-      to: t.token,
-      title: title.trim(),
-      body: message.trim(),
-      data: {
-        type: "admin_announcement",
-        ...data,
-      },
-      sound: "default" as const,
-      priority: "high" as const,
-    }));
+    // Separate mobile and web tokens
+    const mobileTokens = tokens.filter((t) => t.platform !== "web");
+    const webTokens = tokens.filter((t) => t.platform === "web");
 
-    // Send in chunks
-    let sent = 0;
-    let failed = 0;
+    let totalSent = 0;
+    let totalFailed = 0;
     const invalidTokenIds: string[] = [];
 
-    for (let i = 0; i < messages.length; i += CHUNK_SIZE) {
-      const chunk = messages.slice(i, i + CHUNK_SIZE);
-      const tokenChunk = tokens.slice(i, i + CHUNK_SIZE);
+    // Send to mobile devices (Expo)
+    if (mobileTokens.length > 0) {
+      const mobileMessages = mobileTokens.map((t) => ({
+        to: t.token,
+        title: title.trim(),
+        body: message.trim(),
+        data: {
+          type: "admin_broadcast",
+          ...data,
+        },
+        sound: "default" as const,
+        priority: "high" as const,
+      }));
 
-      try {
-        const response = await fetch(EXPO_PUSH_ENDPOINT, {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
+      const mobileResult = await sendExpoMessages(mobileMessages, mobileTokens);
+      totalSent += mobileResult.sent;
+      totalFailed += mobileResult.failed;
+      invalidTokenIds.push(...mobileResult.invalidTokenIds);
+    }
+
+    // Send to web browsers (Web Push)
+    if (webTokens.length > 0) {
+      const webResult = await sendWebPushMessages(
+        {
+          title: title.trim(),
+          body: message.trim(),
+          icon: "/android-chrome-192x192.png",
+          tag: "admin_broadcast",
+          data: {
+            type: "admin_broadcast",
+            ...data,
           },
-          body: JSON.stringify(chunk),
-        });
-
-        if (!response.ok) {
-          failed += chunk.length;
-          continue;
-        }
-
-        const result: { data: ExpoPushTicket[] } = await response.json();
-
-        for (let j = 0; j < result.data.length; j++) {
-          const ticket = result.data[j];
-          if (ticket.status === "error") {
-            failed++;
-            if (
-              ticket.message?.includes("DeviceNotRegistered") ||
-              ticket.message?.includes("InvalidCredentials")
-            ) {
-              invalidTokenIds.push(tokenChunk[j].id);
-            }
-          } else {
-            sent++;
-          }
-        }
-      } catch {
-        failed += chunk.length;
-      }
+        },
+        webTokens
+      );
+      totalSent += webResult.sent;
+      totalFailed += webResult.failed;
+      invalidTokenIds.push(...webResult.invalidTokenIds);
     }
 
     // Deactivate invalid tokens
@@ -158,9 +164,6 @@ export async function POST(request: Request) {
         where: { id: { in: invalidTokenIds } },
         data: { isActive: false },
       });
-      console.log(
-        `Deactivated ${invalidTokenIds.length} invalid tokens after broadcast`
-      );
     }
 
     // Log the broadcast
@@ -171,8 +174,8 @@ export async function POST(request: Request) {
       body: message.trim(),
       usersTargeted,
       tokensFound: tokens.length,
-      sent,
-      failed,
+      sent: totalSent,
+      failed: totalFailed,
     });
 
     return NextResponse.json({
@@ -180,17 +183,138 @@ export async function POST(request: Request) {
       data: {
         usersTargeted,
         tokensFound: tokens.length,
-        sent,
-        failed,
+        sent: totalSent,
+        failed: totalFailed,
+        mobileTokens: mobileTokens.length,
+        webTokens: webTokens.length,
       },
     });
   } catch (error) {
-    console.error("Error sending broadcast push:", error);
+    console.error("Error broadcasting push notification:", error);
     return NextResponse.json(
-      { error: "Failed to send broadcast notification" },
+      { error: "Failed to broadcast notification" },
       { status: 500 }
     );
   }
+}
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+interface TokenRecord {
+  id: string;
+  token: string;
+  deviceId: string | null;
+}
+
+// Send to web browsers using Web Push API
+async function sendWebPushMessages(
+  payload: {
+    title: string;
+    body: string;
+    icon?: string;
+    tag?: string;
+    data?: Record<string, unknown>;
+  },
+  tokens: TokenRecord[]
+): Promise<{ sent: number; failed: number; invalidTokenIds: string[] }> {
+  let sent = 0;
+  let failed = 0;
+  const invalidTokenIds: string[] = [];
+
+  for (const token of tokens) {
+    try {
+      // Parse the subscription object stored in deviceId
+      const subscription = JSON.parse(token.deviceId || "{}");
+
+      if (!subscription.endpoint) {
+        console.error(`Invalid subscription for token ${token.id}`);
+        invalidTokenIds.push(token.id);
+        failed++;
+        continue;
+      }
+
+      await webpush.sendNotification(subscription, JSON.stringify(payload));
+      sent++;
+    } catch (error) {
+      console.error(`❌ Failed to send web push to token ${token.id}:`, error);
+      // Check if it's an invalid subscription error
+      if (
+        error instanceof Error &&
+        (error.message.includes("410") || error.message.includes("expired"))
+      ) {
+        invalidTokenIds.push(token.id);
+      }
+      failed++;
+    }
+  }
+
+  console.log(
+    `📊 Web Push Results: ${sent} sent, ${failed} failed, ${invalidTokenIds.length} invalid`
+  );
+
+  return { sent, failed, invalidTokenIds };
+}
+
+// Send to mobile devices using Expo Push API
+async function sendExpoMessages(
+  messages: Array<{
+    to: string;
+    title: string;
+    body: string;
+    data?: Record<string, string | number | boolean>;
+    sound: "default";
+    priority: "high";
+  }>,
+  tokens: TokenRecord[]
+): Promise<{ sent: number; failed: number; invalidTokenIds: string[] }> {
+  let sent = 0;
+  let failed = 0;
+  const invalidTokenIds: string[] = [];
+
+  // Chunk messages for Expo API (max 100 per request)
+  for (let i = 0; i < messages.length; i += CHUNK_SIZE) {
+    const chunk = messages.slice(i, i + CHUNK_SIZE);
+    const tokenChunk = tokens.slice(i, i + CHUNK_SIZE);
+
+    try {
+      const response = await fetch(EXPO_PUSH_ENDPOINT, {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(chunk),
+      });
+
+      if (!response.ok) {
+        failed += chunk.length;
+        continue;
+      }
+
+      const result: { data: ExpoPushTicket[] } = await response.json();
+
+      for (let j = 0; j < result.data.length; j++) {
+        const ticket = result.data[j];
+        if (ticket.status === "error") {
+          failed++;
+          if (
+            ticket.message?.includes("DeviceNotRegistered") ||
+            ticket.message?.includes("InvalidCredentials")
+          ) {
+            invalidTokenIds.push(tokenChunk[j].id);
+          }
+        } else {
+          sent++;
+        }
+      }
+    } catch {
+      failed += chunk.length;
+    }
+  }
+
+  return { sent, failed, invalidTokenIds };
 }
 
 async function logAdminPush(params: {

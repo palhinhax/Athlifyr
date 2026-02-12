@@ -10,7 +10,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 
 interface LanguageSelectorProps {
@@ -59,49 +58,38 @@ export function LanguageSelector({
   };
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-2">
-        <Label htmlFor="language">{t("language")}</Label>
-        <p className="text-sm text-muted-foreground">
-          {t("languageDescription")}
-        </p>
-      </div>
-
-      <Select
-        value={locale}
-        onValueChange={handleLanguageChange}
-        disabled={isPending}
-      >
-        <SelectTrigger id="language" className="w-full">
-          {isPending ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <SelectValue />
-          )}
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="pt">
-            <span className="flex items-center gap-2">
-              🇵🇹 {t("portuguese")}
-            </span>
-          </SelectItem>
-          <SelectItem value="en">
-            <span className="flex items-center gap-2">🇬🇧 {t("english")}</span>
-          </SelectItem>
-          <SelectItem value="es">
-            <span className="flex items-center gap-2">🇪🇸 {t("spanish")}</span>
-          </SelectItem>
-          <SelectItem value="fr">
-            <span className="flex items-center gap-2">🇫🇷 {t("french")}</span>
-          </SelectItem>
-          <SelectItem value="de">
-            <span className="flex items-center gap-2">🇩🇪 {t("german")}</span>
-          </SelectItem>
-          <SelectItem value="it">
-            <span className="flex items-center gap-2">🇮🇹 {t("italian")}</span>
-          </SelectItem>
-        </SelectContent>
-      </Select>
-    </div>
+    <Select
+      value={locale}
+      onValueChange={handleLanguageChange}
+      disabled={isPending}
+    >
+      <SelectTrigger id="language" className="w-full">
+        {isPending ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <SelectValue />
+        )}
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="pt">
+          <span className="flex items-center gap-2">🇵🇹 {t("portuguese")}</span>
+        </SelectItem>
+        <SelectItem value="en">
+          <span className="flex items-center gap-2">🇬🇧 {t("english")}</span>
+        </SelectItem>
+        <SelectItem value="es">
+          <span className="flex items-center gap-2">🇪🇸 {t("spanish")}</span>
+        </SelectItem>
+        <SelectItem value="fr">
+          <span className="flex items-center gap-2">🇫🇷 {t("french")}</span>
+        </SelectItem>
+        <SelectItem value="de">
+          <span className="flex items-center gap-2">🇩🇪 {t("german")}</span>
+        </SelectItem>
+        <SelectItem value="it">
+          <span className="flex items-center gap-2">🇮🇹 {t("italian")}</span>
+        </SelectItem>
+      </SelectContent>
+    </Select>
   );
 }

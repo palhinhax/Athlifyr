@@ -125,11 +125,22 @@ export default function SettingsScreen() {
 
   const handleLanguageChange = async (langCode: string) => {
     try {
+      // Change language locally first
       await i18n.changeLanguage(langCode);
-      // Update user locale on server
-      await api.patch("/user/locale", { locale: langCode });
+
+      // Try to update user locale on server (non-blocking)
+      try {
+        await api.patch("/user/locale", { locale: langCode });
+      } catch (serverError) {
+        // Log but don't show error - language change already succeeded locally
+        console.warn("Could not update language on server:", serverError);
+      }
     } catch (error) {
       console.error("Error changing language:", error);
+      Alert.alert(
+        t("common.error"),
+        "Failed to change language. Please try again."
+      );
     }
   };
 

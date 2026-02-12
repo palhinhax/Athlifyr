@@ -30,19 +30,48 @@ self.addEventListener("push", (event) => {
 
 // Handle notification clicks
 self.addEventListener("notificationclick", (event) => {
-  console.log("[SW] Notification click:", event.notification.tag);
+  console.log(
+    "[SW] Notification click:",
+    event.notification.tag,
+    event.notification.data
+  );
   event.notification.close();
 
   const data = event.notification.data || {};
-  // Build URL: prefer conversationId for chat, then generic url/route
+
+  // Build URL: prioritize data.url, then conversationId for chat, then generic fallback
   let urlToOpen = "/";
-  if (data.type === "chat_message" && data.conversationId) {
-    urlToOpen = `/pt/chat/${data.conversationId}`;
-  } else if (data.url) {
+
+  if (data.url) {
     urlToOpen = data.url;
+  } else if (
+    data.type === "admin_announcement" ||
+    data.type === "admin_broadcast"
+  ) {
+    urlToOpen = data.url || "/pt/notifications";
+  } else if (data.type === "chat_message" && data.conversationId) {
+    urlToOpen = `/pt/chat/${data.conversationId}`;
   } else if (data.route) {
     urlToOpen = data.route;
   }
+
+  // Ensure URL has locale prefix (default to /pt/)
+  if (
+    urlToOpen &&
+    !urlToOpen.startsWith("http") &&
+    !urlToOpen.startsWith("/pt/") &&
+    !urlToOpen.startsWith("/en/") &&
+    !urlToOpen.startsWith("/es/") &&
+    !urlToOpen.startsWith("/fr/") &&
+    !urlToOpen.startsWith("/de/") &&
+    !urlToOpen.startsWith("/it/")
+  ) {
+    // Remove leading slash if present
+    const path = urlToOpen.startsWith("/") ? urlToOpen.substring(1) : urlToOpen;
+    urlToOpen = `/pt/${path}`;
+  }
+
+  console.log("[SW] Opening URL:", urlToOpen);
 
   event.waitUntil(
     clients

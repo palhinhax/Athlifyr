@@ -14,13 +14,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 
 type Audience = "single" | "broadcast";
@@ -96,6 +89,7 @@ export function AdminPushNotificationDialog({
     try {
       const dataPayload: Record<string, string> = {};
       if (deepLink.trim()) {
+        dataPayload.url = deepLink.trim();
         dataPayload.deepLink = deepLink.trim();
         dataPayload.route = deepLink.trim();
       }
@@ -290,52 +284,63 @@ export function AdminPushNotificationDialog({
           <div className="space-y-2">
             <Label>Destinatário</Label>
             {targetUser ? (
-              <div className="flex items-center gap-2 rounded-lg border bg-muted/50 p-3">
-                <User className="h-4 w-4 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {targetUser.name || "Sem nome"}
-                  </p>
-                  <p className="truncate text-xs text-muted-foreground">
-                    {targetUser.email}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setAudience("broadcast")}
-                  className="text-xs"
-                >
-                  Enviar para todos
-                </Button>
-              </div>
-            ) : (
-              <Select
-                value={audience}
-                onValueChange={(v) => setAudience(v as Audience)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="broadcast">
-                    <div className="flex items-center gap-2">
-                      <Users className="h-4 w-4" />
-                      Todos os utilizadores
+              <>
+                {audience === "single" ? (
+                  <div className="flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3 dark:border-blue-900 dark:bg-blue-950">
+                    <User className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-blue-900 dark:text-blue-100">
+                        {targetUser.name || "Sem nome"}
+                      </p>
+                      <p className="truncate text-xs text-blue-600 dark:text-blue-400">
+                        {targetUser.email}
+                      </p>
                     </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-            {audience === "broadcast" && targetUser && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setAudience("single")}
-                className="text-xs"
-              >
-                ← Voltar para utilizador individual
-              </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAudience("broadcast")}
+                      className="shrink-0 text-xs hover:bg-blue-100 dark:hover:bg-blue-900"
+                    >
+                      Mudar para todos
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                    <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                        Todos os utilizadores
+                      </p>
+                      <p className="text-xs text-amber-600 dark:text-amber-400">
+                        Envio em massa para todos os dispositivos ativos
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setAudience("single")}
+                      className="shrink-0 text-xs hover:bg-amber-100 dark:hover:bg-amber-900"
+                    >
+                      ← Voltar
+                    </Button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-900 dark:bg-amber-950">
+                <div className="flex items-center gap-2">
+                  <Users className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                      Todos os utilizadores
+                    </p>
+                    <p className="text-xs text-amber-600 dark:text-amber-400">
+                      Envio em massa para todos os dispositivos ativos
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
           </div>
 

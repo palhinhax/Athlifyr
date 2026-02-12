@@ -145,9 +145,12 @@ export async function POST(request: Request) {
           title: title.trim(),
           body: message.trim(),
           icon: "/android-chrome-192x192.png",
+          badge: "/android-chrome-192x192.png",
           tag: "admin_broadcast",
+          requireInteraction: false,
           data: {
             type: "admin_broadcast",
+            url: data?.url || "/",
             ...data,
           },
         },
@@ -165,6 +168,23 @@ export async function POST(request: Request) {
         data: { isActive: false },
       });
     }
+
+    // Create in-app notifications for all targeted users (to appear in notification bell)
+    const notificationPromises = Array.from(uniqueUserIds).map((userId) =>
+      prisma.notification.create({
+        data: {
+          userId,
+          type: "ADMIN_ANNOUNCEMENT",
+          title: title.trim(),
+          body: message.trim(),
+          data: data
+            ? (data as import("@prisma/client").Prisma.InputJsonValue)
+            : undefined,
+        },
+      })
+    );
+
+    await Promise.all(notificationPromises);
 
     // Log the broadcast
     await logAdminPush({
@@ -214,7 +234,9 @@ async function sendWebPushMessages(
     title: string;
     body: string;
     icon?: string;
+    badge?: string;
     tag?: string;
+    requireInteraction?: boolean;
     data?: Record<string, unknown>;
   },
   tokens: TokenRecord[]

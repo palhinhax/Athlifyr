@@ -50,10 +50,14 @@ interface User {
   locale: string | null;
   createdAt: string;
   isBanned?: boolean;
+  devices?: {
+    web: number;
+    mobile: number;
+    total: number;
+  };
   _count?: {
     posts: number;
     comments: number;
-    pushTokens: number;
   };
 }
 
@@ -367,16 +371,31 @@ export default function AdminUsersContent() {
                   >
                     {user.role}
                   </span>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                      (user._count?.pushTokens ?? 0) > 0
-                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500"
-                    }`}
-                  >
-                    <Smartphone className="h-3 w-3" />
-                    {user._count?.pushTokens ?? 0}
-                  </span>
+                  {user.devices && user.devices.total > 0 ? (
+                    <div className="inline-flex items-center gap-1">
+                      {user.devices.web > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          title={`${user.devices.web} Web device${user.devices.web > 1 ? "s" : ""}`}
+                        >
+                          🌐 {user.devices.web}
+                        </span>
+                      )}
+                      {user.devices.mobile > 0 && (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          title={`${user.devices.mobile} Mobile device${user.devices.mobile > 1 ? "s" : ""}`}
+                        >
+                          <Smartphone className="h-3 w-3" />
+                          {user.devices.mobile}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 dark:bg-gray-900/30 dark:text-gray-500">
+                      <Smartphone className="h-3 w-3" />0
+                    </span>
+                  )}
                   {user.locale && LOCALE_FLAGS[user.locale] && (
                     <span
                       className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
@@ -479,16 +498,31 @@ export default function AdminUsersContent() {
                     </span>
                   </td>
                   <td className="px-4 py-3 text-center">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                        (user._count?.pushTokens ?? 0) > 0
-                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          : "bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500"
-                      }`}
-                    >
-                      <Smartphone className="h-3 w-3" />
-                      {user._count?.pushTokens ?? 0}
-                    </span>
+                    {user.devices && user.devices.total > 0 ? (
+                      <div className="inline-flex items-center gap-1">
+                        {user.devices.web > 0 && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                            title={`${user.devices.web} Web device${user.devices.web > 1 ? "s" : ""}`}
+                          >
+                            🌐 {user.devices.web}
+                          </span>
+                        )}
+                        {user.devices.mobile > 0 && (
+                          <span
+                            className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                            title={`${user.devices.mobile} Mobile device${user.devices.mobile > 1 ? "s" : ""}`}
+                          >
+                            <Smartphone className="h-3 w-3" />
+                            {user.devices.mobile}
+                          </span>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 dark:bg-gray-900/30 dark:text-gray-500">
+                        <Smartphone className="h-3 w-3" />0
+                      </span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-center">
                     {user.locale && LOCALE_FLAGS[user.locale] ? (

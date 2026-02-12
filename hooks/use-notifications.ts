@@ -33,6 +33,8 @@ export interface NotificationData {
 
   // Navigation
   route?: string;
+  url?: string;
+  deepLink?: string;
   screen?: string;
 }
 

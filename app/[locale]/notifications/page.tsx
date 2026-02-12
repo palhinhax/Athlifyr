@@ -58,6 +58,23 @@ export default function NotificationsPage() {
       .slice(0, 2);
   };
 
+  const getAvatarInfo = (notification: AppNotification) => {
+    if (notification.type === "ADMIN_ANNOUNCEMENT") {
+      return {
+        image: "/android-chrome-192x192.png",
+        name: "Athlifyr",
+      };
+    }
+    return {
+      image:
+        notification.data?.senderImage ||
+        notification.data?.venueLogo ||
+        undefined,
+      name:
+        notification.data?.senderName || notification.data?.venueName || null,
+    };
+  };
+
   const invalidateNotifications = () => {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
@@ -176,6 +193,8 @@ export default function NotificationsPage() {
       case "VENUE_INVITE":
       case "VENUE_INVITE_ACCEPTED":
         return <Building2 className="h-4 w-4 shrink-0 text-purple-600" />;
+      case "ADMIN_ANNOUNCEMENT":
+        return <Bell className="h-4 w-4 shrink-0 text-primary" />;
       default:
         return <Bell className="h-4 w-4 shrink-0" />;
     }
@@ -203,6 +222,8 @@ export default function NotificationsPage() {
         return tNotifications("venueInviteFrom", {
           venue: notification.data?.venueName || "?",
         });
+      case "ADMIN_ANNOUNCEMENT":
+        return notification.title;
       default:
         return notification.title;
     }
@@ -221,6 +242,8 @@ export default function NotificationsPage() {
         return tNotifications("invitedAsRole", {
           role: notification.data?.role || "COACH",
         });
+      case "ADMIN_ANNOUNCEMENT":
+        return notification.body;
       default:
         return notification.body;
     }
@@ -372,68 +395,61 @@ export default function NotificationsPage() {
             <p className="mt-1 text-sm">{tNotifications("emptyDescription")}</p>
           </div>
         ) : (
-          notifications.map((notification) => (
-            <div
-              key={`${notification.type}-${notification.id}`}
-              className="rounded-lg border bg-card p-4 shadow-sm"
-            >
-              <div className="flex items-start gap-3">
-                <Avatar className="h-10 w-10 shrink-0">
-                  <AvatarImage
-                    src={
-                      notification.data?.senderImage ||
-                      notification.data?.venueLogo ||
-                      undefined
-                    }
-                  />
-                  <AvatarFallback className="text-xs">
-                    {getInitials(
-                      notification.data?.senderName ||
-                        notification.data?.venueName ||
-                        null
-                    )}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1 space-y-1">
-                  <div className="flex items-center gap-2">
-                    {getNotificationIcon(notification)}
-                    <p className="text-sm font-semibold">
-                      {getNotificationTitle(notification)}
-                    </p>
-                  </div>
-                  <p className="text-sm text-muted-foreground">
-                    {getNotificationSubtitle(notification)}
-                  </p>
-                  {(notification.type === "TRIAL_REQUEST" ||
-                    notification.type === "TRIAL_ACCEPTED" ||
-                    notification.type === "TRIAL_REJECTED") &&
-                    notification.data?.sessionStartsAt && (
-                      <p className="text-sm text-muted-foreground">
-                        {t("requestedFor", {
-                          date: format(
-                            new Date(notification.data.sessionStartsAt),
-                            "d MMM yyyy",
-                            { locale: dateLocale }
-                          ),
-                          time: format(
-                            new Date(notification.data.sessionStartsAt),
-                            "HH:mm"
-                          ),
-                        })}
+          notifications.map((notification) => {
+            const avatarInfo = getAvatarInfo(notification);
+            return (
+              <div
+                key={`${notification.type}-${notification.id}`}
+                className="rounded-lg border bg-card p-4 shadow-sm"
+              >
+                <div className="flex items-start gap-3">
+                  <Avatar className="h-10 w-10 shrink-0">
+                    <AvatarImage src={avatarInfo.image} />
+                    <AvatarFallback className="text-xs">
+                      {getInitials(avatarInfo.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      {getNotificationIcon(notification)}
+                      <p className="text-sm font-semibold">
+                        {getNotificationTitle(notification)}
                       </p>
-                    )}
-                  <span className="block text-xs text-muted-foreground/70">
-                    {formatDistanceToNow(new Date(notification.createdAt), {
-                      addSuffix: true,
-                      locale: dateLocale,
-                    })}
-                  </span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {getNotificationSubtitle(notification)}
+                    </p>
+                    {(notification.type === "TRIAL_REQUEST" ||
+                      notification.type === "TRIAL_ACCEPTED" ||
+                      notification.type === "TRIAL_REJECTED") &&
+                      notification.data?.sessionStartsAt && (
+                        <p className="text-sm text-muted-foreground">
+                          {t("requestedFor", {
+                            date: format(
+                              new Date(notification.data.sessionStartsAt),
+                              "d MMM yyyy",
+                              { locale: dateLocale }
+                            ),
+                            time: format(
+                              new Date(notification.data.sessionStartsAt),
+                              "HH:mm"
+                            ),
+                          })}
+                        </p>
+                      )}
+                    <span className="block text-xs text-muted-foreground/70">
+                      {formatDistanceToNow(new Date(notification.createdAt), {
+                        addSuffix: true,
+                        locale: dateLocale,
+                      })}
+                    </span>
+                  </div>
                 </div>
-              </div>
 
-              {renderActions(notification)}
-            </div>
-          ))
+                {renderActions(notification)}
+              </div>
+            );
+          })
         )}
       </div>
     </div>

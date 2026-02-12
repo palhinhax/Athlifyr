@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -47,6 +48,7 @@ const localeMap: Record<string, typeof enUS> = {
 
 export function NotificationBell() {
   const { data: session } = useSession();
+  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("venues.trialBooking");
   const tNotifications = useTranslations("notifications");
@@ -221,8 +223,74 @@ export function NotificationBell() {
   };
 
   const handleNotificationClick = (notification: AppNotification) => {
+    console.log("[NotificationBell] Clicked notification:", {
+      id: notification.id,
+      type: notification.type,
+      data: notification.data,
+    });
+
     if (!notification.read) {
       markAsRead(notification.id);
+    }
+
+    // Navigate based on notification type and data
+    const data = notification.data;
+
+    // Priority: url > deepLink > route > type-specific navigation
+    if (data?.url && typeof data.url === "string") {
+      console.log("[NotificationBell] Navigating to url:", data.url);
+      router.push(data.url);
+      return;
+    }
+    if (data?.deepLink && typeof data.deepLink === "string") {
+      console.log("[NotificationBell] Navigating to deepLink:", data.deepLink);
+      router.push(data.deepLink);
+      return;
+    }
+    if (data?.route && typeof data.route === "string") {
+      console.log("[NotificationBell] Navigating to route:", data.route);
+      router.push(data.route);
+      return;
+    }
+
+    console.log(
+      "[NotificationBell] No direct url/deepLink/route, using type-specific navigation"
+    );
+
+    // Type-specific navigation fallbacks
+    switch (notification.type) {
+      case NotificationType.TRIAL_REQUEST:
+      case NotificationType.TRIAL_ACCEPTED:
+      case NotificationType.TRIAL_REJECTED:
+        if (data?.venueSlug && typeof data.venueSlug === "string") {
+          router.push(`/venues/${data.venueSlug}`);
+        }
+        break;
+      case NotificationType.FRIEND_REQUEST:
+      case NotificationType.FRIEND_ACCEPTED:
+        if (data?.senderId && typeof data.senderId === "string") {
+          router.push(`/user/${data.senderId}`);
+        }
+        break;
+      case NotificationType.VENUE_INVITE:
+      case NotificationType.VENUE_INVITE_ACCEPTED:
+        if (data?.venueSlug && typeof data.venueSlug === "string") {
+          router.push(`/venues/${data.venueSlug}`);
+        }
+        break;
+      case NotificationType.EVENT_DATE_CHANGE:
+      case NotificationType.EVENT_CANCELLED:
+        if (data?.eventSlug && typeof data.eventSlug === "string") {
+          router.push(`/events/${data.eventSlug}`);
+        }
+        break;
+      case NotificationType.ADMIN_ANNOUNCEMENT:
+        // Admin announcements should use url/deepLink/route if provided
+        console.log(
+          "[NotificationBell] ADMIN_ANNOUNCEMENT fallback to /notifications"
+        );
+        router.push("/notifications");
+        break;
     }
   };
 
@@ -255,6 +323,8 @@ export function NotificationBell() {
         return (
           <MessageCircle className="h-3.5 w-3.5 shrink-0 text-indigo-600" />
         );
+      case NotificationType.ADMIN_ANNOUNCEMENT:
+        return <Bell className="h-3.5 w-3.5 shrink-0 text-primary" />;
       default:
         return <Bell className="h-3.5 w-3.5 shrink-0 text-gray-600" />;
     }
@@ -263,6 +333,15 @@ export function NotificationBell() {
   // Get avatar info from notification data
   const getAvatarInfo = (notification: AppNotification) => {
     const data = notification.data;
+
+    // For admin announcements, show a system/admin icon
+    if (notification.type === NotificationType.ADMIN_ANNOUNCEMENT) {
+      return {
+        image: "/android-chrome-192x192.png", // Use app logo for admin notifications
+        name: "Athlifyr",
+      };
+    }
+
     return {
       image: data?.senderImage || data?.venueLogo || null,
       name: data?.senderName || data?.venueName || null,
@@ -381,29 +460,31 @@ export function NotificationBell() {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-96">
-        <div className="flex items-center justify-between px-3 py-2">
-          <h3 className="flex items-center gap-2 font-semibold">
-            <Bell className="h-4 w-4" />
-            {tNotifications("notifications")}
-          </h3>
-          <div className="flex items-center gap-2">
-            {unreadCount > 0 && (
-              <>
+        <div className="space-y-2 px-3 py-3">
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="flex items-center gap-2 font-semibold">
+              <Bell className="h-4 w-4" />
+              {tNotifications("notifications")}
+            </h3>
+            <div className="flex items-center gap-2">
+              {unreadCount > 0 && (
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                   {unreadCount} {tNotifications("pending")}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  onClick={() => markAllAsRead()}
-                >
-                  <Check className="mr-1 h-3 w-3" />
-                  {tNotifications("markAllRead")}
-                </Button>
-              </>
-            )}
+              )}
+            </div>
           </div>
+          {unreadCount > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 w-full justify-center text-xs"
+              onClick={() => markAllAsRead()}
+            >
+              <Check className="mr-1.5 h-3.5 w-3.5" />
+              {tNotifications("markAllRead")}
+            </Button>
+          )}
         </div>
         <DropdownMenuSeparator />
         <div className="max-h-96 overflow-y-auto">

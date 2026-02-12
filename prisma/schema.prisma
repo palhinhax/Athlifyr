@@ -1061,6 +1061,7 @@ enum NotificationType {
   VENUE_INVITE
   VENUE_INVITE_ACCEPTED
   CHAT_MESSAGE
+  ADMIN_ANNOUNCEMENT
 }
 
 enum SportType {

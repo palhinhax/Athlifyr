@@ -14,8 +14,10 @@ import {
   Users,
   Flag,
   Dumbbell,
+  Bug,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
+import { AdminPushDebug } from "@/components/admin/admin-push-debug";
 
 // Lazy load admin components
 const AdminEventsContent = lazy(() => import("./events/page"));
@@ -111,6 +113,10 @@ function AdminContent() {
             <TabsTrigger value="reports" className="flex-1 gap-2">
               <Flag className="h-4 w-4" />
               <span className="hidden sm:inline">{t("tabs.reports")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="debug" className="flex-1 gap-2">
+              <Bug className="h-4 w-4" />
+              <span className="hidden sm:inline">Debug</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -209,6 +215,12 @@ function AdminContent() {
           >
             <AdminReportsContent />
           </Suspense>
+        </TabsContent>
+
+        <TabsContent value="debug">
+          <div className="space-y-4">
+            <AdminPushDebug />
+          </div>
         </TabsContent>
       </Tabs>
     </div>

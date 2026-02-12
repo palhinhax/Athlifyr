@@ -58,11 +58,14 @@ export async function GET(request: Request) {
         isBanned: true,
         locale: true,
         createdAt: true,
+        pushTokens: {
+          where: { isActive: true },
+          select: { platform: true },
+        },
         _count: {
           select: {
             posts: true,
             comments: true,
-            pushTokens: { where: { isActive: true } },
           },
         },
       },
@@ -71,15 +74,27 @@ export async function GET(request: Request) {
       take: limit,
     });
 
-    // Debug: Log push tokens count for each user
-    console.log(
-      "📱 Users push tokens:",
-      users.map((u) => ({
-        name: u.name,
-        email: u.email,
-        pushTokens: u._count.pushTokens,
-      }))
-    );
+    // Count web and mobile devices for each user
+    const usersWithDeviceCounts = users.map((user) => {
+      const webDevices = user.pushTokens.filter(
+        (t) => t.platform === "web"
+      ).length;
+      const mobileDevices = user.pushTokens.filter(
+        (t) => t.platform !== "web"
+      ).length;
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { pushTokens, ...userData } = user;
+
+      return {
+        ...userData,
+        devices: {
+          web: webDevices,
+          mobile: mobileDevices,
+          total: webDevices + mobileDevices,
+        },
+      };
+    });
 
     // Get stats
     const stats = {
@@ -89,7 +104,7 @@ export async function GET(request: Request) {
     };
 
     return NextResponse.json({
-      users,
+      users: usersWithDeviceCounts,
       stats,
       pagination: {
         page,

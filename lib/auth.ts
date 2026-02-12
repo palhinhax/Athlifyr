@@ -38,8 +38,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           return null;
         }
 
-        const user = await prisma.user.findUnique({
-          where: { email: credentials.email as string },
+        const user = await prisma.user.findFirst({
+          where: {
+            email: {
+              equals: (credentials.email as string).toLowerCase().trim(),
+              mode: "insensitive",
+            },
+          },
         });
 
         if (!user || !user.password) {
@@ -66,12 +71,46 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      // Sync Google profile image on every sign-in
-      if (account?.provider === "google" && profile?.picture && user?.id) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { image: profile.picture },
-        });
+      if (account?.provider === "google") {
+        // Normalize email to lowercase to prevent case-sensitive duplicates
+        if (profile?.email) {
+          const normalizedEmail = profile.email.toLowerCase().trim();
+
+          // Check if a user with this email already exists (case-insensitive)
+          const existingUser = await prisma.user.findFirst({
+            where: {
+              email: {
+                equals: normalizedEmail,
+                mode: "insensitive",
+              },
+            },
+          });
+
+          // If user exists but with different casing, update to normalized email
+          if (
+            existingUser &&
+            existingUser.email !== normalizedEmail &&
+            existingUser.id === user.id
+          ) {
+            await prisma.user.update({
+              where: { id: existingUser.id },
+              data: { email: normalizedEmail },
+            });
+          }
+
+          // Ensure the user object has normalized email for new account creation
+          if (user.email) {
+            user.email = normalizedEmail;
+          }
+        }
+
+        // Sync Google profile image on every sign-in
+        if (profile?.picture && user?.id) {
+          await prisma.user.update({
+            where: { id: user.id },
+            data: { image: profile.picture },
+          });
+        }
       }
       return true;
     },

@@ -62,7 +62,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const response = await api.post("/auth/login", { email, password });
+      // Clear any previous session tokens before logging in
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+
+      const response = await api.post("/auth/login", {
+        email: email.toLowerCase().trim(),
+        password,
+      });
       const { token, refreshToken, user } = response.data;
 
       // Store tokens

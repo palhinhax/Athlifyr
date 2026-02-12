@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
+import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import {
   colors,
@@ -46,6 +47,7 @@ export default function RegisterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { promptAsync, isReady: isGoogleReady } = useGoogleAuth();
+  const logout = useAuthStore((s) => s.logout);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -93,9 +95,12 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
+      // Clear any existing session before registering a new account
+      await logout();
+
       await api.post("/auth/register", {
         name: name.trim(),
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
       });
 

@@ -2,11 +2,20 @@
 
 import { useEffect, useState, useRef, useCallback } from "react";
 import { usePathname } from "next/navigation";
-import L from "leaflet";
-import "leaflet/dist/leaflet.css";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { Loader2 } from "lucide-react";
-import type { LatLngBounds } from "leaflet";
 import { createVenueMarkerHtml } from "@/lib/venue-icons";
+
+const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
+
+/** Mapbox bounds as a simple object for our fetch logic */
+interface MapBounds {
+  north: number;
+  south: number;
+  east: number;
+  west: number;
+}
 
 /**
  * Get marker size based on zoom level
@@ -21,17 +30,6 @@ function getMarkerSizeForZoom(zoom: number): number {
   if (zoom <= 12) return 40;
   return 48;
 }
-
-// Create custom icon for venues based on their services and zoom level
-const createVenueIcon = (services?: string[], size: number = 40): L.DivIcon => {
-  return L.divIcon({
-    html: createVenueMarkerHtml(services, size),
-    className: "custom-marker",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size],
-    popupAnchor: [0, -size],
-  });
-};
 
 interface MapVenue {
   id: string;
@@ -61,8 +59,8 @@ export default function VenuesMapClient({
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const mapContainerRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<L.Map | null>(null);
-  const markersLayerRef = useRef<L.LayerGroup | null>(null);
+  const mapInstanceRef = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const mapInitializedRef = useRef(false);
 
   const [venues, setVenues] = useState<MapVenue[]>([]);
@@ -73,7 +71,7 @@ export default function VenuesMapClient({
   );
   const [currentZoom, setCurrentZoom] = useState(initialZoom);
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const mapBoundsRef = useRef<LatLngBounds | null>(null);
+  const mapBoundsRef = useRef<MapBounds | null>(null);
   const filtersRef = useRef(filters);
 
   // Sync filters state when props change
@@ -116,18 +114,32 @@ export default function VenuesMapClient({
     };
   }, []);
 
+  /** Extract bounds from the Mapbox map */
+  const getMapBounds = useCallback((): MapBounds | null => {
+    const map = mapInstanceRef.current;
+    if (!map) return null;
+    const bounds = map.getBounds();
+    if (!bounds) return null;
+    return {
+      north: bounds.getNorth(),
+      south: bounds.getSouth(),
+      east: bounds.getEast(),
+      west: bounds.getWest(),
+    };
+  }, []);
+
   // Fetch venues for the current bounds (stable function using ref for filters)
   const fetchVenues = useCallback(
-    async (bounds: LatLngBounds) => {
+    async (bounds: MapBounds) => {
       try {
         mapBoundsRef.current = bounds;
         const currentFilters = filtersRef.current;
 
         const params = new URLSearchParams({
-          north: bounds.getNorth().toString(),
-          south: bounds.getSouth().toString(),
-          east: bounds.getEast().toString(),
-          west: bounds.getWest().toString(),
+          north: bounds.north.toString(),
+          south: bounds.south.toString(),
+          east: bounds.east.toString(),
+          west: bounds.west.toString(),
         });
 
         if (currentFilters?.services?.length) {
@@ -162,17 +174,17 @@ export default function VenuesMapClient({
   }, [filters, fetchVenues]);
 
   // Handle bounds change with debounce (stable function)
-  const handleBoundsChange = useCallback(
-    (bounds: LatLngBounds) => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      debounceTimerRef.current = setTimeout(() => {
-        fetchVenues(bounds);
-      }, 300);
-    },
-    [fetchVenues]
-  );
+  const handleBoundsChange = useCallback(() => {
+    const bounds = getMapBounds();
+    if (!bounds) return;
+
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = setTimeout(() => {
+      fetchVenues(bounds);
+    }, 300);
+  }, [fetchVenues, getMapBounds]);
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -189,48 +201,51 @@ export default function VenuesMapClient({
       return;
     }
 
-    // Mark as initialized to prevent re-initialization
     mapInitializedRef.current = true;
 
-    // Clean up any existing map instance first
     if (mapInstanceRef.current) {
       mapInstanceRef.current.remove();
       mapInstanceRef.current = null;
     }
 
-    const map = L.map(mapContainerRef.current, {
-      center: initialCenter,
+    const map = new mapboxgl.Map({
+      container: mapContainerRef.current,
+      style: "mapbox://styles/mapbox/streets-v12",
+      center: [-8.0, 39.5], // Mapbox uses [lng, lat]
       zoom: initialZoom,
+      accessToken: MAPBOX_TOKEN,
     });
+
+    // Use provided initialCenter (which is [lat, lng]) converted to [lng, lat]
+    if (initialCenter[0] !== 39.5 || initialCenter[1] !== -8.0) {
+      map.setCenter([initialCenter[1], initialCenter[0]]);
+    }
 
     mapInstanceRef.current = map;
 
-    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution:
-        '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-    }).addTo(map);
+    map.addControl(new mapboxgl.NavigationControl(), "top-right");
 
-    // Create a layer group for markers
-    markersLayerRef.current = L.layerGroup().addTo(map);
-
-    // Set up event handlers for bounds changes
-    const onMoveEnd = () => handleBoundsChange(map.getBounds());
+    const onMoveEnd = () => handleBoundsChange();
     const onZoomEnd = () => {
-      handleBoundsChange(map.getBounds());
-      setCurrentZoom(map.getZoom());
+      handleBoundsChange();
+      const zoom = map.getZoom();
+      setCurrentZoom(zoom);
     };
     map.on("moveend", onMoveEnd);
     map.on("zoomend", onZoomEnd);
 
-    // Initial fetch
-    handleBoundsChange(map.getBounds());
+    // Initial fetch after map loads
+    map.on("load", handleBoundsChange);
 
     return () => {
+      // Clear all markers
+      markersRef.current.forEach((m) => m.remove());
+      markersRef.current = [];
+
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
-      markersLayerRef.current = null;
       mapInitializedRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -238,10 +253,11 @@ export default function VenuesMapClient({
 
   // Update markers when venues or zoom change
   useEffect(() => {
-    if (!markersLayerRef.current) return;
+    if (!mapInstanceRef.current) return;
 
     // Clear existing markers
-    markersLayerRef.current.clearLayers();
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
 
     // Get locale from pathname
     const locale = pathname.split("/")[1] || "pt";
@@ -251,11 +267,11 @@ export default function VenuesMapClient({
 
     // Add new markers
     venues.forEach((venue) => {
-      const marker = L.marker([venue.latitude, venue.longitude], {
-        icon: createVenueIcon(venue.services, markerSize),
-      });
+      const markerEl = document.createElement("div");
+      markerEl.className = "custom-marker";
+      markerEl.innerHTML = createVenueMarkerHtml(venue.services, markerSize);
 
-      marker.bindPopup(`
+      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(`
         <div style="min-width: 200px; padding: 8px;">
           <h3 style="font-weight: 600; margin-bottom: 8px;">${venue.name}</h3>
           ${venue.city ? `<p style="color: #666; font-size: 14px; margin-bottom: 8px;">📍 ${venue.city}, ${venue.country}</p>` : ""}
@@ -266,7 +282,12 @@ export default function VenuesMapClient({
         </div>
       `);
 
-      marker.addTo(markersLayerRef.current!);
+      const marker = new mapboxgl.Marker({ element: markerEl })
+        .setLngLat([venue.longitude, venue.latitude])
+        .setPopup(popup)
+        .addTo(mapInstanceRef.current!);
+
+      markersRef.current.push(marker);
     });
   }, [venues, pathname, currentZoom]);
 

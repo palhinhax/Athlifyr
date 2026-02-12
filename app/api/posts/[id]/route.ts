@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -14,9 +14,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,7 +33,7 @@ export async function PATCH(
     }
 
     // Check if user is author
-    if (post.userId !== session.user.id) {
+    if (post.userId !== user.id) {
       return NextResponse.json(
         { error: "Not authorized to edit this post" },
         { status: 403 }
@@ -89,9 +89,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -108,8 +108,8 @@ export async function DELETE(
     }
 
     // Check if user is author or admin
-    const isAuthor = post.userId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
+    const isAuthor = post.userId === user.id;
+    const isAdmin = user.role === "ADMIN";
 
     if (!isAuthor && !isAdmin) {
       return NextResponse.json(
@@ -139,7 +139,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
     const postId = (await params).id;
 
     const post = await prisma.post.findUnique({
@@ -175,8 +175,8 @@ export async function GET(
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const isLikedByUser = session?.user?.id
-      ? post.likes.some((like) => like.userId === session.user.id)
+    const isLikedByUser = user?.id
+      ? post.likes.some((like) => like.userId === user.id)
       : false;
 
     return NextResponse.json({

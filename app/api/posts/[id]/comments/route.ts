@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/posts/[id]/comments - Get comments for a post
@@ -42,9 +42,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -70,7 +70,7 @@ export async function POST(
     const comment = await prisma.postComment.create({
       data: {
         postId,
-        userId: session.user.id,
+        userId: user.id,
         content: content.trim(),
       },
       include: {
@@ -100,9 +100,9 @@ export async function DELETE(
   { params: _params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -125,8 +125,8 @@ export async function DELETE(
     }
 
     // Only author or admin can delete
-    const isAuthor = comment.userId === session.user.id;
-    const isAdmin = session.user.role === "ADMIN";
+    const isAuthor = comment.userId === user.id;
+    const isAdmin = user.role === "ADMIN";
 
     if (!isAuthor && !isAdmin) {
       return NextResponse.json(

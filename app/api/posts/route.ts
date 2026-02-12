@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -22,9 +22,9 @@ const createPostSchema = z.object({
 // POST /api/posts - Create a new post
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
         where: {
           id: validatedData.workoutId,
           OR: [
-            { createdById: session.user.id },
+            { createdById: user.id },
             { isPublic: true },
             { venueId: validatedData.venueId },
           ],
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
 
     const post = await prisma.post.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         content: validatedData.content,
         imageUrl: validatedData.imageUrl || null,
         mediaType: validatedData.imageUrl ? validatedData.mediaType : null,
@@ -185,9 +185,9 @@ export async function GET(request: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const pageSize = parseInt(searchParams.get("pageSize") || "10");
 
-    // Get session to check likes
-    const session = await auth();
-    const currentUserId = session?.user?.id;
+    // Get user to check likes
+    const user = await getAuthenticatedUser(request);
+    const currentUserId = user?.id;
 
     // Build where clause
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -353,9 +353,9 @@ export async function GET(request: NextRequest) {
 // DELETE /api/posts?id=xxx - Delete a post
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -379,7 +379,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    if (post.userId !== session.user.id && session.user.role !== "ADMIN") {
+    if (post.userId !== user.id && user.role !== "ADMIN") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

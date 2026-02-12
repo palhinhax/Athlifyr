@@ -2,10 +2,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
+import axios from "axios";
 
 // Check if running in Expo Go
 const isExpoGo = Constants.appOwnership === "expo";
@@ -94,6 +96,7 @@ export function usePushNotifications() {
       setPermissionStatus("granted");
 
       // Get the token
+      console.log("🎫 Getting Expo push token...");
       const tokenData = await Notifications.getExpoPushTokenAsync({
         projectId:
           Constants.expoConfig?.extra?.eas?.projectId ??
@@ -101,6 +104,7 @@ export function usePushNotifications() {
       });
 
       const token = tokenData.data;
+      console.log("✅ Got Expo push token:", token.substring(0, 30) + "...");
       setExpoPushToken(token);
 
       // Persist token in auth store (available for logout deregistration)
@@ -131,7 +135,20 @@ export function usePushNotifications() {
 
       // Register token with backend (if user is logged in)
       if (user && token) {
+        console.log("👤 User is logged in, registering with backend...", {
+          userId: user.id,
+          userName: user.name,
+        });
         await registerTokenWithBackend(token);
+      } else {
+        console.warn("⚠️ Cannot register push token with backend:", {
+          hasUser: !!user,
+          hasToken: !!token,
+          reason: !user ? "User not logged in" : "Token not available",
+        });
+        console.warn(
+          "📝 Token will be registered automatically when user logs in"
+        );
       }
 
       return token;
@@ -157,6 +174,28 @@ export function usePushNotifications() {
       const deviceName = Device.deviceName || undefined;
       const platform = Platform.OS as "android" | "ios";
 
+      // Check if user is authenticated before attempting registration
+      const authToken = await SecureStore.getItemAsync("auth-token");
+
+      console.log("📲 Registering push token with backend:", {
+        platform,
+        deviceName,
+        deviceId,
+        hasToken: !!token,
+        hasAuthToken: !!authToken,
+        authTokenPrefix: authToken?.substring(0, 20),
+      });
+
+      if (!authToken) {
+        console.warn(
+          "⚠️ No auth token found - skipping push token registration"
+        );
+        console.warn(
+          "User must be logged in to register for push notifications"
+        );
+        return;
+      }
+
       await api.post("/push-tokens", {
         token,
         platform,
@@ -164,9 +203,15 @@ export function usePushNotifications() {
         deviceName,
       });
 
-      console.log("Push token registered with backend");
-    } catch (err) {
-      console.error("Error registering token with backend:", err);
+      console.log("✅ Push token registered with backend");
+    } catch (err: unknown) {
+      console.error("❌ Error registering token with backend:", err);
+      if (axios.isAxiosError(err)) {
+        console.error("Response status:", err.response?.status);
+        console.error("Response data:", err.response?.data);
+        console.error("Request URL:", err.config?.url);
+        console.error("Request method:", err.config?.method);
+      }
       // Don't throw - token registration failure shouldn't block the app
     }
   }
@@ -188,10 +233,25 @@ export function usePushNotifications() {
 
       // Token changed (reinstall, Expo rotation, etc.) — re-register
       if (currentToken !== storedToken) {
-        console.log("Push token changed, re-registering with backend...");
+        console.log("🔄 Push token changed, updating...", {
+          oldTokenPrefix: storedToken.substring(0, 30),
+          newTokenPrefix: currentToken.substring(0, 30),
+        });
         setExpoPushToken(currentToken);
         await setPushToken(currentToken);
-        await registerTokenWithBackend(currentToken);
+
+        // Only register with backend if user is logged in
+        if (user) {
+          console.log(
+            "✅ User is logged in, re-registering push token with backend"
+          );
+          await registerTokenWithBackend(currentToken);
+        } else {
+          console.warn(
+            "⚠️ Push token changed but user not logged in - skipping backend registration"
+          );
+          console.warn("📝 Token will be registered when user logs in");
+        }
       }
     } catch (err) {
       console.error("Error verifying push token:", err);
@@ -303,8 +363,15 @@ export function usePushNotifications() {
   useEffect(() => {
     // Skip in Expo Go
     if (isExpoGo) {
+      console.log("⚠️ Skipping push notifications - running in Expo Go");
       return;
     }
+
+    console.log("🔍 Push notifications effect:", {
+      hasUser: !!user,
+      hasExpoPushToken: !!expoPushToken,
+      hasStoredPushToken: !!storedPushToken,
+    });
 
     // Only register if user is logged in and we don't already have a token
     // storedPushToken comes from SecureStore (survives app restart)
@@ -312,11 +379,13 @@ export function usePushNotifications() {
     if (user && !expoPushToken) {
       if (storedPushToken) {
         // Restore token from SecureStore without hitting the backend again
+        console.log("♻️ Restoring push token from SecureStore");
         setExpoPushToken(storedPushToken);
         // Also verify the token is still current (Expo may have rotated it)
         verifyAndRefreshToken(storedPushToken);
       } else {
         // First time — generate token and register with backend
+        console.log("🆕 Registering for push notifications (first time)");
         registerForPushNotifications();
       }
     }

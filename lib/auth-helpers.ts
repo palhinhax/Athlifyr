@@ -40,31 +40,61 @@ export async function getAuthenticatedUser(
   if (request) {
     try {
       const authHeader = request.headers.get("authorization");
+      console.log("🔍 JWT Auth attempt:", {
+        hasAuthHeader: !!authHeader,
+        authHeaderPrefix: authHeader?.substring(0, 30),
+      });
+
       const token = extractTokenFromHeader(authHeader);
 
-      if (token) {
-        const payload = verifyToken(token);
+      if (!token) {
+        console.log("❌ No JWT token found in Authorization header");
+        return null;
+      }
 
-        // Get user from database
-        const user = await prisma.user.findUnique({
-          where: { id: payload.userId },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            image: true,
-          },
+      console.log("🔑 JWT token extracted, verifying...");
+      const payload = verifyToken(token);
+
+      console.log("✅ JWT verified, userId:", payload.userId);
+
+      // Get user from database
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: {
+          id: true,
+          email: true,
+          name: true,
+          role: true,
+          image: true,
+        },
+      });
+
+      if (user) {
+        console.log("✅ User found in database:", {
+          userId: user.id,
+          userName: user.name,
+          email: user.email,
         });
-
-        if (user) {
-          return user;
-        }
+        return user;
+      } else {
+        console.log(
+          "❌ User not found in database for userId:",
+          payload.userId
+        );
       }
     } catch (error) {
-      console.error("JWT verification failed:", error);
+      console.error("❌ JWT verification failed:", error);
+      if (error instanceof Error) {
+        console.error("Error details:", {
+          message: error.message,
+          name: error.name,
+        });
+      }
     }
+  } else {
+    console.log("⚠️ No request object provided to getAuthenticatedUser");
   }
 
+  console.log("❌ Authentication failed - returning null");
   return null;
 }

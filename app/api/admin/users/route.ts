@@ -71,6 +71,16 @@ export async function GET(request: Request) {
       take: limit,
     });
 
+    // Debug: Log push tokens count for each user
+    console.log(
+      "📱 Users push tokens:",
+      users.map((u) => ({
+        name: u.name,
+        email: u.email,
+        pushTokens: u._count.pushTokens,
+      }))
+    );
+
     // Get stats
     const stats = {
       total: await prisma.user.count(),

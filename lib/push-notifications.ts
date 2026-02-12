@@ -1,4 +1,18 @@
 import { prisma } from "@/lib/prisma";
+import webpush from "web-push";
+
+// Configure web-push with VAPID details
+if (
+  process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY &&
+  process.env.VAPID_PRIVATE_KEY &&
+  process.env.VAPID_SUBJECT
+) {
+  webpush.setVapidDetails(
+    process.env.VAPID_SUBJECT,
+    process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+}
 
 interface PushNotificationMessage {
   to: string; // Expo push token
@@ -69,18 +83,80 @@ export async function sendPushNotification(
       return { success: true, sent: 0, failed: 0 };
     }
 
-    // Prepare messages for Expo Push API
-    const messages: PushNotificationMessage[] = tokens.map((token) => ({
-      to: token.token,
-      title,
-      body,
-      data,
-      sound: sound ?? "default",
-      badge,
-      channelId: channelId ?? "chat-messages",
-      priority: "high",
-    }));
+    // Separate mobile (Expo) and web tokens
+    const mobileTokens = tokens.filter(
+      (t) => t.platform === "android" || t.platform === "ios"
+    );
+    const webTokens = tokens.filter((t) => t.platform === "web");
 
+    let totalSent = 0;
+    let totalFailed = 0;
+
+    // Send to mobile devices (Expo Push)
+    if (mobileTokens.length > 0) {
+      const mobileResult = await sendExpoPushNotifications({
+        tokens: mobileTokens,
+        title,
+        body,
+        data,
+        sound,
+        badge,
+        channelId,
+      });
+      totalSent += mobileResult.sent;
+      totalFailed += mobileResult.failed;
+    }
+
+    // Send to web browsers (Web Push)
+    if (webTokens.length > 0) {
+      const webResult = await sendWebPushNotifications({
+        tokens: webTokens,
+        title: title || "Athlifyr",
+        body,
+        data,
+      });
+      totalSent += webResult.sent;
+      totalFailed += webResult.failed;
+    }
+
+    console.log(
+      `Push notification sent to user ${userId}: ${totalSent} sent, ${totalFailed} failed (${mobileTokens.length} mobile, ${webTokens.length} web)`
+    );
+
+    return { success: true, sent: totalSent, failed: totalFailed };
+  } catch (error) {
+    console.error("Error sending push notification:", error);
+    return { success: false, sent: 0, failed: 0 };
+  }
+}
+
+/**
+ * Send push notifications to mobile devices via Expo Push API
+ */
+async function sendExpoPushNotifications(params: {
+  tokens: Array<{ id: string; token: string }>;
+  title?: string;
+  body: string;
+  data?: Record<string, string | number | boolean>;
+  sound?: "default" | null;
+  badge?: number;
+  channelId?: string;
+}): Promise<{ sent: number; failed: number }> {
+  const { tokens, title, body, data, sound, badge, channelId } = params;
+
+  // Prepare messages for Expo Push API
+  const messages: PushNotificationMessage[] = tokens.map((token) => ({
+    to: token.token,
+    title,
+    body,
+    data,
+    sound: sound ?? "default",
+    badge,
+    channelId: channelId ?? "chat-messages",
+    priority: "high",
+  }));
+
+  try {
     // Send notifications to Expo Push API
     const response = await fetch(EXPO_PUSH_ENDPOINT, {
       method: "POST",
@@ -95,7 +171,7 @@ export async function sendPushNotification(
       console.error(
         `Expo Push API error: ${response.status} ${response.statusText}`
       );
-      return { success: false, sent: 0, failed: tokens.length };
+      return { sent: 0, failed: tokens.length };
     }
 
     const result: ExpoPushResponse = await response.json();
@@ -111,7 +187,7 @@ export async function sendPushNotification(
       if (ticket.status === "error") {
         failed++;
         console.error(
-          `Failed to send push notification to token ${token.id}:`,
+          `Failed to send Expo push to token ${token.id}:`,
           ticket.message
         );
 
@@ -124,22 +200,84 @@ export async function sendPushNotification(
             where: { id: token.id },
             data: { isActive: false },
           });
-          console.log(`Deactivated invalid token ${token.id}`);
+          console.log(`Deactivated invalid Expo token ${token.id}`);
         }
       } else {
         sent++;
       }
     }
 
-    console.log(
-      `Push notification sent to user ${userId}: ${sent} sent, ${failed} failed`
-    );
-
-    return { success: true, sent, failed };
+    return { sent, failed };
   } catch (error) {
-    console.error("Error sending push notification:", error);
-    return { success: false, sent: 0, failed: 0 };
+    console.error("Error sending Expo push notifications:", error);
+    return { sent: 0, failed: tokens.length };
   }
+}
+
+/**
+ * Send push notifications to web browsers via Web Push API
+ */
+async function sendWebPushNotifications(params: {
+  tokens: Array<{ id: string; token: string; deviceId: string | null }>;
+  title: string;
+  body: string;
+  data?: Record<string, string | number | boolean>;
+}): Promise<{ sent: number; failed: number }> {
+  const { tokens, title, body, data } = params;
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const token of tokens) {
+    try {
+      // Parse subscription object from deviceId
+      const subscription = JSON.parse(token.deviceId || "{}");
+
+      if (!subscription.endpoint) {
+        console.error(`Invalid subscription for token ${token.id}`);
+        failed++;
+        continue;
+      }
+
+      // Prepare payload
+      const payload = JSON.stringify({
+        title,
+        body,
+        icon: "/android-chrome-192x192.png",
+        badge: "/android-chrome-192x192.png",
+        tag: "notification",
+        data: {
+          url: data?.route || "/",
+          ...data,
+        },
+      });
+
+      // Send notification
+      await webpush.sendNotification(subscription, payload);
+      sent++;
+
+      console.log(
+        `✅ Web push sent to ${subscription.endpoint.substring(0, 50)}...`
+      );
+    } catch (error) {
+      failed++;
+      console.error(`❌ Failed to send web push to token ${token.id}:`, error);
+
+      // If subscription is no longer valid, mark as inactive
+      if (
+        error instanceof Error &&
+        (error.message.includes("410") || error.message.includes("404"))
+      ) {
+        await prisma.pushToken.update({
+          where: { id: token.id },
+          data: { isActive: false },
+        });
+        console.log(`🔇 Marked web token ${token.id} as inactive`);
+      }
+    }
+  }
+
+  return { sent, failed };
 }
 
 /**

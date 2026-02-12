@@ -5,11 +5,32 @@ import { prisma } from "@/lib/prisma";
 // POST - Register a push token
 export async function POST(request: NextRequest) {
   try {
+    // Log authentication attempt
+    const authHeader = request.headers.get("authorization");
+    console.log("🔐 Push token registration attempt:", {
+      hasAuthHeader: !!authHeader,
+      authHeaderPrefix: authHeader?.substring(0, 20),
+      url: request.url,
+    });
+
     const user = await getAuthenticatedUser(request);
 
     if (!user) {
+      console.error(
+        "❌ Push token registration failed - No authenticated user",
+        {
+          hasAuthHeader: !!authHeader,
+          cookies: request.cookies.getAll().map((c) => c.name),
+        }
+      );
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    console.log("✅ User authenticated for push token:", {
+      userId: user.id,
+      userName: user.name,
+      email: user.email,
+    });
 
     const body = await request.json();
     const { token, platform, deviceId, deviceName } = body;
@@ -45,6 +66,14 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      console.log("🔄 Push token updated:", {
+        userId: user.id,
+        userName: user.name,
+        platform,
+        deviceName: deviceName || existingToken.deviceName,
+        isActive: true,
+      });
+
       return NextResponse.json({
         success: true,
         token: updatedToken,
@@ -63,6 +92,14 @@ export async function POST(request: NextRequest) {
         isActive: true,
         lastSeenAt: new Date(),
       },
+    });
+
+    console.log("✅ Push token registered:", {
+      userId: user.id,
+      userName: user.name,
+      platform,
+      deviceName,
+      isActive: true,
     });
 
     return NextResponse.json({

@@ -68,7 +68,7 @@ export function useChatNotifications(
     queryFn: fetchNotifications,
     enabled,
     refetchInterval: 10000, // Poll every 10 seconds for notifications
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: true,
     staleTime: 5000,
   });
 

@@ -87,7 +87,7 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     queryFn: fetchNotifications,
     enabled,
     refetchInterval: 15000,
-    refetchIntervalInBackground: false,
+    refetchIntervalInBackground: true,
     staleTime: 10000,
   });
 

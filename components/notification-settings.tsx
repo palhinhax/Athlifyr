@@ -1,13 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Bell, Mail, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import {
+  Bell,
+  BellOff,
+  Mail,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { useWebPush } from "@/hooks/use-web-push";
 
 interface NotificationSettingsProps {
   emailVerified: boolean;
@@ -29,6 +37,16 @@ export function NotificationSettings({
   const [isSaving, setIsSaving] = useState(false);
   const [isSendingVerification, setIsSendingVerification] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Web Push hook
+  const { isSubscribed, isLoading, isSupported, subscribe, unsubscribe } =
+    useWebPush();
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleToggleEmailNotifications = async (checked: boolean) => {
     if (!emailVerified) {
@@ -107,6 +125,36 @@ export function NotificationSettings({
       });
     } finally {
       setIsSendingVerification(false);
+    }
+  };
+
+  const handleToggleBrowserNotifications = async () => {
+    if (!isSupported) {
+      toast({
+        title: t("browserNotSupported"),
+        description: t("browserNotSupportedDesc"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const success = isSubscribed ? await unsubscribe() : await subscribe();
+
+    if (success) {
+      toast({
+        title: isSubscribed
+          ? t("browserNotificationsDisabled")
+          : t("browserNotificationsEnabled"),
+        description: isSubscribed
+          ? t("browserNotificationsDisabledDesc")
+          : t("browserNotificationsEnabledDesc"),
+      });
+    } else {
+      toast({
+        title: t("error"),
+        description: t("errorUpdatingBrowserNotifications"),
+        variant: "destructive",
+      });
     }
   };
 
@@ -218,6 +266,48 @@ export function NotificationSettings({
           </button>
         </div>
       </div>
+
+      {/* Browser Push Notifications Toggle */}
+      {mounted && isSupported && (
+        <div className="flex items-center justify-between rounded-lg border p-4">
+          <div className="flex items-start gap-3">
+            {isSubscribed ? (
+              <Bell className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            ) : (
+              <BellOff className="mt-0.5 h-5 w-5 text-muted-foreground" />
+            )}
+            <div>
+              <Label htmlFor="browser-notifications" className="font-medium">
+                {t("browserNotifications")}
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                {t("browserNotificationsDesc")}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
+            <button
+              id="browser-notifications"
+              role="switch"
+              aria-checked={isSubscribed}
+              onClick={handleToggleBrowserNotifications}
+              disabled={isLoading}
+              className={cn(
+                "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+                isSubscribed ? "bg-primary" : "bg-input"
+              )}
+            >
+              <span
+                className={cn(
+                  "pointer-events-none block h-5 w-5 rounded-full bg-background shadow-lg ring-0 transition-transform",
+                  isSubscribed ? "translate-x-5" : "translate-x-0"
+                )}
+              />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

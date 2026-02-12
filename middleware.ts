@@ -43,6 +43,15 @@ export default function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const userAgent = request.headers.get("user-agent");
 
+  // Skip middleware for service worker and web manifest
+  if (
+    pathname === "/sw.js" ||
+    pathname === "/manifest.json" ||
+    pathname === "/site.webmanifest"
+  ) {
+    return NextResponse.next();
+  }
+
   // Skip middleware for static assets served from /public
   // Handle both /videos/... and /[locale]/videos/... paths
   const videoMatch = pathname.match(/^(?:\/[a-z]{2})?\/videos\//i);

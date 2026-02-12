@@ -50,11 +50,23 @@ async function fetchConversations(): Promise<Conversation[]> {
 
 // Fetch messages for a conversation
 async function fetchMessages(conversationId: string): Promise<Message[]> {
+  console.log(`[Chat] Fetching messages for conversation: ${conversationId}`);
+
   const response = await fetch(
     `/api/chat/conversations/${conversationId}/messages`
   );
-  if (!response.ok) throw new Error("Failed to fetch messages");
+
+  console.log(`[Chat] Fetch messages response status: ${response.status}`);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`[Chat] Failed to fetch messages:`, errorText);
+    throw new Error("Failed to fetch messages");
+  }
+
   const data = await response.json();
+  console.log(`[Chat] Received ${data.messages?.length || 0} messages`);
+
   return data.messages || [];
 }
 
@@ -133,9 +145,15 @@ export function useChatMessages(
   // Initial messages fetch
   const messagesQuery = useQuery({
     queryKey: ["messages", conversationId],
-    queryFn: () => fetchMessages(conversationId!),
+    queryFn: async () => {
+      console.log(`[Chat] Query starting for conversation: ${conversationId}`);
+      const result = await fetchMessages(conversationId!);
+      console.log(`[Chat] Query completed, got ${result.length} messages`);
+      return result;
+    },
     enabled: enabled && !!conversationId,
     staleTime: 0, // Always consider stale to enable refetch
+    retry: 1, // Only retry once
   });
 
   // Update lastMessageIdRef when messages load

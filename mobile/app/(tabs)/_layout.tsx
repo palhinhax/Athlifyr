@@ -5,6 +5,7 @@ import {
   User,
   MessageCircle,
   Activity,
+  Map,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { View, StyleSheet, Platform } from "react-native";
@@ -49,6 +50,13 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => (
             <Calendar color={color} size={size} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="map"
+        options={{
+          title: t("navigation.map"),
+          tabBarIcon: ({ color, size }) => <Map color={color} size={size} />,
         }}
       />
       <Tabs.Screen

@@ -5,7 +5,8 @@
     "feed": "Feed",
     "exercises": "Exercises",
     "profile": "Profile",
-    "messages": "Messages"
+    "messages": "Messages",
+    "map": "Map"
   },
   "sports": {
     "RUNNING": "Running",
@@ -258,5 +259,27 @@
     },
     "userBlocked": "This user is blocked",
     "userBlockedYou": "You cannot send messages to this user"
+  },
+  "map": {
+    "title": "Events Map",
+    "loadingMap": "Loading map...",
+    "eventsNearYou": "Events near you",
+    "viewDetails": "View Details",
+    "noCoordinates": "Location not available",
+    "zoomIn": "Zoom in to see markers",
+    "clusterInfo": "{{count}} events in this area",
+    "filters": {
+      "all": "All Events",
+      "running": "Running",
+      "trail": "Trail",
+      "crossfit": "CrossFit",
+      "ocr": "OCR",
+      "hyrox": "HYROX"
+    },
+    "errors": {
+      "loadingFailed": "Failed to load map",
+      "locationPermission": "Location permission denied",
+      "noEvents": "No events with valid coordinates"
+    }
   }
 }

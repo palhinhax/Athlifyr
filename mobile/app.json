@@ -38,6 +38,13 @@
           "androidMode": "default",
           "androidCollapsedTitle": "#{unread_notifications} new notifications"
         }
+      ],
+      [
+        "@rnmapbox/maps",
+        {
+          "RNMapboxMapsDownloadToken": "",
+          "RNMapboxMapsImpl": "mapbox"
+        }
       ]
     ]
   }

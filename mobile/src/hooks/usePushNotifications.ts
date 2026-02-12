@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
-import * as Notifications from "expo-notifications";
+import type * as NotificationsTypes from "expo-notifications";
 import * as SecureStore from "expo-secure-store";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
@@ -12,16 +12,27 @@ import axios from "axios";
 // Check if running in Expo Go
 const isExpoGo = Constants.appOwnership === "expo";
 
-// Configure notification behavior
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+// Lazy-load expo-notifications to avoid the DevicePushTokenAutoRegistration
+// side-effect that crashes in Expo Go (SDK 53+)
+type NotificationsModule = typeof import("expo-notifications");
+let _notifications: NotificationsModule | null = null;
+
+async function getNotifications(): Promise<NotificationsModule> {
+  if (!_notifications) {
+    _notifications = await import("expo-notifications");
+    // Configure notification behaviour once after loading
+    _notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldShowAlert: true,
+        shouldPlaySound: true,
+        shouldSetBadge: true,
+        shouldShowBanner: true,
+        shouldShowList: true,
+      }),
+    });
+  }
+  return _notifications;
+}
 
 interface PushNotificationData {
   type?: string;
@@ -38,17 +49,17 @@ interface PushNotificationData {
 export function usePushNotifications() {
   const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
   const [notification, setNotification] =
-    useState<Notifications.Notification | null>(null);
+    useState<NotificationsTypes.Notification | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<
     "granted" | "denied" | "undetermined"
   >("undetermined");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const notificationListener = useRef<Notifications.Subscription | undefined>(
-    undefined
-  );
-  const responseListener = useRef<Notifications.Subscription | undefined>(
+  const notificationListener = useRef<
+    NotificationsTypes.Subscription | undefined
+  >(undefined);
+  const responseListener = useRef<NotificationsTypes.Subscription | undefined>(
     undefined
   );
 
@@ -77,13 +88,14 @@ export function usePushNotifications() {
       setIsLoading(true);
       setError(null);
 
+      const Notif = await getNotifications();
+
       // Check/request permissions
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
+      const { status: existingStatus } = await Notif.getPermissionsAsync();
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
-        const { status } = await Notifications.requestPermissionsAsync();
+        const { status } = await Notif.requestPermissionsAsync();
         finalStatus = status;
       }
 
@@ -97,7 +109,7 @@ export function usePushNotifications() {
 
       // Get the token
       console.log("🎫 Getting Expo push token...");
-      const tokenData = await Notifications.getExpoPushTokenAsync({
+      const tokenData = await Notif.getExpoPushTokenAsync({
         projectId:
           Constants.expoConfig?.extra?.eas?.projectId ??
           "d8beface-ad76-4676-ba16-5779e1c7672e",
@@ -112,9 +124,9 @@ export function usePushNotifications() {
 
       // Set up notification channel for Android
       if (Platform.OS === "android") {
-        await Notifications.setNotificationChannelAsync("chat-messages", {
+        await Notif.setNotificationChannelAsync("chat-messages", {
           name: "Chat Messages",
-          importance: Notifications.AndroidImportance.HIGH,
+          importance: Notif.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: "#FF231F7C",
           sound: "default",
@@ -122,10 +134,10 @@ export function usePushNotifications() {
         });
 
         // Event updates channel for date changes, cancellations, etc.
-        await Notifications.setNotificationChannelAsync("event-updates", {
+        await Notif.setNotificationChannelAsync("event-updates", {
           name: "Event Updates",
           description: "Notifications about events you're attending",
-          importance: Notifications.AndroidImportance.HIGH,
+          importance: Notif.AndroidImportance.HIGH,
           vibrationPattern: [0, 250, 250, 250],
           lightColor: "#4F46E5",
           sound: "default",
@@ -223,7 +235,8 @@ export function usePushNotifications() {
     try {
       if (!Device.isDevice) return;
 
-      const tokenData = await Notifications.getExpoPushTokenAsync({
+      const Notif = await getNotifications();
+      const tokenData = await Notif.getExpoPushTokenAsync({
         projectId:
           Constants.expoConfig?.extra?.eas?.projectId ??
           "d8beface-ad76-4676-ba16-5779e1c7672e",
@@ -292,7 +305,7 @@ export function usePushNotifications() {
    * Handle notification received in foreground
    */
   const handleNotificationReceived = useCallback(
-    (notification: Notifications.Notification) => {
+    (notification: NotificationsTypes.Notification) => {
       console.log("Notification received in foreground:", notification);
       setNotification(notification);
     },
@@ -303,7 +316,7 @@ export function usePushNotifications() {
    * Handle notification tapped/clicked
    */
   const handleNotificationResponse = useCallback(
-    (response: Notifications.NotificationResponse) => {
+    (response: NotificationsTypes.NotificationResponse) => {
       console.log("Notification tapped:", response);
 
       const data = response.notification.request.content
@@ -337,17 +350,24 @@ export function usePushNotifications() {
       return;
     }
 
-    // Listener for notifications received while app is foregrounded
-    notificationListener.current =
-      Notifications.addNotificationReceivedListener(handleNotificationReceived);
+    let cancelled = false;
 
-    // Listener for when a notification is tapped/clicked
-    responseListener.current =
-      Notifications.addNotificationResponseReceivedListener(
-        handleNotificationResponse
+    getNotifications().then((Notif) => {
+      if (cancelled) return;
+
+      // Listener for notifications received while app is foregrounded
+      notificationListener.current = Notif.addNotificationReceivedListener(
+        handleNotificationReceived
       );
 
+      // Listener for when a notification is tapped/clicked
+      responseListener.current = Notif.addNotificationResponseReceivedListener(
+        handleNotificationResponse
+      );
+    });
+
     return () => {
+      cancelled = true;
       if (notificationListener.current) {
         notificationListener.current.remove();
       }
@@ -404,10 +424,14 @@ export function usePushNotifications() {
       return;
     }
 
-    Notifications.getLastNotificationResponseAsync().then((response) => {
-      if (response) {
-        handleNotificationResponse(response);
-      }
+    getNotifications().then((Notif) => {
+      Notif.getLastNotificationResponseAsync().then(
+        (response: NotificationsTypes.NotificationResponse | null) => {
+          if (response) {
+            handleNotificationResponse(response);
+          }
+        }
+      );
     });
   }, [handleNotificationResponse]);
 

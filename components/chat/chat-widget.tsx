@@ -115,7 +115,7 @@ export function ChatWidget({
   return (
     <div
       className={cn(
-        "fixed bottom-4 right-4 z-50 hidden md:flex",
+        "fixed bottom-4 right-4 z-[60] hidden md:flex",
         "flex-col overflow-hidden rounded-lg border bg-background shadow-2xl",
         "transition-all duration-200 ease-in-out",
         isMinimized ? "h-14 w-72" : "h-[500px] w-96"

@@ -34,6 +34,7 @@ export default function RootLayout() {
               name="notifications"
               options={{ headerShown: false }}
             />
+            <Stack.Screen name="settings" options={{ headerShown: false }} />
           </Stack>
         </PushNotificationProvider>
       </I18nextProvider>

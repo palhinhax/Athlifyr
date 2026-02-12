@@ -2,18 +2,31 @@ import { View, Text, StyleSheet, ActivityIndicator, Alert } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
-import Mapbox from "@rnmapbox/maps";
 import type { Feature } from "geojson";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import type { Event } from "@/src/types";
 
+// Try to import Mapbox - it requires native code and won't work in Expo Go
+let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
+let mapboxAvailable = false;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Mapbox = require("@rnmapbox/maps").default;
+  mapboxAvailable = true;
+} catch {
+  console.warn(
+    "@rnmapbox/maps is not available. Use a development build to enable the map."
+  );
+}
+
 // Configure Mapbox
 const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
 
-if (MAPBOX_ACCESS_TOKEN) {
+if (mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN) {
   Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
-} else {
+} else if (!MAPBOX_ACCESS_TOKEN) {
   console.warn("EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN is not set");
 }
 
@@ -148,6 +161,18 @@ export default function EventsMapScreen() {
     },
     [router]
   );
+
+  if (!mapboxAvailable || !Mapbox) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{t("map.errors.loadingFailed")}</Text>
+        <Text style={styles.errorSubtext}>
+          Mapbox native module is not available.{"\n"}
+          Use a development build instead of Expo Go to enable the map.
+        </Text>
+      </View>
+    );
+  }
 
   if (!MAPBOX_ACCESS_TOKEN) {
     return (

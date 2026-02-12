@@ -42,10 +42,17 @@
       [
         "@rnmapbox/maps",
         {
-          "RNMapboxMapsDownloadToken": "",
+          "RNMapboxMapsDownloadToken": "sk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxpcjRnaHowNWl0M2NzaWxieGZydGFzIn0.dn15f91uODfxvVFpM8IF7Q",
           "RNMapboxMapsImpl": "mapbox"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d8beface-ad76-4676-ba16-5779e1c7672e"
+      }
+    },
+    "owner": "joaomduart"
   }
 }

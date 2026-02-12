@@ -1,6 +1,7 @@
 {
   "cli": {
-    "version": ">= 14.2.1"
+    "version": ">= 14.2.1",
+    "appVersionSource": "local"
   },
   "build": {
     "development": {
@@ -8,17 +9,28 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA"
       }
     },
     "preview": {
       "distribution": "internal",
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://athlifyr.com",
+        "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA"
       }
     },
     "production": {
       "android": {
         "buildType": "apk"
+      },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://athlifyr.com",
+        "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA"
       }
     }
   },

@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import {
@@ -79,11 +79,11 @@ const createEntrySchema = z.discriminatedUnion("type", [
 ]);
 
 // POST /api/profile/performance - Create a new performance entry
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
       // Fetch recent running history for scoring
       const history = await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "RUN",
           performedAt: {
             gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 
       const entry = await prisma.userPerformanceEntry.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           type: "RUN",
           distanceKm: data.distanceKm,
           timeSeconds: data.timeSeconds,
@@ -173,7 +173,7 @@ export async function POST(request: Request) {
       // Fetch recent strength history for this exercise for scoring
       const history = await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "STRENGTH",
           exerciseId: data.exerciseId,
           performedAt: {
@@ -208,7 +208,7 @@ export async function POST(request: Request) {
 
       const entry = await prisma.userPerformanceEntry.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           type: "STRENGTH",
           exerciseId: data.exerciseId,
           weightKg: data.weightKg,
@@ -232,7 +232,7 @@ export async function POST(request: Request) {
       // HYROX entry
       const entry = await prisma.userPerformanceEntry.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           type: "HYROX",
           hyroxCategory: data.hyroxCategory,
           timeSeconds: data.timeSeconds,
@@ -256,11 +256,11 @@ export async function POST(request: Request) {
 }
 
 // GET /api/profile/performance - List performance entries
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -271,7 +271,7 @@ export async function GET(request: Request) {
 
     const entries = await prisma.userPerformanceEntry.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         ...(type && { type }),
       },
       include: {
@@ -310,11 +310,11 @@ export async function GET(request: Request) {
 }
 
 // DELETE /api/profile/performance?id=xxx - Delete a performance entry
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -338,7 +338,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Entry not found" }, { status: 404 });
     }
 
-    if (entry.userId !== session.user.id) {
+    if (entry.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

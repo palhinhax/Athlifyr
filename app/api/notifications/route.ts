@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import {
   markNotificationAsRead,
@@ -7,15 +7,15 @@ import {
 } from "@/lib/notifications";
 
 // GET - Get all notifications for the current user
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     const { searchParams } = new URL(request.url);
     const unreadOnly = searchParams.get("unreadOnly") === "true";
     const limit = parseInt(searchParams.get("limit") ?? "50", 10);
@@ -62,15 +62,15 @@ export async function GET(request: Request) {
 }
 
 // POST - Mark notifications as read
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     const body = await request.json();
     const { notificationId, markAll } = body;
 

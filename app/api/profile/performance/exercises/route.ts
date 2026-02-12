@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { isVenueStaff } from "@/lib/venues/authorization";
@@ -9,11 +9,11 @@ const createExerciseSchema = z.object({
 });
 
 // GET /api/profile/performance/exercises - Search exercises
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,7 +25,7 @@ export async function GET(request: Request) {
     // Include global exercises and user's own exercises
     const exercises = await prisma.exercise.findMany({
       where: {
-        OR: [{ isGlobal: true }, { createdById: session.user.id }],
+        OR: [{ isGlobal: true }, { createdById: user.id }],
         ...(query && {
           OR: [
             { name: { contains: query, mode: "insensitive" } },
@@ -57,23 +57,23 @@ export async function GET(request: Request) {
 }
 
 // POST /api/profile/performance/exercises - Create a new exercise
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Only venue staff and admins can create exercises
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const userDetails = await prisma.user.findUnique({
+      where: { id: user.id },
       select: { role: true },
     });
 
-    const isStaff = await isVenueStaff(session.user.id);
+    const isStaff = await isVenueStaff(user.id);
 
-    if (user?.role !== "ADMIN" && !isStaff) {
+    if (userDetails?.role !== "ADMIN" && !isStaff) {
       return NextResponse.json(
         { error: "Venue staff role required to create exercises" },
         { status: 403 }
@@ -110,7 +110,7 @@ export async function POST(request: Request) {
     // Check if user already has an exercise with this name
     const existingUserExercise = await prisma.exercise.findFirst({
       where: {
-        createdById: session.user.id,
+        createdById: user.id,
         name: { equals: name, mode: "insensitive" },
       },
     });
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
     const exercise = await prisma.exercise.create({
       data: {
         name: name.trim(),
-        createdById: session.user.id,
+        createdById: user.id,
         isGlobal: false,
         category: "OTHER",
       },

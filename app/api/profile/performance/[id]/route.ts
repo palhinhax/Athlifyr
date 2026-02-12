@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import {
@@ -44,13 +44,13 @@ const updateEntrySchema = z.discriminatedUnion("type", [
 
 // PATCH /api/profile/performance/[id] - Update a performance entry
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -66,7 +66,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Entry not found" }, { status: 404 });
     }
 
-    if (existingEntry.userId !== session.user.id) {
+    if (existingEntry.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -90,7 +90,7 @@ export async function PATCH(
       // Fetch recent running history for scoring
       const history = await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "RUN",
           id: { not: id }, // Exclude current entry
           performedAt: {
@@ -148,7 +148,7 @@ export async function PATCH(
       // Fetch recent strength history for this exercise for scoring
       const history = await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "STRENGTH",
           exerciseId: data.exerciseId,
           id: { not: id }, // Exclude current entry
@@ -215,13 +215,13 @@ export async function PATCH(
 
 // GET /api/profile/performance/[id] - Get a single performance entry
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -243,7 +243,7 @@ export async function GET(
       return NextResponse.json({ error: "Entry not found" }, { status: 404 });
     }
 
-    if (entry.userId !== session.user.id) {
+    if (entry.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -262,13 +262,13 @@ export async function GET(
 
 // DELETE /api/profile/performance/[id] - Delete a performance entry
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -284,7 +284,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Entry not found" }, { status: 404 });
     }
 
-    if (entry.userId !== session.user.id) {
+    if (entry.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

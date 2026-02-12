@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { SportType } from "@prisma/client";
 import { z } from "zod";
@@ -11,9 +11,9 @@ const favoriteSportsSchema = z.object({
 // PATCH /api/profile/favorite-sports - Update user's favorite sports
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest) {
     const { favoriteSports } = favoriteSportsSchema.parse(body);
 
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: {
         favoriteSports: favoriteSports,
       },

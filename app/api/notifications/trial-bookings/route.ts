@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { BookingType, BookingStatus } from "@prisma/client";
 
 // GET - Get all pending trial booking requests across all venues the user manages
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Find all venues where user is OWNER or ADMIN
     const managedVenues = await prisma.venueMember.findMany({

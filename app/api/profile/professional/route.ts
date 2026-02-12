@@ -1,17 +1,17 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 // GET - Get user's professional data (pending invites + venue memberships)
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Get pending invites for this user
     const pendingInvites = await prisma.venueInvite.findMany({
@@ -108,15 +108,15 @@ export async function GET() {
 }
 
 // DELETE - Leave a venue (remove membership)
-export async function DELETE(request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
     const { membershipId } = await request.json();
 
     if (!membershipId) {

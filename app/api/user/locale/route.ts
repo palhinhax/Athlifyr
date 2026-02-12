@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 export async function PATCH(req: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(req);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function PATCH(req: NextRequest) {
 
     // Update user's locale preference
     await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: { locale },
     });
 

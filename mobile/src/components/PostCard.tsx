@@ -143,7 +143,9 @@ export function PostCard({ post }: PostCardProps) {
   const toggleLike = useToggleLike();
 
   const likesArray = Array.isArray(post.likes) ? post.likes : [];
-  const isLikedByUser = likesArray.length > 0;
+  const isLikedByUser = user
+    ? likesArray.some((like) => like.userId === user.id)
+    : false;
   const [optimisticLiked, setOptimisticLiked] = useState(isLikedByUser);
   const [optimisticCount, setOptimisticCount] = useState(
     post._count?.likes ?? 0
@@ -187,13 +189,29 @@ export function PostCard({ post }: PostCardProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleLike = () => {
-    if (!user) return;
+    if (!user) {
+      console.log("PostCard: Cannot like - user not authenticated");
+      return;
+    }
+
+    console.log(
+      `PostCard: Toggling like for post ${post.id}, current state: ${optimisticLiked}`
+    );
+
+    // Optimistic update
     setOptimisticLiked(!optimisticLiked);
     setOptimisticCount((c) => (optimisticLiked ? c - 1 : c + 1));
+
+    // Call API
     toggleLike.mutate(post.id, {
-      onError: () => {
+      onError: (error) => {
+        console.error("PostCard: Like error:", error);
+        // Revert optimistic update
         setOptimisticLiked(isLikedByUser);
         setOptimisticCount(post._count?.likes ?? 0);
+      },
+      onSuccess: (data) => {
+        console.log("PostCard: Like success:", data);
       },
     });
   };

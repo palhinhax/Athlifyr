@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -9,12 +9,12 @@ const updatePhotoSchema = z.object({
 
 // PATCH /api/photos/[id] - Update photo caption
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,7 +30,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
-    if (photo.userId !== session.user.id) {
+    if (photo.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -58,12 +58,12 @@ export async function PATCH(
 
 // DELETE /api/photos/[id] - Delete a photo
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -77,7 +77,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Photo not found" }, { status: 404 });
     }
 
-    if (photo.userId !== session.user.id) {
+    if (photo.userId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

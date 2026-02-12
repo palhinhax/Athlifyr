@@ -1,12 +1,12 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
-export async function PATCH(request: Request) {
+export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -21,12 +21,12 @@ export async function PATCH(request: Request) {
 
     // If enabling notifications, check if email is verified
     if (emailNotifications) {
-      const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+      const userDetails = await prisma.user.findUnique({
+        where: { id: user.id },
         select: { emailVerified: true },
       });
 
-      if (!user?.emailVerified) {
+      if (!userDetails?.emailVerified) {
         return NextResponse.json(
           { error: "Email must be verified to enable notifications" },
           { status: 400 }
@@ -36,7 +36,7 @@ export async function PATCH(request: Request) {
 
     // Update user notification settings
     const updatedUser = await prisma.user.update({
-      where: { id: session.user.id },
+      where: { id: user.id },
       data: { emailNotifications },
       select: {
         id: true,
@@ -54,27 +54,27 @@ export async function PATCH(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+    const userSettings = await prisma.user.findUnique({
+      where: { id: user.id },
       select: {
         emailNotifications: true,
         emailVerified: true,
       },
     });
 
-    if (!user) {
+    if (!userSettings) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    return NextResponse.json(user);
+    return NextResponse.json(userSettings);
   } catch (error) {
     console.error("Error fetching notification settings:", error);
     return NextResponse.json(

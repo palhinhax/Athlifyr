@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import {
   predictHalfMarathon,
@@ -85,11 +85,11 @@ function calculateE1rm(weightKg: number, reps: number): number {
 }
 
 // GET /api/profile/performance/summary
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -97,7 +97,7 @@ export async function GET() {
     const runEntries: RunEntryResult[] =
       (await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "RUN",
         },
         orderBy: { performedAt: "asc" },
@@ -143,7 +143,7 @@ export async function GET() {
     const trailEntries: RunEntryResult[] =
       (await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "TRAIL",
         },
         orderBy: { performedAt: "asc" },
@@ -189,7 +189,7 @@ export async function GET() {
     const strengthEntries: StrengthEntryResult[] =
       (await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "STRENGTH",
         },
         orderBy: { performedAt: "asc" },
@@ -214,7 +214,7 @@ export async function GET() {
     const hyroxEntries: HyroxEntryResult[] =
       (await prisma.userPerformanceEntry.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           type: "HYROX",
         },
         orderBy: { performedAt: "desc" },

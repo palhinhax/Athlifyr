@@ -1,22 +1,22 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 /**
  * GET /api/user/data-export
  * Export all user data (GDPR - Right to Data Portability)
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Fetch all user data
     const userData = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       include: {
         posts: {
           include: {

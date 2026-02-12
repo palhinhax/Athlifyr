@@ -41,6 +41,13 @@ api.interceptors.request.use(
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
+        console.log(
+          `API Request: ${config.method?.toUpperCase()} ${config.url} - Token present: YES`
+        );
+      } else {
+        console.log(
+          `API Request: ${config.method?.toUpperCase()} ${config.url} - Token present: NO`
+        );
       }
     } catch (error) {
       console.error("Error getting token from SecureStore:", error);
@@ -59,6 +66,14 @@ api.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    // Log 401 errors for debugging
+    if (error.response?.status === 401) {
+      console.error(
+        `API 401 Error: ${originalRequest.method?.toUpperCase()} ${originalRequest.url}`
+      );
+      console.error("Response data:", error.response?.data);
+    }
 
     // Only attempt refresh on 401 and if we haven't already retried
     if (error.response?.status === 401 && !originalRequest._retry) {

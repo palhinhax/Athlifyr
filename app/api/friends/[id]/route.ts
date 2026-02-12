@@ -1,16 +1,16 @@
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { notifyFriendAccepted } from "@/lib/notifications";
 
 // PATCH /api/friends/[id] - Accept or reject friend request
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -37,7 +37,7 @@ export async function PATCH(
     }
 
     // Only the receiver can accept/reject
-    if (friendship.receiverId !== session.user.id) {
+    if (friendship.receiverId !== user.id) {
       return NextResponse.json(
         { error: "Only the receiver can respond to this request" },
         { status: 403 }
@@ -71,13 +71,13 @@ export async function PATCH(
     // Send notification to original sender if accepted
     if (action === "accept") {
       const accepter = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: user.id },
         select: { name: true, image: true },
       });
 
       notifyFriendAccepted({
         receiverUserId: friendship.senderId,
-        accepterUserId: session.user.id,
+        accepterUserId: user.id,
         accepterName: accepter?.name || "Someone",
         accepterImage: accepter?.image,
       }).catch((error) => {
@@ -97,12 +97,12 @@ export async function PATCH(
 
 // DELETE /api/friends/[id] - Remove friend or cancel request
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -121,10 +121,7 @@ export async function DELETE(
     }
 
     // User must be part of the friendship
-    if (
-      friendship.senderId !== session.user.id &&
-      friendship.receiverId !== session.user.id
-    ) {
+    if (friendship.senderId !== user.id && friendship.receiverId !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

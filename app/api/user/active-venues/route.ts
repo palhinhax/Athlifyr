@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 /**
@@ -7,11 +7,11 @@ import { prisma } from "@/lib/prisma";
  * Returns venues where the user is a member (owner, admin, coach, client)
  * or has an active subscription
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json([]);
     }
 
@@ -30,7 +30,7 @@ export async function GET() {
     // 1. Fetch venues where user is a member (owner, admin, coach, client)
     const venueMemberships = await prisma.venueMember.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         status: "ACTIVE",
       },
       include: {
@@ -64,7 +64,7 @@ export async function GET() {
     const now = new Date();
     const activeSubscriptions = await prisma.venueSubscription.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         status: "ACTIVE",
         startsAt: {
           lte: now, // Subscription must have already started
@@ -145,7 +145,7 @@ export async function GET() {
               // Get the subscription end date for this plan
               subscriptions: {
                 where: {
-                  userId: session.user.id,
+                  userId: user.id,
                   status: "ACTIVE",
                   startsAt: { lte: now },
                   OR: [{ endsAt: null }, { endsAt: { gte: now } }],

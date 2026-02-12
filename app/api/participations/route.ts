@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
@@ -15,9 +15,9 @@ const participationSchema = z.object({
 // POST /api/participations - Create or update participation
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -54,12 +54,12 @@ export async function POST(request: NextRequest) {
     const participation = await prisma.participation.upsert({
       where: {
         userId_eventId: {
-          userId: session.user.id,
+          userId: user.id,
           eventId: validatedData.eventId,
         },
       },
       create: {
-        userId: session.user.id,
+        userId: user.id,
         eventId: validatedData.eventId,
         variantId: validatedData.variantId,
         status: validatedData.status,
@@ -81,11 +81,11 @@ export async function POST(request: NextRequest) {
         ANALYTICS_EVENTS.EVENT_REGISTER,
         {
           eventId: validatedData.eventId,
-          userId: session.user.id,
+          userId: user.id,
           variantId: validatedData.variantId || null,
           eventTitle: event.title,
         },
-        session.user.email
+        user.email
       );
     }
 
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       // Check if there's already an auto-post for this event from this user
       const existingAutoPost = await prisma.post.findFirst({
         where: {
-          userId: session.user.id,
+          userId: user.id,
           eventId: validatedData.eventId,
           isAutoPost: true,
         },
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
         await prisma.post.create({
           data: {
-            userId: session.user.id,
+            userId: user.id,
             eventId: validatedData.eventId,
             content,
             isAutoPost: true,
@@ -202,9 +202,9 @@ export async function GET(request: NextRequest) {
 // DELETE /api/participations?eventId=xxx - Remove participation
 export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -221,7 +221,7 @@ export async function DELETE(request: NextRequest) {
     await prisma.participation.delete({
       where: {
         userId_eventId: {
-          userId: session.user.id,
+          userId: user.id,
           eventId: eventId,
         },
       },
@@ -243,9 +243,9 @@ export async function DELETE(request: NextRequest) {
 // PATCH /api/participations - Update participation details (e.g., completion time)
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -263,7 +263,7 @@ export async function PATCH(request: NextRequest) {
     const participation = await prisma.participation.update({
       where: {
         userId_eventId: {
-          userId: session.user.id,
+          userId: user.id,
           eventId: eventId,
         },
       },

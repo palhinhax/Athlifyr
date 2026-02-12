@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 
@@ -9,15 +9,15 @@ const createPhotoSchema = z.object({
 });
 
 // GET /api/photos - Get user's photos
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get("userId") || session.user.id;
+    const userId = searchParams.get("userId") || user.id;
 
     const photos = await prisma.profilePhoto.findMany({
       where: { userId },
@@ -44,10 +44,10 @@ export async function GET(request: Request) {
 }
 
 // POST /api/photos - Upload a new photo
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
 
     const photo = await prisma.profilePhoto.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         imageUrl: validatedData.imageUrl,
         caption: validatedData.caption,
       },

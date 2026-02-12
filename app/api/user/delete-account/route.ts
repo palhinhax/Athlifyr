@@ -1,20 +1,20 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 /**
  * DELETE /api/user/delete-account
  * Delete user account and all associated data (GDPR - Right to be Forgotten)
  */
-export async function DELETE() {
+export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Delete all user data in correct order (respecting foreign key constraints)
     await prisma.$transaction(async (tx) => {

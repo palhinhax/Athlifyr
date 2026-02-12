@@ -1,13 +1,13 @@
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { notifyFriendRequest } from "@/lib/notifications";
 
 // GET /api/friends - Get user's friends and pending requests
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       // Get pending friend requests received
       const pendingRequests = await prisma.friendship.findMany({
         where: {
-          receiverId: session.user.id,
+          receiverId: user.id,
           status: "PENDING",
         },
         include: {
@@ -40,7 +40,7 @@ export async function GET(request: Request) {
       // Get sent pending requests
       const sentRequests = await prisma.friendship.findMany({
         where: {
-          senderId: session.user.id,
+          senderId: user.id,
           status: "PENDING",
         },
         include: {
@@ -62,8 +62,8 @@ export async function GET(request: Request) {
     const friendships = await prisma.friendship.findMany({
       where: {
         OR: [
-          { senderId: session.user.id, status: "ACCEPTED" },
-          { receiverId: session.user.id, status: "ACCEPTED" },
+          { senderId: user.id, status: "ACCEPTED" },
+          { receiverId: user.id, status: "ACCEPTED" },
         ],
       },
       include: {
@@ -89,7 +89,7 @@ export async function GET(request: Request) {
 
     // Extract friend info (the other user)
     const friends = friendships.map((f) => {
-      const friend = f.senderId === session.user.id ? f.receiver : f.sender;
+      const friend = f.senderId === user.id ? f.receiver : f.sender;
       return {
         friendshipId: f.id,
         ...friend,
@@ -108,10 +108,10 @@ export async function GET(request: Request) {
 }
 
 // POST /api/friends - Send friend request
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthenticatedUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -124,7 +124,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (userId === session.user.id) {
+    if (userId === user.id) {
       return NextResponse.json(
         { error: "Cannot send friend request to yourself" },
         { status: 400 }
@@ -144,8 +144,8 @@ export async function POST(request: Request) {
     const existingFriendship = await prisma.friendship.findFirst({
       where: {
         OR: [
-          { senderId: session.user.id, receiverId: userId },
-          { senderId: userId, receiverId: session.user.id },
+          { senderId: user.id, receiverId: userId },
+          { senderId: userId, receiverId: user.id },
         ],
       },
     });
@@ -164,7 +164,7 @@ export async function POST(request: Request) {
       const updated = await prisma.friendship.update({
         where: { id: existingFriendship.id },
         data: {
-          senderId: session.user.id,
+          senderId: user.id,
           receiverId: userId,
           status: "PENDING",
         },
@@ -175,7 +175,7 @@ export async function POST(request: Request) {
     // Create new friend request
     const friendship = await prisma.friendship.create({
       data: {
-        senderId: session.user.id,
+        senderId: user.id,
         receiverId: userId,
         status: "PENDING",
       },
@@ -193,14 +193,14 @@ export async function POST(request: Request) {
 
     // Get sender info for notification
     const sender = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: user.id },
       select: { name: true, image: true },
     });
 
     // Send notification to receiver
     notifyFriendRequest({
       receiverUserId: userId,
-      senderUserId: session.user.id,
+      senderUserId: user.id,
       senderName: sender?.name || "Someone",
       senderImage: sender?.image,
     }).catch((error) => {

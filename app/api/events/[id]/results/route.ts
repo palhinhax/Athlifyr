@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { SportType, PerformanceEntryType } from "@prisma/client";
 
@@ -40,9 +40,9 @@ function getPerformanceType(
 // GET /api/events/[id]/results - Get user's results for an event
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Get all results for this user and event
     const results = await prisma.result.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         eventId: eventId,
       },
       include: {
@@ -87,9 +87,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // POST /api/events/[id]/results - Create a new result
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -151,7 +151,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     // Check if result already exists for this user, event, and variant
     const existingResult = await prisma.result.findFirst({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         eventId: eventId,
         variantId: variantId || null,
       },
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       // 1. Create the Result
       const newResult = await tx.result.create({
         data: {
-          userId: session.user.id,
+          userId: user.id,
           eventId: eventId,
           variantId: variantId || null,
           time: time,
@@ -197,7 +197,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       if (performanceType) {
         await tx.userPerformanceEntry.create({
           data: {
-            userId: session.user.id,
+            userId: user.id,
             type: performanceType,
             performedAt: event.startDate,
             distanceKm: variant?.distanceKm || null,
@@ -226,9 +226,9 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 // PUT /api/events/[id]/results - Update an existing result
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -240,7 +240,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     // Find existing result
     const existingResult = await prisma.result.findFirst({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         eventId: eventId,
         variantId: variantId || null,
       },
@@ -321,9 +321,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 // DELETE /api/events/[id]/results - Delete a result
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -334,7 +334,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     // Find existing result
     const existingResult = await prisma.result.findFirst({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         eventId: eventId,
         variantId: variantId || null,
       },

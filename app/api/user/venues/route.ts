@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -9,18 +9,18 @@ export const dynamic = "force-dynamic";
  * Returns venues where the authenticated user is a member
  * Used for navigation menu - optimized query
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Fetch only active memberships with minimal venue data
     const memberships = await prisma.venueMember.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         status: "ACTIVE",
         venue: {
           isActive: true,

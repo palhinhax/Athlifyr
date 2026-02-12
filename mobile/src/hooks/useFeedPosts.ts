@@ -28,7 +28,7 @@ export interface FeedPost {
     likes: number;
     comments: number;
   };
-  likes: Array<{ id: string }> | undefined;
+  likes: Array<{ userId: string }> | undefined;
 }
 
 interface PostsResponse {

@@ -1,19 +1,19 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { SportType } from "@prisma/client";
 
-export async function GET(request: Request) {
+export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const anonymousId = searchParams.get("anonymousId");
 
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (session?.user?.id) {
+    if (user?.id) {
       // Get preferences for authenticated user
       const preferences = await prisma.eventsPreferences.findUnique({
-        where: { userId: session.user.id },
+        where: { userId: user.id },
       });
 
       return NextResponse.json({ preferences });
@@ -36,7 +36,7 @@ export async function GET(request: Request) {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const {
@@ -49,12 +49,12 @@ export async function POST(request: Request) {
       anonymousId,
     } = body;
 
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (session?.user?.id) {
+    if (user?.id) {
       // Save preferences for authenticated user
       const preferences = await prisma.eventsPreferences.upsert({
-        where: { userId: session.user.id },
+        where: { userId: user.id },
         update: {
           sports: sports as SportType[],
           distanceRadius,
@@ -64,7 +64,7 @@ export async function POST(request: Request) {
           locationEnabled,
         },
         create: {
-          userId: session.user.id,
+          userId: user.id,
           sports: sports as SportType[],
           distanceRadius,
           searchQuery,

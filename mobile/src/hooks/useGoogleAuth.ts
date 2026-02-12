@@ -18,20 +18,21 @@ export function useGoogleAuth() {
   // This works with both Expo Go and standalone builds
   const redirectUri = "athlifyr://";
 
+  const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
   // Debug
   console.log("Google Auth Config:", {
     redirectUri,
+    androidClientId,
+    iosClientId,
     webClientId,
-    hasAndroidId: !!process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
-    hasIosId: !!process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
   });
 
   const [request, response, promptAsync] = Google.useAuthRequest({
-    // For Expo Go on Android, use webClientId for all platforms
-    androidClientId: webClientId,
-    iosClientId: webClientId,
+    androidClientId,
+    iosClientId,
     webClientId,
     redirectUri,
   });

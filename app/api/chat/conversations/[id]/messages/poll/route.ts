@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET - Poll for new messages after a specific message ID
@@ -8,9 +8,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +20,7 @@ export async function GET(
     const participant = await prisma.conversationParticipant.findFirst({
       where: {
         conversationId,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 

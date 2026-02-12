@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // Hide a conversation from the user's list
@@ -8,9 +8,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -21,7 +21,7 @@ export async function POST(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
     });
@@ -59,9 +59,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -72,7 +72,7 @@ export async function DELETE(
       where: {
         conversationId_userId: {
           conversationId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
     });

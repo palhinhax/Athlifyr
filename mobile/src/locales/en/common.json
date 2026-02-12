@@ -6,6 +6,7 @@
     "exercises": "Exercises",
     "profile": "Profile",
     "messages": "Messages",
+    "workouts": "Workouts",
     "map": "Map"
   },
   "sports": {
@@ -29,6 +30,8 @@
     "noEventsDescription": "Check back later for upcoming events",
     "loadingMore": "Loading more events...",
     "allEventsLoaded": "All events loaded",
+    "viewList": "List",
+    "viewMap": "Map",
     "filters": {
       "searchPlaceholder": "Search events...",
       "searchingGlobally": "Searching all events",

@@ -5,7 +5,8 @@
     "feed": "Feed",
     "exercises": "Übungen",
     "profile": "Profil",
-    "messages": "Nachrichten"
+    "messages": "Nachrichten",
+    "workouts": "Workouts"
   },
   "sports": {
     "RUNNING": "Laufen",
@@ -28,6 +29,8 @@
     "noEventsDescription": "Schau später wieder vorbei für kommende Events",
     "loadingMore": "Weitere Events werden geladen...",
     "allEventsLoaded": "Alle Events geladen",
+    "viewList": "Liste",
+    "viewMap": "Karte",
     "filters": {
       "searchPlaceholder": "Events suchen...",
       "searchingGlobally": "Alle Events durchsuchen",

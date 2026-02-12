@@ -5,7 +5,8 @@
     "feed": "Flux",
     "exercises": "Exercices",
     "profile": "Profil",
-    "messages": "Messages"
+    "messages": "Messages",
+    "workouts": "Séances"
   },
   "sports": {
     "RUNNING": "Course",
@@ -28,6 +29,8 @@
     "noEventsDescription": "Revenez plus tard pour les prochains événements",
     "loadingMore": "Chargement d'événements supplémentaires...",
     "allEventsLoaded": "Tous les événements chargés",
+    "viewList": "Liste",
+    "viewMap": "Carte",
     "filters": {
       "searchPlaceholder": "Rechercher des événements...",
       "searchingGlobally": "Recherche dans tous les événements",

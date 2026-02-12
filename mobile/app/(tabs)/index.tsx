@@ -6,13 +6,15 @@ import {
   ActivityIndicator,
   RefreshControl,
   TextInput,
+  TouchableOpacity,
 } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
-import { Search } from "lucide-react-native";
+import { EventsMap } from "@/src/components/EventsMap";
+import { Search, LayoutGrid, Map } from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -28,6 +30,7 @@ interface EventsResponse {
 
 export default function EventsScreen() {
   const { t } = useTranslation();
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -123,26 +126,68 @@ export default function EventsScreen() {
 
   return (
     <View style={styles.container}>
-      {/* Search Bar */}
+      {/* Search Bar + View Toggle */}
       <View style={styles.searchContainer}>
-        <View style={styles.searchBar}>
-          <Search
-            size={20}
-            color={theme.colors.textSecondary}
-            style={styles.searchIcon}
-          />
-          <TextInput
-            style={styles.searchInput}
-            placeholder={t("events.filters.searchPlaceholder")}
-            placeholderTextColor={theme.colors.textSecondary}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
+        <View style={styles.searchRow}>
+          <View style={styles.searchBar}>
+            <Search
+              size={20}
+              color={theme.colors.textSecondary}
+              style={styles.searchIcon}
+            />
+            <TextInput
+              style={styles.searchInput}
+              placeholder={t("events.filters.searchPlaceholder")}
+              placeholderTextColor={theme.colors.textSecondary}
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          {/* View Mode Toggle */}
+          <View style={styles.viewToggle}>
+            <TouchableOpacity
+              style={[
+                styles.viewToggleButton,
+                viewMode === "list" && styles.viewToggleButtonActive,
+              ]}
+              onPress={() => setViewMode("list")}
+              activeOpacity={0.7}
+            >
+              <LayoutGrid
+                size={18}
+                color={
+                  viewMode === "list"
+                    ? theme.colors.white
+                    : theme.colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.viewToggleButton,
+                viewMode === "map" && styles.viewToggleButtonActive,
+              ]}
+              onPress={() => setViewMode("map")}
+              activeOpacity={0.7}
+            >
+              <Map
+                size={18}
+                color={
+                  viewMode === "map"
+                    ? theme.colors.white
+                    : theme.colors.textSecondary
+                }
+              />
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
-      {/* Events List */}
-      {loading && events.length === 0 ? (
+      {/* Content */}
+      {viewMode === "map" ? (
+        <EventsMap searchQuery={debouncedSearch} />
+      ) : loading && events.length === 0 ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
@@ -180,7 +225,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border,
   },
+  searchRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+  },
   searchBar: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: theme.colors.backgroundSecondary,
@@ -195,6 +246,23 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.colors.text,
+  },
+  viewToggle: {
+    flexDirection: "row",
+    borderRadius: theme.borderRadius.lg,
+    overflow: "hidden",
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  viewToggleButton: {
+    width: 44,
+    height: 44,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: theme.colors.backgroundSecondary,
+  },
+  viewToggleButtonActive: {
+    backgroundColor: theme.colors.primary,
   },
   listContent: {
     padding: theme.spacing.md,

@@ -87,7 +87,7 @@ export function EventLocationMap({
               >
                 <View style={styles.markerContainer}>
                   <View style={styles.marker}>
-                    <MapPin size={18} color={theme.colors.white} />
+                    <MapPin size={20} color={theme.colors.white} />
                   </View>
                 </View>
               </Mapbox.PointAnnotation>

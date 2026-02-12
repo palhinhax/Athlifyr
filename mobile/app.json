@@ -46,7 +46,8 @@
           "RNMapboxMapsDownloadToken": "sk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxpcjRnaHowNWl0M2NzaWxieGZydGFzIn0.dn15f91uODfxvVFpM8IF7Q",
           "RNMapboxMapsImpl": "mapbox"
         }
-      ]
+      ],
+      "@react-native-google-signin/google-signin"
     ],
     "extra": {
       "router": {},

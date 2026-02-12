@@ -30,7 +30,7 @@ export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
-  const { promptAsync, isReady: isGoogleReady } = useGoogleAuth();
+  const { signIn: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -73,7 +73,7 @@ export default function LoginScreen() {
     if (!isGoogleReady) return;
     setIsGoogleLoading(true);
     try {
-      await promptAsync();
+      await googleSignIn();
     } catch {
       Alert.alert(t("common.error"), t("login.googleError"));
     } finally {

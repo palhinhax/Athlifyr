@@ -46,7 +46,7 @@ interface FormErrors {
 export default function RegisterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { promptAsync, isReady: isGoogleReady } = useGoogleAuth();
+  const { signIn: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
   const logout = useAuthStore((s) => s.logout);
 
   const [name, setName] = useState("");
@@ -132,7 +132,7 @@ export default function RegisterScreen() {
     if (!isGoogleReady) return;
     setIsGoogleLoading(true);
     try {
-      await promptAsync();
+      await googleSignIn();
     } catch {
       Alert.alert(t("common.error"), t("login.googleError"));
     } finally {

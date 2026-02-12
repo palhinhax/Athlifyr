@@ -3,10 +3,35 @@
 
 // Listen for push events
 self.addEventListener("push", (event) => {
-  if (!event.data) return;
+  if (!event.data) {
+    console.warn("[SW] Push event received but no data");
+    return;
+  }
+
+  // Log raw data for debugging
+  console.log("[SW] Raw push data type:", typeof event.data);
+  console.log("[SW] Can get text:", typeof event.data.text === "function");
+  console.log("[SW] Can get json:", typeof event.data.json === "function");
 
   try {
-    const data = event.data.json();
+    // Try to parse as JSON first
+    let data;
+    try {
+      data = event.data.json();
+      console.log("[SW] ✅ Successfully parsed as JSON");
+    } catch (jsonError) {
+      // If JSON parsing fails, try to get as text
+      console.warn("[SW] ⚠️ Failed to parse as JSON:", jsonError.message);
+      const text = event.data.text();
+      console.log("[SW] 📝 Received as text:", text);
+
+      // Create a fallback notification
+      data = {
+        title: "Nova Notificação",
+        body: text || "Tens uma nova mensagem",
+      };
+    }
+
     console.log("[SW] Push notification received:", data);
 
     const options = {
@@ -24,7 +49,15 @@ self.addEventListener("push", (event) => {
       self.registration.showNotification(data.title || "Athlifyr", options)
     );
   } catch (error) {
-    console.error("[SW] Error showing notification:", error);
+    console.error("[SW] ❌ Error showing notification:", error);
+
+    // Even if there's an error, try to show a basic notification
+    event.waitUntil(
+      self.registration.showNotification("Athlifyr", {
+        body: "Tens uma nova notificação",
+        icon: "/android-chrome-192x192.png",
+      })
+    );
   }
 });
 

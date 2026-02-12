@@ -14,6 +14,16 @@ if (
     process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
     process.env.VAPID_PRIVATE_KEY
   );
+  console.log("[WEB PUSH] ✅ VAPID configured:", {
+    subject: process.env.VAPID_SUBJECT,
+    publicKeyLength: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY.length,
+  });
+} else {
+  console.error("[WEB PUSH] ❌ VAPID keys missing!", {
+    hasPublicKey: !!process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+    hasPrivateKey: !!process.env.VAPID_PRIVATE_KEY,
+    hasSubject: !!process.env.VAPID_SUBJECT,
+  });
 }
 
 const EXPO_PUSH_ENDPOINT = "https://exp.host/--/api/v2/push/send";
@@ -232,6 +242,8 @@ async function sendWebPushMessages(
   },
   tokens: TokenRecord[]
 ): Promise<{ sent: number; failed: number; invalidTokenIds: string[] }> {
+  console.log(`[WEB PUSH] 🚀 Starting to send to ${tokens.length} web tokens`);
+
   let sent = 0;
   let failed = 0;
   const invalidTokenIds: string[] = [];
@@ -242,17 +254,48 @@ async function sendWebPushMessages(
       const subscription = JSON.parse(token.deviceId || "{}");
 
       if (!subscription.endpoint) {
-        console.error(`Invalid subscription for token ${token.id}`);
+        console.error(
+          `[WEB PUSH] ❌ Invalid subscription for token ${token.id}`
+        );
         invalidTokenIds.push(token.id);
         failed++;
         continue;
       }
 
-      await webpush.sendNotification(subscription, JSON.stringify(payload));
-      console.log(`✅ Web push sent to token ${token.id}`);
+      console.log(`[WEB PUSH] 📤 Sending to token ${token.id}...`);
+      console.log(
+        `[WEB PUSH] 📍 Endpoint:`,
+        subscription.endpoint.substring(0, 50) + "..."
+      );
+      console.log(`[WEB PUSH] 📦 Payload:`, payload);
+
+      const result = await webpush.sendNotification(
+        subscription,
+        JSON.stringify(payload)
+      );
+      console.log(`[WEB PUSH] ✅ Success! Status: ${result.statusCode}`);
       sent++;
     } catch (error) {
-      console.error(`❌ Failed to send web push to token ${token.id}:`, error);
+      console.error(
+        `[WEB PUSH] ❌ Failed to send to token ${token.id}:`,
+        error
+      );
+
+      // Log detailed error info
+      if (error && typeof error === "object") {
+        const err = error as {
+          statusCode?: number;
+          headers?: unknown;
+          body?: string;
+          message?: string;
+        };
+        console.error(`[WEB PUSH] 🔍 Error details:`, {
+          statusCode: err.statusCode,
+          headers: err.headers,
+          body: err.body,
+          message: err.message,
+        });
+      }
       // Check if it's an invalid subscription error
       if (
         error instanceof Error &&
@@ -264,6 +307,7 @@ async function sendWebPushMessages(
     }
   }
 
+  console.log(`[WEB PUSH] 🏁 Finished: ${sent} sent, ${failed} failed`);
   return { sent, failed, invalidTokenIds };
 }
 

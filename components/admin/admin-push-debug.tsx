@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, RefreshCw } from "lucide-react";
 
 export function AdminPushDebug() {
+  const { data: session } = useSession();
   const [debugInfo, setDebugInfo] = useState({
     swRegistered: false,
     swActive: false,
@@ -153,13 +155,19 @@ export function AdminPushDebug() {
 
   // Send test notification
   const sendTestNotification = async () => {
+    if (!session?.user?.id) {
+      setTestResult("❌ User not logged in!");
+      return;
+    }
+
     try {
-      const response = await fetch("/api/web-push/send", {
+      const response = await fetch("/api/admin/notifications/push/user", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: "🧪 Test Notification",
-          body: "This is a test from the debug panel",
+          userId: session.user.id,
+          title: "🧪 Test Push Notification",
+          message: "This is a test notification from the debug panel",
           data: {
             url: "/notifications",
             type: "test",
@@ -168,10 +176,18 @@ export function AdminPushDebug() {
       });
 
       if (!response.ok) {
-        throw new Error(`Backend error: ${response.status}`);
+        const errorData = await response.json();
+        throw new Error(
+          `Backend error: ${response.status} - ${errorData.error || "Unknown error"}`
+        );
       }
 
-      setTestResult("✅ Test notification sent! Check your browser.");
+      const result = await response.json();
+      console.log("✅ Push notification result:", result);
+
+      setTestResult(
+        `✅ Test notification sent! Sent: ${result.data?.sent || 0}, Failed: ${result.data?.failed || 0}`
+      );
     } catch (err) {
       console.error("❌ Test notification failed:", err);
       setTestResult(`❌ Test failed: ${err}`);

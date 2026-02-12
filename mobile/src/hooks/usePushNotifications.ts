@@ -378,9 +378,12 @@ export function usePushNotifications() {
     // expoPushToken comes from local state (current session)
     if (user && !expoPushToken) {
       if (storedPushToken) {
-        // Restore token from SecureStore without hitting the backend again
+        // Restore token from SecureStore and re-register with backend
         console.log("♻️ Restoring push token from SecureStore");
         setExpoPushToken(storedPushToken);
+        // Re-register with backend in case user just logged in
+        console.log("📲 Re-registering push token with backend after login");
+        registerTokenWithBackend(storedPushToken);
         // Also verify the token is still current (Expo may have rotated it)
         verifyAndRefreshToken(storedPushToken);
       } else {

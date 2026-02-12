@@ -2,9 +2,13 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Platform } from "react-native";
 import * as Device from "expo-device";
 import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
+
+// Check if running in Expo Go
+const isExpoGo = Constants.appOwnership === "expo";
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -47,6 +51,15 @@ export function usePushNotifications() {
    * Register for push notifications
    */
   async function registerForPushNotifications() {
+    // Skip push notifications in Expo Go (SDK 53+)
+    if (isExpoGo) {
+      console.log(
+        "Push notifications are not available in Expo Go. Use a development build or production APK."
+      );
+      setError("Push notifications require a development build");
+      return null;
+    }
+
     if (!Device.isDevice) {
       setError("Push notifications only work on physical devices");
       return null;
@@ -211,6 +224,11 @@ export function usePushNotifications() {
    * Set up notification listeners
    */
   useEffect(() => {
+    // Skip in Expo Go
+    if (isExpoGo) {
+      return;
+    }
+
     // Listener for notifications received while app is foregrounded
     notificationListener.current =
       Notifications.addNotificationReceivedListener(handleNotificationReceived);
@@ -223,12 +241,10 @@ export function usePushNotifications() {
 
     return () => {
       if (notificationListener.current) {
-        Notifications.removeNotificationSubscription(
-          notificationListener.current
-        );
+        notificationListener.current.remove();
       }
       if (responseListener.current) {
-        Notifications.removeNotificationSubscription(responseListener.current);
+        responseListener.current.remove();
       }
     };
   }, [handleNotificationReceived, handleNotificationResponse]);
@@ -237,6 +253,11 @@ export function usePushNotifications() {
    * Register for push notifications when user logs in
    */
   useEffect(() => {
+    // Skip in Expo Go
+    if (isExpoGo) {
+      return;
+    }
+
     if (user && !expoPushToken) {
       registerForPushNotifications();
     }
@@ -247,6 +268,11 @@ export function usePushNotifications() {
    * Handle last notification that opened the app
    */
   useEffect(() => {
+    // Skip in Expo Go
+    if (isExpoGo) {
+      return;
+    }
+
     Notifications.getLastNotificationResponseAsync().then((response) => {
       if (response) {
         handleNotificationResponse(response);

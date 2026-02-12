@@ -1,20 +1,20 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET - Get chat notifications (unread messages from conversations)
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get conversations where user is a participant
     const participations = await prisma.conversationParticipant.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         hidden: false,
       },
       select: {
@@ -37,7 +37,7 @@ export async function GET() {
           where: {
             conversationId: participation.conversationId,
             senderId: {
-              not: session.user.id,
+              not: user.id,
             },
             createdAt: {
               gt: participation.lastSeenAt,

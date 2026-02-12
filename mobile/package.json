@@ -4,8 +4,8 @@
   "main": "index.ts",
   "scripts": {
     "start": "expo start",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
     "web": "expo start --web"
   },
   "dependencies": {
@@ -14,16 +14,19 @@
     "@react-navigation/bottom-tabs": "^7.10.1",
     "@react-navigation/native": "^7.1.28",
     "@react-navigation/native-stack": "^7.10.1",
+    "@rnmapbox/maps": "^10.2.10",
     "@tanstack/react-query": "^5.90.19",
     "axios": "^1.13.2",
     "date-fns": "^4.1.0",
     "expo": "~54.0.33",
     "expo-auth-session": "^7.0.10",
     "expo-crypto": "^15.0.8",
+    "expo-device": "^8.0.10",
     "expo-image-picker": "^17.0.10",
     "expo-linking": "~8.0.11",
     "expo-localization": "^17.0.8",
     "expo-location": "^19.0.8",
+    "expo-notifications": "^0.32.16",
     "expo-router": "~6.0.23",
     "expo-secure-store": "^15.0.8",
     "expo-status-bar": "~3.0.9",
@@ -42,8 +45,10 @@
     "zustand": "^5.0.10"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.16",
     "@types/node": "^25.2.2",
     "@types/react": "~19.1.0",
+    "babel-plugin-module-resolver": "^5.0.2",
     "babel-preset-expo": "^54.0.10",
     "typescript": "~5.9.2"
   },

@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET - List conversations for authenticated user
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -15,7 +15,7 @@ export async function GET() {
       where: {
         participants: {
           some: {
-            userId: session.user.id,
+            userId: user.id,
             hidden: false,
           },
         },
@@ -67,9 +67,9 @@ export async function GET() {
 // POST - Create or get existing 1:1 conversation
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -82,7 +82,7 @@ export async function POST(request: Request) {
       );
     }
 
-    if (otherUserId === session.user.id) {
+    if (otherUserId === user.id) {
       return NextResponse.json(
         { error: "Cannot create conversation with yourself" },
         { status: 400 }
@@ -109,7 +109,7 @@ export async function POST(request: Request) {
               {
                 participants: {
                   some: {
-                    userId: session.user.id,
+                    userId: user.id,
                   },
                 },
               },
@@ -161,7 +161,7 @@ export async function POST(request: Request) {
         const conversation = await tx.conversation.create({
           data: {
             participants: {
-              create: [{ userId: session.user.id }, { userId: otherUserId }],
+              create: [{ userId: user.id }, { userId: otherUserId }],
             },
           },
           include: {

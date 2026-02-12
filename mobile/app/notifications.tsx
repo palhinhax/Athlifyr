@@ -39,11 +39,7 @@ import {
 
 // ─── Notification Icon ─────────────────────────────────────────
 
-function NotificationIcon({
-  notification,
-}: {
-  notification: AppNotification;
-}) {
+function NotificationIcon({ notification }: { notification: AppNotification }) {
   switch (notification.type) {
     case "TRIAL_REQUEST":
       return <GraduationCap size={16} color="#16a34a" />;
@@ -72,7 +68,9 @@ function NotificationAvatar({
   name: string | null;
 }) {
   if (image) {
-    return <Image source={{ uri: image }} style={styles.avatar} alt={name ?? ""} />;
+    return (
+      <Image source={{ uri: image }} style={styles.avatar} alt={name ?? ""} />
+    );
   }
 
   const initials = name
@@ -120,11 +118,7 @@ function NotificationItem({
   processingId,
 }: {
   notification: AppNotification;
-  onAction: (
-    type: string,
-    id: string,
-    action: "accept" | "reject"
-  ) => void;
+  onAction: (type: string, id: string, action: "accept" | "reject") => void;
   processingId: string | null;
 }) {
   const { t } = useTranslation();
@@ -206,12 +200,13 @@ function NotificationItem({
                 date: new Date(
                   notification.sessionStartsAt
                 ).toLocaleDateString(),
-                time: new Date(
-                  notification.sessionStartsAt
-                ).toLocaleTimeString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                }),
+                time: new Date(notification.sessionStartsAt).toLocaleTimeString(
+                  [],
+                  {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }
+                ),
               })}
             </Text>
           )}
@@ -221,7 +216,10 @@ function NotificationItem({
         {hasActions && (
           <View style={styles.actionsRow}>
             <TouchableOpacity
-              style={[styles.rejectButton, isProcessing && styles.buttonDisabled]}
+              style={[
+                styles.rejectButton,
+                isProcessing && styles.buttonDisabled,
+              ]}
               onPress={() =>
                 onAction(notification.type, notification.id, "reject")
               }
@@ -279,7 +277,9 @@ function EmptyState() {
       <View style={styles.emptyIconContainer}>
         <Bell size={48} color={colors.textTertiary} />
       </View>
-      <Text style={styles.emptyTitle}>{t("notifications.noNotifications")}</Text>
+      <Text style={styles.emptyTitle}>
+        {t("notifications.noNotifications")}
+      </Text>
       <Text style={styles.emptyDescription}>
         {t("notifications.emptyDescription")}
       </Text>
@@ -342,7 +342,9 @@ export default function NotificationsScreen() {
         invalidate();
       } catch (error: unknown) {
         const message =
-          error instanceof Error ? error.message : t("notifications.actionError");
+          error instanceof Error
+            ? error.message
+            : t("notifications.actionError");
         Alert.alert(t("notifications.actionError"), message);
       } finally {
         setProcessingId(null);

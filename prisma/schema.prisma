@@ -23,6 +23,7 @@ model User {
   locale                   String                    @default("pt")
   isBanned                 Boolean                   @default(false)
   emailNotifications       Boolean                   @default(false)
+  pushNotificationsEnabled Boolean                   @default(true)
   isProAccount             Boolean                   @default(false)
   accounts                 Account[]
   comments                 Comment[]
@@ -68,6 +69,12 @@ model User {
   assignedPlans         UserTrainingPlan[]      @relation("AssignedPlans")
   plansAssigned         UserTrainingPlan[]      @relation("PlanAssigner")
   savedTrainingPlans    SavedTrainingPlan[]
+
+  // Push notification tokens
+  pushTokens            PushToken[]
+
+  // Notifications
+  notifications         Notification[]
 
   @@index([email])
   @@index([name])
@@ -1002,6 +1009,54 @@ model Message {
   @@index([conversationId])
   @@index([senderId])
   @@index([createdAt])
+}
+
+model PushToken {
+  id         String   @id @default(cuid())
+  userId     String
+  token      String   @unique
+  platform   String   // "android" or "ios"
+  deviceId   String?
+  isActive   Boolean  @default(true)
+  lastSeenAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([isActive])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?            // Additional data (eventId, venueId, senderId, etc.)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([read])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  FRIEND_REQUEST
+  FRIEND_ACCEPTED
+  TRIAL_REQUEST
+  TRIAL_ACCEPTED
+  TRIAL_REJECTED
+  EVENT_DATE_CHANGE
+  EVENT_CANCELLED
+  VENUE_INVITE
+  VENUE_INVITE_ACCEPTED
+  CHAT_MESSAGE
 }
 
 enum SportType {

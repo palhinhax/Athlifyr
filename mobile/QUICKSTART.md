@@ -85,6 +85,7 @@ The mobile app connects to the same API as the web app:
 ### Can't connect to API on Android Emulator?
 
 Update `.env`:
+
 ```
 EXPO_PUBLIC_API_URL=http://10.0.2.2:3000
 ```
@@ -92,6 +93,7 @@ EXPO_PUBLIC_API_URL=http://10.0.2.2:3000
 ### Metro bundler issues?
 
 Clear cache:
+
 ```bash
 npx expo start -c
 ```
@@ -99,6 +101,7 @@ npx expo start -c
 ### Module errors?
 
 Reinstall:
+
 ```bash
 rm -rf node_modules
 npm install

@@ -1,0 +1,30 @@
+# Dependencies (EAS installs them during the build)
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+
+# Native generated folders
+android/
+ios/
+
+# Debug & logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+
+# Git
+.git/
+
+# Docs
+*.md
+!README.md
+
+# IDE
+.vscode/
+.idea/

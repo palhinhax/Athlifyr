@@ -126,10 +126,7 @@ export default function ForgotPasswordScreen() {
           {/* Email Field */}
           <View style={styles.fieldContainer}>
             <View
-              style={[
-                styles.inputContainer,
-                error ? styles.inputError : null,
-              ]}
+              style={[styles.inputContainer, error ? styles.inputError : null]}
             >
               <Mail size={20} color={colors.mutedForeground} />
               <TextInput
@@ -152,10 +149,7 @@ export default function ForgotPasswordScreen() {
 
           {/* Send Button */}
           <TouchableOpacity
-            style={[
-              styles.sendButton,
-              isLoading && styles.sendButtonDisabled,
-            ]}
+            style={[styles.sendButton, isLoading && styles.sendButtonDisabled]}
             onPress={handleSubmit}
             disabled={isLoading}
             activeOpacity={0.8}

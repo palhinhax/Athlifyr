@@ -1,0 +1,61 @@
+# Root-level node_modules & build artifacts
+node_modules/
+.next/
+.swc/
+test-results/
+playwright-report/
+public/
+prisma/
+docs/
+.husky/
+.github/
+.claude/
+__tests__/
+tests/
+scripts/
+messages/
+
+# Root-level app (Next.js app folder, not mobile)
+/app/
+/components/
+/hooks/
+/i18n/
+/lib/
+/types/
+
+# Root config files (use leading / to only match root, not mobile/)
+/tsconfig*.json
+/next-env.d.ts
+/middleware.ts
+/docker-compose*.yml
+/Dockerfile
+/next.config.*
+/postcss.config.*
+/tailwind.config.*
+/jest.config.*
+/playwright.config.*
+/*.lock
+/.env*
+
+# Mobile-specific excludes
+mobile/node_modules/
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+mobile/android/
+mobile/ios/
+
+# General
+.git
+.DS_Store
+*.md
+!mobile/README.md
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+.vscode/
+.idea/
+*.tsbuildinfo
+.vscode/
+.idea/
+

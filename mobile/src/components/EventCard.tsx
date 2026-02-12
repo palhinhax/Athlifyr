@@ -1,12 +1,12 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { Calendar, MapPin, Route, CheckCircle, MessageCircle } from "lucide-react-native";
+import {
+  Calendar,
+  MapPin,
+  Route,
+  CheckCircle,
+  MessageCircle,
+} from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import { SportBadge } from "./SportBadge";
@@ -28,10 +28,7 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[
-        styles.card,
-        isParticipating && styles.cardParticipating,
-      ]}
+      style={[styles.card, isParticipating && styles.cardParticipating]}
       onPress={handlePress}
       activeOpacity={0.7}
     >
@@ -96,7 +93,11 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
             event.variants.length > 0 &&
             !event.sportTypes.includes("HYROX") && (
               <View style={[styles.infoRow, styles.variantsRow]}>
-                <Route size={16} color={theme.colors.mutedForeground} style={styles.routeIcon} />
+                <Route
+                  size={16}
+                  color={theme.colors.mutedForeground}
+                  style={styles.routeIcon}
+                />
                 <View style={styles.variantChips}>
                   {event.variants.slice(0, 3).map((variant) => (
                     <View key={variant.id} style={styles.variantChip}>

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus, BookingType } from "@prisma/client";
+import { notifyTrialRequest } from "@/lib/notifications";
 
 // POST - Create a trial booking request
 export async function POST(
@@ -142,6 +143,40 @@ export async function POST(
         },
       },
     });
+
+    // Get venue owner/admin user IDs to notify
+    const venueAdmins = await prisma.venueMember.findMany({
+      where: {
+        venueId,
+        status: "ACTIVE",
+        role: { in: ["OWNER", "ADMIN"] },
+      },
+      select: { userId: true },
+    });
+
+    const adminUserIds = venueAdmins.map((m) => m.userId);
+
+    // Get requester info for notification
+    const requester = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { name: true, image: true },
+    });
+
+    // Notify venue owners/admins about the trial request
+    if (adminUserIds.length > 0) {
+      notifyTrialRequest({
+        venueOwnerUserIds: adminUserIds,
+        bookingId: trialBooking.id,
+        requesterName: requester?.name || "Someone",
+        requesterImage: requester?.image,
+        venueName: trialBooking.venue.name,
+        venueSlug: trialBooking.venue.slug,
+        sessionTitle: trialBooking.session.title,
+        sessionStartsAt: trialBooking.session.startsAt,
+      }).catch((error) => {
+        console.error("Error sending trial request notification:", error);
+      });
+    }
 
     return NextResponse.json(
       {

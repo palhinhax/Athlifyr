@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
+import { sendChatMessageNotification } from "@/lib/push-notifications";
 
 // GET - Get message history for a conversation
 export async function GET(
@@ -8,9 +9,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -20,7 +21,7 @@ export async function GET(
     const participant = await prisma.conversationParticipant.findFirst({
       where: {
         conversationId,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 
@@ -87,9 +88,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -111,7 +112,7 @@ export async function POST(
     const participant = await prisma.conversationParticipant.findFirst({
       where: {
         conversationId,
-        userId: session.user.id,
+        userId: user.id,
       },
     });
 
@@ -126,7 +127,7 @@ export async function POST(
     const message = await prisma.message.create({
       data: {
         conversationId,
-        senderId: session.user.id,
+        senderId: user.id,
         content: content.trim(),
       },
       include: {
@@ -145,6 +146,48 @@ export async function POST(
       where: { id: conversationId },
       data: { updatedAt: new Date() },
     });
+
+    // Send push notifications to other participants (async, don't await)
+    prisma.conversationParticipant
+      .findMany({
+        where: {
+          conversationId,
+          userId: { not: user.id }, // Exclude sender
+        },
+        include: {
+          user: {
+            select: {
+              id: true,
+              pushNotificationsEnabled: true,
+            },
+          },
+        },
+      })
+      .then((participants) => {
+        // Send notification to each participant
+        participants.forEach((p) => {
+          if (p.user.pushNotificationsEnabled) {
+            sendChatMessageNotification({
+              recipientUserId: p.userId,
+              senderName: user.name || "Someone",
+              messageContent: content.trim(),
+              conversationId,
+              messageId: message.id,
+            }).catch((error) => {
+              console.error(
+                `Failed to send push notification to user ${p.userId}:`,
+                error
+              );
+            });
+          }
+        });
+      })
+      .catch((error) => {
+        console.error(
+          "Failed to fetch participants for push notification:",
+          error
+        );
+      });
 
     return NextResponse.json({ message });
   } catch (error) {

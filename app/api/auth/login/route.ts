@@ -16,9 +16,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Find user
-    const user = await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
+    // Find user by normalized email
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await prisma.user.findFirst({
+      where: {
+        email: normalizedEmail,
+      },
       select: {
         id: true,
         email: true,

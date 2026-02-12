@@ -129,9 +129,7 @@ export default function LoginScreen() {
           {/* Divider */}
           <View style={styles.divider}>
             <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>
-              {t("login.orContinueWith")}
-            </Text>
+            <Text style={styles.dividerText}>{t("login.orContinueWith")}</Text>
             <View style={styles.dividerLine} />
           </View>
 

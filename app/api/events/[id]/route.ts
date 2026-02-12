@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Language } from "@prisma/client";
+import { notifyEventDateChange } from "@/lib/notifications";
 
 interface RouteParams {
   params: Promise<{
@@ -243,6 +244,30 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         variants: true,
       },
     });
+
+    // Send notification if event date changed
+    if (startDate && existingEvent.startDate) {
+      const oldDate = new Date(existingEvent.startDate);
+      const newDate = new Date(startDate);
+
+      // Check if the date actually changed (compare only date part, not time)
+      const dateChanged =
+        oldDate.toISOString().split("T")[0] !==
+        newDate.toISOString().split("T")[0];
+
+      if (dateChanged) {
+        // Send notification asynchronously (don't wait for it to complete)
+        notifyEventDateChange({
+          eventId: id,
+          eventTitle: updatedEvent.title,
+          eventSlug: updatedEvent.slug,
+          oldDate,
+          newDate,
+        }).catch((error) => {
+          console.error("Error sending event date change notification:", error);
+        });
+      }
+    }
 
     // Handle variants if provided
     if (variants && Array.isArray(variants)) {

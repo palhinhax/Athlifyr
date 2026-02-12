@@ -13,16 +13,10 @@ import {
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
-import {
-  ArrowLeft,
-  Eye,
-  EyeOff,
-  Mail,
-  Lock,
-  User,
-} from "lucide-react-native";
+import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
+import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import {
   colors,
@@ -53,6 +47,7 @@ export default function RegisterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { promptAsync, isReady: isGoogleReady } = useGoogleAuth();
+  const logout = useAuthStore((s) => s.logout);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -100,9 +95,12 @@ export default function RegisterScreen() {
 
     setIsLoading(true);
     try {
+      // Clear any existing session before registering a new account
+      await logout();
+
       await api.post("/auth/register", {
         name: name.trim(),
-        email: email.trim(),
+        email: email.trim().toLowerCase(),
         password,
       });
 
@@ -121,7 +119,9 @@ export default function RegisterScreen() {
       );
     } catch (error) {
       const message =
-        error instanceof Error ? error.message : t("register.registrationFailed");
+        error instanceof Error
+          ? error.message
+          : t("register.registrationFailed");
       Alert.alert(t("common.error"), message);
     } finally {
       setIsLoading(false);
@@ -219,9 +219,7 @@ export default function RegisterScreen() {
                 editable={!anyLoading}
               />
             </View>
-            {errors.name && (
-              <Text style={styles.errorText}>{errors.name}</Text>
-            )}
+            {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
           </View>
 
           {/* Email Field */}
@@ -309,10 +307,7 @@ export default function RegisterScreen() {
                   />
                 </View>
                 <Text
-                  style={[
-                    styles.strengthText,
-                    { color: getStrengthColor() },
-                  ]}
+                  style={[styles.strengthText, { color: getStrengthColor() }]}
                 >
                   {getStrengthText()}
                 </Text>

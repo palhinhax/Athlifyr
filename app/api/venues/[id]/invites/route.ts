@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
 import { VenueRole } from "@prisma/client";
 import crypto from "crypto";
+import { notifyVenueInvite } from "@/lib/notifications";
 
 // GET - List pending invites (owner/admin only)
 export async function GET(
@@ -203,10 +204,30 @@ export async function POST(
           select: {
             name: true,
             slug: true,
+            logo: true,
           },
         },
       },
     });
+
+    // Notify the invited user (if they exist on the platform)
+    if (userId) {
+      const inviter = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { name: true },
+      });
+
+      notifyVenueInvite({
+        userId,
+        venueName: invite.venue.name,
+        venueSlug: invite.venue.slug,
+        venueLogo: invite.venue.logo,
+        role,
+        inviterName: inviter?.name || "Someone",
+      }).catch((error) => {
+        console.error("Error sending venue invite notification:", error);
+      });
+    }
 
     return NextResponse.json(invite, { status: 201 });
   } catch (error) {

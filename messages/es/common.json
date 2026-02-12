@@ -199,6 +199,7 @@
     "inviteDeclined": "Invitación rechazada",
     "actionError": "Ha ocurrido un error",
     "decline": "Rechazar",
-    "viewAll": "Ver todas las notificaciones"
+    "viewAll": "Ver todas las notificaciones",
+    "markAllRead": "Marcar todas como leídas"
   }
 }

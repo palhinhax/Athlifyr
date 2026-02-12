@@ -5,31 +5,37 @@ A página de detalhes do evento no mobile está agora **100% completa** e igual 
 ## 📱 Componentes Implementados
 
 ### 1. **EventMetaInfo** ✅
+
 - Data com formatação de range
 - Localização (cidade, país)
 - Amigos que vão (quando aplicável)
 - Ícones coloridos em containers arredondados
 
 ### 2. **EventVariantsList** ✅
+
 - Lista todas as distâncias/variantes
 - Mostra data e hora de início
 - Segmentos de triatlo (quando aplicável)
 - Chips com info visual
 
 ### 3. **EventLocationMap** ✅
+
 - Placeholder para mapa
 - Coordenadas GPS
 - Botão "Open in Maps" (Google Maps/Apple Maps)
 - Visual clean
 
 ### 4. **EventFAQ** ✅
+
 - Lista de perguntas frequentes
 - Expansível/Colapsável (accordion)
 - Ícones de chevron
 - Animação suave
 
 ### 5. **Página Principal** ✅
+
 Estrutura completa:
+
 - ✅ Header transparente com botão voltar e share
 - ✅ Imagem grande com badges overlay
 - ✅ Título do evento
@@ -119,15 +125,17 @@ mobile/
 ## 🔄 API Updates
 
 ### Endpoint Atualizado
+
 `GET /api/events/[id]` agora aceita **slug ou ID**:
 
 ```typescript
 // Ambos funcionam
-GET /api/events/corrida-lisboa-2026  // ✅ slug
-GET /api/events/uuid-123-456         // ✅ id
+GET / api / events / corrida - lisboa - 2026; // ✅ slug
+GET / api / events / uuid - 123 - 456; // ✅ id
 ```
 
 ### Resposta inclui:
+
 ```json
 {
   "id": "...",
@@ -151,16 +159,19 @@ GET /api/events/uuid-123-456         // ✅ id
 ## ✨ Features
 
 ### Navegação
+
 - ✅ Botão voltar (transparente sobre imagem)
 - ✅ Botão share (transparente sobre imagem)
 - ✅ Scroll suave
 
 ### Componentes Modulares
+
 - ✅ Cada secção é um componente separado
 - ✅ Reutilizáveis
 - ✅ Styled com theme system
 
 ### Info Completa
+
 - ✅ Todas as distâncias/variantes
 - ✅ Data e hora de cada variante
 - ✅ Localização com GPS
@@ -194,6 +205,7 @@ npx expo start
 ## 🎯 Diferenças vs Next.js
 
 ### ✅ Implementado (Mobile)
+
 - EventMetaInfo ✅
 - EventVariantsList ✅
 - EventLocationMap ✅
@@ -204,6 +216,7 @@ npx expo start
 - Share Button ✅
 
 ### 📱 Adaptado para Mobile
+
 - Header transparente (melhor UX mobile)
 - Componentes em coluna única
 - Botões touch-friendly
@@ -211,6 +224,7 @@ npx expo start
 - Sem sidebar (não faz sentido em mobile)
 
 ### 🔮 Pode Adicionar Depois
+
 - [ ] EventCommunity (posts/comentários)
 - [ ] RelatedEvents (eventos relacionados)
 - [ ] EventWeather (previsão do tempo)

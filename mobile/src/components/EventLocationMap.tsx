@@ -8,6 +8,26 @@ import {
 import { MapPin, Navigation } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 
+// Try to import Mapbox - it requires native code and won't work in Expo Go
+let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
+let mapboxAvailable = false;
+
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Mapbox = require("@rnmapbox/maps").default;
+  mapboxAvailable = true;
+} catch {
+  console.warn(
+    "@rnmapbox/maps is not available for EventLocationMap. Using fallback."
+  );
+}
+
+const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+
+if (mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN) {
+  Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
+}
+
 interface EventLocationMapProps {
   latitude: number;
   longitude: number;
@@ -32,9 +52,7 @@ export function EventLocationMap({
     Linking.openURL(url);
   };
 
-  // Static map image URL (using Google Maps Static API or Mapbox)
-  // Commented out for now - not currently used in the UI
-  // const staticMapUrl = `https://api.mapbox.com/styles/v1/mapbox/streets-v11/static/pin-s+0ea5e9(${longitude},${latitude})/${longitude},${latitude},14,0/600x300@2x?access_token=pk.eyJ1IjoibWFwYm94IiwiYSI6ImNpejY4NXVycTA2emYycXBndHRqcmZ3N3gifQ.rJcFIG214AriISLbB6B5aw`;
+  const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
   return (
     <View style={styles.container}>
@@ -44,16 +62,48 @@ export function EventLocationMap({
       </View>
 
       <View style={styles.mapCard}>
-        {/* Placeholder for map - you can add react-native-maps here */}
-        <View style={styles.mapPlaceholder}>
-          <MapPin size={48} color={theme.colors.primary} />
-          <Text style={styles.locationText}>
-            {city}, {country}
-          </Text>
-          <Text style={styles.coordsText}>
-            {latitude.toFixed(4)}, {longitude.toFixed(4)}
-          </Text>
-        </View>
+        {canShowMap && Mapbox ? (
+          <View style={styles.mapContainer}>
+            <Mapbox.MapView
+              style={styles.map}
+              styleURL={Mapbox.StyleURL.Outdoors}
+              compassEnabled={false}
+              scaleBarEnabled={false}
+              zoomEnabled={false}
+              scrollEnabled={false}
+              pitchEnabled={false}
+              rotateEnabled={false}
+              attributionEnabled={false}
+              logoEnabled={false}
+            >
+              <Mapbox.Camera
+                centerCoordinate={[longitude, latitude]}
+                zoomLevel={13}
+                animationMode="none"
+              />
+              <Mapbox.PointAnnotation
+                id="event-location"
+                coordinate={[longitude, latitude]}
+              >
+                <View style={styles.markerContainer}>
+                  <View style={styles.marker}>
+                    <MapPin size={20} color={theme.colors.white} />
+                  </View>
+                </View>
+              </Mapbox.PointAnnotation>
+            </Mapbox.MapView>
+          </View>
+        ) : (
+          <View style={styles.mapPlaceholder}>
+            <MapPin size={48} color={theme.colors.primary} />
+            <Text style={styles.locationText}>
+              {city}, {country}
+            </Text>
+            <Text style={styles.coordsText}>
+              {latitude.toFixed(4)}, {longitude.toFixed(4)}
+            </Text>
+          </View>
+        )}
 
         <TouchableOpacity
           style={styles.openMapsButton}
@@ -88,6 +138,28 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     overflow: "hidden",
     ...theme.shadows.sm,
+  },
+  mapContainer: {
+    height: 200,
+    overflow: "hidden",
+  },
+  map: {
+    flex: 1,
+  },
+  markerContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  marker: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: theme.colors.primary,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 2,
+    borderColor: theme.colors.white,
+    ...theme.shadows.md,
   },
   mapPlaceholder: {
     height: 200,

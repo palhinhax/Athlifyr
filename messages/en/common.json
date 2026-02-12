@@ -199,6 +199,7 @@
     "inviteDeclined": "Invitation declined",
     "actionError": "An error occurred",
     "decline": "Decline",
-    "viewAll": "View all notifications"
+    "viewAll": "View all notifications",
+    "markAllRead": "Mark all as read"
   }
 }

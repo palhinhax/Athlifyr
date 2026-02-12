@@ -8,9 +8,10 @@ import {
   ActivityIndicator,
   Linking,
   TouchableOpacity,
+  Share,
+  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { Calendar, ExternalLink, ArrowLeft, Share2 } from "lucide-react-native";
 import Markdown from "react-native-markdown-display";
 import { api } from "@/src/lib/api";
@@ -56,75 +57,93 @@ export default function EventDetailScreen() {
     }
   };
 
+  const handleBackPress = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.push("/(tabs)");
+    }
+  };
+
   const handleShare = async () => {
-    // TODO: Implement share functionality
-    console.log("Share event");
+    try {
+      if (!event) return;
+
+      const shareMessage = `Check out this event: ${event.title}\n${
+        event.startDate
+          ? `Date: ${new Date(event.startDate).toLocaleDateString()}`
+          : ""
+      }${event.city && event.country ? `\nLocation: ${event.city}, ${event.country}` : ""}${
+        event.externalUrl ? `\n${event.externalUrl}` : ""
+      }`;
+
+      await Share.share({
+        message: shareMessage,
+        title: event.title,
+      });
+    } catch (error) {
+      if (
+        error &&
+        typeof error === "object" &&
+        "message" in error &&
+        error.message !== "User did not share"
+      ) {
+        Alert.alert("Error", "Failed to share event");
+        console.error("Error sharing event:", error);
+      }
+    }
   };
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <Stack.Screen
-          options={{
-            headerShown: true,
-            headerTitle: "",
-            headerLeft: () => (
-              <TouchableOpacity onPress={() => router.back()}>
-                <ArrowLeft size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            ),
-          }}
-        />
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   if (error || !event) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <Stack.Screen
-          options={{
-            headerShown: true,
-            headerTitle: "",
-            headerLeft: () => (
-              <TouchableOpacity onPress={() => router.back()}>
-                <ArrowLeft size={24} color={theme.colors.text} />
-              </TouchableOpacity>
-            ),
-          }}
-        />
+      <View style={styles.container}>
+        <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
           <Text style={styles.errorText}>{error || "Event not found"}</Text>
         </View>
-      </SafeAreaView>
+      </View>
     );
   }
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+    <View style={styles.container}>
       <Stack.Screen
         options={{
-          headerShown: true,
-          headerTitle: "",
-          headerTransparent: true,
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              style={styles.backButton}
-            >
-              <ArrowLeft size={24} color={theme.colors.white} />
-            </TouchableOpacity>
-          ),
-          headerRight: () => (
-            <TouchableOpacity onPress={handleShare} style={styles.shareButton}>
-              <Share2 size={24} color={theme.colors.white} />
-            </TouchableOpacity>
-          ),
+          headerShown: false,
         }}
       />
+
+      {/* Fixed Action Buttons */}
+      <View style={styles.topActionsContainer}>
+        <TouchableOpacity
+          onPress={handleBackPress}
+          style={styles.backButton}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <ArrowLeft size={24} color={theme.colors.white} />
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={handleShare}
+          style={styles.shareButton}
+          activeOpacity={0.7}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
+          <Share2 size={24} color={theme.colors.white} />
+        </TouchableOpacity>
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
@@ -215,11 +234,15 @@ export default function EventDetailScreen() {
           <View style={{ height: theme.spacing.xl }} />
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
   safeArea: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -239,6 +262,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: theme.colors.error,
     textAlign: "center",
+  },
+  topActionsContainer: {
+    position: "absolute",
+    top: 50, // Increased for Android status bar and notch
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: theme.spacing.md,
+    zIndex: 10,
   },
   backButton: {
     width: 40,

@@ -31,6 +31,9 @@
     "allEventsLoaded": "Todos los eventos cargados",
     "viewList": "Lista",
     "viewMap": "Mapa",
+    "cancelled": "Cancelado",
+    "going": "Voy",
+    "eventCancelled": "Este evento ha sido cancelado",
     "filters": {
       "searchPlaceholder": "Buscar eventos...",
       "searchingGlobally": "Buscando todos los eventos",
@@ -235,6 +238,7 @@
     "inviteAccepted": "Invitación aceptada",
     "inviteDeclined": "Invitación rechazada",
     "actionError": "Ha ocurrido un error",
+    "markAllRead": "Marcar todo como leído",
     "justNow": "Ahora mismo",
     "minuteShort": "m",
     "hourShort": "h",

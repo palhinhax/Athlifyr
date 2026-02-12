@@ -93,6 +93,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   logout: async () => {
     try {
+      // Deregister push token from backend before logout
+      const pushToken = get().pushToken;
+      if (pushToken) {
+        try {
+          await api.delete(`/push-tokens/${encodeURIComponent(pushToken)}`);
+          console.log("Push token deregistered on logout");
+        } catch (pushError: unknown) {
+          console.error("Failed to deregister push token:", pushError);
+        }
+      }
+
       // Call logout endpoint
       await api.post("/auth/logout");
     } catch (error: unknown) {
@@ -102,11 +113,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Clear tokens
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
 
       // Clear state
       set({
         user: null,
         token: null,
+        pushToken: null,
         isAuthenticated: false,
       });
     }
@@ -117,6 +130,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
 
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      const storedPushToken = await SecureStore.getItemAsync(PUSH_TOKEN_KEY);
 
       if (token) {
         // Verify token with API
@@ -129,6 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           user: response.data,
           isAuthenticated: true,
           isLoading: false,
+          pushToken: storedPushToken,
         });
       } else {
         set({ isLoading: false });

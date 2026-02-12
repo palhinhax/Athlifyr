@@ -12,8 +12,15 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import { Calendar, ExternalLink, ArrowLeft, Share2 } from "lucide-react-native";
+import {
+  Calendar,
+  ExternalLink,
+  ArrowLeft,
+  Share2,
+  Ban,
+} from "lucide-react-native";
 import Markdown from "react-native-markdown-display";
+import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { SportBadge } from "@/src/components/SportBadge";
@@ -26,7 +33,7 @@ import type { Event } from "@/src/types";
 export default function EventDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
-  // const { t } = useTranslation(); // Unused for now
+  const { t } = useTranslation();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -177,6 +184,23 @@ export default function EventDetailScreen() {
         <View style={styles.content}>
           {/* Title */}
           <Text style={styles.title}>{event.title}</Text>
+
+          {/* Cancelled Banner */}
+          {event.cancelled && (
+            <View style={styles.cancelledBanner}>
+              <Ban size={20} color={theme.colors.error} />
+              <View style={styles.cancelledBannerContent}>
+                <Text style={styles.cancelledBannerTitle}>
+                  {t("events.eventCancelled")}
+                </Text>
+                {event.cancellationReason && (
+                  <Text style={styles.cancelledBannerReason}>
+                    {event.cancellationReason}
+                  </Text>
+                )}
+              </View>
+            </View>
+          )}
 
           {/* Meta Info (Date, Location, Friends) */}
           <EventMetaInfo
@@ -329,6 +353,30 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     marginBottom: theme.spacing.lg,
     lineHeight: 36,
+  },
+  cancelledBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: theme.spacing.sm,
+    backgroundColor: theme.colors.error + "15",
+    borderWidth: 1,
+    borderColor: theme.colors.error + "40",
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.md,
+    marginBottom: theme.spacing.lg,
+  },
+  cancelledBannerContent: {
+    flex: 1,
+  },
+  cancelledBannerTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.error,
+  },
+  cancelledBannerReason: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 4,
   },
   section: {
     marginBottom: theme.spacing.xl,

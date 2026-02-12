@@ -9,10 +9,11 @@ import {
   Route,
   CheckCircle,
   MessageCircle,
+  Ban,
 } from "lucide-react";
 import { formatDateRange } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
 import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 
@@ -31,6 +32,7 @@ export function EventCard({
   trackingContext = "unknown",
 }: EventCardProps) {
   const locale = useLocale();
+  const t = useTranslations("events");
 
   const handleCardClick = () => {
     analyticsEvent(ANALYTICS_EVENTS.EVENT_VIEW, {
@@ -70,10 +72,16 @@ export function EventCard({
                 <SportBadge key={sportType} sportType={sportType} size="md" />
               ))}
           </div>
-          {isParticipating && (
+          {event.cancelled && (
+            <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-red-600 px-3 py-1 text-sm font-medium text-white shadow-lg">
+              <Ban className="h-4 w-4" />
+              {t("cancelled")}
+            </div>
+          )}
+          {isParticipating && !event.cancelled && (
             <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-sm font-medium text-white">
               <CheckCircle className="h-4 w-4" />
-              Vou
+              {t("going")}
             </div>
           )}
         </div>

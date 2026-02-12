@@ -6,7 +6,7 @@ import { colors, typography, spacing } from "@/src/constants/theme";
 
 export function NotificationBell() {
   const router = useRouter();
-  const { pendingCount } = useNotifications();
+  const { unreadCount } = useNotifications();
 
   return (
     <TouchableOpacity
@@ -16,10 +16,10 @@ export function NotificationBell() {
       hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
     >
       <Bell size={22} color={colors.text} />
-      {pendingCount > 0 && (
+      {unreadCount > 0 && (
         <View style={styles.badge}>
           <Text style={styles.badgeText}>
-            {pendingCount > 9 ? "9+" : pendingCount}
+            {unreadCount > 9 ? "9+" : unreadCount}
           </Text>
         </View>
       )}

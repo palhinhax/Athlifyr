@@ -27,6 +27,8 @@ export interface Event {
   externalUrl?: string | null;
   stravaRouteEmbed?: string | null;
   sportTypes: string[];
+  cancelled?: boolean;
+  cancellationReason?: string | null;
   variants?: EventVariant[];
   faqs?: EventFAQ[];
   _count?: {

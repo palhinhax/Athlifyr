@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Pencil, Trash2, Building2, X, Search } from "lucide-react";
+import { Pencil, Trash2, Building2, X, Search, Ban } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, Language } from "@prisma/client";
 import { useTranslations } from "next-intl";
@@ -79,6 +80,7 @@ interface EventAdminActionsProps {
     featuredVenueId: string | null;
     featuredVenue: FeaturedVenue | null;
     variants: EventVariant[];
+    cancelled: boolean;
   };
 }
 
@@ -86,6 +88,8 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
   const router = useRouter();
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [cancellationReason, setCancellationReason] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const t = useTranslations("admin.events");
 
@@ -480,6 +484,41 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
     }
   };
 
+  const handleCancelEvent = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`/api/events/${event.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          cancelled: true,
+          cancellationReason: cancellationReason.trim() || undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to cancel event");
+      }
+
+      toast({
+        title: t("toast.eventCancelled"),
+        description: t("toast.eventCancelledDesc"),
+      });
+
+      setIsCancelOpen(false);
+      setCancellationReason("");
+      router.refresh();
+    } catch {
+      toast({
+        title: t("toast.cancelError"),
+        description: t("toast.cancelErrorDesc"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="flex items-center gap-1 sm:gap-2">
       {/* Edit Dialog */}
@@ -771,6 +810,66 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Event Dialog */}
+      {!event.cancelled && (
+        <Dialog open={isCancelOpen} onOpenChange={setIsCancelOpen}>
+          <DialogTrigger asChild>
+            <Button
+              variant="destructive"
+              size="sm"
+              className="gap-1 bg-orange-600/80 px-2 backdrop-blur-sm hover:bg-orange-700/90 sm:px-3"
+            >
+              <Ban className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("cancelEventButton")}</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{t("cancelEventTitle")}</DialogTitle>
+              <DialogDescription>
+                {t("cancelEventDescription")}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="cancellation-reason">
+                  {t("cancellationReason")} ({t("optional")})
+                </Label>
+                <Textarea
+                  id="cancellation-reason"
+                  value={cancellationReason}
+                  onChange={(e) => setCancellationReason(e.target.value)}
+                  placeholder={t("cancellationReasonPlaceholder")}
+                  rows={4}
+                  disabled={isLoading}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsCancelOpen(false);
+                  setCancellationReason("");
+                }}
+                disabled={isLoading}
+              >
+                {t("cancelButton")}
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={handleCancelEvent}
+                disabled={isLoading}
+              >
+                {isLoading
+                  ? t("cancellingEventButton")
+                  : t("confirmCancelEventButton")}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }

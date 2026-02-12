@@ -62,6 +62,7 @@ export async function GET(request: Request) {
           select: {
             posts: true,
             comments: true,
+            pushTokens: { where: { isActive: true } },
           },
         },
       },

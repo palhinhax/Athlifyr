@@ -2,11 +2,19 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Check, X, Users } from "lucide-react";
+import { Check, X, Users, Share2, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface EventVariant {
   id: string;
@@ -31,11 +39,13 @@ interface Participation {
 
 interface EventRegistrationProps {
   eventId: string;
+  eventTitle: string;
   variants?: EventVariant[];
 }
 
 export function EventRegistration({
   eventId,
+  eventTitle,
   variants = [],
 }: EventRegistrationProps) {
   const { data: session, status } = useSession();
@@ -46,6 +56,9 @@ export function EventRegistration({
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [participantsCount, setParticipantsCount] = useState(0);
+  const [showShareDialog, setShowShareDialog] = useState(false);
+  const [shareContent, setShareContent] = useState("");
+  const [isSharing, setIsSharing] = useState(false);
 
   // Fetch user's current participation
   useEffect(() => {
@@ -132,6 +145,14 @@ export function EventRegistration({
       setUserParticipation(participation);
       setParticipantsCount((prev) => prev + 1);
 
+      // Prepare share content in user's language
+      const variantLabel = participation.variant?.name;
+      const content = variantLabel
+        ? `${t("sharePostWithVariant", { event: eventTitle, variant: variantLabel })}`
+        : `${t("sharePost", { event: eventTitle })}`;
+      setShareContent(content);
+      setShowShareDialog(true);
+
       toast({
         title: t("markedAsParticipant"),
         description: selectedVariantId
@@ -181,6 +202,43 @@ export function EventRegistration({
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleSharePost = async () => {
+    if (!session?.user || !shareContent.trim()) return;
+
+    setIsSharing(true);
+
+    try {
+      const response = await fetch("/api/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          content: shareContent,
+          eventId,
+          isPublic: true,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to create post");
+      }
+
+      setShowShareDialog(false);
+      toast({
+        title: t("shareSuccess"),
+        description: t("shareSuccessDesc"),
+      });
+    } catch (error) {
+      console.error("Error sharing post:", error);
+      toast({
+        title: t("error"),
+        description: t("shareError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSharing(false);
     }
   };
 
@@ -302,6 +360,46 @@ export function EventRegistration({
           </div>
         </div>
       )}
+
+      {/* Share Post Dialog */}
+      <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Share2 className="h-5 w-5" />
+              {t("shareDialogTitle")}
+            </DialogTitle>
+            <DialogDescription>{t("shareDialogDesc")}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <textarea
+              value={shareContent}
+              onChange={(e) => setShareContent(e.target.value)}
+              className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              maxLength={500}
+            />
+            <p className="text-right text-xs text-muted-foreground">
+              {shareContent.length}/500
+            </p>
+          </div>
+          <DialogFooter className="flex-row gap-2 sm:justify-end">
+            <Button
+              variant="ghost"
+              onClick={() => setShowShareDialog(false)}
+              disabled={isSharing}
+            >
+              {t("shareSkip")}
+            </Button>
+            <Button
+              onClick={handleSharePost}
+              disabled={isSharing || !shareContent.trim()}
+            >
+              <Send className="mr-2 h-4 w-4" />
+              {isSharing ? t("sharePublishing") : t("sharePublish")}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

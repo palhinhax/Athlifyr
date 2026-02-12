@@ -6,6 +6,7 @@ import {
   Route,
   CheckCircle,
   MessageCircle,
+  Ban,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
@@ -20,7 +21,7 @@ interface EventCardProps {
 
 export function EventCard({ event, isParticipating = false }: EventCardProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handlePress = () => {
     router.push(`/events/${event.slug}` as const);
@@ -28,7 +29,11 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, isParticipating && styles.cardParticipating]}
+      style={[
+        styles.card,
+        isParticipating && !event.cancelled && styles.cardParticipating,
+        event.cancelled && styles.cardCancelled,
+      ]}
       onPress={handlePress}
       activeOpacity={0.7}
     >
@@ -37,7 +42,7 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
         {event.imageUrl ? (
           <Image
             source={{ uri: event.imageUrl }}
-            style={styles.image}
+            style={[styles.image, event.cancelled && styles.imageCancelled]}
             resizeMode="cover"
             alt="Event image"
           />
@@ -55,11 +60,19 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
             ))}
         </View>
 
+        {/* Cancelled Badge */}
+        {event.cancelled && (
+          <View style={styles.cancelledBadge}>
+            <Ban size={16} color={theme.colors.white} />
+            <Text style={styles.cancelledText}>{t("events.cancelled")}</Text>
+          </View>
+        )}
+
         {/* Participating Badge */}
-        {isParticipating && (
+        {isParticipating && !event.cancelled && (
           <View style={styles.participatingBadge}>
             <CheckCircle size={16} color={theme.colors.white} />
-            <Text style={styles.participatingText}>Vou</Text>
+            <Text style={styles.participatingText}>{t("events.going")}</Text>
           </View>
         )}
       </View>
@@ -76,7 +89,11 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <View style={styles.infoRow}>
             <Calendar size={16} color={theme.colors.mutedForeground} />
             <Text style={styles.infoText}>
-              {formatDateRange(event.startDate, event.endDate, i18n.language)}
+              {formatDateRange(
+                event.startDate,
+                event.endDate ?? null,
+                i18n.language
+              )}
             </Text>
           </View>
 
@@ -144,6 +161,9 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: theme.colors.success,
   },
+  cardCancelled: {
+    opacity: 0.75,
+  },
   imageContainer: {
     position: "relative",
     width: "100%",
@@ -152,6 +172,9 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
+  },
+  imageCancelled: {
+    opacity: 0.6,
   },
   placeholderImage: {
     backgroundColor: theme.colors.backgroundSecondary,
@@ -183,6 +206,23 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 14,
     fontWeight: "500",
+  },
+  cancelledBadge: {
+    position: "absolute",
+    top: theme.spacing.sm,
+    left: theme.spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.error,
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  cancelledText: {
+    color: theme.colors.white,
+    fontSize: 14,
+    fontWeight: "600",
   },
   content: {
     padding: theme.spacing.md,

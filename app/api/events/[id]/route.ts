@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { Language } from "@prisma/client";
-import { notifyEventDateChange } from "@/lib/notifications";
+import {
+  notifyEventDateChange,
+  notifyEventCancelled,
+} from "@/lib/notifications";
 
 interface RouteParams {
   params: Promise<{
@@ -177,6 +180,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       featuredVenueId,
       variants,
       translations,
+      cancelled,
+      cancellationReason,
     } = body;
 
     // Check if event exists
@@ -212,6 +217,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
+    // Check if event is being cancelled and send notifications
+    const isBeingCancelled = cancelled === true && !existingEvent.cancelled;
+
     // Update event
     const updatedEvent = await prisma.event.update({
       where: { id },
@@ -239,11 +247,32 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(featuredVenueId !== undefined && {
           featuredVenueId: featuredVenueId || null,
         }),
+        ...(cancelled !== undefined && { cancelled }),
+        ...(cancelled === true && { cancelledAt: new Date() }),
+        ...(cancellationReason !== undefined && { cancellationReason }),
       },
       include: {
         variants: true,
       },
     });
+
+    // Send notification if event was cancelled
+    if (isBeingCancelled) {
+      // Delete all participations for this event
+      await prisma.participation.deleteMany({
+        where: { eventId: id },
+      });
+
+      // Send notification asynchronously (don't wait for it to complete)
+      notifyEventCancelled({
+        eventId: id,
+        eventTitle: updatedEvent.title,
+        eventSlug: updatedEvent.slug,
+        cancellationReason: cancellationReason || undefined,
+      }).catch((error) => {
+        console.error("Error sending event cancellation notification:", error);
+      });
+    }
 
     // Send notification if event date changed
     if (startDate && existingEvent.startDate) {

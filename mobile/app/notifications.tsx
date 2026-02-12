@@ -22,6 +22,10 @@ import {
   UserPlus,
   Building2,
   User,
+  CalendarDays,
+  Ban,
+  MessageCircle,
+  CheckCheck,
 } from "lucide-react-native";
 import {
   useNotifications,
@@ -43,6 +47,10 @@ function NotificationIcon({ notification }: { notification: AppNotification }) {
   switch (notification.type) {
     case "TRIAL_REQUEST":
       return <GraduationCap size={16} color="#16a34a" />;
+    case "TRIAL_ACCEPTED":
+      return <CheckCircle size={16} color="#16a34a" />;
+    case "TRIAL_REJECTED":
+      return <XCircle size={16} color={colors.error} />;
     case "TRIAL_RESPONSE":
       return notification.responseStatus === "BOOKED" ? (
         <CheckCircle size={16} color="#16a34a" />
@@ -51,8 +59,18 @@ function NotificationIcon({ notification }: { notification: AppNotification }) {
       );
     case "FRIEND_REQUEST":
       return <UserPlus size={16} color={colors.info} />;
+    case "FRIEND_ACCEPTED":
+      return <CheckCircle size={16} color={colors.info} />;
     case "VENUE_INVITE":
       return <Building2 size={16} color="#9333ea" />;
+    case "VENUE_INVITE_ACCEPTED":
+      return <CheckCircle size={16} color="#9333ea" />;
+    case "EVENT_DATE_CHANGE":
+      return <CalendarDays size={16} color="#ea580c" />;
+    case "EVENT_CANCELLED":
+      return <Ban size={16} color={colors.error} />;
+    case "CHAT_MESSAGE":
+      return <MessageCircle size={16} color="#4f46e5" />;
     default:
       return <Bell size={16} color={colors.textSecondary} />;
   }
@@ -115,21 +133,28 @@ function timeAgo(dateStr: string, t: (key: string) => string): string {
 function NotificationItem({
   notification,
   onAction,
+  onPress,
   processingId,
 }: {
   notification: AppNotification;
   onAction: (type: string, id: string, action: "accept" | "reject") => void;
+  onPress: (notification: AppNotification) => void;
   processingId: string | null;
 }) {
   const { t } = useTranslation();
   const isProcessing = processingId === notification.id;
 
   const getTitle = (): string => {
+    // Use the title from the API if available (all notification types have it)
+    if (notification.title) return notification.title;
+
+    // Fallback for legacy compatibility
     switch (notification.type) {
       case "TRIAL_REQUEST":
         return t("notifications.trialRequestFrom", {
           name: notification.userName ?? "?",
         });
+      case "TRIAL_ACCEPTED":
       case "TRIAL_RESPONSE":
         return notification.responseStatus === "BOOKED"
           ? t("notifications.trialAcceptedTitle", {
@@ -138,6 +163,10 @@ function NotificationItem({
           : t("notifications.trialRejectedTitle", {
               venue: notification.venueName ?? "?",
             });
+      case "TRIAL_REJECTED":
+        return t("notifications.trialRejectedTitle", {
+          venue: notification.venueName ?? "?",
+        });
       case "FRIEND_REQUEST":
         return t("notifications.friendRequestFrom", {
           name: notification.userName ?? "?",
@@ -152,9 +181,15 @@ function NotificationItem({
   };
 
   const getSubtitle = (): string => {
+    // Use the body from the API if available
+    if (notification.body) return notification.body;
+
+    // Fallback for legacy compatibility
     switch (notification.type) {
       case "TRIAL_REQUEST":
         return `${notification.venueName} — ${notification.sessionTitle}`;
+      case "TRIAL_ACCEPTED":
+      case "TRIAL_REJECTED":
       case "TRIAL_RESPONSE":
         return notification.sessionTitle ?? "";
       case "FRIEND_REQUEST":
@@ -173,47 +208,76 @@ function NotificationItem({
     notification.type === "FRIEND_REQUEST" ||
     notification.type === "VENUE_INVITE";
 
+  // Get avatar info: prefer data fields from the API, fall back to top-level fields
+  const avatarImage =
+    notification.data?.senderImage ??
+    notification.data?.venueLogo ??
+    notification.userImage;
+  const avatarName =
+    notification.data?.senderName ??
+    notification.data?.venueName ??
+    notification.userName;
+
   return (
-    <View style={styles.notificationItem}>
-      <NotificationAvatar
-        image={notification.userImage}
-        name={notification.userName}
-      />
+    <TouchableOpacity
+      style={[
+        styles.notificationItem,
+        !notification.read && styles.notificationItemUnread,
+      ]}
+      onPress={() => onPress(notification)}
+      activeOpacity={0.7}
+    >
+      <NotificationAvatar image={avatarImage} name={avatarName} />
 
       <View style={styles.notificationContent}>
         <View style={styles.titleRow}>
           <NotificationIcon notification={notification} />
-          <Text style={styles.notificationTitle} numberOfLines={2}>
+          <Text
+            style={[
+              styles.notificationTitle,
+              !notification.read && styles.notificationTitleUnread,
+            ]}
+            numberOfLines={2}
+          >
             {getTitle()}
           </Text>
+          {!notification.read && <View style={styles.unreadDot} />}
         </View>
 
-        <Text style={styles.notificationSubtitle} numberOfLines={1}>
-          {getSubtitle()}
-        </Text>
+        {getSubtitle() ? (
+          <Text style={styles.notificationSubtitle} numberOfLines={2}>
+            {getSubtitle()}
+          </Text>
+        ) : null}
 
         {(notification.type === "TRIAL_REQUEST" ||
+          notification.type === "TRIAL_ACCEPTED" ||
+          notification.type === "TRIAL_REJECTED" ||
           notification.type === "TRIAL_RESPONSE") &&
-          notification.sessionStartsAt && (
+          (notification.sessionStartsAt ||
+            notification.data?.sessionStartsAt) && (
             <Text style={styles.sessionDate}>
               {t("notifications.scheduledFor", {
                 date: new Date(
-                  notification.sessionStartsAt
+                  notification.sessionStartsAt ??
+                    notification.data?.sessionStartsAt ??
+                    ""
                 ).toLocaleDateString(),
-                time: new Date(notification.sessionStartsAt).toLocaleTimeString(
-                  [],
-                  {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  }
-                ),
+                time: new Date(
+                  notification.sessionStartsAt ??
+                    notification.data?.sessionStartsAt ??
+                    ""
+                ).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                }),
               })}
             </Text>
           )}
 
         <Text style={styles.timeAgo}>{timeAgo(notification.createdAt, t)}</Text>
 
-        {hasActions && (
+        {hasActions && !notification.read && (
           <View style={styles.actionsRow}>
             <TouchableOpacity
               style={[
@@ -263,7 +327,7 @@ function NotificationItem({
           </View>
         )}
       </View>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -293,8 +357,14 @@ export default function NotificationsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const { notifications, pendingCount, isLoading, refetch } =
-    useNotifications();
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    refetch,
+    markAsRead,
+    markAllAsRead,
+  } = useNotifications();
   const invalidate = useInvalidateNotifications();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
@@ -353,6 +423,37 @@ export default function NotificationsScreen() {
     [t, invalidate]
   );
 
+  /**
+   * Handle notification tap - mark as read and navigate
+   */
+  const handleNotificationPress = useCallback(
+    (notification: AppNotification) => {
+      // Mark as read if unread
+      if (!notification.read) {
+        markAsRead(notification.id);
+      }
+
+      // Navigate based on notification type/data
+      const data = notification.data;
+      if (data?.route) {
+        // Use route from notification data
+        if (data.route.startsWith("/events/")) {
+          router.push(`/events/${data.eventSlug ?? ""}`);
+        } else if (data.route.startsWith("/chat/")) {
+          router.push(data.route);
+        }
+      } else if (
+        notification.type === "EVENT_CANCELLED" ||
+        notification.type === "EVENT_DATE_CHANGE"
+      ) {
+        if (data?.eventSlug) {
+          router.push(`/events/${data.eventSlug}`);
+        }
+      }
+    },
+    [markAsRead, router]
+  );
+
   // Not authenticated → go to login
   if (!isAuthenticated) {
     return (
@@ -392,12 +493,17 @@ export default function NotificationsScreen() {
         <Text style={styles.headerTitle}>
           {t("notifications.notifications")}
         </Text>
-        {pendingCount > 0 ? (
-          <View style={styles.headerBadge}>
-            <Text style={styles.headerBadgeText}>
-              {pendingCount} {t("notifications.pending")}
+        {unreadCount > 0 ? (
+          <TouchableOpacity
+            style={styles.markAllReadButton}
+            onPress={() => markAllAsRead()}
+            activeOpacity={0.7}
+          >
+            <CheckCheck size={14} color={colors.primary} />
+            <Text style={styles.markAllReadText}>
+              {t("notifications.markAllRead")}
             </Text>
-          </View>
+          </TouchableOpacity>
         ) : (
           <View style={{ width: 40 }} />
         )}
@@ -416,6 +522,7 @@ export default function NotificationsScreen() {
             <NotificationItem
               notification={item}
               onAction={handleAction}
+              onPress={handleNotificationPress}
               processingId={processingId}
             />
           )}
@@ -510,6 +617,9 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.md,
     gap: spacing.sm,
   },
+  notificationItemUnread: {
+    backgroundColor: `${colors.primary}08`,
+  },
   avatar: {
     width: 40,
     height: 40,
@@ -543,6 +653,9 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: colors.text,
     lineHeight: typography.fontSize.sm * 1.4,
+  },
+  notificationTitleUnread: {
+    fontWeight: "700",
   },
   notificationSubtitle: {
     fontSize: typography.fontSize.xs,
@@ -627,5 +740,28 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textAlign: "center",
     lineHeight: typography.fontSize.sm * 1.5,
+  },
+
+  // Unread dot
+  unreadDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.primary,
+    marginLeft: 4,
+  },
+
+  // Mark all read button
+  markAllReadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+  },
+  markAllReadText: {
+    fontSize: typography.fontSize.xs,
+    fontWeight: "600",
+    color: colors.primary,
   },
 });

@@ -2,7 +2,7 @@
 
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Ban } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
 import { EventAdminActions } from "@/components/event-admin-actions";
 import { useTranslations } from "next-intl";
@@ -27,6 +27,8 @@ interface EventPageHeaderProps {
     externalUrl: string | null;
     stravaRouteEmbed: string | null;
     featuredVenueId: string | null;
+    cancelled: boolean;
+    cancellationReason: string | null;
     featuredVenue: {
       id: string;
       slug: string;
@@ -65,6 +67,25 @@ export function EventPageHeader({
 
   return (
     <div className="container mx-auto px-4 py-4">
+      {/* Cancelled Event Warning */}
+      {event.cancelled && (
+        <div className="mb-4 rounded-lg border-2 border-red-600 bg-red-50 p-4 dark:bg-red-950/20">
+          <div className="flex items-start gap-3">
+            <Ban className="mt-1 h-5 w-5 flex-shrink-0 text-red-600" />
+            <div>
+              <h3 className="text-lg font-bold text-red-800 dark:text-red-400">
+                🚫 {t("eventCancelled")}
+              </h3>
+              {event.cancellationReason && (
+                <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                  {event.cancellationReason}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Link href="/events">
           <Button variant="ghost" size="sm">

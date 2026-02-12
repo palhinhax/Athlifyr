@@ -16,6 +16,8 @@ Notifications.setNotificationHandler({
     shouldShowAlert: true,
     shouldPlaySound: true,
     shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
   }),
 });
 
@@ -41,11 +43,15 @@ export function usePushNotifications() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const notificationListener = useRef<Notifications.Subscription>();
-  const responseListener = useRef<Notifications.Subscription>();
+  const notificationListener = useRef<Notifications.Subscription | undefined>(
+    undefined
+  );
+  const responseListener = useRef<Notifications.Subscription | undefined>(
+    undefined
+  );
 
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, pushToken: storedPushToken, setPushToken } = useAuthStore();
 
   /**
    * Register for push notifications
@@ -89,11 +95,16 @@ export function usePushNotifications() {
 
       // Get the token
       const tokenData = await Notifications.getExpoPushTokenAsync({
-        projectId: "your-project-id", // Replace with your Expo project ID
+        projectId:
+          Constants.expoConfig?.extra?.eas?.projectId ??
+          "d8beface-ad76-4676-ba16-5779e1c7672e",
       });
 
       const token = tokenData.data;
       setExpoPushToken(token);
+
+      // Persist token in auth store (available for logout deregistration)
+      await setPushToken(token);
 
       // Set up notification channel for Android
       if (Platform.OS === "android") {
@@ -143,12 +154,14 @@ export function usePushNotifications() {
   async function registerTokenWithBackend(token: string) {
     try {
       const deviceId = await getDeviceId();
+      const deviceName = Device.deviceName || undefined;
       const platform = Platform.OS as "android" | "ios";
 
       await api.post("/push-tokens", {
         token,
         platform,
         deviceId,
+        deviceName,
       });
 
       console.log("Push token registered with backend");
@@ -159,15 +172,44 @@ export function usePushNotifications() {
   }
 
   /**
+   * Verify stored token is still current and re-register if Expo rotated it
+   */
+  async function verifyAndRefreshToken(storedToken: string) {
+    try {
+      if (!Device.isDevice) return;
+
+      const tokenData = await Notifications.getExpoPushTokenAsync({
+        projectId:
+          Constants.expoConfig?.extra?.eas?.projectId ??
+          "d8beface-ad76-4676-ba16-5779e1c7672e",
+      });
+
+      const currentToken = tokenData.data;
+
+      // Token changed (reinstall, Expo rotation, etc.) — re-register
+      if (currentToken !== storedToken) {
+        console.log("Push token changed, re-registering with backend...");
+        setExpoPushToken(currentToken);
+        await setPushToken(currentToken);
+        await registerTokenWithBackend(currentToken);
+      }
+    } catch (err) {
+      console.error("Error verifying push token:", err);
+    }
+  }
+
+  /**
    * Deregister push token (e.g., on logout)
    */
   async function deregisterPushToken() {
-    if (!expoPushToken) return;
+    const tokenToDeregister = expoPushToken || storedPushToken;
+    if (!tokenToDeregister) return;
 
     try {
-      await api.delete(`/push-tokens/${expoPushToken}`);
+      await api.delete(`/push-tokens/${encodeURIComponent(tokenToDeregister)}`);
       console.log("Push token deregistered");
       setExpoPushToken(null);
+      await setPushToken(null);
     } catch (err) {
       console.error("Error deregistering token:", err);
     }
@@ -207,11 +249,17 @@ export function usePushNotifications() {
       const data = response.notification.request.content
         .data as PushNotificationData;
 
+      // Normalize type to uppercase (backend sends Prisma enum format: EVENT_CANCELLED)
+      const notificationType = data.type?.toUpperCase();
+
       // Navigate based on notification data
-      if (data.type === "chat_message" && data.conversationId) {
+      if (notificationType === "CHAT_MESSAGE" && data.conversationId) {
         router.push(`/chat/${data.conversationId}`);
-      } else if (data.type === "event_date_change" && data.eventSlug) {
-        // Navigate to event page when event date change notification is tapped
+      } else if (
+        (notificationType === "EVENT_DATE_CHANGE" ||
+          notificationType === "EVENT_CANCELLED") &&
+        data.eventSlug
+      ) {
         router.push(`/events/${data.eventSlug}`);
       } else if (data.route) {
         router.push(data.route);
@@ -258,8 +306,19 @@ export function usePushNotifications() {
       return;
     }
 
+    // Only register if user is logged in and we don't already have a token
+    // storedPushToken comes from SecureStore (survives app restart)
+    // expoPushToken comes from local state (current session)
     if (user && !expoPushToken) {
-      registerForPushNotifications();
+      if (storedPushToken) {
+        // Restore token from SecureStore without hitting the backend again
+        setExpoPushToken(storedPushToken);
+        // Also verify the token is still current (Expo may have rotated it)
+        verifyAndRefreshToken(storedPushToken);
+      } else {
+        // First time — generate token and register with backend
+        registerForPushNotifications();
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);

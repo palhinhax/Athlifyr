@@ -32,6 +32,9 @@
     "allEventsLoaded": "All events loaded",
     "viewList": "List",
     "viewMap": "Map",
+    "cancelled": "Cancelled",
+    "going": "Going",
+    "eventCancelled": "This event has been cancelled",
     "filters": {
       "searchPlaceholder": "Search events...",
       "searchingGlobally": "Searching all events",
@@ -236,6 +239,7 @@
     "inviteAccepted": "Invitation accepted",
     "inviteDeclined": "Invitation declined",
     "actionError": "An error occurred",
+    "markAllRead": "Mark all read",
     "justNow": "Just now",
     "minuteShort": "m",
     "hourShort": "h",

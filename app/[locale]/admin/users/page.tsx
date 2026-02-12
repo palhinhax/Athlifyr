@@ -9,6 +9,9 @@ import {
   Ban,
   Trash2,
   UserCog,
+  Bell,
+  Megaphone,
+  Smartphone,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -36,6 +39,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
+import { AdminPushNotificationDialog } from "@/components/admin/admin-push-notification-dialog";
 
 interface User {
   id: string;
@@ -43,9 +47,24 @@ interface User {
   email: string | null;
   image: string | null;
   role: string;
+  locale: string | null;
   createdAt: string;
   isBanned?: boolean;
+  _count?: {
+    posts: number;
+    comments: number;
+    pushTokens: number;
+  };
 }
+
+const LOCALE_FLAGS: Record<string, { flag: string; label: string }> = {
+  pt: { flag: "🇵🇹", label: "PT" },
+  en: { flag: "🇬🇧", label: "EN" },
+  es: { flag: "🇪🇸", label: "ES" },
+  fr: { flag: "🇫🇷", label: "FR" },
+  de: { flag: "🇩🇪", label: "DE" },
+  it: { flag: "🇮🇹", label: "IT" },
+};
 
 export default function AdminUsersContent() {
   const [users, setUsers] = useState<User[]>([]);
@@ -58,6 +77,8 @@ export default function AdminUsersContent() {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPushDialogOpen, setIsPushDialogOpen] = useState(false);
+  const [pushTargetUser, setPushTargetUser] = useState<User | null>(null);
   const [newRole, setNewRole] = useState("");
   const [isActionLoading, setIsActionLoading] = useState(false);
   const { toast } = useToast();
@@ -145,6 +166,11 @@ export default function AdminUsersContent() {
     setIsDeleteDialogOpen(true);
   };
 
+  const handleSendPush = (user: User | null) => {
+    setPushTargetUser(user);
+    setIsPushDialogOpen(true);
+  };
+
   const confirmChangeRole = async () => {
     if (!selectedUser) return;
 
@@ -228,6 +254,10 @@ export default function AdminUsersContent() {
             total
           </p>
         </div>
+        <Button onClick={() => handleSendPush(null)} variant="outline">
+          <Megaphone className="mr-2 h-4 w-4" />
+          Notificar Todos
+        </Button>
       </div>
 
       {/* Filters */}
@@ -300,6 +330,11 @@ export default function AdminUsersContent() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleSendPush(user)}>
+                      <Bell className="mr-2 h-4 w-4" />
+                      Enviar Notificação
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={() => handleChangeRole(user)}>
                       <Shield className="mr-2 h-4 w-4" />
                       Alterar Role
@@ -320,17 +355,38 @@ export default function AdminUsersContent() {
                 </DropdownMenu>
               </div>
               <div className="mt-3 flex items-center justify-between text-sm">
-                <span
-                  className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                    user.role === "ADMIN"
-                      ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                      : user.role === "MOD"
-                        ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                        : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-                  }`}
-                >
-                  {user.role}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
+                      user.role === "ADMIN"
+                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
+                        : user.role === "MOD"
+                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+                          : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+                    }`}
+                  >
+                    {user.role}
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                      (user._count?.pushTokens ?? 0) > 0
+                        ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                        : "bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500"
+                    }`}
+                  >
+                    <Smartphone className="h-3 w-3" />
+                    {user._count?.pushTokens ?? 0}
+                  </span>
+                  {user.locale && LOCALE_FLAGS[user.locale] && (
+                    <span
+                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+                      title={user.locale.toUpperCase()}
+                    >
+                      {LOCALE_FLAGS[user.locale].flag}{" "}
+                      {LOCALE_FLAGS[user.locale].label}
+                    </span>
+                  )}
+                </div>
                 <span className="text-muted-foreground">
                   {new Date(user.createdAt).toLocaleDateString("pt-PT")}
                 </span>
@@ -350,6 +406,15 @@ export default function AdminUsersContent() {
               </th>
               <th className="px-4 py-3 text-left text-sm font-medium">Email</th>
               <th className="px-4 py-3 text-left text-sm font-medium">Role</th>
+              <th className="px-4 py-3 text-center text-sm font-medium">
+                <span className="inline-flex items-center gap-1">
+                  <Smartphone className="h-3.5 w-3.5" />
+                  Devices
+                </span>
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium">
+                Língua
+              </th>
               <th className="px-4 py-3 text-left text-sm font-medium">
                 Data Registo
               </th>
@@ -362,7 +427,7 @@ export default function AdminUsersContent() {
             {users.length === 0 ? (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   Nenhum utilizador encontrado
@@ -413,6 +478,31 @@ export default function AdminUsersContent() {
                       {user.role}
                     </span>
                   </td>
+                  <td className="px-4 py-3 text-center">
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                        (user._count?.pushTokens ?? 0) > 0
+                          ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-gray-100 text-gray-500 dark:bg-gray-900/30 dark:text-gray-500"
+                      }`}
+                    >
+                      <Smartphone className="h-3 w-3" />
+                      {user._count?.pushTokens ?? 0}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {user.locale && LOCALE_FLAGS[user.locale] ? (
+                      <span
+                        className="text-sm"
+                        title={user.locale.toUpperCase()}
+                      >
+                        {LOCALE_FLAGS[user.locale].flag}{" "}
+                        {LOCALE_FLAGS[user.locale].label}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground">—</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-sm text-muted-foreground">
                     {new Date(user.createdAt).toLocaleDateString("pt-PT")}
                   </td>
@@ -424,6 +514,11 @@ export default function AdminUsersContent() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => handleSendPush(user)}>
+                          <Bell className="mr-2 h-4 w-4" />
+                          Enviar Notificação
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => handleChangeRole(user)}
                         >
@@ -572,6 +667,13 @@ export default function AdminUsersContent() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Push Notification Dialog */}
+      <AdminPushNotificationDialog
+        open={isPushDialogOpen}
+        onOpenChange={setIsPushDialogOpen}
+        targetUser={pushTargetUser}
+      />
     </div>
   );
 }

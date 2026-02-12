@@ -2,6 +2,239 @@ import { prisma } from "@/lib/prisma";
 import { NotificationType, Prisma } from "@prisma/client";
 import { sendPushNotification } from "@/lib/push-notifications";
 
+// ============================================================================
+// Notification translations system
+// ============================================================================
+
+type SupportedLocale = "en" | "pt" | "es" | "fr" | "de" | "it";
+
+/**
+ * Notification translation strings for all supported locales
+ */
+const notificationTranslations: Record<
+  string,
+  Record<SupportedLocale, string>
+> = {
+  // Friend notifications
+  "friend.request.title": {
+    en: "New Friend Request",
+    pt: "Novo Pedido de Amizade",
+    es: "Nueva Solicitud de Amistad",
+    fr: "Nouvelle Demande d'Amitié",
+    de: "Neue Freundschaftsanfrage",
+    it: "Nuova Richiesta di Amicizia",
+  },
+  "friend.request.body": {
+    en: "{name} sent you a friend request",
+    pt: "{name} enviou-te um pedido de amizade",
+    es: "{name} te envió una solicitud de amistad",
+    fr: "{name} vous a envoyé une demande d'amitié",
+    de: "{name} hat dir eine Freundschaftsanfrage gesendet",
+    it: "{name} ti ha inviato una richiesta di amicizia",
+  },
+  "friend.accepted.title": {
+    en: "Friend Request Accepted",
+    pt: "Pedido de Amizade Aceite",
+    es: "Solicitud de Amistad Aceptada",
+    fr: "Demande d'Amitié Acceptée",
+    de: "Freundschaftsanfrage Akzeptiert",
+    it: "Richiesta di Amicizia Accettata",
+  },
+  "friend.accepted.body": {
+    en: "{name} accepted your friend request",
+    pt: "{name} aceitou o teu pedido de amizade",
+    es: "{name} aceptó tu solicitud de amistad",
+    fr: "{name} a accepté votre demande d'amitié",
+    de: "{name} hat deine Freundschaftsanfrage akzeptiert",
+    it: "{name} ha accettato la tua richiesta di amicizia",
+  },
+
+  // Trial notifications
+  "trial.request.title": {
+    en: "New Trial Request",
+    pt: "Novo Pedido de Aula Experimental",
+    es: "Nueva Solicitud de Clase de Prueba",
+    fr: "Nouvelle Demande de Cours d'Essai",
+    de: "Neue Probetraining-Anfrage",
+    it: "Nuova Richiesta di Lezione di Prova",
+  },
+  "trial.request.body": {
+    en: "{name} requested a trial class at {venue}",
+    pt: "{name} pediu uma aula experimental em {venue}",
+    es: "{name} solicitó una clase de prueba en {venue}",
+    fr: "{name} a demandé un cours d'essai à {venue}",
+    de: "{name} hat ein Probetraining bei {venue} angefragt",
+    it: "{name} ha richiesto una lezione di prova presso {venue}",
+  },
+  "trial.accepted.title": {
+    en: "Trial Accepted! 🎉",
+    pt: "Aula Experimental Aceite! 🎉",
+    es: "¡Clase de Prueba Aceptada! 🎉",
+    fr: "Cours d'Essai Accepté ! 🎉",
+    de: "Probetraining Akzeptiert! 🎉",
+    it: "Lezione di Prova Accettata! 🎉",
+  },
+  "trial.accepted.body": {
+    en: 'Your trial at {venue} for "{session}" has been accepted',
+    pt: 'A tua aula experimental em {venue} para "{session}" foi aceite',
+    es: 'Tu clase de prueba en {venue} para "{session}" ha sido aceptada',
+    fr: 'Votre cours d\'essai à {venue} pour "{session}" a été accepté',
+    de: 'Dein Probetraining bei {venue} für "{session}" wurde akzeptiert',
+    it: 'La tua lezione di prova presso {venue} per "{session}" è stata accettata',
+  },
+  "trial.rejected.title": {
+    en: "Trial Not Available",
+    pt: "Aula Experimental Indisponível",
+    es: "Clase de Prueba No Disponible",
+    fr: "Cours d'Essai Non Disponible",
+    de: "Probetraining Nicht Verfügbar",
+    it: "Lezione di Prova Non Disponibile",
+  },
+  "trial.rejected.body": {
+    en: 'Your trial request at {venue} for "{session}" was not accepted',
+    pt: 'O teu pedido de aula experimental em {venue} para "{session}" não foi aceite',
+    es: 'Tu solicitud de clase de prueba en {venue} para "{session}" no fue aceptada',
+    fr: "Votre demande de cours d'essai à {venue} pour \"{session}\" n'a pas été acceptée",
+    de: 'Deine Probetraining-Anfrage bei {venue} für "{session}" wurde nicht akzeptiert',
+    it: 'La tua richiesta di lezione di prova presso {venue} per "{session}" non è stata accettata',
+  },
+
+  // Event notifications
+  "event.dateChange.title": {
+    en: "📅 Event Date Changed",
+    pt: "📅 Data do Evento Alterada",
+    es: "📅 Fecha del Evento Cambiada",
+    fr: "📅 Date de l'Événement Modifiée",
+    de: "📅 Veranstaltungsdatum Geändert",
+    it: "📅 Data dell'Evento Modificata",
+  },
+  "event.dateChange.body": {
+    en: '"{event}" has been rescheduled from {oldDate} to {newDate}',
+    pt: '"{event}" foi reagendado de {oldDate} para {newDate}',
+    es: '"{event}" ha sido reprogramado de {oldDate} a {newDate}',
+    fr: '"{event}" a été reprogrammé du {oldDate} au {newDate}',
+    de: '"{event}" wurde von {oldDate} auf {newDate} verschoben',
+    it: '"{event}" è stato riprogrammato da {oldDate} a {newDate}',
+  },
+  "event.cancelled.title": {
+    en: "🚫 Event Cancelled",
+    pt: "🚫 Evento Cancelado",
+    es: "🚫 Evento Cancelado",
+    fr: "🚫 Événement Annulé",
+    de: "🚫 Veranstaltung Abgesagt",
+    it: "🚫 Evento Annullato",
+  },
+  "event.cancelled.body": {
+    en: '"{event}" has been cancelled.',
+    pt: '"{event}" foi cancelado.',
+    es: '"{event}" ha sido cancelado.',
+    fr: '"{event}" a été annulé.',
+    de: '"{event}" wurde abgesagt.',
+    it: '"{event}" è stato annullato.',
+  },
+  "event.cancelled.reason": {
+    en: "Reason: {reason}",
+    pt: "Motivo: {reason}",
+    es: "Motivo: {reason}",
+    fr: "Raison : {reason}",
+    de: "Grund: {reason}",
+    it: "Motivo: {reason}",
+  },
+
+  // Venue notifications
+  "venue.invite.title": {
+    en: "Venue Staff Invitation",
+    pt: "Convite para Equipa do Espaço",
+    es: "Invitación al Equipo del Espacio",
+    fr: "Invitation au Personnel du Lieu",
+    de: "Einladung zum Standort-Team",
+    it: "Invito allo Staff del Centro",
+  },
+  "venue.invite.body": {
+    en: "{inviter} invited you to join {venue} as {role}",
+    pt: "{inviter} convidou-te para te juntares a {venue} como {role}",
+    es: "{inviter} te invitó a unirte a {venue} como {role}",
+    fr: "{inviter} vous a invité à rejoindre {venue} en tant que {role}",
+    de: "{inviter} hat dich eingeladen, {venue} als {role} beizutreten",
+    it: "{inviter} ti ha invitato a unirti a {venue} come {role}",
+  },
+};
+
+/**
+ * Get a translated notification string with variable interpolation
+ */
+function t(key: string, locale: string, vars?: Record<string, string>): string {
+  const translations = notificationTranslations[key];
+  if (!translations) return key;
+
+  const supportedLocale = (
+    ["en", "pt", "es", "fr", "de", "it"].includes(locale) ? locale : "en"
+  ) as SupportedLocale;
+
+  let text = translations[supportedLocale] || translations.en;
+
+  if (vars) {
+    for (const [varName, value] of Object.entries(vars)) {
+      text = text.replace(new RegExp(`\\{${varName}\\}`, "g"), value);
+    }
+  }
+
+  return text;
+}
+
+/**
+ * Format a date for display according to locale
+ */
+function formatDateForLocale(date: Date, locale: string): string {
+  const localeMap: Record<string, string> = {
+    en: "en-GB",
+    pt: "pt-PT",
+    es: "es-ES",
+    fr: "fr-FR",
+    de: "de-DE",
+    it: "it-IT",
+  };
+
+  return date.toLocaleDateString(localeMap[locale] || "en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/**
+ * Fetch user locale from database
+ */
+async function getUserLocale(userId: string): Promise<string> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { locale: true },
+  });
+  return user?.locale || "en";
+}
+
+/**
+ * Fetch locales for multiple users, grouped by locale
+ */
+async function getUsersGroupedByLocale(
+  userIds: string[]
+): Promise<Map<string, string[]>> {
+  const users = await prisma.user.findMany({
+    where: { id: { in: userIds } },
+    select: { id: true, locale: true },
+  });
+
+  const grouped = new Map<string, string[]>();
+  for (const user of users) {
+    const locale = user.locale || "en";
+    const existing = grouped.get(locale) || [];
+    existing.push(user.id);
+    grouped.set(locale, existing);
+  }
+
+  return grouped;
+}
+
 /**
  * Data stored in the notification JSON field
  */
@@ -229,12 +462,13 @@ export async function notifyFriendRequest(params: {
   senderImage?: string | null;
 }): Promise<void> {
   const { receiverUserId, senderUserId, senderName, senderImage } = params;
+  const locale = await getUserLocale(receiverUserId);
 
   await createNotification({
     userId: receiverUserId,
     type: NotificationType.FRIEND_REQUEST,
-    title: "New Friend Request",
-    body: `${senderName} sent you a friend request`,
+    title: t("friend.request.title", locale),
+    body: t("friend.request.body", locale, { name: senderName }),
     data: {
       senderId: senderUserId,
       senderName,
@@ -256,12 +490,13 @@ export async function notifyFriendAccepted(params: {
 }): Promise<void> {
   const { receiverUserId, accepterUserId, accepterName, accepterImage } =
     params;
+  const locale = await getUserLocale(receiverUserId);
 
   await createNotification({
     userId: receiverUserId,
     type: NotificationType.FRIEND_ACCEPTED,
-    title: "Friend Request Accepted",
-    body: `${accepterName} accepted your friend request`,
+    title: t("friend.accepted.title", locale),
+    body: t("friend.accepted.body", locale, { name: accepterName }),
     data: {
       senderId: accepterUserId,
       senderName: accepterName,
@@ -296,22 +531,29 @@ export async function notifyTrialRequest(params: {
     sessionStartsAt,
   } = params;
 
-  await createNotificationsForUsers(venueOwnerUserIds, {
-    type: NotificationType.TRIAL_REQUEST,
-    title: "New Trial Request",
-    body: `${requesterName} requested a trial class at ${venueName}`,
-    data: {
-      bookingId,
-      senderName: requesterName,
-      senderImage: requesterImage ?? undefined,
-      venueName,
-      venueSlug,
-      sessionTitle,
-      sessionStartsAt: sessionStartsAt.toISOString(),
-      route: `/venues/${venueSlug}/clients`,
-      screen: "venue-clients",
-    },
-  });
+  const grouped = await getUsersGroupedByLocale(venueOwnerUserIds);
+
+  for (const [locale, userIds] of grouped) {
+    await createNotificationsForUsers(userIds, {
+      type: NotificationType.TRIAL_REQUEST,
+      title: t("trial.request.title", locale),
+      body: t("trial.request.body", locale, {
+        name: requesterName,
+        venue: venueName,
+      }),
+      data: {
+        bookingId,
+        senderName: requesterName,
+        senderImage: requesterImage ?? undefined,
+        venueName,
+        venueSlug,
+        sessionTitle,
+        sessionStartsAt: sessionStartsAt.toISOString(),
+        route: `/venues/${venueSlug}/clients`,
+        screen: "venue-clients",
+      },
+    });
+  }
 }
 
 /**
@@ -333,12 +575,16 @@ export async function notifyTrialAccepted(params: {
     sessionTitle,
     sessionStartsAt,
   } = params;
+  const locale = await getUserLocale(userId);
 
   await createNotification({
     userId,
     type: NotificationType.TRIAL_ACCEPTED,
-    title: "Trial Accepted! 🎉",
-    body: `Your trial at ${venueName} for "${sessionTitle}" has been accepted`,
+    title: t("trial.accepted.title", locale),
+    body: t("trial.accepted.body", locale, {
+      venue: venueName,
+      session: sessionTitle,
+    }),
     data: {
       venueName,
       venueSlug,
@@ -362,12 +608,16 @@ export async function notifyTrialRejected(params: {
   sessionTitle: string;
 }): Promise<void> {
   const { userId, venueName, venueSlug, venueLogo, sessionTitle } = params;
+  const locale = await getUserLocale(userId);
 
   await createNotification({
     userId,
     type: NotificationType.TRIAL_REJECTED,
-    title: "Trial Not Available",
-    body: `Your trial request at ${venueName} for "${sessionTitle}" was not accepted`,
+    title: t("trial.rejected.title", locale),
+    body: t("trial.rejected.body", locale, {
+      venue: venueName,
+      session: sessionTitle,
+    }),
     data: {
       venueName,
       venueSlug,
@@ -407,40 +657,111 @@ export async function notifyEventDateChange(params: {
   }
 
   const userIds = participations.map((p) => p.userId);
+  const grouped = await getUsersGroupedByLocale(userIds);
 
-  // Format dates for display
-  const formatDate = (date: Date) => {
-    return date.toLocaleDateString("pt-PT", {
-      day: "numeric",
-      month: "long",
-      year: "numeric",
+  let totalCreated = 0;
+  let totalPushSent = 0;
+
+  for (const [locale, localeUserIds] of grouped) {
+    const oldDateStr = formatDateForLocale(oldDate, locale);
+    const newDateStr = formatDateForLocale(newDate, locale);
+
+    const result = await createNotificationsForUsers(localeUserIds, {
+      type: NotificationType.EVENT_DATE_CHANGE,
+      title: t("event.dateChange.title", locale),
+      body: t("event.dateChange.body", locale, {
+        event: eventTitle,
+        oldDate: oldDateStr,
+        newDate: newDateStr,
+      }),
+      data: {
+        eventId,
+        eventSlug,
+        eventTitle,
+        oldDate: oldDate.toISOString(),
+        newDate: newDate.toISOString(),
+        route: `/events/${eventSlug}`,
+        screen: "event",
+      },
+      pushChannelId: "event-updates",
     });
-  };
 
-  const oldDateStr = formatDate(oldDate);
-  const newDateStr = formatDate(newDate);
-
-  const result = await createNotificationsForUsers(userIds, {
-    type: NotificationType.EVENT_DATE_CHANGE,
-    title: "📅 Event Date Changed",
-    body: `"${eventTitle}" has been rescheduled from ${oldDateStr} to ${newDateStr}`,
-    data: {
-      eventId,
-      eventSlug,
-      eventTitle,
-      oldDate: oldDate.toISOString(),
-      newDate: newDate.toISOString(),
-      route: `/events/${eventSlug}`,
-      screen: "event",
-    },
-    pushChannelId: "event-updates",
-  });
+    totalCreated += result.created;
+    totalPushSent += result.pushSent;
+  }
 
   console.log(
-    `Event date change notification for "${eventTitle}": ${result.created} created, ${result.pushSent} push sent`
+    `Event date change notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
   );
 
-  return { totalCreated: result.created, totalPushSent: result.pushSent };
+  return { totalCreated, totalPushSent };
+}
+
+/**
+ * Notify participants about event cancellation
+ */
+export async function notifyEventCancelled(params: {
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  cancellationReason?: string;
+}): Promise<{ totalCreated: number; totalPushSent: number }> {
+  const { eventId, eventSlug, eventTitle, cancellationReason } = params;
+
+  // Find all users who marked as "going" to this event
+  const participations = await prisma.participation.findMany({
+    where: {
+      eventId,
+      status: "going",
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  const userIds = participations.map((p) => p.userId);
+
+  if (userIds.length === 0) {
+    console.log(
+      `No participants to notify for cancelled event "${eventTitle}"`
+    );
+    return { totalCreated: 0, totalPushSent: 0 };
+  }
+
+  const grouped = await getUsersGroupedByLocale(userIds);
+
+  let totalCreated = 0;
+  let totalPushSent = 0;
+
+  for (const [locale, localeUserIds] of grouped) {
+    let body = t("event.cancelled.body", locale, { event: eventTitle });
+    if (cancellationReason) {
+      body += ` ${t("event.cancelled.reason", locale, { reason: cancellationReason })}`;
+    }
+
+    const result = await createNotificationsForUsers(localeUserIds, {
+      type: NotificationType.EVENT_CANCELLED,
+      title: t("event.cancelled.title", locale),
+      body,
+      data: {
+        eventId,
+        eventSlug,
+        eventTitle,
+        route: `/events/${eventSlug}`,
+        screen: "event",
+      },
+      pushChannelId: "event-updates",
+    });
+
+    totalCreated += result.created;
+    totalPushSent += result.pushSent;
+  }
+
+  console.log(
+    `Event cancellation notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
+  );
+
+  return { totalCreated, totalPushSent };
 }
 
 /**
@@ -455,12 +776,17 @@ export async function notifyVenueInvite(params: {
   role: string;
 }): Promise<void> {
   const { userId, venueName, venueSlug, venueLogo, inviterName, role } = params;
+  const locale = await getUserLocale(userId);
 
   await createNotification({
     userId,
     type: NotificationType.VENUE_INVITE,
-    title: "Venue Staff Invitation",
-    body: `${inviterName} invited you to join ${venueName} as ${role}`,
+    title: t("venue.invite.title", locale),
+    body: t("venue.invite.body", locale, {
+      inviter: inviterName,
+      venue: venueName,
+      role,
+    }),
     data: {
       venueName,
       venueSlug,

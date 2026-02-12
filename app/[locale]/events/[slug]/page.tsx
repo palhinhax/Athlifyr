@@ -319,6 +319,8 @@ export default async function EventPage({ params }: PageProps) {
     externalUrl: event.externalUrl,
     stravaRouteEmbed: event.stravaRouteEmbed,
     featuredVenueId: event.featuredVenueId,
+    cancelled: event.cancelled,
+    cancellationReason: event.cancellationReason,
     featuredVenue: event.featuredVenue,
     variants: event.variants.map((v) => ({
       id: v.id,
@@ -413,6 +415,7 @@ export default async function EventPage({ params }: PageProps) {
               pricingPhases={event.pricingPhases}
               externalUrl={event.externalUrl}
               stravaRouteEmbed={event.stravaRouteEmbed}
+              cancelled={event.cancelled}
               translations={{
                 aboutEvent: t("aboutEvent"),
                 readyToParticipate: t("readyToParticipate"),
@@ -422,30 +425,33 @@ export default async function EventPage({ params }: PageProps) {
             />
 
             {/* Event Registration */}
-            <div className="mt-12">
-              {/* Check if event has already happened */}
-              {new Date(event.endDate || event.startDate) < new Date() ? (
-                <EventPastParticipation
-                  eventId={event.id}
-                  variants={event.variants.map((v) => ({
-                    id: v.id,
-                    name: v.name,
-                    distanceKm: v.distanceKm,
-                    startDate: v.startDate,
-                    startTime: v.startTime,
-                  }))}
-                />
-              ) : (
-                <EventRegistration
-                  eventId={event.id}
-                  variants={event.variants.map((v) => ({
-                    id: v.id,
-                    name: v.name,
-                    distanceKm: v.distanceKm,
-                  }))}
-                />
-              )}
-            </div>
+            {!event.cancelled && (
+              <div className="mt-12">
+                {/* Check if event has already happened */}
+                {new Date(event.endDate || event.startDate) < new Date() ? (
+                  <EventPastParticipation
+                    eventId={event.id}
+                    variants={event.variants.map((v) => ({
+                      id: v.id,
+                      name: v.name,
+                      distanceKm: v.distanceKm,
+                      startDate: v.startDate,
+                      startTime: v.startTime,
+                    }))}
+                  />
+                ) : (
+                  <EventRegistration
+                    eventId={event.id}
+                    eventTitle={event.title}
+                    variants={event.variants.map((v) => ({
+                      id: v.id,
+                      name: v.name,
+                      distanceKm: v.distanceKm,
+                    }))}
+                  />
+                )}
+              </div>
+            )}
 
             {/* FAQ Section */}
             {event.faqs.length > 0 && (

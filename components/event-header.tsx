@@ -7,7 +7,7 @@ import { SportBadge } from "@/components/sport-badge";
 import { HeroBackground } from "@/components/hero-background";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Ban } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
 import { EventAdminActions } from "@/components/event-admin-actions";
 import { useTranslations } from "next-intl";
@@ -34,6 +34,8 @@ interface EventHeaderProps {
     externalUrl: string | null;
     stravaRouteEmbed: string | null;
     featuredVenueId: string | null;
+    cancelled: boolean;
+    cancellationReason: string | null;
     featuredVenue: {
       id: string;
       slug: string;
@@ -131,6 +133,27 @@ export function EventHeader({
           </h1>
         </div>
       </HeroBackground>
+
+      {/* Cancelled Event Warning Banner */}
+      {event?.cancelled && (
+        <div className="border-b-2 border-red-600 bg-red-50 dark:bg-red-950/30">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-start gap-3">
+              <Ban className="mt-0.5 h-6 w-6 flex-shrink-0 text-red-600" />
+              <div>
+                <h3 className="text-lg font-bold text-red-800 dark:text-red-400">
+                  {t("eventCancelled")}
+                </h3>
+                {event.cancellationReason && (
+                  <p className="mt-1 text-sm text-red-700 dark:text-red-300">
+                    {event.cancellationReason}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Lightbox */}
       {hasImage && isLightboxOpen && (

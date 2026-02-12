@@ -1,18 +1,18 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 // POST - Register a push token
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await request.json();
-    const { token, platform, deviceId } = body;
+    const { token, platform, deviceId, deviceName } = body;
 
     // Validate required fields
     if (!token || typeof token !== "string") {
@@ -36,9 +36,10 @@ export async function POST(request: Request) {
       const updatedToken = await prisma.pushToken.update({
         where: { token },
         data: {
-          userId: session.user.id, // Update ownership if user changed
+          userId: user.id, // Update ownership if user changed
           platform,
           deviceId: deviceId || existingToken.deviceId,
+          deviceName: deviceName || existingToken.deviceName,
           isActive: true,
           lastSeenAt: new Date(),
         },
@@ -54,10 +55,11 @@ export async function POST(request: Request) {
     // Create new token
     const newToken = await prisma.pushToken.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         token,
         platform,
         deviceId,
+        deviceName,
         isActive: true,
         lastSeenAt: new Date(),
       },
@@ -78,17 +80,17 @@ export async function POST(request: Request) {
 }
 
 // GET - Get all push tokens for the authenticated user
-export async function GET(_request: Request) {
+export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tokens = await prisma.pushToken.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         isActive: true,
       },
       orderBy: {
@@ -107,18 +109,18 @@ export async function GET(_request: Request) {
 }
 
 // DELETE - Deactivate all tokens for the authenticated user (logout)
-export async function DELETE(_request: Request) {
+export async function DELETE(request: NextRequest) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Deactivate all tokens for the user
     await prisma.pushToken.updateMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         isActive: true,
       },
       data: {

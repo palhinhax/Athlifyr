@@ -140,6 +140,9 @@ model Event {
   imageUrl             String?
   externalUrl          String?
   isFeatured           Boolean            @default(false)
+  cancelled            Boolean            @default(false)
+  cancelledAt          DateTime?
+  cancellationReason   String?
   createdAt            DateTime           @default(now())
   updatedAt            DateTime           @updatedAt
   sportTypes           SportType[]
@@ -1017,6 +1020,7 @@ model PushToken {
   token      String   @unique
   platform   String   // "android" or "ios"
   deviceId   String?
+  deviceName String?  // e.g. "Pixel 8", "iPhone 15 Pro"
   isActive   Boolean  @default(true)
   lastSeenAt DateTime @default(now())
   createdAt  DateTime @default(now())

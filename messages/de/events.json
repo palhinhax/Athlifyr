@@ -4,6 +4,9 @@
     "description": "Entdecken Sie die besten Sportveranstaltungen in Ihrer Nähe",
     "metaTitle": "Alle Veranstaltungen - Athlifyr",
     "metaDescription": "Erkunden Sie alle Sportveranstaltungen. Finden Sie Rennen, Wettbewerbe und Herausforderungen in Ihrer Nähe.",
+    "eventCancelled": "Veranstaltung Abgesagt",
+    "cancelled": "Abgesagt",
+    "going": "Dabei",
     "viewMap": "Karte Anzeigen",
     "viewList": "Liste Anzeigen",
     "viewEvent": "Veranstaltung Anzeigen",
@@ -123,7 +126,17 @@
       "registrationError": "Die Teilnahme konnte nicht registriert werden",
       "participationCancelled": "Teilnahme abgebrochen",
       "participationCancelledDesc": "Sie sind nicht mehr für diese Veranstaltung markiert",
-      "cancellationError": "Die Teilnahme konnte nicht abgebrochen werden"
+      "cancellationError": "Die Teilnahme konnte nicht abgebrochen werden",
+      "shareDialogTitle": "Teilnahme teilen?",
+      "shareDialogDesc": "Lass die Community wissen, dass du dabei bist! Du kannst die Nachricht vor dem Teilen bearbeiten.",
+      "sharePost": "Ich nehme an {event} teil! 🏃‍♂️",
+      "sharePostWithVariant": "Ich nehme an {event} - {variant} teil! 🏃‍♂️",
+      "sharePublish": "Teilen",
+      "sharePublishing": "Wird geteilt...",
+      "shareSkip": "Nein, danke",
+      "shareSuccess": "Beitrag geteilt!",
+      "shareSuccessDesc": "Deine Teilnahme wurde mit der Community geteilt",
+      "shareError": "Der Beitrag konnte nicht geteilt werden"
     },
     "pastParticipation": {
       "didYouParticipate": "Haben Sie an dieser Veranstaltung teilgenommen?",

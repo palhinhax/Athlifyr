@@ -5,7 +5,7 @@
       "description": "Gestão centralizada de eventos, contactos e conteúdo",
       "tabs": {
         "events": "Eventos",
-        "venues": "Venues",
+        "venues": "Locais",
         "users": "Utilizadores",
         "contacts": "Contactos",
         "media": "Media",
@@ -97,6 +97,7 @@
       "selectSportsDesc": "Seleciona uma ou mais modalidades",
       "editButton": "Editar",
       "deleteButton": "Eliminar",
+      "cancelEventButton": "Cancelar Evento",
       "editTitle": "Editar Evento",
       "editDescription": "Faz alterações aos detalhes do evento.",
       "titleLabel": "Título",
@@ -129,6 +130,13 @@
       "translationsTitle": "Traduções",
       "translationsDescription": "Adiciona traduções para o evento aparecer corretamente em diferentes idiomas. O conteúdo original (PT) é usado como fallback.",
       "cancelButton": "Cancelar",
+      "cancelEventTitle": "Cancelar Evento",
+      "cancelEventDescription": "Tens a certeza que queres cancelar este evento? Todos os participantes que marcaram presença serão notificados.",
+      "cancellationReason": "Motivo do Cancelamento",
+      "optional": "opcional",
+      "cancellationReasonPlaceholder": "Explica por que razão o evento está a ser cancelado...",
+      "cancellingEventButton": "A cancelar...",
+      "confirmCancelEventButton": "Sim, cancelar evento",
       "deleteTitle": "Eliminar Evento",
       "deleteDescription": "Tens a certeza que queres eliminar este evento? Esta ação não pode ser revertida. Todos os dados associados (comentários, posts, inscrições) serão eliminados.",
       "deletingButton": "A eliminar...",
@@ -149,7 +157,11 @@
         "eventDeleted": "Evento eliminado",
         "eventDeletedDesc": "O evento foi eliminado com sucesso.",
         "deleteError": "Erro",
-        "deleteErrorDesc": "Não foi possível eliminar o evento."
+        "deleteErrorDesc": "Não foi possível eliminar o evento.",
+        "eventCancelled": "Evento cancelado",
+        "eventCancelledDesc": "O evento foi cancelado e todos os participantes foram notificados.",
+        "cancelError": "Erro",
+        "cancelErrorDesc": "Não foi possível cancelar o evento."
       },
       "actions": {
         "changeImage": "Alterar imagem",

@@ -2,7 +2,7 @@
   "nav": {
     "home": "Início",
     "events": "Eventos",
-    "venues": "Venues",
+    "venues": "Locais",
     "workouts": "Treinos",
     "exercises": "Exercícios",
     "map": "Mapa",
@@ -44,7 +44,7 @@
     "tryDifferent": "Tenta um termo de pesquisa diferente",
     "searching": "A pesquisar...",
     "event": "Evento",
-    "venue": "Venue",
+    "venue": "Local",
     "person": "Pessoa",
     "official": "Oficial",
     "toNavigate": "para navegar",

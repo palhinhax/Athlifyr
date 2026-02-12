@@ -643,9 +643,9 @@
     },
     "loading": "A carregar...",
     "loadMore": "Carregar Mais",
-    "venueNotFound": "Venue não encontrado",
-    "venueNotFoundDesc": "O venue que procuras não existe ou foi removido.",
-    "signInToJoin": "Inicia sessão para aderires a este venue ou marcares sessões",
+    "venueNotFound": "Local não encontrado",
+    "venueNotFoundDesc": "O local que procuras não existe ou foi removido.",
+    "signInToJoin": "Inicia sessão para aderires a este local ou marcares sessões",
     "signIn": "Iniciar Sessão",
     "noPlansAvailable": "Ainda não há planos disponíveis.",
     "sessionsComingSoon": "Calendário de sessões em breve",
@@ -1057,7 +1057,7 @@
       },
       "testimonials": {
         "title": "O que dizem os nossos parceiros",
-        "subtitle": "Venues que já fazem parte da comunidade Athlifyr"
+        "subtitle": "Locais que já fazem parte da comunidade Athlifyr"
       },
       "faq": {
         "title": "Perguntas Frequentes",
@@ -1068,7 +1068,7 @@
         },
         "q2": {
           "question": "Quanto tempo demora a configurar?",
-          "answer": "Podes ter o teu espaço configurado em menos de 10 minutos. Basta criar uma conta, adicionar as informações básicas do teu venue, definir os teus serviços e horários, e já está!"
+          "answer": "Podes ter o teu espaço configurado em menos de 10 minutos. Basta criar uma conta, adicionar as informações básicas do teu local, definir os teus serviços e horários, e já está!"
         },
         "q3": {
           "question": "Posso importar os meus clientes existentes?",
@@ -1080,7 +1080,7 @@
         },
         "q5": {
           "question": "Posso usar a minha própria marca e cores?",
-          "answer": "Claro! Podes personalizar a página do teu venue com o teu logo, cores, fotos e toda a informação relevante. Os teus clientes veem a tua marca, não a nossa."
+          "answer": "Claro! Podes personalizar a página do teu local com o teu logo, cores, fotos e toda a informação relevante. Os teus clientes veem a tua marca, não a nossa."
         },
         "q6": {
           "question": "E se precisar de ajuda?",
@@ -1102,7 +1102,7 @@
         "questions": "Tens dúvidas? Contacta-nos:"
       },
       "stats": {
-        "venues": "Venues Ativos",
+        "venues": "Locais Ativos",
         "athletes": "Atletas na Comunidade",
         "sessions": "Sessões por Mês",
         "countries": "Países"

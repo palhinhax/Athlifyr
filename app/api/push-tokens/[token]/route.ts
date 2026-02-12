@@ -1,16 +1,16 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
 // DELETE - Deactivate a specific push token
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ token: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthenticatedUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,7 +25,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Token not found" }, { status: 404 });
     }
 
-    if (pushToken.userId !== session.user.id) {
+    if (pushToken.userId !== user.id) {
       return NextResponse.json(
         { error: "Not authorized to deactivate this token" },
         { status: 403 }

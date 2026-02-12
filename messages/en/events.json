@@ -4,6 +4,9 @@
     "description": "Discover the best sports events near you",
     "metaTitle": "All Events - Athlifyr",
     "metaDescription": "Explore all sports events. Find races, competitions and challenges near you.",
+    "eventCancelled": "Event Cancelled",
+    "cancelled": "Cancelled",
+    "going": "Going",
     "viewMap": "View Map",
     "viewList": "View List",
     "viewEvent": "View Event",
@@ -87,7 +90,17 @@
       "registrationError": "Could not register participation",
       "participationCancelled": "Participation cancelled",
       "participationCancelledDesc": "You are no longer marked for this event",
-      "cancellationError": "Could not cancel participation"
+      "cancellationError": "Could not cancel participation",
+      "shareDialogTitle": "Share your participation?",
+      "shareDialogDesc": "Let the community know you're going! You can edit the message before sharing.",
+      "sharePost": "I'm going to {event}! 🏃‍♂️",
+      "sharePostWithVariant": "I'm going to {event} - {variant}! 🏃‍♂️",
+      "sharePublish": "Share",
+      "sharePublishing": "Sharing...",
+      "shareSkip": "Skip",
+      "shareSuccess": "Post shared!",
+      "shareSuccessDesc": "Your participation has been shared with the community",
+      "shareError": "Could not share the post"
     },
     "pastParticipation": {
       "didYouParticipate": "Did you participate in this event?",

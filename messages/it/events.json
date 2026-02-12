@@ -4,6 +4,9 @@
     "description": "Scopri i migliori eventi sportivi vicino a te",
     "metaTitle": "Tutti gli Eventi - Athlifyr",
     "metaDescription": "Esplora tutti gli eventi sportivi. Trova gare, competizioni e sfide vicino a te.",
+    "eventCancelled": "Evento Annullato",
+    "cancelled": "Annullato",
+    "going": "Partecipo",
     "viewMap": "Vedi Mappa",
     "viewList": "Vedi Lista",
     "viewEvent": "Vedi Evento",
@@ -123,7 +126,17 @@
       "registrationError": "Impossibile registrare la partecipazione",
       "participationCancelled": "Partecipazione annullata",
       "participationCancelledDesc": "Non sei più segnato per questo evento",
-      "cancellationError": "Impossibile annullare la partecipazione"
+      "cancellationError": "Impossibile annullare la partecipazione",
+      "shareDialogTitle": "Condividere la tua partecipazione?",
+      "shareDialogDesc": "Fai sapere alla community che parteciperai! Puoi modificare il messaggio prima di condividere.",
+      "sharePost": "Parteciperò a {event}! 🏃‍♂️",
+      "sharePostWithVariant": "Parteciperò a {event} - {variant}! 🏃‍♂️",
+      "sharePublish": "Condividi",
+      "sharePublishing": "Condivisione...",
+      "shareSkip": "No, grazie",
+      "shareSuccess": "Post condiviso!",
+      "shareSuccessDesc": "La tua partecipazione è stata condivisa con la community",
+      "shareError": "Impossibile condividere il post"
     },
     "pastParticipation": {
       "didYouParticipate": "Hai partecipato a questo evento?",

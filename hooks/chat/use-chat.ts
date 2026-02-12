@@ -186,7 +186,11 @@ export function useChatMessages(
         setIsPolling(false);
       }
     },
-    enabled: enabled && !!conversationId && !!messagesQuery.data,
+    // Only enable polling when:
+    // 1. Chat is enabled
+    // 2. We have a conversation ID
+    // 3. Initial messages have successfully loaded
+    enabled: enabled && !!conversationId && messagesQuery.isSuccess,
     refetchInterval: pollingInterval,
     refetchIntervalInBackground: false,
     staleTime: 0,

@@ -239,10 +239,10 @@ export function VenuePresentationClient() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="mb-4 text-4xl font-black tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              <span className="text-white">{t("hero.title")}</span>
+              <span className="text-white">{t("hero.h1Primary")}</span>
               <br />
               <span className="bg-gradient-to-r from-orange-500 to-red-500 bg-clip-text text-transparent">
-                {t("hero.subtitle")}
+                {t("hero.h1Secondary")}
               </span>
             </h1>
 

@@ -1,14 +1,17 @@
 {
   "presentation": {
     "meta": {
-      "title": "Athlifyr per la Tua Palestra | Presentazione",
-      "description": "Scopri come Athlifyr può trasformare la gestione della tua palestra. Piattaforma gratuita di gestione e comunità."
+      "title": "Software Gestione Palestra e CrossFit | Athlifyr",
+      "description": "Piattaforma completa di gestione palestra per gestire prenotazioni, lezioni di prova, abbonamenti e coach. Progettata per box CrossFit e studi fitness. 100% gratuito.",
+      "keywords": "software gestione palestra, piattaforma gestione crossfit, sistema prenotazioni fitness, app prenotazioni palestra, software per gestione palestra, piattaforma per palestre, software box crossfit, software abbonamenti palestra"
     },
     "hero": {
       "badge": "Presentazione Esclusiva",
       "title": "La Tua Palestra",
       "subtitle": "con Athlifyr",
-      "description": "Scopri come Athlifyr può trasformare la gestione del tuo spazio e creare una comunità più forte.",
+      "h1Primary": "Software Gestione",
+      "h1Secondary": "Palestra e CrossFit",
+      "description": "La piattaforma tutto-in-uno per palestre moderne. Gestisci prenotazioni, abbonamenti, coach e crea una comunità attiva — completamente gratuito.",
       "cta": "Guarda la Demo",
       "free": "100% Gratuito"
     },
@@ -147,6 +150,52 @@
       "noCostsDesc": "Zero canoni mensili, zero costi nascosti",
       "forever": "Per Sempre",
       "foreverDesc": "Il cuore della piattaforma rimane gratuito"
+    },
+    "seoContent": {
+      "badge": "Piattaforma Completa di Gestione Palestra",
+      "title": "Perché Scegliere Athlifyr per la Tua Palestra?",
+      "paragraph1": "Athlifyr è un software di gestione palestra completo, progettato specificamente per box CrossFit, studi fitness e centri di allenamento. La nostra piattaforma semplifica tutti gli aspetti della gestione di una palestra moderna — dalla programmazione dei corsi e gestione delle prenotazioni al controllo dei membri e coordinamento dei coach. Che tu gestisca una piccola palestra boutique o una grande catena fitness, Athlifyr si adatta alle tue esigenze.",
+      "paragraph2": "Il nostro sistema di prenotazioni permette ai membri di prenotare corsi in pochi secondi attraverso un semplice link ottimizzato per mobile. Nessun download di app richiesto — i tuoi atleti semplicemente cliccano, selezionano il corso e confermano. Questa esperienza di prenotazione senza attriti aumenta i tassi di partecipazione e riduce il carico amministrativo. La funzionalità di gestione delle lezioni di prova ti aiuta a convertire i potenziali clienti in membri, offrendo un'esperienza di prima visita perfetta.",
+      "paragraph3": "Oltre alla gestione delle prenotazioni, Athlifyr offre potenti strumenti per il controllo degli abbonamenti, permettendoti di creare piani personalizzati, monitorare i pagamenti e tracciare le metriche di fidelizzazione. Il nostro sistema di gestione dei coach ti aiuta a pianificare lo staff, assegnare corsi e monitorare le prestazioni degli istruttori. Con la pubblicazione di WOD integrata e il tracciamento del progresso degli atleti, il tuo box CrossFit o studio di fitness funzionale ha tutto il necessario per costruire una comunità prospera.",
+      "paragraph4": "Athlifyr supporta più lingue tra cui Italiano, Inglese, Portoghese, Spagnolo, Francese e Tedesco — perfetto per palestre internazionali o spazi con membri di diverse nazionalità. I nostri strumenti di organizzazione eventi ti permettono di creare competizioni, workshop e sessioni speciali, mentre il feed della comunità integrato mantiene i membri coinvolti tra gli allenamenti.",
+      "paragraph5": "La piattaforma include timer professionali (Tabata, EMOM, AMRAP, For Time), un database di esercizi con oltre 500 movimenti e tracciamento dettagliato delle prestazioni degli atleti con storici dei PR. E la cosa migliore: le funzionalità principali di Athlifyr sono completamente gratuite — crediamo che ogni palestra meriti accesso a strumenti di gestione di qualità senza costi proibitivi.",
+      "feature1Title": "Sistema di Prenotazione Corsi",
+      "feature1Desc": "Prenotazioni online facili tramite link condivisibile. I membri prenotano in 30 secondi da qualsiasi dispositivo.",
+      "feature2Title": "Gestione Lezioni di Prova",
+      "feature2Desc": "Converti i potenziali clienti con prenotazioni di lezioni di prova semplici e follow-up automatici.",
+      "feature3Title": "Controllo Abbonamenti",
+      "feature3Desc": "Crea piani, monitora pagamenti, traccia fidelizzazione e gestisci sottoscrizioni.",
+      "feature4Title": "Gestione Coach",
+      "feature4Desc": "Pianifica staff, assegna corsi, monitora ore e gestisci profili istruttori.",
+      "feature5Title": "Supporto Multi-Lingua",
+      "feature5Desc": "Piattaforma completa in 6 lingue: Italiano, Inglese, Portoghese, Spagnolo, Francese, Tedesco.",
+      "feature6Title": "Analisi Prestazioni",
+      "feature6Desc": "Traccia progresso atleti, PR, trend di partecipazione e statistiche palestra.",
+      "feature7Title": "Organizzazione Eventi",
+      "feature7Desc": "Organizza competizioni, workshop ed eventi speciali con registrazione integrata.",
+      "feature8Title": "Costruzione Comunità",
+      "feature8Desc": "Feed social, classifiche e strumenti di engagement per costruire la tua tribù fitness."
+    },
+    "faq": {
+      "badge": "Domande Frequenti",
+      "title": "Domande Comuni su Athlifyr",
+      "subtitle": "Tutto quello che devi sapere sulla nostra piattaforma di gestione palestra",
+      "q1": "Qual è il miglior software di gestione palestra?",
+      "a1": "Athlifyr è un software di gestione palestra di prima categoria, progettato per box CrossFit e studi fitness. Offre funzionalità complete tra cui programmazione corsi, gestione membri, pianificazione coach, pubblicazione WOD e tracciamento progressi atleti — tutto completamente gratuito. A differenza di altre piattaforme che richiedono canoni mensili, Athlifyr fornisce strumenti di livello professionale senza costi nascosti.",
+      "q2": "Posso gestire lezioni di prova online con Athlifyr?",
+      "a2": "Sì! Athlifyr rende semplice la gestione delle lezioni di prova. I potenziali clienti possono prenotare sessioni di prova attraverso il tuo link di prenotazione unico. Il sistema traccia i partecipanti alle lezioni di prova, invia promemoria automatici e ti aiuta a convertirli in membri. Puoi impostare orari specifici per le lezioni di prova e gestire la capacità per sessione.",
+      "q3": "Athlifyr è adatto per box CrossFit?",
+      "a3": "Assolutamente! Athlifyr è stato costruito pensando ai box CrossFit. Le funzionalità includono pubblicazione WOD con il nostro database di oltre 500 esercizi, timer di allenamento (AMRAP, EMOM, Tabata, For Time), tracciamento PR atleti, classifiche comunità e programmazione corsi ottimizzata per diversi tipi di allenamento. Molti affiliati CrossFit usano Athlifyr per le loro operazioni quotidiane.",
+      "q4": "Athlifyr supporta palestre multilingue?",
+      "a4": "Sì, Athlifyr supporta completamente 6 lingue: Italiano, Inglese, Portoghese (Europeo), Spagnolo, Francese e Tedesco. Questo lo rende perfetto per palestre internazionali o spazi con membri di diverse nazionalità. Tutta la piattaforma — comprese le pagine di prenotazione per i membri — si adatta alla lingua scelta.",
+      "q5": "Posso gestire abbonamenti e prenotazioni in un'unica piattaforma?",
+      "a5": "Athlifyr è una soluzione tutto-in-uno. Puoi creare piani di abbonamento, monitorare pagamenti, gestire prenotazioni corsi, pianificare coach, pubblicare allenamenti e coinvolgere la tua comunità — tutto da un unico dashboard. Nessun bisogno di strumenti multipli o integrazioni complicate.",
+      "q6": "Athlifyr è gratuito per le palestre?",
+      "a6": "Sì! La piattaforma principale di Athlifyr è 100% gratuita. Questo include membri illimitati, sessioni di corso illimitate, prenotazioni illimitate, pubblicazione WOD, tracciamento atleti e funzionalità comunità. Crediamo che ogni palestra meriti accesso a strumenti di gestione di qualità senza canoni mensili proibitivi.",
+      "q7": "Come prenotano i corsi i membri con Athlifyr?",
+      "a7": "I membri prenotano corsi attraverso il link unico della tua palestra (athlifyr.com/v/la-tua-palestra/book). Nessun download di app richiesto — funziona su qualsiasi smartphone o browser computer. I membri vedono le sessioni disponibili, verificano i posti rimanenti e confermano la prenotazione in circa 30 secondi.",
+      "q8": "Posso tracciare prestazioni e PR degli atleti?",
+      "a8": "Sì! Athlifyr include tracciamento dettagliato del progresso atleti. I membri possono registrare i loro punteggi di allenamento e record personali. Vedrai grafici di progresso per ogni movimento, storici PR e puoi confrontare con le medie della palestra. Questi dati ti aiutano a fornire coaching personalizzato e mantengono i membri motivati con progressi visibili."
     },
     "cta": {
       "title": "Pronto per iniziare?",

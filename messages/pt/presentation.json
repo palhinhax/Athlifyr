@@ -1,14 +1,17 @@
 {
   "presentation": {
     "meta": {
-      "title": "Athlifyr para o Teu Ginásio | Apresentação",
-      "description": "Descobre como o Athlifyr pode transformar a gestão do teu ginásio. Plataforma gratuita de gestão e comunidade."
+      "title": "Software de Gestão de Ginásio e CrossFit | Athlifyr",
+      "description": "Plataforma completa de gestão de ginásio para gerir reservas, aulas experimentais, membros e treinadores. Desenvolvido para boxes de CrossFit e estúdios de fitness. 100% grátis.",
+      "keywords": "software gestão ginásio, plataforma gestão crossfit, sistema reservas fitness, app reservas ginásio, software para gestão de ginásio, plataforma para ginásios, software box crossfit, software membros ginásio"
     },
     "hero": {
       "badge": "Apresentação Exclusiva",
       "title": "O Teu espaço",
       "subtitle": "com Athlifyr",
-      "description": "Descobre como o Athlifyr pode transformar a gestão do teu espaço e criar uma comunidade mais forte.",
+      "h1Primary": "Software de Gestão",
+      "h1Secondary": "Ginásio e CrossFit",
+      "description": "A plataforma completa para ginásios modernos. Gere reservas, membros, treinadores e cria uma comunidade activa — totalmente grátis.",
       "cta": "Ver Demonstração",
       "free": "100% Grátis"
     },
@@ -147,6 +150,52 @@
       "noCostsDesc": "Zero mensalidades, zero taxas escondidas",
       "forever": "Para Sempre",
       "foreverDesc": "O core da plataforma permanece grátis"
+    },
+    "seoContent": {
+      "badge": "Plataforma Completa de Gestão de Ginásio",
+      "title": "Porque Escolher o Athlifyr para o Teu Ginásio?",
+      "paragraph1": "O Athlifyr é um software de gestão de ginásio completo, desenvolvido especificamente para boxes de CrossFit, estúdios de fitness e centros de treino. A nossa plataforma simplifica todos os aspectos da gestão de um ginásio moderno — desde o agendamento de aulas e gestão de reservas até ao controlo de membros e coordenação de treinadores. Quer gerias um pequeno ginásio boutique ou uma grande rede de fitness, o Athlifyr adapta-se às tuas necessidades.",
+      "paragraph2": "O nosso sistema de reservas de ginásio permite que os membros reservem aulas em segundos através de um link simples e optimizado para telemóvel. Sem necessidade de descarregar apps — os teus atletas simplesmente clicam, seleccionam a aula e confirmam. Esta experiência de reserva sem fricção aumenta as taxas de comparência e reduz o trabalho administrativo. A funcionalidade de gestão de aulas experimentais ajuda-te a converter interessados em membros, proporcionando uma experiência de primeira visita perfeita.",
+      "paragraph3": "Para além da gestão de reservas, o Athlifyr oferece ferramentas poderosas para controlo de membros, permitindo criar planos personalizados, monitorizar pagamentos e acompanhar métricas de retenção. O nosso sistema de gestão de coaches ajuda-te a agendar staff, atribuir aulas e monitorizar o desempenho dos instrutores. Com publicação de WODs integrada e acompanhamento do progresso dos atletas, a tua box de CrossFit ou estúdio de fitness funcional tem tudo o que precisa para construir uma comunidade próspera.",
+      "paragraph4": "O Athlifyr suporta múltiplos idiomas incluindo Português, Inglês, Espanhol, Francês, Alemão e Italiano — perfeito para ginásios internacionais ou espaços com membros de diversas nacionalidades. As nossas ferramentas de organização de eventos permitem-te criar competições, workshops e sessões especiais, enquanto o feed da comunidade integrado mantém os membros envolvidos entre treinos.",
+      "paragraph5": "A plataforma inclui timers profissionais (Tabata, EMOM, AMRAP, For Time), uma base de dados de exercícios com mais de 500 movimentos e acompanhamento detalhado do desempenho dos atletas com históricos de PRs. E o melhor de tudo: as funcionalidades principais do Athlifyr são completamente gratuitas — acreditamos que todos os ginásios merecem acesso a ferramentas de gestão de qualidade sem custos proibitivos.",
+      "feature1Title": "Sistema de Reservas de Aulas",
+      "feature1Desc": "Reservas online fáceis através de link partilháve. Os membros reservam em 30 segundos a partir de qualquer dispositivo.",
+      "feature2Title": "Gestão de Aulas Experimentais",
+      "feature2Desc": "Converte interessados com reservas de aulas experimentais simples e follow-ups automáticos.",
+      "feature3Title": "Controlo de Membros",
+      "feature3Desc": "Cria planos, monitoriza pagamentos, acompanha retenção e gere subscrições.",
+      "feature4Title": "Gestão de Coaches",
+      "feature4Desc": "Agenda staff, atribui aulas, monitoriza horas e gere perfis de instrutores.",
+      "feature5Title": "Suporte Multi-Idioma",
+      "feature5Desc": "Plataforma completa em 6 idiomas: Português, Inglês, Espanhol, Francês, Alemão, Italiano.",
+      "feature6Title": "Análise de Performance",
+      "feature6Desc": "Acompanha progresso dos atletas, PRs, tendências de comparência e estatísticas do ginásio.",
+      "feature7Title": "Organização de Eventos",
+      "feature7Desc": "Organiza competições, workshops e eventos especiais com registo integrado.",
+      "feature8Title": "Construção de Comunidade",
+      "feature8Desc": "Feed social, leaderboards e ferramentas de engagement para construir a tua tribo fitness."
+    },
+    "faq": {
+      "badge": "Perguntas Frequentes",
+      "title": "Questões Comuns Sobre o Athlifyr",
+      "subtitle": "Tudo o que precisas de saber sobre a nossa plataforma de gestão de ginásio",
+      "q1": "Qual é o melhor software de gestão de ginásio?",
+      "a1": "O Athlifyr é um software de gestão de ginásio de topo, desenvolvido para boxes de CrossFit e estúdios de fitness. Oferece funcionalidades completas incluindo agendamento de aulas, gestão de membros, agendamento de coaches, publicação de WODs e acompanhamento do progresso dos atletas — tudo completamente grátis. Ao contrário de outras plataformas que cobram mensalidades, o Athlifyr fornece ferramentas de nível profissional sem custos escondidos.",
+      "q2": "Posso gerir aulas experimentais online com o Athlifyr?",
+      "a2": "Sim! O Athlifyr torna a gestão de aulas experimentais simples. Os interessados podem marcar sessões experimentais através do teu link de reservas único. O sistema acompanha os participantes das aulas experimentais, envia lembretes automáticos e ajuda-te a convertê-los em membros. Podes definir horários específicos para aulas experimentais e gerir a capacidade por sessão.",
+      "q3": "O Athlifyr é adequado para boxes de CrossFit?",
+      "a3": "Absolutamente! O Athlifyr foi construído a pensar nas boxes de CrossFit. As funcionalidades incluem publicação de WODs com a nossa base de dados de mais de 500 exercícios, timers de treino (AMRAP, EMOM, Tabata, For Time), acompanhamento de PRs dos atletas, leaderboards da comunidade e agendamento de aulas optimizado para diferentes tipos de treino. Muitos afiliados CrossFit usam o Athlifyr nas suas operações diárias.",
+      "q4": "O Athlifyr suporta ginásios multi-idioma?",
+      "a4": "Sim, o Athlifyr suporta totalmente 6 idiomas: Português (Europeu), Inglês, Espanhol, Francês, Alemão e Italiano. Isto torna-o perfeito para ginásios internacionais ou espaços com membros de diversas nacionalidades. Toda a plataforma — incluindo as páginas de reserva para membros — adapta-se ao idioma escolhido.",
+      "q5": "Posso gerir membros e reservas numa única plataforma?",
+      "a5": "O Athlifyr é uma solução tudo-em-um. Podes criar planos de membro, monitorizar pagamentos, gerir reservas de aulas, agendar coaches, publicar treinos e envolver a tua comunidade — tudo a partir de um único dashboard. Sem necessidade de múltiplas ferramentas ou integrações complicadas.",
+      "q6": "O Athlifyr é grátis para ginásios?",
+      "a6": "Sim! A plataforma principal do Athlifyr é 100% gratuita. Isto inclui membros ilimitados, sessões de aula ilimitadas, reservas ilimitadas, publicação de WODs, acompanhamento de atletas e funcionalidades de comunidade. Acreditamos que todos os ginásios merecem ferramentas de gestão de qualidade sem mensalidades proibitivas.",
+      "q7": "Como é que os membros reservam aulas com o Athlifyr?",
+      "a7": "Os membros reservam aulas através do link único do teu ginásio (athlifyr.com/v/teu-ginasio/book). Sem necessidade de descarregar app — funciona em qualquer smartphone ou browser de computador. Os membros vêem as sessões disponíveis, verificam os lugares restantes e confirmam a sua reserva em cerca de 30 segundos.",
+      "q8": "Posso acompanhar o desempenho e PRs dos atletas?",
+      "a8": "Sim! O Athlifyr inclui acompanhamento detalhado do progresso dos atletas. Os membros podem registar os seus scores de treino e recordes pessoais. Verás gráficos de progresso para cada movimento, históricos de PRs e podes comparar com as médias do ginásio. Estes dados ajudam-te a fornecer coaching personalizado e mantêm os membros motivados com progresso visível."
     },
     "cta": {
       "title": "Pronto para começar?",

@@ -1,14 +1,17 @@
 {
   "presentation": {
     "meta": {
-      "title": "Athlifyr for Your Venue | Presentation",
-      "description": "Discover how Athlifyr can transform your venue management. Free platform for management and community building."
+      "title": "Gym & CrossFit Management Software | Athlifyr",
+      "description": "All-in-one gym management platform to manage bookings, trial classes, memberships and coaches. Built for CrossFit boxes and fitness studios. 100% free.",
+      "keywords": "gym management software, crossfit management platform, fitness booking system, gym booking app, software for gym management, platform for fitness venues, crossfit box software, gym membership software"
     },
     "hero": {
       "badge": "Exclusive Presentation",
       "title": "Your Venue",
       "subtitle": "with Athlifyr",
-      "description": "Discover how Athlifyr can transform the management of your space and build a stronger community.",
+      "h1Primary": "Gym & CrossFit",
+      "h1Secondary": "Management Software",
+      "description": "The all-in-one platform for modern fitness venues. Manage bookings, memberships, coaches, and build a thriving community — completely free.",
       "cta": "Watch Demo",
       "free": "100% Free"
     },
@@ -147,6 +150,52 @@
       "noCostsDesc": "Zero monthly fees, zero hidden charges",
       "forever": "Forever",
       "foreverDesc": "The core platform remains free"
+    },
+    "seoContent": {
+      "badge": "Complete Gym Management Platform",
+      "title": "Why Choose Athlifyr for Your Fitness Venue?",
+      "paragraph1": "Athlifyr is a comprehensive gym management software designed specifically for CrossFit boxes, fitness studios, and training centers. Our platform streamlines every aspect of running a modern fitness venue — from class scheduling and booking management to membership tracking and coach coordination. Whether you manage a small boutique gym or a large multi-location fitness chain, Athlifyr scales to meet your needs.",
+      "paragraph2": "Our gym booking system allows members to reserve classes in seconds through a simple, mobile-friendly link. No app downloads required — your athletes simply click, select their class, and confirm. This friction-free booking experience increases attendance rates and reduces administrative overhead. The trial class management feature helps you convert prospects into members by providing a seamless first-visit experience.",
+      "paragraph3": "Beyond booking management, Athlifyr offers powerful tools for membership control, allowing you to create custom plans, track payments, and monitor retention metrics. Our coach management system helps you schedule staff, assign classes, and track instructor performance. With built-in WOD publishing and athlete progress tracking, your CrossFit box or functional fitness studio has everything needed to build a thriving community.",
+      "paragraph4": "Athlifyr supports multiple languages including English, Portuguese, Spanish, French, German, and Italian — perfect for international fitness venues or gyms with diverse member bases. Our event hosting tools let you organize competitions, workshops, and special sessions, while the integrated community feed keeps members engaged between workouts.",
+      "paragraph5": "The platform includes professional workout timers (Tabata, EMOM, AMRAP, For Time), an exercise database with 500+ movements, and detailed athlete performance tracking with PR histories. Best of all, Athlifyr's core features are completely free — we believe every fitness venue deserves access to quality management tools without prohibitive costs.",
+      "feature1Title": "Class Booking System",
+      "feature1Desc": "Easy online bookings via shareable link. Members book in 30 seconds from any device.",
+      "feature2Title": "Trial Class Management",
+      "feature2Desc": "Convert prospects with seamless trial bookings and automated follow-ups.",
+      "feature3Title": "Membership Control",
+      "feature3Desc": "Create plans, track payments, monitor retention, and manage subscriptions.",
+      "feature4Title": "Coach Management",
+      "feature4Desc": "Schedule staff, assign classes, track hours, and manage instructor profiles.",
+      "feature5Title": "Multi-Language Support",
+      "feature5Desc": "Full platform in 6 languages: English, Portuguese, Spanish, French, German, Italian.",
+      "feature6Title": "Performance Analytics",
+      "feature6Desc": "Track athlete progress, PRs, attendance trends, and venue statistics.",
+      "feature7Title": "Event Hosting",
+      "feature7Desc": "Organize competitions, workshops, and special events with integrated registration.",
+      "feature8Title": "Community Building",
+      "feature8Desc": "Social feed, leaderboards, and engagement tools to build your fitness tribe."
+    },
+    "faq": {
+      "badge": "Frequently Asked Questions",
+      "title": "Common Questions About Athlifyr",
+      "subtitle": "Everything you need to know about our gym management platform",
+      "q1": "What is the best gym management software?",
+      "a1": "Athlifyr is a top-rated gym management software designed for CrossFit boxes and fitness studios. It offers comprehensive features including class booking, membership management, coach scheduling, WOD publishing, and athlete progress tracking — all completely free. Unlike other platforms that charge monthly fees, Athlifyr provides professional-grade tools without hidden costs.",
+      "q2": "Can I manage trial classes online with Athlifyr?",
+      "a2": "Yes! Athlifyr makes trial class management simple. Prospects can book trial sessions through your unique booking link. The system tracks trial attendees, sends automatic reminders, and helps you convert them into full members. You can set specific trial class times and manage capacity per session.",
+      "q3": "Is Athlifyr suitable for CrossFit boxes?",
+      "a3": "Absolutely! Athlifyr was built with CrossFit boxes in mind. Features include WOD publishing with our 500+ exercise database, workout timers (AMRAP, EMOM, Tabata, For Time), athlete PR tracking, community leaderboards, and class scheduling optimized for varied workout types. Many CrossFit affiliates use Athlifyr for their daily operations.",
+      "q4": "Does Athlifyr support multi-language gyms?",
+      "a4": "Yes, Athlifyr fully supports 6 languages: English, Portuguese (European), Spanish, French, German, and Italian. This makes it perfect for international fitness venues or gyms with diverse member bases. The entire platform — including member-facing booking pages — adapts to your chosen language.",
+      "q5": "Can I manage memberships and bookings in one platform?",
+      "a5": "Athlifyr is an all-in-one solution. You can create membership plans, track payments, manage class bookings, schedule coaches, publish workouts, and engage your community — all from a single dashboard. No need for multiple tools or complicated integrations.",
+      "q6": "Is Athlifyr free for fitness venues?",
+      "a6": "Yes! Athlifyr's core platform is 100% free. This includes unlimited members, unlimited class sessions, unlimited bookings, WOD publishing, athlete tracking, and community features. We believe every fitness venue deserves quality management tools without prohibitive monthly fees.",
+      "q7": "How do members book classes with Athlifyr?",
+      "a7": "Members book classes through your unique venue link (athlifyr.com/v/your-venue/book). No app download required — it works on any smartphone or computer browser. Members see available sessions, check remaining spots, and confirm their booking in about 30 seconds.",
+      "q8": "Can I track athlete performance and PRs?",
+      "a8": "Yes! Athlifyr includes detailed athlete progress tracking. Members can log their workout scores and personal records. You'll see progress charts for each movement, PR histories, and can compare against gym averages. This data helps you provide personalized coaching and keeps members motivated with visible progress."
     },
     "cta": {
       "title": "Ready to get started?",

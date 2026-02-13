@@ -1,14 +1,13 @@
 import { Tabs } from "expo-router";
 import {
-  Newspaper,
-  User,
   Calendar,
-  Building2,
+  MapPin,
+  User,
   Dumbbell,
-  MessageCircle,
+  Activity,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { Platform } from "react-native";
+import { View, StyleSheet, Platform } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
 import { NotificationBell } from "@/src/components/NotificationBell";
@@ -44,15 +43,6 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="feed"
-        options={{
-          title: t("navigation.feed"),
-          tabBarIcon: ({ color, size }) => (
-            <Newspaper color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name="index"
         options={{
           title: t("navigation.events"),
@@ -65,26 +55,35 @@ export default function TabLayout() {
         name="venues"
         options={{
           title: t("navigation.venues"),
-          tabBarIcon: ({ color, size }) => (
-            <Building2 color={color} size={size} />
-          ),
+          tabBarIcon: ({ color, size }) => <MapPin color={color} size={size} />,
         }}
       />
       <Tabs.Screen
-        name="workouts"
+        name="feed"
         options={{
-          title: t("navigation.workouts"),
+          title: t("navigation.feed"),
+          tabBarIcon: ({ color, focused }) => (
+            <View
+              style={[
+                styles.centerTabIcon,
+                focused && styles.centerTabIconActive,
+              ]}
+            >
+              <Activity
+                color={focused ? theme.colors.white : color}
+                size={28}
+              />
+            </View>
+          ),
+          tabBarLabel: () => null,
+        }}
+      />
+      <Tabs.Screen
+        name="exercises"
+        options={{
+          title: t("navigation.exercises"),
           tabBarIcon: ({ color, size }) => (
             <Dumbbell color={color} size={size} />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="messages"
-        options={{
-          title: t("navigation.messages"),
-          tabBarIcon: ({ color, size }) => (
-            <MessageCircle color={color} size={size} />
           ),
         }}
       />
@@ -95,12 +94,24 @@ export default function TabLayout() {
           tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
         }}
       />
-      <Tabs.Screen
-        name="exercises"
-        options={{
-          href: null, // Hide from tabs but keep route available for future use
-        }}
-      />
     </Tabs>
   );
 }
+
+const styles = StyleSheet.create({
+  centerTabIcon: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.muted,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: Platform.OS === "ios" ? 20 : 16,
+    borderWidth: 3,
+    borderColor: theme.colors.background,
+    ...theme.shadows.lg,
+  },
+  centerTabIconActive: {
+    backgroundColor: theme.colors.primary,
+  },
+});

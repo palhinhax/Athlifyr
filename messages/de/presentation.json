@@ -1,14 +1,17 @@
 {
   "presentation": {
     "meta": {
-      "title": "Athlifyr für Ihr Fitnessstudio | Präsentation",
-      "description": "Entdecken Sie, wie Athlifyr die Verwaltung Ihres Fitnessstudios transformieren kann. Kostenlose Plattform für Verwaltung und Community."
+      "title": "Fitnessstudio & CrossFit Management Software | Athlifyr",
+      "description": "All-in-One Fitnessstudio-Management-Plattform zur Verwaltung von Buchungen, Probestunden, Mitgliedschaften und Trainern. Entwickelt für CrossFit-Boxen und Fitnessstudios. 100% kostenlos.",
+      "keywords": "fitnessstudio management software, crossfit management plattform, fitness buchungssystem, gym buchungs-app, software für fitnessstudio verwaltung, plattform für fitnessstudios, crossfit box software, fitnessstudio mitglieder software"
     },
     "hero": {
       "badge": "Exklusive Präsentation",
       "title": "Ihr Fitnessstudio",
       "subtitle": "mit Athlifyr",
-      "description": "Entdecken Sie, wie Athlifyr die Verwaltung Ihres Raums transformieren und eine stärkere Gemeinschaft aufbauen kann.",
+      "h1Primary": "Fitnessstudio & CrossFit",
+      "h1Secondary": "Management Software",
+      "description": "Die All-in-One-Plattform für moderne Fitnessstudios. Verwalten Sie Buchungen, Mitgliedschaften, Trainer und bauen Sie eine aktive Community auf — völlig kostenlos.",
       "cta": "Demo ansehen",
       "free": "100% Kostenlos"
     },
@@ -147,6 +150,52 @@
       "noCostsDesc": "Null monatliche Gebühren, null versteckte Kosten",
       "forever": "Für Immer",
       "foreverDesc": "Der Kern der Plattform bleibt kostenlos"
+    },
+    "seoContent": {
+      "badge": "Komplette Fitnessstudio-Verwaltungsplattform",
+      "title": "Warum Athlifyr für Ihr Fitnessstudio wählen?",
+      "paragraph1": "Athlifyr ist eine umfassende Fitnessstudio-Management-Software, die speziell für CrossFit-Boxen, Fitnessstudios und Trainingszentren entwickelt wurde. Unsere Plattform vereinfacht alle Aspekte des Betriebs eines modernen Fitnessstudios — von der Kursplanung und Buchungsverwaltung bis zur Mitgliederkontrolle und Trainerkoordination. Ob Sie ein kleines Boutique-Studio oder eine große Fitnesskette verwalten, Athlifyr passt sich Ihren Bedürfnissen an.",
+      "paragraph2": "Unser Buchungssystem ermöglicht Mitgliedern, Kurse in Sekunden über einen einfachen, mobilfreundlichen Link zu buchen. Kein App-Download erforderlich — Ihre Athleten klicken einfach, wählen ihren Kurs und bestätigen. Dieses reibungslose Buchungserlebnis erhöht die Anwesenheitsraten und reduziert den Verwaltungsaufwand. Die Probestunden-Verwaltung hilft Ihnen, Interessenten in Mitglieder umzuwandeln, indem sie ein nahtloses Erstbesuchserlebnis bietet.",
+      "paragraph3": "Über die Buchungsverwaltung hinaus bietet Athlifyr leistungsstarke Tools für die Mitgliedschaftskontrolle, mit denen Sie benutzerdefinierte Pläne erstellen, Zahlungen verfolgen und Bindungsmetriken überwachen können. Unser Trainermanagement-System hilft Ihnen, Personal zu planen, Kurse zuzuweisen und die Leistung der Trainer zu verfolgen. Mit integrierter WOD-Veröffentlichung und Athleten-Fortschrittsverfolgung hat Ihre CrossFit-Box oder Ihr Functional-Fitness-Studio alles, was Sie zum Aufbau einer florierenden Community brauchen.",
+      "paragraph4": "Athlifyr unterstützt mehrere Sprachen, darunter Deutsch, Englisch, Portugiesisch, Spanisch, Französisch und Italienisch — perfekt für internationale Fitnessstudios oder Studios mit vielfältiger Mitgliederbasis. Unsere Event-Tools ermöglichen es Ihnen, Wettbewerbe, Workshops und spezielle Sessions zu organisieren, während der integrierte Community-Feed die Mitglieder zwischen den Trainings engagiert hält.",
+      "paragraph5": "Die Plattform umfasst professionelle Workout-Timer (Tabata, EMOM, AMRAP, For Time), eine Übungsdatenbank mit über 500 Bewegungen und detaillierte Athleten-Leistungsverfolgung mit PR-Historien. Und das Beste: Die Kernfunktionen von Athlifyr sind vollständig kostenlos — wir glauben, dass jedes Fitnessstudio Zugang zu hochwertigen Verwaltungstools verdient, ohne prohibitive Kosten.",
+      "feature1Title": "Kursbuchungssystem",
+      "feature1Desc": "Einfache Online-Buchungen über teilbaren Link. Mitglieder buchen in 30 Sekunden von jedem Gerät.",
+      "feature2Title": "Probestunden-Verwaltung",
+      "feature2Desc": "Konvertieren Sie Interessenten mit einfachen Probestunden-Buchungen und automatischen Nachfassaktionen.",
+      "feature3Title": "Mitgliedschaftskontrolle",
+      "feature3Desc": "Erstellen Sie Pläne, verfolgen Sie Zahlungen, überwachen Sie Bindung und verwalten Sie Abonnements.",
+      "feature4Title": "Trainerverwaltung",
+      "feature4Desc": "Planen Sie Personal, weisen Sie Kurse zu, verfolgen Sie Stunden und verwalten Sie Trainerprofile.",
+      "feature5Title": "Mehrsprachige Unterstützung",
+      "feature5Desc": "Komplette Plattform in 6 Sprachen: Deutsch, Englisch, Portugiesisch, Spanisch, Französisch, Italienisch.",
+      "feature6Title": "Leistungsanalyse",
+      "feature6Desc": "Verfolgen Sie Athletenfortschritt, PRs, Anwesenheitstrends und Studio-Statistiken.",
+      "feature7Title": "Event-Organisation",
+      "feature7Desc": "Organisieren Sie Wettbewerbe, Workshops und spezielle Events mit integrierter Anmeldung.",
+      "feature8Title": "Community-Aufbau",
+      "feature8Desc": "Social Feed, Leaderboards und Engagement-Tools zum Aufbau Ihrer Fitness-Community."
+    },
+    "faq": {
+      "badge": "Häufig gestellte Fragen",
+      "title": "Häufige Fragen zu Athlifyr",
+      "subtitle": "Alles, was Sie über unsere Fitnessstudio-Verwaltungsplattform wissen müssen",
+      "q1": "Was ist die beste Fitnessstudio-Management-Software?",
+      "a1": "Athlifyr ist eine erstklassige Fitnessstudio-Management-Software, die für CrossFit-Boxen und Fitnessstudios entwickelt wurde. Sie bietet umfassende Funktionen einschließlich Kursplanung, Mitgliederverwaltung, Trainer-Terminplanung, WOD-Veröffentlichung und Athleten-Fortschrittsverfolgung — alles völlig kostenlos. Im Gegensatz zu anderen Plattformen, die monatliche Gebühren verlangen, bietet Athlifyr professionelle Tools ohne versteckte Kosten.",
+      "q2": "Kann ich Probestunden online mit Athlifyr verwalten?",
+      "a2": "Ja! Athlifyr macht die Verwaltung von Probestunden einfach. Interessenten können Probestunden über Ihren einzigartigen Buchungslink buchen. Das System verfolgt Probestunden-Teilnehmer, sendet automatische Erinnerungen und hilft Ihnen, sie in Mitglieder umzuwandeln. Sie können spezifische Probestunden-Zeiten festlegen und die Kapazität pro Session verwalten.",
+      "q3": "Ist Athlifyr für CrossFit-Boxen geeignet?",
+      "a3": "Absolut! Athlifyr wurde mit CrossFit-Boxen im Sinn entwickelt. Die Funktionen umfassen WOD-Veröffentlichung mit unserer Datenbank von über 500 Übungen, Workout-Timer (AMRAP, EMOM, Tabata, For Time), Athleten-PR-Verfolgung, Community-Leaderboards und für verschiedene Trainingsarten optimierte Kurspläne. Viele CrossFit-Affiliates nutzen Athlifyr für ihren täglichen Betrieb.",
+      "q4": "Unterstützt Athlifyr mehrsprachige Studios?",
+      "a4": "Ja, Athlifyr unterstützt vollständig 6 Sprachen: Deutsch, Englisch, Portugiesisch (Europäisch), Spanisch, Französisch und Italienisch. Dies macht es perfekt für internationale Fitnessstudios oder Studios mit vielfältiger Mitgliederbasis. Die gesamte Plattform — einschließlich der Buchungsseiten für Mitglieder — passt sich der gewählten Sprache an.",
+      "q5": "Kann ich Mitgliedschaften und Buchungen auf einer Plattform verwalten?",
+      "a5": "Athlifyr ist eine All-in-One-Lösung. Sie können Mitgliedschaftspläne erstellen, Zahlungen verfolgen, Kursbuchungen verwalten, Trainer planen, Workouts veröffentlichen und Ihre Community einbinden — alles von einem einzigen Dashboard aus. Keine Notwendigkeit für mehrere Tools oder komplizierte Integrationen.",
+      "q6": "Ist Athlifyr kostenlos für Fitnessstudios?",
+      "a6": "Ja! Die Kernplattform von Athlifyr ist 100% kostenlos. Dies umfasst unbegrenzte Mitglieder, unbegrenzte Kurssitzungen, unbegrenzte Buchungen, WOD-Veröffentlichung, Athletenverfolgung und Community-Funktionen. Wir glauben, dass jedes Fitnessstudio Zugang zu hochwertigen Verwaltungstools verdient, ohne prohibitive monatliche Gebühren.",
+      "q7": "Wie buchen Mitglieder Kurse mit Athlifyr?",
+      "a7": "Mitglieder buchen Kurse über den einzigartigen Link Ihres Studios (athlifyr.com/v/ihr-studio/book). Kein App-Download erforderlich — es funktioniert auf jedem Smartphone oder Computer-Browser. Mitglieder sehen verfügbare Sessions, prüfen freie Plätze und bestätigen ihre Buchung in etwa 30 Sekunden.",
+      "q8": "Kann ich Athletenleistung und PRs verfolgen?",
+      "a8": "Ja! Athlifyr umfasst detaillierte Athleten-Fortschrittsverfolgung. Mitglieder können ihre Workout-Scores und persönlichen Rekorde eintragen. Sie sehen Fortschrittsdiagramme für jede Bewegung, PR-Historien und können mit Studio-Durchschnitten vergleichen. Diese Daten helfen Ihnen, personalisiertes Coaching zu bieten und halten Mitglieder mit sichtbarem Fortschritt motiviert."
     },
     "cta": {
       "title": "Bereit anzufangen?",

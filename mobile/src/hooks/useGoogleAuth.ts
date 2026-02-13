@@ -1,96 +1,47 @@
+import * as Google from "expo-auth-session/providers/google";
+import * as WebBrowser from "expo-web-browser";
 import { useEffect } from "react";
 import * as SecureStore from "expo-secure-store";
-import Constants from "expo-constants";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
+
+// Required for Expo Go auth session redirect
+WebBrowser.maybeCompleteAuthSession();
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
 
-// Check if running in Expo Go (native Google Sign-In won't work there)
-const isExpoGo = Constants.appOwnership === "expo";
-
-// Lazy-load the Google Sign-In module to avoid crashing in Expo Go
-// The native module registers at import time and throws in Expo Go
-let googleSignInModule:
-  | typeof import("@react-native-google-signin/google-signin")
-  | null = null;
-let configured = false;
-
-async function getGoogleSignIn() {
-  if (!googleSignInModule) {
-    googleSignInModule =
-      await import("@react-native-google-signin/google-signin");
-  }
-  if (!configured) {
-    googleSignInModule.GoogleSignin.configure({
-      webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-    });
-    configured = true;
-  }
-  return googleSignInModule;
-}
-
 export function useGoogleAuth() {
   const setUser = useAuthStore((s) => s.setUser);
-  const isReady = !isExpoGo;
 
-  useEffect(() => {
-    if (isExpoGo) {
-      console.log(
-        "Google Sign-In nativo não disponível no Expo Go. Usa um build standalone."
-      );
-    }
-  }, []);
+  // Use makeRedirectUri to automatically generate the correct redirect URI
+  // This works with both Expo Go and standalone builds
+  const redirectUri = "athlifyr://";
 
-  const signIn = async () => {
-    if (isExpoGo) {
-      throw new Error("Google Sign-In requires a standalone build");
-    }
+  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 
+  // Debug
+  console.log("Google Auth Config:", {
+    redirectUri,
+    webClientId,
+    hasAndroidId: !!process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    hasIosId: !!process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  });
+
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    // For Expo Go on Android, use webClientId for all platforms
+    androidClientId: webClientId,
+    iosClientId: webClientId,
+    webClientId,
+    redirectUri,
+  });
+
+  const handleGoogleToken = async (accessToken: string) => {
     try {
-      const gsi = await getGoogleSignIn();
-      await gsi.GoogleSignin.hasPlayServices();
-      const response = await gsi.GoogleSignin.signIn();
-
-      if (gsi.isSuccessResponse(response)) {
-        const { idToken } = response.data;
-
-        console.log(
-          "Google Sign-In Success! idToken:",
-          idToken?.substring(0, 20) + "..."
-        );
-
-        if (idToken) {
-          await handleGoogleToken(idToken);
-        }
-      }
-    } catch (error: unknown) {
-      const gsi = await getGoogleSignIn();
-      if (gsi.isErrorWithCode(error)) {
-        switch (error.code) {
-          case gsi.statusCodes.IN_PROGRESS:
-            console.log("Google Sign-In already in progress");
-            break;
-          case gsi.statusCodes.PLAY_SERVICES_NOT_AVAILABLE:
-            console.error("Play Services not available");
-            throw new Error("Google Play Services not available");
-          default:
-            console.error("Google Sign-In error:", error.code, error.message);
-            throw error;
-        }
-      } else {
-        console.error("Google Sign-In unknown error:", error);
-        throw error;
-      }
-    }
-  };
-
-  const handleGoogleToken = async (idToken: string) => {
-    try {
-      // Send the Google ID token to your backend
+      // Send the Google access token to your backend
+      // The backend will verify it with Google and create/find the user
       const res = await api.post("/auth/google-mobile", {
-        idToken,
+        accessToken,
       });
 
       const { token, refreshToken, user } = res.data;
@@ -109,13 +60,34 @@ export function useGoogleAuth() {
         isLoading: false,
       });
     } catch (error) {
-      console.error("Google auth backend error:", error);
+      console.error("Google auth error:", error);
       throw error;
     }
   };
 
+  useEffect(() => {
+    console.log("Google Auth Response:", response);
+
+    if (response?.type === "success") {
+      const { authentication } = response;
+      console.log(
+        "Google Auth Success! Access Token:",
+        authentication?.accessToken?.substring(0, 20) + "..."
+      );
+
+      if (authentication?.accessToken) {
+        handleGoogleToken(authentication.accessToken);
+      }
+    } else if (response?.type === "error") {
+      console.error("Google Auth Error:", response.error);
+    } else if (response?.type === "cancel") {
+      console.log("Google Auth Cancelled");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [response]);
+
   return {
-    signIn,
-    isReady,
+    promptAsync,
+    isReady: !!request,
   };
 }

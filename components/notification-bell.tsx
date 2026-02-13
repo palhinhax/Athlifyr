@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -19,9 +18,6 @@ import {
   XCircle,
   UserPlus,
   Building2,
-  CalendarDays,
-  MessageCircle,
-  Check,
 } from "lucide-react";
 import {
   useNotifications,
@@ -31,11 +27,10 @@ import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { cn } from "@/lib/utils";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
 import { pt, enUS, es, fr, de, it } from "date-fns/locale";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/i18n/routing";
-import { NotificationType } from "@prisma/client";
 
 const localeMap: Record<string, typeof enUS> = {
   pt,
@@ -48,7 +43,6 @@ const localeMap: Record<string, typeof enUS> = {
 
 export function NotificationBell() {
   const { data: session } = useSession();
-  const router = useRouter();
   const locale = useLocale();
   const t = useTranslations("venues.trialBooking");
   const tNotifications = useTranslations("notifications");
@@ -56,15 +50,14 @@ export function NotificationBell() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [processingId, setProcessingId] = useState<string | null>(null);
-  const { notifications, unreadCount, markAsRead, markAllAsRead } =
-    useNotifications({
-      enabled: !!session,
-    });
+  const { notifications, pendingCount } = useNotifications({
+    enabled: !!session,
+  });
   const dateLocale = localeMap[locale] || enUS;
 
   if (!session) return null;
 
-  const getInitials = (name: string | null | undefined) => {
+  const getInitials = (name: string | null) => {
     if (!name) return "?";
     return name
       .split(" ")
@@ -78,31 +71,14 @@ export function NotificationBell() {
     queryClient.invalidateQueries({ queryKey: ["notifications"] });
   };
 
-  // Get bookingId from notification data for trial actions
-  const getBookingId = (notification: AppNotification): string | null => {
-    return notification.data?.bookingId || null;
-  };
-
-  // Get senderId from notification data for friend actions
-  const getSenderId = (notification: AppNotification): string | null => {
-    return notification.data?.senderId || null;
-  };
-
-  const handleTrialAccept = async (
-    notification: AppNotification,
-    e: React.MouseEvent
-  ) => {
+  const handleTrialAccept = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const bookingId = getBookingId(notification);
-    if (!bookingId) return;
-
-    setProcessingId(notification.id);
+    setProcessingId(id);
     try {
-      const res = await fetch(`/api/trial-bookings/${bookingId}/accept`, {
+      const res = await fetch(`/api/trial-bookings/${id}/accept`, {
         method: "POST",
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      markAsRead(notification.id);
       toast({ title: t("accepted"), description: t("acceptSuccess") });
       invalidateNotifications();
     } catch (error) {
@@ -113,25 +89,19 @@ export function NotificationBell() {
         variant: "destructive",
       });
     } finally {
+      setProcessingId(id);
       setProcessingId(null);
     }
   };
 
-  const handleTrialReject = async (
-    notification: AppNotification,
-    e: React.MouseEvent
-  ) => {
+  const handleTrialReject = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    const bookingId = getBookingId(notification);
-    if (!bookingId) return;
-
-    setProcessingId(notification.id);
+    setProcessingId(id);
     try {
-      const res = await fetch(`/api/trial-bookings/${bookingId}/reject`, {
+      const res = await fetch(`/api/trial-bookings/${id}/reject`, {
         method: "POST",
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      markAsRead(notification.id);
       toast({ title: t("rejected"), description: t("rejectSuccess") });
       invalidateNotifications();
     } catch (error) {
@@ -147,23 +117,19 @@ export function NotificationBell() {
   };
 
   const handleFriendAction = async (
-    notification: AppNotification,
+    id: string,
     action: "accept" | "reject",
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    const senderId = getSenderId(notification);
-    if (!senderId) return;
-
-    setProcessingId(notification.id);
+    setProcessingId(id);
     try {
-      const res = await fetch(`/api/friends/${senderId}`, {
+      const res = await fetch(`/api/friends/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      markAsRead(notification.id);
       toast({
         title:
           action === "accept"
@@ -184,26 +150,19 @@ export function NotificationBell() {
   };
 
   const handleInviteAction = async (
-    notification: AppNotification,
+    id: string,
     accept: boolean,
     e: React.MouseEvent
   ) => {
     e.stopPropagation();
-    // For venue invites, we need the invite ID which should be stored differently
-    // The notification.id is the notification ID, not the invite ID
-    // We need to store the invite ID in the notification data
-    const inviteId = notification.data?.bookingId; // Re-using bookingId for invite ID
-    if (!inviteId) return;
-
-    setProcessingId(notification.id);
+    setProcessingId(id);
     try {
-      const res = await fetch(`/api/venues/invites/${inviteId}/respond`, {
+      const res = await fetch(`/api/venues/invites/${id}/respond`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ accept }),
       });
       if (!res.ok) throw new Error((await res.json()).error);
-      markAsRead(notification.id);
       toast({
         title: accept
           ? tNotifications("inviteAccepted")
@@ -222,137 +181,68 @@ export function NotificationBell() {
     }
   };
 
-  const handleNotificationClick = (notification: AppNotification) => {
-    console.log("[NotificationBell] Clicked notification:", {
-      id: notification.id,
-      type: notification.type,
-      data: notification.data,
-    });
-
-    if (!notification.read) {
-      markAsRead(notification.id);
-    }
-
-    // Navigate based on notification type and data
-    const data = notification.data;
-
-    // Priority: url > deepLink > route > type-specific navigation
-    if (data?.url && typeof data.url === "string") {
-      console.log("[NotificationBell] Navigating to url:", data.url);
-      router.push(data.url);
-      return;
-    }
-    if (data?.deepLink && typeof data.deepLink === "string") {
-      console.log("[NotificationBell] Navigating to deepLink:", data.deepLink);
-      router.push(data.deepLink);
-      return;
-    }
-    if (data?.route && typeof data.route === "string") {
-      console.log("[NotificationBell] Navigating to route:", data.route);
-      router.push(data.route);
-      return;
-    }
-
-    console.log(
-      "[NotificationBell] No direct url/deepLink/route, using type-specific navigation"
-    );
-
-    // Type-specific navigation fallbacks
-    switch (notification.type) {
-      case NotificationType.TRIAL_REQUEST:
-      case NotificationType.TRIAL_ACCEPTED:
-      case NotificationType.TRIAL_REJECTED:
-        if (data?.venueSlug && typeof data.venueSlug === "string") {
-          router.push(`/venues/${data.venueSlug}`);
-        }
-        break;
-      case NotificationType.FRIEND_REQUEST:
-      case NotificationType.FRIEND_ACCEPTED:
-        if (data?.senderId && typeof data.senderId === "string") {
-          router.push(`/user/${data.senderId}`);
-        }
-        break;
-      case NotificationType.VENUE_INVITE:
-      case NotificationType.VENUE_INVITE_ACCEPTED:
-        if (data?.venueSlug && typeof data.venueSlug === "string") {
-          router.push(`/venues/${data.venueSlug}`);
-        }
-        break;
-      case NotificationType.EVENT_DATE_CHANGE:
-      case NotificationType.EVENT_CANCELLED:
-        if (data?.eventSlug && typeof data.eventSlug === "string") {
-          router.push(`/events/${data.eventSlug}`);
-        }
-        break;
-      case NotificationType.ADMIN_ANNOUNCEMENT:
-        // Admin announcements should use url/deepLink/route if provided
-        console.log(
-          "[NotificationBell] ADMIN_ANNOUNCEMENT fallback to /notifications"
-        );
-        router.push("/notifications");
-        break;
-    }
-  };
-
   const getNotificationIcon = (notification: AppNotification) => {
     switch (notification.type) {
-      case NotificationType.TRIAL_REQUEST:
+      case "TRIAL_REQUEST":
         return (
           <GraduationCap className="h-3.5 w-3.5 shrink-0 text-green-600" />
         );
-      case NotificationType.TRIAL_ACCEPTED:
-        return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />;
-      case NotificationType.TRIAL_REJECTED:
-        return <XCircle className="h-3.5 w-3.5 shrink-0 text-red-600" />;
-      case NotificationType.FRIEND_REQUEST:
+      case "TRIAL_RESPONSE":
+        return notification.responseStatus === "BOOKED" ? (
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />
+        ) : (
+          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-600" />
+        );
+      case "FRIEND_REQUEST":
         return <UserPlus className="h-3.5 w-3.5 shrink-0 text-blue-600" />;
-      case NotificationType.FRIEND_ACCEPTED:
-        return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />;
-      case NotificationType.VENUE_INVITE:
+      case "VENUE_INVITE":
         return <Building2 className="h-3.5 w-3.5 shrink-0 text-purple-600" />;
-      case NotificationType.VENUE_INVITE_ACCEPTED:
-        return (
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-purple-600" />
-        );
-      case NotificationType.EVENT_DATE_CHANGE:
-      case NotificationType.EVENT_CANCELLED:
-        return (
-          <CalendarDays className="h-3.5 w-3.5 shrink-0 text-orange-600" />
-        );
-      case NotificationType.CHAT_MESSAGE:
-        return (
-          <MessageCircle className="h-3.5 w-3.5 shrink-0 text-indigo-600" />
-        );
-      case NotificationType.ADMIN_ANNOUNCEMENT:
-        return <Bell className="h-3.5 w-3.5 shrink-0 text-primary" />;
-      default:
-        return <Bell className="h-3.5 w-3.5 shrink-0 text-gray-600" />;
     }
   };
 
-  // Get avatar info from notification data
-  const getAvatarInfo = (notification: AppNotification) => {
-    const data = notification.data;
-
-    // For admin announcements, show a system/admin icon
-    if (notification.type === NotificationType.ADMIN_ANNOUNCEMENT) {
-      return {
-        image: "/android-chrome-192x192.png", // Use app logo for admin notifications
-        name: "Athlifyr",
-      };
+  const getNotificationTitle = (notification: AppNotification) => {
+    switch (notification.type) {
+      case "TRIAL_REQUEST":
+        return t("requestFrom", { name: notification.userName || "?" });
+      case "TRIAL_RESPONSE":
+        return notification.responseStatus === "BOOKED"
+          ? tNotifications("trialAcceptedTitle", {
+              venue: notification.venueName || "?",
+            })
+          : tNotifications("trialRejectedTitle", {
+              venue: notification.venueName || "?",
+            });
+      case "FRIEND_REQUEST":
+        return tNotifications("friendRequestFrom", {
+          name: notification.userName || "?",
+        });
+      case "VENUE_INVITE":
+        return tNotifications("venueInviteFrom", {
+          venue: notification.venueName || "?",
+        });
     }
+  };
 
-    return {
-      image: data?.senderImage || data?.venueLogo || null,
-      name: data?.senderName || data?.venueName || null,
-    };
+  const getNotificationSubtitle = (notification: AppNotification) => {
+    switch (notification.type) {
+      case "TRIAL_REQUEST":
+        return `${notification.venueName} — ${notification.sessionTitle}`;
+      case "TRIAL_RESPONSE":
+        return notification.sessionTitle || "";
+      case "FRIEND_REQUEST":
+        return tNotifications("wantsToBeYourFriend");
+      case "VENUE_INVITE":
+        return tNotifications("invitedAsRole", {
+          role: notification.role || "COACH",
+        });
+    }
   };
 
   const renderActions = (notification: AppNotification) => {
     const isProcessing = processingId === notification.id;
 
     switch (notification.type) {
-      case NotificationType.TRIAL_REQUEST:
+      case "TRIAL_REQUEST":
         return (
           <>
             <Button
@@ -362,7 +252,7 @@ export function NotificationBell() {
                 "h-7 gap-1 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive",
                 isProcessing && "pointer-events-none opacity-50"
               )}
-              onClick={(e) => handleTrialReject(notification, e)}
+              onClick={(e) => handleTrialReject(notification.id, e)}
               disabled={isProcessing}
             >
               <XCircle className="h-3.5 w-3.5" />
@@ -371,7 +261,7 @@ export function NotificationBell() {
             <Button
               size="sm"
               className="h-7 gap-1 bg-green-600 text-xs text-white hover:bg-green-700"
-              onClick={(e) => handleTrialAccept(notification, e)}
+              onClick={(e) => handleTrialAccept(notification.id, e)}
               disabled={isProcessing}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -379,7 +269,7 @@ export function NotificationBell() {
             </Button>
           </>
         );
-      case NotificationType.FRIEND_REQUEST:
+      case "FRIEND_REQUEST":
         return (
           <>
             <Button
@@ -389,7 +279,7 @@ export function NotificationBell() {
                 "h-7 gap-1 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive",
                 isProcessing && "pointer-events-none opacity-50"
               )}
-              onClick={(e) => handleFriendAction(notification, "reject", e)}
+              onClick={(e) => handleFriendAction(notification.id, "reject", e)}
               disabled={isProcessing}
             >
               <XCircle className="h-3.5 w-3.5" />
@@ -398,7 +288,7 @@ export function NotificationBell() {
             <Button
               size="sm"
               className="h-7 gap-1 bg-blue-600 text-xs text-white hover:bg-blue-700"
-              onClick={(e) => handleFriendAction(notification, "accept", e)}
+              onClick={(e) => handleFriendAction(notification.id, "accept", e)}
               disabled={isProcessing}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -406,7 +296,7 @@ export function NotificationBell() {
             </Button>
           </>
         );
-      case NotificationType.VENUE_INVITE:
+      case "VENUE_INVITE":
         return (
           <>
             <Button
@@ -416,7 +306,7 @@ export function NotificationBell() {
                 "h-7 gap-1 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive",
                 isProcessing && "pointer-events-none opacity-50"
               )}
-              onClick={(e) => handleInviteAction(notification, false, e)}
+              onClick={(e) => handleInviteAction(notification.id, false, e)}
               disabled={isProcessing}
             >
               <XCircle className="h-3.5 w-3.5" />
@@ -425,7 +315,7 @@ export function NotificationBell() {
             <Button
               size="sm"
               className="h-7 gap-1 bg-purple-600 text-xs text-white hover:bg-purple-700"
-              onClick={(e) => handleInviteAction(notification, true, e)}
+              onClick={(e) => handleInviteAction(notification.id, true, e)}
               disabled={isProcessing}
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
@@ -433,15 +323,8 @@ export function NotificationBell() {
             </Button>
           </>
         );
-      // Informational notifications - no actions
-      case NotificationType.TRIAL_ACCEPTED:
-      case NotificationType.TRIAL_REJECTED:
-      case NotificationType.FRIEND_ACCEPTED:
-      case NotificationType.VENUE_INVITE_ACCEPTED:
-      case NotificationType.EVENT_DATE_CHANGE:
-      case NotificationType.EVENT_CANCELLED:
-      case NotificationType.CHAT_MESSAGE:
-      default:
+      case "TRIAL_RESPONSE":
+        // No actions for trial responses — informational only
         return null;
     }
   };
@@ -451,39 +334,24 @@ export function NotificationBell() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative">
           <Bell className="h-5 w-5" />
-          {unreadCount > 0 && (
+          {pendingCount > 0 && (
             <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
-              {unreadCount > 9 ? "9+" : unreadCount}
+              {pendingCount > 9 ? "9+" : pendingCount}
             </span>
           )}
           <span className="sr-only">{tNotifications("notifications")}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-96">
-        <div className="space-y-2 px-3 py-3">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="flex items-center gap-2 font-semibold">
-              <Bell className="h-4 w-4" />
-              {tNotifications("notifications")}
-            </h3>
-            <div className="flex items-center gap-2">
-              {unreadCount > 0 && (
-                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                  {unreadCount} {tNotifications("pending")}
-                </span>
-              )}
-            </div>
-          </div>
-          {unreadCount > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-7 w-full justify-center text-xs"
-              onClick={() => markAllAsRead()}
-            >
-              <Check className="mr-1.5 h-3.5 w-3.5" />
-              {tNotifications("markAllRead")}
-            </Button>
+        <div className="flex items-center justify-between px-3 py-2">
+          <h3 className="flex items-center gap-2 font-semibold">
+            <Bell className="h-4 w-4" />
+            {tNotifications("notifications")}
+          </h3>
+          {pendingCount > 0 && (
+            <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+              {pendingCount} {tNotifications("pending")}
+            </span>
           )}
         </div>
         <DropdownMenuSeparator />
@@ -494,59 +362,61 @@ export function NotificationBell() {
               <p className="text-sm">{tNotifications("noNotifications")}</p>
             </div>
           ) : (
-            notifications.map((notification) => {
-              const avatarInfo = getAvatarInfo(notification);
-              return (
-                <DropdownMenuItem
-                  key={`${notification.type}-${notification.id}`}
-                  className={cn(
-                    "flex cursor-default flex-col gap-2 p-3",
-                    !notification.read && "bg-primary/5"
-                  )}
-                  onSelect={(e) => e.preventDefault()}
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <div className="flex w-full items-start gap-3">
-                    <Avatar className="h-9 w-9 shrink-0">
-                      <AvatarImage src={avatarInfo.image || undefined} />
-                      <AvatarFallback className="text-xs">
-                        {getInitials(avatarInfo.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        {getNotificationIcon(notification)}
-                        <p
-                          className={cn(
-                            "text-sm",
-                            !notification.read && "font-medium"
-                          )}
-                        >
-                          {notification.title}
-                        </p>
-                      </div>
-                      <p className="text-xs text-muted-foreground">
-                        {notification.body}
+            notifications.map((notification) => (
+              <DropdownMenuItem
+                key={`${notification.type}-${notification.id}`}
+                className="flex cursor-default flex-col gap-2 p-3"
+                onSelect={(e) => e.preventDefault()}
+              >
+                <div className="flex w-full items-start gap-3">
+                  <Avatar className="h-9 w-9 shrink-0">
+                    <AvatarImage src={notification.userImage || undefined} />
+                    <AvatarFallback className="text-xs">
+                      {getInitials(notification.userName)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1 space-y-1">
+                    <div className="flex items-center gap-2">
+                      {getNotificationIcon(notification)}
+                      <p className="text-sm font-medium">
+                        {getNotificationTitle(notification)}
                       </p>
-                      <span className="block text-xs text-muted-foreground/70">
-                        {formatDistanceToNow(new Date(notification.createdAt), {
-                          addSuffix: true,
-                          locale: dateLocale,
-                        })}
-                      </span>
                     </div>
-                    {!notification.read && (
-                      <div className="h-2 w-2 shrink-0 rounded-full bg-primary" />
-                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {getNotificationSubtitle(notification)}
+                    </p>
+                    {(notification.type === "TRIAL_REQUEST" ||
+                      notification.type === "TRIAL_RESPONSE") &&
+                      notification.sessionStartsAt && (
+                        <p className="text-xs text-muted-foreground">
+                          {t("requestedFor", {
+                            date: format(
+                              new Date(notification.sessionStartsAt),
+                              "d MMM",
+                              { locale: dateLocale }
+                            ),
+                            time: format(
+                              new Date(notification.sessionStartsAt),
+                              "HH:mm"
+                            ),
+                          })}
+                        </p>
+                      )}
+                    <span className="block text-xs text-muted-foreground/70">
+                      {formatDistanceToNow(new Date(notification.createdAt), {
+                        addSuffix: true,
+                        locale: dateLocale,
+                      })}
+                    </span>
                   </div>
-                  {renderActions(notification) && (
-                    <div className="flex w-full justify-end gap-2">
-                      {renderActions(notification)}
-                    </div>
-                  )}
-                </DropdownMenuItem>
-              );
-            })
+                </div>
+                {renderActions(notification) && (
+                  <div className="flex w-full justify-end gap-2">
+                    {renderActions(notification)}
+                  </div>
+                )}
+              </DropdownMenuItem>
+            ))
           )}
         </div>
         <DropdownMenuSeparator />

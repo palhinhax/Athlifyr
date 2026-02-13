@@ -221,6 +221,12 @@ export default async function RootLayout({
                         </p>
                         <div className="flex flex-wrap items-center justify-center gap-4">
                           <Link
+                            href="/presentation/venue"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Gym Management
+                          </Link>
+                          <Link
                             href="/contact"
                             className="transition-colors hover:text-foreground"
                           >

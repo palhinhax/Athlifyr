@@ -975,6 +975,32 @@ async function main() {
   });
   console.log(`   ✅ Inês Pack criada: ${inesPack.email}`);
 
+  // ============================================================================
+  // 11. TEST REVIEW (Utilizador de Teste para Reviews)
+  // ============================================================================
+  console.log("👤 Criando Test Review...");
+  const testReview = await prisma.user.upsert({
+    where: { email: "testreview@athlifyr.com" },
+    update: {
+      name: "Test Review",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.TRAIL, SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+    create: {
+      email: "testreview@athlifyr.com",
+      name: "Test Review",
+      role: UserRole.USER,
+      emailVerified: new Date(),
+      emailNotifications: true,
+      favoriteSports: [SportType.TRAIL, SportType.CROSSFIT],
+      password: hashedPassword,
+    },
+  });
+  console.log(`   ✅ Test Review criado: ${testReview.email}`);
+
   // Rui Drop-in - CLIENT no CrossFit Cascais
   await prisma.venueMember.upsert({
     where: {
@@ -1153,6 +1179,7 @@ async function main() {
   console.log("   8. banned@test.com (Banido)");
   console.log("   9. rui.dropin@test.com (Drop-in - 1 sessão)");
   console.log("   10. ines.pack@test.com (Pack 5 Aulas - 5 sessões)");
+  console.log("   11. testreview@athlifyr.com (Test Review)");
   console.log("\n🏢 VENUES CRIADOS:");
   console.log("   - CrossFit Cascais (crossfit-cascais)");
   console.log("   - HYROX Training Lisboa (hyrox-training-lisboa)");

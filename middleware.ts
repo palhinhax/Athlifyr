@@ -43,6 +43,12 @@ export default function middleware(request: NextRequest) {
   const hostname = request.headers.get("host") || "";
   const userAgent = request.headers.get("user-agent");
 
+  // CRITICAL: Skip middleware for ALL /api/auth/* routes to prevent OAuth breaks
+  // OAuth flow must happen on the SAME host without redirects
+  if (pathname.startsWith("/api/auth")) {
+    return NextResponse.next();
+  }
+
   // Skip middleware for service worker and web manifest
   if (
     pathname === "/sw.js" ||

@@ -30,6 +30,12 @@
     "plugins": [
       "expo-router",
       "expo-build-properties"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "d8beface-ad76-4676-ba16-5779e1c7672e"
+      }
+    },
+    "owner": "joaomduart"
   }
 }

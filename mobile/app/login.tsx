@@ -74,6 +74,8 @@ export default function LoginScreen() {
     setIsGoogleLoading(true);
     try {
       await googleSignIn();
+      // Navigate back after successful Google sign-in (same as email login)
+      router.back();
     } catch {
       Alert.alert(t("common.error"), t("login.googleError"));
     } finally {

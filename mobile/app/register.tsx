@@ -133,6 +133,8 @@ export default function RegisterScreen() {
     setIsGoogleLoading(true);
     try {
       await googleSignIn();
+      // Navigate back after successful Google sign-in
+      router.back();
     } catch {
       Alert.alert(t("common.error"), t("login.googleError"));
     } finally {

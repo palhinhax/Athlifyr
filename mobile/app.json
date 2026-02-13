@@ -27,6 +27,9 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-    "plugins": ["expo-router", "expo-app-integrity"]
+    "plugins": [
+      "expo-router",
+      "expo-build-properties"
+    ]
   }
 }

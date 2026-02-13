@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useLocale } from "next-intl";
+import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,6 +41,7 @@ export function SignUpForm() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+  const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
   const passwordStrength = calculatePasswordStrength(password);
 
@@ -105,15 +107,13 @@ export function SignUpForm() {
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
-
     // Track Google signup start
     analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, {
       method: "google",
     });
 
     try {
-      await signIn("google", { callbackUrl: "/" });
+      await signInWithGoogle("/");
     } catch {
       // Track Google signup failure
       analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
@@ -126,7 +126,6 @@ export function SignUpForm() {
         description: "Erro ao fazer login com Google",
         variant: "destructive",
       });
-      setIsLoading(false);
     }
   };
 
@@ -144,7 +143,7 @@ export function SignUpForm() {
           variant="outline"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isLoading || isGoogleLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path

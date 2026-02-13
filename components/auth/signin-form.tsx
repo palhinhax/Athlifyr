@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Link } from "@/i18n/routing";
+import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,6 +63,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
   const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const router = useRouter();
   const { toast } = useToast();
+  const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
   const handleDemoLogin = async (userKey: keyof typeof DEMO_USERS) => {
     setDemoLoading(userKey);
@@ -140,16 +142,14 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
   };
 
   const handleGoogleSignIn = async () => {
-    setIsLoading(true);
     try {
-      await signIn("google", { callbackUrl: "/" });
+      await signInWithGoogle("/");
     } catch {
       toast({
         title: "Erro",
         description: "Erro ao fazer login com Google",
         variant: "destructive",
       });
-      setIsLoading(false);
     }
   };
 
@@ -221,7 +221,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           variant="outline"
           className="w-full"
           onClick={handleGoogleSignIn}
-          disabled={isLoading}
+          disabled={isLoading || isGoogleLoading}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path

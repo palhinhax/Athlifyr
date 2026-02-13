@@ -52,6 +52,8 @@ await signIn("google", { callbackUrl: "/" });
 
 **Endpoint**: `/api/auth/google-web`
 
+**Configuration**: Set `NEXT_PUBLIC_GOOGLE_AUTH_METHOD="rest-api"` in your `.env`
+
 **Flow**:
 
 1. Call POST `/api/auth/google-web` with `{ action: "getAuthUrl" }`
@@ -59,7 +61,23 @@ await signIn("google", { callbackUrl: "/" });
 3. Google redirects to `/api/auth/google-web/callback`
 4. User is authenticated with JWT tokens in cookies
 
-**Usage**:
+**Usage** (via hook - recommended):
+
+```typescript
+import { useGoogleAuth } from "@/hooks/use-google-auth";
+
+function LoginButton() {
+  const { signInWithGoogle, isLoading } = useGoogleAuth();
+
+  return (
+    <button onClick={() => signInWithGoogle("/")} disabled={isLoading}>
+      Sign in with Google
+    </button>
+  );
+}
+```
+
+**Usage** (direct API call):
 
 ```typescript
 // 1. Get auth URL
@@ -78,6 +96,22 @@ window.location.href = authUrl;
 
 - `auth-token` - Access token (7 days)
 - `refresh-token` - Refresh token (30 days)
+
+---
+
+### Choosing the Right Method
+
+The `useGoogleAuth` hook automatically selects the method based on the `NEXT_PUBLIC_GOOGLE_AUTH_METHOD` environment variable:
+
+```bash
+# Use NextAuth (default)
+NEXT_PUBLIC_GOOGLE_AUTH_METHOD="nextauth"
+
+# Use REST API
+NEXT_PUBLIC_GOOGLE_AUTH_METHOD="rest-api"
+```
+
+**Both login and signup pages use this hook**, so changing the environment variable switches the method globally.
 
 ---
 

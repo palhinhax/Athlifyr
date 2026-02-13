@@ -1,5 +1,4 @@
 import { Platform } from "react-native";
-import * as AppIntegrity from "expo-app-integrity";
 import * as Crypto from "expo-crypto";
 import { API_URL } from "@/src/lib/api";
 
@@ -11,6 +10,26 @@ const GOOGLE_CLOUD_PROJECT_NUMBER =
   process.env.EXPO_PUBLIC_GOOGLE_CLOUD_PROJECT_NUMBER || "";
 
 let isInitialized = false;
+
+/**
+ * Dynamically import expo-app-integrity if available.
+ * This avoids build errors when the package is not installed.
+ */
+let AppIntegrity: {
+  requestIntegrityVerdictAsync: (hash: string) => Promise<string>;
+} | null = null;
+
+async function loadAppIntegrity(): Promise<boolean> {
+  try {
+    AppIntegrity = await import("expo-app-integrity");
+    return true;
+  } catch {
+    console.warn(
+      "[integrity] expo-app-integrity not available — integrity checks disabled"
+    );
+    return false;
+  }
+}
 
 /**
  * Initialize the Play Integrity provider.
@@ -34,11 +53,12 @@ export async function initIntegrity(): Promise<void> {
   }
 
   try {
-    // Warm up the integrity API (prepares the token provider)
-    // This reduces latency on subsequent token requests
     console.log("[integrity] Initializing Play Integrity...");
-    isInitialized = true;
-    console.log("[integrity] Play Integrity ready");
+    const loaded = await loadAppIntegrity();
+    if (loaded) {
+      isInitialized = true;
+      console.log("[integrity] Play Integrity ready");
+    }
   } catch (error) {
     console.error("[integrity] Failed to initialize:", error);
     // Don't throw — app should still work, just without integrity
@@ -95,8 +115,7 @@ export async function getIntegrityToken(
     return null;
   }
 
-  if (!GOOGLE_CLOUD_PROJECT_NUMBER) {
-    console.warn("[integrity] Project number not configured");
+  if (!GOOGLE_CLOUD_PROJECT_NUMBER || !AppIntegrity) {
     return null;
   }
 

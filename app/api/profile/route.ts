@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -11,6 +12,9 @@ const updateProfileSchema = z.object({
 // PATCH /api/profile - Update user profile
 export async function PATCH(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthenticatedUser(request);
 
     if (!user?.id) {

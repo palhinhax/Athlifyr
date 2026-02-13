@@ -2,9 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 export async function POST(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const body = await request.json();
     const { email, password } = body;
 

@@ -1,6 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 // GET - List conversations for authenticated user
 export async function GET(request: Request) {
@@ -65,8 +66,11 @@ export async function GET(request: Request) {
 }
 
 // POST - Create or get existing 1:1 conversation
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthUser(request);
 
     if (!user) {

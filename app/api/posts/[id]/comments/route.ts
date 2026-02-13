@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 // GET /api/posts/[id]/comments - Get comments for a post
 export async function GET(
@@ -42,6 +43,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthenticatedUser(request);
 
     if (!user?.id) {

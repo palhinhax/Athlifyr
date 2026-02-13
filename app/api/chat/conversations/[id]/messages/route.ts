@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { sendChatMessageNotification } from "@/lib/push-notifications";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 // GET - Get message history for a conversation
 export async function GET(
@@ -84,10 +85,13 @@ export async function GET(
 
 // POST - Send a message to a conversation
 export async function POST(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthUser(request);
 
     if (!user) {

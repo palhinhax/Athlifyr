@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 // Schema for creating a post
 const createPostSchema = z.object({
@@ -22,6 +23,9 @@ const createPostSchema = z.object({
 // POST /api/posts - Create a new post
 export async function POST(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthenticatedUser(request);
 
     if (!user?.id) {
@@ -353,6 +357,9 @@ export async function GET(request: NextRequest) {
 // DELETE /api/posts?id=xxx - Delete a post
 export async function DELETE(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthenticatedUser(request);
 
     if (!user?.id) {

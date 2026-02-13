@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
@@ -17,6 +18,9 @@ interface GoogleTokenPayload {
 
 export async function POST(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const body = await request.json();
     const { idToken } = body;
 

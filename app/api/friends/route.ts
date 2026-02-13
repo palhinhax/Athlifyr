@@ -2,6 +2,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import { notifyFriendRequest } from "@/lib/notifications";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 // GET /api/friends - Get user's friends and pending requests
 export async function GET(request: NextRequest) {
@@ -110,6 +111,9 @@ export async function GET(request: NextRequest) {
 // POST /api/friends - Send friend request
 export async function POST(request: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(request);
+    if (integrityError) return integrityError;
+
     const user = await getAuthenticatedUser(request);
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

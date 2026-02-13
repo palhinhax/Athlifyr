@@ -1,6 +1,7 @@
 import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
+import { getIntegrityToken } from "@/src/lib/integrity";
 
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
@@ -34,10 +35,14 @@ export const api = axios.create({
   },
 });
 
-// Request interceptor for adding auth token
+// HTTP methods that require Play Integrity verification
+const PROTECTED_METHODS = new Set(["post", "put", "patch", "delete"]);
+
+// Request interceptor for adding auth token and Play Integrity
 api.interceptors.request.use(
   async (config) => {
     try {
+      // Add auth token
       const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
@@ -49,8 +54,27 @@ api.interceptors.request.use(
           `API Request: ${config.method?.toUpperCase()} ${config.url} - Token present: NO`
         );
       }
+
+      // Add Play Integrity token for protected (write) requests
+      const method = (config.method || "get").toLowerCase();
+      if (PROTECTED_METHODS.has(method)) {
+        try {
+          const fullUrl = `${config.baseURL || ""}${config.url || ""}`;
+          const integrityToken = await getIntegrityToken(method, fullUrl);
+          if (integrityToken) {
+            config.headers["x-app-integrity"] = integrityToken;
+            config.headers["x-client-platform"] = "android";
+          }
+        } catch (integrityError) {
+          // Don't block request if integrity token fails
+          console.warn(
+            "[api] Failed to attach integrity token:",
+            integrityError
+          );
+        }
+      }
     } catch (error) {
-      console.error("Error getting token from SecureStore:", error);
+      console.error("Error in request interceptor:", error);
     }
     return config;
   },

@@ -1,8 +1,9 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
+import { requireIntegrity } from "@/lib/verify-integrity";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
@@ -10,8 +11,11 @@ const registerSchema = z.object({
   password: z.string().min(6, "Password deve ter pelo menos 6 caracteres"),
 });
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
+    const integrityError = await requireIntegrity(req);
+    if (integrityError) return integrityError;
+
     const body = await req.json();
     const { name, email: rawEmail, password } = registerSchema.parse(body);
 

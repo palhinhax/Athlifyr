@@ -187,54 +187,63 @@ export function NotificationBell() {
         return (
           <GraduationCap className="h-3.5 w-3.5 shrink-0 text-green-600" />
         );
-      case "TRIAL_RESPONSE":
-        return notification.responseStatus === "BOOKED" ? (
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />
-        ) : (
-          <XCircle className="h-3.5 w-3.5 shrink-0 text-red-600" />
-        );
+      case "TRIAL_ACCEPTED":
+        return <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-green-600" />;
+      case "TRIAL_REJECTED":
+        return <XCircle className="h-3.5 w-3.5 shrink-0 text-red-600" />;
       case "FRIEND_REQUEST":
+      case "FRIEND_ACCEPTED":
         return <UserPlus className="h-3.5 w-3.5 shrink-0 text-blue-600" />;
       case "VENUE_INVITE":
+      case "VENUE_INVITE_ACCEPTED":
         return <Building2 className="h-3.5 w-3.5 shrink-0 text-purple-600" />;
+      default:
+        return <Bell className="h-3.5 w-3.5 shrink-0" />;
     }
   };
 
   const getNotificationTitle = (notification: AppNotification) => {
     switch (notification.type) {
       case "TRIAL_REQUEST":
-        return t("requestFrom", { name: notification.userName || "?" });
-      case "TRIAL_RESPONSE":
-        return notification.responseStatus === "BOOKED"
-          ? tNotifications("trialAcceptedTitle", {
-              venue: notification.venueName || "?",
-            })
-          : tNotifications("trialRejectedTitle", {
-              venue: notification.venueName || "?",
-            });
+        return t("requestFrom", {
+          name: notification.data?.senderName || "?",
+        });
+      case "TRIAL_ACCEPTED":
+        return tNotifications("trialAcceptedTitle", {
+          venue: notification.data?.venueName || "?",
+        });
+      case "TRIAL_REJECTED":
+        return tNotifications("trialRejectedTitle", {
+          venue: notification.data?.venueName || "?",
+        });
       case "FRIEND_REQUEST":
         return tNotifications("friendRequestFrom", {
-          name: notification.userName || "?",
+          name: notification.data?.senderName || "?",
         });
       case "VENUE_INVITE":
         return tNotifications("venueInviteFrom", {
-          venue: notification.venueName || "?",
+          venue: notification.data?.venueName || "?",
         });
+      default:
+        return notification.title;
     }
   };
 
   const getNotificationSubtitle = (notification: AppNotification) => {
     switch (notification.type) {
       case "TRIAL_REQUEST":
-        return `${notification.venueName} — ${notification.sessionTitle}`;
-      case "TRIAL_RESPONSE":
-        return notification.sessionTitle || "";
+        return `${notification.data?.venueName || ""} — ${notification.data?.sessionTitle || ""}`;
+      case "TRIAL_ACCEPTED":
+      case "TRIAL_REJECTED":
+        return notification.data?.sessionTitle || "";
       case "FRIEND_REQUEST":
         return tNotifications("wantsToBeYourFriend");
       case "VENUE_INVITE":
         return tNotifications("invitedAsRole", {
-          role: notification.role || "COACH",
+          role: notification.data?.role || "COACH",
         });
+      default:
+        return notification.body;
     }
   };
 
@@ -323,7 +332,8 @@ export function NotificationBell() {
             </Button>
           </>
         );
-      case "TRIAL_RESPONSE":
+      case "TRIAL_ACCEPTED":
+      case "TRIAL_REJECTED":
         // No actions for trial responses — informational only
         return null;
     }
@@ -370,9 +380,19 @@ export function NotificationBell() {
               >
                 <div className="flex w-full items-start gap-3">
                   <Avatar className="h-9 w-9 shrink-0">
-                    <AvatarImage src={notification.userImage || undefined} />
+                    <AvatarImage
+                      src={
+                        notification.data?.senderImage ||
+                        notification.data?.venueLogo ||
+                        undefined
+                      }
+                    />
                     <AvatarFallback className="text-xs">
-                      {getInitials(notification.userName)}
+                      {getInitials(
+                        notification.data?.senderName ||
+                          notification.data?.venueName ||
+                          null
+                      )}
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1 space-y-1">
@@ -386,17 +406,18 @@ export function NotificationBell() {
                       {getNotificationSubtitle(notification)}
                     </p>
                     {(notification.type === "TRIAL_REQUEST" ||
-                      notification.type === "TRIAL_RESPONSE") &&
-                      notification.sessionStartsAt && (
+                      notification.type === "TRIAL_ACCEPTED" ||
+                      notification.type === "TRIAL_REJECTED") &&
+                      notification.data?.sessionStartsAt && (
                         <p className="text-xs text-muted-foreground">
                           {t("requestedFor", {
                             date: format(
-                              new Date(notification.sessionStartsAt),
+                              new Date(notification.data.sessionStartsAt),
                               "d MMM",
                               { locale: dateLocale }
                             ),
                             time: format(
-                              new Date(notification.sessionStartsAt),
+                              new Date(notification.data.sessionStartsAt),
                               "HH:mm"
                             ),
                           })}

@@ -1,12 +1,12 @@
 {
   "schedule": {
-    "pageTitle": "Mein Stundenplan",
-    "pageDescription": "Deine zugewiesenen Kurse und Sitzungen in allen Standorten anzeigen",
-    "title": "Mein Stundenplan",
-    "description": "Deine zugewiesenen Kurse und Sitzungen in allen Standorten, in denen du Trainer oder Fachkraft bist.",
+    "pageTitle": "Mein Kalender",
+    "pageDescription": "Deine Kurse, Sitzungen und Events an einem Ort anzeigen",
+    "title": "Mein Kalender",
+    "description": "Deine Kurse, Sitzungen und Events in einem einheitlichen Kalender.",
     "today": "Heute",
-    "noSessionsThisDay": "Keine zugewiesenen Sitzungen an diesem Tag",
-    "todaySessions": "Du hast heute {count, plural, one {# Sitzung} other {# Sitzungen}}",
+    "noSessionsThisDay": "Keine Aktivitäten an diesem Tag",
+    "todaySessions": "Du hast heute {count, plural, one {# Aktivität} other {# Aktivitäten}}",
     "participants": "Teilnehmer",
     "workout": "Training",
     "workouts": "Trainings",
@@ -14,7 +14,15 @@
     "guest": "Gast",
     "full": "Voll",
     "spotsLeft": "{count, plural, one {# Platz frei} other {# Plätze frei}}",
-    "mySchedule": "Mein Stundenplan",
-    "editSession": "Sitzung bearbeiten"
+    "mySchedule": "Mein Kalender",
+    "editSession": "Sitzung bearbeiten",
+    "asCoach": "Trainer",
+    "asParticipant": "Teilnehmer",
+    "upcomingEvents": "Bevorstehende Events",
+    "upcomingSessions": "Bevorstehende Sitzungen",
+    "noUpcomingEvents": "Keine geplanten Events",
+    "noUpcomingSessions": "Keine geplanten Sitzungen",
+    "viewAllEvents": "Alle Events anzeigen",
+    "viewFullCalendar": "Vollständigen Kalender anzeigen"
   }
 }

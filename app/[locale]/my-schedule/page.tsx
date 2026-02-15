@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { getTranslations } from "next-intl/server";
 import { MyScheduleClient } from "@/components/my-schedule-client";
 import type { Metadata } from "next";
@@ -29,20 +28,6 @@ export default async function MySchedulePage({ params }: PageProps) {
 
   if (!session?.user?.id) {
     redirect("/auth/signin");
-  }
-
-  // Only accessible for users who are OWNER, ADMIN, or COACH at a venue
-  const staffMembership = await prisma.venueMember.findFirst({
-    where: {
-      userId: session.user.id,
-      status: "ACTIVE",
-      role: { in: ["OWNER", "ADMIN", "COACH"] },
-    },
-    select: { id: true },
-  });
-
-  if (!staffMembership) {
-    redirect("/profile");
   }
 
   return <MyScheduleClient locale={locale} userId={session.user.id} />;

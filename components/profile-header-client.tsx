@@ -1,7 +1,6 @@
 "use client";
 
 import { ProfileImageUpload } from "@/components/profile-image-upload";
-import { EventCalendar } from "@/components/event-calendar";
 import { useTranslations } from "next-intl";
 
 interface EventParticipation {
@@ -53,12 +52,7 @@ interface ProfileHeaderClientProps {
   sessionBookings?: VenueSessionBooking[];
 }
 
-export function ProfileHeaderClient({
-  user,
-  stats,
-  participations,
-  sessionBookings = [],
-}: ProfileHeaderClientProps) {
+export function ProfileHeaderClient({ user, stats }: ProfileHeaderClientProps) {
   const t = useTranslations("profile");
 
   return (
@@ -66,15 +60,9 @@ export function ProfileHeaderClient({
       <ProfileImageUpload currentImage={user.image} userName={user.name} />
 
       <div className="flex-1 text-center md:text-left">
-        <div className="mb-4 flex flex-col items-center gap-3 md:flex-row md:items-start md:justify-between">
-          <div>
-            <h1 className="text-4xl font-bold">{user.name}</h1>
-            <p className="text-muted-foreground">{user.email}</p>
-          </div>
-          <EventCalendar
-            participations={participations}
-            sessionBookings={sessionBookings}
-          />
+        <div className="mb-4">
+          <h1 className="text-4xl font-bold">{user.name}</h1>
+          <p className="text-muted-foreground">{user.email}</p>
         </div>
 
         {/* Stats */}

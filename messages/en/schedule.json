@@ -1,12 +1,12 @@
 {
   "schedule": {
     "pageTitle": "My Schedule",
-    "pageDescription": "View your assigned classes and sessions across all venues",
+    "pageDescription": "View your classes, sessions and events in one place",
     "title": "My Schedule",
-    "description": "Your assigned classes and sessions across all venues where you are a coach or professional.",
+    "description": "Your classes, sessions and events in one unified calendar.",
     "today": "Today",
-    "noSessionsThisDay": "No sessions assigned to you on this day",
-    "todaySessions": "You have {count, plural, one {# session} other {# sessions}} today",
+    "noSessionsThisDay": "No activities on this day",
+    "todaySessions": "You have {count, plural, one {# activity} other {# activities}} today",
     "participants": "participants",
     "workout": "workout",
     "workouts": "workouts",
@@ -15,6 +15,14 @@
     "full": "Full",
     "spotsLeft": "{count, plural, one {# spot left} other {# spots left}}",
     "mySchedule": "My Schedule",
-    "editSession": "Edit session"
+    "editSession": "Edit session",
+    "asCoach": "Coach",
+    "asParticipant": "Participant",
+    "upcomingEvents": "Upcoming Events",
+    "upcomingSessions": "Upcoming Sessions",
+    "noUpcomingEvents": "No upcoming events",
+    "noUpcomingSessions": "No upcoming sessions",
+    "viewAllEvents": "View all events",
+    "viewFullCalendar": "View full calendar"
   }
 }

@@ -1,12 +1,12 @@
 {
   "schedule": {
-    "pageTitle": "Mi Horario",
-    "pageDescription": "Consulta tus clases y sesiones asignadas en todos los centros",
-    "title": "Mi Horario",
-    "description": "Tus clases y sesiones asignadas en los centros donde eres entrenador o profesional.",
+    "pageTitle": "Mi Calendario",
+    "pageDescription": "Consulta tus clases, sesiones y eventos en un solo lugar",
+    "title": "Mi Calendario",
+    "description": "Tus clases, sesiones y eventos en un calendario unificado.",
     "today": "Hoy",
-    "noSessionsThisDay": "Sin sesiones asignadas en este día",
-    "todaySessions": "Tienes {count, plural, one {# sesión} other {# sesiones}} hoy",
+    "noSessionsThisDay": "Sin actividades en este día",
+    "todaySessions": "Tienes {count, plural, one {# actividad} other {# actividades}} hoy",
     "participants": "participantes",
     "workout": "entrenamiento",
     "workouts": "entrenamientos",
@@ -14,7 +14,15 @@
     "guest": "Invitado",
     "full": "Completo",
     "spotsLeft": "{count, plural, one {# plaza libre} other {# plazas libres}}",
-    "mySchedule": "Mi Horario",
-    "editSession": "Editar sesión"
+    "mySchedule": "Mi Calendario",
+    "editSession": "Editar sesión",
+    "asCoach": "Entrenador",
+    "asParticipant": "Participante",
+    "upcomingEvents": "Próximos Eventos",
+    "upcomingSessions": "Próximas Sesiones",
+    "noUpcomingEvents": "Sin eventos programados",
+    "noUpcomingSessions": "Sin sesiones programadas",
+    "viewAllEvents": "Ver todos los eventos",
+    "viewFullCalendar": "Ver calendario completo"
   }
 }

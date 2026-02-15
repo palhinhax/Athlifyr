@@ -81,7 +81,6 @@ export function AppSidebar() {
           href: "/my-schedule",
           icon: CalendarClockIcon,
           label: t("mySchedule"),
-          staffOnly: true,
         },
         {
           href: "/chat",

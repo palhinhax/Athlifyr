@@ -4,6 +4,8 @@
     "venues": "Luoghi",
     "feed": "Feed",
     "exercises": "Esercizi",
+    "messages": "Messaggi",
+    "myVenue": "Il Mio Centro",
     "profile": "Profilo"
   },
   "sports": {
@@ -33,7 +35,8 @@
       "noResults": "Nessun evento corrisponde ai tuoi filtri. Prova a modificare la ricerca.",
       "resultsCount": "{{count}} eventi trovati",
       "dateRange": "Intervallo di Date"
-    }
+    },
+    "eventCancelled": "Questo evento è stato cancellato"
   },
   "common": {
     "loading": "Caricamento...",
@@ -76,7 +79,26 @@
     "runs": "Corse",
     "lastPace": "Ultimo Passo",
     "distance": "Distanza",
-    "noPerformanceData": "Nessun dato di performance"
+    "noPerformanceData": "Nessun dato di performance",
+    "changePhoto": "Cambia Foto",
+    "removePhoto": "Rimuovi Foto",
+    "calendar": "Calendario",
+    "galleryCount": "Galleria ({{count}})",
+    "noPhotosYet": "Nessuna foto ancora",
+    "shareYourMoments": "Condividi i tuoi migliori momenti di allenamento ed eventi.",
+    "publishPhoto": "Pubblica Foto",
+    "friendsCount": "Amici ({{count}})",
+    "noFriends": "Nessun amico ancora",
+    "noFriendsDescription": "Connettiti con altri atleti della comunità.",
+    "upcomingEvents": "Prossimi",
+    "pastEvents": "Passati",
+    "friends": "Amici",
+    "upcomingEventsCount": "Eventi Prossimi ({{count}})",
+    "noUpcomingEvents": "Nessun evento prossimo",
+    "noUpcomingEventsDescription": "Esplora gli eventi e registrati per partecipare.",
+    "pastEventsCount": "Eventi Passati ({{count}})",
+    "noPastEvents": "Nessun evento passato",
+    "noPastEventsDescription": "La tua cronologia eventi apparirà qui."
   },
   "login": {
     "title": "Accedi",
@@ -186,5 +208,92 @@
     "deleteComment": "Elimina commento",
     "deleteCommentConfirm": "Sei sicuro di voler eliminare questo commento?",
     "playVideo": "Tocca per riprodurre il video"
+  },
+  "venues": {
+    "title": "Luoghi",
+    "description": "Scopri luoghi di allenamento vicino a te",
+    "noVenues": "Nessun luogo trovato",
+    "noVenuesDescription": "Torna più tardi per scoprire centri di allenamento",
+    "loadingMore": "Caricamento di altri luoghi...",
+    "allVenuesLoaded": "Tutti i luoghi caricati",
+    "filters": {
+      "searchPlaceholder": "Cerca luoghi...",
+      "noResults": "Nessun luogo corrisponde alla tua ricerca. Prova a modificare i filtri.",
+      "resultsCount": "{{count}} luoghi trovati"
+    },
+    "myVenues": "I Miei Centri",
+    "noVenuesTitle": "Nessun Centro Ancora",
+    "noVenuesDescription2": "Non hai ancora centri attivi. Esplora la scheda luoghi per scoprire centri di allenamento.",
+    "roles": {
+      "owner": "Proprietario",
+      "admin": "Amministratore",
+      "coach": "Allenatore",
+      "client": "Membro"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "notAuthenticated": "Devi accedere per usare la chat",
+    "signInRequired": "Accedi per inviare e ricevere messaggi.",
+    "loadingConversation": "Caricamento conversazione...",
+    "unknownUser": "Utente Sconosciuto",
+    "connecting": "Connessione...",
+    "noMessages": "Nessun messaggio ancora. Inizia la conversazione!",
+    "typeMessage": "Scrivi un messaggio...",
+    "noConversations": "Nessuna conversazione",
+    "noConversationsDescription": "Inizia una conversazione con qualcuno della comunità.",
+    "newConversationButton": "Nuova Conversazione"
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "tabProfile": "Profilo",
+    "tabPreferences": "Preferenze",
+    "tabNotifications": "Notifiche",
+    "tabAccount": "Account",
+    "accountInfo": "Informazioni Account",
+    "name": "Nome",
+    "email": "Email",
+    "role": "Ruolo",
+    "notDefined": "Non definito",
+    "administrator": "Amministratore",
+    "favoriteSports": "Sport Preferiti",
+    "favoriteSportsDescription": "Seleziona i tuoi sport preferiti per personalizzare la tua esperienza.",
+    "selectSports": "Seleziona Sport",
+    "language": "Lingua",
+    "languageDescription": "Scegli la tua lingua preferita.",
+    "theme": "Tema",
+    "themeDescription": "Scegli l'aspetto dell'app.",
+    "themeLight": "Chiaro",
+    "themeDark": "Scuro",
+    "themeSystem": "Sistema",
+    "notifications": "Notifiche",
+    "pushNotifications": "Notifiche Push",
+    "pushNotificationsDesc": "Ricevi notifiche push sul tuo dispositivo.",
+    "emailNotifications": "Notifiche Email",
+    "emailNotificationsDesc": "Ricevi notifiche via email.",
+    "downloadData": "Scarica i Miei Dati",
+    "downloadDataDescription": "Scarica una copia di tutti i tuoi dati personali.",
+    "download": "Scarica",
+    "downloadDataSuccess": "Dati Scaricati",
+    "downloadDataSuccessDesc": "I tuoi dati sono stati scaricati con successo.",
+    "downloadDataError": "Errore durante il download dei dati",
+    "deleteAccount": "Elimina Account",
+    "deleteAccountDescription": "Elimina permanentemente il tuo account e tutti i dati associati. Questa azione non può essere annullata.",
+    "deleteAccountConfirmTitle": "Elimina Account",
+    "deleteAccountWarning": "Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile e tutti i tuoi dati saranno rimossi permanentemente.",
+    "deleteAccountError": "Errore durante l'eliminazione dell'account"
+  },
+  "schedule": {
+    "title": "Il Mio Calendario",
+    "today": "Oggi",
+    "tomorrow": "Domani",
+    "upcomingEvents": "Eventi Imminenti",
+    "upcomingSessions": "Sessioni Imminenti",
+    "noUpcomingEvents": "Nessun evento programmato",
+    "noUpcomingSessions": "Nessuna sessione programmata",
+    "asCoach": "Allenatore",
+    "asParticipant": "Partecipante",
+    "event": "Evento",
+    "locale": "it-IT"
   }
 }

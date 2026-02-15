@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
 import { Link } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";

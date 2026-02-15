@@ -4,6 +4,8 @@
     "venues": "Lieux",
     "feed": "Flux",
     "exercises": "Exercices",
+    "messages": "Messages",
+    "myVenue": "Mon Centre",
     "profile": "Profil"
   },
   "sports": {
@@ -33,7 +35,8 @@
       "noResults": "Aucun événement ne correspond à vos filtres. Essayez d'ajuster votre recherche.",
       "resultsCount": "{{count}} événements trouvés",
       "dateRange": "Plage de Dates"
-    }
+    },
+    "eventCancelled": "Cet événement a été annulé"
   },
   "common": {
     "loading": "Chargement...",
@@ -76,7 +79,26 @@
     "runs": "Courses",
     "lastPace": "Dernière Allure",
     "distance": "Distance",
-    "noPerformanceData": "Aucune donnée de performance"
+    "noPerformanceData": "Aucune donnée de performance",
+    "changePhoto": "Changer de Photo",
+    "removePhoto": "Supprimer la Photo",
+    "calendar": "Calendrier",
+    "galleryCount": "Galerie ({{count}})",
+    "noPhotosYet": "Pas encore de photos",
+    "shareYourMoments": "Partage tes meilleurs moments d'entraînement et d'événements.",
+    "publishPhoto": "Publier une Photo",
+    "friendsCount": "Amis ({{count}})",
+    "noFriends": "Pas encore d'amis",
+    "noFriendsDescription": "Connecte-toi avec d'autres athlètes de la communauté.",
+    "upcomingEvents": "À venir",
+    "pastEvents": "Passés",
+    "friends": "Amis",
+    "upcomingEventsCount": "Événements à Venir ({{count}})",
+    "noUpcomingEvents": "Aucun événement à venir",
+    "noUpcomingEventsDescription": "Explore les événements et inscris-toi pour participer.",
+    "pastEventsCount": "Événements Passés ({{count}})",
+    "noPastEvents": "Aucun événement passé",
+    "noPastEventsDescription": "Ton historique d'événements apparaîtra ici."
   },
   "login": {
     "title": "Se Connecter",
@@ -186,5 +208,92 @@
     "deleteComment": "Supprimer le commentaire",
     "deleteCommentConfirm": "Es-tu sûr de vouloir supprimer ce commentaire ?",
     "playVideo": "Appuie pour lire la vidéo"
+  },
+  "venues": {
+    "title": "Lieux",
+    "description": "Découvrez des lieux d'entraînement près de chez vous",
+    "noVenues": "Aucun lieu trouvé",
+    "noVenuesDescription": "Revenez plus tard pour découvrir des centres d'entraînement",
+    "loadingMore": "Chargement de lieux supplémentaires...",
+    "allVenuesLoaded": "Tous les lieux chargés",
+    "filters": {
+      "searchPlaceholder": "Rechercher des lieux...",
+      "noResults": "Aucun lieu ne correspond à votre recherche. Essayez d'ajuster vos filtres.",
+      "resultsCount": "{{count}} lieux trouvés"
+    },
+    "myVenues": "Mes Centres",
+    "noVenuesTitle": "Pas Encore de Centres",
+    "noVenuesDescription2": "Tu n'as pas encore de centres actifs. Explore l'onglet lieux pour découvrir des centres d'entraînement.",
+    "roles": {
+      "owner": "Propriétaire",
+      "admin": "Administrateur",
+      "coach": "Entraîneur",
+      "client": "Membre"
+    }
+  },
+  "chat": {
+    "title": "Chat",
+    "notAuthenticated": "Tu dois te connecter pour utiliser le chat",
+    "signInRequired": "Connecte-toi pour envoyer et recevoir des messages.",
+    "loadingConversation": "Chargement de la conversation...",
+    "unknownUser": "Utilisateur Inconnu",
+    "connecting": "Connexion...",
+    "noMessages": "Pas encore de messages. Commence la conversation !",
+    "typeMessage": "Écris un message...",
+    "noConversations": "Aucune conversation",
+    "noConversationsDescription": "Commence une conversation avec quelqu'un de la communauté.",
+    "newConversationButton": "Nouvelle Conversation"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "tabProfile": "Profil",
+    "tabPreferences": "Préférences",
+    "tabNotifications": "Notifications",
+    "tabAccount": "Compte",
+    "accountInfo": "Informations du Compte",
+    "name": "Nom",
+    "email": "Email",
+    "role": "Rôle",
+    "notDefined": "Non défini",
+    "administrator": "Administrateur",
+    "favoriteSports": "Sports Favoris",
+    "favoriteSportsDescription": "Sélectionne tes sports favoris pour personnaliser ton expérience.",
+    "selectSports": "Sélectionner les Sports",
+    "language": "Langue",
+    "languageDescription": "Choisis ta langue préférée.",
+    "theme": "Thème",
+    "themeDescription": "Choisis l'apparence de l'application.",
+    "themeLight": "Clair",
+    "themeDark": "Sombre",
+    "themeSystem": "Système",
+    "notifications": "Notifications",
+    "pushNotifications": "Notifications Push",
+    "pushNotificationsDesc": "Reçois des notifications push sur ton appareil.",
+    "emailNotifications": "Notifications Email",
+    "emailNotificationsDesc": "Reçois des notifications par email.",
+    "downloadData": "Télécharger Mes Données",
+    "downloadDataDescription": "Télécharge une copie de toutes tes données personnelles.",
+    "download": "Télécharger",
+    "downloadDataSuccess": "Données Téléchargées",
+    "downloadDataSuccessDesc": "Tes données ont été téléchargées avec succès.",
+    "downloadDataError": "Erreur lors du téléchargement des données",
+    "deleteAccount": "Supprimer le Compte",
+    "deleteAccountDescription": "Supprime définitivement ton compte et toutes les données associées. Cette action ne peut pas être annulée.",
+    "deleteAccountConfirmTitle": "Supprimer le Compte",
+    "deleteAccountWarning": "Es-tu sûr de vouloir supprimer ton compte ? Cette action est irréversible et toutes tes données seront définitivement supprimées.",
+    "deleteAccountError": "Erreur lors de la suppression du compte"
+  },
+  "schedule": {
+    "title": "Mon Calendrier",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain",
+    "upcomingEvents": "Événements à Venir",
+    "upcomingSessions": "Séances à Venir",
+    "noUpcomingEvents": "Aucun événement programmé",
+    "noUpcomingSessions": "Aucune séance programmée",
+    "asCoach": "Entraîneur",
+    "asParticipant": "Participant",
+    "event": "Événement",
+    "locale": "fr-FR"
   }
 }

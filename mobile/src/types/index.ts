@@ -70,19 +70,21 @@ export interface Venue {
   id: string;
   slug: string;
   name: string;
-  description: string;
-  address: string;
-  city: string;
+  type: string;
+  services: string[];
+  description: string | null;
+  city: string | null;
   country: string;
-  latitude: number;
-  longitude: number;
-  image?: string;
-  amenities?: string[];
-  sport: string;
-  rating?: number;
-  reviewCount: number;
-  createdAt: string;
-  updatedAt: string;
+  latitude: number | null;
+  longitude: number | null;
+  coverImage: string | null;
+  logo: string | null;
+  instagram: string | null;
+  sportTypes?: string[];
+  _count?: {
+    members: number;
+    sessions: number;
+  };
 }
 
 // Post types

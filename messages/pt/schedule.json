@@ -1,12 +1,12 @@
 {
   "schedule": {
-    "pageTitle": "O Meu Horário",
-    "pageDescription": "Consulta as tuas aulas e sessões atribuídas em todos os espaços",
-    "title": "O Meu Horário",
-    "description": "As tuas aulas e sessões atribuídas nos espaços onde és coach ou profissional.",
+    "pageTitle": "O Meu Calendário",
+    "pageDescription": "Consulta as tuas aulas, sessões e eventos num só sítio",
+    "title": "O Meu Calendário",
+    "description": "As tuas aulas, sessões e eventos num calendário unificado.",
     "today": "Hoje",
-    "noSessionsThisDay": "Sem sessões atribuídas neste dia",
-    "todaySessions": "Tens {count, plural, one {# sessão} other {# sessões}} hoje",
+    "noSessionsThisDay": "Sem atividades neste dia",
+    "todaySessions": "Tens {count, plural, one {# atividade} other {# atividades}} hoje",
     "participants": "participantes",
     "workout": "treino",
     "workouts": "treinos",
@@ -14,7 +14,15 @@
     "guest": "Convidado",
     "full": "Lotado",
     "spotsLeft": "{count, plural, one {# vaga} other {# vagas}}",
-    "mySchedule": "O Meu Horário",
-    "editSession": "Editar sessão"
+    "mySchedule": "O Meu Calendário",
+    "editSession": "Editar sessão",
+    "asCoach": "Treinador",
+    "asParticipant": "Participante",
+    "upcomingEvents": "Próximos Eventos",
+    "upcomingSessions": "Próximas Marcações",
+    "noUpcomingEvents": "Sem eventos agendados",
+    "noUpcomingSessions": "Sem marcações agendadas",
+    "viewAllEvents": "Ver todos os eventos",
+    "viewFullCalendar": "Ver calendário completo"
   }
 }

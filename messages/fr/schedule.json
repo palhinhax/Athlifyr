@@ -1,12 +1,12 @@
 {
   "schedule": {
-    "pageTitle": "Mon Emploi du Temps",
-    "pageDescription": "Consultez vos cours et séances assignés dans tous les établissements",
-    "title": "Mon Emploi du Temps",
-    "description": "Vos cours et séances assignés dans les établissements où vous êtes coach ou professionnel.",
+    "pageTitle": "Mon Calendrier",
+    "pageDescription": "Consultez vos cours, séances et événements en un seul endroit",
+    "title": "Mon Calendrier",
+    "description": "Vos cours, séances et événements dans un calendrier unifié.",
     "today": "Aujourd'hui",
-    "noSessionsThisDay": "Aucune séance assignée ce jour",
-    "todaySessions": "Vous avez {count, plural, one {# séance} other {# séances}} aujourd'hui",
+    "noSessionsThisDay": "Aucune activité ce jour",
+    "todaySessions": "Vous avez {count, plural, one {# activité} other {# activités}} aujourd'hui",
     "participants": "participants",
     "workout": "entraînement",
     "workouts": "entraînements",
@@ -14,7 +14,15 @@
     "guest": "Invité",
     "full": "Complet",
     "spotsLeft": "{count, plural, one {# place restante} other {# places restantes}}",
-    "mySchedule": "Mon Emploi du Temps",
-    "editSession": "Modifier la séance"
+    "mySchedule": "Mon Calendrier",
+    "editSession": "Modifier la séance",
+    "asCoach": "Entraîneur",
+    "asParticipant": "Participant",
+    "upcomingEvents": "Événements à Venir",
+    "upcomingSessions": "Séances à Venir",
+    "noUpcomingEvents": "Aucun événement programmé",
+    "noUpcomingSessions": "Aucune séance programmée",
+    "viewAllEvents": "Voir tous les événements",
+    "viewFullCalendar": "Voir le calendrier complet"
   }
 }

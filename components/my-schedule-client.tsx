@@ -22,6 +22,7 @@ import {
   Calendar as CalendarIcon,
   ExternalLink,
   Pencil,
+  MapPin,
 } from "lucide-react";
 import {
   format,
@@ -89,6 +90,24 @@ interface ScheduleSession {
   };
   bookings: ScheduleBooking[];
   workouts: ScheduleWorkout[];
+  userRole?: "COACH" | "CLIENT";
+  bookingId?: string;
+  bookingStatus?: string;
+}
+
+interface ScheduleEvent {
+  id: string;
+  type: "EVENT";
+  title: string;
+  eventSlug: string;
+  startsAt: string;
+  startTime: string | null;
+  city: string;
+  country: string;
+  sportTypes: string[];
+  variantName: string | null;
+  variantDistance: number | null;
+  participationStatus: string;
 }
 
 const localeMap: Record<string, Locale> = {
@@ -115,6 +134,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState(new Date());
   const [sessions, setSessions] = useState<ScheduleSession[]>([]);
+  const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Session details dialog state
@@ -139,7 +159,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
   const monthStart = useMemo(() => startOfMonth(currentDate), [currentDate]);
   const monthEnd = useMemo(() => endOfMonth(currentDate), [currentDate]);
 
-  // Fetch sessions
+  // Fetch sessions and events
   const fetchSessions = useCallback(async () => {
     setLoading(true);
     try {
@@ -154,10 +174,19 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
       }
 
       const data = await response.json();
-      setSessions(data.sessions || []);
+
+      // Combine coach and client sessions
+      const allSessions = [
+        ...(data.sessions || []),
+        ...(data.clientSessions || []),
+      ];
+
+      setSessions(allSessions);
+      setEvents(data.events || []);
     } catch (error) {
       console.error("Error fetching schedule:", error);
       setSessions([]);
+      setEvents([]);
     } finally {
       setLoading(false);
     }
@@ -167,22 +196,51 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
     fetchSessions();
   }, [fetchSessions]);
 
-  // Sessions by day for calendar indicators
-  const sessionsByDay = useMemo(() => {
+  // Sessions and events by day for calendar indicators
+  const itemsByDay = useMemo(() => {
     const map: Record<string, number> = {};
+
+    // Add sessions
     sessions.forEach((session) => {
       const dayKey = format(parseISO(session.startsAt), "yyyy-MM-dd");
       map[dayKey] = (map[dayKey] || 0) + 1;
     });
-    return map;
-  }, [sessions]);
 
-  // Sessions for selected day
-  const selectedDaySessions = useMemo(() => {
-    return sessions.filter((session) =>
+    // Add events
+    events.forEach((event) => {
+      const dayKey = format(parseISO(event.startsAt), "yyyy-MM-dd");
+      map[dayKey] = (map[dayKey] || 0) + 1;
+    });
+
+    return map;
+  }, [sessions, events]);
+
+  // Items for selected day
+  const selectedDayItems = useMemo(() => {
+    const daySessions = sessions.filter((session) =>
       isSameDay(parseISO(session.startsAt), selectedDay)
     );
-  }, [sessions, selectedDay]);
+
+    const dayEvents = events.filter((event) =>
+      isSameDay(parseISO(event.startsAt), selectedDay)
+    );
+
+    // Combine and sort by time
+    const combined = [
+      ...daySessions.map((s) => ({
+        type: "session" as const,
+        item: s,
+        time: parseISO(s.startsAt),
+      })),
+      ...dayEvents.map((e) => ({
+        type: "event" as const,
+        item: e,
+        time: parseISO(e.startsAt),
+      })),
+    ].sort((a, b) => a.time.getTime() - b.time.getTime());
+
+    return combined;
+  }, [sessions, events, selectedDay]);
 
   // Navigation
   const goToPreviousMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -267,11 +325,35 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
 
   const localizedWeekDays = weekDaysLocalized[locale] || weekDaysLocalized.en;
 
-  // Count today's sessions
-  const todaySessionCount = useMemo(() => {
+  // Count today's items
+  const todayItemCount = useMemo(() => {
     const todayKey = format(new Date(), "yyyy-MM-dd");
-    return sessionsByDay[todayKey] || 0;
-  }, [sessionsByDay]);
+    return itemsByDay[todayKey] || 0;
+  }, [itemsByDay]);
+
+  // Upcoming events (max 5, future only)
+  const upcomingEvents = useMemo(() => {
+    const now = new Date();
+    return events
+      .filter((event) => parseISO(event.startsAt) > now)
+      .sort(
+        (a, b) =>
+          parseISO(a.startsAt).getTime() - parseISO(b.startsAt).getTime()
+      )
+      .slice(0, 5);
+  }, [events]);
+
+  // Upcoming sessions (max 5, future only)
+  const upcomingSessions = useMemo(() => {
+    const now = new Date();
+    return sessions
+      .filter((session) => parseISO(session.startsAt) > now)
+      .sort(
+        (a, b) =>
+          parseISO(a.startsAt).getTime() - parseISO(b.startsAt).getTime()
+      )
+      .slice(0, 5);
+  }, [sessions]);
 
   if (loading && sessions.length === 0) {
     return (
@@ -294,15 +376,60 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
         <p className="mt-2 text-muted-foreground">{t("description")}</p>
 
         {/* Today's summary */}
-        {todaySessionCount > 0 && (
+        {todayItemCount > 0 && (
           <div className="mt-4 inline-flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-4 py-2">
             <CalendarIcon className="h-4 w-4 text-primary" />
             <span className="text-sm font-medium">
-              {t("todaySessions", { count: todaySessionCount })}
+              {t("todaySessions", { count: todayItemCount })}
             </span>
           </div>
         )}
       </div>
+
+      {/* Upcoming Events Section */}
+      {upcomingEvents.length > 0 && (
+        <div className="mb-6">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-xl font-semibold">{t("upcomingEvents")}</h2>
+            <Link href="/events">
+              <Button variant="ghost" size="sm">
+                {t("viewAllEvents")}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingEvents.map((event) => (
+              <ScheduleEventCard
+                key={`upcoming-event-${event.id}`}
+                event={event}
+                locale={locale}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Sessions Section */}
+      {upcomingSessions.length > 0 && (
+        <div className="mb-6">
+          <h2 className="mb-4 text-xl font-semibold">
+            {t("upcomingSessions")}
+          </h2>
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {upcomingSessions.map((session) => (
+              <ScheduleSessionCard
+                key={`upcoming-session-${session.id}`}
+                session={session}
+                locale={locale}
+                dateLocale={dateLocale}
+                onClick={() => handleSessionClick(session)}
+                onEdit={() => handleEditSession(session)}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_400px]">
         {/* Sessions for Selected Day */}
@@ -312,7 +439,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
               {format(selectedDay, "PPP", { locale: dateLocale })}
             </h3>
 
-            {selectedDaySessions.length === 0 ? (
+            {selectedDayItems.length === 0 ? (
               <div className="py-12 text-center">
                 <CalendarClock className="mx-auto h-12 w-12 text-muted-foreground/30" />
                 <p className="mt-4 text-muted-foreground">
@@ -321,16 +448,26 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
               </div>
             ) : (
               <div className="space-y-3">
-                {selectedDaySessions.map((session) => (
-                  <ScheduleSessionCard
-                    key={session.id}
-                    session={session}
-                    locale={locale}
-                    dateLocale={dateLocale}
-                    onClick={() => handleSessionClick(session)}
-                    onEdit={() => handleEditSession(session)}
-                  />
-                ))}
+                {selectedDayItems.map(({ type, item }) =>
+                  type === "session" ? (
+                    <ScheduleSessionCard
+                      key={`session-${item.id}`}
+                      session={item as ScheduleSession}
+                      locale={locale}
+                      dateLocale={dateLocale}
+                      onClick={() =>
+                        handleSessionClick(item as ScheduleSession)
+                      }
+                      onEdit={() => handleEditSession(item as ScheduleSession)}
+                    />
+                  ) : (
+                    <ScheduleEventCard
+                      key={`event-${item.id}`}
+                      event={item as ScheduleEvent}
+                      locale={locale}
+                    />
+                  )
+                )}
               </div>
             )}
           </div>
@@ -377,7 +514,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
               <div className="grid grid-cols-7 gap-1">
                 {calendarDays.map((day) => {
                   const dayKey = format(day, "yyyy-MM-dd");
-                  const sessionCount = sessionsByDay[dayKey] || 0;
+                  const itemCount = itemsByDay[dayKey] || 0;
                   const isSelected = isSameDay(day, selectedDay);
                   const isCurrentMonth =
                     day.getMonth() === currentDate.getMonth() &&
@@ -401,8 +538,8 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
                         {format(day, "d")}
                       </span>
 
-                      {/* Session count badge */}
-                      {sessionCount > 0 && (
+                      {/* Item count badge */}
+                      {itemCount > 0 && (
                         <span
                           className={cn(
                             "min-w-[18px] rounded-full px-1 py-0.5 text-center text-[9px] font-semibold leading-none",
@@ -411,7 +548,7 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
                               : "bg-primary/15 text-primary"
                           )}
                         >
-                          {sessionCount}
+                          {itemCount}
                         </span>
                       )}
                     </button>
@@ -474,6 +611,84 @@ export function MyScheduleClient({ locale, userId }: MyScheduleClientProps) {
   );
 }
 
+// --- Event Card Sub-component ---
+
+interface ScheduleEventCardProps {
+  event: ScheduleEvent;
+  locale: string;
+}
+
+function ScheduleEventCard({ event, locale }: ScheduleEventCardProps) {
+  const tEvents = useTranslations("events");
+
+  const eventDate = parseISO(event.startsAt);
+  const dateLocale = localeMap[locale] || enUS;
+
+  return (
+    <Link
+      href={`/events/${event.eventSlug}`}
+      className="block cursor-pointer rounded-lg border bg-gradient-to-r from-accent/5 to-primary/5 p-4 transition-colors hover:from-accent/10 hover:to-primary/10"
+    >
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          {/* Time */}
+          <div className="flex items-center gap-2">
+            <CalendarIcon className="h-5 w-5 text-accent" />
+            <span className="text-lg font-bold text-accent">
+              {format(eventDate, "PPP", { locale: dateLocale })}
+            </span>
+            {event.startTime && (
+              <>
+                <span className="text-sm text-muted-foreground">•</span>
+                <span className="text-sm font-medium text-muted-foreground">
+                  {event.startTime}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Title */}
+          <h4 className="mt-2 text-lg font-semibold">{event.title}</h4>
+
+          {/* Variant */}
+          {event.variantName && (
+            <div className="mt-1 flex items-center gap-2">
+              <Badge variant="secondary" className="text-xs">
+                {event.variantName}
+                {event.variantDistance && ` - ${event.variantDistance} km`}
+              </Badge>
+            </div>
+          )}
+
+          {/* Location */}
+          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
+            <MapPin className="h-4 w-4" />
+            {event.city}, {event.country}
+          </div>
+
+          {/* Sport types */}
+          {event.sportTypes.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-1">
+              {event.sportTypes.map((sport) => (
+                <Badge key={sport} variant="outline" className="text-xs">
+                  {sport}
+                </Badge>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Status badge */}
+        <div className="shrink-0">
+          <Badge variant="default" className="bg-accent text-accent-foreground">
+            {tEvents("registered")}
+          </Badge>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
 // --- Session Card Sub-component ---
 
 interface ScheduleSessionCardProps {
@@ -528,7 +743,19 @@ function ScheduleSessionCard({
               {format(sessionEnd, "HH:mm", { locale: dateLocale })}
             </span>
           </div>
-          <h4 className="mt-1 font-semibold">{session.title}</h4>
+          <div className="mt-1 flex items-center gap-2">
+            <h4 className="font-semibold">{session.title}</h4>
+            {session.userRole && (
+              <Badge
+                variant={session.userRole === "COACH" ? "default" : "secondary"}
+                className="text-[10px]"
+              >
+                {session.userRole === "COACH"
+                  ? t("asCoach")
+                  : t("asParticipant")}
+              </Badge>
+            )}
+          </div>
 
           {/* Venue */}
           <Link
@@ -627,18 +854,20 @@ function ScheduleSessionCard({
 
         {/* Actions and status */}
         <div className="flex shrink-0 flex-col items-end gap-2">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={(e) => {
-              e.stopPropagation();
-              onEdit();
-            }}
-            title={t("editSession")}
-          >
-            <Pencil className="h-4 w-4" />
-          </Button>
+          {session.userRole === "COACH" && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit();
+              }}
+              title={t("editSession")}
+            >
+              <Pencil className="h-4 w-4" />
+            </Button>
+          )}
 
           {isFull ? (
             <Badge variant="destructive" className="text-xs">

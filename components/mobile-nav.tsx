@@ -24,7 +24,6 @@ import {
 import { GlobalSearch } from "./global-search";
 // import { WallClock } from "./wall-clock"; // TODO: Temporarily hidden
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
-import { useIsVenueStaff } from "@/hooks/use-is-venue-staff";
 import { useNotifications } from "@/hooks/use-notifications";
 
 export function MobileNav() {
@@ -33,7 +32,6 @@ export function MobileNav() {
   const locale = useLocale();
   const t = useTranslations("nav");
   const { unreadCount } = useChatNotifications({ enabled: !!session });
-  const { isStaff } = useIsVenueStaff();
   const { pendingCount: notificationsPendingCount } = useNotifications({
     enabled: !!session,
   });
@@ -136,16 +134,14 @@ export function MobileNav() {
                     {t("workouts")}
                   </Link>
 
-                  {isStaff && (
-                    <Link
-                      href="/my-schedule"
-                      onClick={closeMenu}
-                      className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                    >
-                      <CalendarClockIcon className="h-4 w-4" />
-                      {t("mySchedule")}
-                    </Link>
-                  )}
+                  <Link
+                    href="/my-schedule"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <CalendarClockIcon className="h-4 w-4" />
+                    {t("mySchedule")}
+                  </Link>
                 </>
               ) : (
                 <Link

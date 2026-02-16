@@ -8,6 +8,7 @@ import {
   Platform,
 } from "react-native";
 import { Send } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
 
 interface ChatInputProps {
@@ -22,6 +23,7 @@ export function ChatInput({
   placeholder = "Type a message...",
 }: ChatInputProps) {
   const [message, setMessage] = useState("");
+  const insets = useSafeAreaInsets();
 
   const handleSend = () => {
     if (!message.trim() || disabled) return;
@@ -34,7 +36,12 @@ export function ChatInput({
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={100}
     >
-      <View style={styles.container}>
+      <View
+        style={[
+          styles.container,
+          { paddingBottom: Math.max(insets.bottom, 12) },
+        ]}
+      >
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}
@@ -78,7 +85,7 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
     paddingHorizontal: 12,
-    paddingVertical: 12,
+    paddingTop: 12,
   },
   inputContainer: {
     flexDirection: "row",

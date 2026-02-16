@@ -869,7 +869,8 @@
       "cancel": "Cancelar",
       "deleting": "A eliminar...",
       "loadingComments": "A carregar comentários...",
-      "writeComment": "Escreve um comentário..."
+      "writeComment": "Escreve um comentário...",
+      "deleteComment": "Apagar"
     },
     "publishWod": {
       "title": "Publicar Treino do Dia",

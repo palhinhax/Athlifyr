@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import { Tabs } from "expo-router";
+import { Tabs, useRouter } from "expo-router";
 import {
   Calendar,
   User,
@@ -10,7 +10,7 @@ import {
   Dumbbell,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Platform, View, Linking } from "react-native";
+import { StyleSheet, Platform, View, Image } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
 import { NotificationBell } from "@/src/components/NotificationBell";
@@ -20,10 +20,10 @@ import { HeaderLogo } from "@/src/components/HeaderLogo";
 import { VenuePickerModal } from "@/src/components/VenuePickerModal";
 import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
 import { useAuthStore } from "@/src/lib/auth-store";
-import { API_URL } from "@/src/lib/api";
 
 export default function TabLayout() {
   const { t } = useTranslation();
+  const router = useRouter();
   const insets = useSafeAreaInsets();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: activeVenues = [] } = useActiveVenues();
@@ -38,12 +38,14 @@ export default function TabLayout() {
   const tabBarPaddingBottom =
     Platform.OS === "ios" ? 24 : Math.max(8, insets.bottom);
 
-  const navigateToVenue = useCallback((venue: ActiveVenue) => {
-    setShowVenuePicker(false);
-    // Open venue page in the web app
-    const venueUrl = `${API_URL}/venues/${venue.slug}`;
-    Linking.openURL(venueUrl);
-  }, []);
+  const navigateToVenue = useCallback(
+    (venue: ActiveVenue) => {
+      setShowVenuePicker(false);
+      // Navigate to venue page within the app
+      router.push(`/venues/${venue.slug}`);
+    },
+    [router]
+  );
 
   const handleMyVenuePress = useCallback(() => {
     if (activeVenues.length === 1) {
@@ -117,19 +119,36 @@ export default function TabLayout() {
             // Hide tab when not logged in or no venues
             href: showMyVenuesTab ? undefined : null,
             title: t("navigation.myVenue"),
-            tabBarIcon: ({ color, focused: _focused }) => (
-              <View
-                style={[
-                  styles.centerTabIcon,
-                  activeVenues.length > 0 && styles.centerTabIconActive,
-                ]}
-              >
-                <Building2
-                  color={activeVenues.length > 0 ? theme.colors.white : color}
-                  size={28}
-                />
-              </View>
-            ),
+            tabBarIcon: ({ color, focused: _focused }) => {
+              const singleVenue =
+                activeVenues.length === 1 ? activeVenues[0] : null;
+
+              return (
+                <View
+                  style={[
+                    styles.centerTabIcon,
+                    activeVenues.length > 0 && styles.centerTabIconActive,
+                    singleVenue?.imageUrl && styles.centerTabIconWithImage,
+                  ]}
+                >
+                  {singleVenue?.imageUrl ? (
+                    <Image
+                      source={{ uri: singleVenue.imageUrl }}
+                      style={styles.venueLogo}
+                      resizeMode="cover"
+                      accessibilityLabel={singleVenue.name}
+                    />
+                  ) : (
+                    <Building2
+                      color={
+                        activeVenues.length > 0 ? theme.colors.white : color
+                      }
+                      size={28}
+                    />
+                  )}
+                </View>
+              );
+            },
             tabBarLabel: () => null,
           }}
           listeners={{
@@ -205,8 +224,18 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: theme.colors.background,
     ...theme.shadows.lg,
+    overflow: "hidden",
   },
   centerTabIconActive: {
     backgroundColor: theme.colors.primary,
+  },
+  centerTabIconWithImage: {
+    backgroundColor: theme.colors.white,
+    padding: 0,
+  },
+  venueLogo: {
+    width: "100%",
+    height: "100%",
+    borderRadius: 25,
   },
 });

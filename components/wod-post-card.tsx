@@ -358,10 +358,13 @@ export function WodPostCard({
       const response = await fetch(`/api/posts/${post.id}/comments`);
       if (response.ok) {
         const data = await response.json();
-        setComments(data.comments);
+        // API returns comments array directly
+        const commentsList = Array.isArray(data) ? data : [];
+        setComments(commentsList);
       }
     } catch (error) {
       console.error("Error loading comments:", error);
+      setComments([]);
     } finally {
       setIsLoadingComments(false);
     }
@@ -382,15 +385,42 @@ export function WodPostCard({
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setComments([...comments, data.comment]);
-        setCommentsCount((prev) => prev + 1);
-        setNewComment("");
+        const comment = await response.json();
+        // API returns comment object directly, validate structure
+        if (comment && comment.user) {
+          setComments((prev) => {
+            const currentComments = Array.isArray(prev) ? prev : [];
+            return [...currentComments, comment];
+          });
+          setCommentsCount((prev) => prev + 1);
+          setNewComment("");
+        }
       }
     } catch (error) {
       console.error("Error submitting comment:", error);
     } finally {
       setIsSubmittingComment(false);
+    }
+  };
+
+  // Delete comment
+  const handleDeleteComment = async (commentId: string) => {
+    try {
+      const response = await fetch(`/api/posts/${post.id}/comments`, {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ commentId }),
+      });
+
+      if (response.ok) {
+        setComments((prev) => {
+          const currentComments = Array.isArray(prev) ? prev : [];
+          return currentComments.filter((c) => c.id !== commentId);
+        });
+        setCommentsCount((prev) => prev - 1);
+      }
+    } catch (error) {
+      console.error("Error deleting comment:", error);
     }
   };
 
@@ -480,7 +510,7 @@ export function WodPostCard({
 
           {/* Workout blocks */}
           <div className="space-y-3 p-3">
-            {workout.blocks.map((block) => {
+            {(workout.blocks ?? []).map((block) => {
               const config = BLOCK_TYPE_CONFIG[block.type];
               const Icon = config.icon;
 
@@ -502,7 +532,7 @@ export function WodPostCard({
 
                   {/* Exercises */}
                   <div className="space-y-1 font-mono text-xs">
-                    {block.exercises.map((exercise) => (
+                    {(block.exercises ?? []).map((exercise) => (
                       <p key={exercise.id}>{formatExercise(exercise)}</p>
                     ))}
                   </div>
@@ -590,11 +620,32 @@ export function WodPostCard({
                             </AvatarFallback>
                           )}
                         </Avatar>
-                        <div className="flex-1 rounded-lg bg-muted px-3 py-2">
-                          <p className="text-xs font-semibold">
-                            {comment.user.name}
-                          </p>
-                          <p className="text-sm">{comment.content}</p>
+                        <div className="min-w-0 flex-1">
+                          <div className="rounded-lg bg-muted px-3 py-2">
+                            <p className="text-xs font-semibold">
+                              {comment.user.name}
+                            </p>
+                            <p className="text-sm">{comment.content}</p>
+                          </div>
+                          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                            <span>
+                              {formatDistanceToNow(
+                                new Date(comment.createdAt),
+                                {
+                                  addSuffix: true,
+                                  locale: dateLocale,
+                                }
+                              )}
+                            </span>
+                            {(currentUserId === comment.user.id || isAdmin) && (
+                              <button
+                                onClick={() => handleDeleteComment(comment.id)}
+                                className="text-destructive hover:underline"
+                              >
+                                {t("deleteComment")}
+                              </button>
+                            )}
+                          </div>
                         </div>
                       </div>
                     ))}

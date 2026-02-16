@@ -831,7 +831,8 @@
       "cancel": "Annulla",
       "deleting": "Eliminazione...",
       "loadingComments": "Caricamento commenti...",
-      "writeComment": "Scrivi un commento..."
+      "writeComment": "Scrivi un commento...",
+      "deleteComment": "Elimina"
     },
     "publishWod": {
       "title": "Pubblica Allenamento del Giorno",

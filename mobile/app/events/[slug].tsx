@@ -12,6 +12,7 @@ import {
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Calendar,
   ExternalLink,
@@ -34,6 +35,7 @@ export default function EventDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const router = useRouter();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
   const [event, setEvent] = useState<Event | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -131,8 +133,14 @@ export default function EventDetailScreen() {
         }}
       />
 
+      {/* Status Bar Overlay - creates contrast for status bar */}
+      <View style={[styles.statusBarOverlay, { height: insets.top }]} />
+
+      {/* Bottom Navigation Bar Overlay - creates contrast for Android navigation buttons */}
+      <View style={[styles.bottomBarOverlay, { height: insets.bottom }]} />
+
       {/* Fixed Action Buttons */}
-      <View style={styles.topActionsContainer}>
+      <View style={[styles.topActionsContainer, { top: insets.top + 8 }]}>
         <TouchableOpacity
           onPress={handleBackPress}
           style={styles.backButton}
@@ -266,6 +274,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  statusBarOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    zIndex: 10,
+  },
+  bottomBarOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    zIndex: 10,
   },
   safeArea: {
     flex: 1,

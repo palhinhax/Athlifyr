@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback } from "react";
-
 import {
   View,
   Text,
@@ -18,6 +17,8 @@ import type { VenueSession } from "@/src/hooks/useVenueSessions";
 import { SessionCard } from "@/src/components/venue/SessionCard";
 import { SessionDetailSheet } from "@/src/components/venue/SessionDetailSheet";
 import { SessionFormModal } from "@/src/components/venue/SessionFormModal";
+import { Toast } from "@/src/components/ui/Toast";
+import { useToast } from "@/src/hooks/useToast";
 import { api } from "@/src/lib/api";
 import {
   eachDayOfInterval,
@@ -74,6 +75,7 @@ export function VenueSessionsTab({
 }: VenueSessionsTabProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = dateFnsLocaleMap[i18n.language] || enUS;
+  const { toast, showToast, hideToast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -149,7 +151,7 @@ export function VenueSessionsTab({
   const handleBook = useCallback(
     async (session: VenueSession) => {
       if (!userId) {
-        Alert.alert(t("sessions.signInToBook"));
+        showToast(t("sessions.signInToBook"), "warning");
         return;
       }
       setBookingInProgress(session.id);
@@ -159,14 +161,14 @@ export function VenueSessionsTab({
         );
         const bookingId = res.data?.booking?.id ?? res.data?.id ?? "temp";
         optimisticBook(session.id, bookingId);
-        Alert.alert(t("sessions.bookingSuccess"));
+        showToast(t("sessions.bookingSuccess"), "success");
       } catch {
-        Alert.alert(t("sessions.bookingError"));
+        showToast(t("sessions.bookingError"), "error");
       } finally {
         setBookingInProgress(null);
       }
     },
-    [userId, venueId, optimisticBook, t]
+    [userId, venueId, optimisticBook, t, showToast]
   );
 
   const handleCancelBooking = useCallback(
@@ -184,9 +186,9 @@ export function VenueSessionsTab({
                 `/venues/${venueId}/bookings/${session.userBookingId}/cancel`
               );
               optimisticCancelBooking(session.id);
-              Alert.alert(t("sessions.bookingCancelled"));
+              showToast(t("sessions.bookingCancelled"), "success");
             } catch {
-              Alert.alert(t("sessions.cancelError"));
+              showToast(t("sessions.cancelError"), "error");
             } finally {
               setBookingInProgress(null);
             }
@@ -194,7 +196,7 @@ export function VenueSessionsTab({
         },
       ]);
     },
-    [venueId, optimisticCancelBooking, t]
+    [venueId, optimisticCancelBooking, t, showToast]
   );
 
   const handleDelete = useCallback(
@@ -210,9 +212,9 @@ export function VenueSessionsTab({
               try {
                 await api.delete(`/venues/${venueId}/sessions/${session.id}`);
                 optimisticDelete(session.id);
-                Alert.alert(t("sessions.deleteSuccess"));
+                showToast(t("sessions.deleteSuccess"), "success");
               } catch {
-                Alert.alert(t("sessions.deleteError"));
+                showToast(t("sessions.deleteError"), "error");
               }
             },
           },
@@ -225,9 +227,9 @@ export function VenueSessionsTab({
                   `/venues/${venueId}/sessions/${session.id}?deleteAll=true`
                 );
                 refetch();
-                Alert.alert(t("sessions.deleteSuccess"));
+                showToast(t("sessions.deleteSuccess"), "success");
               } catch {
-                Alert.alert(t("sessions.deleteError"));
+                showToast(t("sessions.deleteError"), "error");
               }
             },
           },
@@ -242,16 +244,16 @@ export function VenueSessionsTab({
               try {
                 await api.delete(`/venues/${venueId}/sessions/${session.id}`);
                 optimisticDelete(session.id);
-                Alert.alert(t("sessions.deleteSuccess"));
+                showToast(t("sessions.deleteSuccess"), "success");
               } catch {
-                Alert.alert(t("sessions.deleteError"));
+                showToast(t("sessions.deleteError"), "error");
               }
             },
           },
         ]);
       }
     },
-    [venueId, optimisticDelete, refetch, t]
+    [venueId, optimisticDelete, refetch, t, showToast]
   );
 
   const handleEdit = useCallback((session: VenueSession) => {
@@ -486,6 +488,14 @@ export function VenueSessionsTab({
         session={editingSession}
         defaultDate={selectedDate}
         onSuccess={() => refetch()}
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
       />
     </ScrollView>
   );

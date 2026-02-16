@@ -25,7 +25,6 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
-  Repeat,
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import type { VenueSession } from "@/src/hooks/useVenueSessions";
@@ -196,15 +195,6 @@ export function SessionDetailSheet({
                     : t("sessions.appointment")}
                 </Text>
               </View>
-
-              {session.recurringSessionId && (
-                <View style={styles.recurringBadge}>
-                  <Repeat size={12} color={theme.colors.primary} />
-                  <Text style={styles.recurringBadgeText}>
-                    {t("sessions.recurring", "Recorrente")}
-                  </Text>
-                </View>
-              )}
 
               {session.isBooked && (
                 <View style={styles.bookedBadge}>

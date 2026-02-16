@@ -162,13 +162,15 @@ export function VenueSessionsTab({
         const bookingId = res.data?.booking?.id ?? res.data?.id ?? "temp";
         optimisticBook(session.id, bookingId);
         showToast(t("sessions.bookingSuccess"), "success");
+        // Refetch in background to sync with server
+        refetch();
       } catch {
         showToast(t("sessions.bookingError"), "error");
       } finally {
         setBookingInProgress(null);
       }
     },
-    [userId, venueId, optimisticBook, t, showToast]
+    [userId, venueId, optimisticBook, refetch, t, showToast]
   );
 
   const handleCancelBooking = useCallback(
@@ -187,6 +189,8 @@ export function VenueSessionsTab({
               );
               optimisticCancelBooking(session.id);
               showToast(t("sessions.bookingCancelled"), "success");
+              // Refetch in background to sync with server
+              refetch();
             } catch {
               showToast(t("sessions.cancelError"), "error");
             } finally {
@@ -196,7 +200,7 @@ export function VenueSessionsTab({
         },
       ]);
     },
-    [venueId, optimisticCancelBooking, t, showToast]
+    [venueId, optimisticCancelBooking, refetch, t, showToast]
   );
 
   const handleDelete = useCallback(

@@ -129,8 +129,11 @@ export function useVenueSessions(venueId: string, month: Date) {
 
       return sessions;
     },
-    staleTime: 2 * 60 * 1000,
+    staleTime: 30 * 1000, // Consider data stale after 30 seconds
     gcTime: 10 * 60 * 1000,
+    refetchOnMount: true, // Refetch when component mounts
+    refetchOnWindowFocus: true, // Refetch when app comes back to foreground
+    refetchInterval: 60 * 1000, // Auto-refetch every 60 seconds when viewing sessions
   });
 
   // Optimistic book — update cache instantly

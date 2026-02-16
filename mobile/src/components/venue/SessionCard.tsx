@@ -126,9 +126,6 @@ export function SessionCard({
                 <Text style={styles.bookedText}>{t("sessions.booked")}</Text>
               </View>
             )}
-            {session.recurringSessionId && (
-              <Text style={styles.recurringIcon}>🔁</Text>
-            )}
           </View>
         </View>
 

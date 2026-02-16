@@ -253,11 +253,52 @@ Switch between environments using the dropdown in the top-right.
 
 ## Troubleshooting
 
+### Login Token Not Saving Automatically
+
+If the auto-save script isn't working:
+
+1. **Check Console Output**:
+   - Open Postman Console (bottom-left "Console" button or View → Show Postman Console)
+   - Send the Login request
+   - Look for messages like:
+     - `✅ Access token saved to environment`
+     - `⚠️ No token found in response`
+     - `❌ Request failed with status: 401`
+
+2. **Verify Environment is Selected**:
+   - Check top-right corner dropdown
+   - Make sure "Athlifyr Environment" is selected (not "No Environment")
+
+3. **Check Response Format**:
+   - After login, click on the response body
+   - Verify it contains `token` and `refreshToken` fields
+   - Example expected response:
+     ```json
+     {
+       "token": "eyJhbGc...",
+       "refreshToken": "eyJhbGc...",
+       "user": { ... }
+     }
+     ```
+
+4. **Manual Token Copy** (if auto-save fails):
+   - Send the Login request
+   - Copy the `token` value from the response
+   - Go to Environments → Athlifyr Environment
+   - Paste into `authToken` variable
+   - Click Save
+
+5. **Test Token is Working**:
+   - Go to **Authentication → Get Current User**
+   - Send request
+   - Should return your user data (means token is working)
+
 ### 401 Unauthorized
 
 - Check that `authToken` is set in your environment
-- Verify the token hasn't expired
+- Verify the token hasn't expired (tokens expire after 7 days)
 - Use the `/api/auth/refresh` endpoint to get a new token
+- Try logging in again to get a fresh token
 
 ### 404 Not Found
 

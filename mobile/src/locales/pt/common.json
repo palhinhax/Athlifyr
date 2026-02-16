@@ -4,6 +4,7 @@
     "venues": "Locais",
     "feed": "Feed",
     "exercises": "Exercícios",
+    "workouts": "Treinos",
     "messages": "Mensagens",
     "myVenue": "Meu Espaço",
     "profile": "Perfil"
@@ -172,6 +173,67 @@
     "emptyTitle": "Ainda sem exercícios",
     "emptyDescription": "Começa a acompanhar os teus treinos adicionando o teu primeiro exercício"
   },
+  "workouts": {
+    "title": "Treinos",
+    "subtitleBasic": "Descobre e executa treinos",
+    "authTitle": "Início de sessão necessário",
+    "authDescription": "Inicia sessão para acederes aos teus treinos, rotinas guardadas e planos de treino.",
+    "savedWorkouts": "Guardados",
+    "assignedPlans": "Planos Atribuídos",
+    "publicTab": "Descobrir",
+    "history": "Histórico",
+    "searchPlaceholder": "Pesquisar treinos...",
+    "noSavedWorkouts": "Nenhum treino guardado",
+    "noSavedWorkoutsDescription": "Explora os treinos públicos e guarda-os na tua coleção.",
+    "noAssignedPlans": "Nenhum plano atribuído",
+    "noAssignedPlansDescription": "Pede ao teu treinador para te atribuir um plano de treino.",
+    "noPublicContent": "Nenhum treino público disponível",
+    "noPublicContentDescription": "Volta mais tarde para encontrares novos treinos e planos.",
+    "noSearchResults": "Nenhum treino encontrado",
+    "noSearchResultsDescription": "Tenta um termo de pesquisa diferente ou limpa a pesquisa.",
+    "clearSearch": "Limpar pesquisa",
+    "noHistory": "Sem histórico de treinos",
+    "noHistoryDescription": "Os teus treinos concluídos aparecerão aqui.",
+    "startWorkout": "Iniciar Treino",
+    "createdBy": "Por",
+    "exercise": "exercício",
+    "exercisesLabel": "exercícios",
+    "loginToSave": "Início de sessão necessário",
+    "loginToSaveDescription": "Inicia sessão para guardares treinos na tua coleção.",
+    "assignedToYou": "Atribuído a ti",
+    "assignedByLabel": "Atribuído por",
+    "startDateLabel": "Início a",
+    "weeksCount": "semanas",
+    "blocks": {
+      "WARMUP": "Aquecimento",
+      "STRENGTH": "Força",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Descanso",
+      "COOLDOWN": "Retorno à calma",
+      "SKILL": "Técnica"
+    },
+    "difficultyLevels": {
+      "1": "Iniciante",
+      "2": "Fácil",
+      "3": "Moderado",
+      "4": "Difícil",
+      "5": "Elite"
+    },
+    "feelingLevels": {
+      "1": "Muito mau",
+      "2": "Mau",
+      "3": "Normal",
+      "4": "Bom",
+      "5": "Excelente"
+    },
+    "errors": {
+      "saveFailed": "Erro ao guardar treino"
+    }
+  },
   "notifications": {
     "notifications": "Notificações",
     "pending": "pendentes",
@@ -218,7 +280,9 @@
     "noComments": "Ainda não há comentários. Sê o primeiro a comentar!",
     "deleteComment": "Apagar comentário",
     "deleteCommentConfirm": "Tens a certeza que queres apagar este comentário?",
-    "playVideo": "Toca para reproduzir vídeo"
+    "playVideo": "Toca para reproduzir vídeo",
+    "loginToInteract": "Início de sessão necessário",
+    "loginToInteractDescription": "Inicia sessão para gostar de publicações e deixar comentários."
   },
   "venues": {
     "title": "Locais",

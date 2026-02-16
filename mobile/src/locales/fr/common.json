@@ -4,6 +4,7 @@
     "venues": "Lieux",
     "feed": "Flux",
     "exercises": "Exercices",
+    "workouts": "Entraînements",
     "messages": "Messages",
     "myVenue": "Mon Centre",
     "profile": "Profil"
@@ -172,6 +173,67 @@
     "emptyTitle": "Pas encore d'exercices",
     "emptyDescription": "Commencez à suivre vos entraînements en ajoutant votre premier exercice"
   },
+  "workouts": {
+    "title": "Entraînements",
+    "subtitleBasic": "Découvrez et effectuez des entraînements",
+    "authTitle": "Connexion requise",
+    "authDescription": "Connecte-toi pour accéder à tes entraînements, routines sauvegardées et plans d'entraînement.",
+    "savedWorkouts": "Sauvegardés",
+    "assignedPlans": "Plans Assignés",
+    "publicTab": "Découvrir",
+    "history": "Historique",
+    "searchPlaceholder": "Rechercher des entraînements...",
+    "noSavedWorkouts": "Aucun entraînement sauvegardé",
+    "noSavedWorkoutsDescription": "Explore les entraînements publics et sauvegarde-les dans ta collection.",
+    "noAssignedPlans": "Aucun plan assigné",
+    "noAssignedPlansDescription": "Demande à ton entraîneur de t'assigner un plan d'entraînement.",
+    "noPublicContent": "Aucun entraînement public disponible",
+    "noPublicContentDescription": "Reviens plus tard pour découvrir de nouveaux entraînements et plans.",
+    "noSearchResults": "Aucun entraînement trouvé",
+    "noSearchResultsDescription": "Essaie un autre terme de recherche ou efface la recherche.",
+    "clearSearch": "Effacer la recherche",
+    "noHistory": "Pas d'historique d'entraînements",
+    "noHistoryDescription": "Tes entraînements terminés apparaîtront ici.",
+    "startWorkout": "Démarrer l'Entraînement",
+    "createdBy": "Par",
+    "exercise": "exercice",
+    "exercisesLabel": "exercices",
+    "loginToSave": "Connexion requise",
+    "loginToSaveDescription": "Connecte-toi pour sauvegarder des entraînements dans ta collection.",
+    "assignedToYou": "Assigné à toi",
+    "assignedByLabel": "Assigné par",
+    "startDateLabel": "Début le",
+    "weeksCount": "semaines",
+    "blocks": {
+      "WARMUP": "Échauffement",
+      "STRENGTH": "Force",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Repos",
+      "COOLDOWN": "Retour au calme",
+      "SKILL": "Technique"
+    },
+    "difficultyLevels": {
+      "1": "Débutant",
+      "2": "Facile",
+      "3": "Modéré",
+      "4": "Difficile",
+      "5": "Élite"
+    },
+    "feelingLevels": {
+      "1": "Très mal",
+      "2": "Mal",
+      "3": "Normal",
+      "4": "Bien",
+      "5": "Excellent"
+    },
+    "errors": {
+      "saveFailed": "Erreur lors de la sauvegarde de l'entraînement"
+    }
+  },
   "notifications": {
     "notifications": "Notifications",
     "pending": "en attente",
@@ -218,7 +280,9 @@
     "noComments": "Pas encore de commentaires. Sois le premier à commenter !",
     "deleteComment": "Supprimer le commentaire",
     "deleteCommentConfirm": "Es-tu sûr de vouloir supprimer ce commentaire ?",
-    "playVideo": "Appuie pour lire la vidéo"
+    "playVideo": "Appuie pour lire la vidéo",
+    "loginToInteract": "Connexion requise",
+    "loginToInteractDescription": "Connecte-toi pour aimer des publications et laisser des commentaires."
   },
   "venues": {
     "title": "Lieux",

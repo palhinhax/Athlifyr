@@ -146,7 +146,7 @@ export default function TabLayout() {
         <Tabs.Screen
           name="exercises"
           options={{
-            title: t("navigation.exercises"),
+            title: t("navigation.workouts"),
             tabBarIcon: ({ color, size }) => (
               <Dumbbell color={color} size={size} />
             ),

@@ -4,6 +4,7 @@
     "venues": "Luoghi",
     "feed": "Feed",
     "exercises": "Esercizi",
+    "workouts": "Allenamenti",
     "messages": "Messaggi",
     "myVenue": "Il Mio Centro",
     "profile": "Profilo"
@@ -172,6 +173,67 @@
     "emptyTitle": "Ancora nessun esercizio",
     "emptyDescription": "Inizia a monitorare i tuoi allenamenti aggiungendo il tuo primo esercizio"
   },
+  "workouts": {
+    "title": "Allenamenti",
+    "subtitleBasic": "Scopri ed esegui allenamenti",
+    "authTitle": "Accesso richiesto",
+    "authDescription": "Accedi per visualizzare i tuoi allenamenti, routine salvate e piani di allenamento.",
+    "savedWorkouts": "Salvati",
+    "assignedPlans": "Piani Assegnati",
+    "publicTab": "Scopri",
+    "history": "Cronologia",
+    "searchPlaceholder": "Cerca allenamenti...",
+    "noSavedWorkouts": "Nessun allenamento salvato",
+    "noSavedWorkoutsDescription": "Esplora gli allenamenti pubblici e salvali nella tua collezione.",
+    "noAssignedPlans": "Nessun piano assegnato",
+    "noAssignedPlansDescription": "Chiedi al tuo allenatore di assegnarti un piano di allenamento.",
+    "noPublicContent": "Nessun allenamento pubblico disponibile",
+    "noPublicContentDescription": "Torna più tardi per trovare nuovi allenamenti e piani.",
+    "noSearchResults": "Nessun allenamento trovato",
+    "noSearchResultsDescription": "Prova un termine di ricerca diverso o cancella la ricerca.",
+    "clearSearch": "Cancella ricerca",
+    "noHistory": "Nessuna cronologia allenamenti",
+    "noHistoryDescription": "I tuoi allenamenti completati appariranno qui.",
+    "startWorkout": "Inizia Allenamento",
+    "createdBy": "Di",
+    "exercise": "esercizio",
+    "exercisesLabel": "esercizi",
+    "loginToSave": "Accesso richiesto",
+    "loginToSaveDescription": "Accedi per salvare allenamenti nella tua collezione.",
+    "assignedToYou": "Assegnato a te",
+    "assignedByLabel": "Assegnato da",
+    "startDateLabel": "Inizio il",
+    "weeksCount": "settimane",
+    "blocks": {
+      "WARMUP": "Riscaldamento",
+      "STRENGTH": "Forza",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Riposo",
+      "COOLDOWN": "Defaticamento",
+      "SKILL": "Tecnica"
+    },
+    "difficultyLevels": {
+      "1": "Principiante",
+      "2": "Facile",
+      "3": "Moderato",
+      "4": "Difficile",
+      "5": "Élite"
+    },
+    "feelingLevels": {
+      "1": "Molto male",
+      "2": "Male",
+      "3": "Normale",
+      "4": "Bene",
+      "5": "Eccellente"
+    },
+    "errors": {
+      "saveFailed": "Errore nel salvataggio dell'allenamento"
+    }
+  },
   "notifications": {
     "notifications": "Notifiche",
     "pending": "in sospeso",
@@ -218,7 +280,9 @@
     "noComments": "Nessun commento ancora. Sii il primo a commentare!",
     "deleteComment": "Elimina commento",
     "deleteCommentConfirm": "Sei sicuro di voler eliminare questo commento?",
-    "playVideo": "Tocca per riprodurre il video"
+    "playVideo": "Tocca per riprodurre il video",
+    "loginToInteract": "Accesso richiesto",
+    "loginToInteractDescription": "Accedi per mettere mi piace ai post e lasciare commenti."
   },
   "venues": {
     "title": "Luoghi",

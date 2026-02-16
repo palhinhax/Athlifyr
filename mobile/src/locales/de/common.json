@@ -4,6 +4,7 @@
     "venues": "Orte",
     "feed": "Feed",
     "exercises": "Übungen",
+    "workouts": "Workouts",
     "messages": "Nachrichten",
     "myVenue": "Mein Center",
     "profile": "Profil"
@@ -172,6 +173,67 @@
     "emptyTitle": "Noch keine Übungen",
     "emptyDescription": "Beginne mit der Verfolgung deiner Workouts, indem du deine erste Übung hinzufügst"
   },
+  "workouts": {
+    "title": "Workouts",
+    "subtitleBasic": "Entdecke und führe Workouts durch",
+    "authTitle": "Anmeldung erforderlich",
+    "authDescription": "Melde dich an, um auf deine Workouts, gespeicherte Routinen und Trainingspläne zuzugreifen.",
+    "savedWorkouts": "Gespeichert",
+    "assignedPlans": "Zugewiesene Pläne",
+    "publicTab": "Entdecken",
+    "history": "Verlauf",
+    "searchPlaceholder": "Workouts suchen...",
+    "noSavedWorkouts": "Keine gespeicherten Workouts",
+    "noSavedWorkoutsDescription": "Erkunde öffentliche Workouts und speichere sie in deiner Sammlung.",
+    "noAssignedPlans": "Keine zugewiesenen Pläne",
+    "noAssignedPlansDescription": "Bitte deinen Trainer, dir einen Trainingsplan zuzuweisen.",
+    "noPublicContent": "Keine öffentlichen Workouts verfügbar",
+    "noPublicContentDescription": "Schaue später wieder vorbei für neue Workouts und Trainingspläne.",
+    "noSearchResults": "Keine Workouts gefunden",
+    "noSearchResultsDescription": "Versuche einen anderen Suchbegriff oder lösche die Suche.",
+    "clearSearch": "Suche löschen",
+    "noHistory": "Kein Workout-Verlauf",
+    "noHistoryDescription": "Deine abgeschlossenen Workouts werden hier angezeigt.",
+    "startWorkout": "Workout starten",
+    "createdBy": "Von",
+    "exercise": "Übung",
+    "exercisesLabel": "Übungen",
+    "loginToSave": "Anmeldung erforderlich",
+    "loginToSaveDescription": "Melde dich an, um Workouts in deiner Sammlung zu speichern.",
+    "assignedToYou": "Dir zugewiesen",
+    "assignedByLabel": "Zugewiesen von",
+    "startDateLabel": "Beginn am",
+    "weeksCount": "Wochen",
+    "blocks": {
+      "WARMUP": "Aufwärmen",
+      "STRENGTH": "Kraft",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Pause",
+      "COOLDOWN": "Abkühlung",
+      "SKILL": "Technik"
+    },
+    "difficultyLevels": {
+      "1": "Anfänger",
+      "2": "Leicht",
+      "3": "Mittel",
+      "4": "Schwer",
+      "5": "Elite"
+    },
+    "feelingLevels": {
+      "1": "Sehr schlecht",
+      "2": "Schlecht",
+      "3": "Normal",
+      "4": "Gut",
+      "5": "Ausgezeichnet"
+    },
+    "errors": {
+      "saveFailed": "Fehler beim Speichern des Workouts"
+    }
+  },
   "notifications": {
     "notifications": "Benachrichtigungen",
     "pending": "ausstehend",
@@ -218,7 +280,9 @@
     "noComments": "Noch keine Kommentare. Sei der Erste!",
     "deleteComment": "Kommentar löschen",
     "deleteCommentConfirm": "Bist du sicher, dass du diesen Kommentar löschen möchtest?",
-    "playVideo": "Tippe, um Video abzuspielen"
+    "playVideo": "Tippe, um Video abzuspielen",
+    "loginToInteract": "Anmeldung erforderlich",
+    "loginToInteractDescription": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen."
   },
   "venues": {
     "title": "Orte",

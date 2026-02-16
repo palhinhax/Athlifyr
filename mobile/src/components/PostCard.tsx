@@ -190,7 +190,10 @@ export function PostCard({ post }: PostCardProps) {
 
   const handleLike = () => {
     if (!user) {
-      console.log("PostCard: Cannot like - user not authenticated");
+      Alert.alert(
+        t("feed.loginToInteract"),
+        t("feed.loginToInteractDescription")
+      );
       return;
     }
 

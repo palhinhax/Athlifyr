@@ -9,11 +9,9 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { Activity, MessageSquare } from "lucide-react-native";
-import { useAuthStore } from "@/src/lib/auth-store";
+import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
-import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
 
 // ─── Empty State ───────────────────────────────────────────────
@@ -35,7 +33,6 @@ function EmptyFeed() {
 // ─── Main Feed Screen ──────────────────────────────────────────
 
 export default function FeedScreen() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { posts, isLoading, refetch } = useFeedPosts();
   const [refreshing, setRefreshing] = useState(false);
 
@@ -44,19 +41,6 @@ export default function FeedScreen() {
     await refetch();
     setRefreshing(false);
   }, [refetch]);
-
-  // Guest view
-  if (!isAuthenticated) {
-    return (
-      <View style={styles.safeArea}>
-        <AuthRequiredView
-          icon={Activity}
-          titleKey="common.authTitle"
-          descriptionKey="common.authDescription"
-        />
-      </View>
-    );
-  }
 
   // Loading
   if (isLoading && posts.length === 0) {

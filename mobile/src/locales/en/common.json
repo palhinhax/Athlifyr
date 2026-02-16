@@ -4,6 +4,7 @@
     "venues": "Venues",
     "feed": "Feed",
     "exercises": "Exercises",
+    "workouts": "Workouts",
     "messages": "Messages",
     "myVenue": "My Venue",
     "profile": "Profile"
@@ -172,6 +173,67 @@
     "emptyTitle": "No exercises yet",
     "emptyDescription": "Start tracking your workouts by adding your first exercise"
   },
+  "workouts": {
+    "title": "Workouts",
+    "subtitleBasic": "Discover and perform workouts",
+    "authTitle": "Sign in required",
+    "authDescription": "Sign in to access your workouts, saved routines and training plans.",
+    "savedWorkouts": "Saved",
+    "assignedPlans": "Assigned Plans",
+    "publicTab": "Discover",
+    "history": "History",
+    "searchPlaceholder": "Search workouts...",
+    "noSavedWorkouts": "No saved workouts",
+    "noSavedWorkoutsDescription": "Explore public workouts and save them to your collection.",
+    "noAssignedPlans": "No assigned plans",
+    "noAssignedPlansDescription": "Ask your coach to assign you a training plan.",
+    "noPublicContent": "No public workouts available",
+    "noPublicContentDescription": "Check back later for new workouts and training plans.",
+    "noSearchResults": "No workouts found",
+    "noSearchResultsDescription": "Try a different search term or clear the search.",
+    "clearSearch": "Clear search",
+    "noHistory": "No workout history",
+    "noHistoryDescription": "Your completed workouts will appear here.",
+    "startWorkout": "Start Workout",
+    "createdBy": "By",
+    "exercise": "exercise",
+    "exercisesLabel": "exercises",
+    "loginToSave": "Sign in required",
+    "loginToSaveDescription": "Sign in to save workouts to your collection.",
+    "assignedToYou": "Assigned to you",
+    "assignedByLabel": "Assigned by",
+    "startDateLabel": "Starts on",
+    "weeksCount": "weeks",
+    "blocks": {
+      "WARMUP": "Warm-up",
+      "STRENGTH": "Strength",
+      "AMRAP": "AMRAP",
+      "EMOM": "EMOM",
+      "FOR_TIME": "For Time",
+      "TABATA": "Tabata",
+      "CHIPPER": "Chipper",
+      "REST": "Rest",
+      "COOLDOWN": "Cool-down",
+      "SKILL": "Skill"
+    },
+    "difficultyLevels": {
+      "1": "Beginner",
+      "2": "Easy",
+      "3": "Moderate",
+      "4": "Hard",
+      "5": "Elite"
+    },
+    "feelingLevels": {
+      "1": "Very bad",
+      "2": "Bad",
+      "3": "Normal",
+      "4": "Good",
+      "5": "Excellent"
+    },
+    "errors": {
+      "saveFailed": "Error saving workout"
+    }
+  },
   "notifications": {
     "notifications": "Notifications",
     "pending": "pending",
@@ -218,7 +280,9 @@
     "noComments": "No comments yet. Be the first to comment!",
     "deleteComment": "Delete comment",
     "deleteCommentConfirm": "Are you sure you want to delete this comment?",
-    "playVideo": "Tap to play video"
+    "playVideo": "Tap to play video",
+    "loginToInteract": "Sign in required",
+    "loginToInteractDescription": "Sign in to like posts and leave comments."
   },
   "venues": {
     "title": "Venues",

@@ -66,6 +66,8 @@ The collection is organized into the following folders:
 
 ### 1. Authentication
 
+- **Register**: Create a new user account
+- **Login (Mobile/JWT)**: Get JWT access token for API authentication (auto-saves token)
 - Get current user
 - Forgot/reset password
 - Email verification
@@ -135,14 +137,37 @@ The collection is organized into the following folders:
 
 ### Testing Authentication Flow
 
-1. **First, get an auth token:**
-   - Use NextAuth to login via the web interface
-   - Copy the JWT token from your browser cookies or localStorage
-   - Paste into the `authToken` environment variable
+#### Option 1: Register + Login (Recommended for Testing)
 
-2. **Test authenticated endpoints:**
-   - All requests inherit the Bearer token from the environment
-   - Some requests override this (marked with "No Auth")
+1. **Register a new user:**
+   - Go to **Authentication → Register**
+   - Update the request body with your test user details
+   - Send the request
+   - You'll get a user object (no tokens yet)
+
+2. **Login to get JWT tokens:**
+   - Go to **Authentication → Login (Mobile/JWT)**
+   - Use the same email/password from registration
+   - Send the request
+   - **The token is automatically saved to `authToken` environment variable!**
+   - You'll also get a `refreshToken` for token renewal
+
+3. **Test authenticated endpoints:**
+   - All subsequent requests will use the saved token automatically
+   - Bearer token is inherited from the collection-level authentication
+
+#### Option 2: Web Login (For Existing Users)
+
+1. **Get token from web interface:**
+   - Login via the web application at `http://localhost:3000`
+   - Open browser DevTools → Application → Cookies
+   - Find the NextAuth session cookie or JWT token
+   - Copy the token value
+
+2. **Manually set the token:**
+   - Go to **Environments → Athlifyr Environment**
+   - Paste the token into `authToken` variable
+   - Click **Save**
 
 ### Working with Dynamic IDs
 

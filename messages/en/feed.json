@@ -12,6 +12,7 @@
     "reply": "reply",
     "replies": "replies",
     "loadingMore": "Loading more posts...",
-    "allPostsLoaded": "All posts loaded"
+    "allPostsLoaded": "All posts loaded",
+    "loginToInteract": "Sign in to like posts and leave comments."
   }
 }

@@ -103,6 +103,11 @@ export function AppSidebar() {
           label: t("home"),
         },
         {
+          href: "/feed",
+          icon: NewspaperIcon,
+          label: t("feed"),
+        },
+        {
           href: "/events",
           icon: CalendarIcon,
           label: t("events"),

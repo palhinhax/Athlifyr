@@ -12,6 +12,7 @@
     "reply": "respuesta",
     "replies": "respuestas",
     "loadingMore": "Cargando más publicaciones...",
-    "allPostsLoaded": "Todas las publicaciones cargadas"
+    "allPostsLoaded": "Todas las publicaciones cargadas",
+    "loginToInteract": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios."
   }
 }

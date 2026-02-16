@@ -124,7 +124,11 @@ export function PostCard({
   const canDelete = currentUserId === post.userId || isAdmin;
 
   const handleLike = async () => {
-    if (!currentUserId || isLiking) return;
+    if (!currentUserId) {
+      router.push("/auth/signin");
+      return;
+    }
+    if (isLiking) return;
 
     setIsLiking(true);
     // Optimistic update
@@ -209,7 +213,11 @@ export function PostCard({
 
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentUserId || !newComment.trim() || isSubmittingComment) return;
+    if (!currentUserId) {
+      router.push("/auth/signin");
+      return;
+    }
+    if (!newComment.trim() || isSubmittingComment) return;
 
     setIsSubmittingComment(true);
     try {

@@ -144,14 +144,24 @@ export function MobileNav() {
                   </Link>
                 </>
               ) : (
-                <Link
-                  href="/"
-                  onClick={closeMenu}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                >
-                  <HomeIcon className="h-4 w-4" />
-                  {t("home")}
-                </Link>
+                <>
+                  <Link
+                    href="/"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <HomeIcon className="h-4 w-4" />
+                    {t("home")}
+                  </Link>
+                  <Link
+                    href="/feed"
+                    onClick={closeMenu}
+                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                  >
+                    <NewspaperIcon className="h-4 w-4" />
+                    {t("feed")}
+                  </Link>
+                </>
               )}
 
               <Link

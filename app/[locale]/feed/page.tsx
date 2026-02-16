@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Image from "next/image";
@@ -37,7 +36,7 @@ export const metadata: Metadata = {
   description:
     "See the latest updates from your events. Follow posts, photos, and results from the sports community.",
   robots: {
-    index: false, // Feed is user-specific, no need to index
+    index: true,
     follow: true,
   },
 };
@@ -54,54 +53,50 @@ export default async function FeedPage({
   const dateLocale = dateLocales[locale] || enUS;
   const session = await auth();
 
-  if (!session?.user?.id) {
-    redirect("/auth/signin");
+  const isAuthenticated = !!session?.user?.id;
+
+  // Get fresh user data from database if authenticated
+  let currentUser: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  } | null = null;
+  if (isAuthenticated) {
+    currentUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: {
+        id: true,
+        name: true,
+        image: true,
+      },
+    });
   }
 
-  // Get fresh user data from database (including image)
-  // This ensures we always have the latest profile image even if JWT is stale
-  const currentUser = await prisma.user.findUnique({
-    where: { id: session.user.id },
-    select: {
-      id: true,
-      name: true,
-      image: true,
-    },
-  });
-
-  if (!currentUser) {
-    redirect("/auth/signin");
+  // Get user's participations to show activity from those events (only if authenticated)
+  let eventIds: string[] = [];
+  if (isAuthenticated) {
+    const userParticipations = await prisma.participation.findMany({
+      where: {
+        userId: session.user.id,
+        status: "going",
+      },
+      select: {
+        eventId: true,
+      },
+    });
+    eventIds = userParticipations.map((p) => p.eventId);
   }
 
-  // Get user's participations to show activity from those events
-  const userParticipations = await prisma.participation.findMany({
-    where: {
-      userId: session.user.id,
-      status: "going",
-    },
-    select: {
-      eventId: true,
-    },
-  });
+  // Get all recent posts (public posts + user's participating events if authenticated)
+  const postsWhereClause =
+    isAuthenticated && eventIds.length > 0
+      ? {
+          OR: [{ isPublic: true }, { eventId: { in: eventIds } }],
+        }
+      : { isPublic: true };
 
-  const eventIds = userParticipations.map((p) => p.eventId);
-
-  // Get all recent posts (public posts + user's participating events)
   const recentPosts = await prisma.post.findMany({
-    where: {
-      OR: [
-        {
-          // Public posts only (from any venue/event or general)
-          isPublic: true,
-        },
-        {
-          // Posts from user's participating events (public or private)
-          eventId: {
-            in: eventIds.length > 0 ? eventIds : undefined,
-          },
-        },
-      ],
-    },
+    where: postsWhereClause,
     include: {
       user: {
         select: {
@@ -130,14 +125,12 @@ export default async function FeedPage({
           comments: true,
         },
       },
-      likes: {
-        where: {
-          userId: session.user.id,
-        },
-        select: {
-          id: true,
-        },
-      },
+      likes: isAuthenticated
+        ? {
+            where: { userId: session.user.id },
+            select: { id: true },
+          }
+        : { where: { userId: "none" }, select: { id: true } },
     },
     orderBy: {
       createdAt: "desc",
@@ -145,76 +138,82 @@ export default async function FeedPage({
     take: 30,
   });
 
-  // Get recent comments from user's events
-  const recentComments = await prisma.comment.findMany({
-    where: {
-      eventId: {
-        in: eventIds.length > 0 ? eventIds : ["no-events"], // Avoid empty array
-      },
-      parentId: null, // Only top-level comments
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-      event: {
-        select: {
-          title: true,
-          slug: true,
-        },
-      },
-      replies: {
-        select: {
-          id: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 20,
-  });
+  // Get recent comments from user's events (only if authenticated)
+  const recentComments =
+    isAuthenticated && eventIds.length > 0
+      ? await prisma.comment.findMany({
+          where: {
+            eventId: {
+              in: eventIds,
+            },
+            parentId: null, // Only top-level comments
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+            event: {
+              select: {
+                title: true,
+                slug: true,
+              },
+            },
+            replies: {
+              select: {
+                id: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 20,
+        })
+      : [];
 
-  // Get recent participations from user's events
-  const recentParticipations = await prisma.participation.findMany({
-    where: {
-      eventId: {
-        in: eventIds.length > 0 ? eventIds : ["no-events"],
-      },
-      status: "going",
-      userId: {
-        not: session.user.id, // Exclude user's own participations
-      },
-    },
-    include: {
-      user: {
-        select: {
-          name: true,
-          image: true,
-        },
-      },
-      event: {
-        select: {
-          title: true,
-          slug: true,
-          startDate: true,
-        },
-      },
-      variant: {
-        select: {
-          name: true,
-          distanceKm: true,
-        },
-      },
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-    take: 10,
-  });
+  // Get recent participations from user's events (only if authenticated)
+  const recentParticipations =
+    isAuthenticated && eventIds.length > 0
+      ? await prisma.participation.findMany({
+          where: {
+            eventId: {
+              in: eventIds,
+            },
+            status: "going",
+            userId: {
+              not: session.user.id, // Exclude user's own participations
+            },
+          },
+          include: {
+            user: {
+              select: {
+                name: true,
+                image: true,
+              },
+            },
+            event: {
+              select: {
+                title: true,
+                slug: true,
+                startDate: true,
+              },
+            },
+            variant: {
+              select: {
+                name: true,
+                distanceKm: true,
+              },
+            },
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+          take: 10,
+        })
+      : [];
 
   // Combine and sort activities
   const activities: Array<{
@@ -256,13 +255,15 @@ export default async function FeedPage({
 
       <div className="container mx-auto px-4 py-8">
         <div className="mx-auto max-w-3xl">
-          {/* Create Post */}
-          <div className="mb-6">
-            <CreatePost
-              userImage={currentUser.image}
-              userName={currentUser.name}
-            />
-          </div>
+          {/* Create Post — only for authenticated users */}
+          {isAuthenticated && currentUser && (
+            <div className="mb-6">
+              <CreatePost
+                userImage={currentUser.image}
+                userName={currentUser.name}
+              />
+            </div>
+          )}
 
           {/* Activity Feed */}
           <div className="space-y-4">
@@ -302,8 +303,8 @@ export default async function FeedPage({
                         isLikedByUser: postData.likes.length > 0,
                         commentsCount: postData._count.comments,
                       }}
-                      currentUserId={session.user.id}
-                      isAdmin={session.user.role === "ADMIN"}
+                      currentUserId={session?.user?.id}
+                      isAdmin={session?.user?.role === "ADMIN"}
                     />
                   );
                 }

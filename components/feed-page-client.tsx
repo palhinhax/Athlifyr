@@ -44,9 +44,9 @@ interface PaginationInfo {
 }
 
 interface FeedPageClientProps {
-  userId: string;
-  userName: string | null;
-  userImage: string | null;
+  userId?: string;
+  userName?: string | null;
+  userImage?: string | null;
   initialPosts: PostWithDetails[];
 }
 
@@ -163,12 +163,14 @@ export function FeedPageClient({
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      {/* Create Post */}
-      <CreatePost
-        userName={userName}
-        userImage={userImage}
-        onPostCreated={handlePostCreated}
-      />
+      {/* Create Post — only for authenticated users */}
+      {userId && (
+        <CreatePost
+          userName={userName ?? null}
+          userImage={userImage ?? null}
+          onPostCreated={handlePostCreated}
+        />
+      )}
 
       {/* Posts Feed */}
       <div className="space-y-4">

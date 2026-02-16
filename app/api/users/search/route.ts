@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
@@ -8,8 +8,8 @@ export const dynamic = "force-dynamic";
 // GET /api/users/search - Search for users
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
+    const user = await getAuthUser(request);
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
 
     // Only exclude self if includeSelf is false
     if (!includeSelf) {
-      conditions.push({ id: { not: session.user.id } });
+      conditions.push({ id: { not: user.id } });
     }
 
     // Search users by name or email
@@ -55,22 +55,22 @@ export async function GET(request: Request) {
       where: {
         OR: [
           {
-            senderId: session.user.id,
+            senderId: user.id,
             receiverId: { in: users.map((u) => u.id) },
           },
           {
-            receiverId: session.user.id,
+            receiverId: user.id,
             senderId: { in: users.map((u) => u.id) },
           },
         ],
       },
     });
 
-    const usersWithStatus = users.map((user) => {
+    const usersWithStatus = users.map((foundUser) => {
       const friendship = friendships.find(
         (f) =>
-          (f.senderId === session.user.id && f.receiverId === user.id) ||
-          (f.receiverId === session.user.id && f.senderId === user.id)
+          (f.senderId === user.id && f.receiverId === foundUser.id) ||
+          (f.receiverId === user.id && f.senderId === foundUser.id)
       );
 
       let friendshipStatus: string | null = null;
@@ -79,14 +79,14 @@ export async function GET(request: Request) {
           friendshipStatus = "friends";
         } else if (friendship.status === "PENDING") {
           friendshipStatus =
-            friendship.senderId === session.user.id
+            friendship.senderId === user.id
               ? "request_sent"
               : "request_received";
         }
       }
 
       return {
-        ...user,
+        ...foundUser,
         friendshipStatus,
         friendshipId: friendship?.id,
       };

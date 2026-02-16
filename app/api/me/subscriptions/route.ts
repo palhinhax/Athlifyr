@@ -1,19 +1,19 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET - Get user's subscriptions
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const subscriptions = await prisma.venueSubscription.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
       },
       include: {
         plan: true,

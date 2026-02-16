@@ -15,16 +15,22 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
 import { NotificationBell } from "@/src/components/NotificationBell";
 import { CalendarButton } from "@/src/components/CalendarButton";
+import { SearchButton } from "@/src/components/SearchButton";
 import { HeaderLogo } from "@/src/components/HeaderLogo";
 import { VenuePickerModal } from "@/src/components/VenuePickerModal";
 import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
+import { useAuthStore } from "@/src/lib/auth-store";
 import { API_URL } from "@/src/lib/api";
 
 export default function TabLayout() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: activeVenues = [] } = useActiveVenues();
   const [showVenuePicker, setShowVenuePicker] = useState(false);
+
+  // Only show my-venues tab when logged in AND has venues
+  const showMyVenuesTab = isAuthenticated && activeVenues.length > 0;
 
   // Calculate tab bar height with safe area
   const tabBarHeight = Platform.OS === "ios" ? 88 : 68 + insets.bottom;
@@ -70,7 +76,8 @@ export default function TabLayout() {
           },
           headerTitle: () => <HeaderLogo />,
           headerRight: () => (
-            <View style={{ flexDirection: "row", alignItems: "center" }}>
+            <View style={styles.headerRight}>
+              <SearchButton />
               <CalendarButton />
               <NotificationBell />
             </View>
@@ -107,6 +114,8 @@ export default function TabLayout() {
         <Tabs.Screen
           name="my-venues"
           options={{
+            // Hide tab when not logged in or no venues
+            href: showMyVenuesTab ? undefined : null,
             title: t("navigation.myVenue"),
             tabBarIcon: ({ color, focused: _focused }) => (
               <View
@@ -179,6 +188,12 @@ export default function TabLayout() {
 }
 
 const styles = StyleSheet.create({
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    marginRight: 8,
+  },
   centerTabIcon: {
     width: 56,
     height: 56,

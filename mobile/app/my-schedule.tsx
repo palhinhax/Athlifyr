@@ -19,6 +19,8 @@ import {
   Users,
 } from "lucide-react-native";
 import { api } from "@/src/lib/api";
+import { useAuthStore } from "@/src/lib/auth-store";
+import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import {
   colors,
   typography,
@@ -54,12 +56,18 @@ interface ScheduleEvent {
 export default function MyScheduleScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [sessions, setSessions] = useState<ScheduleSession[]>([]);
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const fetchSchedule = async () => {
+    if (!isAuthenticated) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const now = new Date();
       const futureDate = new Date();
@@ -106,7 +114,8 @@ export default function MyScheduleScreen() {
 
   useEffect(() => {
     fetchSchedule();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -139,6 +148,28 @@ export default function MyScheduleScreen() {
       minute: "2-digit",
     });
   };
+
+  // Not authenticated → show sign in required
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <View style={styles.header}>
+          <TouchableOpacity
+            onPress={() => router.back()}
+            style={styles.backButton}
+          >
+            <ArrowLeft size={24} color={colors.text} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{t("schedule.title")}</Text>
+        </View>
+        <AuthRequiredView
+          icon={CalendarClock}
+          titleKey="common.authTitle"
+          descriptionKey="common.authDescription"
+        />
+      </SafeAreaView>
+    );
+  }
 
   if (loading) {
     return (
@@ -413,5 +444,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     marginTop: spacing.sm,
     textAlign: "center",
+  },
+  signInButton: {
+    marginTop: spacing.lg,
+    backgroundColor: colors.primary,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
+  },
+  signInButtonText: {
+    fontSize: typography.fontSize.base,
+    fontWeight: "600",
+    color: colors.white,
   },
 });

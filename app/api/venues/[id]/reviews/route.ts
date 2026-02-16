@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
@@ -60,9 +60,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -109,7 +109,7 @@ export async function POST(
       where: {
         venueId_userId: {
           venueId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
       update: {
@@ -117,7 +117,7 @@ export async function POST(
       },
       create: {
         venueId,
-        userId: session.user.id,
+        userId: user.id,
         content: content.trim(),
       },
       include: {
@@ -153,9 +153,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -166,7 +166,7 @@ export async function DELETE(
       where: {
         venueId_userId: {
           venueId,
-          userId: session.user.id,
+          userId: user.id,
         },
       },
     });

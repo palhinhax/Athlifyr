@@ -47,7 +47,18 @@
     "delete": "Elimina",
     "edit": "Modifica",
     "close": "Chiudi",
-    "or": "o"
+    "or": "o",
+    "signInButton": "Accedi",
+    "authTitle": "Autenticazione richiesta",
+    "authDescription": "Accedi per utilizzare questa funzionalità e personalizzare la tua esperienza."
+  },
+  "search": {
+    "placeholder": "Cerca eventi, luoghi, utenti...",
+    "noResults": "Nessun risultato",
+    "noResultsDescription": "Prova con un termine di ricerca diverso",
+    "event": "Evento",
+    "venue": "Luogo",
+    "user": "Utente"
   },
   "profile": {
     "title": "Profilo",
@@ -294,6 +305,8 @@
     "asCoach": "Allenatore",
     "asParticipant": "Partecipante",
     "event": "Evento",
-    "locale": "it-IT"
+    "locale": "it-IT",
+    "signInRequired": "Accedi per vedere il tuo calendario",
+    "signInButton": "Accedi"
   }
 }

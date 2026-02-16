@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const currentUser = await getAuthUser(request);
     const { id } = await params;
 
     // Find the user with their public data
@@ -84,12 +84,12 @@ export async function GET(
     let friendshipStatus: string | null = null;
     let friendshipId: string | undefined = undefined;
 
-    if (session?.user?.id && session.user.id !== id) {
+    if (currentUser?.id && currentUser.id !== id) {
       const friendship = await prisma.friendship.findFirst({
         where: {
           OR: [
-            { senderId: session.user.id, receiverId: id },
-            { senderId: id, receiverId: session.user.id },
+            { senderId: currentUser.id, receiverId: id },
+            { senderId: id, receiverId: currentUser.id },
           ],
         },
       });
@@ -99,7 +99,7 @@ export async function GET(
           friendshipStatus = "friends";
         } else if (friendship.status === "PENDING") {
           friendshipStatus =
-            friendship.senderId === session.user.id
+            friendship.senderId === currentUser.id
               ? "request_sent"
               : "request_received";
         }
@@ -140,7 +140,7 @@ export async function GET(
       })),
       friendshipStatus,
       friendshipId,
-      isOwnProfile: session?.user?.id === id,
+      isOwnProfile: currentUser?.id === id,
     });
   } catch (error) {
     console.error("Error fetching user profile:", error);

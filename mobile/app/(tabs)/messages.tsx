@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { useConversations } from "@/src/hooks/useChat";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { ConversationListItem } from "@/src/components/chat/ConversationListItem";
+import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
 
 export default function MessagesScreen() {
@@ -48,15 +49,11 @@ export default function MessagesScreen() {
   if (!isAuthenticated || !user) {
     return (
       <View style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <View style={styles.emptyIcon}>
-            <MessageCircle size={48} color={theme.colors.textSecondary} />
-          </View>
-          <Text style={styles.emptyTitle}>{t("chat.notAuthenticated")}</Text>
-          <Text style={styles.emptyDescription}>
-            {t("chat.signInRequired")}
-          </Text>
-        </View>
+        <AuthRequiredView
+          icon={MessageCircle}
+          titleKey="common.authTitle"
+          descriptionKey="common.authDescription"
+        />
       </View>
     );
   }

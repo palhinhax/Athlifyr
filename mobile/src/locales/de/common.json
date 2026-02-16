@@ -47,7 +47,18 @@
     "delete": "Löschen",
     "edit": "Bearbeiten",
     "close": "Schließen",
-    "or": "oder"
+    "or": "oder",
+    "signInButton": "Anmelden",
+    "authTitle": "Anmeldung erforderlich",
+    "authDescription": "Melde dich an, um auf diese Funktion zuzugreifen und dein Erlebnis zu personalisieren."
+  },
+  "search": {
+    "placeholder": "Events, Orte, Benutzer suchen...",
+    "noResults": "Keine Ergebnisse",
+    "noResultsDescription": "Versuche einen anderen Suchbegriff",
+    "event": "Event",
+    "venue": "Ort",
+    "user": "Benutzer"
   },
   "profile": {
     "title": "Profil",
@@ -294,6 +305,8 @@
     "asCoach": "Trainer",
     "asParticipant": "Teilnehmer",
     "event": "Event",
-    "locale": "de-DE"
+    "locale": "de-DE",
+    "signInRequired": "Melde dich an, um deinen Kalender zu sehen",
+    "signInButton": "Anmelden"
   }
 }

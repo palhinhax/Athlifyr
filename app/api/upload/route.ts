@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { uploadToB2, validateFile } from "@/lib/b2-storage";
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.email) {
+    if (!user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     // Images: Admins up to 20MB, regular users up to 5MB
     const isVideo = file.type.startsWith("video/");
     const maxSizeMB =
-      session.user.role === "ADMIN" ? (isVideo ? 100 : 20) : isVideo ? 50 : 5;
+      user.role === "ADMIN" ? (isVideo ? 100 : 20) : isVideo ? 50 : 5;
 
     // Validate file (image or video)
     const validation = validateFile(buffer, file.type, maxSizeMB);
@@ -73,9 +73,9 @@ export async function POST(request: Request) {
 
 export async function DELETE(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.email) {
+    if (!user?.email) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

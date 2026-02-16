@@ -8,7 +8,6 @@ import {
   Image,
   ActivityIndicator,
 } from "react-native";
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
 import {
@@ -22,33 +21,8 @@ import {
   Users,
 } from "lucide-react-native";
 import { useAuthStore } from "@/src/lib/auth-store";
+import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
-
-// ─── Guest View ────────────────────────────────────────────────
-
-function GuestView() {
-  const { t } = useTranslation();
-  const router = useRouter();
-
-  return (
-    <View style={styles.guestContainer}>
-      <View style={styles.guestIconContainer}>
-        <User size={64} color={theme.colors.primary} />
-      </View>
-      <Text style={styles.guestTitle}>{t("profile.signInTitle")}</Text>
-      <Text style={styles.guestDescription}>
-        {t("profile.signInDescription")}
-      </Text>
-      <TouchableOpacity
-        style={styles.signInButton}
-        onPress={() => router.push("/login")}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.signInButtonText}>{t("profile.signInButton")}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 // ─── Main Profile Screen ───────────────────────────────────────
 
@@ -77,9 +51,13 @@ export default function ProfileScreen() {
   // Not logged in
   if (!isAuthenticated || !user) {
     return (
-      <SafeAreaView style={styles.safeArea}>
-        <GuestView />
-      </SafeAreaView>
+      <View style={styles.safeArea}>
+        <AuthRequiredView
+          icon={User}
+          titleKey="common.authTitle"
+          descriptionKey="common.authDescription"
+        />
+      </View>
     );
   }
 

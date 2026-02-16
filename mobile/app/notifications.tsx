@@ -30,6 +30,7 @@ import {
 } from "@/src/hooks/useNotifications";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
+import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import {
   colors,
   typography,
@@ -369,12 +370,11 @@ export default function NotificationsScreen() {
           </Text>
           <View style={{ width: 40 }} />
         </View>
-        <View style={styles.emptyContainer}>
-          <Bell size={48} color={colors.textTertiary} />
-          <Text style={styles.emptyTitle}>
-            {t("notifications.signInRequired")}
-          </Text>
-        </View>
+        <AuthRequiredView
+          icon={Bell}
+          titleKey="common.authTitle"
+          descriptionKey="common.authDescription"
+        />
       </SafeAreaView>
     );
   }

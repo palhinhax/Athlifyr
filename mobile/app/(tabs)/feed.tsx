@@ -6,22 +6,20 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Activity, MessageSquare } from "lucide-react-native";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
+import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
 
 // ─── Empty State ───────────────────────────────────────────────
 
 function EmptyFeed() {
   const { t } = useTranslation();
-  const router = useRouter();
 
   return (
     <View style={styles.emptyContainer}>
@@ -30,39 +28,6 @@ function EmptyFeed() {
       </View>
       <Text style={styles.emptyTitle}>{t("feed.emptyTitle")}</Text>
       <Text style={styles.emptyDescription}>{t("feed.emptyDescription")}</Text>
-      <TouchableOpacity
-        style={styles.exploreButton}
-        onPress={() => router.push("/(tabs)")}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.exploreButtonText}>{t("feed.exploreEvents")}</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
-
-// ─── Guest State ───────────────────────────────────────────────
-
-function GuestFeed() {
-  const { t } = useTranslation();
-  const router = useRouter();
-
-  return (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconContainer}>
-        <Activity size={48} color={theme.colors.primary} />
-      </View>
-      <Text style={styles.emptyTitle}>{t("feed.title")}</Text>
-      <Text style={styles.emptyDescription}>{t("feed.signInRequired")}</Text>
-      <TouchableOpacity
-        style={styles.exploreButton}
-        onPress={() => router.push("/login")}
-        activeOpacity={0.8}
-      >
-        <Text style={styles.exploreButtonText}>
-          {t("profile.signInButton")}
-        </Text>
-      </TouchableOpacity>
     </View>
   );
 }
@@ -83,9 +48,13 @@ export default function FeedScreen() {
   // Guest view
   if (!isAuthenticated) {
     return (
-      <SafeAreaView style={styles.safeArea} edges={["top"]}>
-        <GuestFeed />
-      </SafeAreaView>
+      <View style={styles.safeArea}>
+        <AuthRequiredView
+          icon={Activity}
+          titleKey="common.authTitle"
+          descriptionKey="common.authDescription"
+        />
+      </View>
     );
   }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { validateBooking } from "@/lib/venues/booking-validation";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
@@ -10,14 +10,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId, sessionId } = await params;
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Validate booking
     const validation = await validateBooking(userId, venueId, sessionId);
@@ -32,7 +32,7 @@ export async function POST(
           userId,
           reason: validation.reason || "validation_failed",
         },
-        session.user.email
+        user.email
       ).catch(() => {});
 
       return NextResponse.json(
@@ -111,7 +111,7 @@ export async function POST(
         userId,
         venueName: booking.session.venue.name,
       },
-      session.user.email
+      user.email
     ).catch(() => {});
 
     return NextResponse.json(booking, { status: 201 });
@@ -131,14 +131,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId, sessionId } = await params;
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Find the booking
     const booking = await prisma.venueBooking.findFirst({
@@ -182,7 +182,7 @@ export async function DELETE(
         userId,
         bookingId: booking.id,
       },
-      session.user.email
+      user.email
     ).catch(() => {});
 
     return NextResponse.json({ success: true });

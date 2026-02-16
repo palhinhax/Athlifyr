@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { SportType, Language } from "@prisma/client";
 import { isOfficialAthlifyrAccount } from "@/lib/constants";
+import { getAuthUser } from "@/lib/auth-utils";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,11 @@ function isValidLanguage(lang: string): lang is Language {
 // GET /api/search - Global search for events, venues, and users
 export async function GET(request: NextRequest) {
   try {
+    // Check authentication (optional - search is public but users only shown to authenticated users)
+    // Uses getAuthUser to support both web (session) and mobile (Bearer token)
+    const user = await getAuthUser(request);
+    const isAuthenticated = !!user;
+
     const searchParams = request.nextUrl.searchParams;
     const query = searchParams.get("q");
     const locale = searchParams.get("locale") || "en";
@@ -225,10 +231,14 @@ export async function GET(request: NextRequest) {
         (venueOrderMap.get(b.id) ?? Infinity)
     );
 
-    // Search users with fuzzy matching
-    const fuzzyUsers = await prisma.$queryRaw<
-      { id: string; max_similarity: number }[]
-    >`
+    // Search users with fuzzy matching - ONLY IF AUTHENTICATED
+    // Users should not be exposed in public search for privacy
+    let sortedUsers: { id: string; name: string | null; email: string | null; image: string | null }[] = [];
+    
+    if (isAuthenticated) {
+      const fuzzyUsers = await prisma.$queryRaw<
+        { id: string; max_similarity: number }[]
+      >`
       SELECT DISTINCT u.id,
         GREATEST(
           similarity(
@@ -280,27 +290,28 @@ export async function GET(request: NextRequest) {
 
     const userIds = fuzzyUsers.map((u) => u.id);
 
-    // Fetch full user data
-    const users =
-      userIds.length > 0
-        ? await prisma.user.findMany({
-            where: { id: { in: userIds } },
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-            },
-          })
-        : [];
+      // Fetch full user data
+      const users =
+        userIds.length > 0
+          ? await prisma.user.findMany({
+              where: { id: { in: userIds } },
+              select: {
+                id: true,
+                name: true,
+                email: true,
+                image: true,
+              },
+            })
+          : [];
 
-    // Sort users by similarity order
-    const userOrderMap = new Map(userIds.map((id, index) => [id, index]));
-    const sortedUsers = users.sort(
-      (a, b) =>
-        (userOrderMap.get(a.id) ?? Infinity) -
-        (userOrderMap.get(b.id) ?? Infinity)
-    );
+      // Sort users by similarity order
+      const userOrderMap = new Map(userIds.map((id, index) => [id, index]));
+      sortedUsers = users.sort(
+        (a, b) =>
+          (userOrderMap.get(a.id) ?? Infinity) -
+          (userOrderMap.get(b.id) ?? Infinity)
+      );
+    }
 
     // Transform results to unified format
     const results: SearchResult[] = [

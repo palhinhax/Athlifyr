@@ -47,7 +47,18 @@
     "delete": "Delete",
     "edit": "Edit",
     "close": "Close",
-    "or": "or"
+    "or": "or",
+    "signInButton": "Sign In",
+    "authTitle": "Sign in required",
+    "authDescription": "Sign in to access this feature and personalise your experience."
+  },
+  "search": {
+    "placeholder": "Search events, venues, users...",
+    "noResults": "No results found",
+    "noResultsDescription": "Try a different search term",
+    "event": "Event",
+    "venue": "Venue",
+    "user": "User"
   },
   "profile": {
     "title": "Profile",
@@ -294,6 +305,8 @@
     "asCoach": "Coach",
     "asParticipant": "Participant",
     "event": "Event",
-    "locale": "en-US"
+    "locale": "en-US",
+    "signInRequired": "Sign in to see your calendar",
+    "signInButton": "Sign In"
   }
 }

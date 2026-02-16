@@ -36,6 +36,7 @@ export default function RootLayout() {
             options={{ headerShown: false, presentation: "modal" }}
           />
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
+          <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
         </Stack>
       </I18nextProvider>
     </QueryClientProvider>

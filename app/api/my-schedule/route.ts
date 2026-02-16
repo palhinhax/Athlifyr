@@ -1,18 +1,19 @@
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET - Get all schedule items for the current user
 // Includes: sessions as coach, sessions as client (bookings), and event participations
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth();
+    // Uses getAuthUser to support both web (session) and mobile (Bearer token)
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const userId = session.user.id;
+    const userId = user.id;
 
     // Get date range from query params
     const searchParams = request.nextUrl.searchParams;

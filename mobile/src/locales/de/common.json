@@ -630,6 +630,8 @@
     "participantError": "Fehler bei der Teilnehmerverwaltung",
     "alreadyBooked": "Bereits gebucht",
     "sessionFull": "Sitzung ausgebucht",
-    "recurringSession": "Wiederkehrende Sitzung"
+    "recurringSession": "Wiederkehrende Sitzung",
+    "dateTime": "Datum & Uhrzeit",
+    "recurring": "Wiederkehrend"
   }
 }

@@ -111,6 +111,16 @@ export interface VenueDetail {
       };
     };
   }>;
+  userSubscriptionStatus?: {
+    hasSubscription: boolean;
+    reason:
+      | "venue_member"
+      | "no_plan_required"
+      | "direct_subscription"
+      | "cross_venue_subscription"
+      | "no_subscription";
+    subscriptionCount: number;
+  } | null;
 }
 
 async function fetchVenueDetail(slug: string): Promise<VenueDetail> {

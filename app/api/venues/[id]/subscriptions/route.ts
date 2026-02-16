@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import {
   calculatePlanEndDate,
@@ -14,9 +14,9 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -27,14 +27,14 @@ export async function GET(
       where: {
         venueId_userId: {
           venueId,
-          userId: session.user.id,
+          userId: authUser.id,
         },
       },
     });
 
     // Also check if user is app admin
     const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: authUser.id },
       select: { role: true },
     });
 
@@ -90,9 +90,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -114,13 +114,13 @@ export async function POST(
         where: {
           venueId_userId: {
             venueId,
-            userId: session.user.id,
+            userId: authUser.id,
           },
         },
       });
 
       const user = await prisma.user.findUnique({
-        where: { id: session.user.id },
+        where: { id: authUser.id },
         select: { role: true },
       });
 
@@ -198,7 +198,7 @@ export async function POST(
           status: "ACTIVE",
           paymentStatus: manualPaymentStatus || "PAID",
           paymentMethod: "Manual", // Use paymentMethod instead of paymentProvider
-          activatedByUserId: session.user.id, // Track who activated it
+          activatedByUserId: authUser.id, // Track who activated it
           activatedAt: new Date(),
           startsAt: subscriptionStartsAt,
           endsAt: subscriptionEndsAt,
@@ -251,7 +251,7 @@ export async function POST(
       where: {
         venueId_userId: {
           venueId,
-          userId: session.user.id,
+          userId: authUser.id,
         },
       },
     });
@@ -261,7 +261,7 @@ export async function POST(
       member = await prisma.venueMember.create({
         data: {
           venueId,
-          userId: session.user.id,
+          userId: authUser.id,
           role: "CLIENT",
           status: "ACTIVE",
           joinedAt: new Date(),
@@ -273,7 +273,7 @@ export async function POST(
         where: {
           venueId_userId: {
             venueId,
-            userId: session.user.id,
+            userId: authUser.id,
           },
         },
         data: {
@@ -287,7 +287,7 @@ export async function POST(
     const existingSubscription = await prisma.venueSubscription.findFirst({
       where: {
         venueId,
-        userId: session.user.id,
+        userId: authUser.id,
         planId,
         status: {
           in: ["PENDING", "ACTIVE"],
@@ -310,7 +310,7 @@ export async function POST(
       ) {
         const totalBookingsUsed = await prisma.venueBooking.count({
           where: {
-            userId: session.user.id,
+            userId: authUser.id,
             status: { in: ["BOOKED", "ATTENDED"] },
             createdAt: {
               gte: existingSubscription.createdAt,
@@ -385,7 +385,7 @@ export async function POST(
     const subscription = await prisma.venueSubscription.create({
       data: {
         venueId,
-        userId: session.user.id,
+        userId: authUser.id,
         planId,
         status: subscriptionStatus,
         paymentStatus,

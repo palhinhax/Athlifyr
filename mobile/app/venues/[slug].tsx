@@ -55,15 +55,13 @@ export default function VenueDetailScreen() {
     );
   }, [userId, userRole, venue]);
 
+  // Use centralized API validation for subscription status
+  // This eliminates duplicated logic and ensures consistency between web and mobile
   const hasActiveSubscription = useMemo(() => {
     if (!venue) return false;
-    const hasPlanSub = venue.plans.some((p) =>
-      p.subscriptions?.some((s) => s.status === "ACTIVE")
-    );
-    const hasCrossVenueSub = venue.crossVenueSubscriptions?.some(
-      (s) => s.status === "ACTIVE"
-    );
-    return hasPlanSub || !!hasCrossVenueSub;
+
+    // Use the centralized userSubscriptionStatus from the API
+    return venue.userSubscriptionStatus?.hasSubscription ?? false;
   }, [venue]);
 
   // Determine which tabs are visible based on venue.visibleTabs config

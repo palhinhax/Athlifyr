@@ -630,6 +630,8 @@
     "participantError": "Erreur de gestion du participant",
     "alreadyBooked": "Déjà réservé",
     "sessionFull": "Session complète",
-    "recurringSession": "Session récurrente"
+    "recurringSession": "Session récurrente",
+    "dateTime": "Date et Heure",
+    "recurring": "Récurrent"
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 
@@ -9,19 +9,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string; sessionId: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId, sessionId } = await params;
-    const currentUserId = session.user.id;
+    const currentUserId = authUser.id;
 
     // Check if user can manage sessions in this venue (owner, admin, coach, or app admin)
     const authorization = await canManageSessions(currentUserId, venueId);
 
-    if (!authorization.authorized && session.user.role !== "ADMIN") {
+    if (!authorization.authorized && authUser.role !== "ADMIN") {
       return NextResponse.json(
         { error: "Not authorized to manage this session" },
         { status: 403 }

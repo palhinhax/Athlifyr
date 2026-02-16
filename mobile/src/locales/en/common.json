@@ -630,6 +630,8 @@
     "participantError": "Failed to manage participant",
     "alreadyBooked": "Already booked",
     "sessionFull": "Session is full",
-    "recurringSession": "Recurring session"
+    "recurringSession": "Recurring session",
+    "dateTime": "Date & Time",
+    "recurring": "Recurring"
   }
 }

@@ -50,16 +50,16 @@ function getDurationMinutes(startsAt: string, endsAt: string): number {
 
 interface SessionCardProps {
   session: VenueSession;
-  userId?: string;
+  userId?: string | null;
   hasActiveSubscription: boolean;
   isOwnerOrAdmin: boolean;
   canEditSessions: boolean;
   onPress?: (session: VenueSession) => void;
-  onBook?: (sessionId: string) => void;
-  onCancelBooking?: (bookingId: string, sessionId: string) => void;
-  onEdit?: (session: VenueSession) => void;
-  onDelete?: (session: VenueSession) => void;
-  bookingInProgress?: string | null;
+  onBook?: () => void;
+  onCancelBooking?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  bookingInProgress?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ export function SessionCard({
     !isPast;
   const canCancel = !!userId && !!session.isBooked && !isPast;
 
-  const isBooking = bookingInProgress === session.id;
+  const isBooking = !!bookingInProgress;
 
   return (
     <TouchableOpacity
@@ -190,7 +190,7 @@ export function SessionCard({
             {canBook && onBook && (
               <TouchableOpacity
                 style={styles.bookButton}
-                onPress={() => onBook(session.id)}
+                onPress={onBook}
                 disabled={isBooking}
                 activeOpacity={0.7}
               >
@@ -208,9 +208,7 @@ export function SessionCard({
             {canCancel && onCancelBooking && session.userBookingId && (
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={() =>
-                  onCancelBooking(session.userBookingId!, session.id)
-                }
+                onPress={onCancelBooking}
                 activeOpacity={0.7}
               >
                 <Text style={styles.cancelButtonText}>
@@ -223,7 +221,7 @@ export function SessionCard({
             {canEditSessions && onEdit && (
               <TouchableOpacity
                 style={styles.iconButton}
-                onPress={() => onEdit(session)}
+                onPress={onEdit}
                 activeOpacity={0.7}
               >
                 <Pencil size={16} color={theme.colors.primary} />
@@ -234,7 +232,7 @@ export function SessionCard({
             {isOwnerOrAdmin && onDelete && (
               <TouchableOpacity
                 style={[styles.iconButton, styles.deleteIconButton]}
-                onPress={() => onDelete(session)}
+                onPress={onDelete}
                 activeOpacity={0.7}
               >
                 <Trash2 size={16} color="#ef4444" />

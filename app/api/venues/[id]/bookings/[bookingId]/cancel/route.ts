@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus } from "@prisma/client";
 import { validateCancellation } from "@/lib/venues/booking-validation";
@@ -10,9 +10,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string; bookingId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!user) {
       console.error("[Cancellation] Unauthorized access attempt", {
         timestamp: new Date().toISOString(),
       });
@@ -20,13 +20,13 @@ export async function POST(
     }
 
     const { id: venueId, bookingId } = await params;
-    const userId = session.user.id;
+    const userId = user.id;
 
     console.log("[Cancellation] Request received", {
       venueId,
       bookingId,
       userId,
-      userEmail: session.user.email,
+      userEmail: user.email,
       timestamp: new Date().toISOString(),
     });
 

@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 
@@ -15,14 +15,14 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: venueId, sessionId } = await params;
 
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check authorization
-    const authResult = await canManageSessions(session.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -92,14 +92,14 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: venueId, sessionId } = await params;
 
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check authorization
-    const authResult = await canManageSessions(session.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -130,7 +130,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     const workouts = await prisma.workout.findMany({
       where: {
         id: { in: workoutIds },
-        OR: [{ venueId }, { isPublic: true }, { createdById: session.user.id }],
+        OR: [{ venueId }, { isPublic: true }, { createdById: authUser.id }],
       },
     });
 
@@ -178,14 +178,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: venueId, sessionId } = await params;
 
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check authorization
-    const authResult = await canManageSessions(session.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -224,7 +224,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const workouts = await prisma.workout.findMany({
       where: {
         id: { in: workoutIds },
-        OR: [{ venueId }, { isPublic: true }, { createdById: session.user.id }],
+        OR: [{ venueId }, { isPublic: true }, { createdById: authUser.id }],
       },
     });
 
@@ -265,14 +265,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: venueId, sessionId } = await params;
 
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Check authorization
-    const authResult = await canManageSessions(session.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

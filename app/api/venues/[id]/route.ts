@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
+import { hasActiveSubscription } from "@/lib/venues/subscription-utils";
 import { SportType, VenueService } from "@prisma/client";
 
 // GET - Get venue by ID or slug
@@ -11,8 +12,8 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const session = await auth();
-    const currentUserId = session?.user?.id;
+    const authUser = await getAuthUser(request);
+    const currentUserId = authUser?.id;
 
     // Try to find by ID first, then by slug
     const venue = await prisma.venue.findFirst({
@@ -342,10 +343,25 @@ export async function GET(
       }
     }
 
+    // Check if user has active subscription (centralized logic)
+    let userSubscriptionStatus: {
+      hasSubscription: boolean;
+      reason: string;
+      subscriptionCount: number;
+    } | null = null;
+
+    if (currentUserId) {
+      userSubscriptionStatus = await hasActiveSubscription(
+        currentUserId,
+        venue.id
+      );
+    }
+
     // Build final response
     const venueWithUniqueCount = {
       ...venue,
       crossVenueSubscriptions,
+      userSubscriptionStatus, // Add centralized subscription validation
       _count: {
         ...(venue as { _count?: { sessions: number; bookings: number } })
           ._count,
@@ -369,16 +385,16 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
 
     // Check authorization
-    const authResult = await canManageVenue(session.user.id, id);
+    const authResult = await canManageVenue(authUser.id, id);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -507,9 +523,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -520,7 +536,7 @@ export async function DELETE(
       where: {
         venueId_userId: {
           venueId: id,
-          userId: session.user.id,
+          userId: authUser.id,
         },
       },
     });

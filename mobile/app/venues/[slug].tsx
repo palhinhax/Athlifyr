@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   ActivityIndicator,
   TouchableOpacity,
   Share,
@@ -15,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapPin, ArrowLeft, Share2, Building2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import { useVenueDetail } from "@/src/hooks/useVenueDetail";
 import { VenueAboutTab } from "@/src/components/venue/VenueAboutTab";
 import { VenueTeamTab } from "@/src/components/venue/VenueTeamTab";
@@ -148,11 +148,12 @@ export default function VenueDetailScreen() {
         {/* Hero Image */}
         <View style={styles.heroContainer}>
           {venue.coverImage ? (
-            <Image
-              source={{ uri: venue.coverImage }}
+            <CachedImage
+              uri={venue.coverImage}
               style={styles.heroImage}
-              resizeMode="cover"
+              contentFit="cover"
               alt="Venue cover"
+              priority="high"
             />
           ) : (
             <View style={[styles.heroImage, styles.placeholderImage]}>
@@ -185,10 +186,10 @@ export default function VenueDetailScreen() {
         <View style={styles.content}>
           <View style={styles.headerRow}>
             {venue.logo && (
-              <Image
-                source={{ uri: venue.logo }}
+              <CachedImage
+                uri={venue.logo}
                 style={styles.logoImage}
-                resizeMode="cover"
+                contentFit="cover"
                 alt="Venue logo"
               />
             )}

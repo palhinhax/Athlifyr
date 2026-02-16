@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   ActivityIndicator,
   Linking,
   TouchableOpacity,
@@ -24,6 +23,7 @@ import Markdown from "react-native-markdown-display";
 import { useTranslation } from "react-i18next";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import { SportBadge } from "@/src/components/SportBadge";
 import { EventMetaInfo } from "@/src/components/EventMetaInfo";
 import { EventVariantsList } from "@/src/components/EventVariantsList";
@@ -167,11 +167,12 @@ export default function EventDetailScreen() {
         {/* Event Image */}
         <View style={styles.imageContainer}>
           {event.imageUrl ? (
-            <Image
-              source={{ uri: event.imageUrl }}
+            <CachedImage
+              uri={event.imageUrl}
               style={styles.image}
-              resizeMode="cover"
+              contentFit="cover"
               alt="Event image"
+              priority="high"
             />
           ) : (
             <View style={[styles.image, styles.placeholderImage]}>

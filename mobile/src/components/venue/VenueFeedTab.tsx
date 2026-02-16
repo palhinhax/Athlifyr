@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   ActivityIndicator,
-  Image,
   TouchableOpacity,
   TextInput,
   Alert,
@@ -28,6 +27,7 @@ import {
 } from "lucide-react-native";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
+import { CachedImage, CachedAvatar } from "@/src/components/CachedImage";
 import { theme } from "@/src/constants/theme";
 
 // --- Types matching API response ---
@@ -209,10 +209,11 @@ function PostHeader({
       activeOpacity={0.7}
     >
       {user.image ? (
-        <Image
-          source={{ uri: user.image }}
+        <CachedAvatar
+          uri={user.image}
           style={styles.authorAvatar}
           alt={user.name || "Author"}
+          size={36}
         />
       ) : (
         <View style={styles.authorAvatarPlaceholder}>
@@ -290,10 +291,10 @@ function PostMedia({
     );
   }
   return (
-    <Image
-      source={{ uri: imageUrl }}
+    <CachedImage
+      uri={imageUrl}
       style={styles.postImage}
-      resizeMode="cover"
+      contentFit="cover"
       alt="Post image"
     />
   );
@@ -308,10 +309,10 @@ function EventCard({ event }: { event: PostEvent }) {
       activeOpacity={0.7}
     >
       {event.imageUrl && (
-        <Image
-          source={{ uri: event.imageUrl }}
+        <CachedImage
+          uri={event.imageUrl}
           style={styles.eventImage}
-          resizeMode="cover"
+          contentFit="cover"
           alt={event.title}
         />
       )}
@@ -585,10 +586,11 @@ function PostActions({
           {currentUser && (
             <View style={styles.commentInputRow}>
               {currentUser.image ? (
-                <Image
-                  source={{ uri: currentUser.image }}
+                <CachedAvatar
+                  uri={currentUser.image}
                   style={styles.commentAvatar}
                   alt={currentUser.name ?? ""}
+                  size={28}
                 />
               ) : (
                 <View style={styles.commentAvatarPlaceholder}>
@@ -642,10 +644,11 @@ function PostActions({
             comments.map((comment) => (
               <View key={comment.id} style={styles.commentRow}>
                 {comment.user.image ? (
-                  <Image
-                    source={{ uri: comment.user.image }}
+                  <CachedAvatar
+                    uri={comment.user.image}
                     style={styles.commentAvatar}
                     alt={comment.user.name ?? ""}
+                    size={28}
                   />
                 ) : (
                   <View style={styles.commentAvatarPlaceholder}>

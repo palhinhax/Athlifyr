@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { Calendar, Camera, Settings, Trash2, User } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { CachedAvatar } from "@/src/components/CachedImage";
 
 interface ProfileHeaderProps {
   user: {
@@ -34,10 +35,11 @@ export function ProfileHeader({ user }: ProfileHeaderProps) {
       <View style={styles.headerSection}>
         <View style={styles.avatarContainer}>
           {user.image ? (
-            <Image
-              source={{ uri: user.image }}
+            <CachedAvatar
+              uri={user.image}
               style={styles.avatar}
               alt={user.name ?? "User avatar"}
+              size={100}
             />
           ) : (
             <View style={styles.avatarPlaceholder}>

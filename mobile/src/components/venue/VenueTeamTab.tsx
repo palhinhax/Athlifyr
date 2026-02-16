@@ -1,9 +1,10 @@
 import React from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Users } from "lucide-react-native";
 import { useRouter } from "expo-router";
 import { theme } from "@/src/constants/theme";
+import { CachedAvatar } from "@/src/components/CachedImage";
 import type { VenueMember } from "@/src/hooks/useVenueDetail";
 
 interface VenueTeamTabProps {
@@ -50,10 +51,11 @@ export function VenueTeamTab({ members }: VenueTeamTabProps) {
         >
           <View style={styles.memberRow}>
             {member.user.image ? (
-              <Image
-                source={{ uri: member.user.image }}
+              <CachedAvatar
+                uri={member.user.image}
                 style={styles.avatar}
                 alt={member.user.name || "User"}
+                size={48}
               />
             ) : (
               <View style={styles.avatarPlaceholder}>

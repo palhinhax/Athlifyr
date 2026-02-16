@@ -78,13 +78,17 @@ export async function uploadToB2({
       bucketId,
     });
 
-    // Upload file
+    // Upload file with cache control header
+    // B2 supports b2-cache-control info header for browser caching
     const uploadResponse = await b2.uploadFile({
       uploadUrl: uploadUrlResponse.data.uploadUrl,
       uploadAuthToken: uploadUrlResponse.data.authorizationToken,
       fileName: fullFileName,
       data: file,
       contentType,
+      info: {
+        "b2-cache-control": "public, max-age=31536000, immutable",
+      },
     });
 
     // Construct public URL

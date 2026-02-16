@@ -10,9 +10,10 @@ import {
   Dumbbell,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { StyleSheet, Platform, View, Image } from "react-native";
+import { StyleSheet, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import { NotificationBell } from "@/src/components/NotificationBell";
 import { CalendarButton } from "@/src/components/CalendarButton";
 import { SearchButton } from "@/src/components/SearchButton";
@@ -132,11 +133,11 @@ export default function TabLayout() {
                   ]}
                 >
                   {singleVenue?.imageUrl ? (
-                    <Image
-                      source={{ uri: singleVenue.imageUrl }}
+                    <CachedImage
+                      uri={singleVenue.imageUrl}
                       style={styles.venueLogo}
-                      resizeMode="cover"
-                      accessibilityLabel={singleVenue.name}
+                      contentFit="cover"
+                      alt={singleVenue.name}
                     />
                   ) : (
                     <Building2

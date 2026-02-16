@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import {
   Calendar,
@@ -9,6 +9,7 @@ import {
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import { SportBadge } from "./SportBadge";
 import { formatDateRange } from "@/src/lib/event-utils";
 import type { Event } from "@/src/types";
@@ -35,10 +36,10 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
       {/* Event Image */}
       <View style={styles.imageContainer}>
         {event.imageUrl ? (
-          <Image
-            source={{ uri: event.imageUrl }}
+          <CachedImage
+            uri={event.imageUrl}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
             alt="Event image"
           />
         ) : (

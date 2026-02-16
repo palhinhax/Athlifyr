@@ -9,6 +9,14 @@ const nextConfig = {
   trailingSlash: false,
   images: {
     qualities: [75, 90],
+    // Cache optimized images for 30 days (TTL in seconds)
+    minimumCacheTTL: 2592000,
+    // Common device sizes for responsive images
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    // Smaller sizes for thumbnails and avatars
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
+    // Prefer WebP/AVIF for best compression
+    formats: ["image/avif", "image/webp"],
     remotePatterns: [
       {
         protocol: "https",

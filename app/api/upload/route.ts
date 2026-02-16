@@ -1,6 +1,39 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { uploadToB2, validateFile } from "@/lib/b2-storage";
+import {
+  optimizeProfileImage,
+  optimizeEventImage,
+  optimizePostImage,
+  optimizeImage,
+} from "@/lib/image-optimizer";
+import type { OptimizeImageResult } from "@/lib/image-optimizer";
+
+/** Select optimization strategy based on upload folder */
+function optimizeByFolder(
+  buffer: Buffer,
+  contentType: string,
+  folder: string
+): Promise<OptimizeImageResult> {
+  switch (folder) {
+    case "profiles":
+      return optimizeProfileImage(buffer, contentType);
+    case "events":
+      return optimizeEventImage(buffer, contentType);
+    case "posts":
+      return optimizePostImage(buffer, contentType);
+    case "instagram":
+      return optimizeImage({
+        buffer,
+        contentType,
+        maxWidth: 1080,
+        maxHeight: 1080,
+        quality: 90,
+      });
+    default:
+      return optimizePostImage(buffer, contentType);
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -32,6 +65,7 @@ export async function POST(request: Request) {
     // Videos can be larger: Admins up to 100MB, regular users up to 50MB
     // Images: Admins up to 20MB, regular users up to 5MB
     const isVideo = file.type.startsWith("video/");
+    const isImage = file.type.startsWith("image/");
     const maxSizeMB =
       user.role === "ADMIN" ? (isVideo ? 100 : 20) : isVideo ? 50 : 5;
 
@@ -41,11 +75,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: validation.error }, { status: 400 });
     }
 
+    // Optimize images before upload (skip videos)
+    let uploadBuffer: Buffer<ArrayBuffer> = buffer;
+    let uploadContentType = file.type;
+    let uploadFileName = file.name;
+
+    if (isImage) {
+      const optimized = await optimizeByFolder(buffer, file.type, folder);
+      uploadBuffer = Buffer.from(optimized.buffer);
+      uploadContentType = optimized.contentType;
+
+      // Update file extension if converted to webp
+      if (
+        optimized.contentType === "image/webp" &&
+        !file.name.endsWith(".webp")
+      ) {
+        uploadFileName = file.name.replace(/\.[^.]+$/, ".webp");
+      }
+
+      if (optimized.savedPercent > 0) {
+        console.log(
+          `🖼️ Image optimized: ${(optimized.originalSize / 1024).toFixed(0)}KB → ${(optimized.optimizedSize / 1024).toFixed(0)}KB (-${optimized.savedPercent}%)`
+        );
+      }
+    }
+
     // Upload to B2
     const result = await uploadToB2({
-      file: buffer,
-      fileName: file.name,
-      contentType: file.type,
+      file: uploadBuffer,
+      fileName: uploadFileName,
+      contentType: uploadContentType,
       folder: folder as "profiles" | "posts" | "events" | "instagram",
     });
 

@@ -3,7 +3,6 @@ import {
   View,
   Text,
   StyleSheet,
-  Image,
   TouchableOpacity,
   TextInput,
   ActivityIndicator,
@@ -23,6 +22,7 @@ import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 import { useToggleLike, type FeedPost } from "@/src/hooks/useFeedPosts";
+import { CachedImage, CachedAvatar } from "@/src/components/CachedImage";
 import {
   colors,
   typography,
@@ -59,7 +59,12 @@ function PostAvatar({
 }) {
   if (image) {
     return (
-      <Image source={{ uri: image }} style={styles.avatar} alt={name ?? ""} />
+      <CachedAvatar
+        uri={image}
+        style={styles.avatar}
+        alt={name ?? ""}
+        size={40}
+      />
     );
   }
 
@@ -102,13 +107,11 @@ function MiniAvatar({
 }) {
   if (image) {
     return (
-      <Image
-        source={{ uri: image }}
-        style={[
-          styles.commentAvatar,
-          { width: size, height: size, borderRadius: size / 2 },
-        ]}
+      <CachedAvatar
+        uri={image}
+        style={styles.commentAvatar}
         alt={name ?? ""}
+        size={size}
       />
     );
   }
@@ -325,10 +328,10 @@ export function PostCard({ post }: PostCardProps) {
 
       {/* Media — Image */}
       {post.imageUrl && post.mediaType !== "video" && (
-        <Image
-          source={{ uri: post.imageUrl }}
+        <CachedImage
+          uri={post.imageUrl}
           style={styles.postImage}
-          resizeMode="cover"
+          contentFit="cover"
           alt="Post image"
         />
       )}

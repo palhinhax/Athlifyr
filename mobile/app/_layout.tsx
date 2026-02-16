@@ -4,14 +4,18 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { I18nextProvider } from "react-i18next";
 import i18n from "@/src/lib/i18n";
 import { initIntegrity } from "@/src/lib/integrity";
+import { useAuthStore } from "@/src/lib/auth-store";
 
 const queryClient = new QueryClient();
 
 export default function RootLayout() {
-  // Initialize Play Integrity on app launch
+  const loadStoredAuth = useAuthStore((s) => s.loadStoredAuth);
+
+  // Restore auth session + initialize Play Integrity on app launch
   useEffect(() => {
+    loadStoredAuth();
     initIntegrity();
-  }, []);
+  }, [loadStoredAuth]);
 
   return (
     <QueryClientProvider client={queryClient}>

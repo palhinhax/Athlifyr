@@ -56,59 +56,71 @@ export default function SearchScreen() {
     return () => clearTimeout(timer);
   }, []);
 
-  const performSearch = useCallback(async (searchQuery: string) => {
-    if (searchQuery.trim().length < 2) {
-      setResults([]);
-      setHasSearched(false);
-      return;
-    }
-
-    setLoading(true);
-    setHasSearched(true);
-
-    try {
-      // Build headers - include auth token if available to enable user search
-      const headers: HeadersInit = {
-        "Content-Type": "application/json",
-      };
-      if (token) {
-        headers["Authorization"] = `Bearer ${token}`;
-      }
-
-      const response = await fetch(
-        `${API_URL}/api/search?q=${encodeURIComponent(searchQuery)}`,
-        { headers }
-      );
-      
-      if (!response.ok) {
-        throw new Error(`Search failed: ${response.status}`);
-      }
-      
-      const data = await response.json();
-
-      // API returns { results: SearchResult[], counts: {...} }
-      // Results already have the correct structure: type, id, title, subtitle, image, href
-      if (data.results && Array.isArray(data.results)) {
-        setResults(
-          data.results.map((r: { type: string; id: string; title: string; subtitle?: string; image?: string; href: string }) => ({
-            id: r.id,
-            type: r.type as "event" | "venue" | "user",
-            title: r.title,
-            subtitle: r.subtitle,
-            image: r.image,
-            href: r.href,
-          }))
-        );
-      } else {
+  const performSearch = useCallback(
+    async (searchQuery: string) => {
+      if (searchQuery.trim().length < 2) {
         setResults([]);
+        setHasSearched(false);
+        return;
       }
-    } catch (error) {
-      console.error("Search error:", error);
-      setResults([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [token]);
+
+      setLoading(true);
+      setHasSearched(true);
+
+      try {
+        // Build headers - include auth token if available to enable user search
+        const headers: HeadersInit = {
+          "Content-Type": "application/json",
+        };
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
+        const response = await fetch(
+          `${API_URL}/api/search?q=${encodeURIComponent(searchQuery)}`,
+          { headers }
+        );
+
+        if (!response.ok) {
+          throw new Error(`Search failed: ${response.status}`);
+        }
+
+        const data = await response.json();
+
+        // API returns { results: SearchResult[], counts: {...} }
+        // Results already have the correct structure: type, id, title, subtitle, image, href
+        if (data.results && Array.isArray(data.results)) {
+          setResults(
+            data.results.map(
+              (r: {
+                type: string;
+                id: string;
+                title: string;
+                subtitle?: string;
+                image?: string;
+                href: string;
+              }) => ({
+                id: r.id,
+                type: r.type as "event" | "venue" | "user",
+                title: r.title,
+                subtitle: r.subtitle,
+                image: r.image,
+                href: r.href,
+              })
+            )
+          );
+        } else {
+          setResults([]);
+        }
+      } catch (error) {
+        console.error("Search error:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [token]
+  );
 
   // Debounced search
   useEffect(() => {
@@ -120,7 +132,7 @@ export default function SearchScreen() {
 
   const handleResultPress = (result: SearchResult) => {
     Keyboard.dismiss();
-    
+
     // href contains the full path like "/events/slug" or "/venues/slug" or "/users/id"
     // Navigate based on type since mobile routes may differ from web
     switch (result.type) {
@@ -239,7 +251,11 @@ export default function SearchScreen() {
         </View>
       ) : hasSearched && results.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Search size={48} color={colors.textTertiary} style={{ opacity: 0.5 }} />
+          <Search
+            size={48}
+            color={colors.textTertiary}
+            style={{ opacity: 0.5 }}
+          />
           <Text style={styles.emptyTitle}>{t("search.noResults")}</Text>
           <Text style={styles.emptyDescription}>
             {t("search.noResultsDescription")}

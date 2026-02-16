@@ -1,4 +1,5 @@
 import { setRequestLocale } from "next-intl/server";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,13 @@ interface PrivacyPageProps {
 export default async function PrivacyPage({ params }: PrivacyPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
+  const t = await getTranslations("legal.privacy");
+
+  const formattedDate = new Date().toLocaleDateString(locale, {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -17,14 +25,14 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
         <Button asChild variant="ghost" className="mb-6">
           <Link href="/">
             <ChevronLeft className="mr-2 h-4 w-4" />
-            Voltar
+            {t("back")}
           </Link>
         </Button>
 
         <article className="prose prose-gray dark:prose-invert max-w-none">
-          <h1>Política de Privacidade</h1>
+          <h1>{t("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            Última atualização: 16 de Janeiro de 2026
+            {t("lastUpdated", { date: formattedDate })}
           </p>
 
           <p>

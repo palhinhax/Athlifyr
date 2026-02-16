@@ -233,8 +233,13 @@ export async function GET(request: NextRequest) {
 
     // Search users with fuzzy matching - ONLY IF AUTHENTICATED
     // Users should not be exposed in public search for privacy
-    let sortedUsers: { id: string; name: string | null; email: string | null; image: string | null }[] = [];
-    
+    let sortedUsers: {
+      id: string;
+      name: string | null;
+      email: string | null;
+      image: string | null;
+    }[] = [];
+
     if (isAuthenticated) {
       const fuzzyUsers = await prisma.$queryRaw<
         { id: string; max_similarity: number }[]
@@ -288,7 +293,7 @@ export async function GET(request: NextRequest) {
       LIMIT ${limit}
     `;
 
-    const userIds = fuzzyUsers.map((u) => u.id);
+      const userIds = fuzzyUsers.map((u) => u.id);
 
       // Fetch full user data
       const users =

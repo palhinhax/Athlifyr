@@ -67,7 +67,7 @@ export default function MyScheduleScreen() {
       setLoading(false);
       return;
     }
-    
+
     try {
       const now = new Date();
       const futureDate = new Date();

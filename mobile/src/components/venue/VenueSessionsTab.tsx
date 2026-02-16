@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback, useMemo } from "react";
+import React, { useState, useMemo, useCallback } from "react";
 
 import {
   View,
@@ -8,20 +8,18 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
+  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import {
-  Calendar,
-  Clock,
-  Users,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react-native";
-import { api } from "@/src/lib/api";
+import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { useVenueSessions } from "@/src/hooks/useVenueSessions";
+import type { VenueSession } from "@/src/hooks/useVenueSessions";
+import { SessionCard } from "@/src/components/venue/SessionCard";
+import { SessionDetailSheet } from "@/src/components/venue/SessionDetailSheet";
+import { SessionFormModal } from "@/src/components/venue/SessionFormModal";
+import { api } from "@/src/lib/api";
 import {
-  startOfMonth,
-  endOfMonth,
   eachDayOfInterval,
   format,
   isSameDay,
@@ -30,6 +28,8 @@ import {
   subMonths,
   startOfWeek,
   endOfWeek,
+  startOfMonth,
+  endOfMonth,
   isSameMonth,
 } from "date-fns";
 import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
@@ -45,22 +45,12 @@ const dateFnsLocaleMap: Record<string, Locale> = {
 
 // ── Types ──────────────────────────────────────────────────────────────
 
-interface Session {
-  id: string;
-  title: string;
-  type: string;
-  startsAt: string;
-  endsAt: string;
-  maxCapacity: number | null;
-  currentBookings: number;
-  coach?: {
-    user: { id: string; name: string; image: string | null };
-  } | null;
-  _count?: { bookings: number };
-}
-
 interface VenueSessionsTabProps {
   venueId: string;
+  userId: string | null;
+  isOwnerOrAdmin: boolean;
+  canEditSessions: boolean;
+  hasActiveSubscription: boolean;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -73,75 +63,43 @@ const AVAILABLE_WIDTH =
   SCREEN_WIDTH - PARENT_PADDING * 2 - CALENDAR_PADDING * 2;
 const CELL_HEIGHT = Math.floor(AVAILABLE_WIDTH / 7) + 8;
 
-function formatSessionTime(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-}
-
-function getSessionTypeColor(type: string): string {
-  switch (type) {
-    case "CLASS":
-      return "#3b82f6";
-    case "OPEN_GYM":
-      return "#10b981";
-    case "PERSONAL":
-      return "#8b5cf6";
-    case "EVENT":
-      return "#f59e0b";
-    default:
-      return theme.colors.textSecondary;
-  }
-}
-
 // ── Component ──────────────────────────────────────────────────────────
 
-export function VenueSessionsTab({ venueId }: VenueSessionsTabProps) {
+export function VenueSessionsTab({
+  venueId,
+  userId,
+  isOwnerOrAdmin,
+  canEditSessions,
+  hasActiveSubscription,
+}: VenueSessionsTabProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = dateFnsLocaleMap[i18n.language] || enUS;
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [loading, setLoading] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
-  // ── Data fetching ──
-
-  const fetchSessions = useCallback(
-    async (month: Date) => {
-      try {
-        setLoading(true);
-        const start = startOfMonth(month);
-        const end = endOfMonth(month);
-
-        const response = await api.get(`/venues/${venueId}/sessions`, {
-          params: { from: start.toISOString(), to: end.toISOString() },
-        });
-
-        const raw = response.data;
-        let sessionsData: Session[] = [];
-        if (Array.isArray(raw)) {
-          sessionsData = raw;
-        } else if (
-          raw &&
-          typeof raw === "object" &&
-          Array.isArray(raw.sessions)
-        ) {
-          sessionsData = raw.sessions;
-        }
-
-        setSessions(sessionsData || []);
-      } catch (error) {
-        console.error("Error fetching sessions:", error);
-        setSessions([]);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [venueId]
+  // ── Session state ──
+  const [selectedSession, setSelectedSession] = useState<VenueSession | null>(
+    null
+  );
+  const [detailSheetVisible, setDetailSheetVisible] = useState(false);
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [editingSession, setEditingSession] = useState<VenueSession | null>(
+    null
+  );
+  const [bookingInProgress, setBookingInProgress] = useState<string | null>(
+    null
   );
 
-  useEffect(() => {
-    fetchSessions(currentMonth);
-  }, [currentMonth, fetchSessions]);
+  // ── Data fetching (React Query — cached for instant re-renders) ──
+
+  const {
+    sessions,
+    isLoading,
+    refetch,
+    optimisticBook,
+    optimisticCancelBooking,
+    optimisticDelete,
+  } = useVenueSessions(venueId, currentMonth);
 
   // ── Calendar computation ──
 
@@ -186,6 +144,131 @@ export function VenueSessionsTab({ venueId }: VenueSessionsTabProps) {
   const handleNextMonth = () => setCurrentMonth(addMonths(currentMonth, 1));
   const handleDayPress = (day: Date) => setSelectedDate(day);
 
+  // ── Session action handlers ──
+
+  const handleBook = useCallback(
+    async (session: VenueSession) => {
+      if (!userId) {
+        Alert.alert(t("sessions.signInToBook"));
+        return;
+      }
+      setBookingInProgress(session.id);
+      try {
+        const res = await api.post(
+          `/venues/${venueId}/sessions/${session.id}/book`
+        );
+        const bookingId = res.data?.booking?.id ?? res.data?.id ?? "temp";
+        optimisticBook(session.id, bookingId);
+        Alert.alert(t("sessions.bookingSuccess"));
+      } catch {
+        Alert.alert(t("sessions.bookingError"));
+      } finally {
+        setBookingInProgress(null);
+      }
+    },
+    [userId, venueId, optimisticBook, t]
+  );
+
+  const handleCancelBooking = useCallback(
+    async (session: VenueSession) => {
+      if (!session.userBookingId) return;
+      Alert.alert(t("sessions.confirmCancel"), "", [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("sessions.cancelBooking"),
+          style: "destructive",
+          onPress: async () => {
+            setBookingInProgress(session.id);
+            try {
+              await api.post(
+                `/venues/${venueId}/bookings/${session.userBookingId}/cancel`
+              );
+              optimisticCancelBooking(session.id);
+              Alert.alert(t("sessions.bookingCancelled"));
+            } catch {
+              Alert.alert(t("sessions.cancelError"));
+            } finally {
+              setBookingInProgress(null);
+            }
+          },
+        },
+      ]);
+    },
+    [venueId, optimisticCancelBooking, t]
+  );
+
+  const handleDelete = useCallback(
+    async (session: VenueSession) => {
+      const isRecurring = !!session.recurringSessionId;
+
+      if (isRecurring) {
+        Alert.alert(t("sessions.confirmDeleteRecurring"), "", [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: t("sessions.deleteOnlyThis"),
+            onPress: async () => {
+              try {
+                await api.delete(`/venues/${venueId}/sessions/${session.id}`);
+                optimisticDelete(session.id);
+                Alert.alert(t("sessions.deleteSuccess"));
+              } catch {
+                Alert.alert(t("sessions.deleteError"));
+              }
+            },
+          },
+          {
+            text: t("sessions.deleteAll"),
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await api.delete(
+                  `/venues/${venueId}/sessions/${session.id}?deleteAll=true`
+                );
+                refetch();
+                Alert.alert(t("sessions.deleteSuccess"));
+              } catch {
+                Alert.alert(t("sessions.deleteError"));
+              }
+            },
+          },
+        ]);
+      } else {
+        Alert.alert(t("sessions.confirmDelete"), "", [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: t("sessions.deleteSession"),
+            style: "destructive",
+            onPress: async () => {
+              try {
+                await api.delete(`/venues/${venueId}/sessions/${session.id}`);
+                optimisticDelete(session.id);
+                Alert.alert(t("sessions.deleteSuccess"));
+              } catch {
+                Alert.alert(t("sessions.deleteError"));
+              }
+            },
+          },
+        ]);
+      }
+    },
+    [venueId, optimisticDelete, refetch, t]
+  );
+
+  const handleEdit = useCallback((session: VenueSession) => {
+    setEditingSession(session);
+    setFormModalVisible(true);
+  }, []);
+
+  const handleSessionPress = useCallback((session: VenueSession) => {
+    setSelectedSession(session);
+    setDetailSheetVisible(true);
+  }, []);
+
+  const handleCreateSession = useCallback(() => {
+    setEditingSession(null);
+    setFormModalVisible(true);
+  }, []);
+
   // ── Weekday labels ──
 
   const weekDayLabels = [
@@ -200,7 +283,7 @@ export function VenueSessionsTab({ venueId }: VenueSessionsTabProps) {
 
   // ── Loading state ──
 
-  if (loading && sessions.length === 0) {
+  if (isLoading && sessions.length === 0) {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -311,11 +394,24 @@ export function VenueSessionsTab({ venueId }: VenueSessionsTabProps) {
 
       {/* Sessions for selected date */}
       <View style={styles.sessionsSection}>
-        <Text style={styles.sectionTitle}>
-          {isToday(selectedDate)
-            ? t("sessions.today", "Hoje")
-            : format(selectedDate, "EEEE, d MMMM", { locale: dateLocale })}
-        </Text>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>
+            {isToday(selectedDate)
+              ? t("sessions.today", "Hoje")
+              : format(selectedDate, "EEEE, d MMMM", { locale: dateLocale })}
+          </Text>
+          {canEditSessions && (
+            <TouchableOpacity
+              style={styles.createButton}
+              onPress={handleCreateSession}
+            >
+              <Plus size={16} color="#fff" />
+              <Text style={styles.createButtonText}>
+                {t("sessions.createSession")}
+              </Text>
+            </TouchableOpacity>
+          )}
+        </View>
 
         {selectedDateSessions.length === 0 ? (
           <View style={styles.emptyState}>
@@ -325,67 +421,72 @@ export function VenueSessionsTab({ venueId }: VenueSessionsTabProps) {
             </Text>
           </View>
         ) : (
-          selectedDateSessions.map((session) => {
-            const typeColor = getSessionTypeColor(session.type);
-            const bookings =
-              session.currentBookings || session._count?.bookings || 0;
-
-            return (
-              <View key={session.id} style={styles.sessionCard}>
-                {/* Left accent bar */}
-                <View
-                  style={[styles.sessionAccent, { backgroundColor: typeColor }]}
-                />
-
-                <View style={styles.sessionContent}>
-                  {/* Type badge + time */}
-                  <View style={styles.sessionTopRow}>
-                    <View
-                      style={[
-                        styles.typeBadge,
-                        { backgroundColor: typeColor + "20" },
-                      ]}
-                    >
-                      <Text
-                        style={[styles.typeBadgeText, { color: typeColor }]}
-                      >
-                        {session.type.replace("_", " ")}
-                      </Text>
-                    </View>
-                    <View style={styles.sessionTime}>
-                      <Clock size={13} color={theme.colors.textSecondary} />
-                      <Text style={styles.sessionTimeText}>
-                        {formatSessionTime(session.startsAt)} -{" "}
-                        {formatSessionTime(session.endsAt)}
-                      </Text>
-                    </View>
-                  </View>
-
-                  {/* Title */}
-                  <Text style={styles.sessionTitle}>{session.title}</Text>
-
-                  {/* Meta row */}
-                  <View style={styles.sessionMetaRow}>
-                    {session.coach?.user?.name && (
-                      <Text style={styles.sessionMetaText}>
-                        🏋️ {session.coach.user.name}
-                      </Text>
-                    )}
-                    {session.maxCapacity && (
-                      <View style={styles.capacityBadge}>
-                        <Users size={12} color={theme.colors.textSecondary} />
-                        <Text style={styles.capacityText}>
-                          {bookings}/{session.maxCapacity}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              </View>
-            );
-          })
+          selectedDateSessions.map((session) => (
+            <SessionCard
+              key={session.id}
+              session={session}
+              userId={userId}
+              hasActiveSubscription={hasActiveSubscription}
+              isOwnerOrAdmin={isOwnerOrAdmin}
+              canEditSessions={canEditSessions}
+              onPress={() => handleSessionPress(session)}
+              onBook={() => handleBook(session)}
+              onCancelBooking={() => handleCancelBooking(session)}
+              onEdit={() => handleEdit(session)}
+              onDelete={() => handleDelete(session)}
+              bookingInProgress={bookingInProgress === session.id}
+            />
+          ))
         )}
       </View>
+
+      {/* Session Detail Bottom Sheet */}
+      <SessionDetailSheet
+        visible={detailSheetVisible}
+        onClose={() => {
+          setDetailSheetVisible(false);
+          setSelectedSession(null);
+        }}
+        session={selectedSession}
+        userId={userId}
+        hasActiveSubscription={hasActiveSubscription}
+        isOwnerOrAdmin={isOwnerOrAdmin}
+        canEditSessions={canEditSessions}
+        onBook={() => {
+          if (selectedSession) handleBook(selectedSession);
+        }}
+        onCancelBooking={() => {
+          if (selectedSession) handleCancelBooking(selectedSession);
+        }}
+        onEdit={() => {
+          if (selectedSession) {
+            setDetailSheetVisible(false);
+            handleEdit(selectedSession);
+          }
+        }}
+        onDelete={() => {
+          if (selectedSession) {
+            setDetailSheetVisible(false);
+            handleDelete(selectedSession);
+          }
+        }}
+        bookingInProgress={
+          selectedSession ? bookingInProgress === selectedSession.id : false
+        }
+      />
+
+      {/* Create / Edit Session Modal */}
+      <SessionFormModal
+        visible={formModalVisible}
+        onClose={() => {
+          setFormModalVisible(false);
+          setEditingSession(null);
+        }}
+        venueId={venueId}
+        session={editingSession}
+        defaultDate={selectedDate}
+        onSuccess={() => refetch()}
+      />
     </ScrollView>
   );
 }
@@ -530,12 +631,32 @@ const styles = StyleSheet.create({
   sessionsSection: {
     paddingBottom: theme.spacing.xl,
   },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: theme.spacing.md,
+  },
   sectionTitle: {
     fontSize: 16,
     fontWeight: "700",
     color: theme.colors.text,
-    marginBottom: theme.spacing.md,
     textTransform: "capitalize",
+    flex: 1,
+  },
+  createButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: theme.borderRadius.md,
+  },
+  createButtonText: {
+    color: "#fff",
+    fontSize: 12,
+    fontWeight: "700",
   },
 
   emptyState: {
@@ -550,79 +671,5 @@ const styles = StyleSheet.create({
     color: theme.colors.textTertiary,
     textAlign: "center",
     lineHeight: 20,
-  },
-
-  // Session card
-  sessionCard: {
-    flexDirection: "row",
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    marginBottom: theme.spacing.sm,
-    overflow: "hidden",
-  },
-  sessionAccent: {
-    width: 4,
-  },
-  sessionContent: {
-    flex: 1,
-    padding: theme.spacing.md,
-    gap: 6,
-  },
-  sessionTopRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  typeBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  typeBadgeText: {
-    fontSize: 10,
-    fontWeight: "800",
-    textTransform: "uppercase",
-    letterSpacing: 0.5,
-  },
-  sessionTime: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-  },
-  sessionTimeText: {
-    fontSize: 12,
-    fontWeight: "500",
-    color: theme.colors.textSecondary,
-  },
-  sessionTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: theme.colors.text,
-    lineHeight: 20,
-  },
-  sessionMetaRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: theme.spacing.md,
-  },
-  sessionMetaText: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-  },
-  capacityBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 4,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 10,
-  },
-  capacityText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.textSecondary,
   },
 });

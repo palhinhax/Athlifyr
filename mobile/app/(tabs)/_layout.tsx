@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { Tabs, useRouter } from "expo-router";
 import {
   Calendar,
@@ -12,6 +12,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { StyleSheet, Platform, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
+import { startOfMonth, endOfMonth, format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import { NotificationBell } from "@/src/components/NotificationBell";
@@ -21,17 +23,52 @@ import { HeaderLogo } from "@/src/components/HeaderLogo";
 import { VenuePickerModal } from "@/src/components/VenuePickerModal";
 import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
 import { useAuthStore } from "@/src/lib/auth-store";
+import { api } from "@/src/lib/api";
 
 export default function TabLayout() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: activeVenues = [] } = useActiveVenues();
   const [showVenuePicker, setShowVenuePicker] = useState(false);
 
   // Only show my-venues tab when logged in AND has venues
   const showMyVenuesTab = isAuthenticated && activeVenues.length > 0;
+
+  // ── Pre-fetch venue detail + sessions for instant navigation ──
+  useEffect(() => {
+    if (activeVenues.length === 0) return;
+    const now = new Date();
+    const monthKey = format(now, "yyyy-MM");
+    const from = startOfMonth(now).toISOString();
+    const to = endOfMonth(now).toISOString();
+
+    for (const venue of activeVenues) {
+      // Pre-fetch venue detail
+      queryClient.prefetchQuery({
+        queryKey: ["venue", venue.slug],
+        queryFn: () => api.get(`/venues/${venue.slug}`).then((r) => r.data),
+        staleTime: 2 * 60 * 1000,
+      });
+      // Pre-fetch current month sessions
+      queryClient.prefetchQuery({
+        queryKey: ["venueSessions", venue.id, monthKey],
+        queryFn: () =>
+          api
+            .get(`/venues/${venue.id}/sessions`, { params: { from, to } })
+            .then((r) => {
+              const raw = r.data;
+              if (Array.isArray(raw)) return raw;
+              if (raw && typeof raw === "object" && Array.isArray(raw.sessions))
+                return raw.sessions;
+              return [];
+            }),
+        staleTime: 2 * 60 * 1000,
+      });
+    }
+  }, [activeVenues, queryClient]);
 
   // Calculate tab bar height with safe area
   const tabBarHeight = Platform.OS === "ios" ? 88 : 68 + insets.bottom;
@@ -42,8 +79,8 @@ export default function TabLayout() {
   const navigateToVenue = useCallback(
     (venue: ActiveVenue) => {
       setShowVenuePicker(false);
-      // Navigate to venue page within the app
-      router.push(`/venues/${venue.slug}`);
+      // Navigate directly to sessions tab for fastest access
+      router.push(`/venues/${venue.slug}?tab=sessions`);
     },
     [router]
   );

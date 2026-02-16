@@ -16,6 +16,7 @@ import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import { useVenueDetail } from "@/src/hooks/useVenueDetail";
+import { useAuthStore } from "@/src/lib/auth-store";
 import { VenueAboutTab } from "@/src/components/venue/VenueAboutTab";
 import { VenueTeamTab } from "@/src/components/venue/VenueTeamTab";
 import { VenuePlansTab } from "@/src/components/venue/VenuePlansTab";
@@ -26,11 +27,44 @@ const PUBLIC_TABS = ["feed", "about", "plans", "sessions", "team"] as const;
 type TabId = (typeof PUBLIC_TABS)[number];
 
 export default function VenueDetailScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, tab } = useLocalSearchParams<{ slug: string; tab?: string }>();
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { venue, isLoading, error, refetch } = useVenueDetail(slug ?? "");
+
+  // ── Auth & role computation ──
+  const userId = useAuthStore((s) => s.user?.id) ?? null;
+  const userRole = useAuthStore((s) => s.user?.role) ?? null;
+
+  const isOwnerOrAdmin = useMemo(() => {
+    if (!userId || !venue) return false;
+    if (userRole === "ADMIN") return true;
+    return venue.members.some(
+      (m) => m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
+    );
+  }, [userId, userRole, venue]);
+
+  const canEditSessions = useMemo(() => {
+    if (!userId || !venue) return false;
+    if (userRole === "ADMIN") return true;
+    return venue.members.some(
+      (m) =>
+        m.user.id === userId &&
+        (m.role === "OWNER" || m.role === "ADMIN" || m.role === "COACH")
+    );
+  }, [userId, userRole, venue]);
+
+  const hasActiveSubscription = useMemo(() => {
+    if (!venue) return false;
+    const hasPlanSub = venue.plans.some((p) =>
+      p.subscriptions?.some((s) => s.status === "ACTIVE")
+    );
+    const hasCrossVenueSub = venue.crossVenueSubscriptions?.some(
+      (s) => s.status === "ACTIVE"
+    );
+    return hasPlanSub || !!hasCrossVenueSub;
+  }, [venue]);
 
   // Determine which tabs are visible based on venue.visibleTabs config
   const visibleTabs = useMemo<TabId[]>(() => {
@@ -39,8 +73,11 @@ export default function VenueDetailScreen() {
     return PUBLIC_TABS.filter((tab) => configured.includes(tab));
   }, [venue]);
 
-  // Default to the first visible tab
-  const [activeTab, setActiveTab] = useState<TabId>("feed");
+  // Use tab query param as initial tab (e.g. from My Venues shortcut → sessions)
+  const initialTab = PUBLIC_TABS.includes(tab as TabId)
+    ? (tab as TabId)
+    : "feed";
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
 
   // Ensure the active tab is always a visible one
   const currentTab = visibleTabs.includes(activeTab)
@@ -121,7 +158,15 @@ export default function VenueDetailScreen() {
       case "plans":
         return <VenuePlansTab plans={venue.plans} />;
       case "sessions":
-        return <VenueSessionsTab venueId={venue.id} />;
+        return (
+          <VenueSessionsTab
+            venueId={venue.id}
+            userId={userId}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            canEditSessions={canEditSessions}
+            hasActiveSubscription={hasActiveSubscription}
+          />
+        );
       case "team":
         return <VenueTeamTab members={venue.members} />;
       default:

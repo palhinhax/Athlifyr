@@ -123,6 +123,8 @@ export function useVenueDetail(slug: string) {
     queryKey: ["venue", slug],
     queryFn: () => fetchVenueDetail(slug),
     enabled: !!slug,
+    staleTime: 2 * 60 * 1000, // 2 minutes – show cached data instantly
+    gcTime: 10 * 60 * 1000, // 10 minutes in cache
   });
 
   return {

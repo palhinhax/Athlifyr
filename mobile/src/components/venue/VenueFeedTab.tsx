@@ -6,7 +6,6 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   TextInput,
-  Alert,
 } from "react-native";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useTranslation } from "react-i18next";
@@ -28,6 +27,7 @@ import {
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { CachedImage, CachedAvatar } from "@/src/components/CachedImage";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { theme } from "@/src/constants/theme";
 
 // --- Types matching API response ---
@@ -411,6 +411,10 @@ function PostActions({
   const { t } = useTranslation();
   const currentUser = useAuthStore((s) => s.user);
 
+  // Modal states
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null);
+
   // Like state
   const isLikedByUser = currentUser ? (post.likes ?? []).length > 0 : false;
   const [optimisticLiked, setOptimisticLiked] = useState(isLikedByUser);
@@ -432,10 +436,7 @@ function PostActions({
       currentUser?.id ?? "null"
     );
     if (!currentUser) {
-      Alert.alert(
-        t("feed.loginToInteract"),
-        t("feed.loginToInteractDescription")
-      );
+      setShowLoginPrompt(true);
       return;
     }
 
@@ -510,25 +511,23 @@ function PostActions({
   };
 
   const handleDeleteComment = (commentId: string) => {
-    Alert.alert(t("feed.deleteComment"), t("feed.deleteCommentConfirm"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("common.delete"),
-        style: "destructive",
-        onPress: async () => {
-          try {
-            await api.delete(
-              `/posts/${post.id}/comments?commentId=${commentId}`
-            );
-            setComments((prev) => prev.filter((c) => c.id !== commentId));
-            setCommentsCount((c) => c - 1);
-            onCountsChange?.(optimisticLikeCount, commentsCount - 1);
-          } catch (error) {
-            console.error("Error deleting comment:", error);
-          }
-        },
-      },
-    ]);
+    setCommentToDelete(commentId);
+  };
+
+  const confirmDeleteComment = async () => {
+    if (!commentToDelete) return;
+    try {
+      await api.delete(
+        `/posts/${post.id}/comments?commentId=${commentToDelete}`
+      );
+      setComments((prev) => prev.filter((c) => c.id !== commentToDelete));
+      setCommentsCount((c) => c - 1);
+      onCountsChange?.(optimisticLikeCount, commentsCount - 1);
+    } catch (error) {
+      console.error("Error deleting comment:", error);
+    } finally {
+      setCommentToDelete(null);
+    }
   };
 
   return (
@@ -682,6 +681,41 @@ function PostActions({
           )}
         </View>
       )}
+
+      {/* Login Prompt Modal */}
+      <ConfirmModal
+        visible={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        title={t("feed.loginToInteract")}
+        message={t("feed.loginToInteractDescription")}
+        actions={[
+          {
+            label: t("common.close"),
+            variant: "outline",
+            onPress: () => setShowLoginPrompt(false),
+          },
+        ]}
+      />
+
+      {/* Delete Comment Confirmation Modal */}
+      <ConfirmModal
+        visible={commentToDelete !== null}
+        onClose={() => setCommentToDelete(null)}
+        title={t("feed.deleteComment")}
+        message={t("feed.deleteCommentConfirm")}
+        actions={[
+          {
+            label: t("common.cancel"),
+            variant: "outline",
+            onPress: () => setCommentToDelete(null),
+          },
+          {
+            label: t("common.delete"),
+            variant: "destructive",
+            onPress: confirmDeleteComment,
+          },
+        ]}
+      />
     </View>
   );
 }

@@ -12,6 +12,7 @@ import {
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   ArrowLeft,
   Search,
@@ -20,7 +21,7 @@ import {
   User,
   X,
 } from "lucide-react-native";
-import { API_URL } from "@/src/lib/api";
+import { API_URL, api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import {
   colors,
@@ -41,6 +42,7 @@ interface SearchResult {
 export default function SearchScreen() {
   const router = useRouter();
   const { t } = useTranslation();
+  const queryClient = useQueryClient();
   const inputRef = useRef<TextInput>(null);
   const token = useAuthStore((s) => s.token);
   const [query, setQuery] = useState("");
@@ -147,6 +149,12 @@ export default function SearchScreen() {
         // Extract slug from href (e.g., "/venues/slug" -> "slug")
         const venueSlug = result.href.split("/").pop();
         if (venueSlug) {
+          // Pre-fetch venue detail for instant navigation
+          queryClient.prefetchQuery({
+            queryKey: ["venue", venueSlug],
+            queryFn: () => api.get(`/venues/${venueSlug}`).then((r) => r.data),
+            staleTime: 2 * 60 * 1000,
+          });
           router.push(`/venues/${venueSlug}`);
         }
         break;

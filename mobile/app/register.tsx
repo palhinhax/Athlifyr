@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -18,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useToast } from "@/src/hooks/useToast";
 import {
   colors,
   typography,
@@ -48,6 +48,7 @@ export default function RegisterScreen() {
   const router = useRouter();
   const { signIn: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
   const logout = useAuthStore((s) => s.logout);
+  const { showToast } = useToast();
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -104,25 +105,15 @@ export default function RegisterScreen() {
         password,
       });
 
-      Alert.alert(
-        t("register.registrationSuccess"),
-        t("register.nowYouCanSignIn"),
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              router.back();
-              setTimeout(() => router.push("/login"), 100);
-            },
-          },
-        ]
-      );
+      showToast(t("register.nowYouCanSignIn"), "success");
+      router.back();
+      setTimeout(() => router.push("/login"), 100);
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : t("register.registrationFailed");
-      Alert.alert(t("common.error"), message);
+      showToast(message, "error");
     } finally {
       setIsLoading(false);
     }
@@ -136,7 +127,7 @@ export default function RegisterScreen() {
       // Navigate back after successful Google sign-in
       router.back();
     } catch {
-      Alert.alert(t("common.error"), t("login.googleError"));
+      showToast(t("login.googleError"), "error");
     } finally {
       setIsGoogleLoading(false);
     }

@@ -10,11 +10,11 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { useToast } from "@/src/hooks/useToast";
 import {
   usePerformance,
   parseTimeToSeconds,
@@ -34,6 +34,7 @@ export function AddRunSheet({
 }: AddRunSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
+  const { showToast } = useToast();
 
   const [distance, setDistance] = useState("");
   const [time, setTime] = useState("");
@@ -48,13 +49,13 @@ export function AddRunSheet({
   const handleSave = async () => {
     const distanceKm = parseFloat(distance);
     if (!distanceKm || distanceKm <= 0) {
-      Alert.alert(t("performance.error"), t("performance.run.invalidDistance"));
+      showToast(t("performance.run.invalidDistance"), "error");
       return;
     }
 
     const timeSeconds = parseTimeToSeconds(time);
     if (!timeSeconds || timeSeconds <= 0) {
-      Alert.alert(t("performance.error"), t("performance.run.invalidTime"));
+      showToast(t("performance.run.invalidTime"), "error");
       return;
     }
 
@@ -76,11 +77,11 @@ export function AddRunSheet({
       }
 
       await createEntry(entry);
-      Alert.alert(t("performance.success"), t("performance.run.savedSuccess"));
+      showToast(t("performance.run.savedSuccess"), "success");
       resetForm();
       onClose();
     } catch {
-      Alert.alert(t("performance.error"), t("performance.run.saveFailed"));
+      showToast(t("performance.run.saveFailed"), "error");
     }
   };
 

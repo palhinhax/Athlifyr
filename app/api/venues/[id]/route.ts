@@ -5,14 +5,19 @@ import { canManageVenue } from "@/lib/venues/authorization";
 import { hasActiveSubscription } from "@/lib/venues/subscription-utils";
 import { SportType, VenueService } from "@prisma/client";
 
+export const dynamic = "force-dynamic";
+
 // GET - Get venue by ID or slug
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
-    const authUser = await getAuthUser(request);
+    // Resolve params and auth in parallel
+    const [{ id }, authUser] = await Promise.all([
+      params,
+      getAuthUser(request),
+    ]);
     const currentUserId = authUser?.id;
 
     // Try to find by ID first, then by slug
@@ -343,7 +348,7 @@ export async function GET(
       }
     }
 
-    // Check if user has active subscription (centralized logic)
+    // Check if user has active subscription (optimized: reuse venue data already loaded)
     let userSubscriptionStatus: {
       hasSubscription: boolean;
       reason: string;
@@ -351,10 +356,34 @@ export async function GET(
     } | null = null;
 
     if (currentUserId) {
-      userSubscriptionStatus = await hasActiveSubscription(
-        currentUserId,
-        venue.id
-      );
+      // Optimization: avoid re-querying venue and members — we already have them
+      if (!venue.requiresPlanToBook) {
+        userSubscriptionStatus = {
+          hasSubscription: true,
+          reason: "no_plan_required",
+          subscriptionCount: 0,
+        };
+      } else {
+        // Check if user is a venue member (OWNER, ADMIN, COACH) using data already loaded
+        const isMember = venue.members.some(
+          (m) =>
+            m.user.id === currentUserId &&
+            ["OWNER", "ADMIN", "COACH"].includes(m.role)
+        );
+        if (isMember) {
+          userSubscriptionStatus = {
+            hasSubscription: true,
+            reason: "venue_member",
+            subscriptionCount: 0,
+          };
+        } else {
+          // Only call the full function when we actually need to check subscriptions
+          userSubscriptionStatus = await hasActiveSubscription(
+            currentUserId,
+            venue.id
+          );
+        }
+      }
     }
 
     // Build final response
@@ -369,7 +398,11 @@ export async function GET(
       },
     };
 
-    return NextResponse.json(venueWithUniqueCount);
+    return NextResponse.json(venueWithUniqueCount, {
+      headers: {
+        "Cache-Control": "no-store, no-cache, must-revalidate",
+      },
+    });
   } catch (error) {
     console.error("Error fetching venue:", error);
     return NextResponse.json(

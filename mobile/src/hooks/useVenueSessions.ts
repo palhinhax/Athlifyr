@@ -1,4 +1,7 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { AppState } from "react-native";
+import type { AppStateStatus } from "react-native";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { startOfMonth, endOfMonth, format } from "date-fns";
@@ -28,6 +31,45 @@ export interface SessionBooking {
   } | null;
 }
 
+export interface WorkoutExercise {
+  id: string;
+  exerciseId: string;
+  exercise: {
+    name: string;
+  };
+  prescribedReps: number | null;
+  prescribedWeight: number | null;
+  prescribedWeightUnit: string | null;
+  prescribedDistance: number | null;
+  prescribedDistanceUnit: string | null;
+  prescribedTime: number | null;
+  prescribedCalories: number | null;
+  prescribedSets: number | null;
+  notes: string | null;
+}
+
+export interface WorkoutBlock {
+  id: string;
+  type: string;
+  name: string | null;
+  rounds: number | null;
+  timeCap: number | null;
+  notes: string | null;
+  exercises: WorkoutExercise[];
+}
+
+export interface SessionWorkout {
+  id: string;
+  workout: {
+    id: string;
+    name: string;
+    description: string | null;
+    estimatedTime: number | null;
+    difficulty: string | null;
+    blocks?: WorkoutBlock[];
+  };
+}
+
 export interface VenueSession {
   id: string;
   venueId: string;
@@ -46,14 +88,7 @@ export interface VenueSession {
     isActive: boolean;
   } | null;
   bookings?: SessionBooking[];
-  workouts?: Array<{
-    id: string;
-    workout: {
-      id: string;
-      name: string;
-      description: string | null;
-    };
-  }>;
+  workouts?: SessionWorkout[];
   _count: {
     bookings: number;
   };
@@ -129,12 +164,38 @@ export function useVenueSessions(venueId: string, month: Date) {
 
       return sessions;
     },
-    staleTime: 30 * 1000, // Consider data stale after 30 seconds
+    staleTime: 10 * 1000, // Consider data stale after 10 seconds
     gcTime: 10 * 60 * 1000,
-    refetchOnMount: true, // Refetch when component mounts
-    refetchOnWindowFocus: true, // Refetch when app comes back to foreground
-    refetchInterval: 60 * 1000, // Auto-refetch every 60 seconds when viewing sessions
+    refetchOnMount: "always", // Always refetch when component mounts (e.g. navigating back)
+    refetchOnWindowFocus: "always", // Always refetch when app comes back to foreground
+    refetchInterval: 15 * 1000, // Auto-refetch every 15 seconds for near-real-time sync
+    refetchIntervalInBackground: true, // Keep polling even when app is backgrounded
   });
+
+  // ── Foreground refetch safety net ────────────────────────────────────
+  // React Query's refetchOnWindowFocus relies on the global focusManager,
+  // which may not always fire in React Native. This listener guarantees
+  // an immediate refetch + cache invalidation when the app returns to foreground.
+  const appState = useRef<AppStateStatus>(AppState.currentState);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener(
+      "change",
+      (nextAppState: AppStateStatus) => {
+        if (
+          appState.current.match(/inactive|background/) &&
+          nextAppState === "active"
+        ) {
+          // App came back to foreground — force fresh data
+          queryClient.invalidateQueries({
+            queryKey: ["venueSessions", venueId, monthKey],
+          });
+        }
+        appState.current = nextAppState;
+      }
+    );
+    return () => subscription.remove();
+  }, [venueId, monthKey, queryClient]);
 
   // Optimistic book — update cache instantly
   const optimisticBook = (sessionId: string, bookingId: string) => {

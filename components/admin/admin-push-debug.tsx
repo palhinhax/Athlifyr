@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle, RefreshCw } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function AdminPushDebug() {
   const { data: session } = useSession();
+  const { toast } = useToast();
   const [debugInfo, setDebugInfo] = useState({
     swRegistered: false,
     swActive: false,
@@ -68,7 +70,10 @@ export function AdminPushDebug() {
   // Request notification permission
   const requestPermission = async () => {
     if (!("Notification" in window)) {
-      alert("This browser doesn't support notifications");
+      toast({
+        description: "This browser doesn't support notifications",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -90,7 +95,10 @@ export function AdminPushDebug() {
   // Register service worker
   const registerServiceWorker = async () => {
     if (!("serviceWorker" in navigator)) {
-      alert("This browser doesn't support service workers");
+      toast({
+        description: "This browser doesn't support service workers",
+        variant: "destructive",
+      });
       return;
     }
 
@@ -197,12 +205,19 @@ export function AdminPushDebug() {
   // Show browser notification directly (bypass push)
   const showBrowserNotification = async () => {
     if (!("Notification" in window)) {
-      alert("Notifications not supported");
+      toast({
+        description: "Notifications not supported",
+        variant: "destructive",
+      });
       return;
     }
 
     if (Notification.permission !== "granted") {
-      alert("Permission not granted. Click 'Request Permission' first.");
+      toast({
+        description:
+          "Permission not granted. Click 'Request Permission' first.",
+        variant: "destructive",
+      });
       return;
     }
 

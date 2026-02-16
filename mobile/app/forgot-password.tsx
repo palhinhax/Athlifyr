@@ -8,13 +8,13 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Mail, CheckCircle } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
+import { useToast } from "@/src/hooks/useToast";
 import {
   colors,
   typography,
@@ -26,6 +26,7 @@ import {
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +49,7 @@ export default function ForgotPasswordScreen() {
 
       setIsSubmitted(true);
     } catch {
-      Alert.alert(t("common.error"), t("forgotPassword.sendError"));
+      showToast(t("forgotPassword.sendError"), "error");
     } finally {
       setIsLoading(false);
     }

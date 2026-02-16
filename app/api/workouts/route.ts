@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WorkoutBlockType, WeightUnit, DistanceUnit } from "@prisma/client";
@@ -87,9 +87,9 @@ const createWorkoutSchema = z.object({
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -106,7 +106,7 @@ export async function GET(request: Request) {
     const savedWorkoutIds = includeSaved
       ? (
           await prisma.savedWorkout.findMany({
-            where: { userId: session.user.id },
+            where: { userId: user.id },
             select: { workoutId: true },
           })
         ).map((s) => s.workoutId)
@@ -115,7 +115,7 @@ export async function GET(request: Request) {
     // Build where clause - include own, public, and saved workouts
     // When venueId is provided, include venue workouts in addition to user's own and public
     const accessConditions = [
-      { createdById: session.user.id },
+      { createdById: user.id },
       { isPublic: true },
       ...(savedWorkoutIds.length > 0 ? [{ id: { in: savedWorkoutIds } }] : []),
       ...(venueId ? [{ venueId }] : []),
@@ -222,9 +222,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -249,7 +249,7 @@ export async function POST(request: Request) {
         where: {
           venueId_userId: {
             venueId: data.venueId,
-            userId: session.user.id,
+            userId: user.id,
           },
         },
       });
@@ -290,7 +290,7 @@ export async function POST(request: Request) {
       data: {
         name: data.name,
         description: data.description,
-        createdById: session.user.id,
+        createdById: user.id,
         venueId: data.venueId,
         estimatedTime: data.estimatedTime,
         difficulty: data.difficulty,

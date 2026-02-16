@@ -232,6 +232,24 @@
     },
     "errors": {
       "saveFailed": "Erreur lors de la sauvegarde de l'entraînement"
+    },
+    "runner": {
+      "start": "Démarrer",
+      "pause": "Pause",
+      "resume": "Reprendre",
+      "finish": "Terminer",
+      "finishTitle": "Terminer l'entraînement",
+      "finishMessage": "Bien joué ! Sauvegarder les résultats de l'entraînement ?",
+      "howDidYouFeel": "Comment vous êtes-vous senti ?",
+      "submitResults": "Sauvegarder les résultats",
+      "submitting": "Sauvegarde...",
+      "submitError": "Erreur lors de la sauvegarde des résultats",
+      "completedTitle": "Entraînement terminé ! 🎉",
+      "completedSubtitle": "Excellent travail, continuez comme ça !",
+      "backToWorkouts": "Retour aux entraînements",
+      "exitTitle": "Quitter l'entraînement ?",
+      "exitMessage": "Votre progression sera perdue si vous quittez maintenant.",
+      "exitConfirm": "Quitter"
     }
   },
   "notifications": {
@@ -392,6 +410,7 @@
     "selectSports": "Sélectionner les Sports",
     "language": "Langue",
     "languageDescription": "Choisis ta langue préférée.",
+    "languageUpdateError": "Erreur lors du changement de langue. Réessaie.",
     "theme": "Thème",
     "themeDescription": "Choisis l'apparence de l'application.",
     "themeLight": "Clair",
@@ -412,7 +431,10 @@
     "deleteAccountDescription": "Supprime définitivement ton compte et toutes les données associées. Cette action ne peut pas être annulée.",
     "deleteAccountConfirmTitle": "Supprimer le Compte",
     "deleteAccountWarning": "Es-tu sûr de vouloir supprimer ton compte ? Cette action est irréversible et toutes tes données seront définitivement supprimées.",
-    "deleteAccountError": "Erreur lors de la suppression du compte"
+    "deleteAccountError": "Erreur lors de la suppression du compte",
+    "logOut": "Se Déconnecter",
+    "logOutConfirmTitle": "Se Déconnecter",
+    "logOutConfirmMessage": "Es-tu sûr de vouloir te déconnecter ?"
   },
   "schedule": {
     "title": "Mon Calendrier",
@@ -595,6 +617,8 @@
     "coach": "Coach",
     "capacity": "Capacité",
     "attendees": "Participants",
+    "attendeesCount_one": "{{count}} participant",
+    "attendeesCount_other": "{{count}} participants",
     "workout": "Entraînement",
     "description": "Description",
     "tags": "Tags",

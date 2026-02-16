@@ -38,6 +38,16 @@ import {
   Power,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AdminOwnershipClaims } from "@/components/admin-ownership-claims";
 import { Badge } from "@/components/ui/badge";
 
@@ -106,6 +116,12 @@ export default function AdminVenuesPage() {
   const [userSearch, setUserSearch] = useState("");
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
   const [searchingUsers, setSearchingUsers] = useState(false);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    title: string;
+    description: string;
+    onConfirm: () => void;
+  }>({ open: false, title: "", description: "", onConfirm: () => {} });
 
   // Fee form state
   const [feeFormData, setFeeFormData] = useState<{
@@ -234,63 +250,73 @@ export default function AdminVenuesPage() {
   };
 
   const handleDelete = async (venueId: string) => {
-    if (!confirm("Tens a certeza que queres eliminar este venue?")) return;
+    setConfirmDialog({
+      open: true,
+      title: "Eliminar venue",
+      description:
+        "Tens a certeza que queres eliminar este venue? Esta ação não pode ser desfeita.",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          const response = await fetch(`/api/admin/venues?id=${venueId}`, {
+            method: "DELETE",
+          });
 
-    try {
-      const response = await fetch(`/api/admin/venues?id=${venueId}`, {
-        method: "DELETE",
-      });
+          if (!response.ok) throw new Error("Failed to delete venue");
 
-      if (!response.ok) throw new Error("Failed to delete venue");
+          toast({
+            title: "Sucesso",
+            description: "Venue eliminado com sucesso",
+          });
 
-      toast({
-        title: "Sucesso",
-        description: "Venue eliminado com sucesso",
-      });
-
-      fetchVenues();
-    } catch (error) {
-      console.error("Error deleting venue:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao eliminar venue",
-        variant: "destructive",
-      });
-    }
+          fetchVenues();
+        } catch (error) {
+          console.error("Error deleting venue:", error);
+          toast({
+            title: "Erro",
+            description: "Erro ao eliminar venue",
+            variant: "destructive",
+          });
+        }
+      },
+    });
   };
 
   const handleToggleActive = async (venue: Venue) => {
     const newStatus = !venue.isActive;
     const action = newStatus ? "ativar" : "desativar";
 
-    if (
-      !confirm(`Tens a certeza que queres ${action} o venue "${venue.name}"?`)
-    )
-      return;
+    setConfirmDialog({
+      open: true,
+      title: `${newStatus ? "Ativar" : "Desativar"} venue`,
+      description: `Tens a certeza que queres ${action} o venue "${venue.name}"?`,
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        try {
+          const response = await fetch(`/api/admin/venues/${venue.id}/status`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ isActive: newStatus }),
+          });
 
-    try {
-      const response = await fetch(`/api/admin/venues/${venue.id}/status`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isActive: newStatus }),
-      });
+          if (!response.ok) throw new Error(`Failed to ${action} venue`);
 
-      if (!response.ok) throw new Error(`Failed to ${action} venue`);
+          toast({
+            title: "Sucesso",
+            description: `Venue ${newStatus ? "ativado" : "desativado"} com sucesso`,
+          });
 
-      toast({
-        title: "Sucesso",
-        description: `Venue ${newStatus ? "ativado" : "desativado"} com sucesso`,
-      });
-
-      fetchVenues();
-    } catch (error) {
-      console.error("Error toggling venue status:", error);
-      toast({
-        title: "Erro",
-        description: `Erro ao ${action} venue`,
-        variant: "destructive",
-      });
-    }
+          fetchVenues();
+        } catch (error) {
+          console.error("Error toggling venue status:", error);
+          toast({
+            title: "Erro",
+            description: `Erro ao ${action} venue`,
+            variant: "destructive",
+          });
+        }
+      },
+    });
   };
 
   const resetForm = () => {
@@ -373,37 +399,42 @@ export default function AdminVenuesPage() {
   const handleRemoveOwner = async () => {
     if (!selectedVenue) return;
 
-    if (!confirm("Tens a certeza que queres remover o owner desta venue?"))
-      return;
+    setConfirmDialog({
+      open: true,
+      title: "Remover owner",
+      description: "Tens a certeza que queres remover o owner desta venue?",
+      onConfirm: async () => {
+        setConfirmDialog((prev) => ({ ...prev, open: false }));
+        setIsSubmitting(true);
+        try {
+          const response = await fetch(
+            `/api/admin/venues/${selectedVenue.id}/remove-owner`,
+            {
+              method: "POST",
+            }
+          );
 
-    setIsSubmitting(true);
-    try {
-      const response = await fetch(
-        `/api/admin/venues/${selectedVenue.id}/remove-owner`,
-        {
-          method: "POST",
+          if (!response.ok) throw new Error("Failed to remove owner");
+
+          toast({
+            title: "Sucesso",
+            description: "Owner removido com sucesso",
+          });
+
+          setIsOwnerDialogOpen(false);
+          fetchVenues();
+        } catch (error) {
+          console.error("Error removing owner:", error);
+          toast({
+            title: "Erro",
+            description: "Erro ao remover owner",
+            variant: "destructive",
+          });
+        } finally {
+          setIsSubmitting(false);
         }
-      );
-
-      if (!response.ok) throw new Error("Failed to remove owner");
-
-      toast({
-        title: "Sucesso",
-        description: "Owner removido com sucesso",
-      });
-
-      setIsOwnerDialogOpen(false);
-      fetchVenues();
-    } catch (error) {
-      console.error("Error removing owner:", error);
-      toast({
-        title: "Erro",
-        description: "Erro ao remover owner",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+      },
+    });
   };
 
   const openOwnerDialog = (venue: Venue) => {
@@ -1058,6 +1089,30 @@ export default function AdminVenuesPage() {
           ))}
         </div>
       )}
+
+      {/* Confirm Dialog */}
+      <AlertDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{confirmDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {confirmDialog.description}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={confirmDialog.onConfirm}
+            >
+              Confirmar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

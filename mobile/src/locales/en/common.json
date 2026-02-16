@@ -232,6 +232,24 @@
     },
     "errors": {
       "saveFailed": "Error saving workout"
+    },
+    "runner": {
+      "start": "Start",
+      "pause": "Pause",
+      "resume": "Resume",
+      "finish": "Finish",
+      "finishTitle": "Finish Workout",
+      "finishMessage": "Well done! Save your workout results?",
+      "howDidYouFeel": "How did you feel?",
+      "submitResults": "Save Results",
+      "submitting": "Saving...",
+      "submitError": "Failed to save workout results",
+      "completedTitle": "Workout Complete! 🎉",
+      "completedSubtitle": "Great job, keep pushing!",
+      "backToWorkouts": "Back to Workouts",
+      "exitTitle": "Leave Workout?",
+      "exitMessage": "Your progress will be lost if you leave now.",
+      "exitConfirm": "Leave"
     }
   },
   "notifications": {
@@ -392,6 +410,7 @@
     "selectSports": "Select Sports",
     "language": "Language",
     "languageDescription": "Choose your preferred language.",
+    "languageUpdateError": "Failed to change language. Please try again.",
     "theme": "Theme",
     "themeDescription": "Choose the appearance of the app.",
     "themeLight": "Light",
@@ -412,7 +431,10 @@
     "deleteAccountDescription": "Permanently delete your account and all associated data. This action cannot be undone.",
     "deleteAccountConfirmTitle": "Delete Account",
     "deleteAccountWarning": "Are you sure you want to delete your account? This action is irreversible and all your data will be permanently removed.",
-    "deleteAccountError": "Error deleting account"
+    "deleteAccountError": "Error deleting account",
+    "logOut": "Log Out",
+    "logOutConfirmTitle": "Log Out",
+    "logOutConfirmMessage": "Are you sure you want to log out?"
   },
   "schedule": {
     "title": "My Calendar",
@@ -595,6 +617,8 @@
     "coach": "Coach",
     "capacity": "Capacity",
     "attendees": "Attendees",
+    "attendeesCount_one": "{{count}} attendee",
+    "attendeesCount_other": "{{count}} attendees",
     "workout": "Workout",
     "description": "Description",
     "tags": "Tags",

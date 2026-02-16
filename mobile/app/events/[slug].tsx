@@ -8,7 +8,6 @@ import {
   Linking,
   TouchableOpacity,
   Share,
-  Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -97,7 +96,6 @@ export default function EventDetailScreen() {
         "message" in error &&
         error.message !== "User did not share"
       ) {
-        Alert.alert("Error", "Failed to share event");
         console.error("Error sharing event:", error);
       }
     }

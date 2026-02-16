@@ -8,7 +8,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Alert,
   ScrollView,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -17,6 +16,7 @@ import { ArrowLeft, Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useToast } from "@/src/hooks/useToast";
 import {
   colors,
   typography,
@@ -31,6 +31,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
   const { signIn: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
+  const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -63,7 +64,7 @@ export default function LoginScreen() {
       await login(email.trim(), password);
       router.back();
     } catch {
-      Alert.alert(t("common.error"), t("login.invalidCredentials"));
+      showToast(t("login.invalidCredentials"), "error");
     } finally {
       setIsLoading(false);
     }
@@ -77,7 +78,7 @@ export default function LoginScreen() {
       // Navigate back after successful Google sign-in (same as email login)
       router.back();
     } catch {
-      Alert.alert(t("common.error"), t("login.googleError"));
+      showToast(t("login.googleError"), "error");
     } finally {
       setIsGoogleLoading(false);
     }

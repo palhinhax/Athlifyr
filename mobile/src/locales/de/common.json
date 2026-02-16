@@ -232,6 +232,24 @@
     },
     "errors": {
       "saveFailed": "Fehler beim Speichern des Workouts"
+    },
+    "runner": {
+      "start": "Starten",
+      "pause": "Pause",
+      "resume": "Fortsetzen",
+      "finish": "Beenden",
+      "finishTitle": "Workout beenden",
+      "finishMessage": "Gut gemacht! Workout-Ergebnisse speichern?",
+      "howDidYouFeel": "Wie hast du dich gefühlt?",
+      "submitResults": "Ergebnisse speichern",
+      "submitting": "Speichern...",
+      "submitError": "Fehler beim Speichern der Workout-Ergebnisse",
+      "completedTitle": "Workout abgeschlossen! 🎉",
+      "completedSubtitle": "Tolle Arbeit, weiter so!",
+      "backToWorkouts": "Zurück zu Workouts",
+      "exitTitle": "Workout verlassen?",
+      "exitMessage": "Dein Fortschritt geht verloren, wenn du jetzt gehst.",
+      "exitConfirm": "Verlassen"
     }
   },
   "notifications": {
@@ -392,6 +410,7 @@
     "selectSports": "Sportarten Auswählen",
     "language": "Sprache",
     "languageDescription": "Wähle deine bevorzugte Sprache.",
+    "languageUpdateError": "Fehler beim Ändern der Sprache. Bitte versuche es erneut.",
     "theme": "Design",
     "themeDescription": "Wähle das Erscheinungsbild der App.",
     "themeLight": "Hell",
@@ -412,7 +431,10 @@
     "deleteAccountDescription": "Lösche dein Konto und alle zugehörigen Daten dauerhaft. Diese Aktion kann nicht rückgängig gemacht werden.",
     "deleteAccountConfirmTitle": "Konto Löschen",
     "deleteAccountWarning": "Bist du sicher, dass du dein Konto löschen möchtest? Diese Aktion ist irreversibel und alle deine Daten werden dauerhaft entfernt.",
-    "deleteAccountError": "Fehler beim Löschen des Kontos"
+    "deleteAccountError": "Fehler beim Löschen des Kontos",
+    "logOut": "Abmelden",
+    "logOutConfirmTitle": "Abmelden",
+    "logOutConfirmMessage": "Bist du sicher, dass du dich abmelden möchtest?"
   },
   "schedule": {
     "title": "Mein Kalender",
@@ -595,6 +617,8 @@
     "coach": "Trainer",
     "capacity": "Kapazität",
     "attendees": "Teilnehmer",
+    "attendeesCount_one": "{{count}} Teilnehmer",
+    "attendeesCount_other": "{{count}} Teilnehmer",
     "workout": "Training",
     "description": "Beschreibung",
     "tags": "Tags",

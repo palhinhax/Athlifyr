@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/training-plans/[id]/assign - Assign plan to user
@@ -14,9 +14,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -42,11 +42,11 @@ export async function POST(
     }
 
     // Determine target user
-    const targetUserId = userId || session.user.id;
-    const isSelfAssign = targetUserId === session.user.id;
+    const targetUserId = userId || user.id;
+    const isSelfAssign = targetUserId === user.id;
 
     // If assigning to someone else, check if current user is the plan owner
-    if (!isSelfAssign && plan.createdById !== session.user.id) {
+    if (!isSelfAssign && plan.createdById !== user.id) {
       return NextResponse.json(
         { error: "Only the plan owner can assign to other users" },
         { status: 403 }
@@ -54,11 +54,7 @@ export async function POST(
     }
 
     // If self-assigning, check if plan is public or user is the owner
-    if (
-      isSelfAssign &&
-      !plan.isPublic &&
-      plan.createdById !== session.user.id
-    ) {
+    if (isSelfAssign && !plan.isPublic && plan.createdById !== user.id) {
       return NextResponse.json(
         { error: "This plan is not available" },
         { status: 403 }
@@ -93,7 +89,7 @@ export async function POST(
       data: {
         userId: targetUserId,
         planId: id,
-        assignedById: isSelfAssign ? null : session.user.id,
+        assignedById: isSelfAssign ? null : user.id,
         startDate: start,
         endDate,
         currentWeek: 1,

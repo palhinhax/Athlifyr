@@ -13,6 +13,17 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface MediaFile {
   fileId: string;
@@ -45,6 +56,7 @@ interface MediaStats {
 }
 
 export default function MediaManagerPage() {
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [files, setFiles] = useState<MediaFile[]>([]);
   const [stats, setStats] = useState<MediaStats | null>(null);
@@ -52,6 +64,14 @@ export default function MediaManagerPage() {
   const [filterOrphans, setFilterOrphans] = useState(false);
   const [filterFolder, setFilterFolder] = useState<string>("all");
   const [deletingFiles, setDeletingFiles] = useState<Set<string>>(new Set());
+  const [deleteDialog, setDeleteDialog] = useState<{
+    open: boolean;
+    type: "single" | "bulk";
+    fileId?: string;
+    fileName?: string;
+    orphanCount?: number;
+    orphanSize?: string;
+  }>({ open: false, type: "single" });
 
   // Infinite scroll state
   const [displayedFiles, setDisplayedFiles] = useState<MediaFile[]>([]);
@@ -82,9 +102,16 @@ export default function MediaManagerPage() {
   };
 
   const handleDeleteFile = async (fileId: string, fileName: string) => {
-    if (!confirm("Tem a certeza que quer eliminar este ficheiro?")) {
-      return;
-    }
+    setDeleteDialog({
+      open: true,
+      type: "single",
+      fileId,
+      fileName,
+    });
+  };
+
+  const executeDeleteFile = async (fileId: string, fileName: string) => {
+    setDeleteDialog({ open: false, type: "single" });
 
     try {
       // Add file to deleting set
@@ -128,7 +155,10 @@ export default function MediaManagerPage() {
       }
     } catch (error) {
       console.error("Error deleting file:", error);
-      alert("Erro ao eliminar ficheiro. Por favor tenta novamente.");
+      toast({
+        description: "Erro ao eliminar ficheiro. Por favor tenta novamente.",
+        variant: "destructive",
+      });
     } finally {
       // Remove file from deleting set
       setDeletingFiles((prev) => {
@@ -143,7 +173,9 @@ export default function MediaManagerPage() {
     const orphanFiles = files.filter((f) => f.isOrphan);
 
     if (orphanFiles.length === 0) {
-      alert("Não há ficheiros órfãos para eliminar.");
+      toast({
+        description: "Não há ficheiros órfãos para eliminar.",
+      });
       return;
     }
 
@@ -151,14 +183,18 @@ export default function MediaManagerPage() {
       orphanFiles.reduce((sum, f) => sum + f.contentLength, 0)
     );
 
-    if (
-      !confirm(
-        `Tem a certeza que quer eliminar ${orphanFiles.length} ficheiros órfãos (${totalSize})?\n\nEsta ação não pode ser desfeita!`
-      )
-    ) {
-      return;
-    }
+    setDeleteDialog({
+      open: true,
+      type: "bulk",
+      orphanCount: orphanFiles.length,
+      orphanSize: totalSize,
+    });
+  };
 
+  const executeDeleteAllOrphans = async () => {
+    setDeleteDialog({ open: false, type: "single" });
+
+    const orphanFiles = files.filter((f) => f.isOrphan);
     let deletedCount = 0;
     let failedCount = 0;
 
@@ -200,9 +236,10 @@ export default function MediaManagerPage() {
     // Refresh stats after bulk delete
     await fetchMedia();
 
-    alert(
-      `Eliminação concluída!\n\nEliminados: ${deletedCount}\nFalhados: ${failedCount}`
-    );
+    toast({
+      description: `Eliminação concluída! Eliminados: ${deletedCount}${failedCount > 0 ? ` | Falhados: ${failedCount}` : ""}`,
+      variant: failedCount > 0 ? "destructive" : "default",
+    });
   };
 
   const formatBytes = (bytes: number) => {
@@ -557,6 +594,46 @@ export default function MediaManagerPage() {
           </p>
         </Card>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={deleteDialog.open}
+        onOpenChange={(open) => setDeleteDialog((prev) => ({ ...prev, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {deleteDialog.type === "single"
+                ? "Eliminar ficheiro"
+                : "Eliminar ficheiros órfãos"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {deleteDialog.type === "single"
+                ? "Tem a certeza que quer eliminar este ficheiro? Esta ação não pode ser desfeita."
+                : `Tem a certeza que quer eliminar ${deleteDialog.orphanCount} ficheiros órfãos (${deleteDialog.orphanSize})? Esta ação não pode ser desfeita!`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (
+                  deleteDialog.type === "single" &&
+                  deleteDialog.fileId &&
+                  deleteDialog.fileName
+                ) {
+                  executeDeleteFile(deleteDialog.fileId, deleteDialog.fileName);
+                } else {
+                  executeDeleteAllOrphans();
+                }
+              }}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

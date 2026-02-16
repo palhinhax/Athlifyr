@@ -1,8 +1,11 @@
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { MapPin, Users, Building2 } from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
+import { startOfMonth, endOfMonth, format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
+import { api } from "@/src/lib/api";
 import type { Venue } from "@/src/types";
 
 interface VenueCardProps {
@@ -11,8 +14,36 @@ interface VenueCardProps {
 
 export function VenueCard({ venue }: VenueCardProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const handlePress = () => {
+    // Pre-fetch venue detail and sessions in parallel for instant navigation
+    queryClient.prefetchQuery({
+      queryKey: ["venue", venue.slug],
+      queryFn: () => api.get(`/venues/${venue.slug}`).then((r) => r.data),
+      staleTime: 2 * 60 * 1000,
+    });
+
+    const now = new Date();
+    const monthKey = format(now, "yyyy-MM");
+    const from = startOfMonth(now).toISOString();
+    const to = endOfMonth(now).toISOString();
+
+    queryClient.prefetchQuery({
+      queryKey: ["venueSessions", venue.id, monthKey],
+      queryFn: () =>
+        api
+          .get(`/venues/${venue.id}/sessions`, { params: { from, to } })
+          .then((r) => {
+            const raw = r.data;
+            if (Array.isArray(raw)) return raw;
+            if (raw && typeof raw === "object" && Array.isArray(raw.sessions))
+              return raw.sessions;
+            return [];
+          }),
+      staleTime: 2 * 60 * 1000,
+    });
+
     router.push(`/venues/${venue.slug}` as const);
   };
 

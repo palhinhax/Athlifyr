@@ -6,7 +6,6 @@ import {
   ScrollView,
   TouchableOpacity,
   Switch,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -31,9 +30,14 @@ import {
   AlertCircle,
 } from "lucide-react-native";
 import { useAuthStore } from "@/src/lib/auth-store";
-import { api } from "@/src/lib/api";
+import { api, API_URL } from "@/src/lib/api";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import { useToast } from "@/src/hooks/useToast";
 import { theme } from "@/src/constants/theme";
 import i18n from "@/src/lib/i18n";
+import { File as ExpoFile, Paths } from "expo-file-system";
+import * as Sharing from "expo-sharing";
+import * as SecureStore from "expo-secure-store";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -103,10 +107,13 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const { showToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [showDeleteAccountModal, setShowDeleteAccountModal] = useState(false);
   const [emailNotificationsEnabled, setEmailNotificationsEnabled] =
     useState(false);
   const [pushNotificationsEnabled, setPushNotificationsEnabled] =
@@ -137,78 +144,77 @@ export default function SettingsScreen() {
       }
     } catch (error) {
       console.error("Error changing language:", error);
-      Alert.alert(
-        t("common.error"),
-        "Failed to change language. Please try again."
-      );
+      showToast(t("settings.languageUpdateError"), "error");
     }
   };
 
   const handleLogout = () => {
-    Alert.alert(
-      t("profile.logOutConfirmTitle"),
-      t("profile.logOutConfirmMessage"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("profile.logOut"),
-          style: "destructive",
-          onPress: async () => {
-            setIsLoggingOut(true);
-            try {
-              await logout();
-              router.replace("/login");
-            } catch (error) {
-              console.error("Logout error:", error);
-            } finally {
-              setIsLoggingOut(false);
-            }
-          },
-        },
-      ]
-    );
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = async () => {
+    setShowLogoutModal(false);
+    setIsLoggingOut(true);
+    try {
+      await logout();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+    } finally {
+      setIsLoggingOut(false);
+    }
   };
 
   const handleDownloadData = async () => {
     setIsDownloading(true);
     try {
-      await api.get("/user/data-export", {
-        responseType: "blob",
-      });
-      Alert.alert(
-        t("settings.downloadDataSuccess"),
-        t("settings.downloadDataSuccessDesc")
+      const token = await SecureStore.getItemAsync("auth-token");
+      const downloadUrl = `${API_URL}/api/user/data-export`;
+      const destination = new ExpoFile(
+        Paths.document,
+        "athlifyr-data-export.json"
       );
+
+      const downloadedFile = await ExpoFile.downloadFileAsync(
+        downloadUrl,
+        destination,
+        {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+          idempotent: true,
+        }
+      );
+
+      const canShare = await Sharing.isAvailableAsync();
+      if (canShare) {
+        await Sharing.shareAsync(downloadedFile.uri, {
+          mimeType: "application/json",
+          dialogTitle: t("settings.downloadData"),
+        });
+      }
+
+      showToast(t("settings.downloadDataSuccess"), "success");
     } catch (error) {
       console.error("Error downloading data:", error);
-      Alert.alert(t("common.error"), t("settings.downloadDataError"));
+      showToast(t("settings.downloadDataError"), "error");
     } finally {
       setIsDownloading(false);
     }
   };
 
   const handleDeleteAccount = () => {
-    Alert.alert(
-      t("settings.deleteAccountConfirmTitle"),
-      t("settings.deleteAccountWarning"),
-      [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("settings.deleteAccount"),
-          style: "destructive",
-          onPress: async () => {
-            try {
-              await api.delete("/user/delete-account");
-              await logout();
-              router.replace("/login");
-            } catch (error) {
-              console.error("Error deleting account:", error);
-              Alert.alert(t("common.error"), t("settings.deleteAccountError"));
-            }
-          },
-        },
-      ]
-    );
+    setShowDeleteAccountModal(true);
+  };
+
+  const confirmDeleteAccount = async () => {
+    setShowDeleteAccountModal(false);
+    try {
+      await api.delete("/user/delete-account");
+      await logout();
+      router.replace("/login");
+    } catch (error) {
+      console.error("Error deleting account:", error);
+      showToast(t("settings.deleteAccountError"), "error");
+    }
   };
 
   const handleToggleEmailNotifications = async (value: boolean) => {
@@ -586,6 +592,46 @@ export default function SettingsScreen() {
       >
         {renderTabContent()}
       </ScrollView>
+
+      {/* Logout Confirmation Modal */}
+      <ConfirmModal
+        visible={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        title={t("settings.logOutConfirmTitle")}
+        message={t("settings.logOutConfirmMessage")}
+        actions={[
+          {
+            label: t("common.cancel"),
+            variant: "outline",
+            onPress: () => setShowLogoutModal(false),
+          },
+          {
+            label: t("settings.logOut"),
+            variant: "destructive",
+            onPress: confirmLogout,
+          },
+        ]}
+      />
+
+      {/* Delete Account Confirmation Modal */}
+      <ConfirmModal
+        visible={showDeleteAccountModal}
+        onClose={() => setShowDeleteAccountModal(false)}
+        title={t("settings.deleteAccountConfirmTitle")}
+        message={t("settings.deleteAccountWarning")}
+        actions={[
+          {
+            label: t("common.cancel"),
+            variant: "outline",
+            onPress: () => setShowDeleteAccountModal(false),
+          },
+          {
+            label: t("settings.deleteAccount"),
+            variant: "destructive",
+            onPress: confirmDeleteAccount,
+          },
+        ]}
+      />
     </SafeAreaView>
   );
 }

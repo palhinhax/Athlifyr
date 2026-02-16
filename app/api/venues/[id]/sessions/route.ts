@@ -5,6 +5,9 @@ import { canManageSessions } from "@/lib/venues/authorization";
 import { SessionType } from "@prisma/client";
 import { format, addWeeks } from "date-fns";
 
+// Ensure this route is always dynamic (never cached by Next.js)
+export const dynamic = "force-dynamic";
+
 // How many weeks to generate sessions in advance for recurring templates
 const RECURRING_GENERATION_WEEKS = 12; // 3 months ahead
 
@@ -186,7 +189,14 @@ export async function GET(
       sessionWorkouts: undefined, // Remove the original field from response
     }));
 
-    return NextResponse.json({ sessions: sessionsWithCoach });
+    return NextResponse.json(
+      { sessions: sessionsWithCoach },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching sessions:", error);
     return NextResponse.json(

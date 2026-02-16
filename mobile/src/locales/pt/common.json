@@ -232,6 +232,24 @@
     },
     "errors": {
       "saveFailed": "Erro ao guardar treino"
+    },
+    "runner": {
+      "start": "Iniciar",
+      "pause": "Pausar",
+      "resume": "Retomar",
+      "finish": "Terminar",
+      "finishTitle": "Terminar Treino",
+      "finishMessage": "Boa! Guardar os resultados do treino?",
+      "howDidYouFeel": "Como te sentiste?",
+      "submitResults": "Guardar Resultados",
+      "submitting": "A guardar...",
+      "submitError": "Erro ao guardar resultados do treino",
+      "completedTitle": "Treino Concluído! 🎉",
+      "completedSubtitle": "Excelente trabalho, continua assim!",
+      "backToWorkouts": "Voltar aos Treinos",
+      "exitTitle": "Sair do Treino?",
+      "exitMessage": "O teu progresso será perdido se saíres agora.",
+      "exitConfirm": "Sair"
     }
   },
   "notifications": {
@@ -392,6 +410,7 @@
     "selectSports": "Selecionar Desportos",
     "language": "Idioma",
     "languageDescription": "Escolhe o teu idioma preferido.",
+    "languageUpdateError": "Erro ao alterar o idioma. Tenta novamente.",
     "theme": "Tema",
     "themeDescription": "Escolhe a aparência da aplicação.",
     "themeLight": "Claro",
@@ -412,7 +431,10 @@
     "deleteAccountDescription": "Elimina permanentemente a tua conta e todos os dados associados. Esta ação não pode ser revertida.",
     "deleteAccountConfirmTitle": "Eliminar Conta",
     "deleteAccountWarning": "Tens a certeza de que queres eliminar a tua conta? Esta ação é irreversível e todos os teus dados serão permanentemente removidos.",
-    "deleteAccountError": "Erro ao eliminar conta"
+    "deleteAccountError": "Erro ao eliminar conta",
+    "logOut": "Terminar Sessão",
+    "logOutConfirmTitle": "Terminar Sessão",
+    "logOutConfirmMessage": "Tens a certeza de que queres terminar sessão?"
   },
   "schedule": {
     "title": "O Meu Calendário",
@@ -595,6 +617,8 @@
     "coach": "Treinador",
     "capacity": "Capacidade",
     "attendees": "Participantes",
+    "attendeesCount_one": "{{count}} participante",
+    "attendeesCount_other": "{{count}} participantes",
     "workout": "Treino",
     "description": "Descrição",
     "tags": "Etiquetas",

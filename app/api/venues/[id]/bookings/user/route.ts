@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
+// Ensure this route is always dynamic (never cached by Next.js)
+export const dynamic = "force-dynamic";
+
 // GET - List user's bookings for a venue
 export async function GET(
   request: Request,
@@ -42,7 +45,14 @@ export async function GET(
       },
     });
 
-    return NextResponse.json({ bookings });
+    return NextResponse.json(
+      { bookings },
+      {
+        headers: {
+          "Cache-Control": "no-store, no-cache, must-revalidate",
+        },
+      }
+    );
   } catch (error) {
     console.error("Error fetching user bookings:", error);
     return NextResponse.json(

@@ -8,7 +8,6 @@ import {
   ScrollView,
   TextInput,
   ActivityIndicator,
-  Alert,
   Platform,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -16,6 +15,7 @@ import { X } from "lucide-react-native";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { theme } from "@/src/constants/theme";
 import { api } from "@/src/lib/api";
+import { useToast } from "@/src/hooks/useToast";
 import type { VenueSession } from "@/src/hooks/useVenueSessions";
 import { format } from "date-fns";
 
@@ -41,6 +41,7 @@ export function SessionFormModal({
   onSuccess,
 }: SessionFormModalProps) {
   const { t } = useTranslation();
+  const { showToast } = useToast();
   const isEditing = !!session;
 
   const [title, setTitle] = useState("");
@@ -94,7 +95,7 @@ export function SessionFormModal({
 
   const handleSave = async () => {
     if (!title.trim()) {
-      Alert.alert(t("common.error"), t("sessions.title") + " required");
+      showToast(t("sessions.title") + " required", "error");
       return;
     }
 
@@ -121,17 +122,17 @@ export function SessionFormModal({
 
       if (isEditing && session) {
         await api.put(`/venues/${venueId}/sessions/${session.id}`, payload);
-        Alert.alert(t("sessions.updateSuccess"));
+        showToast(t("sessions.updateSuccess"), "success");
       } else {
         await api.post(`/venues/${venueId}/sessions`, payload);
-        Alert.alert(t("sessions.createSuccess"));
+        showToast(t("sessions.createSuccess"), "success");
       }
 
       onSuccess();
       onClose();
     } catch (error) {
       console.error("Error saving session:", error);
-      Alert.alert(t("common.error"), t("sessions.saveError"));
+      showToast(t("sessions.saveError"), "error");
     } finally {
       setLoading(false);
     }

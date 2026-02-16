@@ -5,7 +5,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/training-plans/[id]/weeks/[weekId]/workouts - Add workout to week
@@ -14,9 +14,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string; weekId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -33,7 +33,7 @@ export async function POST(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    if (plan.createdById !== session.user.id) {
+    if (plan.createdById !== user.id) {
       return NextResponse.json(
         { error: "No permission to modify this plan" },
         { status: 403 }

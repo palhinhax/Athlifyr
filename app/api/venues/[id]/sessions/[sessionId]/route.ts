@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 import { SessionType } from "@prisma/client";
@@ -72,16 +72,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // PUT - Update a session (owner/admin/coach only)
 export async function PUT(request: Request, { params }: RouteParams) {
   try {
-    const authSession = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!authSession?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId, sessionId } = await params;
 
     // Check authorization
-    const authResult = await canManageSessions(authSession.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
@@ -162,9 +162,9 @@ export async function PUT(request: Request, { params }: RouteParams) {
 // DELETE - Delete a session (owner/admin/coach only)
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const authSession = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!authSession?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -176,7 +176,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const deleteRecurring = searchParams.get("deleteRecurring") === "true";
 
     // Check authorization
-    const authResult = await canManageSessions(authSession.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay } from "date-fns";
 
@@ -14,9 +14,9 @@ type RouteParams = {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { id: venueId } = await params;
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -25,7 +25,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       where: {
         venueId_userId: {
           venueId,
-          userId: session.user.id,
+          userId: authUser.id,
         },
       },
     });

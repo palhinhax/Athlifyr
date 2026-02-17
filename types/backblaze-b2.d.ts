@@ -27,6 +27,8 @@ declare module "backblaze-b2" {
     fileName: string;
     data: Buffer;
     contentType: string;
+    info?: Record<string, string>;
+    hash?: string;
   }
 
   export interface UploadFileResponse {

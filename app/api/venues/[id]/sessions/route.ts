@@ -1,5 +1,5 @@
 import { NextResponse, NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 import { SessionType } from "@prisma/client";
@@ -202,19 +202,19 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId } = await params;
 
     // Check authorization
-    const authResult = await canManageSessions(session.user.id, venueId);
+    const authResult = await canManageSessions(authUser.id, venueId);
     if (!authResult.authorized) {
       console.log(
-        `[Sessions API] Authorization failed for user ${session.user.id} on venue ${venueId}:`,
+        `[Sessions API] Authorization failed for user ${authUser.id} on venue ${venueId}:`,
         authResult.reason
       );
       return NextResponse.json(

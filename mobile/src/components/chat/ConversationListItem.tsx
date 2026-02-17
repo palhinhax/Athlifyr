@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { formatDistanceToNow } from "date-fns";
 import { theme } from "@/src/constants/theme";
+import { CachedAvatar } from "@/src/components/CachedImage";
 import type { Conversation } from "@/src/api/chat";
 
 interface ConversationListItemProps {
@@ -43,7 +44,12 @@ export function ConversationListItem({
       {/* Avatar */}
       <View style={styles.avatarContainer}>
         {otherUser?.image ? (
-          <Image source={{ uri: otherUser.image }} style={styles.avatar} />
+          <CachedAvatar
+            uri={otherUser.image}
+            style={styles.avatar}
+            alt={otherUser.name || "User"}
+            size={48}
+          />
         ) : (
           <View style={[styles.avatar, styles.avatarPlaceholder]}>
             <Text style={styles.avatarText}>

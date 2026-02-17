@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  Alert,
-} from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
 import { useTranslation } from "react-i18next";
 import {
   Clock,
@@ -17,6 +10,7 @@ import {
   User,
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { CachedAvatar } from "@/src/components/CachedImage";
 import type { WorkoutItem } from "@/src/hooks/useWorkouts";
 import { useToggleSaveWorkout } from "@/src/hooks/useWorkouts";
 import { useAuthStore } from "@/src/lib/auth-store";
@@ -220,11 +214,11 @@ export function WorkoutCard({
       {workout.isPublic && workout.createdBy && (
         <View style={styles.creatorRow}>
           {workout.createdBy.image ? (
-            <Image
-              source={{ uri: workout.createdBy.image }}
+            <CachedAvatar
+              uri={workout.createdBy.image}
               style={styles.creatorAvatar}
               alt={workout.createdBy.name || "User avatar"}
-              accessibilityLabel={workout.createdBy.name || "User avatar"}
+              size={20}
             />
           ) : (
             <View style={styles.creatorAvatarPlaceholder}>

@@ -35,6 +35,8 @@ jobs:
         run: pnpm lint
 
       - name: Run type check
+        env:
+          NODE_OPTIONS: --max-old-space-size=4096
         run: pnpm typecheck
 
       - name: Run tests
@@ -42,6 +44,7 @@ jobs:
 
       - name: Build
         env:
+          NODE_OPTIONS: --max-old-space-size=4096
           DATABASE_URL: postgresql://user:pass@localhost:5432/db
           AUTH_SECRET: test-secret-for-ci-build-only
           GOOGLE_CLIENT_ID: test-google-client-id

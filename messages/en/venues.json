@@ -869,7 +869,8 @@
       "cancel": "Cancel",
       "deleting": "Deleting...",
       "loadingComments": "Loading comments...",
-      "writeComment": "Write a comment..."
+      "writeComment": "Write a comment...",
+      "deleteComment": "Delete"
     },
     "publishWod": {
       "title": "Publish Workout of the Day",

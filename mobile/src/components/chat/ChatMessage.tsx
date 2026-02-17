@@ -1,7 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet, Image } from "react-native";
+import { View, Text, StyleSheet } from "react-native";
 import { format } from "date-fns";
 import { theme } from "@/src/constants/theme";
+import { CachedAvatar } from "@/src/components/CachedImage";
 import type { Message } from "@/src/api/chat";
 
 interface ChatMessageProps {
@@ -37,9 +38,11 @@ export function ChatMessage({ message, isOwnMessage }: ChatMessageProps) {
       {!isOwnMessage && (
         <View style={styles.avatarContainer}>
           {message.sender.image ? (
-            <Image
-              source={{ uri: message.sender.image }}
+            <CachedAvatar
+              uri={message.sender.image}
               style={styles.avatar}
+              alt={message.sender.name || "User"}
+              size={32}
             />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>

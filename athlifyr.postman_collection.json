@@ -1,0 +1,2323 @@
+{
+  "info": {
+    "name": "Athlifyr API",
+    "description": "Complete API collection for Athlifyr - CrossFit & Fitness Management Platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "athlifyr"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account. Returns user data without tokens (NextAuth handles session creation)."
+          },
+          "response": []
+        },
+        {
+          "name": "Login (Mobile/JWT)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Auto-save the JWT token for subsequent requests",
+                  "if (pm.response.code === 200) {",
+                  "    const jsonData = pm.response.json();",
+                  "    if (jsonData.token) {",
+                  "        pm.environment.set('authToken', jsonData.token);",
+                  "        pm.environment.set('refreshToken', jsonData.refreshToken);",
+                  "        console.log('✅ Auth token saved to environment');",
+                  "    }",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Login with email and password. Returns JWT access token and refresh token for mobile/API authentication. The token is automatically saved to the environment variable 'authToken'."
+          },
+          "response": []
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"user@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "forgot-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"reset-token-here\",\n  \"password\": \"newPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/reset-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "reset-password"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Send Verification Email",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/send-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "send-verification"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Verify Email",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"verification-token-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/verify-email",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "verify-email"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "logout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venues",
+      "item": [
+        {
+          "name": "List Venues",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues?page=1&pageSize=12&search=&city=&services=PERSONAL_TRAINING&sports=CROSSFIT",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "12"
+                },
+                {
+                  "key": "search",
+                  "value": ""
+                },
+                {
+                  "key": "city",
+                  "value": "",
+                  "disabled": true
+                },
+                {
+                  "key": "services",
+                  "value": "PERSONAL_TRAINING",
+                  "disabled": true
+                },
+                {
+                  "key": "sports",
+                  "value": "CROSSFIT",
+                  "disabled": true
+                },
+                {
+                  "key": "lat",
+                  "value": "38.7223",
+                  "disabled": true
+                },
+                {
+                  "key": "lng",
+                  "value": "-9.1393",
+                  "disabled": true
+                },
+                {
+                  "key": "radius",
+                  "value": "10",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Venue",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CrossFit Downtown\",\n  \"type\": \"GYM\",\n  \"sportTypes\": [\"CROSSFIT\", \"WEIGHTLIFTING\"],\n  \"description\": \"Premier CrossFit facility in the heart of downtown\",\n  \"phone\": \"+351 21 234 5678\",\n  \"email\": \"info@cfdowntown.com\",\n  \"website\": \"https://cfdowntown.com\",\n  \"instagram\": \"cfdowntown\",\n  \"address\": \"Rua Augusta, 123\",\n  \"city\": \"Lisboa\",\n  \"country\": \"Portugal\",\n  \"latitude\": 38.7223,\n  \"longitude\": -9.1393\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Venue by ID",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Venue",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"CrossFit Downtown - Updated\",\n  \"description\": \"The best CrossFit box in town\",\n  \"sportTypes\": [\"CROSSFIT\", \"WEIGHTLIFTING\", \"GYMNASTICS\"],\n  \"services\": [\"PERSONAL_TRAINING\", \"NUTRITION\"],\n  \"defaultSessionCapacity\": 15,\n  \"defaultBookingAdvanceDays\": 7,\n  \"requiresPlanToBook\": true,\n  \"enableTrialBooking\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Venue",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Venues Map Data",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/map",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "map"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Sessions",
+      "item": [
+        {
+          "name": "List Sessions",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions?from=2026-02-16T00:00:00Z&to=2026-02-23T23:59:59Z&type=CLASS",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "sessions"],
+              "query": [
+                {
+                  "key": "from",
+                  "value": "2026-02-16T00:00:00Z",
+                  "disabled": true
+                },
+                {
+                  "key": "to",
+                  "value": "2026-02-23T23:59:59Z",
+                  "disabled": true
+                },
+                {
+                  "key": "type",
+                  "value": "CLASS",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CLASS\",\n  \"title\": \"Morning WOD\",\n  \"description\": \"High intensity CrossFit workout\",\n  \"startsAt\": \"2026-02-17T09:00:00Z\",\n  \"endsAt\": \"2026-02-17T10:00:00Z\",\n  \"capacity\": 15,\n  \"coachId\": null,\n  \"serviceId\": null,\n  \"tags\": [\"crossfit\", \"wod\"],\n  \"bookingAdvanceDays\": 4,\n  \"cancellationDeadlineMinutes\": 30,\n  \"isRecurring\": false\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "sessions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Recurring Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CLASS\",\n  \"title\": \"Monday Morning WOD\",\n  \"description\": \"Weekly Monday morning session\",\n  \"startsAt\": \"2026-02-17T09:00:00Z\",\n  \"endsAt\": \"2026-02-17T10:00:00Z\",\n  \"capacity\": 15,\n  \"isRecurring\": true,\n  \"bookingAdvanceDays\": 4,\n  \"cancellationDeadlineMinutes\": 30\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "sessions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Session",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"CLASS\",\n  \"title\": \"Evening WOD\",\n  \"description\": \"Updated description\",\n  \"startsAt\": \"2026-02-17T18:00:00Z\",\n  \"endsAt\": \"2026-02-17T19:00:00Z\",\n  \"capacity\": 20,\n  \"tags\": [\"crossfit\", \"evening\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}?deleteFuture=false&deleteRecurring=false",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}"
+              ],
+              "query": [
+                {
+                  "key": "deleteFuture",
+                  "value": "false"
+                },
+                {
+                  "key": "deleteRecurring",
+                  "value": "false"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Easy Book Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subscriptionId\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}/easy-book",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}",
+                "easy-book"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Add Participant to Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-id-here\",\n  \"subscriptionId\": null\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}/add-participant",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}",
+                "add-participant"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Participant from Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-id-here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}/remove-participant",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}",
+                "remove-participant"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Session Workouts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/{{sessionId}}/workouts",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "{{sessionId}}",
+                "workouts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Assign Coach",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionIds\": [\"session-id-1\", \"session-id-2\"],\n  \"coachId\": \"coach-user-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/bulk-assign-coach",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "bulk-assign-coach"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Bulk Assign Workout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionIds\": [\"session-id-1\", \"session-id-2\"],\n  \"workoutId\": \"workout-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/bulk-assign-workout",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "bulk-assign-workout"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Today's Workouts",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/sessions/today-workouts",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "sessions",
+                "today-workouts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Bookings",
+      "item": [
+        {
+          "name": "Get User Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/bookings/user",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "bookings", "user"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cancel Booking",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/bookings/{{bookingId}}/cancel",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "bookings",
+                "{{bookingId}}",
+                "cancel"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Members",
+      "item": [
+        {
+          "name": "List Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "members"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/members/search?q=john",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "members", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "john"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Member Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"role\": \"COACH\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/members/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "members", "{{userId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Remove Member",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/members/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "members", "{{userId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Invites",
+      "item": [
+        {
+          "name": "List Invites",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/invites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "invites"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"newcoach@example.com\",\n  \"role\": \"COACH\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/invites",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "invites"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Resend Invite",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/invites/{{inviteId}}/resend",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "invites",
+                "{{inviteId}}",
+                "resend"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Invite",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/invites/{{inviteId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "invites",
+                "{{inviteId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Invite",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/invites/{{inviteToken}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "invites", "{{inviteToken}}", "accept"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Respond to Invite",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"accept\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/invites/{{inviteToken}}/respond",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "invites", "{{inviteToken}}", "respond"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Plans & Subscriptions",
+      "item": [
+        {
+          "name": "List Plans",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "plans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly Unlimited\",\n  \"description\": \"Unlimited access to all classes\",\n  \"price\": 79.99,\n  \"currency\": \"EUR\",\n  \"policy\": {\n    \"type\": \"unlimited\",\n    \"validityDays\": 30\n  },\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "plans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Plan",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Monthly Unlimited - Updated\",\n  \"price\": 89.99,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/plans/{{planId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "plans", "{{planId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Plan",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/plans/{{planId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "plans", "{{planId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "subscriptions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Subscription",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"planId\": \"plan-id-here\",\n  \"userId\": \"user-id-here\",\n  \"paymentStatus\": \"PAID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "subscriptions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Subscription",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"ACTIVE\",\n  \"paymentStatus\": \"PAID\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions/{{subscriptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "subscriptions",
+                "{{subscriptionId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Mark Subscription as Paid",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions/{{subscriptionId}}/mark-paid",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "subscriptions",
+                "{{subscriptionId}}",
+                "mark-paid"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Renew Subscription",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions/{{subscriptionId}}/renew",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "subscriptions",
+                "{{subscriptionId}}",
+                "renew"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Subscription",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/subscriptions/{{subscriptionId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "subscriptions",
+                "{{subscriptionId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Clients",
+      "item": [
+        {
+          "name": "List Clients",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/clients",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "clients"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Images",
+      "item": [
+        {
+          "name": "Upload Image",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/images",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "images"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Recurring Sessions",
+      "item": [
+        {
+          "name": "List Recurring Sessions",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/recurring-sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "recurring-sessions"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Recurring Session",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Monday WOD\",\n  \"description\": \"Updated description\",\n  \"capacity\": 20,\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/recurring-sessions/{{recurringId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "recurring-sessions",
+                "{{recurringId}}"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Recurring Session",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/recurring-sessions/{{recurringId}}",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "recurring-sessions",
+                "{{recurringId}}"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Trial Bookings",
+      "item": [
+        {
+          "name": "List Trial Bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/trial-bookings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "trial-bookings"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Accept Trial Booking",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/trial-bookings/{{trialBookingId}}/accept",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trial-bookings", "{{trialBookingId}}", "accept"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Reject Trial Booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"Session is fully booked\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/trial-bookings/{{trialBookingId}}/reject",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "trial-bookings", "{{trialBookingId}}", "reject"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Venue Stripe",
+      "item": [
+        {
+          "name": "Get Stripe Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/stripe/status",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "stripe", "status"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Stripe Connect",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/stripe/connect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "stripe", "connect"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Onboarding Link",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/stripe/onboarding-link",
+              "host": ["{{baseUrl}}"],
+              "path": [
+                "api",
+                "venues",
+                "{{venueId}}",
+                "stripe",
+                "onboarding-link"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Login Link",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/venues/{{venueId}}/stripe/login-link",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "venues", "{{venueId}}", "stripe", "login-link"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Workouts",
+      "item": [
+        {
+          "name": "List Workouts",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fran\",\n  \"description\": \"Classic CrossFit benchmark workout\",\n  \"estimatedTime\": 15,\n  \"difficulty\": \"ADVANCED\",\n  \"blocks\": [\n    {\n      \"type\": \"FOR_TIME\",\n      \"name\": \"Main WOD\",\n      \"rounds\": 3,\n      \"timeCap\": 15,\n      \"exercises\": [\n        {\n          \"exerciseId\": \"exercise-id-thrusters\",\n          \"prescribedReps\": 21,\n          \"prescribedWeight\": 43,\n          \"prescribedWeightUnit\": \"KG\"\n        },\n        {\n          \"exerciseId\": \"exercise-id-pullups\",\n          \"prescribedReps\": 21\n        }\n      ]\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Workout",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts/{{workoutId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts", "{{workoutId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Workout",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Fran - Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts/{{workoutId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts", "{{workoutId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Workout",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts/{{workoutId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts", "{{workoutId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Workout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts/{{workoutId}}/save",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts", "{{workoutId}}", "save"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Workout Log",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"workoutId\": \"workout-id-here\",\n  \"sessionId\": \"session-id-here\",\n  \"completedAt\": \"2026-02-16T10:30:00Z\",\n  \"notes\": \"Great workout!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/workouts/logs",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "workouts", "logs"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Exercises",
+      "item": [
+        {
+          "name": "List Exercises",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Search Exercises",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises/search?q=squat",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "squat"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Exercise",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thruster\",\n  \"description\": \"Front squat into overhead press\",\n  \"category\": \"BARBELL\",\n  \"muscleGroups\": [\"LEGS\", \"SHOULDERS\"],\n  \"equipment\": [\"BARBELL\"],\n  \"difficulty\": \"INTERMEDIATE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Exercise",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises/{{exerciseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises", "{{exerciseId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Update Exercise",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Thruster - Updated\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises/{{exerciseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises", "{{exerciseId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Exercise",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/exercises/{{exerciseId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "exercises", "{{exerciseId}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Training Plans",
+      "item": [
+        {
+          "name": "List Training Plans",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/training-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "training-plans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Training Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"8-Week Strength Program\",\n  \"description\": \"Progressive strength building program\",\n  \"duration\": 8,\n  \"difficulty\": \"INTERMEDIATE\",\n  \"isPublic\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/training-plans",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "training-plans"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Training Plan",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/training-plans/{{planId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "training-plans", "{{planId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Save Training Plan",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/training-plans/{{planId}}/save",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "training-plans", "{{planId}}", "save"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Assign Training Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"userId\": \"user-id-here\",\n  \"startDate\": \"2026-02-17\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/training-plans/{{planId}}/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "training-plans", "{{planId}}", "assign"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "Get Map Events",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/map",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "map"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Weekly Events",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/weekly?date=2026-02-16",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "weekly"],
+              "query": [
+                {
+                  "key": "date",
+                  "value": "2026-02-16"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Monthly Events",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/monthly?year=2026&month=2",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "monthly"],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2026"
+                },
+                {
+                  "key": "month",
+                  "value": "2"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get User Owned Venues",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/me/owned-venues",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "me", "owned-venues"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Manage Blocks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/blocks",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "blocks"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Posts",
+      "item": [
+        {
+          "name": "Get Post",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/posts/{{postId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "posts", "{{postId}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Like Post",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/posts/{{postId}}/like",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "posts", "{{postId}}", "like"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Comments",
+      "item": [
+        {
+          "name": "Create Comment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"postId\": \"post-id-here\",\n  \"content\": \"Great workout!\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/comments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "comments"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Contact",
+      "item": [
+        {
+          "name": "Send Contact Message",
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"subject\": \"Question about platform\",\n  \"message\": \"I have a question about your platform...\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/contact",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "contact"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Reports",
+      "item": [
+        {
+          "name": "Create Report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetType\": \"POST\",\n  \"targetId\": \"post-id-here\",\n  \"reason\": \"SPAM\",\n  \"description\": \"This post contains spam content\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "Users",
+          "item": [
+            {
+              "name": "List Users",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Get User",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/{{userId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", "{{userId}}"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update User Role",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"role\": \"ADMIN\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/{{userId}}/role",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", "{{userId}}", "role"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Ban User",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"reason\": \"Violation of terms of service\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/users/{{userId}}/ban",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "users", "{{userId}}", "ban"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Venues",
+          "item": [
+            {
+              "name": "List Venues",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "venues"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Venue Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"isActive\": true\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/{{venueId}}/status",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "venues", "{{venueId}}", "status"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Set Venue Owner",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"new-owner-user-id\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/{{venueId}}/set-owner",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "venues", "{{venueId}}", "set-owner"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Remove Venue Owner",
+              "request": {
+                "method": "POST",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/{{venueId}}/remove-owner",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "admin",
+                    "venues",
+                    "{{venueId}}",
+                    "remove-owner"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Venue Fees",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"platformFeePercentage\": 10\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/{{venueId}}/fees",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "venues", "{{venueId}}", "fees"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "List Ownership Claims",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/ownership-claims",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "venues", "ownership-claims"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Process Ownership Claim",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"APPROVED\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/venues/ownership-claims/{{claimId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "admin",
+                    "venues",
+                    "ownership-claims",
+                    "{{claimId}}"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Reports",
+          "item": [
+            {
+              "name": "List Reports",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/reports",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "reports"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Update Report Status",
+              "request": {
+                "method": "PATCH",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"status\": \"RESOLVED\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/reports/{{reportId}}",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "reports", "{{reportId}}"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Contacts",
+          "item": [
+            {
+              "name": "List Contacts",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/contacts",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "contacts"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Reply to Contact",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"message\": \"Thank you for contacting us...\"\n}"
+                },
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/contacts/{{contactId}}/reply",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "contacts", "{{contactId}}", "reply"]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "Delete Contact",
+              "request": {
+                "method": "DELETE",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/contacts/{{contactId}}/delete",
+                  "host": ["{{baseUrl}}"],
+                  "path": [
+                    "api",
+                    "admin",
+                    "contacts",
+                    "{{contactId}}",
+                    "delete"
+                  ]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Events",
+          "item": [
+            {
+              "name": "Manage Events",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/events",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "events"]
+                }
+              },
+              "response": []
+            }
+          ]
+        },
+        {
+          "name": "Media",
+          "item": [
+            {
+              "name": "Manage Media",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/api/admin/media",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "admin", "media"]
+                }
+              },
+              "response": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "venueId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "sessionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "planId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "subscriptionId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "workoutId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "exerciseId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "postId",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

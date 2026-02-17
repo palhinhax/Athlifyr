@@ -1,7 +1,8 @@
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { MapPin, Users, Building2 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import type { Venue } from "@/src/types";
 
 interface VenueCardProps {
@@ -24,10 +25,10 @@ export function VenueCard({ venue }: VenueCardProps) {
       {/* Venue Image */}
       <View style={styles.imageContainer}>
         {venue.coverImage ? (
-          <Image
-            source={{ uri: venue.coverImage }}
+          <CachedImage
+            uri={venue.coverImage}
             style={styles.image}
-            resizeMode="cover"
+            contentFit="cover"
             alt="Venue image"
           />
         ) : (
@@ -39,10 +40,10 @@ export function VenueCard({ venue }: VenueCardProps) {
         {/* Logo overlay */}
         {venue.logo && (
           <View style={styles.logoContainer}>
-            <Image
-              source={{ uri: venue.logo }}
+            <CachedImage
+              uri={venue.logo}
               style={styles.logo}
-              resizeMode="cover"
+              contentFit="cover"
               alt="Venue logo"
             />
           </View>

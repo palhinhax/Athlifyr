@@ -5,7 +5,6 @@ import {
   StyleSheet,
   FlatList,
   TouchableOpacity,
-  Image,
   ActivityIndicator,
   Alert,
   RefreshControl,
@@ -31,6 +30,7 @@ import {
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
+import { CachedAvatar } from "@/src/components/CachedImage";
 import {
   colors,
   typography,
@@ -70,7 +70,12 @@ function NotificationAvatar({
 }) {
   if (image) {
     return (
-      <Image source={{ uri: image }} style={styles.avatar} alt={name ?? ""} />
+      <CachedAvatar
+        uri={image}
+        style={styles.avatar}
+        alt={name ?? ""}
+        size={40}
+      />
     );
   }
 

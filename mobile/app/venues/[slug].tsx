@@ -1,68 +1,86 @@
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
-  Image,
   ActivityIndicator,
-  Linking,
   TouchableOpacity,
   Share,
   Alert,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
-import {
-  MapPin,
-  ExternalLink,
-  ArrowLeft,
-  Share2,
-  Users,
-  Building2,
-  Instagram,
-} from "lucide-react-native";
-import Markdown from "react-native-markdown-display";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MapPin, ArrowLeft, Share2, Building2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
-import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
-import { EventLocationMap } from "@/src/components/EventLocationMap";
-import type { Venue } from "@/src/types";
+import { CachedImage } from "@/src/components/CachedImage";
+import { useVenueDetail } from "@/src/hooks/useVenueDetail";
+import { useAuthStore } from "@/src/lib/auth-store";
+import { VenueAboutTab } from "@/src/components/venue/VenueAboutTab";
+import { VenueTeamTab } from "@/src/components/venue/VenueTeamTab";
+import { VenuePlansTab } from "@/src/components/venue/VenuePlansTab";
+import { VenueSessionsTab } from "@/src/components/venue/VenueSessionsTab";
+import { VenueFeedTab } from "@/src/components/venue/VenueFeedTab";
 
-interface VenueDetail extends Venue {
-  phone: string | null;
-  email: string | null;
-  website: string | null;
-  address: string | null;
-}
+const PUBLIC_TABS = ["feed", "about", "plans", "sessions", "team"] as const;
+type TabId = (typeof PUBLIC_TABS)[number];
 
 export default function VenueDetailScreen() {
-  const { slug } = useLocalSearchParams<{ slug: string }>();
+  const { slug, tab } = useLocalSearchParams<{ slug: string; tab?: string }>();
   const router = useRouter();
   const { t } = useTranslation();
-  const [venue, setVenue] = useState<VenueDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const insets = useSafeAreaInsets();
+  const { venue, isLoading, error, refetch } = useVenueDetail(slug ?? "");
 
-  const fetchVenue = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await api.get<VenueDetail>(`/venues/${slug}`);
-      setVenue(response.data);
-    } catch (err) {
-      console.error("Error fetching venue:", err);
-      setError("Failed to load venue");
-    } finally {
-      setLoading(false);
-    }
-  };
+  // ── Auth & role computation ──
+  const userId = useAuthStore((s) => s.user?.id) ?? null;
+  const userRole = useAuthStore((s) => s.user?.role) ?? null;
 
-  useEffect(() => {
-    if (slug) {
-      fetchVenue();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [slug]);
+  const isOwnerOrAdmin = useMemo(() => {
+    if (!userId || !venue) return false;
+    if (userRole === "ADMIN") return true;
+    return venue.members.some(
+      (m) => m.user.id === userId && (m.role === "OWNER" || m.role === "ADMIN")
+    );
+  }, [userId, userRole, venue]);
+
+  const canEditSessions = useMemo(() => {
+    if (!userId || !venue) return false;
+    if (userRole === "ADMIN") return true;
+    return venue.members.some(
+      (m) =>
+        m.user.id === userId &&
+        (m.role === "OWNER" || m.role === "ADMIN" || m.role === "COACH")
+    );
+  }, [userId, userRole, venue]);
+
+  // Use centralized API validation for subscription status
+  // This eliminates duplicated logic and ensures consistency between web and mobile
+  const hasActiveSubscription = useMemo(() => {
+    if (!venue) return false;
+
+    // Use the centralized userSubscriptionStatus from the API
+    return venue.userSubscriptionStatus?.hasSubscription ?? false;
+  }, [venue]);
+
+  // Determine which tabs are visible based on venue.visibleTabs config
+  const visibleTabs = useMemo<TabId[]>(() => {
+    if (!venue) return [...PUBLIC_TABS];
+    const configured = venue.visibleTabs ?? [...PUBLIC_TABS];
+    return PUBLIC_TABS.filter((tab) => configured.includes(tab));
+  }, [venue]);
+
+  // Use tab query param as initial tab (e.g. from My Venues shortcut → sessions)
+  const initialTab = PUBLIC_TABS.includes(tab as TabId)
+    ? (tab as TabId)
+    : "feed";
+  const [activeTab, setActiveTab] = useState<TabId>(initialTab);
+
+  // Ensure the active tab is always a visible one
+  const currentTab = visibleTabs.includes(activeTab)
+    ? activeTab
+    : (visibleTabs[0] ?? "about");
 
   const handleBackPress = () => {
     if (router.canGoBack()) {
@@ -99,20 +117,7 @@ export default function VenueDetailScreen() {
     }
   };
 
-  const handleInstagramPress = () => {
-    if (venue?.instagram) {
-      const username = venue.instagram.replace(/^@/, "");
-      Linking.openURL(`https://instagram.com/${username}`);
-    }
-  };
-
-  const handleWebsitePress = () => {
-    if (venue?.website) {
-      Linking.openURL(venue.website);
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />
@@ -128,8 +133,13 @@ export default function VenueDetailScreen() {
       <>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || t("common.error")}</Text>
-          <TouchableOpacity style={styles.retryButton} onPress={fetchVenue}>
+          <Text style={styles.errorText}>
+            {error instanceof Error ? error.message : t("common.error")}
+          </Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => refetch()}
+          >
             <Text style={styles.retryButtonText}>{t("common.retry")}</Text>
           </TouchableOpacity>
         </View>
@@ -137,18 +147,56 @@ export default function VenueDetailScreen() {
     );
   }
 
+  const renderTabContent = () => {
+    switch (currentTab) {
+      case "feed":
+        return <VenueFeedTab venueId={venue.id} />;
+      case "about":
+        return <VenueAboutTab venue={venue} />;
+      case "plans":
+        return <VenuePlansTab plans={venue.plans} />;
+      case "sessions":
+        return (
+          <VenueSessionsTab
+            venueId={venue.id}
+            userId={userId}
+            isOwnerOrAdmin={isOwnerOrAdmin}
+            canEditSessions={canEditSessions}
+            hasActiveSubscription={hasActiveSubscription}
+          />
+        );
+      case "team":
+        return <VenueTeamTab members={venue.members} />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <>
       <Stack.Screen options={{ headerShown: false }} />
-      <ScrollView style={styles.container} bounces={false}>
+
+      {/* Status Bar Overlay */}
+      <View style={[styles.statusBarOverlay, { height: insets.top }]} />
+
+      {/* Bottom Navigation Bar Overlay */}
+      <View style={[styles.bottomBarOverlay, { height: insets.bottom }]} />
+
+      <ScrollView
+        style={styles.container}
+        bounces={false}
+        keyboardShouldPersistTaps="handled"
+        keyboardDismissMode="interactive"
+      >
         {/* Hero Image */}
         <View style={styles.heroContainer}>
           {venue.coverImage ? (
-            <Image
-              source={{ uri: venue.coverImage }}
+            <CachedImage
+              uri={venue.coverImage}
               style={styles.heroImage}
-              resizeMode="cover"
+              contentFit="cover"
               alt="Venue cover"
+              priority="high"
             />
           ) : (
             <View style={[styles.heroImage, styles.placeholderImage]}>
@@ -157,7 +205,7 @@ export default function VenueDetailScreen() {
           )}
 
           {/* Navigation Buttons */}
-          <View style={styles.navButtons}>
+          <View style={[styles.navButtons, { top: insets.top + 8 }]}>
             <TouchableOpacity
               style={styles.navButton}
               onPress={handleBackPress}
@@ -177,15 +225,14 @@ export default function VenueDetailScreen() {
           </View>
         </View>
 
-        {/* Content */}
+        {/* Header: Logo + Name + Location */}
         <View style={styles.content}>
-          {/* Logo + Name */}
           <View style={styles.headerRow}>
             {venue.logo && (
-              <Image
-                source={{ uri: venue.logo }}
+              <CachedImage
+                uri={venue.logo}
                 style={styles.logoImage}
-                resizeMode="cover"
+                contentFit="cover"
                 alt="Venue logo"
               />
             )}
@@ -201,118 +248,40 @@ export default function VenueDetailScreen() {
               )}
             </View>
           </View>
-
-          {/* Stats Row */}
-          {venue._count && (
-            <View style={styles.statsRow}>
-              <View style={styles.statItem}>
-                <Users size={18} color={theme.colors.primary} />
-                <Text style={styles.statValue}>{venue._count.members}</Text>
-                <Text style={styles.statLabel}>Members</Text>
-              </View>
-              <View style={styles.statItem}>
-                <Building2 size={18} color={theme.colors.primary} />
-                <Text style={styles.statValue}>{venue._count.sessions}</Text>
-                <Text style={styles.statLabel}>Sessions</Text>
-              </View>
-            </View>
-          )}
-
-          {/* Quick Actions */}
-          <View style={styles.actionsRow}>
-            {venue.instagram && (
-              <TouchableOpacity
-                style={styles.actionButton}
-                onPress={handleInstagramPress}
-              >
-                <Instagram size={20} color={theme.colors.white} />
-                <Text style={styles.actionButtonText}>Instagram</Text>
-              </TouchableOpacity>
-            )}
-            {venue.website && (
-              <TouchableOpacity
-                style={[styles.actionButton, styles.actionButtonSecondary]}
-                onPress={handleWebsitePress}
-              >
-                <ExternalLink size={20} color={theme.colors.primary} />
-                <Text style={styles.actionButtonSecondaryText}>Website</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-
-          {/* Services */}
-          {venue.services && venue.services.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Services</Text>
-              <View style={styles.serviceChips}>
-                {venue.services.map((service) => (
-                  <View key={service} style={styles.serviceChip}>
-                    <Text style={styles.serviceChipText}>
-                      {service.replace(/_/g, " ")}
-                    </Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-          )}
-
-          {/* Description */}
-          {venue.description && (
-            <View style={styles.section}>
-              <Markdown
-                style={{
-                  body: {
-                    color: theme.colors.text,
-                    fontSize: 16,
-                    lineHeight: 24,
-                  },
-                  heading1: {
-                    fontSize: 22,
-                    fontWeight: "700",
-                    color: theme.colors.text,
-                    marginTop: 16,
-                    marginBottom: 8,
-                  },
-                  heading2: {
-                    fontSize: 20,
-                    fontWeight: "700",
-                    color: theme.colors.text,
-                    marginTop: 12,
-                    marginBottom: 6,
-                  },
-                  heading3: {
-                    fontSize: 18,
-                    fontWeight: "600",
-                    color: theme.colors.text,
-                    marginTop: 10,
-                    marginBottom: 4,
-                  },
-                  strong: { fontWeight: "700" },
-                  link: { color: theme.colors.primary },
-                }}
-              >
-                {venue.description}
-              </Markdown>
-            </View>
-          )}
-
-          {/* Location Map */}
-          {venue.latitude && venue.longitude && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Location</Text>
-              {venue.address && (
-                <Text style={styles.address}>{venue.address}</Text>
-              )}
-              <EventLocationMap
-                latitude={venue.latitude}
-                longitude={venue.longitude}
-                title={venue.name}
-                city={venue.city || ""}
-                country={venue.country}
-              />
-            </View>
-          )}
         </View>
+
+        {/* Tab Bar */}
+        {visibleTabs.length > 1 && (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.tabBarContent}
+            style={styles.tabBar}
+          >
+            {visibleTabs.map((tab) => {
+              const isActive = tab === currentTab;
+              return (
+                <TouchableOpacity
+                  key={tab}
+                  style={[styles.tabItem, isActive && styles.tabItemActive]}
+                  onPress={() => setActiveTab(tab)}
+                >
+                  <Text
+                    style={[
+                      styles.tabItemText,
+                      isActive && styles.tabItemTextActive,
+                    ]}
+                  >
+                    {t(`venueDetail.tabs.${tab}`)}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </ScrollView>
+        )}
+
+        {/* Tab Content */}
+        <View style={styles.tabContent}>{renderTabContent()}</View>
       </ScrollView>
     </>
   );
@@ -322,6 +291,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
+  },
+  statusBarOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    zIndex: 10,
+  },
+  bottomBarOverlay: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    zIndex: 10,
   },
   loadingContainer: {
     flex: 1,
@@ -402,12 +387,12 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: theme.spacing.md,
-    paddingBottom: theme.spacing.xl * 2,
+    paddingBottom: 0,
   },
   headerRow: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
     gap: theme.spacing.md,
   },
   logoImage: {
@@ -435,88 +420,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: theme.colors.mutedForeground,
   },
-  statsRow: {
-    flexDirection: "row",
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    gap: theme.spacing.lg,
-    justifyContent: "center",
+  tabBar: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border,
   },
-  statItem: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  tabBarContent: {
+    paddingHorizontal: theme.spacing.md,
+    gap: 4,
   },
-  statValue: {
-    fontSize: 16,
-    fontWeight: "700",
-    color: theme.colors.text,
+  tabItem: {
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 2,
+    borderBottomColor: "transparent",
   },
-  statLabel: {
+  tabItemActive: {
+    borderBottomColor: theme.colors.primary,
+  },
+  tabItemText: {
     fontSize: 14,
-    color: theme.colors.mutedForeground,
-  },
-  actionsRow: {
-    flexDirection: "row",
-    gap: theme.spacing.sm,
-    marginBottom: theme.spacing.lg,
-  },
-  actionButton: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 8,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: theme.spacing.sm + 4,
-    borderRadius: theme.borderRadius.lg,
-  },
-  actionButtonText: {
-    color: theme.colors.white,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  actionButtonSecondary: {
-    backgroundColor: theme.colors.white,
-    borderWidth: 1,
-    borderColor: theme.colors.primary,
-  },
-  actionButtonSecondaryText: {
-    color: theme.colors.primary,
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  section: {
-    marginBottom: theme.spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.colors.text,
-    marginBottom: theme.spacing.sm,
-  },
-  address: {
-    fontSize: 14,
-    color: theme.colors.mutedForeground,
-    marginBottom: theme.spacing.sm,
-  },
-  serviceChips: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 8,
-  },
-  serviceChip: {
-    backgroundColor: theme.colors.primary + "20",
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: theme.borderRadius.full,
-  },
-  serviceChipText: {
-    fontSize: 13,
     fontWeight: "500",
-    color: theme.colors.primaryDark,
-    textTransform: "capitalize",
+    color: theme.colors.textSecondary,
+  },
+  tabItemTextActive: {
+    color: theme.colors.primary,
+    fontWeight: "600",
+  },
+  tabContent: {
+    padding: theme.spacing.md,
+    paddingBottom: theme.spacing.xl * 2,
   },
 });

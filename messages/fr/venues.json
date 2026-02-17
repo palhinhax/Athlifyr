@@ -831,7 +831,8 @@
       "cancel": "Annuler",
       "deleting": "Suppression...",
       "loadingComments": "Chargement des commentaires...",
-      "writeComment": "Écrire un commentaire..."
+      "writeComment": "Écrire un commentaire...",
+      "deleteComment": "Supprimer"
     },
     "publishWod": {
       "title": "Publier l'Entraînement du Jour",

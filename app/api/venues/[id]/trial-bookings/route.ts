@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { BookingStatus, BookingType } from "@prisma/client";
 import { notifyTrialRequest } from "@/lib/notifications";
@@ -10,14 +10,14 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId } = await params;
-    const userId = session.user.id;
+    const userId = authUser.id;
     const body = await request.json();
     const { sessionId } = body;
 
@@ -200,14 +200,14 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const authUser = await getAuthUser(request);
 
-    if (!session?.user) {
+    if (!authUser) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id: venueId } = await params;
-    const userId = session.user.id;
+    const userId = authUser.id;
 
     // Check if user is owner or staff of the venue
     const venue = await prisma.venue.findUnique({

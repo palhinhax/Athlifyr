@@ -6,12 +6,12 @@ import {
   StyleSheet,
   TouchableOpacity,
   FlatList,
-  Image,
   Pressable,
 } from "react-native";
 import { Building2, X, ChevronRight } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
+import { CachedImage } from "@/src/components/CachedImage";
 import type { ActiveVenue } from "@/src/hooks/useActiveVenues";
 
 interface VenuePickerModalProps {
@@ -37,11 +37,10 @@ export function VenuePickerModal({
     >
       {/* Venue Image/Icon */}
       {item.imageUrl ? (
-        <Image
-          source={{ uri: item.imageUrl }}
+        <CachedImage
+          uri={item.imageUrl}
           style={styles.venueImage}
           alt={item.name}
-          accessibilityLabel={item.name}
         />
       ) : (
         <View style={styles.venueIconContainer}>

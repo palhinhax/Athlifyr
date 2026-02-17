@@ -831,7 +831,8 @@
       "cancel": "Abbrechen",
       "deleting": "Wird gelöscht...",
       "loadingComments": "Kommentare werden geladen...",
-      "writeComment": "Schreibe einen Kommentar..."
+      "writeComment": "Schreibe einen Kommentar...",
+      "deleteComment": "Löschen"
     },
     "publishWod": {
       "title": "Training des Tages veröffentlichen",

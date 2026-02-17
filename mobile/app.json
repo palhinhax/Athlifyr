@@ -18,7 +18,9 @@
       "bundleIdentifier": "com.athlifyr.app",
       "buildNumber": "2",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMicrophoneUsageDescription": "Athlifyr needs microphone access to record video with audio for lift analysis.",
+        "NSCameraUsageDescription": "Athlifyr needs camera access to record videos for lift analysis."
       }
     },
     "android": {
@@ -30,6 +32,7 @@
       "versionCode": 2,
       "permissions": [
         "CAMERA",
+        "RECORD_AUDIO",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE"
       ]

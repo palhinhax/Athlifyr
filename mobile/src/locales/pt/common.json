@@ -324,6 +324,8 @@
     "phone": "Telefone",
     "email": "E-mail",
     "website": "Website",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
     "location": "Localização",
     "noTeamMembers": "Ainda sem membros de equipa",
     "noPlans": "Nenhum plano disponível",
@@ -468,7 +470,10 @@
       "deleting": "A eliminar...",
       "deleted": "Registo eliminado com sucesso",
       "deleteError": "Falha ao eliminar registo",
-      "noEntries": "Ainda sem registos"
+      "noEntries": "Ainda sem registos",
+      "repsUnit_one": "rep",
+      "repsUnit_other": "reps",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Adicionar Corrida",
@@ -645,6 +650,7 @@
       "distanceHint": "Fica a 2–3 metros da câmara",
       "recording": "A gravar...",
       "recordingFailed": "A gravação falhou. Tenta novamente.",
+      "microphonePermissionRequired": "O acesso ao microfone é necessário para gravar vídeo. Por favor, concede permissão nas definições do dispositivo.",
       "permissionTitle": "Acesso à Câmara Necessário",
       "permissionDescription": "Esta funcionalidade necessita de acesso à câmara para gravar o teu levantamento para análise.",
       "grantPermission": "Conceder Permissão",

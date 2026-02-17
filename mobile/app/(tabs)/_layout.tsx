@@ -19,6 +19,7 @@ import { CachedImage } from "@/src/components/CachedImage";
 import { NotificationBell } from "@/src/components/NotificationBell";
 import { CalendarButton } from "@/src/components/CalendarButton";
 import { SearchButton } from "@/src/components/SearchButton";
+import { LiftAnalysisButton } from "@/src/components/LiftAnalysisButton";
 import { HeaderLogo } from "@/src/components/HeaderLogo";
 import { VenuePickerModal } from "@/src/components/VenuePickerModal";
 import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
@@ -117,6 +118,7 @@ export default function TabLayout() {
           headerTitle: () => <HeaderLogo />,
           headerRight: () => (
             <View style={styles.headerRight}>
+              <LiftAnalysisButton />
               <SearchButton />
               <CalendarButton />
               <NotificationBell />

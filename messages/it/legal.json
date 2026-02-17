@@ -12,48 +12,103 @@
     "privacy": {
       "title": "Informativa sulla Privacy",
       "lastUpdated": "Ultimo aggiornamento: {date}",
-      "intro": "La tua privacy è importante per noi. Questa informativa spiega come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali.",
-      "sections": {
-        "dataCollection": {
-          "title": "1. Dati che Raccogliamo",
-          "content": "Raccogliamo informazioni quando ti registri, inclusi nome, email, foto del profilo (tramite Google OAuth), posizione (se autorizzi) e dati di utilizzo del sito."
-        },
-        "dataUsage": {
-          "title": "2. Come Utilizziamo i Tuoi Dati",
-          "content": "Utilizziamo i tuoi dati per: fornire e migliorare i nostri servizi, personalizzare la tua esperienza, inviare notifiche sugli eventi, analizzare l'utilizzo del sito (Google Analytics) e rispettare gli obblighi legali."
-        },
-        "dataSharing": {
-          "title": "3. Condivisione dei Dati",
-          "content": "Non vendiamo i tuoi dati. Condividiamo informazioni solo con: Google (autenticazione e analytics), Backblaze B2 (archiviazione immagini) e quando richiesto dalla legge."
-        },
-        "dataRetention": {
-          "title": "4. Conservazione dei Dati",
-          "content": "Conserviamo i tuoi dati finché il tuo account è attivo. Puoi richiedere l'eliminazione del tuo account in qualsiasi momento."
-        },
-        "rights": {
-          "title": "5. I Tuoi Diritti (GDPR)",
-          "content": "Hai il diritto di: accedere ai tuoi dati, rettificare informazioni errate, eliminare il tuo account, esportare i tuoi dati e revocare consensi precedentemente dati."
-        },
-        "cookies": {
-          "title": "6. Cookie",
-          "content": "Utilizziamo cookie essenziali (autenticazione, preferenze) e analitici (Google Analytics). Puoi gestire le tue preferenze sui cookie nelle impostazioni."
-        },
-        "security": {
-          "title": "7. Sicurezza",
-          "content": "Implementiamo misure tecniche e organizzative per proteggere i tuoi dati da accessi non autorizzati, perdita o distruzione."
-        },
-        "children": {
-          "title": "8. Minori",
-          "content": "I nostri servizi non sono destinati a minori di 16 anni. Se scopriamo di aver raccolto dati di un minore, li elimineremo immediatamente."
-        },
-        "changes": {
-          "title": "9. Modifiche all'Informativa",
-          "content": "Potremmo aggiornare questa informativa occasionalmente. Ti informeremo di modifiche significative."
-        },
-        "contact": {
-          "title": "10. Contatto",
-          "content": "Per domande sulla privacy, contattaci tramite la pagina di contatto."
-        }
+      "intro": "La tua privacy è importante per noi. Questa informativa spiega come raccogliamo, utilizziamo e proteggiamo i tuoi dati personali quando utilizzi Athlifyr.",
+      "section1": {
+        "title": "1. Dati che Raccogliamo",
+        "intro": "Quando utilizzi Athlifyr, possiamo raccogliere:",
+        "accountData": "Dati dell'Account",
+        "accountDataDesc": "Nome, email, foto del profilo (tramite Google OAuth)",
+        "locationData": "Dati di Posizione",
+        "locationDataDesc": "Coordinate GPS (solo con la tua autorizzazione esplicita)",
+        "contentData": "Contenuti",
+        "contentDataDesc": "Foto, commenti e altri contenuti che pubblichi",
+        "usageData": "Dati di Utilizzo",
+        "usageDataDesc": "Pagine visitate, eventi salvati, preferenze",
+        "technicalData": "Dati Tecnici",
+        "technicalDataDesc": "Indirizzo IP, tipo di browser, sistema operativo"
+      },
+      "section2": {
+        "title": "2. Come Utilizziamo i Tuoi Dati",
+        "intro": "Utilizziamo i tuoi dati personali per:",
+        "item1": "Fornire e migliorare i nostri servizi",
+        "item2": "Personalizzare la tua esperienza",
+        "item3": "Mostrare eventi vicini a te (se autorizzi la posizione)",
+        "item4": "Permetterti di condividere contenuti e interagire con altri",
+        "item5": "Inviare notifiche sugli eventi (con il tuo consenso)",
+        "item6": "Analizzare l'utilizzo del sito per miglioramenti (Google Analytics)",
+        "item7": "Rispettare gli obblighi legali"
+      },
+      "section3": {
+        "title": "3. Condivisione dei Dati",
+        "noSell": "Non vendiamo i tuoi dati personali.",
+        "intro": "Condividiamo informazioni solo con:",
+        "google": "Google",
+        "googleDesc": "Per autenticazione (OAuth) e analisi (Google Analytics)",
+        "backblaze": "Backblaze B2",
+        "backblazeDesc": "Per archiviazione sicura delle immagini",
+        "authorities": "Autorità",
+        "authoritiesDesc": "Quando richiesto dalla legge o per proteggere i diritti"
+      },
+      "section4": {
+        "title": "4. Conservazione dei Dati",
+        "content": "Conserviamo i tuoi dati finché il tuo account è attivo o secondo necessità per fornire servizi. Puoi richiedere l'eliminazione del tuo account in qualsiasi momento tramite la pagina di contatto."
+      },
+      "section5": {
+        "title": "5. I Tuoi Diritti (GDPR)",
+        "intro": "Hai il diritto di:",
+        "access": "Accesso",
+        "accessDesc": "Richiedere una copia dei tuoi dati",
+        "rectification": "Rettifica",
+        "rectificationDesc": "Correggere informazioni errate",
+        "erasure": "Cancellazione",
+        "erasureDesc": "Richiedere la rimozione dei tuoi dati",
+        "portability": "Portabilità",
+        "portabilityDesc": "Esportare i tuoi dati",
+        "objection": "Opposizione",
+        "objectionDesc": "Opporti al trattamento dei tuoi dati",
+        "withdrawal": "Ritirare il Consenso",
+        "withdrawalDesc": "Ritirare i consensi dati precedentemente",
+        "exercise": "Per esercitare questi diritti, contattaci tramite la",
+        "contactPage": "pagina di contatto"
+      },
+      "section6": {
+        "title": "6. Cookie",
+        "content1": "Utilizziamo cookie essenziali per il funzionamento del sito (autenticazione, preferenze di lingua) e cookie analitici (Google Analytics) per migliorare la tua esperienza.",
+        "content2": "Puoi gestire le tue preferenze sui cookie in qualsiasi momento. Vedi di più nella nostra",
+        "cookiePolicy": "Informativa sui Cookie"
+      },
+      "section7": {
+        "title": "7. Sicurezza",
+        "intro": "Implementiamo misure tecniche e organizzative per proteggere i tuoi dati da accessi non autorizzati, perdita o distruzione, tra cui:",
+        "item1": "Crittografia dei dati in transito (HTTPS)",
+        "item2": "Autenticazione sicura tramite Google OAuth",
+        "item3": "Archiviazione sicura delle immagini",
+        "item4": "Accesso limitato ai dati personali"
+      },
+      "section8": {
+        "title": "8. Minori",
+        "content": "I nostri servizi non sono destinati a persone di età inferiore ai 16 anni. Se scopriamo di aver raccolto dati di un minore senza consenso parentale, elimineremo immediatamente tali informazioni."
+      },
+      "section9": {
+        "title": "9. Trasferimenti Internazionali",
+        "content": "I tuoi dati possono essere trasferiti e archiviati su server ubicati al di fuori dell'Unione Europea. Quando ciò accade, garantiamo che siano in atto adeguate garanzie per proteggere i tuoi dati."
+      },
+      "section10": {
+        "title": "10. Modifiche all'Informativa",
+        "content": "Potremmo aggiornare questa Informativa sulla Privacy occasionalmente. Ti informeremo di modifiche significative tramite il sito o via email. La data dell'ultimo aggiornamento è mostrata nella parte superiore di questa pagina."
+      },
+      "section11": {
+        "title": "11. Contatto",
+        "content": "Per domande sulla privacy o per esercitare i tuoi diritti, contattaci tramite la",
+        "contactPage": "pagina di contatto"
+      },
+      "summary": {
+        "title": "Riepilogo",
+        "item1": "Raccogliamo solo i dati necessari",
+        "item2": "Non vendiamo i tuoi dati",
+        "item3": "Puoi accedere, correggere ed eliminare i tuoi dati",
+        "item4": "Utilizziamo cookie (puoi gestirli nelle impostazioni)",
+        "item5": "I tuoi dati sono protetti"
       }
     },
     "terms": {

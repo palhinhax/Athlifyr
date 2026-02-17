@@ -324,6 +324,8 @@
     "phone": "Telefono",
     "email": "E-mail",
     "website": "Sito web",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
     "location": "Posizione",
     "noTeamMembers": "Ancora nessun membro del team",
     "noPlans": "Nessun piano disponibile",
@@ -468,7 +470,10 @@
       "deleting": "Eliminazione...",
       "deleted": "Voce eliminata con successo",
       "deleteError": "Errore durante l'eliminazione",
-      "noEntries": "Ancora nessuna voce"
+      "noEntries": "Ancora nessuna voce",
+      "repsUnit_one": "rip",
+      "repsUnit_other": "rip",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Aggiungi Corsa",
@@ -645,6 +650,7 @@
       "distanceHint": "Stai a 2–3 metri dalla fotocamera",
       "recording": "Registrazione...",
       "recordingFailed": "Registrazione fallita. Riprova.",
+      "microphonePermissionRequired": "L'accesso al microfono è necessario per registrare video. Concedi il permesso nelle impostazioni del dispositivo.",
       "permissionTitle": "Accesso alla Fotocamera Richiesto",
       "permissionDescription": "Questa funzione necessita dell'accesso alla fotocamera per registrare il tuo sollevamento per l'analisi.",
       "grantPermission": "Concedi Permesso",

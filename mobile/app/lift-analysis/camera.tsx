@@ -10,7 +10,12 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import { CameraView, useCameraPermissions, type CameraType } from "expo-camera";
+import {
+  CameraView,
+  useCameraPermissions,
+  useMicrophonePermissions,
+  type CameraType,
+} from "expo-camera";
 import {
   ArrowLeft,
   Zap,
@@ -39,12 +44,25 @@ export default function LiftCameraScreen() {
   const cameraRef = useRef<CameraView>(null);
 
   const [permission, requestPermission] = useCameraPermissions();
+  const [micPermission, requestMicPermission] = useMicrophonePermissions();
   const [isRecording, setIsRecording] = useState(false);
   const [torchEnabled, setTorchEnabled] = useState(false);
   const [facing, setFacing] = useState<CameraType>("back");
 
   const handleStartRecording = useCallback(async () => {
     if (!cameraRef.current || isRecording) return;
+
+    // Ensure microphone permission before recording
+    if (!micPermission?.granted) {
+      const result = await requestMicPermission();
+      if (!result.granted) {
+        Alert.alert(
+          t("common.error"),
+          t("liftAnalysis.camera.microphonePermissionRequired")
+        );
+        return;
+      }
+    }
 
     setIsRecording(true);
     try {
@@ -63,7 +81,7 @@ export default function LiftCameraScreen() {
     } finally {
       setIsRecording(false);
     }
-  }, [isRecording, router, t]);
+  }, [isRecording, router, t, micPermission, requestMicPermission]);
 
   const handleStopRecording = useCallback(() => {
     if (cameraRef.current && isRecording) {

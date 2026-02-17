@@ -11,7 +11,8 @@ interface PrivacyPageProps {
 export default async function PrivacyPage({ params }: PrivacyPageProps) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("legal.privacy");
+  const t = await getTranslations("legal");
+  const p = await getTranslations("legal.privacy");
 
   const formattedDate = new Date().toLocaleDateString(locale, {
     year: "numeric",
@@ -30,171 +31,145 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
         </Button>
 
         <article className="prose prose-gray dark:prose-invert max-w-none">
-          <h1>{t("title")}</h1>
+          <h1>{p("title")}</h1>
           <p className="text-sm text-muted-foreground">
-            {t("lastUpdated", { date: formattedDate })}
+            {p("lastUpdated", { date: formattedDate })}
           </p>
 
-          <p>
-            A tua privacidade é importante para nós. Esta política explica como
-            recolhemos, usamos e protegemos os teus dados pessoais quando usas o
-            Athlifyr.
-          </p>
+          <p>{p("intro")}</p>
 
-          <h2>1. Dados que Recolhemos</h2>
-          <p>Quando usas o Athlifyr, podemos recolher:</p>
+          <h2>{p("section1.title")}</h2>
+          <p>{p("section1.intro")}</p>
           <ul>
             <li>
-              <strong>Dados de Conta:</strong> Nome, email, fotografia de perfil
-              (via Google OAuth)
+              <strong>{p("section1.accountData")}:</strong>{" "}
+              {p("section1.accountDataDesc")}
             </li>
             <li>
-              <strong>Dados de Localização:</strong> Coordenadas GPS (apenas com
-              a tua autorização explícita)
+              <strong>{p("section1.locationData")}:</strong>{" "}
+              {p("section1.locationDataDesc")}
             </li>
             <li>
-              <strong>Conteúdo:</strong> Fotos, comentários e outros conteúdos
-              que publiques
+              <strong>{p("section1.contentData")}:</strong>{" "}
+              {p("section1.contentDataDesc")}
             </li>
             <li>
-              <strong>Dados de Utilização:</strong> Páginas visitadas, eventos
-              marcados, preferências
+              <strong>{p("section1.usageData")}:</strong>{" "}
+              {p("section1.usageDataDesc")}
             </li>
             <li>
-              <strong>Dados Técnicos:</strong> Endereço IP, tipo de navegador,
-              sistema operativo
+              <strong>{p("section1.technicalData")}:</strong>{" "}
+              {p("section1.technicalDataDesc")}
             </li>
           </ul>
 
-          <h2>2. Como Usamos os Teus Dados</h2>
-          <p>Utilizamos os teus dados pessoais para:</p>
+          <h2>{p("section2.title")}</h2>
+          <p>{p("section2.intro")}</p>
           <ul>
-            <li>Fornecer e melhorar os nossos serviços</li>
-            <li>Personalizar a tua experiência</li>
-            <li>Mostrar eventos próximos de ti (se autorizares localização)</li>
-            <li>Permitir que partilhes conteúdo e interajas com outros</li>
-            <li>Enviar notificações sobre eventos (com o teu consentimento)</li>
-            <li>Analisar o uso do site para melhorias (Google Analytics)</li>
-            <li>Cumprir obrigações legais</li>
+            <li>{p("section2.item1")}</li>
+            <li>{p("section2.item2")}</li>
+            <li>{p("section2.item3")}</li>
+            <li>{p("section2.item4")}</li>
+            <li>{p("section2.item5")}</li>
+            <li>{p("section2.item6")}</li>
+            <li>{p("section2.item7")}</li>
           </ul>
 
-          <h2>3. Partilha de Dados</h2>
+          <h2>{p("section3.title")}</h2>
           <p>
-            <strong>Não vendemos os teus dados pessoais.</strong>
+            <strong>{p("section3.noSell")}</strong>
           </p>
-          <p>Partilhamos informações apenas com:</p>
+          <p>{p("section3.intro")}</p>
           <ul>
             <li>
-              <strong>Google:</strong> Para autenticação (OAuth) e análise
-              (Google Analytics)
+              <strong>{p("section3.google")}:</strong>{" "}
+              {p("section3.googleDesc")}
             </li>
             <li>
-              <strong>Backblaze B2:</strong> Para armazenamento seguro de
-              imagens
+              <strong>{p("section3.backblaze")}:</strong>{" "}
+              {p("section3.backblazeDesc")}
             </li>
             <li>
-              <strong>Autoridades:</strong> Quando exigido por lei ou para
-              proteger direitos
+              <strong>{p("section3.authorities")}:</strong>{" "}
+              {p("section3.authoritiesDesc")}
             </li>
           </ul>
 
-          <h2>4. Retenção de Dados</h2>
-          <p>
-            Mantemos os teus dados enquanto a tua conta estiver ativa ou
-            conforme necessário para fornecer serviços. Podes solicitar a
-            eliminação da tua conta a qualquer momento através da página de
-            contacto.
-          </p>
+          <h2>{p("section4.title")}</h2>
+          <p>{p("section4.content")}</p>
 
-          <h2>5. Os Teus Direitos (RGPD)</h2>
-          <p>Tens direito a:</p>
+          <h2>{p("section5.title")}</h2>
+          <p>{p("section5.intro")}</p>
           <ul>
             <li>
-              <strong>Acesso:</strong> Solicitar uma cópia dos teus dados
+              <strong>{p("section5.access")}:</strong>{" "}
+              {p("section5.accessDesc")}
             </li>
             <li>
-              <strong>Retificação:</strong> Corrigir informações incorretas
+              <strong>{p("section5.rectification")}:</strong>{" "}
+              {p("section5.rectificationDesc")}
             </li>
             <li>
-              <strong>Eliminação:</strong> Pedir a remoção dos teus dados
+              <strong>{p("section5.erasure")}:</strong>{" "}
+              {p("section5.erasureDesc")}
             </li>
             <li>
-              <strong>Portabilidade:</strong> Exportar os teus dados
+              <strong>{p("section5.portability")}:</strong>{" "}
+              {p("section5.portabilityDesc")}
             </li>
             <li>
-              <strong>Oposição:</strong> Opor-te ao processamento dos teus dados
+              <strong>{p("section5.objection")}:</strong>{" "}
+              {p("section5.objectionDesc")}
             </li>
             <li>
-              <strong>Retirar Consentimento:</strong> Retirar consentimentos
-              dados anteriormente
+              <strong>{p("section5.withdrawal")}:</strong>{" "}
+              {p("section5.withdrawalDesc")}
             </li>
           </ul>
           <p>
-            Para exercer estes direitos, contacta-nos através da{" "}
-            <Link href="/contact">página de contacto</Link>.
+            {p("section5.exercise")}{" "}
+            <Link href="/contact">{p("section5.contactPage")}</Link>.
           </p>
 
-          <h2>6. Cookies</h2>
+          <h2>{p("section6.title")}</h2>
+          <p>{p("section6.content1")}</p>
           <p>
-            Utilizamos cookies essenciais para o funcionamento do site
-            (autenticação, preferências de idioma) e cookies analíticos (Google
-            Analytics) para melhorar a tua experiência.
-          </p>
-          <p>
-            Podes gerir as tuas preferências de cookies a qualquer momento. Vê
-            mais na nossa <Link href="/cookies">Política de Cookies</Link>.
+            {p("section6.content2")}{" "}
+            <Link href="/cookies">{p("section6.cookiePolicy")}</Link>.
           </p>
 
-          <h2>7. Segurança</h2>
-          <p>
-            Implementamos medidas técnicas e organizacionais para proteger os
-            teus dados contra acesso não autorizado, perda ou destruição,
-            incluindo:
-          </p>
+          <h2>{p("section7.title")}</h2>
+          <p>{p("section7.intro")}</p>
           <ul>
-            <li>Encriptação de dados em trânsito (HTTPS)</li>
-            <li>Autenticação segura via Google OAuth</li>
-            <li>Armazenamento seguro de imagens</li>
-            <li>Acesso restrito a dados pessoais</li>
+            <li>{p("section7.item1")}</li>
+            <li>{p("section7.item2")}</li>
+            <li>{p("section7.item3")}</li>
+            <li>{p("section7.item4")}</li>
           </ul>
 
-          <h2>8. Menores de Idade</h2>
-          <p>
-            Os nossos serviços não se destinam a menores de 16 anos. Se
-            descobrirmos que recolhemos dados de um menor sem consentimento
-            parental, eliminaremos essas informações imediatamente.
-          </p>
+          <h2>{p("section8.title")}</h2>
+          <p>{p("section8.content")}</p>
 
-          <h2>9. Transferências Internacionais</h2>
-          <p>
-            Os teus dados podem ser transferidos e armazenados em servidores
-            localizados fora da União Europeia. Quando isso acontece, garantimos
-            que existem salvaguardas adequadas para proteger os teus dados.
-          </p>
+          <h2>{p("section9.title")}</h2>
+          <p>{p("section9.content")}</p>
 
-          <h2>10. Alterações à Política</h2>
-          <p>
-            Podemos atualizar esta Política de Privacidade ocasionalmente.
-            Notificar-te-emos de alterações significativas através do site ou
-            por email. A data da última atualização está indicada no topo desta
-            página.
-          </p>
+          <h2>{p("section10.title")}</h2>
+          <p>{p("section10.content")}</p>
 
-          <h2>11. Contacto</h2>
+          <h2>{p("section11.title")}</h2>
           <p>
-            Para questões sobre privacidade ou para exercer os teus direitos,
-            contacta-nos através da{" "}
-            <Link href="/contact">página de contacto</Link>.
+            {p("section11.content")}{" "}
+            <Link href="/contact">{p("section11.contactPage")}</Link>.
           </p>
 
           <div className="mt-12 rounded-lg border bg-muted/50 p-6">
-            <h3 className="mt-0">Resumo</h3>
+            <h3 className="mt-0">{p("summary.title")}</h3>
             <ul className="mb-0">
-              <li>✅ Recolhemos apenas dados necessários</li>
-              <li>✅ Não vendemos os teus dados</li>
-              <li>✅ Podes aceder, corrigir e eliminar os teus dados</li>
-              <li>✅ Usamos cookies (podes gerir nas definições)</li>
-              <li>✅ Os teus dados estão protegidos</li>
+              <li>✅ {p("summary.item1")}</li>
+              <li>✅ {p("summary.item2")}</li>
+              <li>✅ {p("summary.item3")}</li>
+              <li>✅ {p("summary.item4")}</li>
+              <li>✅ {p("summary.item5")}</li>
             </ul>
           </div>
         </article>

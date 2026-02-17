@@ -113,10 +113,15 @@ export function PerformanceEntriesList({
         <Text style={styles.entryDetail}>🏋️ {entry.exerciseName}</Text>
       )}
       {entry.reps != null && (
-        <Text style={styles.entryDetail}>🔄 {entry.reps} reps</Text>
+        <Text style={styles.entryDetail}>
+          🔄 {entry.reps}{" "}
+          {t("performance.entries.repsUnit", { count: entry.reps })}
+        </Text>
       )}
       {entry.weightKg != null && (
-        <Text style={styles.entryDetail}>⚖️ {entry.weightKg} kg</Text>
+        <Text style={styles.entryDetail}>
+          ⚖️ {entry.weightKg} {t("performance.entries.kgUnit")}
+        </Text>
       )}
     </View>
   );

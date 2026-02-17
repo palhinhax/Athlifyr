@@ -39,9 +39,14 @@ export default function RootLayout() {
             name="forgot-password"
             options={{ headerShown: false, presentation: "modal" }}
           />
+          <Stack.Screen name="search" options={{ headerShown: false }} />
+          <Stack.Screen name="settings" options={{ headerShown: false }} />
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
           <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
           <Stack.Screen name="lift-analysis" options={{ headerShown: false }} />
+          <Stack.Screen name="events" options={{ headerShown: false }} />
+          <Stack.Screen name="venues" options={{ headerShown: false }} />
+          <Stack.Screen name="chat" options={{ headerShown: false }} />
         </Stack>
       </I18nextProvider>
     </QueryClientProvider>

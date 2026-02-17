@@ -12,48 +12,103 @@
     "privacy": {
       "title": "Politique de Confidentialité",
       "lastUpdated": "Dernière mise à jour : {date}",
-      "intro": "Votre vie privée est importante pour nous. Cette politique explique comment nous collectons, utilisons et protégeons vos données personnelles.",
-      "sections": {
-        "dataCollection": {
-          "title": "1. Données que Nous Collectons",
-          "content": "Nous collectons des informations lorsque vous vous inscrivez, y compris nom, email, photo de profil (via Google OAuth), localisation (si vous autorisez), et données d'utilisation du site."
-        },
-        "dataUsage": {
-          "title": "2. Comment Nous Utilisons Vos Données",
-          "content": "Nous utilisons vos données pour : fournir et améliorer nos services, personnaliser votre expérience, envoyer des notifications sur les événements, analyser l'utilisation du site (Google Analytics), et respecter les obligations légales."
-        },
-        "dataSharing": {
-          "title": "3. Partage de Données",
-          "content": "Nous ne vendons pas vos données. Nous partageons des informations uniquement avec : Google (authentification et analytics), Backblaze B2 (stockage d'images), et lorsque la loi l'exige."
-        },
-        "dataRetention": {
-          "title": "4. Conservation des Données",
-          "content": "Nous conservons vos données tant que votre compte est actif. Vous pouvez demander la suppression de votre compte à tout moment."
-        },
-        "rights": {
-          "title": "5. Vos Droits (RGPD)",
-          "content": "Vous avez le droit de : accéder à vos données, rectifier les informations incorrectes, supprimer votre compte, exporter vos données, et retirer les consentements donnés précédemment."
-        },
-        "cookies": {
-          "title": "6. Cookies",
-          "content": "Nous utilisons des cookies essentiels (authentification, préférences) et analytiques (Google Analytics). Vous pouvez gérer vos préférences de cookies dans les paramètres."
-        },
-        "security": {
-          "title": "7. Sécurité",
-          "content": "Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données contre l'accès non autorisé, la perte ou la destruction."
-        },
-        "children": {
-          "title": "8. Mineurs",
-          "content": "Nos services ne sont pas destinés aux mineurs de moins de 16 ans. Si nous découvrons que nous avons collecté des données d'un mineur, nous les supprimerons immédiatement."
-        },
-        "changes": {
-          "title": "9. Modifications de la Politique",
-          "content": "Nous pouvons mettre à jour cette politique occasionnellement. Nous vous informerons des changements importants."
-        },
-        "contact": {
-          "title": "10. Contact",
-          "content": "Pour les questions concernant la confidentialité, contactez-nous via la page de contact."
-        }
+      "intro": "Votre vie privée est importante pour nous. Cette politique explique comment nous collectons, utilisons et protégeons vos données personnelles lorsque vous utilisez Athlifyr.",
+      "section1": {
+        "title": "1. Données que Nous Collectons",
+        "intro": "Lorsque vous utilisez Athlifyr, nous pouvons collecter :",
+        "accountData": "Données de Compte",
+        "accountDataDesc": "Nom, email, photo de profil (via Google OAuth)",
+        "locationData": "Données de Localisation",
+        "locationDataDesc": "Coordonnées GPS (uniquement avec votre autorisation explicite)",
+        "contentData": "Contenu",
+        "contentDataDesc": "Photos, commentaires et autres contenus que vous publiez",
+        "usageData": "Données d'Utilisation",
+        "usageDataDesc": "Pages visitées, événements marqués, préférences",
+        "technicalData": "Données Techniques",
+        "technicalDataDesc": "Adresse IP, type de navigateur, système d'exploitation"
+      },
+      "section2": {
+        "title": "2. Comment Nous Utilisons Vos Données",
+        "intro": "Nous utilisons vos données personnelles pour :",
+        "item1": "Fournir et améliorer nos services",
+        "item2": "Personnaliser votre expérience",
+        "item3": "Afficher des événements près de vous (si vous autorisez la localisation)",
+        "item4": "Vous permettre de partager du contenu et d'interagir avec d'autres",
+        "item5": "Envoyer des notifications sur les événements (avec votre consentement)",
+        "item6": "Analyser l'utilisation du site pour des améliorations (Google Analytics)",
+        "item7": "Respecter les obligations légales"
+      },
+      "section3": {
+        "title": "3. Partage de Données",
+        "noSell": "Nous ne vendons pas vos données personnelles.",
+        "intro": "Nous partageons des informations uniquement avec :",
+        "google": "Google",
+        "googleDesc": "Pour l'authentification (OAuth) et l'analyse (Google Analytics)",
+        "backblaze": "Backblaze B2",
+        "backblazeDesc": "Pour le stockage sécurisé des images",
+        "authorities": "Autorités",
+        "authoritiesDesc": "Lorsque la loi l'exige ou pour protéger les droits"
+      },
+      "section4": {
+        "title": "4. Conservation des Données",
+        "content": "Nous conservons vos données tant que votre compte est actif ou selon les besoins pour fournir des services. Vous pouvez demander la suppression de votre compte à tout moment via la page de contact."
+      },
+      "section5": {
+        "title": "5. Vos Droits (RGPD)",
+        "intro": "Vous avez le droit de :",
+        "access": "Accès",
+        "accessDesc": "Demander une copie de vos données",
+        "rectification": "Rectification",
+        "rectificationDesc": "Corriger les informations incorrectes",
+        "erasure": "Effacement",
+        "erasureDesc": "Demander la suppression de vos données",
+        "portability": "Portabilité",
+        "portabilityDesc": "Exporter vos données",
+        "objection": "Opposition",
+        "objectionDesc": "Vous opposer au traitement de vos données",
+        "withdrawal": "Retirer le Consentement",
+        "withdrawalDesc": "Retirer les consentements donnés précédemment",
+        "exercise": "Pour exercer ces droits, contactez-nous via la",
+        "contactPage": "page de contact"
+      },
+      "section6": {
+        "title": "6. Cookies",
+        "content1": "Nous utilisons des cookies essentiels pour le fonctionnement du site (authentification, préférences de langue) et des cookies analytiques (Google Analytics) pour améliorer votre expérience.",
+        "content2": "Vous pouvez gérer vos préférences de cookies à tout moment. Voir plus dans notre",
+        "cookiePolicy": "Politique de Cookies"
+      },
+      "section7": {
+        "title": "7. Sécurité",
+        "intro": "Nous mettons en œuvre des mesures techniques et organisationnelles pour protéger vos données contre l'accès non autorisé, la perte ou la destruction, notamment :",
+        "item1": "Chiffrement des données en transit (HTTPS)",
+        "item2": "Authentification sécurisée via Google OAuth",
+        "item3": "Stockage sécurisé des images",
+        "item4": "Accès restreint aux données personnelles"
+      },
+      "section8": {
+        "title": "8. Mineurs",
+        "content": "Nos services ne sont pas destinés aux personnes de moins de 16 ans. Si nous découvrons que nous avons collecté des données d'un mineur sans consentement parental, nous supprimerons ces informations immédiatement."
+      },
+      "section9": {
+        "title": "9. Transferts Internationaux",
+        "content": "Vos données peuvent être transférées et stockées sur des serveurs situés en dehors de l'Union européenne. Lorsque cela se produit, nous veillons à ce que des garanties appropriées soient en place pour protéger vos données."
+      },
+      "section10": {
+        "title": "10. Modifications de la Politique",
+        "content": "Nous pouvons mettre à jour cette Politique de Confidentialité occasionnellement. Nous vous informerons des changements importants via le site ou par email. La date de la dernière mise à jour est indiquée en haut de cette page."
+      },
+      "section11": {
+        "title": "11. Contact",
+        "content": "Pour des questions sur la confidentialité ou pour exercer vos droits, contactez-nous via la",
+        "contactPage": "page de contact"
+      },
+      "summary": {
+        "title": "Résumé",
+        "item1": "Nous collectons uniquement les données nécessaires",
+        "item2": "Nous ne vendons pas vos données",
+        "item3": "Vous pouvez accéder, corriger et supprimer vos données",
+        "item4": "Nous utilisons des cookies (vous pouvez les gérer dans les paramètres)",
+        "item5": "Vos données sont protégées"
       }
     },
     "terms": {

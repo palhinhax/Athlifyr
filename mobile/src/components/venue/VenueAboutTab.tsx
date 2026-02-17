@@ -188,7 +188,9 @@ export function VenueAboutTab({ venue }: VenueAboutTabProps) {
                   <Instagram size={18} color={theme.colors.primary} />
                 </View>
                 <View style={styles.contactTextContainer}>
-                  <Text style={styles.contactLabel}>Instagram</Text>
+                  <Text style={styles.contactLabel}>
+                    {t("venueDetail.instagram")}
+                  </Text>
                   <Text style={styles.contactValue} numberOfLines={1}>
                     {venue.instagram.startsWith("@")
                       ? venue.instagram
@@ -208,7 +210,9 @@ export function VenueAboutTab({ venue }: VenueAboutTabProps) {
                   <Phone size={18} color="#25D366" />
                 </View>
                 <View style={styles.contactTextContainer}>
-                  <Text style={styles.contactLabel}>WhatsApp</Text>
+                  <Text style={styles.contactLabel}>
+                    {t("venueDetail.whatsapp")}
+                  </Text>
                   <Text style={styles.contactValue} numberOfLines={1}>
                     {venue.whatsapp}
                   </Text>

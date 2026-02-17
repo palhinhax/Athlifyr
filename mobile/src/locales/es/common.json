@@ -468,7 +468,10 @@
       "deleting": "Eliminando...",
       "deleted": "Registro eliminado correctamente",
       "deleteError": "Error al eliminar registro",
-      "noEntries": "Aún sin registros"
+      "noEntries": "Aún sin registros",
+      "repsUnit_one": "rep",
+      "repsUnit_other": "reps",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Añadir Carrera",
@@ -645,6 +648,7 @@
       "distanceHint": "Sitúate a 2–3 metros de la cámara",
       "recording": "Grabando...",
       "recordingFailed": "La grabación falló. Inténtalo de nuevo.",
+      "microphonePermissionRequired": "Se requiere acceso al micrófono para grabar vídeo. Por favor, concede permiso en los ajustes del dispositivo.",
       "permissionTitle": "Acceso a la Cámara Requerido",
       "permissionDescription": "Esta función necesita acceso a la cámara para grabar tu levantamiento para análisis.",
       "grantPermission": "Conceder Permiso",

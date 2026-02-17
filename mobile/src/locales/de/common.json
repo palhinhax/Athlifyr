@@ -324,6 +324,8 @@
     "phone": "Telefon",
     "email": "E-Mail",
     "website": "Webseite",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
     "location": "Standort",
     "noTeamMembers": "Noch keine Teammitglieder",
     "noPlans": "Keine Pläne verfügbar",
@@ -468,7 +470,10 @@
       "deleting": "Wird gelöscht...",
       "deleted": "Eintrag erfolgreich gelöscht",
       "deleteError": "Fehler beim Löschen",
-      "noEntries": "Noch keine Einträge"
+      "noEntries": "Noch keine Einträge",
+      "repsUnit_one": "Wdh",
+      "repsUnit_other": "Wdh",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Lauf hinzufügen",
@@ -645,6 +650,7 @@
       "distanceHint": "Steh 2–3 Meter von der Kamera entfernt",
       "recording": "Aufnahme...",
       "recordingFailed": "Aufnahme fehlgeschlagen. Bitte erneut versuchen.",
+      "microphonePermissionRequired": "Mikrofonzugriff ist erforderlich, um Videos aufzunehmen. Bitte erteile die Berechtigung in den Geräteeinstellungen.",
       "permissionTitle": "Kamerazugriff Erforderlich",
       "permissionDescription": "Diese Funktion benötigt Kamerazugriff, um deine Hebung zur Analyse aufzunehmen.",
       "grantPermission": "Berechtigung Erteilen",

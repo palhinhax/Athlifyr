@@ -286,10 +286,7 @@ For detailed API documentation, refer to:
 
 ## Support
 
-For issues or questions:
-
-- GitHub: https://github.com/anthropics/claude-code/issues
-- Documentation: Check the codebase README
+For issues or questions, check the codebase documentation and README.
 
 ---
 

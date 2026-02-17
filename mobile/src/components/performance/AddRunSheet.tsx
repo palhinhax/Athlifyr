@@ -60,6 +60,15 @@ export function AddRunSheet({
 
     const elevationGainM = elevation ? parseInt(elevation, 10) : undefined;
 
+    // Validate elevation for trail runs
+    if (isTrail && (!elevationGainM || elevationGainM <= 0)) {
+      Alert.alert(
+        t("performance.error"),
+        t("performance.run.invalidElevation")
+      );
+      return;
+    }
+
     try {
       const entry: CreateRunEntry = {
         type: "RUN",
@@ -68,12 +77,6 @@ export function AddRunSheet({
         performedAt: new Date().toISOString(),
         ...(elevationGainM !== undefined && { elevationGainM }),
       };
-
-      // If trail, we still use type "RUN" with elevation (API uses same type for both)
-      // The backend differentiates by having elevationGainM > 0
-      if (isTrail && elevationGainM === undefined) {
-        entry.elevationGainM = 0;
-      }
 
       await createEntry(entry);
       Alert.alert(t("performance.success"), t("performance.run.savedSuccess"));

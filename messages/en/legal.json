@@ -12,48 +12,103 @@
     "privacy": {
       "title": "Privacy Policy",
       "lastUpdated": "Last updated: {date}",
-      "intro": "Your privacy is important to us. This policy explains how we collect, use, and protect your personal data.",
-      "sections": {
-        "dataCollection": {
-          "title": "1. Data We Collect",
-          "content": "We collect information when you register, including name, email, profile photo (via Google OAuth), location (if authorized), and site usage data."
-        },
-        "dataUsage": {
-          "title": "2. How We Use Your Data",
-          "content": "We use your data to: provide and improve our services, personalize your experience, send event notifications, analyze site usage (Google Analytics), and comply with legal obligations."
-        },
-        "dataSharing": {
-          "title": "3. Data Sharing",
-          "content": "We do not sell your data. We share information only with: Google (authentication and analytics), Backblaze B2 (image storage), and when required by law."
-        },
-        "dataRetention": {
-          "title": "4. Data Retention",
-          "content": "We keep your data while your account is active. You can request account deletion at any time."
-        },
-        "rights": {
-          "title": "5. Your Rights (GDPR)",
-          "content": "You have the right to: access your data, rectify incorrect information, delete your account, export your data, and withdraw previously given consents."
-        },
-        "cookies": {
-          "title": "6. Cookies",
-          "content": "We use essential cookies (authentication, preferences) and analytics cookies (Google Analytics). You can manage your cookie preferences in settings."
-        },
-        "security": {
-          "title": "7. Security",
-          "content": "We implement technical and organizational measures to protect your data against unauthorized access, loss, or destruction."
-        },
-        "children": {
-          "title": "8. Minors",
-          "content": "Our services are not intended for individuals under 16 years old. If we discover we have collected data from a minor, we will delete it immediately."
-        },
-        "changes": {
-          "title": "9. Policy Changes",
-          "content": "We may update this policy occasionally. We will notify you of significant changes."
-        },
-        "contact": {
-          "title": "10. Contact",
-          "content": "For privacy questions, contact us through the contact page."
-        }
+      "intro": "Your privacy is important to us. This policy explains how we collect, use, and protect your personal data when you use Athlifyr.",
+      "section1": {
+        "title": "1. Data We Collect",
+        "intro": "When you use Athlifyr, we may collect:",
+        "accountData": "Account Data",
+        "accountDataDesc": "Name, email, profile photo (via Google OAuth)",
+        "locationData": "Location Data",
+        "locationDataDesc": "GPS coordinates (only with your explicit authorization)",
+        "contentData": "Content",
+        "contentDataDesc": "Photos, comments, and other content you publish",
+        "usageData": "Usage Data",
+        "usageDataDesc": "Pages visited, events bookmarked, preferences",
+        "technicalData": "Technical Data",
+        "technicalDataDesc": "IP address, browser type, operating system"
+      },
+      "section2": {
+        "title": "2. How We Use Your Data",
+        "intro": "We use your personal data to:",
+        "item1": "Provide and improve our services",
+        "item2": "Personalize your experience",
+        "item3": "Show events near you (if you authorize location)",
+        "item4": "Allow you to share content and interact with others",
+        "item5": "Send event notifications (with your consent)",
+        "item6": "Analyze site usage for improvements (Google Analytics)",
+        "item7": "Comply with legal obligations"
+      },
+      "section3": {
+        "title": "3. Data Sharing",
+        "noSell": "We do not sell your personal data.",
+        "intro": "We share information only with:",
+        "google": "Google",
+        "googleDesc": "For authentication (OAuth) and analytics (Google Analytics)",
+        "backblaze": "Backblaze B2",
+        "backblazeDesc": "For secure image storage",
+        "authorities": "Authorities",
+        "authoritiesDesc": "When required by law or to protect rights"
+      },
+      "section4": {
+        "title": "4. Data Retention",
+        "content": "We keep your data while your account is active or as necessary to provide services. You can request account deletion at any time through the contact page."
+      },
+      "section5": {
+        "title": "5. Your Rights (GDPR)",
+        "intro": "You have the right to:",
+        "access": "Access",
+        "accessDesc": "Request a copy of your data",
+        "rectification": "Rectification",
+        "rectificationDesc": "Correct incorrect information",
+        "erasure": "Erasure",
+        "erasureDesc": "Request removal of your data",
+        "portability": "Portability",
+        "portabilityDesc": "Export your data",
+        "objection": "Objection",
+        "objectionDesc": "Object to the processing of your data",
+        "withdrawal": "Withdraw Consent",
+        "withdrawalDesc": "Withdraw previously given consents",
+        "exercise": "To exercise these rights, contact us through the",
+        "contactPage": "contact page"
+      },
+      "section6": {
+        "title": "6. Cookies",
+        "content1": "We use essential cookies for site functionality (authentication, language preferences) and analytics cookies (Google Analytics) to improve your experience.",
+        "content2": "You can manage your cookie preferences at any time. See more in our",
+        "cookiePolicy": "Cookie Policy"
+      },
+      "section7": {
+        "title": "7. Security",
+        "intro": "We implement technical and organizational measures to protect your data against unauthorized access, loss, or destruction, including:",
+        "item1": "Data encryption in transit (HTTPS)",
+        "item2": "Secure authentication via Google OAuth",
+        "item3": "Secure image storage",
+        "item4": "Restricted access to personal data"
+      },
+      "section8": {
+        "title": "8. Minors",
+        "content": "Our services are not intended for individuals under 16 years old. If we discover we have collected data from a minor without parental consent, we will delete that information immediately."
+      },
+      "section9": {
+        "title": "9. International Transfers",
+        "content": "Your data may be transferred to and stored on servers located outside the European Union. When this happens, we ensure adequate safeguards are in place to protect your data."
+      },
+      "section10": {
+        "title": "10. Policy Changes",
+        "content": "We may update this Privacy Policy occasionally. We will notify you of significant changes through the site or by email. The date of the last update is shown at the top of this page."
+      },
+      "section11": {
+        "title": "11. Contact",
+        "content": "For privacy questions or to exercise your rights, contact us through the",
+        "contactPage": "contact page"
+      },
+      "summary": {
+        "title": "Summary",
+        "item1": "We collect only necessary data",
+        "item2": "We do not sell your data",
+        "item3": "You can access, correct, and delete your data",
+        "item4": "We use cookies (you can manage them in settings)",
+        "item5": "Your data is protected"
       }
     },
     "terms": {

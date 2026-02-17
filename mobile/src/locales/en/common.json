@@ -324,6 +324,8 @@
     "phone": "Phone",
     "email": "Email",
     "website": "Website",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
     "location": "Location",
     "noTeamMembers": "No team members yet",
     "noPlans": "No plans available",
@@ -468,7 +470,10 @@
       "deleting": "Deleting...",
       "deleted": "Entry deleted successfully",
       "deleteError": "Failed to delete entry",
-      "noEntries": "No entries yet"
+      "noEntries": "No entries yet",
+      "repsUnit_one": "rep",
+      "repsUnit_other": "reps",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Add Run",
@@ -645,6 +650,7 @@
       "distanceHint": "Stand 2–3 metres from the camera",
       "recording": "Recording...",
       "recordingFailed": "Recording failed. Please try again.",
+      "microphonePermissionRequired": "Microphone access is required to record video. Please grant permission in your device settings.",
       "permissionTitle": "Camera Access Required",
       "permissionDescription": "This feature needs camera access to record your lift for analysis.",
       "grantPermission": "Grant Permission",

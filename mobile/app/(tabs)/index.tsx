@@ -10,12 +10,11 @@ import {
 } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
-import { useRouter } from "expo-router";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
 import { EventsMap } from "@/src/components/EventsMap";
-import { Search, LayoutGrid, Map, Activity } from "lucide-react-native";
+import { Search, LayoutGrid, Map } from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -31,7 +30,6 @@ interface EventsResponse {
 
 export default function EventsScreen() {
   const { t } = useTranslation();
-  const router = useRouter();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -146,15 +144,6 @@ export default function EventsScreen() {
             />
           </View>
 
-          {/* Lift Analysis Button */}
-          <TouchableOpacity
-            style={styles.liftAnalysisButton}
-            onPress={() => router.push("/lift-analysis/history")}
-            activeOpacity={0.7}
-          >
-            <Activity size={20} color={theme.colors.primary} />
-          </TouchableOpacity>
-
           {/* View Mode Toggle */}
           <View style={styles.viewToggle}>
             <TouchableOpacity
@@ -257,16 +246,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     color: theme.colors.text,
-  },
-  liftAnalysisButton: {
-    width: 48,
-    height: 48,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: theme.colors.backgroundSecondary,
-    borderRadius: theme.borderRadius.lg,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
   },
   viewToggle: {
     flexDirection: "row",

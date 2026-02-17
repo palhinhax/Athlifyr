@@ -324,6 +324,8 @@
     "phone": "Téléphone",
     "email": "E-mail",
     "website": "Site web",
+    "instagram": "Instagram",
+    "whatsapp": "WhatsApp",
     "location": "Localisation",
     "noTeamMembers": "Pas encore de membres d'équipe",
     "noPlans": "Aucun forfait disponible",
@@ -468,7 +470,10 @@
       "deleting": "Suppression...",
       "deleted": "Entrée supprimée avec succès",
       "deleteError": "Échec de la suppression",
-      "noEntries": "Pas encore d'entrées"
+      "noEntries": "Pas encore d'entrées",
+      "repsUnit_one": "rép",
+      "repsUnit_other": "réps",
+      "kgUnit": "kg"
     },
     "run": {
       "addTitle": "Ajouter une Course",
@@ -645,6 +650,7 @@
       "distanceHint": "Tenez-vous à 2–3 mètres de la caméra",
       "recording": "Enregistrement...",
       "recordingFailed": "L'enregistrement a échoué. Veuillez réessayer.",
+      "microphonePermissionRequired": "L'accès au microphone est nécessaire pour enregistrer une vidéo. Veuillez accorder la permission dans les paramètres de votre appareil.",
       "permissionTitle": "Accès à la Caméra Requis",
       "permissionDescription": "Cette fonctionnalité nécessite l'accès à la caméra pour enregistrer votre levage pour analyse.",
       "grantPermission": "Accorder la Permission",

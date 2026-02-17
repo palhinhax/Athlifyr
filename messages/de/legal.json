@@ -12,48 +12,103 @@
     "privacy": {
       "title": "Datenschutzerklärung",
       "lastUpdated": "Letzte Aktualisierung: {date}",
-      "intro": "Ihre Privatsphäre ist uns wichtig. Diese Richtlinie erklärt, wie wir Ihre persönlichen Daten sammeln, verwenden und schützen.",
-      "sections": {
-        "dataCollection": {
-          "title": "1. Daten, die Wir Sammeln",
-          "content": "Wir sammeln Informationen bei der Registrierung, einschließlich Name, E-Mail, Profilbild (über Google OAuth), Standort (wenn Sie zustimmen) und Nutzungsdaten der Website."
-        },
-        "dataUsage": {
-          "title": "2. Wie Wir Ihre Daten Verwenden",
-          "content": "Wir verwenden Ihre Daten, um: unsere Dienste bereitzustellen und zu verbessern, Ihre Erfahrung zu personalisieren, Benachrichtigungen über Veranstaltungen zu senden, die Nutzung der Website zu analysieren (Google Analytics) und gesetzliche Verpflichtungen zu erfüllen."
-        },
-        "dataSharing": {
-          "title": "3. Datenweitergabe",
-          "content": "Wir verkaufen Ihre Daten nicht. Wir teilen Informationen nur mit: Google (Authentifizierung und Analytics), Backblaze B2 (Bildspeicherung) und wenn gesetzlich vorgeschrieben."
-        },
-        "dataRetention": {
-          "title": "4. Datenspeicherung",
-          "content": "Wir speichern Ihre Daten, solange Ihr Konto aktiv ist. Sie können jederzeit die Löschung Ihres Kontos beantragen."
-        },
-        "rights": {
-          "title": "5. Ihre Rechte (DSGVO)",
-          "content": "Sie haben das Recht auf: Zugriff auf Ihre Daten, Berichtigung falscher Informationen, Löschung Ihres Kontos, Export Ihrer Daten und Widerruf zuvor erteilter Einwilligungen."
-        },
-        "cookies": {
-          "title": "6. Cookies",
-          "content": "Wir verwenden wesentliche Cookies (Authentifizierung, Präferenzen) und Analyse-Cookies (Google Analytics). Sie können Ihre Cookie-Einstellungen in den Einstellungen verwalten."
-        },
-        "security": {
-          "title": "7. Sicherheit",
-          "content": "Wir setzen technische und organisatorische Maßnahmen um, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Zerstörung zu schützen."
-        },
-        "children": {
-          "title": "8. Minderjährige",
-          "content": "Unsere Dienste richten sich nicht an Minderjährige unter 16 Jahren. Wenn wir feststellen, dass wir Daten eines Minderjährigen gesammelt haben, werden wir diese sofort löschen."
-        },
-        "changes": {
-          "title": "9. Änderungen der Richtlinie",
-          "content": "Wir können diese Richtlinie gelegentlich aktualisieren. Wir werden Sie über wesentliche Änderungen informieren."
-        },
-        "contact": {
-          "title": "10. Kontakt",
-          "content": "Bei Fragen zum Datenschutz kontaktieren Sie uns über die Kontaktseite."
-        }
+      "intro": "Ihre Privatsphäre ist uns wichtig. Diese Richtlinie erklärt, wie wir Ihre persönlichen Daten sammeln, verwenden und schützen, wenn Sie Athlifyr nutzen.",
+      "section1": {
+        "title": "1. Daten, die Wir Sammeln",
+        "intro": "Wenn Sie Athlifyr nutzen, können wir Folgendes sammeln:",
+        "accountData": "Kontodaten",
+        "accountDataDesc": "Name, E-Mail, Profilfoto (über Google OAuth)",
+        "locationData": "Standortdaten",
+        "locationDataDesc": "GPS-Koordinaten (nur mit Ihrer ausdrücklichen Genehmigung)",
+        "contentData": "Inhalte",
+        "contentDataDesc": "Fotos, Kommentare und andere Inhalte, die Sie veröffentlichen",
+        "usageData": "Nutzungsdaten",
+        "usageDataDesc": "Besuchte Seiten, markierte Veranstaltungen, Präferenzen",
+        "technicalData": "Technische Daten",
+        "technicalDataDesc": "IP-Adresse, Browsertyp, Betriebssystem"
+      },
+      "section2": {
+        "title": "2. Wie Wir Ihre Daten Verwenden",
+        "intro": "Wir verwenden Ihre persönlichen Daten, um:",
+        "item1": "Unsere Dienste bereitzustellen und zu verbessern",
+        "item2": "Ihre Erfahrung zu personalisieren",
+        "item3": "Veranstaltungen in Ihrer Nähe anzuzeigen (wenn Sie den Standort autorisieren)",
+        "item4": "Ihnen zu ermöglichen, Inhalte zu teilen und mit anderen zu interagieren",
+        "item5": "Benachrichtigungen über Veranstaltungen zu senden (mit Ihrer Zustimmung)",
+        "item6": "Die Nutzung der Website für Verbesserungen zu analysieren (Google Analytics)",
+        "item7": "Gesetzliche Verpflichtungen zu erfüllen"
+      },
+      "section3": {
+        "title": "3. Datenweitergabe",
+        "noSell": "Wir verkaufen Ihre persönlichen Daten nicht.",
+        "intro": "Wir teilen Informationen nur mit:",
+        "google": "Google",
+        "googleDesc": "Für Authentifizierung (OAuth) und Analyse (Google Analytics)",
+        "backblaze": "Backblaze B2",
+        "backblazeDesc": "Für sichere Bildspeicherung",
+        "authorities": "Behörden",
+        "authoritiesDesc": "Wenn gesetzlich vorgeschrieben oder zum Schutz von Rechten"
+      },
+      "section4": {
+        "title": "4. Datenspeicherung",
+        "content": "Wir speichern Ihre Daten, solange Ihr Konto aktiv ist oder wie es für die Bereitstellung von Diensten erforderlich ist. Sie können jederzeit über die Kontaktseite die Löschung Ihres Kontos beantragen."
+      },
+      "section5": {
+        "title": "5. Ihre Rechte (DSGVO)",
+        "intro": "Sie haben das Recht auf:",
+        "access": "Zugriff",
+        "accessDesc": "Eine Kopie Ihrer Daten anzufordern",
+        "rectification": "Berichtigung",
+        "rectificationDesc": "Falsche Informationen zu korrigieren",
+        "erasure": "Löschung",
+        "erasureDesc": "Die Entfernung Ihrer Daten zu beantragen",
+        "portability": "Datenübertragbarkeit",
+        "portabilityDesc": "Ihre Daten zu exportieren",
+        "objection": "Widerspruch",
+        "objectionDesc": "Der Verarbeitung Ihrer Daten zu widersprechen",
+        "withdrawal": "Einwilligung Widerrufen",
+        "withdrawalDesc": "Zuvor erteilte Einwilligungen zu widerrufen",
+        "exercise": "Um diese Rechte auszuüben, kontaktieren Sie uns über die",
+        "contactPage": "Kontaktseite"
+      },
+      "section6": {
+        "title": "6. Cookies",
+        "content1": "Wir verwenden wesentliche Cookies für die Funktionalität der Website (Authentifizierung, Spracheinstellungen) und Analyse-Cookies (Google Analytics), um Ihre Erfahrung zu verbessern.",
+        "content2": "Sie können Ihre Cookie-Einstellungen jederzeit verwalten. Weitere Informationen in unserer",
+        "cookiePolicy": "Cookie-Richtlinie"
+      },
+      "section7": {
+        "title": "7. Sicherheit",
+        "intro": "Wir setzen technische und organisatorische Maßnahmen um, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Zerstörung zu schützen, einschließlich:",
+        "item1": "Verschlüsselung der Daten im Transit (HTTPS)",
+        "item2": "Sichere Authentifizierung über Google OAuth",
+        "item3": "Sichere Bildspeicherung",
+        "item4": "Eingeschränkter Zugriff auf persönliche Daten"
+      },
+      "section8": {
+        "title": "8. Minderjährige",
+        "content": "Unsere Dienste richten sich nicht an Personen unter 16 Jahren. Wenn wir feststellen, dass wir Daten einer minderjährigen Person ohne elterliche Zustimmung gesammelt haben, werden wir diese Informationen umgehend löschen."
+      },
+      "section9": {
+        "title": "9. Internationale Übermittlungen",
+        "content": "Ihre Daten können an Server außerhalb der Europäischen Union übermittelt und dort gespeichert werden. In diesem Fall stellen wir sicher, dass angemessene Schutzmaßnahmen zum Schutz Ihrer Daten vorhanden sind."
+      },
+      "section10": {
+        "title": "10. Änderungen der Richtlinie",
+        "content": "Wir können diese Datenschutzerklärung gelegentlich aktualisieren. Wir werden Sie über wesentliche Änderungen über die Website oder per E-Mail informieren. Das Datum der letzten Aktualisierung wird oben auf dieser Seite angezeigt."
+      },
+      "section11": {
+        "title": "11. Kontakt",
+        "content": "Bei Fragen zum Datenschutz oder zur Ausübung Ihrer Rechte kontaktieren Sie uns über die",
+        "contactPage": "Kontaktseite"
+      },
+      "summary": {
+        "title": "Zusammenfassung",
+        "item1": "Wir sammeln nur notwendige Daten",
+        "item2": "Wir verkaufen Ihre Daten nicht",
+        "item3": "Sie können auf Ihre Daten zugreifen, sie korrigieren und löschen",
+        "item4": "Wir verwenden Cookies (Sie können sie in den Einstellungen verwalten)",
+        "item5": "Ihre Daten sind geschützt"
       }
     },
     "terms": {

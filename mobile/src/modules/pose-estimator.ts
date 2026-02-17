@@ -38,19 +38,16 @@ export interface PoseEstimatorModule {
 
 /**
  * Placeholder factory until native module is available.
- * Throws an informative error when called in a non-native environment.
+ * Returns a module that rejects all operations with informative errors.
  */
 export function createPoseEstimator(): PoseEstimatorModule {
-  const notAvailable = (): never => {
-    throw new Error(
-      "PoseEstimator native module is not available. " +
-        "This feature requires an EAS dev build with MediaPipe/TFLite native module installed."
-    );
-  };
+  const errorMessage =
+    "PoseEstimator native module is not available. " +
+    "This feature requires an EAS dev build with MediaPipe/TFLite native module installed.";
 
   return {
-    initialize: () => Promise.reject(notAvailable()),
-    estimatePoses: () => Promise.reject(notAvailable()),
-    dispose: () => Promise.reject(notAvailable()),
+    initialize: () => Promise.reject(new Error(errorMessage)),
+    estimatePoses: () => Promise.reject(new Error(errorMessage)),
+    dispose: () => Promise.reject(new Error(errorMessage)),
   };
 }

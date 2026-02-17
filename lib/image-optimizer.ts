@@ -48,12 +48,15 @@ export async function optimizeImage({
     };
   }
 
-  let pipeline = sharp(buffer).rotate(); // Auto-rotate based on EXIF
+  let pipeline = sharp(buffer);
 
   // Get image metadata to check dimensions
-  const metadata = await sharp(buffer).metadata();
+  const metadata = await pipeline.metadata();
   const width = metadata.width ?? 0;
   const height = metadata.height ?? 0;
+
+  // Auto-rotate based on EXIF after getting metadata
+  pipeline = pipeline.rotate();
 
   // Only resize if image exceeds max dimensions
   if (width > maxWidth || height > maxHeight) {

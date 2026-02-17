@@ -39,19 +39,16 @@ export interface VideoTrimmerModule {
 
 /**
  * Placeholder factory until native module is available.
- * Throws an informative error when called in a non-native environment.
+ * Returns a module that rejects all operations with informative errors.
  */
 export function createVideoTrimmer(): VideoTrimmerModule {
-  const notAvailable = (): never => {
-    throw new Error(
-      "VideoTrimmer native module is not available. " +
-        "This feature requires an EAS dev build with FFmpegKit native module installed."
-    );
-  };
+  const errorMessage =
+    "VideoTrimmer native module is not available. " +
+    "This feature requires an EAS dev build with FFmpegKit native module installed.";
 
   return {
-    trim: () => Promise.reject(notAvailable()),
-    extractFrame: () => Promise.reject(notAvailable()),
-    getMetadata: () => Promise.reject(notAvailable()),
+    trim: () => Promise.reject(new Error(errorMessage)),
+    extractFrame: () => Promise.reject(new Error(errorMessage)),
+    getMetadata: () => Promise.reject(new Error(errorMessage)),
   };
 }

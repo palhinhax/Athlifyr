@@ -1,7 +1,8 @@
 import React from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { useTranslation } from "react-i18next";
-import { ImagePlus, Users } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { ImagePlus, Users, Activity } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { EmptyState } from "./EmptyState";
 
@@ -11,9 +12,37 @@ interface OtherSectionsProps {
 
 export function OtherSections({ friendsCount }: OtherSectionsProps) {
   const { t } = useTranslation();
+  const router = useRouter();
 
   return (
     <>
+      {/* Lift Analysis Section */}
+      <View style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Activity size={20} color={theme.colors.primary} />
+          <Text style={styles.sectionTitle}>{t("profile.liftAnalysis")}</Text>
+        </View>
+        <View style={styles.emptyCard}>
+          <Activity size={48} color={theme.colors.textSecondary} />
+          <Text style={styles.emptyCardTitle}>
+            {t("profile.analyzeLiftTitle")}
+          </Text>
+          <Text style={styles.emptyCardText}>
+            {t("profile.analyzeLiftDescription")}
+          </Text>
+          <TouchableOpacity
+            style={[styles.actionButton, styles.primaryButton]}
+            activeOpacity={0.7}
+            onPress={() => router.push("/lift-analysis/history")}
+          >
+            <Activity size={16} color={theme.colors.white} />
+            <Text style={[styles.actionButtonText, styles.primaryButtonText]}>
+              {t("profile.startAnalysis")}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Gallery Section */}
       <View style={styles.section}>
         <View style={styles.sectionHeader}>
@@ -108,5 +137,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: theme.colors.text,
+  },
+  primaryButton: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  primaryButtonText: {
+    color: theme.colors.white,
+    fontWeight: "600",
   },
 });

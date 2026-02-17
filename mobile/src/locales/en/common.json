@@ -110,7 +110,11 @@
     "noUpcomingEventsDescription": "Explore events and register to participate.",
     "pastEventsCount": "Past Events ({{count}})",
     "noPastEvents": "No past events",
-    "noPastEventsDescription": "Your event history will appear here."
+    "noPastEventsDescription": "Your event history will appear here.",
+    "liftAnalysis": "Lift Analysis",
+    "analyzeLiftTitle": "Analyze Your Lifts",
+    "analyzeLiftDescription": "Record your weightlifting movements and get detailed analysis with bar tracking and joint angle measurements.",
+    "startAnalysis": "Start Analysis"
   },
   "login": {
     "title": "Sign In",

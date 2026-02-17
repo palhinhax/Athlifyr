@@ -110,7 +110,11 @@
     "noUpcomingEventsDescription": "Erkunde Events und melde dich zur Teilnahme an.",
     "pastEventsCount": "Vergangene Events ({{count}})",
     "noPastEvents": "Keine vergangenen Events",
-    "noPastEventsDescription": "Deine Event-Historie wird hier angezeigt."
+    "noPastEventsDescription": "Deine Event-Historie wird hier angezeigt.",
+    "liftAnalysis": "Hubanalyse",
+    "analyzeLiftTitle": "Analysiere Deine Hebebewegungen",
+    "analyzeLiftDescription": "Nimm deine Gewichtheberbewegungen auf und erhalte detaillierte Analysen mit Stangenverfolgung und Gelenkmessungen.",
+    "startAnalysis": "Analyse Starten"
   },
   "login": {
     "title": "Anmelden",

@@ -110,7 +110,11 @@
     "noUpcomingEventsDescription": "Esplora gli eventi e registrati per partecipare.",
     "pastEventsCount": "Eventi Passati ({{count}})",
     "noPastEvents": "Nessun evento passato",
-    "noPastEventsDescription": "La tua cronologia eventi apparirà qui."
+    "noPastEventsDescription": "La tua cronologia degli eventi apparirà qui.",
+    "liftAnalysis": "Analisi di Sollevamento",
+    "analyzeLiftTitle": "Analizza i Tuoi Sollevamenti",
+    "analyzeLiftDescription": "Registra i tuoi movimenti di sollevamento pesi e ottieni un'analisi dettagliata con tracciamento della barra e misurazioni degli angoli articolari.",
+    "startAnalysis": "Inizia Analisi"
   },
   "login": {
     "title": "Accedi",

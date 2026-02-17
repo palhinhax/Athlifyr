@@ -110,7 +110,11 @@
     "noUpcomingEventsDescription": "Explore les événements et inscris-toi pour participer.",
     "pastEventsCount": "Événements Passés ({{count}})",
     "noPastEvents": "Aucun événement passé",
-    "noPastEventsDescription": "Ton historique d'événements apparaîtra ici."
+    "noPastEventsDescription": "Ton historique d'événements apparaîtra ici.",
+    "liftAnalysis": "Analyse de Levage",
+    "analyzeLiftTitle": "Analyse Tes Levages",
+    "analyzeLiftDescription": "Enregistre tes mouvements d'haltérophilie et obtiens une analyse détaillée avec suivi de la barre et mesures des angles articulaires.",
+    "startAnalysis": "Commencer l'Analyse"
   },
   "login": {
     "title": "Se Connecter",

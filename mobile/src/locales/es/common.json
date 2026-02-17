@@ -110,7 +110,11 @@
     "noUpcomingEventsDescription": "Explora eventos y regístrate para participar.",
     "pastEventsCount": "Eventos Pasados ({{count}})",
     "noPastEvents": "Sin eventos pasados",
-    "noPastEventsDescription": "Tu historial de eventos aparecerá aquí."
+    "noPastEventsDescription": "Tu historial de eventos aparecerá aquí.",
+    "liftAnalysis": "Análisis de Levantamientos",
+    "analyzeLiftTitle": "Analiza Tus Levantamientos",
+    "analyzeLiftDescription": "Graba tus movimientos de levantamiento de pesas y obtén análisis detallado con seguimiento de barra y mediciones de ángulos articulares.",
+    "startAnalysis": "Iniciar Análisis"
   },
   "login": {
     "title": "Iniciar Sesión",

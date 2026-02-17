@@ -1,21 +1,16 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import {
-  ArrowLeft,
-  Scissors,
-  Check,
-} from "lucide-react-native";
+import { ArrowLeft, Scissors, Check } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { PlaybackControls } from "@/src/components/lift-analysis/PlaybackControls";
 import type { PlaybackSpeed } from "@/src/types/lift-analysis";
@@ -41,14 +36,23 @@ export default function LiftEditorScreen() {
 
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [startMs, setStartMs] = useState(0);
-  const [endMs, setEndMs] = useState(0);
+  const startMs = 0;
+  const endMs = 0;
+  const trimTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = true;
   });
 
   const [isPlaying, setIsPlaying] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      if (trimTimerRef.current) {
+        clearTimeout(trimTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleTogglePlay = useCallback(() => {
     if (isPlaying) {
@@ -72,7 +76,7 @@ export default function LiftEditorScreen() {
 
     // In a full implementation, this would use the native VideoTrimmer
     // to create a trimmed video file. For now, pass through the original URI.
-    setTimeout(() => {
+    trimTimerRef.current = setTimeout(() => {
       setIsProcessing(false);
       router.push({
         pathname: "/lift-analysis/analysis",
@@ -115,9 +119,7 @@ export default function LiftEditorScreen() {
         >
           <ArrowLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {t("liftAnalysis.editor.title")}
-        </Text>
+        <Text style={styles.headerTitle}>{t("liftAnalysis.editor.title")}</Text>
         <View style={styles.headerSpacer} />
       </View>
 

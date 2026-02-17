@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,15 +12,10 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import {
-  ArrowLeft,
-  Save,
-  Info,
-} from "lucide-react-native";
+import { ArrowLeft, Save, Info } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { PlaybackControls } from "@/src/components/lift-analysis/PlaybackControls";
 import { OverlayToggles } from "@/src/components/lift-analysis/OverlayToggles";
-import { useAnalysisStorage } from "@/src/hooks/useAnalysisStorage";
 import type {
   PlaybackSpeed,
   OverlayVisibility,
@@ -41,7 +36,6 @@ import type {
 export default function LiftAnalysisScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { saveAnalysis } = useAnalysisStorage();
   const params = useLocalSearchParams<{
     videoUri: string;
     startMs: string;
@@ -49,6 +43,10 @@ export default function LiftAnalysisScreen() {
   }>();
 
   const videoUri = params.videoUri ?? "";
+
+  const analysisIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
+    null
+  );
 
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -65,6 +63,14 @@ export default function LiftAnalysisScreen() {
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = true;
   });
+
+  useEffect(() => {
+    return () => {
+      if (analysisIntervalRef.current) {
+        clearInterval(analysisIntervalRef.current);
+      }
+    };
+  }, []);
 
   const handleTogglePlay = useCallback(() => {
     if (isPlaying) {
@@ -83,15 +89,12 @@ export default function LiftAnalysisScreen() {
     [player]
   );
 
-  const handleToggleOverlay = useCallback(
-    (key: keyof OverlayVisibility) => {
-      setOverlayVisibility((prev) => ({
-        ...prev,
-        [key]: !prev[key],
-      }));
-    },
-    []
-  );
+  const handleToggleOverlay = useCallback((key: keyof OverlayVisibility) => {
+    setOverlayVisibility((prev) => ({
+      ...prev,
+      [key]: !prev[key],
+    }));
+  }, []);
 
   const handleSaveAnalysis = useCallback(async () => {
     setIsSaving(true);
@@ -104,14 +107,11 @@ export default function LiftAnalysisScreen() {
       );
     } catch (error) {
       console.error("Failed to save analysis:", error);
-      Alert.alert(
-        t("common.error"),
-        t("liftAnalysis.analysis.saveFailed")
-      );
+      Alert.alert(t("common.error"), t("liftAnalysis.analysis.saveFailed"));
     } finally {
       setIsSaving(false);
     }
-  }, [saveAnalysis, t]);
+  }, [t]);
 
   const handleRunAnalysis = useCallback(() => {
     // Placeholder: In a full implementation, this triggers the native analysis pipeline.
@@ -127,12 +127,15 @@ export default function LiftAnalysisScreen() {
     ];
     let stepIndex = 0;
 
-    const interval = setInterval(() => {
+    analysisIntervalRef.current = setInterval(() => {
       stepIndex++;
       if (stepIndex < steps.length) {
         setAnalysisStatus(steps[stepIndex]);
       } else {
-        clearInterval(interval);
+        if (analysisIntervalRef.current) {
+          clearInterval(analysisIntervalRef.current);
+          analysisIntervalRef.current = null;
+        }
       }
     }, 1500);
   }, []);
@@ -155,13 +158,6 @@ export default function LiftAnalysisScreen() {
         return t("liftAnalysis.analysis.statusError");
     }
   };
-
-  const isAnalyzing = [
-    "extracting_frames",
-    "tracking_bar",
-    "estimating_pose",
-    "computing_angles",
-  ].includes(analysisStatus);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>

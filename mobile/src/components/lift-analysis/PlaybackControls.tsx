@@ -51,15 +51,17 @@ export function PlaybackControls({
         {SPEEDS.map((s) => (
           <TouchableOpacity
             key={s}
-            style={[styles.speedButton, speed === s && styles.speedButtonActive]}
+            style={[
+              styles.speedButton,
+              speed === s && styles.speedButtonActive,
+            ]}
             onPress={() => onSpeedChange(s)}
             activeOpacity={0.7}
+            accessibilityLabel={`${s}x`}
+            accessibilityRole="button"
           >
             <Text
-              style={[
-                styles.speedText,
-                speed === s && styles.speedTextActive,
-              ]}
+              style={[styles.speedText, speed === s && styles.speedTextActive]}
             >
               {s === 1 ? "1x" : `${s}x`}
             </Text>

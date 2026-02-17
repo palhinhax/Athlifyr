@@ -74,6 +74,9 @@ export function OverlayToggles({ visibility, onToggle }: OverlayTogglesProps) {
           style={[styles.toggle, visibility[key] && styles.toggleActive]}
           onPress={() => onToggle(key)}
           activeOpacity={0.7}
+          accessibilityLabel={label}
+          accessibilityRole="switch"
+          accessibilityState={{ checked: visibility[key] }}
         >
           {icon}
           <Text

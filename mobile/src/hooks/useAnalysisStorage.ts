@@ -18,7 +18,12 @@ interface AnalysisStorageIndex {
 async function getIndex(): Promise<AnalysisStorageIndex> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
   if (!raw) return { ids: [] };
-  return JSON.parse(raw) as AnalysisStorageIndex;
+  try {
+    return JSON.parse(raw) as AnalysisStorageIndex;
+  } catch {
+    console.warn("useAnalysisStorage: corrupted index, resetting");
+    return { ids: [] };
+  }
 }
 
 async function setIndex(index: AnalysisStorageIndex): Promise<void> {
@@ -46,6 +51,9 @@ export function useAnalysisStorage() {
           index.ids.unshift(result.id);
           await setIndex(index);
         }
+      } catch (error) {
+        console.error("useAnalysisStorage: failed to save analysis:", error);
+        throw error;
       } finally {
         setLoading(false);
       }
@@ -66,18 +74,25 @@ export function useAnalysisStorage() {
       >[] = [];
 
       for (const id of index.ids) {
-        const raw = await AsyncStorage.getItem(analysisKey(id));
-        if (raw) {
-          const parsed = JSON.parse(raw) as LiftAnalysisResult;
-          results.push({
-            id: parsed.id,
-            createdAt: parsed.createdAt,
-            videoUriTrimmed: parsed.videoUriTrimmed,
-          });
+        try {
+          const raw = await AsyncStorage.getItem(analysisKey(id));
+          if (raw) {
+            const parsed = JSON.parse(raw) as LiftAnalysisResult;
+            results.push({
+              id: parsed.id,
+              createdAt: parsed.createdAt,
+              videoUriTrimmed: parsed.videoUriTrimmed,
+            });
+          }
+        } catch {
+          console.warn(`useAnalysisStorage: corrupted entry ${id}, skipping`);
         }
       }
 
       return results;
+    } catch (error) {
+      console.error("useAnalysisStorage: failed to list analyses:", error);
+      return [];
     } finally {
       setLoading(false);
     }
@@ -90,7 +105,15 @@ export function useAnalysisStorage() {
       try {
         const raw = await AsyncStorage.getItem(analysisKey(id));
         if (!raw) return null;
-        return JSON.parse(raw) as LiftAnalysisResult;
+        try {
+          return JSON.parse(raw) as LiftAnalysisResult;
+        } catch {
+          console.warn(`useAnalysisStorage: corrupted entry ${id}`);
+          return null;
+        }
+      } catch (error) {
+        console.error("useAnalysisStorage: failed to get analysis:", error);
+        return null;
       } finally {
         setLoading(false);
       }
@@ -106,6 +129,9 @@ export function useAnalysisStorage() {
       const index = await getIndex();
       index.ids = index.ids.filter((storedId) => storedId !== id);
       await setIndex(index);
+    } catch (error) {
+      console.error("useAnalysisStorage: failed to delete analysis:", error);
+      throw error;
     } finally {
       setLoading(false);
     }

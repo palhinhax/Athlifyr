@@ -35,7 +35,7 @@ type AnalysisSummary = Pick<
 export default function AnalysisHistoryScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { listAnalyses, deleteAnalysis, loading } = useAnalysisStorage();
+  const { listAnalyses, deleteAnalysis } = useAnalysisStorage();
 
   const [analyses, setAnalyses] = useState<AnalysisSummary[]>([]);
 

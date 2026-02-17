@@ -156,8 +156,12 @@ export default function LiftAnalysisScreen() {
     }
   };
 
-  const isAnalyzing =
-    analysisStatus !== "idle" && analysisStatus !== "complete" && analysisStatus !== "error";
+  const isAnalyzing = [
+    "extracting_frames",
+    "tracking_bar",
+    "estimating_pose",
+    "computing_angles",
+  ].includes(analysisStatus);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
@@ -335,7 +339,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   overlayPlaceholder: {
-    backgroundColor: "rgba(229, 123, 42, 0.2)",
+    backgroundColor: `${theme.colors.primary}33`,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,

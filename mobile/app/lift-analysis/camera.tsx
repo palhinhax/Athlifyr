@@ -79,7 +79,7 @@ export default function LiftCameraScreen() {
   }, [isRecording]);
 
   const handleFlipCamera = useCallback(() => {
-    setFacing((prev) => (prev === "back" ? "front" : "back"));
+    setFacing((prev: CameraType) => (prev === "back" ? "front" : "back"));
   }, []);
 
   // ─── Permission handling ────────────────────────────────────

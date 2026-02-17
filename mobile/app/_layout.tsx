@@ -41,6 +41,10 @@ export default function RootLayout() {
           />
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
           <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="lift-analysis"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </I18nextProvider>
     </QueryClientProvider>

@@ -633,5 +633,58 @@
     "recurringSession": "Session récurrente",
     "dateTime": "Date et Heure",
     "recurring": "Récurrent"
+  },
+  "liftAnalysis": {
+    "camera": {
+      "title": "Caméra de Levage",
+      "framingHint": "Placez-vous de côté, gardez le corps entier et la barre dans le cadre",
+      "distanceHint": "Tenez-vous à 2–3 mètres de la caméra",
+      "recording": "Enregistrement...",
+      "recordingFailed": "L'enregistrement a échoué. Veuillez réessayer.",
+      "permissionTitle": "Accès à la Caméra Requis",
+      "permissionDescription": "Cette fonctionnalité nécessite l'accès à la caméra pour enregistrer votre levage pour analyse.",
+      "grantPermission": "Accorder la Permission",
+      "loadingPermissions": "Chargement des permissions de la caméra..."
+    },
+    "editor": {
+      "title": "Éditer la Vidéo",
+      "trimHint": "Faites glisser les poignées pour découper le segment vidéo",
+      "analyze": "Analyser le Levage",
+      "noVideo": "Aucune vidéo sélectionnée"
+    },
+    "analysis": {
+      "title": "Analyse de Levage",
+      "description": "Analysez la trajectoire de la barre, la position du corps et les angles articulaires de votre levage.",
+      "runAnalysis": "Lancer l'Analyse",
+      "nativeNote": "L'analyse complète nécessite des modules natifs (OpenCV + MediaPipe) via EAS dev build.",
+      "saveSuccess": "Analyse Sauvegardée",
+      "saveSuccessDescription": "Votre analyse de levage a été sauvegardée et peut être revue plus tard.",
+      "saveFailed": "Échec de la sauvegarde de l'analyse",
+      "statusIdle": "Prêt à analyser",
+      "statusExtractingFrames": "Extraction des images vidéo...",
+      "statusTrackingBar": "Suivi de la trajectoire de la barre...",
+      "statusEstimatingPose": "Estimation de la pose corporelle...",
+      "statusComputingAngles": "Calcul des angles articulaires...",
+      "statusComplete": "Analyse terminée",
+      "statusError": "L'analyse a échoué"
+    },
+    "history": {
+      "title": "Analyse de Levage",
+      "newRecording": "Nouvel Enregistrement",
+      "analysisLabel": "Analyse de Levage",
+      "emptyTitle": "Aucune analyse",
+      "emptyDescription": "Enregistrez une vidéo latérale de votre levage pour obtenir le suivi de la barre et l'analyse des angles articulaires.",
+      "deleteTitle": "Supprimer l'Analyse",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette analyse ?"
+    },
+    "playback": {
+      "play": "Lecture",
+      "pause": "Pause"
+    },
+    "overlays": {
+      "barPath": "Trajectoire de la Barre",
+      "skeleton": "Squelette",
+      "angles": "Angles"
+    }
   }
 }

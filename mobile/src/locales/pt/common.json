@@ -633,5 +633,58 @@
     "recurringSession": "Sessão recorrente",
     "dateTime": "Data e Hora",
     "recurring": "Recorrente"
+  },
+  "liftAnalysis": {
+    "camera": {
+      "title": "Câmara de Levantamento",
+      "framingHint": "Posiciona-te de lado, mantém o corpo inteiro e a barra no enquadramento",
+      "distanceHint": "Fica a 2–3 metros da câmara",
+      "recording": "A gravar...",
+      "recordingFailed": "A gravação falhou. Tenta novamente.",
+      "permissionTitle": "Acesso à Câmara Necessário",
+      "permissionDescription": "Esta funcionalidade necessita de acesso à câmara para gravar o teu levantamento para análise.",
+      "grantPermission": "Conceder Permissão",
+      "loadingPermissions": "A carregar permissões da câmara..."
+    },
+    "editor": {
+      "title": "Editar Vídeo",
+      "trimHint": "Arrasta as alças para cortar o segmento de vídeo",
+      "analyze": "Analisar Levantamento",
+      "noVideo": "Nenhum vídeo selecionado"
+    },
+    "analysis": {
+      "title": "Análise de Levantamento",
+      "description": "Analisa a trajetória da barra, posição corporal e ângulos articulares do teu levantamento.",
+      "runAnalysis": "Executar Análise",
+      "nativeNote": "A análise completa requer módulos nativos (OpenCV + MediaPipe) via EAS dev build.",
+      "saveSuccess": "Análise Guardada",
+      "saveSuccessDescription": "A tua análise de levantamento foi guardada e pode ser revista mais tarde.",
+      "saveFailed": "Falha ao guardar a análise",
+      "statusIdle": "Pronto para analisar",
+      "statusExtractingFrames": "A extrair fotogramas do vídeo...",
+      "statusTrackingBar": "A rastrear trajetória da barra...",
+      "statusEstimatingPose": "A estimar pose corporal...",
+      "statusComputingAngles": "A calcular ângulos articulares...",
+      "statusComplete": "Análise concluída",
+      "statusError": "A análise falhou"
+    },
+    "history": {
+      "title": "Análise de Levantamento",
+      "newRecording": "Nova Gravação",
+      "analysisLabel": "Análise de Levantamento",
+      "emptyTitle": "Sem análises",
+      "emptyDescription": "Grava um vídeo lateral do teu levantamento para obter rastreamento da barra e análise de ângulos articulares.",
+      "deleteTitle": "Eliminar Análise",
+      "deleteConfirm": "Tens a certeza de que queres eliminar esta análise?"
+    },
+    "playback": {
+      "play": "Reproduzir",
+      "pause": "Pausar"
+    },
+    "overlays": {
+      "barPath": "Trajetória da Barra",
+      "skeleton": "Esqueleto",
+      "angles": "Ângulos"
+    }
   }
 }

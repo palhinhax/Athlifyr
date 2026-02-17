@@ -633,5 +633,58 @@
     "recurringSession": "Recurring session",
     "dateTime": "Date & Time",
     "recurring": "Recurring"
+  },
+  "liftAnalysis": {
+    "camera": {
+      "title": "Lift Camera",
+      "framingHint": "Stand side-on, keep full body and bar in frame",
+      "distanceHint": "Stand 2–3 metres from the camera",
+      "recording": "Recording...",
+      "recordingFailed": "Recording failed. Please try again.",
+      "permissionTitle": "Camera Access Required",
+      "permissionDescription": "This feature needs camera access to record your lift for analysis.",
+      "grantPermission": "Grant Permission",
+      "loadingPermissions": "Loading camera permissions..."
+    },
+    "editor": {
+      "title": "Edit Video",
+      "trimHint": "Drag handles to trim the video segment",
+      "analyze": "Analyze Lift",
+      "noVideo": "No video selected"
+    },
+    "analysis": {
+      "title": "Lift Analysis",
+      "description": "Analyze barbell path, body position, and joint angles from your lift video.",
+      "runAnalysis": "Run Analysis",
+      "nativeNote": "Full analysis requires native modules (OpenCV + MediaPipe) via EAS dev build.",
+      "saveSuccess": "Analysis Saved",
+      "saveSuccessDescription": "Your lift analysis has been saved and can be reviewed later.",
+      "saveFailed": "Failed to save analysis",
+      "statusIdle": "Ready to analyze",
+      "statusExtractingFrames": "Extracting video frames...",
+      "statusTrackingBar": "Tracking barbell path...",
+      "statusEstimatingPose": "Estimating body pose...",
+      "statusComputingAngles": "Computing joint angles...",
+      "statusComplete": "Analysis complete",
+      "statusError": "Analysis failed"
+    },
+    "history": {
+      "title": "Lift Analysis",
+      "newRecording": "New Recording",
+      "analysisLabel": "Lift Analysis",
+      "emptyTitle": "No analyses yet",
+      "emptyDescription": "Record a lateral video of your lift to get barbell tracking and joint angle analysis.",
+      "deleteTitle": "Delete Analysis",
+      "deleteConfirm": "Are you sure you want to delete this analysis?"
+    },
+    "playback": {
+      "play": "Play",
+      "pause": "Pause"
+    },
+    "overlays": {
+      "barPath": "Bar Path",
+      "skeleton": "Skeleton",
+      "angles": "Angles"
+    }
   }
 }

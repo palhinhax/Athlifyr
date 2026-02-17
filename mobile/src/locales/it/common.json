@@ -633,5 +633,58 @@
     "recurringSession": "Sessione ricorrente",
     "dateTime": "Data e Ora",
     "recurring": "Ricorrente"
+  },
+  "liftAnalysis": {
+    "camera": {
+      "title": "Fotocamera Sollevamento",
+      "framingHint": "Posizionati di lato, mantieni il corpo intero e il bilanciere nell'inquadratura",
+      "distanceHint": "Stai a 2–3 metri dalla fotocamera",
+      "recording": "Registrazione...",
+      "recordingFailed": "Registrazione fallita. Riprova.",
+      "permissionTitle": "Accesso alla Fotocamera Richiesto",
+      "permissionDescription": "Questa funzione necessita dell'accesso alla fotocamera per registrare il tuo sollevamento per l'analisi.",
+      "grantPermission": "Concedi Permesso",
+      "loadingPermissions": "Caricamento permessi fotocamera..."
+    },
+    "editor": {
+      "title": "Modifica Video",
+      "trimHint": "Trascina le maniglie per tagliare il segmento video",
+      "analyze": "Analizza Sollevamento",
+      "noVideo": "Nessun video selezionato"
+    },
+    "analysis": {
+      "title": "Analisi Sollevamento",
+      "description": "Analizza la traiettoria del bilanciere, la posizione del corpo e gli angoli articolari del tuo sollevamento.",
+      "runAnalysis": "Esegui Analisi",
+      "nativeNote": "L'analisi completa richiede moduli nativi (OpenCV + MediaPipe) tramite EAS dev build.",
+      "saveSuccess": "Analisi Salvata",
+      "saveSuccessDescription": "La tua analisi del sollevamento è stata salvata e può essere rivista in seguito.",
+      "saveFailed": "Salvataggio dell'analisi fallito",
+      "statusIdle": "Pronto per l'analisi",
+      "statusExtractingFrames": "Estrazione fotogrammi video...",
+      "statusTrackingBar": "Tracciamento traiettoria del bilanciere...",
+      "statusEstimatingPose": "Stima della posa corporea...",
+      "statusComputingAngles": "Calcolo angoli articolari...",
+      "statusComplete": "Analisi completata",
+      "statusError": "Analisi fallita"
+    },
+    "history": {
+      "title": "Analisi Sollevamento",
+      "newRecording": "Nuova Registrazione",
+      "analysisLabel": "Analisi Sollevamento",
+      "emptyTitle": "Nessuna analisi",
+      "emptyDescription": "Registra un video laterale del tuo sollevamento per ottenere il tracciamento del bilanciere e l'analisi degli angoli articolari.",
+      "deleteTitle": "Elimina Analisi",
+      "deleteConfirm": "Sei sicuro di voler eliminare questa analisi?"
+    },
+    "playback": {
+      "play": "Riproduci",
+      "pause": "Pausa"
+    },
+    "overlays": {
+      "barPath": "Traiettoria del Bilanciere",
+      "skeleton": "Scheletro",
+      "angles": "Angoli"
+    }
   }
 }

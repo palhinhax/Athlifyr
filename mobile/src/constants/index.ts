@@ -111,6 +111,12 @@ export const SCREENS = {
   EDIT_PROFILE: "EditProfile",
   SETTINGS: "Settings",
   MY_EVENTS: "MyEvents",
+
+  // Lift Analysis screens
+  LIFT_ANALYSIS_HISTORY: "LiftAnalysisHistory",
+  LIFT_CAMERA: "LiftCamera",
+  LIFT_EDITOR: "LiftEditor",
+  LIFT_ANALYSIS: "LiftAnalysis",
 } as const;
 
 // Pagination

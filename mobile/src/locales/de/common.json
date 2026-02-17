@@ -633,5 +633,58 @@
     "recurringSession": "Wiederkehrende Sitzung",
     "dateTime": "Datum & Uhrzeit",
     "recurring": "Wiederkehrend"
+  },
+  "liftAnalysis": {
+    "camera": {
+      "title": "Hebe-Kamera",
+      "framingHint": "Steh seitlich, halte den ganzen Körper und die Stange im Bild",
+      "distanceHint": "Steh 2–3 Meter von der Kamera entfernt",
+      "recording": "Aufnahme...",
+      "recordingFailed": "Aufnahme fehlgeschlagen. Bitte erneut versuchen.",
+      "permissionTitle": "Kamerazugriff Erforderlich",
+      "permissionDescription": "Diese Funktion benötigt Kamerazugriff, um deine Hebung zur Analyse aufzunehmen.",
+      "grantPermission": "Berechtigung Erteilen",
+      "loadingPermissions": "Kameraberechtigungen werden geladen..."
+    },
+    "editor": {
+      "title": "Video Bearbeiten",
+      "trimHint": "Ziehe die Griffe, um den Videoabschnitt zu schneiden",
+      "analyze": "Hebung Analysieren",
+      "noVideo": "Kein Video ausgewählt"
+    },
+    "analysis": {
+      "title": "Hebe-Analyse",
+      "description": "Analysiere die Stangenbahn, Körperposition und Gelenkwinkel deiner Hebung.",
+      "runAnalysis": "Analyse Starten",
+      "nativeNote": "Die vollständige Analyse erfordert native Module (OpenCV + MediaPipe) über EAS Dev Build.",
+      "saveSuccess": "Analyse Gespeichert",
+      "saveSuccessDescription": "Deine Hebe-Analyse wurde gespeichert und kann später überprüft werden.",
+      "saveFailed": "Analyse konnte nicht gespeichert werden",
+      "statusIdle": "Bereit zur Analyse",
+      "statusExtractingFrames": "Video-Einzelbilder werden extrahiert...",
+      "statusTrackingBar": "Stangenbahn wird verfolgt...",
+      "statusEstimatingPose": "Körperpose wird geschätzt...",
+      "statusComputingAngles": "Gelenkwinkel werden berechnet...",
+      "statusComplete": "Analyse abgeschlossen",
+      "statusError": "Analyse fehlgeschlagen"
+    },
+    "history": {
+      "title": "Hebe-Analyse",
+      "newRecording": "Neue Aufnahme",
+      "analysisLabel": "Hebe-Analyse",
+      "emptyTitle": "Keine Analysen",
+      "emptyDescription": "Nimm ein seitliches Video deiner Hebung auf, um Stangenverfolgung und Gelenkwinkelanalyse zu erhalten.",
+      "deleteTitle": "Analyse Löschen",
+      "deleteConfirm": "Bist du sicher, dass du diese Analyse löschen möchtest?"
+    },
+    "playback": {
+      "play": "Abspielen",
+      "pause": "Pause"
+    },
+    "overlays": {
+      "barPath": "Stangenbahn",
+      "skeleton": "Skelett",
+      "angles": "Winkel"
+    }
   }
 }

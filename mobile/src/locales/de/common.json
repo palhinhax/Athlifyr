@@ -665,7 +665,7 @@
     },
     "analysis": {
       "title": "Hebe-Analyse",
-      "description": "Analysiere die Stangenbahn, Körperposition und Gelenkwinkel deiner Hebung.",
+      "description": "Die Echtzeit-Pose-Schätzung analysiert die Stangenbahn, die Körperposition und die Gelenkwinkel deines Videos.",
       "runAnalysis": "Analyse Starten",
       "saveSuccess": "Analyse Gespeichert",
       "saveSuccessDescription": "Deine Hebe-Analyse wurde gespeichert und kann später überprüft werden.",
@@ -677,10 +677,12 @@
       "statusIdle": "Bereit zur Analyse",
       "statusExtractingFrames": "Video-Einzelbilder werden extrahiert...",
       "statusTrackingBar": "Stangenbahn wird verfolgt...",
-      "statusEstimatingPose": "Körperpose wird geschätzt...",
+      "statusEstimatingPose": "Pose-Schätzung wird ausgeführt...",
       "statusComputingAngles": "Gelenkwinkel werden berechnet...",
       "statusComplete": "Analyse abgeschlossen",
-      "statusError": "Analyse fehlgeschlagen"
+      "statusError": "Analyse fehlgeschlagen",
+      "demoBanner": "Demo-Modus",
+      "demoBannerDescription": "Die echte Pose-Schätzung konnte nicht geladen werden (erfordert Internet bei der ersten Nutzung). Simulierte Daten werden angezeigt — die Ergebnisse spiegeln nicht dein tatsächliches Video wider."
     },
     "history": {
       "title": "Hebe-Analyse",

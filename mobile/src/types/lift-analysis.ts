@@ -64,6 +64,8 @@ export interface AnalysisMetadata {
   avgConfidence: number;
   /** Minimum confidence observed. */
   minConfidence: number;
+  /** How the bar was tracked: "circles:N/M" or "wrists". */
+  barTrackingSource?: string;
 }
 
 // ─── Full Analysis Result ───────────────────────────────────────

@@ -665,7 +665,7 @@
     },
     "analysis": {
       "title": "Analisi Sollevamento",
-      "description": "Analizza la traiettoria del bilanciere, la posizione del corpo e gli angoli articolari del tuo sollevamento.",
+      "description": "La stima della posa in tempo reale analizzerà la traiettoria del bilanciere, la posizione del corpo e gli angoli articolari del tuo video.",
       "runAnalysis": "Esegui Analisi",
       "saveSuccess": "Analisi Salvata",
       "saveSuccessDescription": "La tua analisi del sollevamento è stata salvata e può essere rivista in seguito.",
@@ -677,10 +677,12 @@
       "statusIdle": "Pronto per l'analisi",
       "statusExtractingFrames": "Estrazione fotogrammi video...",
       "statusTrackingBar": "Tracciamento traiettoria del bilanciere...",
-      "statusEstimatingPose": "Stima della posa corporea...",
+      "statusEstimatingPose": "Esecuzione stima della posa...",
       "statusComputingAngles": "Calcolo angoli articolari...",
       "statusComplete": "Analisi completata",
-      "statusError": "Analisi fallita"
+      "statusError": "Analisi fallita",
+      "demoBanner": "Modalità Dimostrazione",
+      "demoBannerDescription": "La stima della posa reale non ha potuto essere caricata (richiede internet per il primo utilizzo). Vengono mostrati dati simulati — i risultati non riflettono il tuo video reale."
     },
     "history": {
       "title": "Analisi Sollevamento",

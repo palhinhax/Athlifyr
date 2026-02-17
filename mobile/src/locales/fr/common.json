@@ -665,7 +665,7 @@
     },
     "analysis": {
       "title": "Analyse de Levage",
-      "description": "Analysez la trajectoire de la barre, la position du corps et les angles articulaires de votre levage.",
+      "description": "L'estimation de pose en temps réel analysera la trajectoire de la barre, la position du corps et les angles articulaires de votre vidéo.",
       "runAnalysis": "Lancer l'Analyse",
       "saveSuccess": "Analyse Sauvegardée",
       "saveSuccessDescription": "Votre analyse de levage a été sauvegardée et peut être revue plus tard.",
@@ -677,10 +677,12 @@
       "statusIdle": "Prêt à analyser",
       "statusExtractingFrames": "Extraction des images vidéo...",
       "statusTrackingBar": "Suivi de la trajectoire de la barre...",
-      "statusEstimatingPose": "Estimation de la pose corporelle...",
+      "statusEstimatingPose": "Exécution de l'estimation de pose...",
       "statusComputingAngles": "Calcul des angles articulaires...",
       "statusComplete": "Analyse terminée",
-      "statusError": "L'analyse a échoué"
+      "statusError": "L'analyse a échoué",
+      "demoBanner": "Mode Démonstration",
+      "demoBannerDescription": "L'estimation de pose réelle n'a pas pu être chargée (nécessite internet pour la première utilisation). Affichage de données simulées — les résultats ne reflètent pas votre vidéo réelle."
     },
     "history": {
       "title": "Analyse de Levage",

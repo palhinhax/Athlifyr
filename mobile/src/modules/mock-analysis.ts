@@ -14,9 +14,8 @@ import type {
   LiftAnalysisResult,
 } from "@/src/types/lift-analysis";
 
-const MOCK_FPS = 30;
-const MOCK_DURATION_MS = 4000; // 4 seconds simulated lift
-const FRAME_COUNT = (MOCK_DURATION_MS / 1000) * MOCK_FPS;
+const DEFAULT_FPS = 30;
+const DEFAULT_DURATION_MS = 4000; // fallback if no duration provided
 
 /**
  * Viewport dimensions for the overlay.
@@ -36,16 +35,20 @@ function easeInOut(t: number): number {
  * The bar starts at shoulder height, descends (with slight forward shift),
  * and returns to the starting position.
  */
-export function generateMockBarPath(): BarPositionSample[] {
+export function generateMockBarPath(
+  durationMs: number = DEFAULT_DURATION_MS,
+  fps: number = DEFAULT_FPS
+): BarPositionSample[] {
+  const frameCount = Math.round((durationMs / 1000) * fps);
   const samples: BarPositionSample[] = [];
   const startX = 0.5;
   const startY = 0.28;
   const bottomY = 0.52;
   const forwardShift = 0.04;
 
-  for (let i = 0; i < FRAME_COUNT; i++) {
-    const t = i / (FRAME_COUNT - 1);
-    const tMs = Math.round((i / MOCK_FPS) * 1000);
+  for (let i = 0; i < frameCount; i++) {
+    const t = i / (frameCount - 1);
+    const tMs = Math.round((i / fps) * 1000);
 
     let phase: number;
     let x: number;
@@ -99,7 +102,11 @@ function makeJoint(
  * Generate mock skeleton pose data simulating a squat movement.
  * Joints: ankle, knee, hip, shoulder (lateral view).
  */
-export function generateMockPoseData(): PoseFrameData[] {
+export function generateMockPoseData(
+  durationMs: number = DEFAULT_DURATION_MS,
+  fps: number = DEFAULT_FPS
+): PoseFrameData[] {
+  const frameCount = Math.round((durationMs / 1000) * fps);
   const frames: PoseFrameData[] = [];
 
   // Standing positions (normalized 0–1)
@@ -114,9 +121,9 @@ export function generateMockPoseData(): PoseFrameData[] {
   const squatHip = { x: 0.46, y: 0.62 };
   const squatShoulder = { x: 0.52, y: 0.42 };
 
-  for (let i = 0; i < FRAME_COUNT; i++) {
-    const t = i / (FRAME_COUNT - 1);
-    const tMs = Math.round((i / MOCK_FPS) * 1000);
+  for (let i = 0; i < frameCount; i++) {
+    const t = i / (frameCount - 1);
+    const tMs = Math.round((i / fps) * 1000);
 
     let phase: number;
 
@@ -203,9 +210,14 @@ export function generateMockAngles(poseData: PoseFrameData[]): FrameAngles[] {
 /**
  * Generate a complete mock analysis result.
  */
-export function generateMockAnalysis(videoUri: string): LiftAnalysisResult {
-  const barPath = generateMockBarPath();
-  const pose = generateMockPoseData();
+export function generateMockAnalysis(
+  videoUri: string,
+  videoDurationMs?: number
+): LiftAnalysisResult {
+  const durationMs = videoDurationMs ?? DEFAULT_DURATION_MS;
+  const fps = DEFAULT_FPS;
+  const barPath = generateMockBarPath(durationMs, fps);
+  const pose = generateMockPoseData(durationMs, fps);
   const angles = generateMockAngles(pose);
 
   return {
@@ -213,8 +225,8 @@ export function generateMockAnalysis(videoUri: string): LiftAnalysisResult {
     videoUriOriginal: videoUri,
     videoUriTrimmed: videoUri,
     startMs: 0,
-    endMs: MOCK_DURATION_MS,
-    fps: MOCK_FPS,
+    endMs: durationMs,
+    fps,
     barPath,
     pose,
     angles,
@@ -230,12 +242,6 @@ export function generateMockAnalysis(videoUri: string): LiftAnalysisResult {
 
 /**
  * Get the frame index closest to a given timestamp.
+ * @deprecated Import from '@/src/modules/analysis-utils' instead.
  */
-export function getFrameAtTime(
-  tMs: number,
-  totalFrames: number,
-  durationMs: number
-): number {
-  const ratio = Math.max(0, Math.min(1, tMs / durationMs));
-  return Math.min(Math.round(ratio * (totalFrames - 1)), totalFrames - 1);
-}
+export { getFrameAtTime } from "@/src/modules/analysis-utils";

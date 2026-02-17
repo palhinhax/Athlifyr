@@ -665,7 +665,7 @@
     },
     "analysis": {
       "title": "Lift Analysis",
-      "description": "Analyze barbell path, body position, and joint angles from your lift video.",
+      "description": "Real-time pose estimation will analyze barbell path, body position, and joint angles from your video.",
       "runAnalysis": "Run Analysis",
       "saveSuccess": "Analysis Saved",
       "saveSuccessDescription": "Your lift analysis has been saved and can be reviewed later.",
@@ -677,10 +677,12 @@
       "statusIdle": "Ready to analyze",
       "statusExtractingFrames": "Extracting video frames...",
       "statusTrackingBar": "Tracking barbell path...",
-      "statusEstimatingPose": "Estimating body pose...",
+      "statusEstimatingPose": "Running pose estimation...",
       "statusComputingAngles": "Computing joint angles...",
       "statusComplete": "Analysis complete",
-      "statusError": "Analysis failed"
+      "statusError": "Analysis failed",
+      "demoBanner": "Demo Mode",
+      "demoBannerDescription": "Real pose estimation could not load (requires internet for first use). Showing simulated data — results do not reflect your actual video."
     },
     "history": {
       "title": "Lift Analysis",

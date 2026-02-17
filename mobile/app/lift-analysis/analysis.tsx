@@ -13,12 +13,24 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { ArrowLeft, Save, Info, Share2 } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Save,
+  Info,
+  Share2,
+  AlertTriangle,
+} from "lucide-react-native";
 import * as Sharing from "expo-sharing";
 import { theme } from "@/src/constants/theme";
 import { PlaybackControls } from "@/src/components/lift-analysis/PlaybackControls";
 import { OverlayToggles } from "@/src/components/lift-analysis/OverlayToggles";
 import { AnalysisOverlay } from "@/src/components/lift-analysis/AnalysisOverlay";
+import {
+  PoseAnalysisWebView,
+  type PoseAnalysisHandle,
+} from "@/src/components/lift-analysis/PoseAnalysisWebView";
+import { extractFrames, cleanupFrames } from "@/src/modules/frame-extractor";
+import { buildAnalysisResult } from "@/src/modules/real-analysis";
 import { generateMockAnalysis } from "@/src/modules/mock-analysis";
 import { useAnalysisStorage } from "@/src/hooks/useAnalysisStorage";
 import type {
@@ -31,12 +43,10 @@ import type {
 /**
  * LiftAnalysis – Analysis results screen with overlay visualization.
  *
- * Receives the video URI and trim parameters. Runs analysis pipeline
- * (bar tracking + pose estimation) and displays the results with
- * interactive SVG overlays on the video.
- *
- * Uses mock data until native modules (OpenCV + MediaPipe) are available
- * via EAS dev build.
+ * Receives the video URI and trim parameters. Runs a real analysis
+ * pipeline: frame extraction → MediaPipe pose estimation → joint
+ * angle computation. Falls back to mock data if MediaPipe is
+ * unavailable (no network, WebView error).
  */
 export default function LiftAnalysisScreen() {
   const { t } = useTranslation();
@@ -50,9 +60,7 @@ export default function LiftAnalysisScreen() {
 
   const videoUri = params.videoUri ?? "";
 
-  const analysisIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
-    null
-  );
+  const poseWebViewRef = useRef<PoseAnalysisHandle>(null);
   const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
@@ -74,10 +82,31 @@ export default function LiftAnalysisScreen() {
       angles: true,
     }
   );
+  const [videoDurationMs, setVideoDurationMs] = useState<number>(0);
+  const [poseEngineReady, setPoseEngineReady] = useState(false);
+  const [isMockData, setIsMockData] = useState(false);
+  const [analysisProgress, setAnalysisProgress] = useState(0);
 
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = true;
   });
+
+  // Get actual video duration from the player
+  useEffect(() => {
+    const interval = setInterval(() => {
+      try {
+        const dur = player.duration;
+        if (dur > 0) {
+          setVideoDurationMs(dur * 1000);
+          clearInterval(interval);
+        }
+      } catch {
+        // Player may not be ready yet
+      }
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [player]);
 
   // Track current playback position for overlay sync
   useEffect(() => {
@@ -105,9 +134,6 @@ export default function LiftAnalysisScreen() {
 
   useEffect(() => {
     return () => {
-      if (analysisIntervalRef.current) {
-        clearInterval(analysisIntervalRef.current);
-      }
       if (playbackTimerRef.current) {
         clearInterval(playbackTimerRef.current);
       }
@@ -184,37 +210,60 @@ export default function LiftAnalysisScreen() {
     }
   }, [videoUri, t]);
 
-  const handleRunAnalysis = useCallback(() => {
+  const handleRunAnalysis = useCallback(async () => {
     setAnalysisStatus("extracting_frames");
+    setAnalysisProgress(0);
+    setIsMockData(false);
 
-    // Simulate analysis progress, then generate mock data
-    const steps: AnalysisStatus[] = [
-      "extracting_frames",
-      "tracking_bar",
-      "estimating_pose",
-      "computing_angles",
-      "complete",
-    ];
-    let stepIndex = 0;
+    try {
+      const duration = videoDurationMs > 0 ? videoDurationMs : 4000;
 
-    analysisIntervalRef.current = setInterval(() => {
-      stepIndex++;
-      if (stepIndex < steps.length) {
-        setAnalysisStatus(steps[stepIndex]);
+      // Step 1: Extract frames from the video (~15 fps for smooth bar path)
+      const frames = await extractFrames(videoUri, duration, 15, (pct) => {
+        setAnalysisProgress(Math.round(pct * 0.3)); // 0–30%
+      });
 
-        // When complete, generate mock analysis data
-        if (steps[stepIndex] === "complete") {
-          const result = generateMockAnalysis(videoUri);
-          setAnalysisResult(result);
-
-          if (analysisIntervalRef.current) {
-            clearInterval(analysisIntervalRef.current);
-            analysisIntervalRef.current = null;
-          }
-        }
+      if (frames.length === 0) {
+        throw new Error("No frames extracted");
       }
-    }, 1200);
-  }, [videoUri]);
+
+      // Step 2: Run pose estimation via MediaPipe WebView
+      if (!poseEngineReady || !poseWebViewRef.current) {
+        throw new Error("Pose engine not available");
+      }
+
+      setAnalysisStatus("estimating_pose");
+      const poseResults = await poseWebViewRef.current.processFrames(
+        frames,
+        (pct) => {
+          setAnalysisProgress(30 + Math.round(pct * 0.5)); // 30–80%
+        }
+      );
+
+      // Step 3: Compute angles and build result
+      setAnalysisStatus("computing_angles");
+      setAnalysisProgress(85);
+
+      const result = buildAnalysisResult(videoUri, duration, poseResults);
+      setAnalysisResult(result);
+      setAnalysisStatus("complete");
+      setAnalysisProgress(100);
+
+      // Cleanup temporary frame files
+      cleanupFrames(frames).catch(() => {});
+    } catch (error) {
+      // Fall back to mock data if real analysis fails
+      console.warn("Real analysis failed, using mock data:", error);
+      setIsMockData(true);
+      const result = generateMockAnalysis(
+        videoUri,
+        videoDurationMs > 0 ? videoDurationMs : undefined
+      );
+      setAnalysisResult(result);
+      setAnalysisStatus("complete");
+      setAnalysisProgress(100);
+    }
+  }, [videoUri, videoDurationMs, poseEngineReady]);
 
   const getStatusMessage = (status: AnalysisStatus): string => {
     switch (status) {
@@ -326,13 +375,25 @@ export default function LiftAnalysisScreen() {
             )}
         </View>
 
-        {/* Analysis status */}
+        {/* Analysis status with progress */}
         {analysisStatus !== "idle" && analysisStatus !== "complete" && (
           <View style={styles.statusCard}>
             <ActivityIndicator size="small" color={theme.colors.primary} />
-            <Text style={styles.statusText}>
-              {getStatusMessage(analysisStatus)}
-            </Text>
+            <View style={styles.statusContent}>
+              <Text style={styles.statusText}>
+                {getStatusMessage(analysisStatus)}
+              </Text>
+              {analysisProgress > 0 && (
+                <View style={styles.progressBarContainer}>
+                  <View
+                    style={[
+                      styles.progressBar,
+                      { width: `${analysisProgress}%` },
+                    ]}
+                  />
+                </View>
+              )}
+            </View>
           </View>
         )}
 
@@ -342,6 +403,21 @@ export default function LiftAnalysisScreen() {
             <Text style={styles.completeText}>
               {getStatusMessage(analysisStatus)}
             </Text>
+          </View>
+        )}
+
+        {/* Demo banner (only visible when using mock fallback data) */}
+        {analysisStatus === "complete" && isMockData && (
+          <View style={styles.demoBanner}>
+            <AlertTriangle size={16} color={theme.colors.warning} />
+            <View style={styles.demoBannerContent}>
+              <Text style={styles.demoBannerTitle}>
+                {t("liftAnalysis.analysis.demoBanner")}
+              </Text>
+              <Text style={styles.demoBannerText}>
+                {t("liftAnalysis.analysis.demoBannerDescription")}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -404,6 +480,13 @@ export default function LiftAnalysisScreen() {
           onSpeedChange={handleSpeedChange}
         />
       </View>
+
+      {/* Hidden WebView for MediaPipe pose estimation */}
+      <PoseAnalysisWebView
+        ref={poseWebViewRef}
+        onReady={() => setPoseEngineReady(true)}
+        onError={(msg) => console.warn("Pose engine error:", msg)}
+      />
     </SafeAreaView>
   );
 }
@@ -473,10 +556,25 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primaryLight,
     borderRadius: theme.borderRadius.md,
   },
+  statusContent: {
+    flex: 1,
+    gap: 6,
+  },
   statusText: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.primary,
     fontWeight: theme.typography.fontWeight.medium,
+  },
+  progressBarContainer: {
+    height: 4,
+    backgroundColor: `${theme.colors.primary}30`,
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: theme.colors.primary,
+    borderRadius: 2,
   },
   completeCard: {
     flexDirection: "row",
@@ -492,6 +590,34 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.success,
     fontWeight: theme.typography.fontWeight.medium,
+  },
+
+  // Demo banner
+  demoBanner: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    gap: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.sm,
+    padding: theme.spacing.md,
+    backgroundColor: `${theme.colors.warning}15`,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: `${theme.colors.warning}30`,
+  },
+  demoBannerContent: {
+    flex: 1,
+    gap: 4,
+  },
+  demoBannerTitle: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.warning,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  demoBannerText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.textSecondary,
+    lineHeight: 18,
   },
 
   // Analyze section

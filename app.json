@@ -4,6 +4,12 @@
       "eas": {
         "projectId": "d8beface-ad76-4676-ba16-5779e1c7672e"
       }
+    },
+    "ios": {
+      "bundleIdentifier": "com.joaomduart.athlifyr",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     }
   }
 }

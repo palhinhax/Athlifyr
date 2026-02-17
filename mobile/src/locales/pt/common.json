@@ -665,7 +665,7 @@
     },
     "analysis": {
       "title": "Análise de Levantamento",
-      "description": "Analisa a trajetória da barra, posição corporal e ângulos articulares do teu levantamento.",
+      "description": "A estimativa de pose em tempo real irá analisar a trajetória da barra, posição corporal e ângulos articulares do teu vídeo.",
       "runAnalysis": "Executar Análise",
       "saveSuccess": "Análise Guardada",
       "saveSuccessDescription": "A tua análise de levantamento foi guardada e pode ser revista mais tarde.",
@@ -677,10 +677,12 @@
       "statusIdle": "Pronto para analisar",
       "statusExtractingFrames": "A extrair fotogramas do vídeo...",
       "statusTrackingBar": "A rastrear trajetória da barra...",
-      "statusEstimatingPose": "A estimar pose corporal...",
+      "statusEstimatingPose": "A executar estimativa de pose...",
       "statusComputingAngles": "A calcular ângulos articulares...",
       "statusComplete": "Análise concluída",
-      "statusError": "A análise falhou"
+      "statusError": "A análise falhou",
+      "demoBanner": "Modo Demonstração",
+      "demoBannerDescription": "A estimativa de pose real não pôde ser carregada (requer internet na primeira utilização). A mostrar dados simulados — os resultados não refletem o teu vídeo real."
     },
     "history": {
       "title": "Análise de Levantamento",

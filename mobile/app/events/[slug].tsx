@@ -40,12 +40,6 @@ export default function EventDetailScreen() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (slug) {
-      fetchEvent();
-    }
-  }, [slug]);
-
   const fetchEvent = async () => {
     try {
       setLoading(true);
@@ -59,6 +53,13 @@ export default function EventDetailScreen() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (slug) {
+      fetchEvent();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [slug]);
 
   const handleExternalLinkPress = () => {
     if (event?.externalUrl) {

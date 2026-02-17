@@ -8,20 +8,14 @@
 
 import React, { useMemo } from "react";
 import { StyleSheet } from "react-native";
-import Svg, {
-  Circle,
-  Line,
-  Polyline,
-  Text as SvgText,
-  G,
-} from "react-native-svg";
+import Svg, { Circle, Line, Path, Text as SvgText, G } from "react-native-svg";
 import type {
   BarPositionSample,
   PoseFrameData,
   FrameAngles,
   OverlayVisibility,
 } from "@/src/types/lift-analysis";
-import { getFrameAtTime } from "@/src/modules/mock-analysis";
+import { getFrameAtTime } from "@/src/modules/analysis-utils";
 
 interface AnalysisOverlayProps {
   /** Width of the overlay container in pixels. */
@@ -64,18 +58,38 @@ export function AnalysisOverlay({
   const totalFrames = poseData.length;
   const currentFrame = getFrameAtTime(currentTimeMs, totalFrames, durationMs);
 
-  // Build bar path polyline up to the current frame
-  const barPathPoints = useMemo(() => {
+  // Build a smooth SVG cubic bezier path up to the current frame
+  const barPathD = useMemo(() => {
     if (!visibility.barPath || barPath.length === 0) return "";
     const frameIndex = getFrameAtTime(
       currentTimeMs,
       barPath.length,
       durationMs
     );
-    return barPath
+    const pts = barPath
       .slice(0, frameIndex + 1)
-      .map((s) => `${s.x * width},${s.y * height}`)
-      .join(" ");
+      .map((s) => ({ x: s.x * width, y: s.y * height }));
+
+    if (pts.length === 0) return "";
+    if (pts.length === 1) return `M${pts[0].x},${pts[0].y}`;
+
+    // Build smooth cubic bezier path (Catmull-Rom → cubic bezier control points)
+    let d = `M${pts[0].x},${pts[0].y}`;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)];
+      const p1 = pts[i];
+      const p2 = pts[i + 1];
+      const p3 = pts[Math.min(pts.length - 1, i + 2)];
+
+      // Catmull-Rom to cubic bezier conversion (tension = 0, alpha = 1/6)
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      d += ` C${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+    }
+    return d;
   }, [visibility.barPath, barPath, currentTimeMs, durationMs, width, height]);
 
   // Current bar position
@@ -124,11 +138,11 @@ export function AnalysisOverlay({
       style={StyleSheet.absoluteFill}
       pointerEvents="none"
     >
-      {/* Bar Path Trail */}
-      {visibility.barPath && barPathPoints.length > 0 && (
+      {/* Bar Path Trail – smooth cubic bezier curve */}
+      {visibility.barPath && barPathD.length > 0 && (
         <G>
-          <Polyline
-            points={barPathPoints}
+          <Path
+            d={barPathD}
             fill="none"
             stroke={BAR_COLOR}
             strokeWidth={BAR_PATH_WIDTH}

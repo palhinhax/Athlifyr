@@ -37,6 +37,8 @@ jobs:
       - name: Build Android Production APK
         working-directory: ./mobile
         run: eas build --platform android --profile production --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
   build_ios:
     name: Build iOS
@@ -68,3 +70,5 @@ jobs:
       - name: Build iOS Production
         working-directory: ./mobile
         run: eas build --platform ios --profile production --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}

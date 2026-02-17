@@ -10,11 +10,7 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
-import {
-  CameraView,
-  useCameraPermissions,
-  type CameraType,
-} from "expo-camera";
+import { CameraView, useCameraPermissions, type CameraType } from "expo-camera";
 import {
   ArrowLeft,
   Zap,
@@ -63,10 +59,7 @@ export default function LiftCameraScreen() {
       }
     } catch (error) {
       console.error("Recording failed:", error);
-      Alert.alert(
-        t("common.error"),
-        t("liftAnalysis.camera.recordingFailed")
-      );
+      Alert.alert(t("common.error"), t("liftAnalysis.camera.recordingFailed"));
     } finally {
       setIsRecording(false);
     }
@@ -151,9 +144,7 @@ export default function LiftCameraScreen() {
             <ArrowLeft size={24} color={theme.colors.white} />
           </TouchableOpacity>
 
-          <Text style={styles.topTitle}>
-            {t("liftAnalysis.camera.title")}
-          </Text>
+          <Text style={styles.topTitle}>{t("liftAnalysis.camera.title")}</Text>
 
           <TouchableOpacity
             style={styles.topButton}

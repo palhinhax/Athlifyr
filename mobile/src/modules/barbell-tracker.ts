@@ -26,9 +26,7 @@ export interface BarbellTrackerModule {
    * @param onProgress Callback with progress percentage (0–100).
    * @returns Array of bar position samples over time.
    */
-  track(
-    onProgress?: (progress: number) => void
-  ): Promise<BarPositionSample[]>;
+  track(onProgress?: (progress: number) => void): Promise<BarPositionSample[]>;
 
   /**
    * Re-acquire the bar at a specific frame with a new ROI.

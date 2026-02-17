@@ -484,6 +484,7 @@
       "timeFormat": "Formato: mm:ss ou hh:mm:ss",
       "invalidDistance": "Introduz uma distância válida",
       "invalidTime": "Introduz um tempo válido",
+      "invalidElevation": "Trail runs requerem ganho de elevação superior a 0",
       "savedSuccess": "Corrida guardada com sucesso!",
       "saveFailed": "Falha ao guardar corrida",
       "noData": "Ainda sem dados de corrida",

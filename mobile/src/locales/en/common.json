@@ -484,6 +484,7 @@
       "timeFormat": "Format: mm:ss or hh:mm:ss",
       "invalidDistance": "Please enter a valid distance",
       "invalidTime": "Please enter a valid time",
+      "invalidElevation": "Trail runs require elevation gain greater than 0",
       "savedSuccess": "Run saved successfully!",
       "saveFailed": "Failed to save run",
       "noData": "No running data yet",

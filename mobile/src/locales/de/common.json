@@ -484,6 +484,7 @@
       "timeFormat": "Format: mm:ss oder hh:mm:ss",
       "invalidDistance": "Bitte gib eine gültige Distanz ein",
       "invalidTime": "Bitte gib eine gültige Zeit ein",
+      "invalidElevation": "Trail-Läufe erfordern einen Höhenunterschied größer als 0",
       "savedSuccess": "Lauf erfolgreich gespeichert!",
       "saveFailed": "Fehler beim Speichern",
       "noData": "Noch keine Laufdaten",

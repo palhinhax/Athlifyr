@@ -484,6 +484,7 @@
       "timeFormat": "Formato: mm:ss o hh:mm:ss",
       "invalidDistance": "Inserisci una distanza valida",
       "invalidTime": "Inserisci un tempo valido",
+      "invalidElevation": "I trail run richiedono un dislivello positivo superiore a 0",
       "savedSuccess": "Corsa salvata con successo!",
       "saveFailed": "Errore nel salvataggio",
       "noData": "Ancora nessun dato di corsa",

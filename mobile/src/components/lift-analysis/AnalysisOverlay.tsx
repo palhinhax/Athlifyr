@@ -15,7 +15,6 @@ import Svg, {
   Text as SvgText,
   G,
 } from "react-native-svg";
-import { theme } from "@/src/constants/theme";
 import type {
   BarPositionSample,
   PoseFrameData,

@@ -136,7 +136,7 @@ export interface EventFilters {
   endDate?: string;
   location?: string;
   search?: string;
-  status?: Event["status"];
+  status?: "upcoming" | "past" | "cancelled";
 }
 
 export interface VenueFilters {

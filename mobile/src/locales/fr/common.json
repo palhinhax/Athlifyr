@@ -666,10 +666,13 @@
       "title": "Analyse de Levage",
       "description": "Analysez la trajectoire de la barre, la position du corps et les angles articulaires de votre levage.",
       "runAnalysis": "Lancer l'Analyse",
-      "nativeNote": "L'analyse complète nécessite des modules natifs (OpenCV + MediaPipe) via EAS dev build.",
       "saveSuccess": "Analyse Sauvegardée",
       "saveSuccessDescription": "Votre analyse de levage a été sauvegardée et peut être revue plus tard.",
       "saveFailed": "Échec de la sauvegarde de l'analyse",
+      "exportVideo": "Exporter la Vidéo",
+      "exportTitle": "Exporter la Vidéo du Levage",
+      "exportFailed": "Échec de l'exportation de la vidéo",
+      "sharingUnavailable": "Le partage n'est pas disponible sur cet appareil",
       "statusIdle": "Prêt à analyser",
       "statusExtractingFrames": "Extraction des images vidéo...",
       "statusTrackingBar": "Suivi de la trajectoire de la barre...",
@@ -685,7 +688,9 @@
       "emptyTitle": "Aucune analyse",
       "emptyDescription": "Enregistrez une vidéo latérale de votre levage pour obtenir le suivi de la barre et l'analyse des angles articulaires.",
       "deleteTitle": "Supprimer l'Analyse",
-      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette analyse ?"
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette analyse ?",
+      "uploadVideo": "Charger une Vidéo Existante",
+      "uploadFailed": "Échec du chargement de la vidéo depuis la galerie"
     },
     "playback": {
       "play": "Lecture",

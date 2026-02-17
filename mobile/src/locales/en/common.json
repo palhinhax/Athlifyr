@@ -666,10 +666,13 @@
       "title": "Lift Analysis",
       "description": "Analyze barbell path, body position, and joint angles from your lift video.",
       "runAnalysis": "Run Analysis",
-      "nativeNote": "Full analysis requires native modules (OpenCV + MediaPipe) via EAS dev build.",
       "saveSuccess": "Analysis Saved",
       "saveSuccessDescription": "Your lift analysis has been saved and can be reviewed later.",
       "saveFailed": "Failed to save analysis",
+      "exportVideo": "Export Video",
+      "exportTitle": "Export Lift Video",
+      "exportFailed": "Failed to export video",
+      "sharingUnavailable": "Sharing is not available on this device",
       "statusIdle": "Ready to analyze",
       "statusExtractingFrames": "Extracting video frames...",
       "statusTrackingBar": "Tracking barbell path...",
@@ -685,7 +688,9 @@
       "emptyTitle": "No analyses yet",
       "emptyDescription": "Record a lateral video of your lift to get barbell tracking and joint angle analysis.",
       "deleteTitle": "Delete Analysis",
-      "deleteConfirm": "Are you sure you want to delete this analysis?"
+      "deleteConfirm": "Are you sure you want to delete this analysis?",
+      "uploadVideo": "Upload Existing Video",
+      "uploadFailed": "Failed to load video from gallery"
     },
     "playback": {
       "play": "Play",

@@ -77,7 +77,11 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <View style={styles.infoRow}>
             <Calendar size={16} color={theme.colors.mutedForeground} />
             <Text style={styles.infoText}>
-              {formatDateRange(event.startDate, event.endDate, i18n.language)}
+              {formatDateRange(
+                event.startDate,
+                event.endDate ?? null,
+                i18n.language
+              )}
             </Text>
           </View>
 

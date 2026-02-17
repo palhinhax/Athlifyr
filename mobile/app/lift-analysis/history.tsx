@@ -13,10 +13,12 @@ import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   Camera,
+  Upload,
   Trash2,
   ChevronRight,
   Activity,
 } from "lucide-react-native";
+import * as ImagePicker from "expo-image-picker";
 import { theme } from "@/src/constants/theme";
 import { useAnalysisStorage } from "@/src/hooks/useAnalysisStorage";
 import type { LiftAnalysisResult } from "@/src/types/lift-analysis";
@@ -72,6 +74,26 @@ export default function AnalysisHistoryScreen() {
   const handleNewRecording = useCallback(() => {
     router.push("/lift-analysis/camera");
   }, [router]);
+
+  const handleUploadVideo = useCallback(async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+        quality: 1,
+        videoMaxDuration: 120,
+      });
+
+      if (!result.canceled && result.assets[0]?.uri) {
+        router.push({
+          pathname: "/lift-analysis/editor",
+          params: { videoUri: result.assets[0].uri },
+        });
+      }
+    } catch (error) {
+      console.error("Failed to pick video:", error);
+      Alert.alert(t("common.error"), t("liftAnalysis.history.uploadFailed"));
+    }
+  }, [router, t]);
 
   const formatDate = (dateString: string): string => {
     const date = new Date(dateString);
@@ -147,16 +169,29 @@ export default function AnalysisHistoryScreen() {
       </View>
 
       {/* New Recording CTA */}
-      <TouchableOpacity
-        style={styles.newRecordingButton}
-        onPress={handleNewRecording}
-        activeOpacity={0.7}
-      >
-        <Camera size={20} color={theme.colors.white} />
-        <Text style={styles.newRecordingText}>
-          {t("liftAnalysis.history.newRecording")}
-        </Text>
-      </TouchableOpacity>
+      <View style={styles.actionButtons}>
+        <TouchableOpacity
+          style={styles.newRecordingButton}
+          onPress={handleNewRecording}
+          activeOpacity={0.7}
+        >
+          <Camera size={20} color={theme.colors.white} />
+          <Text style={styles.newRecordingText}>
+            {t("liftAnalysis.history.newRecording")}
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.uploadButton}
+          onPress={handleUploadVideo}
+          activeOpacity={0.7}
+        >
+          <Upload size={20} color={theme.colors.primary} />
+          <Text style={styles.uploadButtonText}>
+            {t("liftAnalysis.history.uploadVideo")}
+          </Text>
+        </TouchableOpacity>
+      </View>
 
       {/* Analysis List */}
       <FlatList
@@ -200,14 +235,17 @@ const styles = StyleSheet.create({
     width: 32,
   },
 
-  // New recording
+  // New recording & upload
+  actionButtons: {
+    paddingHorizontal: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    gap: theme.spacing.sm,
+  },
   newRecordingButton: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: theme.spacing.sm,
-    marginHorizontal: theme.spacing.md,
-    marginTop: theme.spacing.md,
     paddingVertical: theme.spacing.md,
     backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.md,
@@ -215,6 +253,22 @@ const styles = StyleSheet.create({
   },
   newRecordingText: {
     color: theme.colors.white,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.bold,
+  },
+  uploadButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.card,
+  },
+  uploadButtonText: {
+    color: theme.colors.primary,
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.bold,
   },

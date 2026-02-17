@@ -214,7 +214,7 @@ export default function EventDetailScreen() {
           {/* Meta Info (Date, Location, Friends) */}
           <EventMetaInfo
             startDate={event.startDate}
-            endDate={event.endDate}
+            endDate={event.endDate ?? null}
             city={event.city}
             country={event.country}
           />
@@ -440,21 +440,21 @@ const markdownStyles = {
   },
   heading1: {
     fontSize: 24,
-    fontWeight: "700",
+    fontWeight: "700" as const,
     color: theme.colors.text,
     marginTop: theme.spacing.lg,
     marginBottom: theme.spacing.sm,
   },
   heading2: {
     fontSize: 20,
-    fontWeight: "700",
+    fontWeight: "700" as const,
     color: theme.colors.text,
     marginTop: theme.spacing.md,
     marginBottom: theme.spacing.sm,
   },
   heading3: {
     fontSize: 18,
-    fontWeight: "600",
+    fontWeight: "600" as const,
     color: theme.colors.text,
     marginTop: theme.spacing.md,
     marginBottom: theme.spacing.xs,
@@ -466,15 +466,15 @@ const markdownStyles = {
     marginBottom: theme.spacing.sm,
   },
   strong: {
-    fontWeight: "700",
+    fontWeight: "700" as const,
     color: theme.colors.text,
   },
   em: {
-    fontStyle: "italic",
+    fontStyle: "italic" as const,
   },
   link: {
     color: theme.colors.primary,
-    textDecorationLine: "underline",
+    textDecorationLine: "underline" as const,
   },
   bullet_list: {
     marginBottom: theme.spacing.sm,

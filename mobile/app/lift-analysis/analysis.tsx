@@ -7,19 +7,25 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  LayoutChangeEvent,
 } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { ArrowLeft, Save, Info } from "lucide-react-native";
+import { ArrowLeft, Save, Info, Share2 } from "lucide-react-native";
+import * as Sharing from "expo-sharing";
 import { theme } from "@/src/constants/theme";
 import { PlaybackControls } from "@/src/components/lift-analysis/PlaybackControls";
 import { OverlayToggles } from "@/src/components/lift-analysis/OverlayToggles";
+import { AnalysisOverlay } from "@/src/components/lift-analysis/AnalysisOverlay";
+import { generateMockAnalysis } from "@/src/modules/mock-analysis";
+import { useAnalysisStorage } from "@/src/hooks/useAnalysisStorage";
 import type {
   PlaybackSpeed,
   OverlayVisibility,
   AnalysisStatus,
+  LiftAnalysisResult,
 } from "@/src/types/lift-analysis";
 
 /**
@@ -27,15 +33,15 @@ import type {
  *
  * Receives the video URI and trim parameters. Runs analysis pipeline
  * (bar tracking + pose estimation) and displays the results with
- * interactive overlays on the video.
+ * interactive SVG overlays on the video.
  *
- * NOTE: Full analysis requires native modules (OpenCV + MediaPipe).
- * Currently shows the video with controls and placeholder analysis state.
- * The overlay rendering will use Skia or SVG once native data is available.
+ * Uses mock data until native modules (OpenCV + MediaPipe) are available
+ * via EAS dev build.
  */
 export default function LiftAnalysisScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const { saveAnalysis } = useAnalysisStorage();
   const params = useLocalSearchParams<{
     videoUri: string;
     startMs: string;
@@ -47,11 +53,20 @@ export default function LiftAnalysisScreen() {
   const analysisIntervalRef = useRef<ReturnType<typeof setInterval> | null>(
     null
   );
+  const playbackTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [speed, setSpeed] = useState<PlaybackSpeed>(1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
   const [analysisStatus, setAnalysisStatus] = useState<AnalysisStatus>("idle");
+  const [analysisResult, setAnalysisResult] =
+    useState<LiftAnalysisResult | null>(null);
+  const [currentTimeMs, setCurrentTimeMs] = useState(0);
+  const [videoLayoutSize, setVideoLayoutSize] = useState({
+    width: 0,
+    height: 0,
+  });
   const [overlayVisibility, setOverlayVisibility] = useState<OverlayVisibility>(
     {
       barPath: true,
@@ -64,12 +79,44 @@ export default function LiftAnalysisScreen() {
     p.loop = true;
   });
 
+  // Track current playback position for overlay sync
+  useEffect(() => {
+    if (isPlaying && analysisResult) {
+      playbackTimerRef.current = setInterval(() => {
+        try {
+          const time = player.currentTime;
+          setCurrentTimeMs(time * 1000);
+        } catch {
+          // Player may not be ready yet
+        }
+      }, 33); // ~30fps update
+    } else if (playbackTimerRef.current) {
+      clearInterval(playbackTimerRef.current);
+      playbackTimerRef.current = null;
+    }
+
+    return () => {
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+        playbackTimerRef.current = null;
+      }
+    };
+  }, [isPlaying, analysisResult, player]);
+
   useEffect(() => {
     return () => {
       if (analysisIntervalRef.current) {
         clearInterval(analysisIntervalRef.current);
       }
+      if (playbackTimerRef.current) {
+        clearInterval(playbackTimerRef.current);
+      }
     };
+  }, []);
+
+  const handleVideoLayout = useCallback((event: LayoutChangeEvent) => {
+    const { width, height } = event.nativeEvent.layout;
+    setVideoLayoutSize({ width, height });
   }, []);
 
   const handleTogglePlay = useCallback(() => {
@@ -97,10 +144,10 @@ export default function LiftAnalysisScreen() {
   }, []);
 
   const handleSaveAnalysis = useCallback(async () => {
+    if (!analysisResult) return;
     setIsSaving(true);
     try {
-      // In a full implementation, this would save the complete analysis result
-      // with bar path, pose data, and angle calculations.
+      await saveAnalysis(analysisResult);
       Alert.alert(
         t("liftAnalysis.analysis.saveSuccess"),
         t("liftAnalysis.analysis.saveSuccessDescription")
@@ -111,13 +158,36 @@ export default function LiftAnalysisScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [t]);
+  }, [t, analysisResult, saveAnalysis]);
+
+  const handleExportVideo = useCallback(async () => {
+    if (!videoUri) return;
+    setIsExporting(true);
+    try {
+      const isAvailable = await Sharing.isAvailableAsync();
+      if (!isAvailable) {
+        Alert.alert(
+          t("common.error"),
+          t("liftAnalysis.analysis.sharingUnavailable")
+        );
+        return;
+      }
+      await Sharing.shareAsync(videoUri, {
+        mimeType: "video/mp4",
+        dialogTitle: t("liftAnalysis.analysis.exportTitle"),
+      });
+    } catch (error) {
+      console.error("Failed to export video:", error);
+      Alert.alert(t("common.error"), t("liftAnalysis.analysis.exportFailed"));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [videoUri, t]);
 
   const handleRunAnalysis = useCallback(() => {
-    // Placeholder: In a full implementation, this triggers the native analysis pipeline.
     setAnalysisStatus("extracting_frames");
 
-    // Simulate analysis progress
+    // Simulate analysis progress, then generate mock data
     const steps: AnalysisStatus[] = [
       "extracting_frames",
       "tracking_bar",
@@ -131,14 +201,20 @@ export default function LiftAnalysisScreen() {
       stepIndex++;
       if (stepIndex < steps.length) {
         setAnalysisStatus(steps[stepIndex]);
-      } else {
-        if (analysisIntervalRef.current) {
-          clearInterval(analysisIntervalRef.current);
-          analysisIntervalRef.current = null;
+
+        // When complete, generate mock analysis data
+        if (steps[stepIndex] === "complete") {
+          const result = generateMockAnalysis(videoUri);
+          setAnalysisResult(result);
+
+          if (analysisIntervalRef.current) {
+            clearInterval(analysisIntervalRef.current);
+            analysisIntervalRef.current = null;
+          }
         }
       }
-    }, 1500);
-  }, []);
+    }, 1200);
+  }, [videoUri]);
 
   const getStatusMessage = (status: AnalysisStatus): string => {
     switch (status) {
@@ -173,25 +249,48 @@ export default function LiftAnalysisScreen() {
         <Text style={styles.headerTitle}>
           {t("liftAnalysis.analysis.title")}
         </Text>
-        <TouchableOpacity
-          style={styles.headerButton}
-          onPress={handleSaveAnalysis}
-          disabled={isSaving || analysisStatus !== "complete"}
-          activeOpacity={0.7}
-        >
-          {isSaving ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} />
-          ) : (
-            <Save
-              size={22}
-              color={
-                analysisStatus === "complete"
-                  ? theme.colors.primary
-                  : theme.colors.border
-              }
-            />
-          )}
-        </TouchableOpacity>
+        <View style={styles.headerActions}>
+          {/* Export button */}
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={handleExportVideo}
+            disabled={isExporting || analysisStatus !== "complete"}
+            activeOpacity={0.7}
+          >
+            {isExporting ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            ) : (
+              <Share2
+                size={20}
+                color={
+                  analysisStatus === "complete"
+                    ? theme.colors.primary
+                    : theme.colors.border
+                }
+              />
+            )}
+          </TouchableOpacity>
+          {/* Save button */}
+          <TouchableOpacity
+            style={styles.headerButton}
+            onPress={handleSaveAnalysis}
+            disabled={isSaving || analysisStatus !== "complete"}
+            activeOpacity={0.7}
+          >
+            {isSaving ? (
+              <ActivityIndicator size="small" color={theme.colors.primary} />
+            ) : (
+              <Save
+                size={22}
+                color={
+                  analysisStatus === "complete"
+                    ? theme.colors.primary
+                    : theme.colors.border
+                }
+              />
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
 
       <ScrollView
@@ -200,7 +299,7 @@ export default function LiftAnalysisScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Video with overlays */}
-        <View style={styles.videoContainer}>
+        <View style={styles.videoContainer} onLayout={handleVideoLayout}>
           <VideoView
             player={player}
             style={styles.video}
@@ -208,18 +307,23 @@ export default function LiftAnalysisScreen() {
             nativeControls={false}
           />
 
-          {/* Overlay rendering area (placeholder) */}
-          {analysisStatus === "complete" && (
-            <View style={styles.overlayContainer} pointerEvents="none">
-              {overlayVisibility.barPath && (
-                <View style={styles.overlayPlaceholder}>
-                  <Text style={styles.overlayPlaceholderText}>
-                    {t("liftAnalysis.overlays.barPath")}
-                  </Text>
-                </View>
-              )}
-            </View>
-          )}
+          {/* SVG overlay rendering */}
+          {analysisStatus === "complete" &&
+            analysisResult &&
+            videoLayoutSize.width > 0 && (
+              <View style={styles.overlayContainer} pointerEvents="none">
+                <AnalysisOverlay
+                  width={videoLayoutSize.width}
+                  height={videoLayoutSize.height}
+                  currentTimeMs={currentTimeMs}
+                  durationMs={analysisResult.endMs}
+                  barPath={analysisResult.barPath}
+                  poseData={analysisResult.pose}
+                  angleData={analysisResult.angles}
+                  visibility={overlayVisibility}
+                />
+              </View>
+            )}
         </View>
 
         {/* Analysis status */}
@@ -256,9 +360,6 @@ export default function LiftAnalysisScreen() {
                 {t("liftAnalysis.analysis.runAnalysis")}
               </Text>
             </TouchableOpacity>
-            <Text style={styles.nativeNote}>
-              {t("liftAnalysis.analysis.nativeNote")}
-            </Text>
           </View>
         )}
 
@@ -268,6 +369,29 @@ export default function LiftAnalysisScreen() {
             visibility={overlayVisibility}
             onToggle={handleToggleOverlay}
           />
+        )}
+
+        {/* Export button (visible when analysis complete) */}
+        {analysisStatus === "complete" && (
+          <View style={styles.exportSection}>
+            <TouchableOpacity
+              style={styles.exportButton}
+              onPress={handleExportVideo}
+              disabled={isExporting}
+              activeOpacity={0.7}
+            >
+              {isExporting ? (
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              ) : (
+                <>
+                  <Share2 size={18} color={theme.colors.primary} />
+                  <Text style={styles.exportButtonText}>
+                    {t("liftAnalysis.analysis.exportVideo")}
+                  </Text>
+                </>
+              )}
+            </TouchableOpacity>
+          </View>
         )}
       </ScrollView>
 
@@ -309,6 +433,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     textAlign: "center",
   },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.xs,
+  },
 
   scrollView: {
     flex: 1,
@@ -331,19 +460,6 @@ const styles = StyleSheet.create({
   },
   overlayContainer: {
     ...StyleSheet.absoluteFillObject,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  overlayPlaceholder: {
-    backgroundColor: `${theme.colors.primary}33`,
-    paddingHorizontal: theme.spacing.sm,
-    paddingVertical: theme.spacing.xs,
-    borderRadius: theme.borderRadius.sm,
-  },
-  overlayPlaceholderText: {
-    color: theme.colors.primary,
-    fontSize: theme.typography.fontSize.xs,
-    fontWeight: theme.typography.fontWeight.semibold,
   },
 
   // Status
@@ -402,11 +518,28 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.bold,
   },
-  nativeNote: {
-    fontSize: theme.typography.fontSize.xs,
-    color: theme.colors.textTertiary,
-    textAlign: "center",
-    fontStyle: "italic",
+
+  // Export
+  exportSection: {
+    paddingHorizontal: theme.spacing.md,
+    paddingTop: theme.spacing.sm,
+  },
+  exportButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.primary,
+    backgroundColor: theme.colors.card,
+  },
+  exportButtonText: {
+    color: theme.colors.primary,
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
   },
 
   // Controls

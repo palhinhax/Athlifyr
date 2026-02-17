@@ -666,10 +666,13 @@
       "title": "Hebe-Analyse",
       "description": "Analysiere die Stangenbahn, Körperposition und Gelenkwinkel deiner Hebung.",
       "runAnalysis": "Analyse Starten",
-      "nativeNote": "Die vollständige Analyse erfordert native Module (OpenCV + MediaPipe) über EAS Dev Build.",
       "saveSuccess": "Analyse Gespeichert",
       "saveSuccessDescription": "Deine Hebe-Analyse wurde gespeichert und kann später überprüft werden.",
       "saveFailed": "Analyse konnte nicht gespeichert werden",
+      "exportVideo": "Video Exportieren",
+      "exportTitle": "Hebe-Video Exportieren",
+      "exportFailed": "Video konnte nicht exportiert werden",
+      "sharingUnavailable": "Teilen ist auf diesem Gerät nicht verfügbar",
       "statusIdle": "Bereit zur Analyse",
       "statusExtractingFrames": "Video-Einzelbilder werden extrahiert...",
       "statusTrackingBar": "Stangenbahn wird verfolgt...",
@@ -685,7 +688,9 @@
       "emptyTitle": "Keine Analysen",
       "emptyDescription": "Nimm ein seitliches Video deiner Hebung auf, um Stangenverfolgung und Gelenkwinkelanalyse zu erhalten.",
       "deleteTitle": "Analyse Löschen",
-      "deleteConfirm": "Bist du sicher, dass du diese Analyse löschen möchtest?"
+      "deleteConfirm": "Bist du sicher, dass du diese Analyse löschen möchtest?",
+      "uploadVideo": "Bestehendes Video Hochladen",
+      "uploadFailed": "Video konnte nicht aus der Galerie geladen werden"
     },
     "playback": {
       "play": "Abspielen",

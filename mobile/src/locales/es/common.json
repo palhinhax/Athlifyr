@@ -664,10 +664,13 @@
       "title": "Análisis de Levantamiento",
       "description": "Analiza la trayectoria de la barra, posición corporal y ángulos articulares de tu levantamiento.",
       "runAnalysis": "Ejecutar Análisis",
-      "nativeNote": "El análisis completo requiere módulos nativos (OpenCV + MediaPipe) vía EAS dev build.",
       "saveSuccess": "Análisis Guardado",
       "saveSuccessDescription": "Tu análisis de levantamiento ha sido guardado y puede revisarse más tarde.",
       "saveFailed": "Error al guardar el análisis",
+      "exportVideo": "Exportar Vídeo",
+      "exportTitle": "Exportar Vídeo del Levantamiento",
+      "exportFailed": "Error al exportar el vídeo",
+      "sharingUnavailable": "La función de compartir no está disponible en este dispositivo",
       "statusIdle": "Listo para analizar",
       "statusExtractingFrames": "Extrayendo fotogramas del vídeo...",
       "statusTrackingBar": "Rastreando trayectoria de la barra...",
@@ -683,7 +686,9 @@
       "emptyTitle": "Sin análisis",
       "emptyDescription": "Graba un vídeo lateral de tu levantamiento para obtener seguimiento de la barra y análisis de ángulos articulares.",
       "deleteTitle": "Eliminar Análisis",
-      "deleteConfirm": "¿Estás seguro de que quieres eliminar este análisis?"
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar este análisis?",
+      "uploadVideo": "Subir Vídeo Existente",
+      "uploadFailed": "Error al cargar el vídeo de la galería"
     },
     "playback": {
       "play": "Reproducir",

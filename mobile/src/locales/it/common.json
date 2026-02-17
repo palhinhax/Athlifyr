@@ -666,10 +666,13 @@
       "title": "Analisi Sollevamento",
       "description": "Analizza la traiettoria del bilanciere, la posizione del corpo e gli angoli articolari del tuo sollevamento.",
       "runAnalysis": "Esegui Analisi",
-      "nativeNote": "L'analisi completa richiede moduli nativi (OpenCV + MediaPipe) tramite EAS dev build.",
       "saveSuccess": "Analisi Salvata",
       "saveSuccessDescription": "La tua analisi del sollevamento è stata salvata e può essere rivista in seguito.",
       "saveFailed": "Salvataggio dell'analisi fallito",
+      "exportVideo": "Esporta Video",
+      "exportTitle": "Esporta Video del Sollevamento",
+      "exportFailed": "Esportazione del video fallita",
+      "sharingUnavailable": "La condivisione non è disponibile su questo dispositivo",
       "statusIdle": "Pronto per l'analisi",
       "statusExtractingFrames": "Estrazione fotogrammi video...",
       "statusTrackingBar": "Tracciamento traiettoria del bilanciere...",
@@ -685,7 +688,9 @@
       "emptyTitle": "Nessuna analisi",
       "emptyDescription": "Registra un video laterale del tuo sollevamento per ottenere il tracciamento del bilanciere e l'analisi degli angoli articolari.",
       "deleteTitle": "Elimina Analisi",
-      "deleteConfirm": "Sei sicuro di voler eliminare questa analisi?"
+      "deleteConfirm": "Sei sicuro di voler eliminare questa analisi?",
+      "uploadVideo": "Carica Video Esistente",
+      "uploadFailed": "Caricamento del video dalla galleria fallito"
     },
     "playback": {
       "play": "Riproduci",

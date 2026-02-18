@@ -684,6 +684,8 @@
     "playbackTitle": "Analysis Result",
     "seedInstruction": "Tap on the centre of the barbell (or sleeve end) on the first frame.",
     "confirmSeed": "Confirm Point",
+    "detectingCircle": "Detecting circular object…",
+    "noCircleDetected": "No circular object detected at this location. Try tapping directly on the barbell plate.",
     "trackingInstruction": "Tap the bar position at each frame. Skip if unclear.",
     "skipMarker": "Skip",
     "prevFrame": "Prev",

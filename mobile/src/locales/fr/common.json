@@ -714,7 +714,9 @@
       "horizontalDrift": "Dérive Horizontale Max.",
       "avgSpeed": "Vitesse Moyenne",
       "maxSpeed": "Vitesse Maximale"
-    }
+    },
+    "detectingCircle": "Détection d'objet circulaire…",
+    "noCircleDetected": "Aucun objet circulaire détecté à cet emplacement. Essayez de toucher directement sur le disque de la barre."
   },
   "motionAnalysis": {
     "trimTitle": "Couper la Vidéo",

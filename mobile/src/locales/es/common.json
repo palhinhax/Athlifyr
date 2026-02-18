@@ -714,7 +714,9 @@
       "horizontalDrift": "Desvío Horizontal Máx.",
       "avgSpeed": "Velocidad Media",
       "maxSpeed": "Velocidad Máxima"
-    }
+    },
+    "detectingCircle": "Detectando objeto circular…",
+    "noCircleDetected": "No se detectó ningún objeto circular en esta ubicación. Intenta tocar directamente sobre el disco de la barra."
   },
   "motionAnalysis": {
     "trimTitle": "Recortar Vídeo",

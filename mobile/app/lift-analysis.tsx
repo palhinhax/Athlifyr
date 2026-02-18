@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   GestureResponderEvent,
 } from "react-native";
+import Svg, { Circle as SvgCircle } from "react-native-svg";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -32,7 +33,11 @@ import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
-import { trackPlate, type TrackingProgress } from "@/src/lib/plate-tracker";
+import {
+  trackPlate,
+  detectCircleAtPoint,
+  type TrackingProgress,
+} from "@/src/lib/plate-tracker";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
@@ -76,6 +81,12 @@ export default function LiftAnalysisScreen() {
   const [seedPoint, setSeedPoint] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [detectedCircle, setDetectedCircle] = useState<{
+    x: number;
+    y: number;
+    radius: number;
+  } | null>(null);
+  const [isDetecting, setIsDetecting] = useState(false);
 
   // Result
   const [barPath, setBarPath] = useState<BarPathPoint[]>([]);
@@ -203,18 +214,59 @@ export default function LiftAnalysisScreen() {
   // ─── Phase: Seed ─────────────────────────────────────────────
 
   const handleSeedTap = useCallback(
-    (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
-      if (phase !== "seed") return;
+    async (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
+      if (phase !== "seed" || isDetecting) return;
 
       const nx = evt.nativeEvent.locationX / containerLayout.width;
       const ny = evt.nativeEvent.locationY / containerLayout.height;
+
+      // Set tap point immediately for visual feedback
       setSeedPoint({ x: nx, y: ny });
+      setDetectedCircle(null);
+      setIsDetecting(true);
+
+      try {
+        // Detect circular object at tap point
+        const currentTimeMs = Math.round((scrubTime || 0) * 1000);
+        const circle = await detectCircleAtPoint(
+          videoUri,
+          { x: nx, y: ny },
+          currentTimeMs
+        );
+
+        if (circle) {
+          // Circle detected - show it
+          setDetectedCircle(circle);
+          // Update seed point to circle center for more accurate tracking
+          setSeedPoint({ x: circle.x, y: circle.y });
+        } else {
+          // No circle detected near tap point
+          setModalConfig({
+            visible: true,
+            type: "error",
+            title: t("common.error"),
+            message: t("liftAnalysis.noCircleDetected"),
+          });
+          setSeedPoint(null);
+        }
+      } catch (err) {
+        console.error("[LiftAnalysis] Circle detection failed:", err);
+        // On detection error, still allow manual point selection as fallback
+        setDetectedCircle(null);
+      } finally {
+        setIsDetecting(false);
+      }
     },
-    [phase, containerLayout]
+    [phase, containerLayout, scrubTime, videoUri, t, isDetecting]
   );
 
   const confirmSeed = useCallback(async () => {
     if (!seedPoint) return;
+
+    // Use detected circle center if available, otherwise use tap point
+    const trackingPoint = detectedCircle
+      ? { x: detectedCircle.x, y: detectedCircle.y }
+      : seedPoint;
 
     // Switch to tracking phase and run automatic CV tracking
     setPhase("tracking");
@@ -223,7 +275,7 @@ export default function LiftAnalysisScreen() {
     try {
       const result = await trackPlate(
         videoUri,
-        seedPoint,
+        trackingPoint,
         videoDurationMs,
         (p) => setTrackingProgress(p)
       );
@@ -255,7 +307,7 @@ export default function LiftAnalysisScreen() {
       setPhase("seed");
       setTrackingProgress(null);
     }
-  }, [seedPoint, videoDurationMs, videoUri, player, t]);
+  }, [seedPoint, detectedCircle, videoDurationMs, videoUri, player, t]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
@@ -558,16 +610,48 @@ export default function LiftAnalysisScreen() {
             )}
 
             {/* Seed point indicator */}
-            {phase === "seed" && seedPoint && (
-              <View
-                style={[
-                  styles.seedDot,
-                  {
-                    left: seedPoint.x * containerLayout.width - 12,
-                    top: seedPoint.y * containerLayout.height - 12,
-                  },
-                ]}
-              />
+            {phase === "seed" && seedPoint && !isDetecting && (
+              <>
+                {/* Center dot */}
+                <View
+                  style={[
+                    styles.seedDot,
+                    {
+                      left: seedPoint.x * containerLayout.width - 12,
+                      top: seedPoint.y * containerLayout.height - 12,
+                    },
+                  ]}
+                />
+
+                {/* Detected circle outline (if detected) */}
+                {detectedCircle && (
+                  <Svg
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
+                    width={containerLayout.width}
+                    height={containerLayout.height}
+                  >
+                    <SvgCircle
+                      cx={detectedCircle.x * containerLayout.width}
+                      cy={detectedCircle.y * containerLayout.height}
+                      r={detectedCircle.radius * containerLayout.width}
+                      stroke="#00FF88"
+                      strokeWidth={3}
+                      fill="none"
+                    />
+                  </Svg>
+                )}
+              </>
+            )}
+
+            {/* Detection in progress indicator */}
+            {phase === "seed" && isDetecting && (
+              <View style={styles.detectingOverlay} pointerEvents="none">
+                <ActivityIndicator size="large" color="#00FF88" />
+                <Text style={styles.detectingText}>
+                  {t("liftAnalysis.detectingCircle")}
+                </Text>
+              </View>
             )}
 
             {/* Tracking progress overlay */}
@@ -1043,6 +1127,19 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   trackingOverlayText: {
+    color: "#fff",
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.medium,
+  },
+  detectingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.55)",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    zIndex: 10,
+  },
+  detectingText: {
     color: "#fff",
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,

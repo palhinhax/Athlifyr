@@ -621,16 +621,17 @@ export function AnalysesSection() {
           </div>
         ) : (
           /* Single card containing tabs + content */
-          <div className="overflow-hidden rounded-xl border bg-card">
+          <div className="rounded-lg border bg-card p-6 text-card-foreground shadow-sm">
             <Tabs defaultValue="motion">
-              {/* Full-width tab bar */}
-              <TabsList className="h-11 w-full rounded-none border-b bg-muted/30">
+              <TabsList className="mb-4 grid w-full grid-cols-2">
                 <TabsTrigger
                   value="motion"
-                  className="h-full flex-1 gap-1.5 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <Activity className="h-4 w-4" />
-                  {t("analyses.motionTab")}
+                  <Activity className="h-4 w-4 shrink-0" />
+                  <span className="hidden sm:inline">
+                    {t("analyses.motionTab")}
+                  </span>
                   {motionAnalyses.length > 0 && (
                     <Badge
                       variant="secondary"
@@ -642,10 +643,12 @@ export function AnalysesSection() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="lift"
-                  className="h-full flex-1 gap-1.5 rounded-none data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
+                  className="gap-1 px-1 text-xs sm:gap-2 sm:px-3 sm:text-sm"
                 >
-                  <Dumbbell className="h-4 w-4" />
-                  {t("analyses.liftTab")}
+                  <Dumbbell className="h-4 w-4 shrink-0" />
+                  <span className="hidden sm:inline">
+                    {t("analyses.liftTab")}
+                  </span>
                   {liftAnalyses.length > 0 && (
                     <Badge
                       variant="secondary"
@@ -657,7 +660,7 @@ export function AnalysesSection() {
                 </TabsTrigger>
               </TabsList>
 
-              <TabsContent value="motion" className="mt-0 p-4">
+              <TabsContent value="motion" className="mt-0">
                 {motionAnalyses.length === 0 ? (
                   <div className="py-10 text-center text-muted-foreground">
                     <Activity className="mx-auto mb-3 h-10 w-10 opacity-30" />
@@ -680,7 +683,7 @@ export function AnalysesSection() {
                 )}
               </TabsContent>
 
-              <TabsContent value="lift" className="mt-0 p-4">
+              <TabsContent value="lift" className="mt-0">
                 {liftAnalyses.length === 0 ? (
                   <div className="py-10 text-center text-muted-foreground">
                     <Dumbbell className="mx-auto mb-3 h-10 w-10 opacity-30" />

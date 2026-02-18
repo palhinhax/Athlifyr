@@ -149,6 +149,7 @@ export function ExportSnapshotModal({
             source={{ uri: thumbUri }}
             style={styles.snapImage}
             resizeMode="cover"
+            accessible={false}
           />
         )}
         {thumbUri && poseFrame && (

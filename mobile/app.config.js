@@ -1,5 +1,7 @@
+/* eslint-disable @typescript-eslint/no-require-imports */
 const fs = require("fs");
 const path = require("path");
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 /**
  * Read the version from the root package.json (managed by semantic-release).

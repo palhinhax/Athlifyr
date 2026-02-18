@@ -722,6 +722,7 @@ export default function AdminVenuesPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3">
                       {selectedVenue.owner.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={selectedVenue.owner.image}
                           alt={selectedVenue.owner.name || "User"}
@@ -793,6 +794,7 @@ export default function AdminVenuesPage() {
                       className="flex w-full items-center gap-3 rounded-md p-3 text-left transition-colors hover:bg-muted disabled:opacity-50"
                     >
                       {user.image ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={user.image}
                           alt={user.name || "User"}

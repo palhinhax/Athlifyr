@@ -649,6 +649,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                 <div className="flex items-center gap-3 rounded-lg border p-3">
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-md border bg-muted">
                     {selectedVenue.logo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
                       <img
                         src={selectedVenue.logo}
                         alt={selectedVenue.name}
@@ -701,6 +702,7 @@ export function EventAdminActions({ event }: EventAdminActionsProps) {
                         >
                           <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded border bg-muted">
                             {venue.logo ? (
+                              // eslint-disable-next-line @next/next/no-img-element
                               <img
                                 src={venue.logo}
                                 alt={venue.name}

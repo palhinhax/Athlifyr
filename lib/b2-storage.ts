@@ -38,7 +38,7 @@ export interface UploadOptions {
   file: Buffer;
   fileName: string;
   contentType: string;
-  folder?: "profiles" | "posts" | "events" | "instagram";
+  folder?: "profiles" | "posts" | "events" | "instagram" | "exports";
 }
 
 export interface UploadResult {

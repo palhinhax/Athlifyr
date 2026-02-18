@@ -7,6 +7,12 @@ const nextConfig = {
   // SEO: Disable trailing slashes for consistent URL structure
   // This prevents duplicate URLs like /events/ vs /events
   trailingSlash: false,
+  // Allow large body uploads for video export API (up to 100MB)
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "100mb",
+    },
+  },
   images: {
     qualities: [75, 90],
     // Cache optimized images for 30 days (TTL in seconds)

@@ -12,8 +12,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import * as Sharing from "expo-sharing";
-import { Paths, File as FSFile } from "expo-file-system";
 import {
   ArrowLeft,
   Save,
@@ -31,9 +29,11 @@ import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
 import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import { trackPlate, type TrackingProgress } from "@/src/lib/plate-tracker";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
+import type { ExportLiftPayload } from "@/src/lib/analysis-export";
 import type { BarPathPoint, LiftAnalysis } from "@/src/types/lift-analysis";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -294,47 +294,19 @@ export default function LiftAnalysisScreen() {
   }, [barPath, seedPoint, videoUri, videoDurationMs, saveAnalysis, t, router]);
 
   // ─── Export video ─────────────────────────────────────────
-  const [isExporting, setIsExporting] = useState(false);
+  const [exportPayload, setExportPayload] = useState<ExportLiftPayload | null>(
+    null
+  );
 
-  const handleExportVideo = useCallback(async () => {
-    if (!videoUri) return;
-    const isAvailable = await Sharing.isAvailableAsync();
-    if (!isAvailable) {
-      setModalConfig({
-        visible: true,
-        type: "error",
-        title: t("common.error"),
-        message: t("liftAnalysis.shareNotAvailable"),
-      });
-      return;
-    }
-    setIsExporting(true);
-    try {
-      // content:// URIs on Android can't be shared directly — copy to cache first
-      let shareUri = videoUri;
-      if (videoUri.startsWith("content://")) {
-        const dest = new FSFile(Paths.cache, `athlifyr_lift_${Date.now()}.mp4`);
-        const src = new FSFile(videoUri);
-        await src.copy(dest);
-        shareUri = dest.uri;
-      }
-      await Sharing.shareAsync(shareUri, {
-        mimeType: "video/mp4",
-        dialogTitle: t("liftAnalysis.exportVideo"),
-        UTI: "public.movie",
-      });
-    } catch (err) {
-      console.error("[LiftAnalysis] Export failed:", err);
-      setModalConfig({
-        visible: true,
-        type: "error",
-        title: t("common.error"),
-        message: t("liftAnalysis.exportError"),
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  }, [videoUri, t]);
+  const handleExportVideo = useCallback(() => {
+    if (!videoUri || barPath.length < 2) return;
+    setExportPayload({
+      type: "lift",
+      videoUri,
+      durationMs: videoDurationMs,
+      barPath,
+    });
+  }, [videoUri, barPath, videoDurationMs]);
 
   // ─── Metrics (computed lazily) ───────────────────────────────
   const metrics = barPath.length >= 2 ? computeMetrics(barPath) : null;
@@ -403,21 +375,11 @@ export default function LiftAnalysisScreen() {
                   style={styles.secondaryButton}
                   onPress={handleExportVideo}
                   activeOpacity={0.7}
-                  disabled={isExporting}
                 >
-                  {isExporting ? (
-                    <ActivityIndicator
-                      size="small"
-                      color={theme.colors.textSecondary}
-                    />
-                  ) : (
-                    <>
-                      <Share2 size={20} color={theme.colors.textSecondary} />
-                      <Text style={styles.secondaryButtonText}>
-                        {t("liftAnalysis.exportVideo")}
-                      </Text>
-                    </>
-                  )}
+                  <Share2 size={20} color={theme.colors.textSecondary} />
+                  <Text style={styles.secondaryButtonText}>
+                    {t("liftAnalysis.exportVideo")}
+                  </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
@@ -681,6 +643,22 @@ export default function LiftAnalysisScreen() {
             },
           },
         ]}
+      />
+
+      {/* Export Video Modal — backend composition (upload → FFmpeg → share) */}
+      <ExportVideoModal
+        visible={exportPayload !== null}
+        payload={exportPayload}
+        onDone={() => setExportPayload(null)}
+        onError={(msg) => {
+          setExportPayload(null);
+          setModalConfig({
+            visible: true,
+            type: "error",
+            title: t("common.error"),
+            message: msg,
+          });
+        }}
       />
     </View>
   );

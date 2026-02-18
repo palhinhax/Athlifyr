@@ -21,11 +21,11 @@ import {
   CheckCircle2,
   AlertCircle,
 } from "lucide-react-native";
-import * as Sharing from "expo-sharing";
-import { Paths, File as FSFile } from "expo-file-system";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
+import type { ExportMotionPayload } from "@/src/lib/analysis-export";
 import { TrimSlider } from "@/src/components/motion-analysis/TrimSlider";
 import { AnalysisProgress } from "@/src/components/motion-analysis/AnalysisProgress";
 import { PoseResultTabs } from "@/src/components/motion-analysis/PoseResultTabs";
@@ -98,6 +98,10 @@ export default function MotionAnalysisScreen() {
     message: string;
     onDismiss?: () => void;
   }>({ visible: false, type: "success", title: "", message: "" });
+
+  // Export video modal (backend composition)
+  const [exportPayload, setExportPayload] =
+    useState<ExportMotionPayload | null>(null);
 
   // ─── Video player (trim preview) ────────────────────────────
   // CRITICAL: Release the native player when entering results phase.
@@ -247,51 +251,18 @@ export default function MotionAnalysisScreen() {
     router,
   ]);
 
-  // ─── Export video ────────────────────────────────────────────
-  const [isExporting, setIsExporting] = useState(false);
-
-  const handleExportVideo = useCallback(async () => {
-    if (!videoUri) return;
-    const isAvailable = await Sharing.isAvailableAsync();
-    if (!isAvailable) {
-      setModalConfig({
-        visible: true,
-        type: "error",
-        title: t("common.error"),
-        message: t("motionAnalysis.shareNotAvailable"),
-      });
-      return;
-    }
-    setIsExporting(true);
-    try {
-      // content:// URIs on Android can't be shared directly — copy to cache first
-      let shareUri = videoUri;
-      if (videoUri.startsWith("content://")) {
-        const dest = new FSFile(
-          Paths.cache,
-          `athlifyr_motion_${Date.now()}.mp4`
-        );
-        const src = new FSFile(videoUri);
-        await src.copy(dest);
-        shareUri = dest.uri;
-      }
-      await Sharing.shareAsync(shareUri, {
-        mimeType: "video/mp4",
-        dialogTitle: t("motionAnalysis.exportVideo"),
-        UTI: "public.movie",
-      });
-    } catch (err) {
-      console.error("[MotionAnalysis] Export failed:", err);
-      setModalConfig({
-        visible: true,
-        type: "error",
-        title: t("common.error"),
-        message: t("motionAnalysis.exportError"),
-      });
-    } finally {
-      setIsExporting(false);
-    }
-  }, [videoUri, t]);
+  // ─── Export snapshot (frame + overlay + watermark) ──────────
+  const handleExportVideo = useCallback(() => {
+    if (!poseFrames.length || !metrics || !videoMeta) return;
+    setExportPayload({
+      type: "motion",
+      videoUri,
+      segment: { startMs: trimStart, endMs: trimEnd },
+      videoMeta,
+      poseFrames,
+      metrics,
+    });
+  }, [poseFrames, metrics, videoMeta, videoUri, trimStart, trimEnd]);
 
   // ─── Memoize PoseResultTabs props to prevent re-renders ─────
   const resultTabsProps = useMemo(() => {
@@ -433,21 +404,11 @@ export default function MotionAnalysisScreen() {
                 style={styles.exportButton}
                 onPress={handleExportVideo}
                 activeOpacity={0.7}
-                disabled={isExporting}
               >
-                {isExporting ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.textSecondary}
-                  />
-                ) : (
-                  <>
-                    <Share2 size={20} color={theme.colors.textSecondary} />
-                    <Text style={styles.exportButtonText}>
-                      {t("motionAnalysis.exportVideo")}
-                    </Text>
-                  </>
-                )}
+                <Share2 size={20} color={theme.colors.textSecondary} />
+                <Text style={styles.exportButtonText}>
+                  {t("motionAnalysis.exportVideo")}
+                </Text>
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -500,6 +461,22 @@ export default function MotionAnalysisScreen() {
             },
           },
         ]}
+      />
+
+      {/* Export Video Modal — backend composition (upload → FFmpeg → share) */}
+      <ExportVideoModal
+        visible={exportPayload !== null}
+        payload={exportPayload}
+        onDone={() => setExportPayload(null)}
+        onError={(msg) => {
+          setExportPayload(null);
+          setModalConfig({
+            visible: true,
+            type: "error",
+            title: t("common.error"),
+            message: msg,
+          });
+        }}
       />
     </View>
   );

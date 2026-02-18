@@ -52,7 +52,13 @@ export async function POST(request: Request) {
     }
 
     // Validate folder
-    const allowedFolders = ["profiles", "posts", "events", "instagram"];
+    const allowedFolders = [
+      "profiles",
+      "posts",
+      "events",
+      "instagram",
+      "exports",
+    ];
     if (!allowedFolders.includes(folder)) {
       return NextResponse.json({ error: "Invalid folder" }, { status: 400 });
     }
@@ -105,7 +111,12 @@ export async function POST(request: Request) {
       file: uploadBuffer,
       fileName: uploadFileName,
       contentType: uploadContentType,
-      folder: folder as "profiles" | "posts" | "events" | "instagram",
+      folder: folder as
+        | "profiles"
+        | "posts"
+        | "events"
+        | "instagram"
+        | "exports",
     });
 
     return NextResponse.json({

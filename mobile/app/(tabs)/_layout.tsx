@@ -17,6 +17,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import { NotificationBell } from "@/src/components/NotificationBell";
+import { CameraButton } from "@/src/components/CameraButton";
 import { CalendarButton } from "@/src/components/CalendarButton";
 import { SearchButton } from "@/src/components/SearchButton";
 import { HeaderLogo } from "@/src/components/HeaderLogo";
@@ -119,6 +120,7 @@ export default function TabLayout() {
             <View style={styles.headerRight}>
               <SearchButton />
               <CalendarButton />
+              <CameraButton />
               <NotificationBell />
             </View>
           ),

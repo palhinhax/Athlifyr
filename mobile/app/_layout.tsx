@@ -63,6 +63,25 @@ export default function RootLayout() {
           <Stack.Screen name="notifications" options={{ headerShown: false }} />
           <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
           <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
+          <Stack.Screen name="record-lift" options={{ headerShown: false }} />
+          <Stack.Screen name="lift-analysis" options={{ headerShown: false }} />
+          <Stack.Screen name="lift-analyses" options={{ headerShown: false }} />
+          <Stack.Screen
+            name="lift-analysis-view"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="motion-analysis"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="motion-analyses"
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="motion-analysis-view"
+            options={{ headerShown: false }}
+          />
         </Stack>
       </I18nextProvider>
     </QueryClientProvider>

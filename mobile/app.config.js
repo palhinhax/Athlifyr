@@ -4,6 +4,26 @@ const config = ({ config }) => {
     plugins: [
       "expo-router",
       [
+        "expo-camera",
+        {
+          cameraPermission:
+            "Allow Athlifyr to access your camera to take photos and videos.",
+          microphonePermission:
+            "Allow Athlifyr to access your microphone for video recording.",
+          recordAudioAndroid: true,
+        },
+      ],
+      [
+        "expo-media-library",
+        {
+          photosPermission:
+            "Allow Athlifyr to save photos and videos to your gallery.",
+          savePhotosPermission:
+            "Allow Athlifyr to save photos and videos to your gallery.",
+          isAccessMediaLocationEnabled: true,
+        },
+      ],
+      [
         "@rnmapbox/maps",
         {
           RNMapboxMapsDownloadToken:

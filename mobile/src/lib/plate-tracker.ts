@@ -245,10 +245,18 @@ export async function detectCircleAtPoint(
     const minRadius = 10;
     const maxRadius = Math.round(Math.min(roiW, roiH) / 2);
 
-    OpenCV.invoke("HoughCircles", roi, circles, 3, 1, 30, 100, 30, [
+    OpenCV.invoke(
+      "HoughCircles",
+      roi,
+      circles,
+      3,
+      1,
+      30,
+      100,
+      30,
       minRadius,
-      maxRadius,
-    ]);
+      maxRadius
+    );
 
     // Extract circle data
     const circleData = OpenCV.matToBuffer(circles, "float32");

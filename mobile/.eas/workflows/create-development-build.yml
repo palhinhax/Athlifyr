@@ -1,4 +1,4 @@
-name: Create Development Build (APK)
+name: Create Production Build (APK)
 
 on:
   push:
@@ -10,4 +10,4 @@ jobs:
     type: build
     params:
       platform: android
-      profile: development
+      profile: production

@@ -240,7 +240,9 @@ export async function detectCircleAtPoint(
     const minRadius = 10;
     const maxRadius = Math.round(Math.min(roiW, roiH) / 2);
 
-    OpenCV.invoke("HoughCircles", roi, circles, 3, 1, 30, 100, 30, [
+    // param2=20 (was 30) — lower threshold catches more circles, better for
+    // plates that are partially lit or low-contrast
+    OpenCV.invoke("HoughCircles", roi, circles, 3, 1, 20, 80, 20, [
       minRadius,
       maxRadius,
     ]);

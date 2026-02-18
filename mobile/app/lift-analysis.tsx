@@ -235,19 +235,14 @@ export default function LiftAnalysisScreen() {
         );
 
         if (circle) {
-          // Circle detected - show it
+          // Circle detected - show it and snap to center
           setDetectedCircle(circle);
-          // Update seed point to circle center for more accurate tracking
           setSeedPoint({ x: circle.x, y: circle.y });
         } else {
-          // No circle detected near tap point
-          setModalConfig({
-            visible: true,
-            type: "error",
-            title: t("common.error"),
-            message: t("liftAnalysis.noCircleDetected"),
-          });
-          setSeedPoint(null);
+          // No circle detected — keep the manual tap point so user can still
+          // confirm and proceed with template-matching from wherever they tapped
+          setDetectedCircle(null);
+          setSeedPoint({ x: nx, y: ny });
         }
       } catch (err) {
         console.error("[LiftAnalysis] Circle detection failed:", err);

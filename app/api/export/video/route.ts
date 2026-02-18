@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
-import { getAuthUser } from "@/lib/auth-utils";
 import {
   createJob,
   processExportJob,
@@ -18,15 +17,10 @@ export const dynamic = "force-dynamic";
  *
  * Accepts multipart/form-data with a video file + overlay metadata.
  * Returns 202 { jobId } immediately and processes in background.
+ * No auth required — the video belongs to the user's local device.
  */
 export async function POST(request: Request) {
   try {
-    // ── Auth ──────────────────────────────────────────────────────
-    const user = await getAuthUser(request);
-    if (!user?.email) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     // ── Parse form data ──────────────────────────────────────────
     const formData = await request.formData();
 

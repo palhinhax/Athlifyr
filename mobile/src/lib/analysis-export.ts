@@ -58,7 +58,6 @@
 import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Paths, File as FSFile } from "expo-file-system";
-import * as SecureStore from "expo-secure-store";
 import { API_URL } from "@/src/lib/api";
 import type {
   PoseFrame,
@@ -102,7 +101,6 @@ export type ExportProgressCallback = (
 
 // ─── Internal helpers ─────────────────────────────────────────────────────────
 
-const TOKEN_KEY = "auth-token";
 const POLL_INTERVAL_MS = 1500;
 const POLL_TIMEOUT_MS = 5 * 60 * 1000; // 5 min max
 
@@ -153,7 +151,6 @@ async function buildFormData(
 /** Poll the job status until done / error / timeout */
 async function pollUntilDone(
   jobId: string,
-  authToken: string | null,
   onProgress: ExportProgressCallback
 ): Promise<string> {
   const deadline = Date.now() + POLL_TIMEOUT_MS;
@@ -161,9 +158,6 @@ async function pollUntilDone(
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
-  if (authToken) {
-    headers["Authorization"] = `Bearer ${authToken}`;
-  }
 
   while (Date.now() < deadline) {
     await sleep(POLL_INTERVAL_MS);
@@ -232,21 +226,12 @@ export async function exportAnalysisVideo(
   // ── 3. Build FormData ────────────────────────────────────────────────────
   const form = await buildFormData(payload, localUri);
 
-  // ── 4. Get auth token ────────────────────────────────────────────────────
-  const authToken = await SecureStore.getItemAsync(TOKEN_KEY);
-
-  const uploadHeaders: Record<string, string> = {};
-  if (authToken) {
-    uploadHeaders["Authorization"] = `Bearer ${authToken}`;
-  }
+  // ── 4. Upload ────────────────────────────────────────────────────────────
   // Note: Do NOT set Content-Type — fetch sets it automatically with boundary
-
-  // ── 5. Upload ────────────────────────────────────────────────────────────
   progress("uploading", 10);
 
   const uploadRes = await fetch(`${API_URL}/api/export/video`, {
     method: "POST",
-    headers: uploadHeaders,
     body: form,
   });
 
@@ -268,21 +253,18 @@ export async function exportAnalysisVideo(
 
   progress("uploading", 100);
 
-  // ── 6. Poll until done ───────────────────────────────────────────────────
+  // ── 5. Poll until done ───────────────────────────────────────────────────
   progress("processing", 0);
-  const downloadUrl = await pollUntilDone(jobId, authToken, progress);
+  const downloadUrl = await pollUntilDone(jobId, progress);
 
-  // ── 7. Download composed MP4 ─────────────────────────────────────────────
+  // ── 6. Download composed MP4 ─────────────────────────────────────────────
   progress("downloading", 0);
 
   const destFile = new FSFile(Paths.cache, `athlifyr_export_${Date.now()}.mp4`);
 
   const downloadResult = await FileSystem.downloadAsync(
     downloadUrl,
-    destFile.uri,
-    authToken
-      ? { headers: { Authorization: `Bearer ${authToken}` } }
-      : undefined
+    destFile.uri
   );
 
   if (downloadResult.status !== 200) {
@@ -291,7 +273,7 @@ export async function exportAnalysisVideo(
 
   progress("downloading", 100);
 
-  // ── 8. Share ──────────────────────────────────────────────────────────────
+  // ── 7. Share ──────────────────────────────────────────────────────────────
   await Sharing.shareAsync(destFile.uri, {
     mimeType: "video/mp4",
     dialogTitle: "Athlifyr Analysis",

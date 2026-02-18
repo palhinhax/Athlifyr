@@ -55,7 +55,6 @@
  *     output.mp4
  */
 
-import * as FileSystem from "expo-file-system";
 import * as Sharing from "expo-sharing";
 import { Paths, File as FSFile } from "expo-file-system";
 import { API_URL } from "@/src/lib/api";
@@ -262,14 +261,13 @@ export async function exportAnalysisVideo(
 
   const destFile = new FSFile(Paths.cache, `athlifyr_export_${Date.now()}.mp4`);
 
-  const downloadResult = await FileSystem.downloadAsync(
-    downloadUrl,
-    destFile.uri
-  );
-
-  if (downloadResult.status !== 200) {
-    throw new Error(`Download failed with status ${downloadResult.status}`);
+  // Use fetch + writableStream (new expo-file-system API; avoids deprecated downloadAsync)
+  const downloadRes = await fetch(downloadUrl);
+  if (!downloadRes.ok || !downloadRes.body) {
+    throw new Error(`Download failed with status ${downloadRes.status}`);
   }
+  const writer = destFile.writableStream();
+  await downloadRes.body.pipeTo(writer);
 
   progress("downloading", 100);
 

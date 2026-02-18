@@ -4,12 +4,13 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { Trash2, ChevronDown, ChevronUp } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import { useToast } from "@/src/hooks/useToast";
 import {
   usePerformance,
   formatTime,
@@ -30,8 +31,10 @@ export function PerformanceEntriesList({
 }: PerformanceEntriesListProps) {
   const { t } = useTranslation();
   const { deleteEntry, isDeleting } = usePerformance();
+  const { showToast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
 
   const filteredEntries = entries
     .filter((e) => e.type === type)
@@ -47,30 +50,20 @@ export function PerformanceEntriesList({
     : filteredEntries.slice(0, INITIAL_DISPLAY);
 
   const handleDelete = (id: string) => {
-    Alert.alert(
-      t("performance.entries.deleteTitle"),
-      t("performance.entries.deleteDescription"),
-      [
-        { text: t("performance.cancel"), style: "cancel" },
-        {
-          text: t("performance.entries.delete"),
-          style: "destructive",
-          onPress: async () => {
-            setDeletingId(id);
-            try {
-              await deleteEntry(id);
-            } catch {
-              Alert.alert(
-                t("performance.error"),
-                t("performance.entries.deleteError")
-              );
-            } finally {
-              setDeletingId(null);
-            }
-          },
-        },
-      ]
-    );
+    setEntryToDelete(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!entryToDelete) return;
+    setDeletingId(entryToDelete);
+    try {
+      await deleteEntry(entryToDelete);
+    } catch {
+      showToast(t("performance.entries.deleteError"), "error");
+    } finally {
+      setDeletingId(null);
+      setEntryToDelete(null);
+    }
   };
 
   const formatDate = (dateStr: string): string => {
@@ -193,6 +186,26 @@ export function PerformanceEntriesList({
           </Text>
         </TouchableOpacity>
       )}
+
+      {/* Delete Confirmation Modal */}
+      <ConfirmModal
+        visible={entryToDelete !== null}
+        onClose={() => setEntryToDelete(null)}
+        title={t("performance.entries.deleteTitle")}
+        message={t("performance.entries.deleteDescription")}
+        actions={[
+          {
+            label: t("performance.cancel"),
+            variant: "outline",
+            onPress: () => setEntryToDelete(null),
+          },
+          {
+            label: t("performance.entries.delete"),
+            variant: "destructive",
+            onPress: confirmDelete,
+          },
+        ]}
+      />
     </View>
   );
 }

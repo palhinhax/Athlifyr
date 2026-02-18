@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
 
 interface LanguageSelectorProps {
@@ -26,6 +27,7 @@ export function LanguageSelector({
   const [isPending, startTransition] = useTransition();
   const [locale, setLocale] = useState(currentLocale);
   const t = useTranslations("settings");
+  const { toast } = useToast();
 
   const handleLanguageChange = async (newLocale: string) => {
     setLocale(newLocale);
@@ -52,7 +54,10 @@ export function LanguageSelector({
       });
     } catch (error) {
       console.error("Error updating language:", error);
-      alert("Failed to update language preference");
+      toast({
+        description: t("languageUpdateError"),
+        variant: "destructive",
+      });
       setLocale(currentLocale); // Revert on error
     }
   };

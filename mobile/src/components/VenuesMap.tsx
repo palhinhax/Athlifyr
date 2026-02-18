@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "expo-router";
 import { MapPin } from "lucide-react-native";
+import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 
@@ -43,6 +44,7 @@ interface VenuesMapProps {
 
 export function VenuesMap({ searchQuery }: VenuesMapProps) {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [venues, setVenues] = useState<MapVenue[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -86,6 +88,12 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
   }, [fetchMapVenues]);
 
   const handleVenuePress = (slug: string) => {
+    // Pre-fetch venue detail for instant navigation
+    queryClient.prefetchQuery({
+      queryKey: ["venue", slug],
+      queryFn: () => api.get(`/venues/${slug}`).then((r) => r.data),
+      staleTime: 2 * 60 * 1000,
+    });
     router.push(`/venues/${slug}`);
   };
 

@@ -10,13 +10,13 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
   FlatList,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X, Search, Plus } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { API_URL } from "@/src/lib/api";
+import { useToast } from "@/src/hooks/useToast";
 import * as SecureStore from "expo-secure-store";
 import { usePerformance } from "@/src/hooks/usePerformance";
 
@@ -35,6 +35,7 @@ interface AddStrengthSheetProps {
 export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
+  const { showToast } = useToast();
 
   const [exerciseQuery, setExerciseQuery] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -127,16 +128,10 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
         setSelectedExercise(newExercise);
         setExerciseQuery(newExercise.name);
         setShowDropdown(false);
-        Alert.alert(
-          t("performance.success"),
-          t("performance.strength.exerciseCreated")
-        );
+        showToast(t("performance.strength.exerciseCreated"), "success");
       }
     } catch {
-      Alert.alert(
-        t("performance.error"),
-        t("performance.strength.exerciseCreateFailed")
-      );
+      showToast(t("performance.strength.exerciseCreateFailed"), "error");
     } finally {
       setIsSearching(false);
     }
@@ -144,28 +139,19 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
 
   const handleSave = async () => {
     if (!selectedExercise) {
-      Alert.alert(
-        t("performance.error"),
-        t("performance.strength.selectExercise")
-      );
+      showToast(t("performance.strength.selectExercise"), "error");
       return;
     }
 
     const repsNum = parseInt(reps, 10);
     if (!repsNum || repsNum <= 0) {
-      Alert.alert(
-        t("performance.error"),
-        t("performance.strength.invalidReps")
-      );
+      showToast(t("performance.strength.invalidReps"), "error");
       return;
     }
 
     const weightNum = parseFloat(weight);
     if (isNaN(weightNum) || weightNum < 0) {
-      Alert.alert(
-        t("performance.error"),
-        t("performance.strength.invalidWeight")
-      );
+      showToast(t("performance.strength.invalidWeight"), "error");
       return;
     }
 
@@ -177,14 +163,11 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
         weightKg: weightNum || 0,
         performedAt: new Date().toISOString(),
       });
-      Alert.alert(
-        t("performance.success"),
-        t("performance.strength.savedSuccess")
-      );
+      showToast(t("performance.strength.savedSuccess"), "success");
       resetForm();
       onClose();
     } catch {
-      Alert.alert(t("performance.error"), t("performance.strength.saveFailed"));
+      showToast(t("performance.strength.saveFailed"), "error");
     }
   };
 

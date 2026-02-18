@@ -7,7 +7,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/training-plans/[id] - Get plan details
@@ -16,7 +16,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
     const { id } = await params;
 
     const plan = await prisma.trainingPlan.findUnique({
@@ -68,10 +68,10 @@ export async function GET(
     // Check access
     const canAccess =
       plan.isPublic ||
-      plan.createdById === session?.user?.id ||
-      (session?.user?.id &&
+      plan.createdById === user?.id ||
+      (user?.id &&
         (await prisma.userTrainingPlan.findFirst({
-          where: { userId: session.user.id, planId: id },
+          where: { userId: user.id, planId: id },
         })));
 
     if (!canAccess) {
@@ -79,7 +79,7 @@ export async function GET(
     }
 
     // Check if current user owns this plan
-    const isOwner = plan.createdById === session?.user?.id;
+    const isOwner = plan.createdById === user?.id;
 
     return NextResponse.json({ plan, isOwner });
   } catch (error) {
@@ -97,9 +97,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -116,7 +116,7 @@ export async function PATCH(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    if (existingPlan.createdById !== session.user.id) {
+    if (existingPlan.createdById !== user.id) {
       return NextResponse.json(
         { error: "No permission to edit this plan" },
         { status: 403 }
@@ -186,9 +186,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -204,7 +204,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Plan not found" }, { status: 404 });
     }
 
-    if (existingPlan.createdById !== session.user.id) {
+    if (existingPlan.createdById !== user.id) {
       return NextResponse.json(
         { error: "No permission to delete this plan" },
         { status: 403 }

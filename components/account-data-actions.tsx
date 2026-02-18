@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Download, Trash2, AlertTriangle } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 export function AccountDataActions() {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -21,6 +22,7 @@ export function AccountDataActions() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const locale = useLocale();
   const t = useTranslations("settings");
+  const { toast } = useToast();
 
   const handleDownloadData = async () => {
     setIsDownloading(true);
@@ -44,7 +46,7 @@ export function AccountDataActions() {
       document.body.removeChild(a);
     } catch (error) {
       console.error("Error downloading data:", error);
-      alert(t("downloadDataError"));
+      toast({ description: t("downloadDataError"), variant: "destructive" });
     } finally {
       setIsDownloading(false);
     }
@@ -52,7 +54,10 @@ export function AccountDataActions() {
 
   const handleDeleteAccount = async () => {
     if (deleteConfirmation !== "DELETE") {
-      alert(t("deleteConfirmationError"));
+      toast({
+        description: t("deleteConfirmationError"),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -70,7 +75,7 @@ export function AccountDataActions() {
       await signOut({ callbackUrl: `/${locale}` });
     } catch (error) {
       console.error("Error deleting account:", error);
-      alert(t("deleteAccountError"));
+      toast({ description: t("deleteAccountError"), variant: "destructive" });
       setIsDeleting(false);
     }
   };

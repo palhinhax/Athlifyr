@@ -7,6 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Loader2, Building2 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { AdminVenueCard } from "@/components/admin/admin-venue-card";
 import { AdminVenueCreateDialog } from "@/components/admin/admin-venue-create-dialog";
 import { AdminVenueOwnerDialog } from "@/components/admin/admin-venue-owner-dialog";
@@ -46,6 +56,10 @@ export default function AdminVenuesPage() {
   const [isOwnerDialogOpen, setIsOwnerDialogOpen] = useState(false);
   const [isFeeDialogOpen, setIsFeeDialogOpen] = useState(false);
   const [selectedVenue, setSelectedVenue] = useState<Venue | null>(null);
+  const [confirmDialog, setConfirmDialog] = useState<{
+    open: boolean;
+    venueId: string;
+  }>({ open: false, venueId: "" });
 
   useEffect(() => {
     if (status === "loading") return;
@@ -82,7 +96,11 @@ export default function AdminVenuesPage() {
   };
 
   const handleDelete = async (venueId: string) => {
-    if (!confirm("Tens a certeza que queres eliminar este venue?")) return;
+    setConfirmDialog({ open: true, venueId });
+  };
+
+  const executeDelete = async (venueId: string) => {
+    setConfirmDialog({ open: false, venueId: "" });
 
     try {
       const response = await fetch(`/api/admin/venues?id=${venueId}`, {
@@ -196,6 +214,31 @@ export default function AdminVenuesPage() {
           ))}
         </div>
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={confirmDialog.open}
+        onOpenChange={(open) => setConfirmDialog((prev) => ({ ...prev, open }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Eliminar venue</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tens a certeza que queres eliminar este venue? Esta ação não pode
+              ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => executeDelete(confirmDialog.venueId)}
+            >
+              Eliminar
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

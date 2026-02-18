@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // POST /api/workouts/[id]/save - Save a workout
@@ -15,9 +15,9 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -34,7 +34,7 @@ export async function POST(
     }
 
     // Can't save your own workout
-    if (workout.createdById === session.user.id) {
+    if (workout.createdById === user.id) {
       return NextResponse.json(
         { error: "Cannot save your own workout" },
         { status: 400 }
@@ -53,13 +53,13 @@ export async function POST(
     const savedWorkout = await prisma.savedWorkout.upsert({
       where: {
         userId_workoutId: {
-          userId: session.user.id,
+          userId: user.id,
           workoutId,
         },
       },
       update: {},
       create: {
-        userId: session.user.id,
+        userId: user.id,
         workoutId,
       },
     });
@@ -80,9 +80,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -90,7 +90,7 @@ export async function DELETE(
 
     await prisma.savedWorkout.deleteMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         workoutId,
       },
     });

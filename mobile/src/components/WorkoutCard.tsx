@@ -1,5 +1,6 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import {
   Clock,
@@ -11,6 +12,7 @@ import {
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { CachedAvatar } from "@/src/components/CachedImage";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import type { WorkoutItem } from "@/src/hooks/useWorkouts";
 import { useToggleSaveWorkout } from "@/src/hooks/useWorkouts";
 import { useAuthStore } from "@/src/lib/auth-store";
@@ -41,9 +43,11 @@ export function WorkoutCard({
   onPress,
 }: WorkoutCardProps) {
   const { t } = useTranslation();
+  const router = useRouter();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const toggleSave = useToggleSaveWorkout();
   const [isSaved, setIsSaved] = useState(workout.isSaved);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
 
   const totalExercises = workout.blocks.reduce(
     (sum, block) => sum + block.exercises.length,
@@ -54,10 +58,7 @@ export function WorkoutCard({
 
   const handleSaveToggle = () => {
     if (!isAuthenticated) {
-      Alert.alert(
-        t("workouts.loginToSave"),
-        t("workouts.loginToSaveDescription")
-      );
+      setShowLoginPrompt(true);
       return;
     }
 
@@ -69,7 +70,7 @@ export function WorkoutCard({
       {
         onError: () => {
           setIsSaved(isSaved); // revert
-          Alert.alert(t("workouts.errors.saveFailed"));
+          console.error("Failed to save workout");
         },
       }
     );
@@ -235,10 +236,29 @@ export function WorkoutCard({
       )}
 
       {/* Start Button */}
-      <TouchableOpacity style={styles.startButton} activeOpacity={0.8}>
+      <TouchableOpacity
+        style={styles.startButton}
+        activeOpacity={0.8}
+        onPress={() => router.push(`/workout/${workout.id}`)}
+      >
         <Play size={16} color={theme.colors.white} fill={theme.colors.white} />
         <Text style={styles.startButtonText}>{t("workouts.startWorkout")}</Text>
       </TouchableOpacity>
+
+      {/* Login Prompt Modal */}
+      <ConfirmModal
+        visible={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        title={t("workouts.loginToSave")}
+        message={t("workouts.loginToSaveDescription")}
+        actions={[
+          {
+            label: t("common.close"),
+            variant: "outline",
+            onPress: () => setShowLoginPrompt(false),
+          },
+        ]}
+      />
     </TouchableOpacity>
   );
 }

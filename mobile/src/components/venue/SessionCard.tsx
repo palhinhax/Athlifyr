@@ -46,6 +46,26 @@ function getDurationMinutes(startsAt: string, endsAt: string): number {
   );
 }
 
+// Returns a color between green (#22c55e) → orange (#f97316) → red (#ef4444)
+function getCapacityColor(percent: number): string {
+  if (percent >= 100) return "#ef4444";
+  if (percent >= 75) {
+    const t = (percent - 75) / 25;
+    const r = Math.round(249 + (239 - 249) * t);
+    const g = Math.round(115 + (68 - 115) * t);
+    const b = Math.round(22 + (68 - 22) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  if (percent >= 40) {
+    const t = (percent - 40) / 35;
+    const r = Math.round(34 + (249 - 34) * t);
+    const g = Math.round(197 + (115 - 197) * t);
+    const b = Math.round(94 + (22 - 94) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  return "#22c55e";
+}
+
 // ── Props ──────────────────────────────────────────────────────────────
 
 interface SessionCardProps {
@@ -82,7 +102,9 @@ export function SessionCard({
   const typeColor = getSessionTypeColor(session.type);
   const bookings = session._count?.bookings ?? 0;
   const isFull = session.capacity ? bookings >= session.capacity : false;
-  const spotsLeft = session.capacity ? session.capacity - bookings : null;
+  const capacityPercent = session.capacity
+    ? Math.min((bookings / session.capacity) * 100, 100)
+    : 0;
   const isPast = new Date(session.startsAt) < new Date();
   const duration = getDurationMinutes(session.startsAt, session.endsAt);
 
@@ -126,9 +148,6 @@ export function SessionCard({
                 <Text style={styles.bookedText}>{t("sessions.booked")}</Text>
               </View>
             )}
-            {session.recurringSessionId && (
-              <Text style={styles.recurringIcon}>🔁</Text>
-            )}
           </View>
         </View>
 
@@ -164,24 +183,35 @@ export function SessionCard({
             <View />
           )}
 
-          {session.capacity ? (
-            <View style={styles.capacityRow}>
-              <Users size={13} color={theme.colors.textSecondary} />
-              <Text style={styles.metaText}>
-                {bookings}/{session.capacity}
-              </Text>
-              {isFull ? (
-                <View style={styles.fullBadge}>
-                  <Text style={styles.fullBadgeText}>{t("sessions.full")}</Text>
-                </View>
-              ) : spotsLeft !== null && spotsLeft <= 3 ? (
-                <Text style={styles.spotsLeftText}>
-                  {t("sessions.spotsLeft", { count: spotsLeft })}
-                </Text>
-              ) : null}
-            </View>
-          ) : null}
+          <View style={styles.capacityRow}>
+            <Users size={13} color={theme.colors.textSecondary} />
+            <Text style={styles.metaText}>
+              {session.capacity
+                ? `${bookings}/${session.capacity}`
+                : t("sessions.attendeesCount", { count: bookings })}
+            </Text>
+            {isFull ? (
+              <View style={styles.fullBadge}>
+                <Text style={styles.fullBadgeText}>{t("sessions.full")}</Text>
+              </View>
+            ) : null}
+          </View>
         </View>
+
+        {/* Capacity progress bar (only when capacity is set) */}
+        {session.capacity ? (
+          <View style={styles.progressBarBg}>
+            <View
+              style={[
+                styles.progressBarFill,
+                {
+                  width: `${capacityPercent}%`,
+                  backgroundColor: getCapacityColor(capacityPercent),
+                },
+              ]}
+            />
+          </View>
+        ) : null}
 
         {/* Row 5: Action buttons */}
         {!isPast && (
@@ -209,11 +239,16 @@ export function SessionCard({
               <TouchableOpacity
                 style={styles.cancelButton}
                 onPress={onCancelBooking}
+                disabled={isBooking}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>
-                  {t("sessions.cancelBooking")}
-                </Text>
+                {isBooking ? (
+                  <ActivityIndicator size="small" color={theme.colors.text} />
+                ) : (
+                  <Text style={styles.cancelButtonText}>
+                    {t("sessions.cancelBooking")}
+                  </Text>
+                )}
               </TouchableOpacity>
             )}
 
@@ -357,10 +392,17 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: "#ef4444",
   },
-  spotsLeftText: {
-    fontSize: 10,
-    color: "#f97316",
-    fontWeight: "600",
+  progressBarBg: {
+    height: 3,
+    backgroundColor: theme.colors.border,
+    borderRadius: 2,
+    overflow: "hidden",
+    marginTop: 6,
+    marginHorizontal: 2,
+  },
+  progressBarFill: {
+    height: 3,
+    borderRadius: 2,
   },
   actionsRow: {
     flexDirection: "row",

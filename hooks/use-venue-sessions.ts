@@ -145,6 +145,29 @@ export function useVenueSessions({
     fetchSessions();
   }, [fetchSessions]);
 
+  // Auto-refetch when page regains visibility (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        fetchSessions();
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [fetchSessions]);
+
+  // Polling: refetch every 60 seconds to catch changes from other devices/tabs
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchSessions();
+    }, 60 * 1000); // 60 seconds
+
+    return () => clearInterval(interval);
+  }, [fetchSessions]);
+
   // Get sessions for a specific day
   const getSessionsForDay = useCallback(
     (day: Date) => {

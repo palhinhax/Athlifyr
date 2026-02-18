@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   Modal,
   TouchableOpacity,
   ScrollView,
   ActivityIndicator,
-  Alert,
   Platform,
 } from "react-native";
 import { useTranslation } from "react-i18next";
@@ -25,10 +25,23 @@ import {
   ChevronDown,
   ChevronUp,
   AlertCircle,
-  Repeat,
 } from "lucide-react-native";
+import { format, parseISO } from "date-fns";
+import { pt, enUS, es, fr, de, it, Locale } from "date-fns/locale";
 import { theme } from "@/src/constants/theme";
-import type { VenueSession } from "@/src/hooks/useVenueSessions";
+import type {
+  VenueSession,
+  WorkoutExercise,
+} from "@/src/hooks/useVenueSessions";
+
+const dateFnsLocaleMap: Record<string, Locale> = {
+  pt,
+  en: enUS,
+  es,
+  fr,
+  de,
+  it,
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────
 
@@ -37,14 +50,8 @@ function formatSessionTime(dateStr: string): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-function formatSessionDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString([], {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  });
+function formatSessionDate(dateStr: string, locale: Locale): string {
+  return format(parseISO(dateStr), "EEEE, d MMMM yyyy", { locale });
 }
 
 function getDurationMinutes(startsAt: string, endsAt: string): number {
@@ -66,6 +73,78 @@ function getSessionTypeColor(type: string): string {
     default:
       return theme.colors.textSecondary;
   }
+}
+
+// Returns a color between green (#22c55e) → orange (#f97316) → red (#ef4444)
+function getCapacityColor(percent: number): string {
+  if (percent >= 100) return "#ef4444";
+  if (percent >= 75) {
+    // Orange → Red (75-100%)
+    const t = (percent - 75) / 25;
+    const r = Math.round(249 + (239 - 249) * t);
+    const g = Math.round(115 + (68 - 115) * t);
+    const b = Math.round(22 + (68 - 22) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  if (percent >= 40) {
+    // Green → Orange (40-75%)
+    const t = (percent - 40) / 35;
+    const r = Math.round(34 + (249 - 34) * t);
+    const g = Math.round(197 + (115 - 197) * t);
+    const b = Math.round(94 + (22 - 94) * t);
+    return `rgb(${r},${g},${b})`;
+  }
+  // Green (0-40%)
+  return "#22c55e";
+}
+
+// Format exercise prescription into a compact string (e.g. "3x 10 @ 60kg")
+function formatExercisePrescription(ex: WorkoutExercise): string {
+  const parts: string[] = [];
+
+  if (ex.prescribedSets) {
+    parts.push(`${ex.prescribedSets}x`);
+  }
+
+  if (ex.prescribedReps) {
+    parts.push(`${ex.prescribedReps}`);
+  }
+
+  if (ex.prescribedWeight) {
+    const unit = ex.prescribedWeightUnit || "kg";
+    parts.push(`@ ${ex.prescribedWeight}${unit}`);
+  }
+
+  if (ex.prescribedDistance) {
+    const unit = ex.prescribedDistanceUnit || "m";
+    parts.push(`${ex.prescribedDistance}${unit}`);
+  }
+
+  if (ex.prescribedTime) {
+    if (ex.prescribedTime >= 60) {
+      const mins = Math.floor(ex.prescribedTime / 60);
+      const secs = ex.prescribedTime % 60;
+      parts.push(
+        secs > 0 ? `${mins}:${secs.toString().padStart(2, "0")}` : `${mins} min`
+      );
+    } else {
+      parts.push(`${ex.prescribedTime}s`);
+    }
+  }
+
+  if (ex.prescribedCalories) {
+    parts.push(`${ex.prescribedCalories} cal`);
+  }
+
+  return parts.join(" ") || "";
+}
+
+// Format block type into a readable label using translations
+function formatBlockType(type: string, t: (key: string) => string): string {
+  const key = `workouts.blocks.${type}`;
+  const translated = t(key);
+  // If translation returns the key itself, fall back to the raw type
+  return translated !== key ? translated : type;
 }
 
 // ── Props ──────────────────────────────────────────────────────────────
@@ -101,8 +180,20 @@ export function SessionDetailSheet({
   onDelete,
   bookingInProgress,
 }: SessionDetailSheetProps) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const dateLocale = dateFnsLocaleMap[i18n.language] || enUS;
   const [showAttendees, setShowAttendees] = useState(false);
+
+  // Debug logging to check if workouts data is present
+  useEffect(() => {
+    if (session) {
+      console.log("SessionDetailSheet - session workouts:", session.workouts);
+      console.log(
+        "SessionDetailSheet - full session:",
+        JSON.stringify(session, null, 2)
+      );
+    }
+  }, [session]);
 
   if (!session) return null;
 
@@ -125,28 +216,7 @@ export function SessionDetailSheet({
   const canCancel = !!userId && !!session.isBooked && !isPast;
 
   const handleDelete = () => {
-    if (session.recurringSessionId) {
-      Alert.alert(
-        t("sessions.deleteSession"),
-        t("sessions.confirmDeleteRecurring"),
-        [
-          { text: t("common.cancel"), style: "cancel" },
-          {
-            text: t("sessions.deleteOnlyThis"),
-            onPress: () => onDelete?.(),
-          },
-        ]
-      );
-    } else {
-      Alert.alert(t("sessions.deleteSession"), t("sessions.confirmDelete"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("sessions.deleteSession"),
-          style: "destructive",
-          onPress: () => onDelete?.(),
-        },
-      ]);
-    }
+    onDelete?.();
   };
 
   return (
@@ -197,15 +267,6 @@ export function SessionDetailSheet({
                 </Text>
               </View>
 
-              {session.recurringSessionId && (
-                <View style={styles.recurringBadge}>
-                  <Repeat size={12} color={theme.colors.primary} />
-                  <Text style={styles.recurringBadgeText}>
-                    {t("sessions.recurring", "Recorrente")}
-                  </Text>
-                </View>
-              )}
-
               {session.isBooked && (
                 <View style={styles.bookedBadge}>
                   <CheckCircle size={14} color="#16a34a" />
@@ -239,7 +300,7 @@ export function SessionDetailSheet({
                 </Text>
               </View>
               <Text style={styles.infoCardValue}>
-                {formatSessionDate(session.startsAt)}
+                {formatSessionDate(session.startsAt, dateLocale)}
               </Text>
               <View style={styles.timeBlock}>
                 <Clock size={14} color={theme.colors.textSecondary} />
@@ -265,11 +326,21 @@ export function SessionDetailSheet({
                   </Text>
                 </View>
                 <View style={styles.coachInfo}>
-                  <View style={styles.coachAvatar}>
-                    <Text style={styles.coachInitial}>
-                      {session.coach.user.name[0]?.toUpperCase() || "?"}
-                    </Text>
-                  </View>
+                  {session.coach.user.image ? (
+                    <Image
+                      source={{ uri: session.coach.user.image }}
+                      style={styles.coachAvatarImage}
+                      accessible
+                      accessibilityLabel={session.coach.user.name || ""}
+                      alt={session.coach.user.name || ""}
+                    />
+                  ) : (
+                    <View style={styles.coachAvatar}>
+                      <Text style={styles.coachInitial}>
+                        {session.coach.user.name[0]?.toUpperCase() || "?"}
+                      </Text>
+                    </View>
+                  )}
                   <Text style={styles.coachName}>
                     {session.coach.user.name}
                   </Text>
@@ -278,51 +349,53 @@ export function SessionDetailSheet({
             )}
 
             {/* Capacity Card */}
-            {session.capacity && (
-              <View style={styles.infoCard}>
-                <View style={styles.infoCardHeader}>
-                  <Users size={18} color={theme.colors.primary} />
-                  <Text style={styles.infoCardLabel}>
-                    {t("sessions.capacity")}
-                  </Text>
-                </View>
-                <View style={styles.capacityNumbers}>
+            <View style={styles.infoCard}>
+              <View style={styles.infoCardHeader}>
+                <Users size={18} color={theme.colors.primary} />
+                <Text style={styles.infoCardLabel}>
+                  {session.capacity
+                    ? t("sessions.capacity")
+                    : t("sessions.attendees")}
+                </Text>
+              </View>
+              <View style={styles.capacityNumbers}>
+                {session.capacity ? (
                   <Text style={styles.capacityMain}>
                     {bookings}
                     <Text style={styles.capacitySlash}> / </Text>
                     {session.capacity}
                   </Text>
-                  {isFull ? (
-                    <View style={styles.fullChip}>
-                      <AlertCircle size={12} color="#ef4444" />
-                      <Text style={styles.fullChipText}>
-                        {t("sessions.full")}
-                      </Text>
-                    </View>
-                  ) : spotsLeft !== null && spotsLeft <= 5 ? (
-                    <Text style={styles.spotsLeftText}>
-                      {t("sessions.spotsLeft", { count: spotsLeft })}
+                ) : (
+                  <Text style={styles.capacityMain}>{bookings}</Text>
+                )}
+                {isFull ? (
+                  <View style={styles.fullChip}>
+                    <AlertCircle size={12} color="#ef4444" />
+                    <Text style={styles.fullChipText}>
+                      {t("sessions.full")}
                     </Text>
-                  ) : null}
-                </View>
-                {/* Progress bar */}
+                  </View>
+                ) : spotsLeft !== null ? (
+                  <Text style={styles.spotsLeftText}>
+                    {t("sessions.spotsLeft", { count: spotsLeft })}
+                  </Text>
+                ) : null}
+              </View>
+              {/* Gradient progress bar (only when capacity is set) */}
+              {session.capacity && (
                 <View style={styles.progressBarBg}>
                   <View
                     style={[
                       styles.progressBarFill,
                       {
                         width: `${capacityPercent}%`,
-                        backgroundColor: isFull
-                          ? "#ef4444"
-                          : capacityPercent >= 75
-                            ? "#f97316"
-                            : theme.colors.primary,
+                        backgroundColor: getCapacityColor(capacityPercent),
                       },
                     ]}
                   />
                 </View>
-              </View>
-            )}
+              )}
+            </View>
           </View>
 
           {/* ── Tags ── */}
@@ -361,11 +434,121 @@ export function SessionDetailSheet({
               </View>
               {session.workouts.map((sw) => (
                 <View key={sw.id} style={styles.workoutCard}>
-                  <Text style={styles.workoutName}>{sw.workout.name}</Text>
+                  {/* Workout Header */}
+                  <View style={workoutStyles.workoutHeader}>
+                    <Text style={workoutStyles.workoutName}>
+                      {sw.workout.name}
+                    </Text>
+                    {sw.workout.estimatedTime && (
+                      <View style={workoutStyles.workoutTimeBadge}>
+                        <Clock size={12} color={theme.colors.textSecondary} />
+                        <Text style={workoutStyles.workoutTimeBadgeText}>
+                          {sw.workout.estimatedTime} min
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+
+                  {/* Difficulty */}
+                  {sw.workout.difficulty && (
+                    <View style={workoutStyles.difficultyRow}>
+                      {Array.from({ length: 5 }).map((_, i) => (
+                        <View
+                          key={i}
+                          style={[
+                            workoutStyles.difficultyBar,
+                            {
+                              backgroundColor:
+                                i < Number(sw.workout.difficulty)
+                                  ? theme.colors.primary
+                                  : theme.colors.border,
+                            },
+                          ]}
+                        />
+                      ))}
+                      <Text style={workoutStyles.difficultyLabel}>
+                        {t(
+                          `workouts.difficultyLevels.${sw.workout.difficulty}`
+                        )}
+                      </Text>
+                    </View>
+                  )}
+
+                  {/* Description */}
                   {sw.workout.description && (
                     <Text style={styles.workoutDesc}>
                       {sw.workout.description}
                     </Text>
+                  )}
+
+                  {/* Workout Blocks */}
+                  {sw.workout.blocks && sw.workout.blocks.length > 0 && (
+                    <View style={workoutStyles.blocksContainer}>
+                      {sw.workout.blocks.map((block) => (
+                        <View key={block.id} style={workoutStyles.blockCard}>
+                          {/* Block Header */}
+                          <View style={workoutStyles.blockHeader}>
+                            <View style={workoutStyles.blockTypeBadge}>
+                              <Text style={workoutStyles.blockTypeBadgeText}>
+                                {formatBlockType(block.type, t)}
+                              </Text>
+                            </View>
+                            {block.name && (
+                              <Text style={workoutStyles.blockName}>
+                                {block.name}
+                              </Text>
+                            )}
+                            {block.timeCap && (
+                              <Text style={workoutStyles.blockMeta}>
+                                ({Math.floor(block.timeCap / 60)} min)
+                              </Text>
+                            )}
+                            {block.rounds && (
+                              <Text style={workoutStyles.blockMeta}>
+                                ({block.rounds}{" "}
+                                {block.rounds === 1 ? "round" : "rounds"})
+                              </Text>
+                            )}
+                          </View>
+
+                          {/* Block Notes */}
+                          {block.notes && (
+                            <Text style={workoutStyles.blockNotes}>
+                              {block.notes}
+                            </Text>
+                          )}
+
+                          {/* Exercises */}
+                          {block.exercises && block.exercises.length > 0 && (
+                            <View style={workoutStyles.exercisesList}>
+                              {block.exercises.map((ex) => (
+                                <View
+                                  key={ex.id}
+                                  style={workoutStyles.exerciseRow}
+                                >
+                                  <View style={workoutStyles.exerciseDot} />
+                                  {formatExercisePrescription(ex) !== "" && (
+                                    <Text
+                                      style={workoutStyles.exercisePrescription}
+                                    >
+                                      {formatExercisePrescription(ex)}
+                                    </Text>
+                                  )}
+                                  <Text style={workoutStyles.exerciseName}>
+                                    {ex.exercise.name}
+                                  </Text>
+                                  {ex.notes && (
+                                    <Text style={workoutStyles.exerciseNotes}>
+                                      ({ex.notes})
+                                    </Text>
+                                  )}
+                                </View>
+                              ))}
+                            </View>
+                          )}
+                        </View>
+                      ))}
+                    </View>
                   )}
                 </View>
               ))}
@@ -458,7 +641,10 @@ export function SessionDetailSheet({
             {canBook && onBook && (
               <TouchableOpacity
                 style={styles.bookButton}
-                onPress={onBook}
+                onPress={() => {
+                  onBook();
+                  onClose();
+                }}
                 disabled={bookingInProgress}
                 activeOpacity={0.7}
               >
@@ -502,12 +688,20 @@ export function SessionDetailSheet({
             {canCancel && onCancelBooking && (
               <TouchableOpacity
                 style={styles.cancelButton}
-                onPress={onCancelBooking}
+                onPress={() => {
+                  onCancelBooking();
+                  onClose();
+                }}
+                disabled={bookingInProgress}
                 activeOpacity={0.7}
               >
-                <Text style={styles.cancelButtonText}>
-                  {t("sessions.cancelBooking")}
-                </Text>
+                {bookingInProgress ? (
+                  <ActivityIndicator size="small" color={theme.colors.text} />
+                ) : (
+                  <Text style={styles.cancelButtonText}>
+                    {t("sessions.cancelBooking")}
+                  </Text>
+                )}
               </TouchableOpacity>
             )}
 
@@ -736,6 +930,11 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  coachAvatarImage: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+  },
   coachInitial: {
     fontSize: 16,
     fontWeight: "700",
@@ -855,16 +1054,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
-  workoutName: {
-    fontSize: 15,
-    fontWeight: "600",
-    color: theme.colors.text,
-    marginBottom: 4,
-  },
   workoutDesc: {
     fontSize: 13,
     color: theme.colors.textSecondary,
     lineHeight: 20,
+    marginBottom: 4,
   },
 
   // ── Attendees ──
@@ -1017,5 +1211,127 @@ const styles = StyleSheet.create({
     borderColor: "#fecaca",
     justifyContent: "center",
     alignItems: "center",
+  },
+});
+
+// ── Workout Detail Styles (split to avoid TS inference limit) ──────────
+
+const workoutStyles = StyleSheet.create({
+  workoutHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 6,
+  },
+  workoutName: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: theme.colors.text,
+    flex: 1,
+  },
+  workoutTimeBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.card,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  workoutTimeBadgeText: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.textSecondary,
+  },
+  difficultyRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 3,
+    marginBottom: 8,
+  },
+  difficultyBar: {
+    height: 4,
+    width: 20,
+    borderRadius: 2,
+  },
+  difficultyLabel: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginLeft: 6,
+  },
+  blocksContainer: {
+    gap: 10,
+    marginTop: 10,
+  },
+  blockCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.sm,
+  },
+  blockHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+    marginBottom: 6,
+  },
+  blockTypeBadge: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  blockTypeBadgeText: {
+    fontSize: 11,
+    fontWeight: "800",
+    color: "#fff",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+  },
+  blockName: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.text,
+  },
+  blockMeta: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
+  },
+  blockNotes: {
+    fontSize: 12,
+    fontStyle: "italic",
+    color: theme.colors.textSecondary,
+    marginBottom: 6,
+  },
+  exercisesList: {
+    gap: 4,
+  },
+  exerciseRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "wrap",
+    gap: 6,
+    paddingVertical: 2,
+  },
+  exerciseDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: theme.colors.primary,
+  },
+  exercisePrescription: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.text,
+  },
+  exerciseName: {
+    fontSize: 13,
+    color: theme.colors.text,
+  },
+  exerciseNotes: {
+    fontSize: 11,
+    color: theme.colors.textSecondary,
   },
 });

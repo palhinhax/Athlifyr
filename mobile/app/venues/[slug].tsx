@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -7,12 +7,17 @@ import {
   ActivityIndicator,
   TouchableOpacity,
   Share,
-  Alert,
 } from "react-native";
-import { useLocalSearchParams, useRouter, Stack } from "expo-router";
+import {
+  useLocalSearchParams,
+  useRouter,
+  Stack,
+  useFocusEffect,
+} from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { MapPin, ArrowLeft, Share2, Building2 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
+import { useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import { useVenueDetail } from "@/src/hooks/useVenueDetail";
@@ -31,11 +36,27 @@ export default function VenueDetailScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { venue, isLoading, error, refetch } = useVenueDetail(slug ?? "");
 
   // ── Auth & role computation ──
   const userId = useAuthStore((s) => s.user?.id) ?? null;
   const userRole = useAuthStore((s) => s.user?.role) ?? null;
+
+  // Invalidate venue sessions cache when screen gains focus
+  // This ensures bookings cancelled on the website are reflected immediately
+  // Use background refetch so cached data is shown instantly
+  useFocusEffect(
+    useCallback(() => {
+      if (venue?.id) {
+        queryClient.invalidateQueries({
+          queryKey: ["venueSessions", venue.id],
+        });
+      }
+      // Background refetch — don't block the UI, cached data is already displayed
+      refetch();
+    }, [venue?.id, queryClient, refetch])
+  );
 
   const isOwnerOrAdmin = useMemo(() => {
     if (!userId || !venue) return false;
@@ -111,13 +132,12 @@ export default function VenueDetailScreen() {
         "message" in shareError &&
         shareError.message !== "User did not share"
       ) {
-        Alert.alert("Error", "Failed to share venue");
         console.error("Error sharing venue:", shareError);
       }
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !venue) {
     return (
       <>
         <Stack.Screen options={{ headerShown: false }} />

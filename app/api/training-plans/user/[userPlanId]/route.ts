@@ -6,7 +6,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // PATCH /api/training-plans/user/[userPlanId] - Update progress
@@ -15,9 +15,9 @@ export async function PATCH(
   { params }: { params: Promise<{ userPlanId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -37,7 +37,7 @@ export async function PATCH(
       );
     }
 
-    if (existingPlan.userId !== session.user.id) {
+    if (existingPlan.userId !== user.id) {
       return NextResponse.json(
         { error: "No permission to modify this plan" },
         { status: 403 }
@@ -76,9 +76,9 @@ export async function DELETE(
   { params }: { params: Promise<{ userPlanId: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -97,7 +97,7 @@ export async function DELETE(
       );
     }
 
-    if (existingPlan.userId !== session.user.id) {
+    if (existingPlan.userId !== user.id) {
       return NextResponse.json(
         { error: "No permission to modify this plan" },
         { status: 403 }

@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useCallback } from "react";
-
 import {
   View,
   Text,
@@ -8,16 +7,25 @@ import {
   TouchableOpacity,
   ScrollView,
   Dimensions,
-  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
-import { Calendar, ChevronLeft, ChevronRight, Plus } from "lucide-react-native";
+import {
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Plus,
+  AlertTriangle,
+  Trash2,
+} from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useVenueSessions } from "@/src/hooks/useVenueSessions";
 import type { VenueSession } from "@/src/hooks/useVenueSessions";
 import { SessionCard } from "@/src/components/venue/SessionCard";
 import { SessionDetailSheet } from "@/src/components/venue/SessionDetailSheet";
 import { SessionFormModal } from "@/src/components/venue/SessionFormModal";
+import { Toast } from "@/src/components/ui/Toast";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import { useToast } from "@/src/hooks/useToast";
 import { api } from "@/src/lib/api";
 import {
   eachDayOfInterval,
@@ -74,6 +82,7 @@ export function VenueSessionsTab({
 }: VenueSessionsTabProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = dateFnsLocaleMap[i18n.language] || enUS;
+  const { toast, showToast, hideToast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -89,6 +98,14 @@ export function VenueSessionsTab({
   const [bookingInProgress, setBookingInProgress] = useState<string | null>(
     null
   );
+
+  // ── Confirm modal state ──
+  const [confirmModal, setConfirmModal] = useState<{
+    visible: boolean;
+    type: "cancel" | "delete" | "deleteRecurring";
+    session: VenueSession | null;
+    loading: boolean;
+  }>({ visible: false, type: "cancel", session: null, loading: false });
 
   // ── Data fetching (React Query — cached for instant re-renders) ──
 
@@ -149,7 +166,7 @@ export function VenueSessionsTab({
   const handleBook = useCallback(
     async (session: VenueSession) => {
       if (!userId) {
-        Alert.alert(t("sessions.signInToBook"));
+        showToast(t("sessions.signInToBook"), "warning");
         return;
       }
       setBookingInProgress(session.id);
@@ -159,100 +176,105 @@ export function VenueSessionsTab({
         );
         const bookingId = res.data?.booking?.id ?? res.data?.id ?? "temp";
         optimisticBook(session.id, bookingId);
-        Alert.alert(t("sessions.bookingSuccess"));
+        showToast(t("sessions.bookingSuccess"), "success");
+        // Refetch in background to sync with server
+        refetch();
       } catch {
-        Alert.alert(t("sessions.bookingError"));
+        showToast(t("sessions.bookingError"), "error");
       } finally {
         setBookingInProgress(null);
       }
     },
-    [userId, venueId, optimisticBook, t]
+    [userId, venueId, optimisticBook, refetch, t, showToast]
   );
 
-  const handleCancelBooking = useCallback(
-    async (session: VenueSession) => {
-      if (!session.userBookingId) return;
-      Alert.alert(t("sessions.confirmCancel"), "", [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("sessions.cancelBooking"),
-          style: "destructive",
-          onPress: async () => {
-            setBookingInProgress(session.id);
-            try {
-              await api.post(
-                `/venues/${venueId}/bookings/${session.userBookingId}/cancel`
-              );
-              optimisticCancelBooking(session.id);
-              Alert.alert(t("sessions.bookingCancelled"));
-            } catch {
-              Alert.alert(t("sessions.cancelError"));
-            } finally {
-              setBookingInProgress(null);
-            }
-          },
-        },
-      ]);
-    },
-    [venueId, optimisticCancelBooking, t]
-  );
+  const handleCancelBooking = useCallback((session: VenueSession) => {
+    if (!session.userBookingId) return;
+    setConfirmModal({
+      visible: true,
+      type: "cancel",
+      session,
+      loading: false,
+    });
+  }, []);
 
-  const handleDelete = useCallback(
-    async (session: VenueSession) => {
-      const isRecurring = !!session.recurringSessionId;
+  const executeCancelBooking = useCallback(async () => {
+    const session = confirmModal.session;
+    if (!session?.userBookingId) return;
+    setConfirmModal((prev) => ({ ...prev, loading: true }));
+    try {
+      await api.post(
+        `/venues/${venueId}/bookings/${session.userBookingId}/cancel`
+      );
+      optimisticCancelBooking(session.id);
+      showToast(t("sessions.bookingCancelled"), "success");
+      refetch();
+    } catch {
+      showToast(t("sessions.cancelError"), "error");
+    } finally {
+      setConfirmModal({
+        visible: false,
+        type: "cancel",
+        session: null,
+        loading: false,
+      });
+    }
+  }, [
+    confirmModal.session,
+    venueId,
+    optimisticCancelBooking,
+    refetch,
+    t,
+    showToast,
+  ]);
 
-      if (isRecurring) {
-        Alert.alert(t("sessions.confirmDeleteRecurring"), "", [
-          { text: t("common.cancel"), style: "cancel" },
-          {
-            text: t("sessions.deleteOnlyThis"),
-            onPress: async () => {
-              try {
-                await api.delete(`/venues/${venueId}/sessions/${session.id}`);
-                optimisticDelete(session.id);
-                Alert.alert(t("sessions.deleteSuccess"));
-              } catch {
-                Alert.alert(t("sessions.deleteError"));
-              }
-            },
-          },
-          {
-            text: t("sessions.deleteAll"),
-            style: "destructive",
-            onPress: async () => {
-              try {
-                await api.delete(
-                  `/venues/${venueId}/sessions/${session.id}?deleteAll=true`
-                );
-                refetch();
-                Alert.alert(t("sessions.deleteSuccess"));
-              } catch {
-                Alert.alert(t("sessions.deleteError"));
-              }
-            },
-          },
-        ]);
-      } else {
-        Alert.alert(t("sessions.confirmDelete"), "", [
-          { text: t("common.cancel"), style: "cancel" },
-          {
-            text: t("sessions.deleteSession"),
-            style: "destructive",
-            onPress: async () => {
-              try {
-                await api.delete(`/venues/${venueId}/sessions/${session.id}`);
-                optimisticDelete(session.id);
-                Alert.alert(t("sessions.deleteSuccess"));
-              } catch {
-                Alert.alert(t("sessions.deleteError"));
-              }
-            },
-          },
-        ]);
+  const handleDelete = useCallback((session: VenueSession) => {
+    setConfirmModal({
+      visible: true,
+      type: session.recurringSessionId ? "deleteRecurring" : "delete",
+      session,
+      loading: false,
+    });
+  }, []);
+
+  const executeDelete = useCallback(
+    async (deleteAll = false) => {
+      const session = confirmModal.session;
+      if (!session) return;
+      setConfirmModal((prev) => ({ ...prev, loading: true }));
+      try {
+        const url = deleteAll
+          ? `/venues/${venueId}/sessions/${session.id}?deleteAll=true`
+          : `/venues/${venueId}/sessions/${session.id}`;
+        await api.delete(url);
+        if (deleteAll) {
+          refetch();
+        } else {
+          optimisticDelete(session.id);
+        }
+        showToast(t("sessions.deleteSuccess"), "success");
+      } catch {
+        showToast(t("sessions.deleteError"), "error");
+      } finally {
+        setConfirmModal({
+          visible: false,
+          type: "cancel",
+          session: null,
+          loading: false,
+        });
       }
     },
-    [venueId, optimisticDelete, refetch, t]
+    [confirmModal.session, venueId, optimisticDelete, refetch, t, showToast]
   );
+
+  const closeConfirmModal = useCallback(() => {
+    setConfirmModal({
+      visible: false,
+      type: "cancel",
+      session: null,
+      loading: false,
+    });
+  }, []);
 
   const handleEdit = useCallback((session: VenueSession) => {
     setEditingSession(session);
@@ -268,6 +290,13 @@ export function VenueSessionsTab({
     setEditingSession(null);
     setFormModalVisible(true);
   }, []);
+
+  // ── Keep selectedSession in sync with latest data ──
+  const currentSelectedSession = useMemo(() => {
+    if (!selectedSession) return null;
+    // Find the latest version of the selected session from the sessions array
+    return sessions.find((s) => s.id === selectedSession.id) || selectedSession;
+  }, [selectedSession, sessions]);
 
   // ── Weekday labels ──
 
@@ -447,31 +476,36 @@ export function VenueSessionsTab({
           setDetailSheetVisible(false);
           setSelectedSession(null);
         }}
-        session={selectedSession}
+        session={currentSelectedSession}
         userId={userId}
         hasActiveSubscription={hasActiveSubscription}
         isOwnerOrAdmin={isOwnerOrAdmin}
         canEditSessions={canEditSessions}
         onBook={() => {
-          if (selectedSession) handleBook(selectedSession);
+          if (currentSelectedSession) handleBook(currentSelectedSession);
         }}
         onCancelBooking={() => {
-          if (selectedSession) handleCancelBooking(selectedSession);
+          if (currentSelectedSession) {
+            setDetailSheetVisible(false);
+            handleCancelBooking(currentSelectedSession);
+          }
         }}
         onEdit={() => {
-          if (selectedSession) {
+          if (currentSelectedSession) {
             setDetailSheetVisible(false);
-            handleEdit(selectedSession);
+            handleEdit(currentSelectedSession);
           }
         }}
         onDelete={() => {
-          if (selectedSession) {
+          if (currentSelectedSession) {
             setDetailSheetVisible(false);
-            handleDelete(selectedSession);
+            handleDelete(currentSelectedSession);
           }
         }}
         bookingInProgress={
-          selectedSession ? bookingInProgress === selectedSession.id : false
+          currentSelectedSession
+            ? bookingInProgress === currentSelectedSession.id
+            : false
         }
       />
 
@@ -486,6 +520,88 @@ export function VenueSessionsTab({
         session={editingSession}
         defaultDate={selectedDate}
         onSuccess={() => refetch()}
+      />
+
+      {/* Confirm Modal */}
+      <ConfirmModal
+        visible={confirmModal.visible}
+        onClose={closeConfirmModal}
+        title={
+          confirmModal.type === "cancel"
+            ? t("sessions.cancelBooking")
+            : t("sessions.deleteSession")
+        }
+        message={
+          confirmModal.type === "cancel"
+            ? t("sessions.confirmCancel")
+            : confirmModal.type === "deleteRecurring"
+              ? t("sessions.confirmDeleteRecurring")
+              : t("sessions.confirmDelete")
+        }
+        icon={
+          confirmModal.type === "cancel" ? (
+            <AlertTriangle size={28} color="#f97316" />
+          ) : (
+            <Trash2 size={28} color={theme.colors.error} />
+          )
+        }
+        actions={
+          confirmModal.type === "cancel"
+            ? [
+                {
+                  label: t("sessions.cancelBooking"),
+                  variant: "destructive",
+                  onPress: executeCancelBooking,
+                  loading: confirmModal.loading,
+                },
+                {
+                  label: t("common.close"),
+                  variant: "outline",
+                  onPress: closeConfirmModal,
+                },
+              ]
+            : confirmModal.type === "deleteRecurring"
+              ? [
+                  {
+                    label: t("sessions.deleteOnlyThis"),
+                    variant: "primary",
+                    onPress: () => executeDelete(false),
+                    loading: confirmModal.loading,
+                  },
+                  {
+                    label: t("sessions.deleteAll"),
+                    variant: "destructive",
+                    onPress: () => executeDelete(true),
+                    loading: confirmModal.loading,
+                  },
+                  {
+                    label: t("common.close"),
+                    variant: "outline",
+                    onPress: closeConfirmModal,
+                  },
+                ]
+              : [
+                  {
+                    label: t("sessions.deleteSession"),
+                    variant: "destructive",
+                    onPress: () => executeDelete(false),
+                    loading: confirmModal.loading,
+                  },
+                  {
+                    label: t("common.close"),
+                    variant: "outline",
+                    onPress: closeConfirmModal,
+                  },
+                ]
+        }
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
       />
     </ScrollView>
   );

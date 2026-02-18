@@ -6,7 +6,6 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
   RefreshControl,
 } from "react-native";
 import { useRouter } from "expo-router";
@@ -29,6 +28,7 @@ import {
 } from "@/src/hooks/useNotifications";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
+import { useToast } from "@/src/hooks/useToast";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { CachedAvatar } from "@/src/components/CachedImage";
 import {
@@ -302,6 +302,7 @@ export default function NotificationsScreen() {
   const { notifications, pendingCount, isLoading, refetch } =
     useNotifications();
   const invalidate = useInvalidateNotifications();
+  const { showToast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -344,19 +345,19 @@ export default function NotificationsScreen() {
                 ? "notifications.inviteAccepted"
                 : "notifications.inviteDeclined";
 
-        Alert.alert(t(successKey));
+        showToast(t(successKey), "success");
         invalidate();
       } catch (error: unknown) {
         const message =
           error instanceof Error
             ? error.message
             : t("notifications.actionError");
-        Alert.alert(t("notifications.actionError"), message);
+        showToast(message, "error");
       } finally {
         setProcessingId(null);
       }
     },
-    [t, invalidate]
+    [t, invalidate, showToast]
   );
 
   // Not authenticated → go to login

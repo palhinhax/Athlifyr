@@ -135,11 +135,14 @@ export function useVenueDetail(slug: string) {
     enabled: !!slug,
     staleTime: 2 * 60 * 1000, // 2 minutes – show cached data instantly
     gcTime: 10 * 60 * 1000, // 10 minutes in cache
+    refetchOnMount: true, // Refetch in background when remounting, but show cache first
+    placeholderData: (previousData) => previousData, // Keep previous data while refetching
   });
 
   return {
     venue: query.data ?? null,
     isLoading: query.isLoading,
+    isFetching: query.isFetching,
     error: query.error,
     refetch: query.refetch,
   };

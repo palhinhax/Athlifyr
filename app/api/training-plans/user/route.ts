@@ -5,21 +5,21 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
 // GET /api/training-plans/user - Get user's training plans
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const userPlans = await prisma.userTrainingPlan.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
       },
       include: {
         plan: {

@@ -17,6 +17,7 @@ import { startOfMonth, endOfMonth, format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import { NotificationBell } from "@/src/components/NotificationBell";
+import { CameraButton } from "@/src/components/CameraButton";
 import { CalendarButton } from "@/src/components/CalendarButton";
 import { SearchButton } from "@/src/components/SearchButton";
 import { HeaderLogo } from "@/src/components/HeaderLogo";
@@ -117,6 +118,7 @@ export default function TabLayout() {
           headerTitle: () => <HeaderLogo />,
           headerRight: () => (
             <View style={styles.headerRight}>
+              <CameraButton />
               <SearchButton />
               <CalendarButton />
               <NotificationBell />
@@ -248,7 +250,7 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
     marginRight: 8,
   },
   centerTabIcon: {

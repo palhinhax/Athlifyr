@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WeightUnit, DistanceUnit } from "@prisma/client";
@@ -67,9 +67,9 @@ function convertToKg(weight: number, unit: WeightUnit): number {
 
 export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -80,7 +80,7 @@ export async function GET(request: Request) {
 
     const logs = await prisma.workoutLog.findMany({
       where: {
-        userId: session.user.id,
+        userId: user.id,
         ...(workoutId && { workoutId }),
       },
       include: {
@@ -158,9 +158,9 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -210,7 +210,7 @@ export async function POST(request: Request) {
       const existingLog = await prisma.workoutLog.findFirst({
         where: {
           id: data.existingLogId,
-          userId: session.user.id, // Ensure user owns the log
+          userId: user.id, // Ensure user owns the log
         },
       });
 
@@ -218,7 +218,7 @@ export async function POST(request: Request) {
         // Delete associated performance entries first
         await prisma.userPerformanceEntry.deleteMany({
           where: {
-            userId: session.user.id,
+            userId: user.id,
             OR: [
               {
                 workoutExerciseSet: {
@@ -246,7 +246,7 @@ export async function POST(request: Request) {
     // Create workout log with all nested data
     const log = await prisma.workoutLog.create({
       data: {
-        userId: session.user.id,
+        userId: user.id,
         workoutId: data.workoutId,
         sessionId: data.sessionId,
         performedAt,
@@ -352,7 +352,7 @@ export async function POST(request: Request) {
             // Get historical data for scoring
             const history = await prisma.userPerformanceEntry.findMany({
               where: {
-                userId: session.user.id,
+                userId: user.id,
                 type: "STRENGTH",
                 exerciseId: exerciseResult.exerciseId,
                 performedAt: {
@@ -405,7 +405,7 @@ export async function POST(request: Request) {
             // Create performance entry
             const entry = await prisma.userPerformanceEntry.create({
               data: {
-                userId: session.user.id,
+                userId: user.id,
                 type: "STRENGTH",
                 exerciseId: exerciseResult.exerciseId,
                 weightKg,
@@ -430,7 +430,7 @@ export async function POST(request: Request) {
 
           const history = await prisma.userPerformanceEntry.findMany({
             where: {
-              userId: session.user.id,
+              userId: user.id,
               type: "STRENGTH",
               exerciseId: exerciseResult.exerciseId,
               performedAt: {
@@ -480,7 +480,7 @@ export async function POST(request: Request) {
 
           const entry = await prisma.userPerformanceEntry.create({
             data: {
-              userId: session.user.id,
+              userId: user.id,
               type: "STRENGTH",
               exerciseId: exerciseResult.exerciseId,
               weightKg,

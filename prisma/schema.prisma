@@ -76,6 +76,10 @@ model User {
   // Notifications
   notifications         Notification[]
 
+  // Analysis records (motion & lift)
+  motionAnalyses        MotionAnalysisRecord[]
+  liftAnalyses          LiftAnalysisRecord[]
+
   @@index([email])
   @@index([name])
 }
@@ -1970,4 +1974,60 @@ enum DistanceUnit {
   KM
   MI
   FT
+}
+
+// ─── Analysis Records ─────────────────────────────────────────────────────────
+
+/// Saved motion (pose) analysis — video in B2, JSON data in DB
+model MotionAnalysisRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Local UUID generated on the device (for deduplication / idempotency)
+  localId     String   @unique
+
+  label       String?
+
+  /// Public B2 URL of the original video clip
+  videoUrl    String
+
+  /// B2 internal file name (for deletion)
+  videoB2Key  String
+
+  /// JSON blob: segment, sampleFps, poseFrames[], metrics, videoMeta
+  analysisJson Json
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([localId])
+}
+
+/// Saved lift (bar path) analysis — video in B2, JSON data in DB
+model LiftAnalysisRecord {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Local UUID generated on the device (for deduplication / idempotency)
+  localId     String   @unique
+
+  label       String?
+
+  /// Public B2 URL of the original video clip
+  videoUrl    String
+
+  /// B2 internal file name (for deletion)
+  videoB2Key  String
+
+  /// JSON blob: durationMs, fpsSample, seedPoint, barPath[], metrics
+  analysisJson Json
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+  @@index([localId])
 }

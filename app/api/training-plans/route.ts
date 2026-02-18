@@ -6,14 +6,14 @@
  */
 
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import type { Prisma } from "@prisma/client";
 
 // GET /api/training-plans - List training plans
 export async function GET(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
     const { searchParams } = new URL(request.url);
 
     const category = searchParams.get("category");
@@ -25,10 +25,10 @@ export async function GET(request: Request) {
 
     // Get user's saved plan IDs
     const savedPlanIds =
-      includeSaved && session?.user?.id
+      includeSaved && user?.id
         ? (
             await prisma.savedTrainingPlan.findMany({
-              where: { userId: session.user.id },
+              where: { userId: user.id },
               select: { planId: true },
             })
           ).map((s) => s.planId)
@@ -39,16 +39,16 @@ export async function GET(request: Request) {
 
     if (isPublic) {
       where.isPublic = true;
-    } else if (myPlans && session?.user?.id) {
-      where.createdById = session.user.id;
-    } else if (!session?.user?.id) {
+    } else if (myPlans && user?.id) {
+      where.createdById = user.id;
+    } else if (!user?.id) {
       // Not logged in - only show public plans
       where.isPublic = true;
     } else {
       // Logged in - show public + own plans + saved plans
       where.OR = [
         { isPublic: true },
-        { createdById: session.user.id },
+        { createdById: user.id },
         ...(savedPlanIds.length > 0 ? [{ id: { in: savedPlanIds } }] : []),
       ];
     }
@@ -62,10 +62,10 @@ export async function GET(request: Request) {
     }
 
     // If getting plans assigned to me
-    if (assignedToMe && session?.user?.id) {
+    if (assignedToMe && user?.id) {
       const userPlans = await prisma.userTrainingPlan.findMany({
         where: {
-          userId: session.user.id,
+          userId: user.id,
         },
         include: {
           plan: {
@@ -145,9 +145,9 @@ export async function GET(request: Request) {
 // POST /api/training-plans - Create a new training plan
 export async function POST(request: Request) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -182,7 +182,7 @@ export async function POST(request: Request) {
       const venueMember = await prisma.venueMember.findFirst({
         where: {
           venueId,
-          userId: session.user.id,
+          userId: user.id,
           role: { in: ["OWNER", "ADMIN", "COACH"] },
         },
       });
@@ -210,7 +210,7 @@ export async function POST(request: Request) {
         targetAudience: targetAudience || null,
         goals: goals || [],
         requirements: requirements || [],
-        createdById: session.user.id,
+        createdById: user.id,
         venueId: venueId || null,
       },
       include: {

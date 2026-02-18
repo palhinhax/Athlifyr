@@ -10,11 +10,11 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X, ChevronDown } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
+import { useToast } from "@/src/hooks/useToast";
 import { usePerformance, parseTimeToSeconds } from "@/src/hooks/usePerformance";
 
 const HYROX_CATEGORIES = [
@@ -41,6 +41,7 @@ interface AddHyroxSheetProps {
 export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
+  const { showToast } = useToast();
 
   const [category, setCategory] = useState("OPEN_MEN");
   const [time, setTime] = useState("");
@@ -65,7 +66,7 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
   const handleSave = async () => {
     const timeSeconds = parseTimeToSeconds(time);
     if (!timeSeconds || timeSeconds <= 0) {
-      Alert.alert(t("performance.error"), t("performance.hyrox.invalidTime"));
+      showToast(t("performance.hyrox.invalidTime"), "error");
       return;
     }
 
@@ -78,14 +79,11 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
         ...(eventName.trim() && { eventName: eventName.trim() }),
         ...(location.trim() && { location: location.trim() }),
       });
-      Alert.alert(
-        t("performance.success"),
-        t("performance.hyrox.savedSuccess")
-      );
+      showToast(t("performance.hyrox.savedSuccess"), "success");
       resetForm();
       onClose();
     } catch {
-      Alert.alert(t("performance.error"), t("performance.hyrox.saveFailed"));
+      showToast(t("performance.hyrox.saveFailed"), "error");
     }
   };
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WorkoutBlockType, WeightUnit, DistanceUnit } from "@prisma/client";
@@ -146,7 +146,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
     const { id } = await params;
 
     const workout = await prisma.workout.findUnique({
@@ -230,14 +230,14 @@ export async function GET(
     // Check access: owner, public, or venue member
     const canAccess =
       workout.isPublic ||
-      workout.createdById === session?.user?.id ||
+      workout.createdById === user?.id ||
       (workout.venueId &&
-        session?.user?.id &&
+        user?.id &&
         (await prisma.venueMember.findUnique({
           where: {
             venueId_userId: {
               venueId: workout.venueId,
-              userId: session.user.id,
+              userId: user.id,
             },
           },
         })));
@@ -265,9 +265,9 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -290,7 +290,7 @@ export async function PATCH(
     }
 
     // Check permission: only creator can edit
-    if (existingWorkout.createdById !== session.user.id) {
+    if (existingWorkout.createdById !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -642,9 +642,9 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
+    const user = await getAuthUser(request);
 
-    if (!session?.user?.id) {
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -659,7 +659,7 @@ export async function DELETE(
       return NextResponse.json({ error: "Workout not found" }, { status: 404 });
     }
 
-    if (workout.createdById !== session.user.id) {
+    if (workout.createdById !== user.id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

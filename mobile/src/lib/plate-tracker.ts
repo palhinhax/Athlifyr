@@ -191,7 +191,12 @@ export async function detectCircleAtPoint(
     const { cols: imgW, rows: imgH } = matSize(gray);
 
     // Apply Gaussian blur to reduce noise (helps HoughCircles work better)
-    const blurred = OpenCV.createObject(ObjectType.Mat, 1, 1, DataTypes.CV_8UC1);
+    const blurred = OpenCV.createObject(
+      ObjectType.Mat,
+      1,
+      1,
+      DataTypes.CV_8UC1
+    );
     OpenCV.invoke("GaussianBlur", gray, blurred, [9, 9], 2, 2);
 
     // Define search region around tap point

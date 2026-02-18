@@ -16,6 +16,7 @@ import { ProfileStats } from "@/src/components/profile/ProfileStats";
 import { EventsSection } from "@/src/components/profile/EventsSection";
 import { OtherSections } from "@/src/components/profile/OtherSections";
 import { PerformanceSection } from "@/src/components/profile/PerformanceSection";
+import { AnalysesSection } from "@/src/components/profile/AnalysesSection";
 import { theme } from "@/src/constants/theme";
 
 export default function ProfileScreen() {
@@ -95,6 +96,7 @@ export default function ProfileScreen() {
           pastEvents={pastEvents}
         />
         <PerformanceSection />
+        <AnalysesSection />
         <OtherSections friendsCount={stats.friendsCount} />
         <View style={{ height: theme.spacing.xl }} />
       </ScrollView>

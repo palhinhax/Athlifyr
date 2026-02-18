@@ -11,6 +11,7 @@ import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions"
 import { ProfilePastSessions } from "@/components/profile-past-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
+import { AnalysesSection } from "@/components/analyses-section";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -373,6 +374,9 @@ export default async function ProfilePage({ params }: PageProps) {
 
         {/* Performance Section */}
         <PerformanceSection />
+
+        {/* Analyses Section */}
+        <AnalysesSection />
 
         {/* Professional Section - Only shows if user has venue invites or memberships */}
         <ProfileProfessionalSection userId={session.user.id} />

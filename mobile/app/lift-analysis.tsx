@@ -13,7 +13,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
 import * as Sharing from "expo-sharing";
-import { captureRef } from "react-native-view-shot";
+import { Paths, File as FSFile } from "expo-file-system";
 import {
   ArrowLeft,
   Save,
@@ -60,9 +60,6 @@ export default function LiftAnalysisScreen() {
     : null;
 
   const saveAnalysis = useLiftAnalysisStore((s) => s.save);
-
-  // ─── Refs ────────────────────────────────────────────────────
-  const videoOverlayRef = useRef<View>(null);
 
   // ─── State ───────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("seed");
@@ -300,7 +297,7 @@ export default function LiftAnalysisScreen() {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportVideo = useCallback(async () => {
-    if (!videoOverlayRef.current) return;
+    if (!videoUri) return;
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
       setModalConfig({
@@ -313,14 +310,18 @@ export default function LiftAnalysisScreen() {
     }
     setIsExporting(true);
     try {
-      const uri = await captureRef(videoOverlayRef, {
-        format: "png",
-        quality: 1,
-      });
-      await Sharing.shareAsync(uri, {
-        mimeType: "image/png",
+      // content:// URIs on Android can't be shared directly — copy to cache first
+      let shareUri = videoUri;
+      if (videoUri.startsWith("content://")) {
+        const dest = new FSFile(Paths.cache, `athlifyr_lift_${Date.now()}.mp4`);
+        const src = new FSFile(videoUri);
+        await src.copy(dest);
+        shareUri = dest.uri;
+      }
+      await Sharing.shareAsync(shareUri, {
+        mimeType: "video/mp4",
         dialogTitle: t("liftAnalysis.exportVideo"),
-        UTI: "public.png",
+        UTI: "public.movie",
       });
     } catch (err) {
       console.error("[LiftAnalysis] Export failed:", err);
@@ -333,7 +334,7 @@ export default function LiftAnalysisScreen() {
     } finally {
       setIsExporting(false);
     }
-  }, [t]);
+  }, [videoUri, t]);
 
   // ─── Metrics (computed lazily) ───────────────────────────────
   const metrics = barPath.length >= 2 ? computeMetrics(barPath) : null;
@@ -363,8 +364,6 @@ export default function LiftAnalysisScreen() {
         <View style={styles.mainContent}>
           {/* Video + Overlay Container */}
           <View
-            ref={videoOverlayRef}
-            collapsable={false}
             style={[styles.videoContainer, { height: containerLayout.height }]}
             onLayout={(e) => {
               setContainerLayout({

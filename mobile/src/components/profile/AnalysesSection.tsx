@@ -17,13 +17,22 @@ import {
   X,
   Clock,
   Calendar,
+  Share2,
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { API_URL } from "@/src/lib/api";
 import { StickmanRenderer } from "@/src/components/motion-analysis/StickmanRenderer";
 import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
-import type { PoseFrame } from "@/src/types/motion-analysis";
+import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
+import type { ExportPayload } from "@/src/lib/analysis-export";
+import type {
+  PoseFrame,
+  PoseMetrics,
+  PoseVideoMeta,
+  VideoSegment,
+} from "@/src/types/motion-analysis";
 import type { BarPathPoint } from "@/src/types/lift-analysis";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -93,24 +102,33 @@ function MotionVideoModalContent({ record }: { record: AnalysisRecord }) {
   const [currentMs, setCurrentMs] = useState(0);
 
   const player = useVideoPlayer(record.videoUrl, (p) => {
-    p.loop = false;
+    p.loop = true;
+    p.muted = true;
     p.play();
   });
 
-  // Subscribe to playback time
+  // Poll at ~30fps to drive stickman — timeUpdate fires too infrequently
   useEffect(() => {
-    const sub = player.addListener("timeUpdate", ({ currentTime }) => {
-      setCurrentMs(currentTime * 1000);
-    });
-    return () => sub.remove();
-  }, [player]);
+    const interval = setInterval(() => {
+      try {
+        if (player.currentTime !== undefined) {
+          // currentTime is absolute from video start; subtract segment offset
+          // so it matches poseFrames[].t which is relative to segment start
+          const relMs = Math.round(player.currentTime * 1000) - segmentStartMs;
+          setCurrentMs(Math.max(0, relMs));
+        }
+      } catch {
+        // ignore
+      }
+    }, 33); // ~30 fps
+    return () => clearInterval(interval);
+  }, [player, segmentStartMs]);
 
-  // Find the pose frame closest to current video time
-  const absoluteMs = segmentStartMs + currentMs;
+  // Find the pose frame closest to current relative time
   const frame: PoseFrame | null =
     poseFrames.length > 0
       ? poseFrames.reduce((best, f) =>
-          Math.abs(f.t - absoluteMs) < Math.abs(best.t - absoluteMs) ? f : best
+          Math.abs(f.t - currentMs) < Math.abs(best.t - currentMs) ? f : best
         )
       : null;
 
@@ -157,24 +175,82 @@ function MotionVideoModal({
   record: AnalysisRecord;
   onClose: () => void;
 }) {
-  const title = record.label ?? "Análise de Movimento";
+  const { t } = useTranslation();
+  const title = record.label ?? t("motionAnalysis.analysisLabel");
+  const json = record.analysisJson as MotionAnalysisJson;
+
+  const [exportPayload, setExportPayload] = useState<ExportPayload | null>(
+    null
+  );
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  function handleExport() {
+    if (!json.poseFrames?.length || !json.segment || !json.videoMeta) return;
+    const payload: ExportPayload = {
+      type: "motion",
+      videoUri: record.videoUrl,
+      segment: json.segment as VideoSegment,
+      videoMeta: json.videoMeta as PoseVideoMeta,
+      poseFrames: json.poseFrames,
+      metrics: {
+        durationMs: json.segment.endMs - json.segment.startMs,
+        avgConfidence: 0,
+        maxKneeFlexion: json.metrics?.kneeFlexionDeg ?? null,
+        torsoAngleRange: null,
+      } as PoseMetrics,
+    };
+    setExportPayload(payload);
+  }
+
+  const canExport = !!(
+    json.poseFrames?.length &&
+    json.segment &&
+    json.videoMeta
+  );
 
   return (
-    <Modal visible animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle} numberOfLines={1}>
-              {title}
-            </Text>
-            <TouchableOpacity onPress={onClose} style={styles.modalClose}>
-              <X size={20} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
+    <>
+      <ExportVideoModal
+        visible={exportPayload !== null}
+        payload={exportPayload}
+        onDone={() => setExportPayload(null)}
+        onError={(msg) => {
+          setExportPayload(null);
+          setExportError(msg);
+        }}
+      />
+      <ConfirmModal
+        visible={exportError !== null}
+        title={t("common.error")}
+        message={exportError ?? ""}
+        onClose={() => setExportError(null)}
+      />
+      <Modal visible animationType="fade" transparent onRequestClose={onClose}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle} numberOfLines={1}>
+                {title}
+              </Text>
+              <View style={styles.modalHeaderActions}>
+                {canExport && (
+                  <TouchableOpacity
+                    onPress={handleExport}
+                    style={styles.exportBtn}
+                  >
+                    <Share2 size={18} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={onClose} style={styles.modalClose}>
+                  <X size={20} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <MotionVideoModalContent record={record} />
           </View>
-          <MotionVideoModalContent record={record} />
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 
@@ -191,15 +267,23 @@ function LiftVideoModalContent({ record }: { record: AnalysisRecord }) {
   const [currentMs, setCurrentMs] = useState(0);
 
   const player = useVideoPlayer(record.videoUrl, (p) => {
-    p.loop = false;
+    p.loop = true;
+    p.muted = true;
     p.play();
   });
 
+  // Poll at ~30fps — timeUpdate fires too infrequently to animate bar path
   useEffect(() => {
-    const sub = player.addListener("timeUpdate", ({ currentTime }) => {
-      setCurrentMs(currentTime * 1000);
-    });
-    return () => sub.remove();
+    const interval = setInterval(() => {
+      try {
+        if (player.currentTime !== undefined) {
+          setCurrentMs(Math.round(player.currentTime * 1000));
+        }
+      } catch {
+        // ignore
+      }
+    }, 33);
+    return () => clearInterval(interval);
   }, [player]);
 
   return (
@@ -244,24 +328,71 @@ function LiftVideoModal({
   record: AnalysisRecord;
   onClose: () => void;
 }) {
-  const title = record.label ?? "Análise de Levantamento";
+  const { t } = useTranslation();
+  const title = record.label ?? t("liftAnalysis.analysisLabel");
+  const json = record.analysisJson as LiftAnalysisJson;
+
+  const [exportPayload, setExportPayload] = useState<ExportPayload | null>(
+    null
+  );
+  const [exportError, setExportError] = useState<string | null>(null);
+
+  function handleExport() {
+    if (!json.barPath?.length || !json.durationMs) return;
+    const payload: ExportPayload = {
+      type: "lift",
+      videoUri: record.videoUrl,
+      durationMs: json.durationMs,
+      barPath: json.barPath,
+    };
+    setExportPayload(payload);
+  }
+
+  const canExport = !!(json.barPath?.length && json.durationMs);
 
   return (
-    <Modal visible animationType="fade" transparent onRequestClose={onClose}>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle} numberOfLines={1}>
-              {title}
-            </Text>
-            <TouchableOpacity onPress={onClose} style={styles.modalClose}>
-              <X size={20} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
+    <>
+      <ExportVideoModal
+        visible={exportPayload !== null}
+        payload={exportPayload}
+        onDone={() => setExportPayload(null)}
+        onError={(msg) => {
+          setExportPayload(null);
+          setExportError(msg);
+        }}
+      />
+      <ConfirmModal
+        visible={exportError !== null}
+        title={t("common.error")}
+        message={exportError ?? ""}
+        onClose={() => setExportError(null)}
+      />
+      <Modal visible animationType="fade" transparent onRequestClose={onClose}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle} numberOfLines={1}>
+                {title}
+              </Text>
+              <View style={styles.modalHeaderActions}>
+                {canExport && (
+                  <TouchableOpacity
+                    onPress={handleExport}
+                    style={styles.exportBtn}
+                  >
+                    <Share2 size={18} color={theme.colors.primary} />
+                  </TouchableOpacity>
+                )}
+                <TouchableOpacity onPress={onClose} style={styles.modalClose}>
+                  <X size={20} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+              </View>
+            </View>
+            <LiftVideoModalContent record={record} />
           </View>
-          <LiftVideoModalContent record={record} />
         </View>
-      </View>
-    </Modal>
+      </Modal>
+    </>
   );
 }
 
@@ -484,37 +615,16 @@ export function AnalysesSection() {
   const tabs: {
     key: TabKey;
     label: string;
-    icon: React.ReactNode;
     count: number;
   }[] = [
     {
       key: "motion",
       label: t("camera.motionAnalysis"),
-      icon: (
-        <Activity
-          size={14}
-          color={
-            activeTab === "motion"
-              ? theme.colors.primary
-              : theme.colors.textSecondary
-          }
-        />
-      ),
       count: motionAnalyses.length,
     },
     {
       key: "lift",
       label: t("camera.liftAnalysis"),
-      icon: (
-        <Dumbbell
-          size={14}
-          color={
-            activeTab === "lift"
-              ? theme.colors.primary
-              : theme.colors.textSecondary
-          }
-        />
-      ),
       count: liftAnalyses.length,
     },
   ];
@@ -533,103 +643,99 @@ export function AnalysesSection() {
 
       <View style={styles.container}>
         {/* Section header */}
-        <View style={styles.header}>
-          <Activity size={20} color={theme.colors.primary} />
-          <Text style={styles.headerTitle}>
-            {t("motionAnalysis.myAnalyses")}
-            {totalCount > 0 ? ` (${totalCount})` : ""}
-          </Text>
+        <View style={styles.sectionHeader}>
+          <View style={styles.headerLeft}>
+            <Activity size={20} color={theme.colors.primary} />
+            <Text style={styles.headerTitle}>
+              {t("motionAnalysis.myAnalyses")}
+            </Text>
+          </View>
         </View>
 
-        {/* Card with full-width tabs + content */}
-        <View style={styles.card}>
-          {/* Full-width tab bar */}
-          <View style={styles.tabBar}>
-            {tabs.map((tab) => {
-              const isActive = activeTab === tab.key;
-              return (
-                <TouchableOpacity
-                  key={tab.key}
-                  style={[styles.tab, isActive && styles.tabActive]}
-                  onPress={() => setActiveTab(tab.key)}
-                  activeOpacity={0.7}
+        {/* Sport-style pill tabs */}
+        <View style={styles.sportTabs}>
+          {tabs.map((tab) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <TouchableOpacity
+                key={tab.key}
+                style={[styles.sportTab, isActive && styles.sportTabActive]}
+                onPress={() => setActiveTab(tab.key)}
+                activeOpacity={0.7}
+              >
+                <Text
+                  style={[
+                    styles.sportTabText,
+                    isActive && styles.sportTabTextActive,
+                  ]}
                 >
-                  {tab.icon}
-                  <Text
-                    style={[styles.tabLabel, isActive && styles.tabLabelActive]}
-                  >
-                    {tab.label}
-                  </Text>
-                  {tab.count > 0 && (
-                    <View style={styles.tabBadge}>
-                      <Text style={styles.tabBadgeText}>{tab.count}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  {tab.label}
+                  {tab.count > 0 ? ` (${tab.count})` : ""}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
 
-          {/* Tab content */}
-          <View style={styles.tabContent}>
-            {isLoading ? (
-              <View style={styles.loadingContainer}>
-                <ActivityIndicator color={theme.colors.primary} />
-              </View>
-            ) : activeTab === "motion" ? (
-              motionAnalyses.length === 0 ? (
-                <View style={styles.emptyState}>
-                  <Activity
-                    size={36}
-                    color={theme.colors.textSecondary}
-                    style={{ opacity: 0.4 }}
-                  />
-                  <Text style={styles.emptyTitle}>
-                    {t("motionAnalysis.noAnalyses")}
-                  </Text>
-                  <Text style={styles.emptyDesc}>
-                    {t("motionAnalysis.noAnalysesDescription")}
-                  </Text>
-                </View>
-              ) : (
-                <View style={styles.cardList}>
-                  {motionAnalyses.map((record) => (
-                    <MotionCard
-                      key={record.id}
-                      record={record}
-                      onPlay={() => setOpenMotion(record)}
-                      t={t}
-                    />
-                  ))}
-                </View>
-              )
-            ) : liftAnalyses.length === 0 ? (
+        {/* Tab content */}
+        <View>
+          {isLoading ? (
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color={theme.colors.primary} />
+            </View>
+          ) : activeTab === "motion" ? (
+            motionAnalyses.length === 0 ? (
               <View style={styles.emptyState}>
-                <Dumbbell
+                <Activity
                   size={36}
                   color={theme.colors.textSecondary}
                   style={{ opacity: 0.4 }}
                 />
                 <Text style={styles.emptyTitle}>
-                  {t("liftAnalysis.noAnalyses")}
+                  {t("motionAnalysis.noAnalyses")}
                 </Text>
                 <Text style={styles.emptyDesc}>
-                  {t("liftAnalysis.noAnalysesDescription")}
+                  {t("motionAnalysis.noAnalysesDescription")}
                 </Text>
               </View>
             ) : (
               <View style={styles.cardList}>
-                {liftAnalyses.map((record) => (
-                  <LiftCard
+                {motionAnalyses.map((record) => (
+                  <MotionCard
                     key={record.id}
                     record={record}
-                    onPlay={() => setOpenLift(record)}
+                    onPlay={() => setOpenMotion(record)}
                     t={t}
                   />
                 ))}
               </View>
-            )}
-          </View>
+            )
+          ) : liftAnalyses.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Dumbbell
+                size={36}
+                color={theme.colors.textSecondary}
+                style={{ opacity: 0.4 }}
+              />
+              <Text style={styles.emptyTitle}>
+                {t("liftAnalysis.noAnalyses")}
+              </Text>
+              <Text style={styles.emptyDesc}>
+                {t("liftAnalysis.noAnalysesDescription")}
+              </Text>
+            </View>
+          ) : (
+            <View style={styles.cardList}>
+              {liftAnalyses.map((record) => (
+                <LiftCard
+                  key={record.id}
+                  record={record}
+                  onPlay={() => setOpenLift(record)}
+                  t={t}
+                />
+              ))}
+            </View>
+          )}
         </View>
       </View>
     </>
@@ -642,83 +748,64 @@ const styles = StyleSheet.create({
   container: {
     marginBottom: theme.spacing.lg,
   },
-  header: {
+  // Section header — matches PerformanceSection
+  sectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: theme.spacing.md,
+  },
+  headerLeft: {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing.sm,
-    marginBottom: theme.spacing.md,
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: "700",
     color: theme.colors.text,
   },
-  // Outer card wrapping tabs + content
-  card: {
+  // Pill tabs — matches PerformanceSection.sportTabs
+  sportTabs: {
+    flexDirection: "row",
+    gap: theme.spacing.xs,
+    marginBottom: theme.spacing.md,
+  },
+  sportTab: {
+    flex: 1,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.xs,
+    borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.card,
-    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    overflow: "hidden",
+    alignItems: "center",
   },
-  // Individual analysis cards inside tabs
+  sportTabActive: {
+    backgroundColor: theme.colors.primary,
+    borderColor: theme.colors.primary,
+  },
+  sportTabText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.textSecondary,
+  },
+  sportTabTextActive: {
+    color: theme.colors.white,
+  },
+  // Individual analysis cards
   analysisCard: {
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.card,
     borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
     padding: theme.spacing.md,
     gap: theme.spacing.sm,
   },
-  // Full-width tab bar
-  tabBar: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    backgroundColor: theme.colors.background,
-  },
-  tab: {
-    flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 6,
-    paddingVertical: 11,
-    paddingHorizontal: 8,
-    borderBottomWidth: 2,
-    borderBottomColor: "transparent",
-  },
-  tabActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabLabel: {
-    fontSize: 13,
-    color: theme.colors.textSecondary,
-    fontWeight: "500",
-  },
-  tabLabelActive: {
-    color: theme.colors.primary,
-    fontWeight: "600",
-  },
-  tabBadge: {
-    backgroundColor: theme.colors.primary,
-    borderRadius: 10,
-    paddingHorizontal: 5,
-    paddingVertical: 1,
-    minWidth: 17,
-    alignItems: "center",
-  },
-  tabBadgeText: {
-    fontSize: 10,
-    color: "#fff",
-    fontWeight: "700",
-  },
-  tabContent: {
-    padding: theme.spacing.md,
-  },
   loadingContainer: {
     paddingVertical: theme.spacing.xl,
     alignItems: "center",
+    gap: theme.spacing.sm,
   },
   emptyState: {
     alignItems: "center",
@@ -740,7 +827,7 @@ const styles = StyleSheet.create({
   cardList: {
     gap: theme.spacing.md,
   },
-  // Analysis card (inside the tab content)
+  // Analysis card internals
   cardHeader: {
     gap: 4,
   },
@@ -847,6 +934,16 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: "rgba(255,255,255,0.1)",
     backgroundColor: "rgba(0,0,0,0.6)",
+  },
+  modalHeaderActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  exportBtn: {
+    padding: 6,
+    borderRadius: 8,
+    backgroundColor: "rgba(255,255,255,0.08)",
   },
   modalTitle: {
     fontSize: 15,

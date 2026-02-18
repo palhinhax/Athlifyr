@@ -21,9 +21,15 @@ import path from "path";
 import fs from "fs/promises";
 import os from "os";
 import sharp from "sharp";
+import ffmpegPath from "ffmpeg-static";
+import ffprobeInstaller from "@ffprobe-installer/ffprobe";
 import { uploadToB2 } from "@/lib/b2-storage";
 
 const execFileAsync = promisify(execFile);
+
+// Use bundled binaries — avoids ENOENT when ffmpeg/ffprobe are not in PATH
+const FFMPEG_BIN = (ffmpegPath as string | null) ?? "ffmpeg";
+const FFPROBE_BIN = ffprobeInstaller.path ?? "ffprobe";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -133,7 +139,7 @@ const MIN_KEYPOINT_SCORE = 0.2;
 // ── ffprobe ───────────────────────────────────────────────────────────────────
 
 export async function probeVideo(videoPath: string): Promise<VideoProbeResult> {
-  const { stdout } = await execFileAsync("ffprobe", [
+  const { stdout } = await execFileAsync(FFPROBE_BIN, [
     "-v",
     "quiet",
     "-print_format",
@@ -347,7 +353,7 @@ export async function processExportJob(
 
     updateJob(jobId, { progress: 15 });
 
-    await execFileAsync("ffmpeg", [
+    await execFileAsync(FFMPEG_BIN, [
       "-y",
       "-i",
       inputPath,
@@ -475,7 +481,7 @@ export async function processExportJob(
       outputPath
     );
 
-    await execFileAsync("ffmpeg", ffmpegArgs);
+    await execFileAsync(FFMPEG_BIN, ffmpegArgs);
 
     updateJob(jobId, { progress: 90 });
 
@@ -515,7 +521,7 @@ export async function processExportJob(
 /** Check if a video file has an audio stream */
 async function videoHasAudio(videoPath: string): Promise<boolean> {
   try {
-    const { stdout } = await execFileAsync("ffprobe", [
+    const { stdout } = await execFileAsync(FFPROBE_BIN, [
       "-v",
       "quiet",
       "-select_streams",

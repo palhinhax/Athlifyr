@@ -1,4 +1,4 @@
-name: Android Production Build (AAB)
+name: iOS Production Build (IPA)
 
 on:
   push:
@@ -10,8 +10,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-android-aab:
-    name: Build Android AAB
+  build-ios-ipa:
+    name: Build iOS IPA
     runs-on: ubuntu-latest
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
@@ -51,15 +51,15 @@ jobs:
           "
           echo "✅ Mobile version synced to $WEB_VERSION"
 
-      - name: Build Android AAB (Production)
-        run: eas build --platform android --profile production --non-interactive
+      - name: Build iOS IPA (Production)
+        run: eas build --platform ios --profile production --non-interactive
 
-      - name: Submit to Google Play Store
+      - name: Submit to App Store Connect
         if: success()
-        run: eas submit --platform android --profile production --non-interactive --latest
+        run: eas submit --platform ios --profile production --non-interactive --latest
 
       - name: Get build URL
         if: success()
         run: |
-          echo "✅ Android production AAB built and submitted to Google Play Store!"
+          echo "✅ iOS production IPA built and submitted to App Store Connect!"
           echo "Check build status at: https://expo.dev/accounts/joaomduart/projects/athlifyr/builds"

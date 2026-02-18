@@ -28,6 +28,7 @@ import type {
   ColorConversionCodes as ColorConversionCodesEnum,
   DataTypes as DataTypesEnum,
   TemplateMatchModes as TemplateMatchModesEnum,
+  HoughModes as HoughModesEnum,
 } from "react-native-fast-opencv";
 import type * as VideoThumbnailsType from "expo-video-thumbnails";
 import type { File as ExpoFileType } from "expo-file-system";
@@ -62,6 +63,7 @@ function getOpenCV() {
     DataTypes: _opencv!.DataTypes as typeof DataTypesEnum,
     TemplateMatchModes: _opencv!
       .TemplateMatchModes as typeof TemplateMatchModesEnum,
+    HoughModes: _opencv!.HoughModes as typeof HoughModesEnum,
   };
 }
 
@@ -174,7 +176,7 @@ export async function detectCircleAtPoint(
   timeMs = 0
 ): Promise<DetectedCircle | null> {
   try {
-    const { OpenCV, ObjectType, ColorConversionCodes, DataTypes } = getOpenCV();
+    const { OpenCV, ObjectType, ColorConversionCodes, DataTypes, HoughModes } = getOpenCV();
     const VT = getVideoThumbnails();
 
     // Extract frame at specified time
@@ -237,17 +239,25 @@ export async function detectCircleAtPoint(
       DataTypes.CV_32FC3
     );
 
-    const minRadius = 10;
-    const maxRadius = Math.round(Math.min(roiW, roiH) / 2);
+    // HoughCircles API: invoke(name, image, circles, method, dp, minDist, param1?, param2?)
+    // - method: HOUGH_GRADIENT (3)
+    // - dp=1.5: good balance for HOUGH_GRADIENT
+    // - minDist=20: min px between circle centers
+    // - param1=50: Canny upper threshold (lower = more edges detected)
+    // - param2=15: accumulator threshold (lower = more circles, less precise)
+    OpenCV.invoke(
+      "HoughCircles",
+      roi,
+      circles,
+      HoughModes.HOUGH_GRADIENT,
+      1.5,
+      20,
+      50,
+      15
+    );
 
-    // param2=20 (was 30) — lower threshold catches more circles, better for
-    // plates that are partially lit or low-contrast
-    OpenCV.invoke("HoughCircles", roi, circles, 3, 1, 20, 80, 20, [
-      minRadius,
-      maxRadius,
-    ]);
-
-    // Extract circle data
+    // Extract circle data — matToBuffer returns { cols, rows, channels, buffer }
+    // NOT .data — this was the critical bug causing 100% failure
     const circleData = OpenCV.matToBuffer(circles, "float32");
 
     if (circleData.cols === 0 || circleData.rows === 0) {
@@ -255,13 +265,13 @@ export async function detectCircleAtPoint(
       return null;
     }
 
-    // Parse circles (each circle is [x, y, radius] in float32)
+    // Parse circles — each circle is [x, y, radius] in float32 stored in .buffer
     const detected: Array<{ x: number; y: number; radius: number }> = [];
     for (let i = 0; i < circleData.cols; i++) {
       const offset = i * 3;
-      const cx = circleData.data[offset];
-      const cy = circleData.data[offset + 1];
-      const r = circleData.data[offset + 2];
+      const cx = (circleData.buffer as Float32Array)[offset];
+      const cy = (circleData.buffer as Float32Array)[offset + 1];
+      const r = (circleData.buffer as Float32Array)[offset + 2];
 
       // Convert ROI coordinates back to full image coordinates
       const fullX = roiLeft + cx;

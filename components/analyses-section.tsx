@@ -2,10 +2,17 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
-import { Activity, Dumbbell, CalendarDays, Clock, X, Play } from "lucide-react";
+import { Activity, Dumbbell, CalendarDays, Clock, Play } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -103,10 +110,14 @@ function SkeletonOverlay({
   frame,
   width,
   height,
+  left,
+  top,
 }: {
   frame: PoseFrame | null;
   width: number;
   height: number;
+  left: number;
+  top: number;
 }) {
   if (!frame || width === 0 || height === 0) return null;
 
@@ -151,7 +162,7 @@ function SkeletonOverlay({
     <svg
       width={width}
       height={height}
-      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      style={{ position: "absolute", left, top, pointerEvents: "none" }}
     >
       {bones}
       {joints}
@@ -165,11 +176,15 @@ function BarPathOverlay({
   path,
   width,
   height,
+  left,
+  top,
   currentMs,
 }: {
   path: BarPathPoint[];
   width: number;
   height: number;
+  left: number;
+  top: number;
   currentMs: number;
 }) {
   if (path.length < 2 || width === 0 || height === 0) return null;
@@ -185,7 +200,7 @@ function BarPathOverlay({
     <svg
       width={width}
       height={height}
-      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+      style={{ position: "absolute", left, top, pointerEvents: "none" }}
     >
       <polyline
         points={points}
@@ -215,33 +230,58 @@ function MotionVideoModal({
   record,
   onClose,
 }: {
-  record: AnalysisRecord;
+  record: AnalysisRecord | null;
   onClose: () => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoSize, setVideoSize] = useState({ w: 0, h: 0, left: 0, top: 0 });
   const [currentMs, setCurrentMs] = useState(0);
 
-  const json = record.analysisJson as MotionAnalysisJson;
-  const poseFrames = json.poseFrames ?? [];
-  const segmentStartMs = json.segment?.startMs ?? 0;
+  const json = record?.analysisJson as MotionAnalysisJson | undefined;
+  const poseFrames = json?.poseFrames ?? [];
+  const segmentStartMs = json?.segment?.startMs ?? 0;
+  const metrics = json?.metrics ?? {};
+  const frameCount = poseFrames.length;
+  const durationMs = json?.segment
+    ? json.segment.endMs - json.segment.startMs
+    : null;
 
-  // Observe container size for overlay positioning
+  // Reset on open
   useEffect(() => {
-    const el = containerRef.current;
+    if (record) setCurrentMs(0);
+  }, [record]);
+
+  // Compute the actual rendered video frame rect inside the letterboxed element.
+  // object-contain preserves aspect ratio and may add horizontal or vertical bars.
+  const updateVideoSize = useCallback(() => {
+    const el = videoRef.current;
+    if (!el || !el.videoWidth || !el.videoHeight) return;
+    const elW = el.clientWidth;
+    const elH = el.clientHeight;
+    const intrinsicRatio = el.videoWidth / el.videoHeight;
+    const elRatio = elW / elH;
+    let rendW: number, rendH: number;
+    if (intrinsicRatio > elRatio) {
+      // pillarboxed (bars on top/bottom)
+      rendW = elW;
+      rendH = elW / intrinsicRatio;
+    } else {
+      // letterboxed (bars on left/right)
+      rendH = elH;
+      rendW = elH * intrinsicRatio;
+    }
+    const left = (elW - rendW) / 2;
+    const top = (elH - rendH) / 2;
+    setVideoSize({ w: rendW, h: rendH, left, top });
+  }, []);
+
+  useEffect(() => {
+    const el = videoRef.current;
     if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        setContainerSize({
-          w: entry.contentRect.width,
-          h: entry.contentRect.height,
-        });
-      }
-    });
+    const ro = new ResizeObserver(updateVideoSize);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [updateVideoSize, record]);
 
   const absoluteMs = segmentStartMs + currentMs * 1000;
 
@@ -252,49 +292,94 @@ function MotionVideoModal({
         )
       : null;
 
-  const title = record.label ?? "Análise de Movimento";
+  const title = record?.label ?? "Análise de Movimento";
+  const createdAt = record ? formatDate(record.createdAt) : "";
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-2xl overflow-hidden rounded-xl bg-black shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-white/10 bg-black/60 px-4 py-3">
-          <span className="truncate text-sm font-medium text-white">
-            {title}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="shrink-0 text-white hover:text-white/70"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+    <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80">
+        {/* Dark header */}
+        <div className="flex items-start gap-3 bg-black px-5 py-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+            <Activity className="h-5 w-5 text-primary" />
+          </div>
+          <DialogHeader className="flex-1 space-y-0.5 text-left">
+            <DialogTitle className="text-base text-white">{title}</DialogTitle>
+            <DialogDescription className="flex items-center gap-1.5 text-xs text-white/50">
+              <CalendarDays className="h-3 w-3" />
+              {createdAt}
+              {durationMs !== null && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <Clock className="h-3 w-3" />
+                  {formatDuration(durationMs)}
+                </>
+              )}
+              {frameCount > 0 && (
+                <>
+                  <span className="text-white/30">·</span>
+                  {frameCount} frames
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        <div ref={containerRef} className="relative w-full bg-black">
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video
-            src={record.videoUrl}
-            controls
-            autoPlay
-            playsInline
-            className="max-h-[65vh] w-full object-contain"
-            onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime)}
-          />
-          <SkeletonOverlay
-            frame={frame}
-            width={containerSize.w}
-            height={containerSize.h}
-          />
+        {/* Video area — overlay is positioned relative to the video element itself */}
+        <div className="relative flex w-full justify-center bg-black">
+          {record && (
+            <>
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                ref={videoRef}
+                key={record.id}
+                src={record.videoUrl}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-[60vh] w-full object-contain"
+                onLoadedMetadata={updateVideoSize}
+                onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime)}
+              />
+              <SkeletonOverlay
+                frame={frame}
+                width={videoSize.w}
+                height={videoSize.h}
+                left={videoSize.left}
+                top={videoSize.top}
+              />
+            </>
+          )}
         </div>
-      </div>
-    </div>
+
+        {/* Metrics footer */}
+        {(metrics.kneeFlexionDeg !== undefined ||
+          metrics.torsoRangeDeg !== undefined) && (
+          <div className="grid grid-cols-2 divide-x border-t bg-muted/30">
+            {metrics.kneeFlexionDeg !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-6 py-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Flexão do Joelho
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {metrics.kneeFlexionDeg.toFixed(1)}°
+                </p>
+              </div>
+            )}
+            {metrics.torsoRangeDeg !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-6 py-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Amplitude do Tronco
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {metrics.torsoRangeDeg.toFixed(1)}°
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -304,78 +389,155 @@ function LiftVideoModal({
   record,
   onClose,
 }: {
-  record: AnalysisRecord;
+  record: AnalysisRecord | null;
   onClose: () => void;
 }) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [videoSize, setVideoSize] = useState({ w: 0, h: 0, left: 0, top: 0 });
   const [currentMs, setCurrentMs] = useState(0);
 
-  const json = record.analysisJson as LiftAnalysisJson;
-  const barPath = json.barPath ?? [];
+  const json = record?.analysisJson as LiftAnalysisJson | undefined;
+  const barPath = json?.barPath ?? [];
+  const durationMs = json?.durationMs;
+  const metrics = json?.metrics ?? {};
 
+  // Reset on open
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    const ro = new ResizeObserver((entries) => {
-      const entry = entries[0];
-      if (entry) {
-        setContainerSize({
-          w: entry.contentRect.width,
-          h: entry.contentRect.height,
-        });
-      }
-    });
-    ro.observe(el);
-    return () => ro.disconnect();
+    if (record) setCurrentMs(0);
+  }, [record]);
+
+  // Compute the actual rendered video frame rect inside the letterboxed element.
+  const updateVideoSize = useCallback(() => {
+    const el = videoRef.current;
+    if (!el || !el.videoWidth || !el.videoHeight) return;
+    const elW = el.clientWidth;
+    const elH = el.clientHeight;
+    const intrinsicRatio = el.videoWidth / el.videoHeight;
+    const elRatio = elW / elH;
+    let rendW: number, rendH: number;
+    if (intrinsicRatio > elRatio) {
+      rendW = elW;
+      rendH = elW / intrinsicRatio;
+    } else {
+      rendH = elH;
+      rendW = elH * intrinsicRatio;
+    }
+    const left = (elW - rendW) / 2;
+    const top = (elH - rendH) / 2;
+    setVideoSize({ w: rendW, h: rendH, left, top });
   }, []);
 
-  const title = record.label ?? "Análise de Levantamento";
+  useEffect(() => {
+    const el = videoRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(updateVideoSize);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [updateVideoSize, record]);
+
+  const title = record?.label ?? "Análise de Levantamento";
+  const createdAt = record ? formatDate(record.createdAt) : "";
+
+  const hasMetrics = Object.values(metrics).some((v) => v !== undefined);
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
-      onClick={onClose}
-    >
-      <div
-        className="relative w-full max-w-2xl overflow-hidden rounded-xl bg-black shadow-2xl"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-center justify-between border-b border-white/10 bg-black/60 px-4 py-3">
-          <span className="truncate text-sm font-medium text-white">
-            {title}
-          </span>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={onClose}
-            className="shrink-0 text-white hover:text-white/70"
-          >
-            <X className="h-4 w-4" />
-          </Button>
+    <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-2xl gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80">
+        {/* Dark header */}
+        <div className="flex items-start gap-3 bg-black px-5 py-4">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
+            <Dumbbell className="h-5 w-5 text-primary" />
+          </div>
+          <DialogHeader className="flex-1 space-y-0.5 text-left">
+            <DialogTitle className="text-base text-white">{title}</DialogTitle>
+            <DialogDescription className="flex items-center gap-1.5 text-xs text-white/50">
+              <CalendarDays className="h-3 w-3" />
+              {createdAt}
+              {durationMs !== undefined && (
+                <>
+                  <span className="text-white/30">·</span>
+                  <Clock className="h-3 w-3" />
+                  {formatDuration(durationMs)}
+                </>
+              )}
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        <div ref={containerRef} className="relative w-full bg-black">
-          {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-          <video
-            src={record.videoUrl}
-            controls
-            autoPlay
-            playsInline
-            className="max-h-[65vh] w-full object-contain"
-            onTimeUpdate={(e) =>
-              setCurrentMs(e.currentTarget.currentTime * 1000)
-            }
-          />
-          <BarPathOverlay
-            path={barPath}
-            width={containerSize.w}
-            height={containerSize.h}
-            currentMs={currentMs}
-          />
+        {/* Video area — overlay anchored to the video element */}
+        <div className="relative flex w-full justify-center bg-black">
+          {record && (
+            <>
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                ref={videoRef}
+                key={record.id}
+                src={record.videoUrl}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-[60vh] w-full object-contain"
+                onLoadedMetadata={updateVideoSize}
+                onTimeUpdate={(e) =>
+                  setCurrentMs(e.currentTarget.currentTime * 1000)
+                }
+              />
+              <BarPathOverlay
+                path={barPath}
+                width={videoSize.w}
+                height={videoSize.h}
+                left={videoSize.left}
+                top={videoSize.top}
+                currentMs={currentMs}
+              />
+            </>
+          )}
         </div>
-      </div>
-    </div>
+
+        {/* Metrics footer */}
+        {hasMetrics && (
+          <div
+            className="grid divide-x border-t bg-muted/30"
+            style={{
+              gridTemplateColumns: `repeat(${Object.values(metrics).filter((v) => v !== undefined).length}, minmax(0, 1fr))`,
+            }}
+          >
+            {metrics.maxHorizontalDrift !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Desvio Horizontal
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {(metrics.maxHorizontalDrift * 100).toFixed(1)}
+                  <span className="text-base font-normal">%</span>
+                </p>
+              </div>
+            )}
+            {metrics.totalVerticalTravel !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Viagem Vertical
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {(metrics.totalVerticalTravel * 100).toFixed(1)}
+                  <span className="text-base font-normal">%</span>
+                </p>
+              </div>
+            )}
+            {metrics.averageSpeed !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
+                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+                  Velocidade Média
+                </p>
+                <p className="text-2xl font-bold tabular-nums">
+                  {metrics.averageSpeed.toFixed(2)}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -589,15 +751,11 @@ export function AnalysesSection() {
 
   return (
     <>
-      {openMotion && (
-        <MotionVideoModal
-          record={openMotion}
-          onClose={() => setOpenMotion(null)}
-        />
-      )}
-      {openLift && (
-        <LiftVideoModal record={openLift} onClose={() => setOpenLift(null)} />
-      )}
+      <MotionVideoModal
+        record={openMotion}
+        onClose={() => setOpenMotion(null)}
+      />
+      <LiftVideoModal record={openLift} onClose={() => setOpenLift(null)} />
 
       <div className="mt-12">
         <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">

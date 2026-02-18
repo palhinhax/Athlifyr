@@ -640,7 +640,7 @@ export function AnalysesSection() {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: theme.spacing.xl,
+    marginBottom: theme.spacing.lg,
   },
   header: {
     flexDirection: "row",
@@ -655,8 +655,8 @@ const styles = StyleSheet.create({
   },
   // Outer card wrapping tabs + content
   card: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
     overflow: "hidden",
@@ -664,7 +664,7 @@ const styles = StyleSheet.create({
   // Individual analysis cards inside tabs
   analysisCard: {
     backgroundColor: theme.colors.background,
-    borderRadius: 10,
+    borderRadius: theme.borderRadius.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
     padding: theme.spacing.md,

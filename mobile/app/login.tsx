@@ -30,14 +30,17 @@ export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
-  const { promptAsync: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
+  const {
+    promptAsync: googleSignIn,
+    isReady: isGoogleReady,
+    isLoading: isGoogleLoading,
+  } = useGoogleAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
     {}
   );
@@ -71,16 +74,13 @@ export default function LoginScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isGoogleReady) return;
-    setIsGoogleLoading(true);
+    if (!isGoogleReady || isGoogleLoading) return;
     try {
       await googleSignIn();
       // Navigate back after successful Google sign-in (same as email login)
       router.back();
     } catch {
       showToast(t("login.googleError"), "error");
-    } finally {
-      setIsGoogleLoading(false);
     }
   };
 

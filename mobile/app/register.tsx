@@ -46,7 +46,11 @@ interface FormErrors {
 export default function RegisterScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { promptAsync: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
+  const {
+    promptAsync: googleSignIn,
+    isReady: isGoogleReady,
+    isLoading: isGoogleLoading,
+  } = useGoogleAuth();
   const logout = useAuthStore((s) => s.logout);
   const { showToast } = useToast();
 
@@ -55,7 +59,6 @@ export default function RegisterScreen() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
   const passwordStrength = calculatePasswordStrength(password);
@@ -120,16 +123,13 @@ export default function RegisterScreen() {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isGoogleReady) return;
-    setIsGoogleLoading(true);
+    if (!isGoogleReady || isGoogleLoading) return;
     try {
       await googleSignIn();
       // Navigate back after successful Google sign-in
       router.back();
     } catch {
       showToast(t("login.googleError"), "error");
-    } finally {
-      setIsGoogleLoading(false);
     }
   };
 

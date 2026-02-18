@@ -5,6 +5,7 @@ import { api } from "./api";
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
 const PUSH_TOKEN_KEY = "push-token";
+const TOKEN_EXPIRY_KEY = "token-expiry";
 
 interface User {
   id: string;
@@ -65,6 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       // Clear any previous session tokens before logging in
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
 
       const response = await api.post("/auth/login", {
         email: email.toLowerCase().trim(),
@@ -114,6 +116,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       await SecureStore.deleteItemAsync(TOKEN_KEY);
       await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
       await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
 
       // Clear state
       set({
@@ -151,6 +154,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     } catch {
       // Token invalid or expired
       await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
       set({
         user: null,
         token: null,

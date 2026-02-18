@@ -11,6 +11,7 @@ import {
 import { useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
+import { useKeepAwake } from "expo-keep-awake";
 import {
   CameraView,
   CameraType,
@@ -31,9 +32,9 @@ import {
   Image as ImageIcon,
   Video,
   Square,
-  Activity,
+  Dumbbell,
+  PersonStanding,
   ImagePlus,
-  Sparkles,
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 
@@ -45,6 +46,9 @@ export default function CameraScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const cameraRef = useRef<CameraView>(null);
+
+  // Keep screen awake while the camera is open
+  useKeepAwake();
 
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   const [micPermission, requestMicPermission] = useMicrophonePermissions();
@@ -371,7 +375,7 @@ export default function CameraScreen() {
             onPress={() => handleSetMode("lift")}
             activeOpacity={0.7}
           >
-            <Activity
+            <Dumbbell
               size={16}
               color={appMode === "lift" ? "#fff" : "rgba(255,255,255,0.6)"}
             />
@@ -392,7 +396,7 @@ export default function CameraScreen() {
             onPress={() => handleSetMode("motion")}
             activeOpacity={0.7}
           >
-            <Sparkles
+            <PersonStanding
               size={16}
               color={appMode === "motion" ? "#fff" : "rgba(255,255,255,0.6)"}
             />
@@ -631,15 +635,15 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     backgroundColor: "rgba(0,0,0,0.5)",
     borderRadius: 20,
-    padding: 4,
+    padding: 3,
     marginBottom: theme.spacing.lg,
   },
   modeButton: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 6,
-    paddingVertical: 8,
-    paddingHorizontal: 18,
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 16,
   },
   modeButtonActive: {
@@ -647,7 +651,7 @@ const styles = StyleSheet.create({
   },
   modeText: {
     color: "rgba(255,255,255,0.6)",
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "600",
   },
   modeTextActive: {

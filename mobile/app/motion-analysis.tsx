@@ -13,7 +13,15 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
-import { ArrowLeft, Save, Scissors, Sparkles } from "lucide-react-native";
+import {
+  ArrowLeft,
+  Save,
+  Scissors,
+  Sparkles,
+  Share2,
+} from "lucide-react-native";
+import * as Sharing from "expo-sharing";
+import { Paths, File as FSFile } from "expo-file-system";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
 import { TrimSlider } from "@/src/components/motion-analysis/TrimSlider";
@@ -211,6 +219,41 @@ export default function MotionAnalysisScreen() {
     router,
   ]);
 
+  // ─── Export video ────────────────────────────────────────────
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportVideo = useCallback(async () => {
+    if (!videoUri) return;
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert(t("common.error"), t("motionAnalysis.shareNotAvailable"));
+      return;
+    }
+    setIsExporting(true);
+    try {
+      let shareUri = videoUri;
+      if (videoUri.startsWith("content://")) {
+        const dest = new FSFile(
+          Paths.cache,
+          `athlifyr_motion_${Date.now()}.mp4`
+        );
+        const src = new FSFile(videoUri);
+        src.copy(dest);
+        shareUri = dest.uri;
+      }
+      await Sharing.shareAsync(shareUri, {
+        mimeType: "video/mp4",
+        dialogTitle: "Exportar vídeo de Motion Analysis",
+        UTI: "public.movie",
+      });
+    } catch (err) {
+      console.error("[MotionAnalysis] Export failed:", err);
+      Alert.alert(t("common.error"), t("motionAnalysis.exportError"));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [videoUri, t]);
+
   // ─── Memoize PoseResultTabs props to prevent re-renders ─────
   const resultTabsProps = useMemo(() => {
     // Only create props object when we're actually in results phase
@@ -291,7 +334,7 @@ export default function MotionAnalysisScreen() {
           />
 
           {/* Instructions */}
-          <View style={styles.phaseContent}>
+          <SafeAreaView edges={["bottom"]} style={styles.phaseContent}>
             <View style={styles.trimInfoRow}>
               <Scissors size={18} color={theme.colors.textSecondary} />
               <Text style={styles.instruction}>
@@ -309,7 +352,7 @@ export default function MotionAnalysisScreen() {
                 {t("motionAnalysis.analyzeButton")}
               </Text>
             </TouchableOpacity>
-          </View>
+          </SafeAreaView>
         </View>
       )}
 
@@ -344,26 +387,49 @@ export default function MotionAnalysisScreen() {
             />
           </ErrorBoundary>
 
-          {/* Save button */}
-          <View style={styles.phaseContent}>
-            <TouchableOpacity
-              style={styles.saveButton}
-              onPress={handleSave}
-              activeOpacity={0.7}
-              disabled={isSaving}
-            >
-              {isSaving ? (
-                <ActivityIndicator size="small" color="#fff" />
-              ) : (
-                <>
-                  <Save size={20} color="#fff" />
-                  <Text style={styles.analyzeButtonText}>
-                    {t("motionAnalysis.saveAnalysis")}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
+          {/* Save + Export buttons */}
+          <SafeAreaView edges={["bottom"]} style={styles.phaseContent}>
+            <View style={styles.buttonRow}>
+              <TouchableOpacity
+                style={styles.exportButton}
+                onPress={handleExportVideo}
+                activeOpacity={0.7}
+                disabled={isExporting}
+              >
+                {isExporting ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.textSecondary}
+                  />
+                ) : (
+                  <>
+                    <Share2 size={20} color={theme.colors.textSecondary} />
+                    <Text style={styles.exportButtonText}>
+                      {t("motionAnalysis.exportVideo")}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.saveButton}
+                onPress={handleSave}
+                activeOpacity={0.7}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <ActivityIndicator size="small" color="#fff" />
+                ) : (
+                  <>
+                    <Save size={20} color="#fff" />
+                    <Text style={styles.analyzeButtonText}>
+                      {t("motionAnalysis.saveAnalysis")}
+                    </Text>
+                  </>
+                )}
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
         </ScrollView>
       )}
     </View>
@@ -444,14 +510,35 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.semibold,
   },
+  buttonRow: {
+    flexDirection: "row",
+    gap: theme.spacing.sm,
+  },
+  exportButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.xs,
+    backgroundColor: theme.colors.muted,
+    paddingVertical: 14,
+    paddingHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.md,
+  },
+  exportButtonText: {
+    color: theme.colors.textSecondary,
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.medium,
+  },
   saveButton: {
+    flex: 1,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
     gap: theme.spacing.sm,
     backgroundColor: theme.colors.success,
-    paddingVertical: 16,
-    paddingHorizontal: theme.spacing.xl,
+    paddingVertical: 14,
+    paddingHorizontal: theme.spacing.md,
     borderRadius: theme.borderRadius.md,
   },
 });

@@ -17,6 +17,7 @@ import { theme } from "@/src/constants/theme";
 import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
+import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const VIDEO_HEIGHT = Math.round(SCREEN_WIDTH * (16 / 9));
@@ -166,6 +167,7 @@ export default function LiftAnalysisViewScreen() {
             strokeColor="#00FF88"
             strokeWidth={3}
           />
+          <WatermarkLogo />
 
           {/* Play/Pause overlay button */}
           <TouchableOpacity

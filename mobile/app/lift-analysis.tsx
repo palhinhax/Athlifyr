@@ -13,6 +13,8 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
+import * as Sharing from "expo-sharing";
+import { Paths, File as FSFile } from "expo-file-system";
 import {
   ArrowLeft,
   Save,
@@ -20,6 +22,7 @@ import {
   SkipBack,
   ChevronLeft,
   ChevronRight,
+  Share2,
 } from "lucide-react-native";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
@@ -215,7 +218,17 @@ export default function LiftAnalysisScreen() {
       }
     } catch (err) {
       console.error("[LiftAnalysis] Tracking failed:", err);
-      Alert.alert(t("common.error"), t("liftAnalysis.trackingError"));
+      const isNativeModuleError =
+        err instanceof Error &&
+        (err.message.includes("not linked") ||
+          err.message.includes("not available") ||
+          err.message.includes("react-native-fast-opencv"));
+      Alert.alert(
+        t("common.error"),
+        isNativeModuleError
+          ? "O tracking de placas requer uma development build. Esta funcionalidade não está disponível no Expo Go."
+          : t("liftAnalysis.trackingError")
+      );
       setPhase("seed");
       setTrackingProgress(null);
     }
@@ -256,6 +269,39 @@ export default function LiftAnalysisScreen() {
       setIsSaving(false);
     }
   }, [barPath, seedPoint, videoUri, videoDurationMs, saveAnalysis, t, router]);
+
+  // ─── Export video ─────────────────────────────────────────
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportVideo = useCallback(async () => {
+    if (!videoUri) return;
+    const isAvailable = await Sharing.isAvailableAsync();
+    if (!isAvailable) {
+      Alert.alert(t("common.error"), t("liftAnalysis.shareNotAvailable"));
+      return;
+    }
+    setIsExporting(true);
+    try {
+      // If the URI is a content:// URI (Android), copy it to a cache file first
+      let shareUri = videoUri;
+      if (videoUri.startsWith("content://")) {
+        const dest = new FSFile(Paths.cache, `athlifyr_lift_${Date.now()}.mp4`);
+        const src = new FSFile(videoUri);
+        src.copy(dest);
+        shareUri = dest.uri;
+      }
+      await Sharing.shareAsync(shareUri, {
+        mimeType: "video/mp4",
+        dialogTitle: "Exportar vídeo de Lift Analysis",
+        UTI: "public.movie",
+      });
+    } catch (err) {
+      console.error("[LiftAnalysis] Export failed:", err);
+      Alert.alert(t("common.error"), t("liftAnalysis.exportError"));
+    } finally {
+      setIsExporting(false);
+    }
+  }, [videoUri, t]);
 
   // ─── Metrics (computed lazily) ───────────────────────────────
   const metrics = barPath.length >= 2 ? computeMetrics(barPath) : null;
@@ -313,27 +359,50 @@ export default function LiftAnalysisScreen() {
           </View>
 
           {metrics && (
-            <View style={styles.phaseContent}>
+            <SafeAreaView edges={["bottom"]} style={styles.phaseContent}>
               <LiftMetricsCard metrics={metrics} />
 
-              <TouchableOpacity
-                style={[styles.primaryButton, styles.saveButton]}
-                onPress={handleSave}
-                activeOpacity={0.7}
-                disabled={isSaving}
-              >
-                {isSaving ? (
-                  <ActivityIndicator size="small" color="#fff" />
-                ) : (
-                  <>
-                    <Save size={20} color="#fff" />
-                    <Text style={styles.primaryButtonText}>
-                      {t("liftAnalysis.saveAnalysis")}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
-            </View>
+              <View style={styles.buttonRow}>
+                <TouchableOpacity
+                  style={styles.secondaryButton}
+                  onPress={handleExportVideo}
+                  activeOpacity={0.7}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.textSecondary}
+                    />
+                  ) : (
+                    <>
+                      <Share2 size={20} color={theme.colors.textSecondary} />
+                      <Text style={styles.secondaryButtonText}>
+                        {t("liftAnalysis.exportVideo")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.primaryButton}
+                  onPress={handleSave}
+                  activeOpacity={0.7}
+                  disabled={isSaving}
+                >
+                  {isSaving ? (
+                    <ActivityIndicator size="small" color="#fff" />
+                  ) : (
+                    <>
+                      <Save size={20} color="#fff" />
+                      <Text style={styles.primaryButtonText}>
+                        {t("liftAnalysis.saveAnalysis")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
           )}
         </View>
       ) : (

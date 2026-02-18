@@ -10,7 +10,12 @@
  *
  * Uses react-native-fast-opencv for the CV operations and
  * expo-video-thumbnails for frame extraction.
+ *
+ * NOTE: require() is intentional here — these are lazy-loaded native modules
+ * that are not available in Expo Go. They must be required at runtime, not
+ * imported at the top level.
  */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 import type { BarPathPoint } from "@/src/types/lift-analysis";
 import { smoothPath } from "./bar-path-utils";
@@ -33,9 +38,21 @@ let _ExpoFile: typeof ExpoFileType | null = null;
 
 function getOpenCV() {
   if (!_opencv) {
-    // eslint-disable-next-line
-    _opencv =
-      require("react-native-fast-opencv") as typeof import("react-native-fast-opencv");
+    try {
+      _opencv =
+        require("react-native-fast-opencv") as typeof import("react-native-fast-opencv");
+    } catch {
+      throw new Error(
+        "react-native-fast-opencv not available. Lift tracking requires a development build (not Expo Go). Please use a custom dev build."
+      );
+    }
+    // Extra guard: the native module may load but be unlinked (proxy trap)
+    if (!_opencv?.OpenCV) {
+      _opencv = null;
+      throw new Error(
+        "react-native-fast-opencv native module is not linked. Please rebuild the app as a development build."
+      );
+    }
   }
   return {
     OpenCV: _opencv!.OpenCV,
@@ -50,7 +67,6 @@ function getOpenCV() {
 
 function getVideoThumbnails(): typeof VideoThumbnailsType {
   if (!_videoThumbnails) {
-    // eslint-disable-next-line
     _videoThumbnails =
       require("expo-video-thumbnails") as typeof VideoThumbnailsType;
   }
@@ -59,7 +75,6 @@ function getVideoThumbnails(): typeof VideoThumbnailsType {
 
 function getExpoFile(): typeof ExpoFileType {
   if (!_ExpoFile) {
-    // eslint-disable-next-line
     _ExpoFile = (require("expo-file-system") as { File: typeof ExpoFileType })
       .File;
   }

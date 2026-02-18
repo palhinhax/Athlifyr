@@ -13,6 +13,7 @@ import { Play, Pause, Gauge, Eye, PersonStanding } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { StickmanRenderer } from "@/src/components/motion-analysis/StickmanRenderer";
 import { findClosestFrameIndex } from "@/src/lib/pose-utils";
+import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 import type { PoseFrame, PoseMetrics } from "@/src/types/motion-analysis";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -334,6 +335,8 @@ const PoseResultTabsComponent = ({
             )}
           </View>
         )}
+        {/* Watermark — always visible over the viewport */}
+        <WatermarkLogo />
       </View>
 
       {/* Scrub bar */}

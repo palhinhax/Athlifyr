@@ -118,9 +118,9 @@ export default function TabLayout() {
           headerTitle: () => <HeaderLogo />,
           headerRight: () => (
             <View style={styles.headerRight}>
+              <CameraButton />
               <SearchButton />
               <CalendarButton />
-              <CameraButton />
               <NotificationBell />
             </View>
           ),
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   headerRight: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 4,
+    gap: 8,
     marginRight: 8,
   },
   centerTabIcon: {

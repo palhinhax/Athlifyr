@@ -1,17 +1,20 @@
 /**
- * PoseAnalysisWebView – Hidden WebView that runs MediaPipe Pose Landmarker.
+ * PoseAnalysisWebView – Hidden WebView that runs MediaPipe Pose Landmarker
+ * combined with a Hough Circle Transform for barbell weight plate detection.
  *
- * Loads the MediaPipe Tasks Vision WASM module in a hidden WebView and
- * exposes an imperative API for processing video frames through pose
- * estimation. The WebView is mounted invisibly and communicates with
- * React Native via injectJavaScript / postMessage.
- *
- * Architecture:
+ * NEW ARCHITECTURE (fast video-seek approach):
  *   1. On mount, loads MediaPipe model from CDN (~10MB, cached by browser)
- *   2. Parent calls processFrames() via ref
- *   3. Frames are sent one-by-one as base64 to the WebView
- *   4. WebView runs pose detection and returns landmarks via onMessage
- *   5. Results are collected and returned as a Promise
+ *   2. Parent calls startAnalysis(videoUri, startMs, endMs, fps) via ref
+ *   3. A single message sends the video file:// URI to the WebView
+ *   4. WebView loads the video internally, seeks frame-by-frame via
+ *      <video>.currentTime = t; waits for "seeked" event; draws to canvas
+ *   5. Per frame: MediaPipe detects pose + Hough Transform detects plates
+ *   6. Only compact JSON results (~2KB/frame) return via postMessage
+ *   7. No frame extraction, no base64 bridge transfer → 10-100x faster
+ *
+ * Bar detection strategy:
+ *   PRIMARY  – Hough Circle Transform on each canvas frame
+ *   FALLBACK – MediaPipe wrist landmark midpoint
  */
 
 import React, {
@@ -23,7 +26,6 @@ import React, {
 } from "react";
 import { View, StyleSheet } from "react-native";
 import WebView, { type WebViewMessageEvent } from "react-native-webview";
-import type { ExtractedFrame } from "@/src/modules/frame-extractor";
 import type {
   PoseResult,
   MediaPipeLandmark,
@@ -36,13 +38,18 @@ export interface PoseAnalysisHandle {
   /** Whether the MediaPipe model is loaded and ready. */
   isReady: boolean;
   /**
-   * Process an array of extracted frames through pose estimation.
-   * @param frames  Extracted video frames with base64 image data.
-   * @param onProgress  Callback with progress percentage (0–100).
-   * @returns Pose estimation results for each frame.
+   * Analyse a video by seeking through it frame-by-frame inside the WebView.
+   * @param videoUri   file:// URI of the recorded video.
+   * @param startMs    Start trim offset in milliseconds.
+   * @param endMs      End trim offset in milliseconds (0 = full video).
+   * @param fps        Frames per second to sample (default 12).
+   * @param onProgress Callback with progress 0–100.
    */
-  processFrames: (
-    frames: ExtractedFrame[],
+  startAnalysis: (
+    videoUri: string,
+    startMs: number,
+    endMs: number,
+    fps?: number,
     onProgress?: (pct: number) => void
   ) => Promise<PoseResult[]>;
 }
@@ -55,15 +62,22 @@ interface PoseAnalysisWebViewProps {
 }
 
 interface WebViewMessage {
-  type: "ready" | "pose" | "poseError" | "error" | "status";
+  type: "ready" | "frame_result" | "analysis_complete" | "error" | "status";
   frameIndex?: number;
   tMs?: number;
+  totalFrames?: number;
   landmarks?: MediaPipeLandmark[] | null;
   barCircles?: DetectedCircle[] | null;
   message?: string;
 }
 
-// ─── MediaPipe HTML ─────────────────────────────────────────────
+// ─── WebView HTML ────────────────────────────────────────────────
+// The video is loaded INSIDE the WebView via a file:// URI.
+// The WebView seeks through it frame-by-frame and runs:
+//   • MediaPipe Pose Landmarker  (33 body landmarks)
+//   • Hough Circle Transform     (barbell weight plate detection)
+// Only compact JSON results are sent back – no base64 transfers.
+// ────────────────────────────────────────────────────────────────
 
 const MEDIAPIPE_HTML = `
 <!DOCTYPE html>
@@ -71,35 +85,42 @@ const MEDIAPIPE_HTML = `
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <style>body{margin:0;overflow:hidden;background:#000;}</style>
+  <style>
+    body { margin:0; overflow:hidden; background:#000; }
+    video, canvas { display:none; }
+  </style>
 </head>
 <body>
-<canvas id="c" style="display:none;"></canvas>
+<video id="v" playsinline muted></video>
+<canvas id="c"></canvas>
+
 <script type="module">
+const video  = document.getElementById("v");
 const canvas = document.getElementById("c");
-const ctx = canvas.getContext("2d");
+const ctx    = canvas.getContext("2d", { willReadFrequently: true });
+
 let poseLandmarker = null;
 
+// ── Utility ──────────────────────────────────────────────────────
 function send(data) {
   if (window.ReactNativeWebView) {
     window.ReactNativeWebView.postMessage(JSON.stringify(data));
   }
 }
 
-// ── Hough Circle Transform – detect barbell weight plates ───────
-// Runs on a downscaled copy to keep latency low (~50–150 ms).
+// ── Hough Circle Transform – detect barbell weight plates ────────
+// Runs on a downscaled copy to keep per-frame latency low.
 function detectPlateCircles() {
   if (canvas.width < 20 || canvas.height < 20) return [];
 
-  // Downscale for speed
-  var maxDim = 300;
+  var maxDim = 320;
   var scl = Math.min(1.0, maxDim / Math.max(canvas.width, canvas.height));
-  var w = Math.round(canvas.width * scl);
+  var w = Math.round(canvas.width  * scl);
   var h = Math.round(canvas.height * scl);
 
   var tmp = document.createElement("canvas");
   tmp.width = w; tmp.height = h;
-  var tc = tmp.getContext("2d");
+  var tc = tmp.getContext("2d", { willReadFrequently: true });
   tc.drawImage(canvas, 0, 0, w, h);
   var id = tc.getImageData(0, 0, w, h);
   var px = id.data;
@@ -111,11 +132,10 @@ function detectPlateCircles() {
     gray[i] = px[j] * 0.299 + px[j + 1] * 0.587 + px[j + 2] * 0.114;
   }
 
-  // 2. Gaussian blur (separable 5x5, sigma ≈ 1.0)
+  // 2. Gaussian blur – separable 5×5, sigma ≈ 1.0
   var kn = [1, 4, 6, 4, 1];
   var kS = 16;
   var buf = new Float32Array(w * h);
-  // horizontal
   for (var y = 0; y < h; y++) {
     for (var x = 0; x < w; x++) {
       var s = 0;
@@ -125,7 +145,6 @@ function detectPlateCircles() {
       buf[y * w + x] = s / kS;
     }
   }
-  // vertical
   for (var y = 0; y < h; y++) {
     for (var x = 0; x < w; x++) {
       var s = 0;
@@ -144,22 +163,21 @@ function detectPlateCircles() {
     for (var x = 1; x < w - 1; x++) {
       var idx = y * w + x;
       var gxv =
-        -gray[(y - 1) * w + (x - 1)] + gray[(y - 1) * w + (x + 1)]
-        - 2 * gray[y * w + (x - 1)] + 2 * gray[y * w + (x + 1)]
-        - gray[(y + 1) * w + (x - 1)] + gray[(y + 1) * w + (x + 1)];
+        -gray[(y-1)*w+(x-1)] + gray[(y-1)*w+(x+1)]
+        - 2*gray[y*w+(x-1)] + 2*gray[y*w+(x+1)]
+        - gray[(y+1)*w+(x-1)] + gray[(y+1)*w+(x+1)];
       var gyv =
-        -gray[(y - 1) * w + (x - 1)] - 2 * gray[(y - 1) * w + x] - gray[(y - 1) * w + (x + 1)]
-        + gray[(y + 1) * w + (x - 1)] + 2 * gray[(y + 1) * w + x] + gray[(y + 1) * w + (x + 1)];
-      gx[idx] = gxv;
-      gy[idx] = gyv;
-      mag[idx] = Math.sqrt(gxv * gxv + gyv * gyv);
+        -gray[(y-1)*w+(x-1)] - 2*gray[(y-1)*w+x] - gray[(y-1)*w+(x+1)]
+        + gray[(y+1)*w+(x-1)] + 2*gray[(y+1)*w+x] + gray[(y+1)*w+(x+1)];
+      gx[idx] = gxv; gy[idx] = gyv;
+      mag[idx] = Math.sqrt(gxv*gxv + gyv*gyv);
     }
   }
 
   // 4. Adaptive edge threshold (top ~12 % of gradient magnitudes)
   var mags = [];
   for (var i = 0; i < mag.length; i++) { if (mag[i] > 0) mags.push(mag[i]); }
-  mags.sort(function (a, b) { return b - a; });
+  mags.sort(function(a,b){ return b-a; });
   var edgeTh = mags.length > 0 ? mags[Math.floor(mags.length * 0.12)] : 30;
   edgeTh = Math.max(edgeTh, 20);
 
@@ -167,23 +185,22 @@ function detectPlateCircles() {
   //    Plate radius range: ~2.5 %–20 % of frame height
   var minR = Math.max(5, Math.round(h * 0.025));
   var maxR = Math.round(h * 0.20);
-  var acc = new Float32Array(w * h);
+  var acc  = new Float32Array(w * h);
 
   for (var y = 1; y < h - 1; y++) {
     for (var x = 1; x < w - 1; x++) {
       var idx = y * w + x;
       if (mag[idx] < edgeTh) continue;
-      var m = mag[idx];
+      var m  = mag[idx];
       var dx = gx[idx] / m;
       var dy = gy[idx] / m;
-      // Vote along gradient direction (both signs)
       for (var r = minR; r <= maxR; r += 2) {
         var cx1 = Math.round(x + r * dx);
         var cy1 = Math.round(y + r * dy);
-        if (cx1 >= 0 && cx1 < w && cy1 >= 0 && cy1 < h) acc[cy1 * w + cx1]++;
+        if (cx1 >= 0 && cx1 < w && cy1 >= 0 && cy1 < h) acc[cy1*w+cx1]++;
         var cx2 = Math.round(x - r * dx);
         var cy2 = Math.round(y - r * dy);
-        if (cx2 >= 0 && cx2 < w && cy2 >= 0 && cy2 < h) acc[cy2 * w + cx2]++;
+        if (cx2 >= 0 && cx2 < w && cy2 >= 0 && cy2 < h) acc[cy2*w+cx2]++;
       }
     }
   }
@@ -193,29 +210,28 @@ function detectPlateCircles() {
   var cands = [];
   for (var y = 2; y < h - 2; y++) {
     for (var x = 2; x < w - 2; x++) {
-      if (acc[y * w + x] >= minVotes) {
-        cands.push({ x: x, y: y, v: acc[y * w + x] });
-      }
+      if (acc[y*w+x] >= minVotes) cands.push({ x, y, v: acc[y*w+x] });
     }
   }
-  cands.sort(function (a, b) { return b.v - a.v; });
+  cands.sort(function(a,b){ return b.v - a.v; });
 
   var nmsR = Math.max(minR, 12);
-  var out = [];
+  var out  = [];
   for (var ci = 0; ci < cands.length && out.length < 6; ci++) {
     var c = cands[ci];
     var skip = false;
     for (var ai = 0; ai < out.length; ai++) {
-      var dd = Math.sqrt((c.x - out[ai].x) * (c.x - out[ai].x) + (c.y - out[ai].y) * (c.y - out[ai].y));
+      var dd = Math.sqrt((c.x-out[ai].x)**2 + (c.y-out[ai].y)**2);
       if (dd < nmsR) { skip = true; break; }
     }
     if (!skip) out.push(c);
   }
 
-  // Normalise to 0-1
-  return out.map(function (c) { return { x: c.x / w, y: c.y / h, votes: c.v }; });
+  // Normalise to 0–1
+  return out.map(function(c){ return { x: c.x/w, y: c.y/h, votes: c.v }; });
 }
 
+// ── MediaPipe initialisation ─────────────────────────────────────
 async function initialize() {
   try {
     send({ type: "status", message: "Loading MediaPipe WASM..." });
@@ -242,67 +258,115 @@ async function initialize() {
 
     send({ type: "ready" });
   } catch (err) {
-    send({ type: "error", message: err.message || "Failed to initialize MediaPipe" });
+    send({ type: "error", message: (err && err.message) || "Failed to initialize MediaPipe" });
   }
 }
 
-// Process a single frame – called from RN via injectJavaScript
-window._processFrame = async function (base64Data, frameIndex, tMs) {
-  if (!poseLandmarker) {
-    send({ type: "poseError", frameIndex, tMs, message: "Model not loaded" });
-    return;
-  }
-
+// ── Per-frame processing ─────────────────────────────────────────
+function processCurrentFrame(frameIndex, tMs) {
   try {
-    const img = new Image();
-    await new Promise((resolve, reject) => {
-      img.onload = resolve;
-      img.onerror = () => reject(new Error("Image load failed"));
-      img.src = "data:image/jpeg;base64," + base64Data;
-    });
+    canvas.width  = video.videoWidth  || 640;
+    canvas.height = video.videoHeight || 480;
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    canvas.width = img.width;
-    canvas.height = img.height;
-    ctx.drawImage(img, 0, 0);
+    // MediaPipe pose detection
+    var result = poseLandmarker ? poseLandmarker.detect(canvas) : null;
+    var rawLandmarks = (result && result.landmarks && result.landmarks.length > 0)
+      ? result.landmarks[0] : null;
 
-    const result = poseLandmarker.detect(canvas);
-    const landmarks =
-      result.landmarks && result.landmarks.length > 0
-        ? result.landmarks[0]
-        : null;
+    var landmarks = rawLandmarks
+      ? rawLandmarks.map(function(l){ return { x: l.x, y: l.y, z: l.z, visibility: l.visibility }; })
+      : null;
 
-    // Run Hough Circle Transform to detect barbell weight plates
+    // Hough Circle Transform for barbell plate detection
     var barCircles = null;
     try {
       var circles = detectPlateCircles();
       if (circles.length > 0) barCircles = circles;
-    } catch (circleErr) {
-      // Circle detection is non-critical – silently continue
-    }
+    } catch (_) { /* non-critical */ }
 
-    send({
-      type: "pose",
-      frameIndex,
-      tMs,
-      landmarks: landmarks
-        ? landmarks.map((l) => ({
-            x: l.x,
-            y: l.y,
-            z: l.z,
-            visibility: l.visibility,
-          }))
-        : null,
-      barCircles: barCircles,
-    });
+    send({ type: "frame_result", frameIndex, tMs, landmarks, barCircles });
   } catch (err) {
-    send({
-      type: "poseError",
-      frameIndex,
-      tMs,
-      message: err.message || "Detection failed",
-    });
+    // Still send a null result so the pipeline doesn't stall
+    send({ type: "frame_result", frameIndex, tMs, landmarks: null, barCircles: null });
   }
-};
+}
+
+// ── Video seek loop ──────────────────────────────────────────────
+// Receives START_ANALYSIS from React Native and processes the video
+// entirely inside the WebView without any base64 bridge transfer.
+async function runAnalysis(config) {
+  var videoUri = config.videoUri;
+  var startMs  = config.startMs  || 0;
+  var endMs    = config.endMs    || 0;
+  var fps      = config.fps      || 12;
+
+  return new Promise(function(resolve, reject) {
+    video.src = videoUri;
+
+    video.addEventListener("error", function() {
+      reject(new Error("Video load failed: " + (video.error && video.error.message)));
+    }, { once: true });
+
+    video.addEventListener("loadedmetadata", async function() {
+      var durationSec = video.duration;
+      var startSec    = startMs / 1000;
+      var endSec      = endMs > 0 ? Math.min(endMs / 1000, durationSec) : durationSec;
+      var step        = 1 / fps;
+      var times       = [];
+
+      for (var t = startSec; t <= endSec + 0.001; t += step) {
+        times.push(Math.min(t, endSec));
+      }
+
+      var totalFrames = times.length;
+      send({ type: "status", message: "Analysing " + totalFrames + " frames..." });
+
+      for (var fi = 0; fi < totalFrames; fi++) {
+        var tSec = times[fi];
+        var tMs  = Math.round(tSec * 1000);
+
+        // Seek the video element to the desired frame
+        await new Promise(function(res) {
+          function onSeeked() {
+            video.removeEventListener("seeked", onSeeked);
+            res();
+          }
+          video.addEventListener("seeked", onSeeked);
+          video.currentTime = tSec;
+        });
+
+        processCurrentFrame(fi, tMs);
+      }
+
+      send({ type: "analysis_complete", totalFrames });
+      resolve();
+    }, { once: true });
+  });
+}
+
+// ── Message handler from React Native ───────────────────────────
+document.addEventListener("message", function(event) {
+  handleRNMessage(event.data);
+});
+window.addEventListener("message", function(event) {
+  handleRNMessage(event.data);
+});
+
+function handleRNMessage(rawData) {
+  try {
+    var msg = JSON.parse(rawData);
+    if (msg.type === "START_ANALYSIS") {
+      if (!poseLandmarker) {
+        send({ type: "error", message: "Model not ready yet" });
+        return;
+      }
+      runAnalysis(msg.config).catch(function(err) {
+        send({ type: "error", message: (err && err.message) || "Analysis failed" });
+      });
+    }
+  } catch (_) { /* ignore malformed */ }
+}
 
 initialize();
 </script>
@@ -310,8 +374,9 @@ initialize();
 </html>
 `;
 
-// ─── Timeout for individual frame processing ────────────────────
-const FRAME_TIMEOUT_MS = 15000;
+// ─── Analysis timeout ────────────────────────────────────────────
+// 3 min max – generous for long videos, avoids infinite hang.
+const ANALYSIS_TIMEOUT_MS = 3 * 60 * 1000;
 
 // ─── Component ──────────────────────────────────────────────────
 
@@ -322,68 +387,59 @@ export const PoseAnalysisWebView = forwardRef<
   const webViewRef = useRef<WebView>(null);
   const [isReady, setIsReady] = useState(false);
 
-  // Map of pending frame resolvers keyed by frameIndex
-  const pendingRef = useRef<Map<number, (result: PoseResult) => void>>(
-    new Map()
-  );
-
-  // Process a single frame and return result via promise
-  const processOneFrame = useCallback(
-    (frame: ExtractedFrame): Promise<PoseResult> => {
-      return new Promise<PoseResult>((resolve) => {
-        const { index, tMs, base64 } = frame;
-
-        // Register resolver
-        pendingRef.current.set(index, resolve);
-
-        // Inject the processing call
-        // Base64 only contains [A-Za-z0-9+/=] so it's safe in a JS string
-        webViewRef.current?.injectJavaScript(
-          `window._processFrame("${base64}", ${index}, ${tMs}); true;`
-        );
-
-        // Timeout fallback
-        setTimeout(() => {
-          if (pendingRef.current.has(index)) {
-            pendingRef.current.delete(index);
-            resolve({
-              frameIndex: index,
-              tMs,
-              landmarks: null,
-              barCircles: null,
-            });
-          }
-        }, FRAME_TIMEOUT_MS);
-      });
-    },
-    []
-  );
+  // Current analysis state – resolve/reject + per-frame progress
+  const analysisRef = useRef<{
+    results: PoseResult[];
+    totalFrames: number;
+    resolve: (r: PoseResult[]) => void;
+    reject: (e: Error) => void;
+    onProgress?: (pct: number) => void;
+    timeoutId: ReturnType<typeof setTimeout>;
+  } | null>(null);
 
   useImperativeHandle(
     ref,
     () => ({
       isReady,
-      processFrames: async (
-        frames: ExtractedFrame[],
+      startAnalysis: (
+        videoUri: string,
+        startMs: number,
+        endMs: number,
+        fps: number = 12,
         onProgress?: (pct: number) => void
       ): Promise<PoseResult[]> => {
         if (!isReady || !webViewRef.current) {
-          throw new Error("Pose analysis engine not ready");
+          return Promise.reject(new Error("Pose analysis engine not ready"));
         }
 
-        const results: PoseResult[] = [];
+        return new Promise<PoseResult[]>((resolve, reject) => {
+          const timeoutId = setTimeout(() => {
+            if (analysisRef.current) {
+              analysisRef.current = null;
+              reject(new Error("Analysis timed out"));
+            }
+          }, ANALYSIS_TIMEOUT_MS);
 
-        // Process frames sequentially to avoid overwhelming the WebView
-        for (let i = 0; i < frames.length; i++) {
-          const result = await processOneFrame(frames[i]);
-          results.push(result);
-          onProgress?.(((i + 1) / frames.length) * 100);
-        }
+          analysisRef.current = {
+            results: [],
+            totalFrames: 0,
+            resolve,
+            reject,
+            onProgress,
+            timeoutId,
+          };
 
-        return results;
+          // Send a single message – the WebView does all the heavy lifting
+          webViewRef.current!.postMessage(
+            JSON.stringify({
+              type: "START_ANALYSIS",
+              config: { videoUri, startMs, endMs, fps },
+            })
+          );
+        });
       },
     }),
-    [isReady, processOneFrame]
+    [isReady]
   );
 
   const handleMessage = useCallback(
@@ -397,30 +453,46 @@ export const PoseAnalysisWebView = forwardRef<
             onReady?.();
             break;
 
-          case "pose": {
-            const resolver = pendingRef.current.get(data.frameIndex!);
-            if (resolver) {
-              pendingRef.current.delete(data.frameIndex!);
-              resolver({
-                frameIndex: data.frameIndex!,
-                tMs: data.tMs!,
-                landmarks: (data.landmarks as MediaPipeLandmark[]) ?? null,
-                barCircles: (data.barCircles as DetectedCircle[]) ?? null,
-              });
+          case "frame_result": {
+            const state = analysisRef.current;
+            if (!state) break;
+
+            state.results.push({
+              frameIndex: data.frameIndex!,
+              tMs: data.tMs!,
+              landmarks: (data.landmarks as MediaPipeLandmark[]) ?? null,
+              barCircles: (data.barCircles as DetectedCircle[]) ?? null,
+            });
+
+            // Progress based on received frames vs expected total
+            if (state.totalFrames > 0) {
+              const pct = Math.round(
+                (state.results.length / state.totalFrames) * 100
+              );
+              state.onProgress?.(Math.min(pct, 99));
             }
             break;
           }
 
-          case "poseError": {
-            const errorResolver = pendingRef.current.get(data.frameIndex!);
-            if (errorResolver) {
-              pendingRef.current.delete(data.frameIndex!);
-              errorResolver({
-                frameIndex: data.frameIndex!,
-                tMs: data.tMs!,
-                landmarks: null,
-                barCircles: null,
-              });
+          case "analysis_complete": {
+            const state = analysisRef.current;
+            if (!state) break;
+            clearTimeout(state.timeoutId);
+            state.onProgress?.(100);
+            const results = [...state.results].sort(
+              (a, b) => a.frameIndex - b.frameIndex
+            );
+            analysisRef.current = null;
+            state.resolve(results);
+            break;
+          }
+
+          case "status": {
+            // Try to parse total frame count from status messages
+            const state = analysisRef.current;
+            if (state && data.message) {
+              const m = data.message.match(/Analysing (\d+) frames/);
+              if (m) state.totalFrames = parseInt(m[1], 10);
             }
             break;
           }
@@ -428,10 +500,12 @@ export const PoseAnalysisWebView = forwardRef<
           case "error":
             console.warn("Pose WebView error:", data.message);
             onError?.(data.message ?? "Unknown error");
-            break;
-
-          case "status":
-            // Model loading status update (could be surfaced to UI)
+            if (analysisRef.current) {
+              const state = analysisRef.current;
+              clearTimeout(state.timeoutId);
+              analysisRef.current = null;
+              state.reject(new Error(data.message ?? "WebView error"));
+            }
             break;
         }
       } catch {
@@ -450,9 +524,13 @@ export const PoseAnalysisWebView = forwardRef<
         javaScriptEnabled
         domStorageEnabled
         allowFileAccess
-        originWhitelist={["*"]}
+        allowFileAccessFromFileURLs
+        allowUniversalAccessFromFileURLs
+        mixedContentMode="always"
+        originWhitelist={["*", "file://*"]}
         onMessage={handleMessage}
-        // Prevent the WebView from navigating away
+        mediaPlaybackRequiresUserAction={false}
+        allowsInlineMediaPlayback
         onShouldStartLoadWithRequest={() => true}
       />
     </View>

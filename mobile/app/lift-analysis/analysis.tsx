@@ -29,7 +29,6 @@ import {
   PoseAnalysisWebView,
   type PoseAnalysisHandle,
 } from "@/src/components/lift-analysis/PoseAnalysisWebView";
-import { extractFrames, cleanupFrames } from "@/src/modules/frame-extractor";
 import { buildAnalysisResult } from "@/src/modules/real-analysis";
 import { generateMockAnalysis } from "@/src/modules/mock-analysis";
 import { useAnalysisStorage } from "@/src/hooks/useAnalysisStorage";
@@ -108,20 +107,27 @@ export default function LiftAnalysisScreen() {
     return () => clearInterval(interval);
   }, [player]);
 
-  // Track current playback position for overlay sync
+  // Track current playback position for overlay sync.
+  // Uses a 16ms interval (≈60fps polling) when playing for smooth overlay;
+  // clears it when paused to avoid wasted work.
   useEffect(() => {
     if (isPlaying && analysisResult) {
       playbackTimerRef.current = setInterval(() => {
         try {
-          const time = player.currentTime;
-          setCurrentTimeMs(time * 1000);
+          setCurrentTimeMs(player.currentTime * 1000);
         } catch {
           // Player may not be ready yet
         }
-      }, 33); // ~30fps update
+      }, 16); // ~60fps – smooth overlay tracking
     } else if (playbackTimerRef.current) {
       clearInterval(playbackTimerRef.current);
       playbackTimerRef.current = null;
+      // Sync one last time after pause so overlay stays at the paused frame
+      try {
+        setCurrentTimeMs(player.currentTime * 1000);
+      } catch {
+        // ignore
+      }
     }
 
     return () => {
@@ -211,46 +217,40 @@ export default function LiftAnalysisScreen() {
   }, [videoUri, t]);
 
   const handleRunAnalysis = useCallback(async () => {
-    setAnalysisStatus("extracting_frames");
+    setAnalysisStatus("estimating_pose");
     setAnalysisProgress(0);
     setIsMockData(false);
 
     try {
       const duration = videoDurationMs > 0 ? videoDurationMs : 4000;
+      const startMs = Number(params.startMs) || 0;
+      const endMs = Number(params.endMs) > 0 ? Number(params.endMs) : duration;
 
-      // Step 1: Extract frames from the video (~15 fps for smooth bar path)
-      const frames = await extractFrames(videoUri, duration, 15, (pct) => {
-        setAnalysisProgress(Math.round(pct * 0.3)); // 0–30%
-      });
-
-      if (frames.length === 0) {
-        throw new Error("No frames extracted");
-      }
-
-      // Step 2: Run pose estimation via MediaPipe WebView
+      // Run pose estimation + Hough Circle plate detection entirely inside
+      // the WebView – the video is seeked frame-by-frame without any base64
+      // transfer over the JS bridge (10-100× faster than the old approach).
       if (!poseEngineReady || !poseWebViewRef.current) {
         throw new Error("Pose engine not available");
       }
 
-      setAnalysisStatus("estimating_pose");
-      const poseResults = await poseWebViewRef.current.processFrames(
-        frames,
-        (pct) => {
-          setAnalysisProgress(30 + Math.round(pct * 0.5)); // 30–80%
+      const poseResults = await poseWebViewRef.current.startAnalysis(
+        videoUri,
+        startMs,
+        endMs,
+        12, // 12 fps – good balance of detail vs speed
+        (pct: number) => {
+          setAnalysisProgress(Math.round(pct * 0.9)); // 0–90%
         }
       );
 
-      // Step 3: Compute angles and build result
+      // Compute joint angles and build the final result
       setAnalysisStatus("computing_angles");
-      setAnalysisProgress(85);
+      setAnalysisProgress(92);
 
       const result = buildAnalysisResult(videoUri, duration, poseResults);
       setAnalysisResult(result);
       setAnalysisStatus("complete");
       setAnalysisProgress(100);
-
-      // Cleanup temporary frame files
-      cleanupFrames(frames).catch(() => {});
     } catch (error) {
       // Fall back to mock data if real analysis fails
       console.warn("Real analysis failed, using mock data:", error);
@@ -263,14 +263,20 @@ export default function LiftAnalysisScreen() {
       setAnalysisStatus("complete");
       setAnalysisProgress(100);
     }
-  }, [videoUri, videoDurationMs, poseEngineReady]);
+  }, [
+    videoUri,
+    videoDurationMs,
+    poseEngineReady,
+    params.startMs,
+    params.endMs,
+  ]);
 
   const getStatusMessage = (status: AnalysisStatus): string => {
     switch (status) {
       case "idle":
         return t("liftAnalysis.analysis.statusIdle");
       case "extracting_frames":
-        return t("liftAnalysis.analysis.statusExtractingFrames");
+        return t("liftAnalysis.analysis.statusEstimatingPose"); // no longer used, fallback
       case "tracking_bar":
         return t("liftAnalysis.analysis.statusTrackingBar");
       case "estimating_pose":

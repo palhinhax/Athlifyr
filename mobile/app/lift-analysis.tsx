@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Alert,
   ActivityIndicator,
   GestureResponderEvent,
 } from "react-native";
@@ -23,12 +22,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Share2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react-native";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
 import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
 import { WatermarkLogo } from "@/src/components/WatermarkLogo";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import { trackPlate, type TrackingProgress } from "@/src/lib/plate-tracker";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
@@ -74,6 +76,15 @@ export default function LiftAnalysisScreen() {
   // Result
   const [barPath, setBarPath] = useState<BarPathPoint[]>([]);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Modal state (replaces native Alert)
+  const [modalConfig, setModalConfig] = useState<{
+    visible: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+    onDismiss?: () => void;
+  }>({ visible: false, type: "success", title: "", message: "" });
 
   // Auto-tracking progress
   const [trackingProgress, setTrackingProgress] =
@@ -227,12 +238,14 @@ export default function LiftAnalysisScreen() {
         (err.message.includes("not linked") ||
           err.message.includes("not available") ||
           err.message.includes("react-native-fast-opencv"));
-      Alert.alert(
-        t("common.error"),
-        isNativeModuleError
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: isNativeModuleError
           ? "O tracking de placas requer uma development build. Esta funcionalidade não está disponível no Expo Go."
-          : t("liftAnalysis.trackingError")
-      );
+          : t("liftAnalysis.trackingError"),
+      });
       setPhase("seed");
       setTrackingProgress(null);
     }
@@ -263,12 +276,21 @@ export default function LiftAnalysisScreen() {
       };
 
       await saveAnalysis(analysis);
-      Alert.alert(t("liftAnalysis.saved"), t("liftAnalysis.savedMessage"), [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      setModalConfig({
+        visible: true,
+        type: "success",
+        title: t("liftAnalysis.saved"),
+        message: t("liftAnalysis.savedMessage"),
+        onDismiss: () => router.back(),
+      });
     } catch (error) {
       console.error("Error saving lift analysis:", error);
-      Alert.alert(t("common.error"), t("liftAnalysis.saveError"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("liftAnalysis.saveError"),
+      });
     } finally {
       setIsSaving(false);
     }
@@ -281,7 +303,12 @@ export default function LiftAnalysisScreen() {
     if (!videoOverlayRef.current) return;
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
-      Alert.alert(t("common.error"), t("liftAnalysis.shareNotAvailable"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("liftAnalysis.shareNotAvailable"),
+      });
       return;
     }
     setIsExporting(true);
@@ -297,7 +324,12 @@ export default function LiftAnalysisScreen() {
       });
     } catch (err) {
       console.error("[LiftAnalysis] Export failed:", err);
-      Alert.alert(t("common.error"), t("liftAnalysis.exportError"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("liftAnalysis.exportError"),
+      });
     } finally {
       setIsExporting(false);
     }
@@ -621,6 +653,36 @@ export default function LiftAnalysisScreen() {
           )}
         </View>
       )}
+
+      {/* Feedback Modal */}
+      <ConfirmModal
+        visible={modalConfig.visible}
+        onClose={() => {
+          const cb = modalConfig.onDismiss;
+          setModalConfig((prev) => ({ ...prev, visible: false }));
+          cb?.();
+        }}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        icon={
+          modalConfig.type === "success" ? (
+            <CheckCircle2 size={28} color={theme.colors.success} />
+          ) : (
+            <AlertCircle size={28} color={theme.colors.error} />
+          )
+        }
+        actions={[
+          {
+            label: "OK",
+            variant: "primary",
+            onPress: () => {
+              const cb = modalConfig.onDismiss;
+              setModalConfig((prev) => ({ ...prev, visible: false }));
+              cb?.();
+            },
+          },
+        ]}
+      />
     </View>
   );
 }

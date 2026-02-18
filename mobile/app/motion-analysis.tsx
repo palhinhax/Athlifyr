@@ -11,7 +11,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  Alert,
   ScrollView,
   ActivityIndicator,
 } from "react-native";
@@ -25,11 +24,14 @@ import {
   Scissors,
   Sparkles,
   Share2,
+  CheckCircle2,
+  AlertCircle,
 } from "lucide-react-native";
 import * as Sharing from "expo-sharing";
 import { captureRef } from "react-native-view-shot";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { TrimSlider } from "@/src/components/motion-analysis/TrimSlider";
 import { AnalysisProgress } from "@/src/components/motion-analysis/AnalysisProgress";
 import { PoseResultTabs } from "@/src/components/motion-analysis/PoseResultTabs";
@@ -93,6 +95,15 @@ export default function MotionAnalysisScreen() {
   const [metrics, setMetrics] = useState<PoseMetrics | null>(null);
   const [videoMeta, setVideoMeta] = useState<PoseVideoMeta | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // Modal state (replaces native Alert)
+  const [modalConfig, setModalConfig] = useState<{
+    visible: boolean;
+    type: "success" | "error";
+    title: string;
+    message: string;
+    onDismiss?: () => void;
+  }>({ visible: false, type: "success", title: "", message: "" });
 
   // ─── Video player (trim preview) ────────────────────────────
   // CRITICAL: Release the native player when entering results phase.
@@ -181,7 +192,12 @@ export default function MotionAnalysisScreen() {
     (message: string) => {
       setRunAnalysis(false);
       setPhase("trim");
-      Alert.alert(t("motionAnalysis.analysisError"), message);
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("motionAnalysis.analysisError"),
+        message,
+      });
     },
     [t]
   );
@@ -207,12 +223,21 @@ export default function MotionAnalysisScreen() {
       };
 
       await saveAnalysis(analysis);
-      Alert.alert(t("motionAnalysis.saved"), t("motionAnalysis.savedMessage"), [
-        { text: "OK", onPress: () => router.back() },
-      ]);
+      setModalConfig({
+        visible: true,
+        type: "success",
+        title: t("motionAnalysis.saved"),
+        message: t("motionAnalysis.savedMessage"),
+        onDismiss: () => router.back(),
+      });
     } catch (error) {
       console.error("Error saving motion analysis:", error);
-      Alert.alert(t("common.error"), t("motionAnalysis.saveError"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("motionAnalysis.saveError"),
+      });
     } finally {
       setIsSaving(false);
     }
@@ -235,7 +260,12 @@ export default function MotionAnalysisScreen() {
     if (!viewportRef.current) return;
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
-      Alert.alert(t("common.error"), t("motionAnalysis.shareNotAvailable"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("motionAnalysis.shareNotAvailable"),
+      });
       return;
     }
     setIsExporting(true);
@@ -251,7 +281,12 @@ export default function MotionAnalysisScreen() {
       });
     } catch (err) {
       console.error("[MotionAnalysis] Export failed:", err);
-      Alert.alert(t("common.error"), t("motionAnalysis.exportError"));
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: t("motionAnalysis.exportError"),
+      });
     } finally {
       setIsExporting(false);
     }
@@ -436,6 +471,36 @@ export default function MotionAnalysisScreen() {
           </SafeAreaView>
         </ScrollView>
       )}
+
+      {/* Feedback Modal */}
+      <ConfirmModal
+        visible={modalConfig.visible}
+        onClose={() => {
+          const cb = modalConfig.onDismiss;
+          setModalConfig((prev) => ({ ...prev, visible: false }));
+          cb?.();
+        }}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        icon={
+          modalConfig.type === "success" ? (
+            <CheckCircle2 size={28} color={theme.colors.success} />
+          ) : (
+            <AlertCircle size={28} color={theme.colors.error} />
+          )
+        }
+        actions={[
+          {
+            label: "OK",
+            variant: "primary",
+            onPress: () => {
+              const cb = modalConfig.onDismiss;
+              setModalConfig((prev) => ({ ...prev, visible: false }));
+              cb?.();
+            },
+          },
+        ]}
+      />
     </View>
   );
 }

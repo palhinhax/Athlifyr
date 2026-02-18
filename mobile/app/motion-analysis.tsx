@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -22,10 +28,12 @@ import {
   AlertCircle,
 } from "lucide-react-native";
 import * as Crypto from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
 import { theme } from "@/src/constants/theme";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import type { ExportMotionPayload } from "@/src/lib/analysis-export";
+import { saveMotionAnalysisToCloud } from "@/src/lib/analysis-cloud";
 import { TrimSlider } from "@/src/components/motion-analysis/TrimSlider";
 import { AnalysisProgress } from "@/src/components/motion-analysis/AnalysisProgress";
 import { PoseResultTabs } from "@/src/components/motion-analysis/PoseResultTabs";
@@ -33,6 +41,7 @@ import { PoseWebViewRunner } from "@/src/components/motion-analysis/PoseWebViewR
 import { ErrorBoundary } from "@/src/components/motion-analysis/ErrorBoundary";
 import { computePoseMetrics, smoothPoseFrames } from "@/src/lib/pose-utils";
 import { useMotionAnalysisStore } from "@/src/lib/motion-analysis-store";
+import { useAuthStore } from "@/src/lib/auth-store";
 import type {
   PoseFrame,
   PoseMetrics,
@@ -63,9 +72,10 @@ export default function MotionAnalysisScreen() {
     : null;
 
   const saveAnalysis = useMotionAnalysisStore((s) => s.save);
+  const { isAuthenticated, token } = useAuthStore();
 
-  // ─── Refs ────────────────────────────────────────────────────
-  // (reserved for future use)
+  // Pending save payload — preserved while user goes to login and comes back
+  const pendingSaveRef = useRef<MotionAnalysis | null>(null);
 
   // ─── State ───────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("trim");
@@ -97,6 +107,8 @@ export default function MotionAnalysisScreen() {
     title: string;
     message: string;
     onDismiss?: () => void;
+    /** When true, render "Sign in" + "Cancel" action buttons */
+    loginAction?: boolean;
   }>({ visible: false, type: "success", title: "", message: "" });
 
   // Export video modal (backend composition)
@@ -201,6 +213,14 @@ export default function MotionAnalysisScreen() {
   );
 
   // ─── Save ───────────────────────────────────────────────────
+  /**
+   * Save flow:
+   * 1. Build the MotionAnalysis object (always saved locally too)
+   * 2. If not authenticated → show login gate modal; store payload in ref
+   * 3. If authenticated → upload video + JSON to cloud, then also save locally
+   * 4. After login, `useEffect` detects `isAuthenticated` became true and
+   *    retries the pending save automatically.
+   */
   const handleSave = useCallback(async () => {
     console.log("💾 Save button pressed");
     if (poseFrames.length === 0 || !metrics) return;
@@ -220,12 +240,45 @@ export default function MotionAnalysisScreen() {
         videoMeta: videoMeta ?? undefined,
       };
 
+      if (!isAuthenticated || !token) {
+        // Not logged in — store payload and prompt login
+        pendingSaveRef.current = analysis;
+        setIsSaving(false);
+        setModalConfig({
+          visible: true,
+          type: "error",
+          title: t("motionAnalysis.loginToSaveAnalysis"),
+          message: t("motionAnalysis.loginToSaveAnalysisMessage"),
+          onDismiss: () => {},
+          loginAction: true,
+        });
+        return;
+      }
+
+      // Authenticated → upload to cloud
+      const authToken =
+        token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
+      await saveMotionAnalysisToCloud(
+        {
+          localId: id,
+          videoUri,
+          segment: { startMs: trimStart, endMs: trimEnd },
+          sampleFps: 12,
+          videoMeta: videoMeta ?? null,
+          poseFrames,
+          metrics,
+        },
+        authToken
+      );
+
+      // Also save locally (offline access)
       await saveAnalysis(analysis);
+
       setModalConfig({
         visible: true,
         type: "success",
-        title: t("motionAnalysis.saved"),
-        message: t("motionAnalysis.savedMessage"),
+        title: t("motionAnalysis.savedCloud"),
+        message: t("motionAnalysis.savedCloudMessage"),
         onDismiss: () => router.back(),
       });
     } catch (error) {
@@ -246,10 +299,60 @@ export default function MotionAnalysisScreen() {
     videoUri,
     trimStart,
     trimEnd,
+    isAuthenticated,
+    token,
     saveAnalysis,
     t,
     router,
   ]);
+
+  // ─── Retry pending save after login ─────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated || !token || !pendingSaveRef.current) return;
+
+    const pending = pendingSaveRef.current;
+    pendingSaveRef.current = null;
+
+    const retry = async () => {
+      setIsSaving(true);
+      try {
+        const authToken =
+          token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
+        await saveMotionAnalysisToCloud(
+          {
+            localId: pending.id,
+            videoUri: pending.videoUri,
+            segment: pending.segment,
+            sampleFps: pending.sampleFps,
+            videoMeta: pending.videoMeta ?? null,
+            poseFrames: pending.poseFrames,
+            metrics: pending.metrics,
+          },
+          authToken
+        );
+        await saveAnalysis(pending);
+        setModalConfig({
+          visible: true,
+          type: "success",
+          title: t("motionAnalysis.savedCloud"),
+          message: t("motionAnalysis.savedCloudMessage"),
+          onDismiss: () => router.back(),
+        });
+      } catch (error) {
+        console.error("Error retrying motion analysis save:", error);
+        setModalConfig({
+          visible: true,
+          type: "error",
+          title: t("common.error"),
+          message: t("motionAnalysis.saveError"),
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    retry();
+  }, [isAuthenticated, token, saveAnalysis, t, router]);
 
   // ─── Export snapshot (frame + overlay + watermark) ──────────
   const handleExportVideo = useCallback(() => {
@@ -450,17 +553,38 @@ export default function MotionAnalysisScreen() {
             <AlertCircle size={28} color={theme.colors.error} />
           )
         }
-        actions={[
-          {
-            label: "OK",
-            variant: "primary",
-            onPress: () => {
-              const cb = modalConfig.onDismiss;
-              setModalConfig((prev) => ({ ...prev, visible: false }));
-              cb?.();
-            },
-          },
-        ]}
+        actions={
+          modalConfig.loginAction
+            ? [
+                {
+                  label: t("motionAnalysis.loginAndReturn"),
+                  variant: "primary",
+                  onPress: () => {
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                    router.push("/login");
+                  },
+                },
+                {
+                  label: t("common.cancel"),
+                  variant: "outline",
+                  onPress: () => {
+                    pendingSaveRef.current = null;
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                  },
+                },
+              ]
+            : [
+                {
+                  label: "OK",
+                  variant: "primary",
+                  onPress: () => {
+                    const cb = modalConfig.onDismiss;
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                    cb?.();
+                  },
+                },
+              ]
+        }
       />
 
       {/* Export Video Modal — backend composition (upload → FFmpeg → share) */}

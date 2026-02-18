@@ -24,6 +24,7 @@ import {
   AlertCircle,
 } from "lucide-react-native";
 import * as Crypto from "expo-crypto";
+import * as SecureStore from "expo-secure-store";
 import { theme } from "@/src/constants/theme";
 import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
@@ -33,6 +34,8 @@ import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoMo
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import { trackPlate, type TrackingProgress } from "@/src/lib/plate-tracker";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
+import { useAuthStore } from "@/src/lib/auth-store";
+import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
 import type { ExportLiftPayload } from "@/src/lib/analysis-export";
 import type { BarPathPoint, LiftAnalysis } from "@/src/types/lift-analysis";
 
@@ -60,6 +63,10 @@ export default function LiftAnalysisScreen() {
     : null;
 
   const saveAnalysis = useLiftAnalysisStore((s) => s.save);
+  const { isAuthenticated, token } = useAuthStore();
+
+  // Pending save payload — preserved while user goes to login and comes back
+  const pendingSaveRef = useRef<LiftAnalysis | null>(null);
 
   // ─── State ───────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("seed");
@@ -81,6 +88,8 @@ export default function LiftAnalysisScreen() {
     title: string;
     message: string;
     onDismiss?: () => void;
+    /** When true, render "Sign in" + "Cancel" action buttons */
+    loginAction?: boolean;
   }>({ visible: false, type: "success", title: "", message: "" });
 
   // Auto-tracking progress
@@ -250,6 +259,14 @@ export default function LiftAnalysisScreen() {
 
   // ─── Phase: Playback ────────────────────────────────────────
 
+  /**
+   * Save flow:
+   * 1. Build the LiftAnalysis object (always saved locally too)
+   * 2. If not authenticated → show login gate modal; store payload in ref
+   * 3. If authenticated → upload video + JSON to cloud, then also save locally
+   * 4. After login, `useEffect` detects `isAuthenticated` became true and
+   *    retries the pending save automatically.
+   */
   const handleSave = useCallback(async () => {
     if (barPath.length < 2 || !seedPoint) return;
     setIsSaving(true);
@@ -272,12 +289,45 @@ export default function LiftAnalysisScreen() {
         metrics,
       };
 
+      if (!isAuthenticated || !token) {
+        // Not logged in — store payload and prompt login
+        pendingSaveRef.current = analysis;
+        setIsSaving(false);
+        setModalConfig({
+          visible: true,
+          type: "error",
+          title: t("liftAnalysis.loginToSaveAnalysis"),
+          message: t("liftAnalysis.loginToSaveAnalysisMessage"),
+          onDismiss: () => {},
+          loginAction: true,
+        });
+        return;
+      }
+
+      // Authenticated → upload to cloud
+      const authToken =
+        token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
+      await saveLiftAnalysisToCloud(
+        {
+          localId: id,
+          videoUri,
+          durationMs: videoDurationMs,
+          fpsSample: analysis.fpsSample,
+          seedPoint,
+          barPath,
+          metrics,
+        },
+        authToken
+      );
+
+      // Also save locally (offline access)
       await saveAnalysis(analysis);
+
       setModalConfig({
         visible: true,
         type: "success",
-        title: t("liftAnalysis.saved"),
-        message: t("liftAnalysis.savedMessage"),
+        title: t("liftAnalysis.savedCloud"),
+        message: t("liftAnalysis.savedCloudMessage"),
         onDismiss: () => router.back(),
       });
     } catch (error) {
@@ -291,7 +341,65 @@ export default function LiftAnalysisScreen() {
     } finally {
       setIsSaving(false);
     }
-  }, [barPath, seedPoint, videoUri, videoDurationMs, saveAnalysis, t, router]);
+  }, [
+    barPath,
+    seedPoint,
+    videoUri,
+    videoDurationMs,
+    isAuthenticated,
+    token,
+    saveAnalysis,
+    t,
+    router,
+  ]);
+
+  // ─── Retry pending save after login ─────────────────────────
+  useEffect(() => {
+    if (!isAuthenticated || !token || !pendingSaveRef.current) return;
+
+    const pending = pendingSaveRef.current;
+    pendingSaveRef.current = null;
+
+    const retry = async () => {
+      setIsSaving(true);
+      try {
+        const authToken =
+          token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
+        await saveLiftAnalysisToCloud(
+          {
+            localId: pending.id,
+            videoUri: pending.videoUri,
+            durationMs: pending.durationMs,
+            fpsSample: pending.fpsSample,
+            seedPoint: pending.seedPoint,
+            barPath: pending.barPath,
+            metrics: pending.metrics,
+          },
+          authToken
+        );
+        await saveAnalysis(pending);
+        setModalConfig({
+          visible: true,
+          type: "success",
+          title: t("liftAnalysis.savedCloud"),
+          message: t("liftAnalysis.savedCloudMessage"),
+          onDismiss: () => router.back(),
+        });
+      } catch (error) {
+        console.error("Error retrying lift analysis save:", error);
+        setModalConfig({
+          visible: true,
+          type: "error",
+          title: t("common.error"),
+          message: t("liftAnalysis.saveError"),
+        });
+      } finally {
+        setIsSaving(false);
+      }
+    };
+
+    retry();
+  }, [isAuthenticated, token, saveAnalysis, t, router]);
 
   // ─── Export video ─────────────────────────────────────────
   const [exportPayload, setExportPayload] = useState<ExportLiftPayload | null>(
@@ -619,9 +727,11 @@ export default function LiftAnalysisScreen() {
       <ConfirmModal
         visible={modalConfig.visible}
         onClose={() => {
-          const cb = modalConfig.onDismiss;
-          setModalConfig((prev) => ({ ...prev, visible: false }));
-          cb?.();
+          if (!modalConfig.loginAction) {
+            const cb = modalConfig.onDismiss;
+            setModalConfig((prev) => ({ ...prev, visible: false }));
+            cb?.();
+          }
         }}
         title={modalConfig.title}
         message={modalConfig.message}
@@ -632,17 +742,38 @@ export default function LiftAnalysisScreen() {
             <AlertCircle size={28} color={theme.colors.error} />
           )
         }
-        actions={[
-          {
-            label: "OK",
-            variant: "primary",
-            onPress: () => {
-              const cb = modalConfig.onDismiss;
-              setModalConfig((prev) => ({ ...prev, visible: false }));
-              cb?.();
-            },
-          },
-        ]}
+        actions={
+          modalConfig.loginAction
+            ? [
+                {
+                  label: t("liftAnalysis.loginAndReturn"),
+                  variant: "primary" as const,
+                  onPress: () => {
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                    router.push("/login");
+                  },
+                },
+                {
+                  label: t("common.cancel"),
+                  variant: "outline" as const,
+                  onPress: () => {
+                    pendingSaveRef.current = null;
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                  },
+                },
+              ]
+            : [
+                {
+                  label: "OK",
+                  variant: "primary" as const,
+                  onPress: () => {
+                    const cb = modalConfig.onDismiss;
+                    setModalConfig((prev) => ({ ...prev, visible: false }));
+                    cb?.();
+                  },
+                },
+              ]
+        }
       />
 
       {/* Export Video Modal — backend composition (upload → FFmpeg → share) */}

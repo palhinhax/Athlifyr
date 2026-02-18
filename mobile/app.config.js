@@ -1,6 +1,35 @@
+const fs = require("fs");
+const path = require("path");
+
+/**
+ * Read the version from the root package.json (managed by semantic-release).
+ * This ensures the mobile app version always matches the web release version.
+ */
+function getWebVersion() {
+  try {
+    const rootPkg = JSON.parse(
+      fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8")
+    );
+    return rootPkg.version || "1.0.0";
+  } catch {
+    return "1.0.0";
+  }
+}
+
 const config = ({ config }) => {
+  const version = getWebVersion();
+
   return {
     ...config,
+    version,
+    ios: {
+      ...config.ios,
+      buildNumber: String(config.ios?.buildNumber || "1"),
+    },
+    android: {
+      ...config.android,
+      versionCode: config.android?.versionCode || 1,
+    },
     plugins: [
       "expo-router",
       [

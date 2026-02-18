@@ -39,6 +39,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Sync version from web
+        run: |
+          WEB_VERSION=$(node -p "require('../package.json').version")
+          echo "Syncing mobile version to web version: $WEB_VERSION"
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$WEB_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+          echo "✅ Mobile version synced to $WEB_VERSION"
+
       - name: Build Android AAB (Production)
         run: eas build --platform android --profile production --non-interactive
 

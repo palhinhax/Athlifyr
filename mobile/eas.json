@@ -29,8 +29,13 @@
       }
     },
     "production": {
+      "autoIncrement": true,
       "android": {
-        "buildType": "app-bundle"
+        "buildType": "app-bundle",
+        "autoIncrement": "versionCode"
+      },
+      "ios": {
+        "autoIncrement": "buildNumber"
       },
       "env": {
         "EXPO_PUBLIC_API_URL": "https://www.athlifyr.com",

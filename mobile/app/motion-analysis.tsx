@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+} from "react";
 import {
   View,
   Text,
@@ -21,7 +27,7 @@ import {
   Share2,
 } from "lucide-react-native";
 import * as Sharing from "expo-sharing";
-import { Paths, File as FSFile } from "expo-file-system";
+import { captureRef } from "react-native-view-shot";
 import * as Crypto from "expo-crypto";
 import { theme } from "@/src/constants/theme";
 import { TrimSlider } from "@/src/components/motion-analysis/TrimSlider";
@@ -61,6 +67,9 @@ export default function MotionAnalysisScreen() {
     : null;
 
   const saveAnalysis = useMotionAnalysisStore((s) => s.save);
+
+  // ─── Refs ────────────────────────────────────────────────────
+  const viewportRef = useRef<View>(null);
 
   // ─── State ───────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("trim");
@@ -223,7 +232,7 @@ export default function MotionAnalysisScreen() {
   const [isExporting, setIsExporting] = useState(false);
 
   const handleExportVideo = useCallback(async () => {
-    if (!videoUri) return;
+    if (!viewportRef.current) return;
     const isAvailable = await Sharing.isAvailableAsync();
     if (!isAvailable) {
       Alert.alert(t("common.error"), t("motionAnalysis.shareNotAvailable"));
@@ -231,20 +240,14 @@ export default function MotionAnalysisScreen() {
     }
     setIsExporting(true);
     try {
-      let shareUri = videoUri;
-      if (videoUri.startsWith("content://")) {
-        const dest = new FSFile(
-          Paths.cache,
-          `athlifyr_motion_${Date.now()}.mp4`
-        );
-        const src = new FSFile(videoUri);
-        src.copy(dest);
-        shareUri = dest.uri;
-      }
-      await Sharing.shareAsync(shareUri, {
-        mimeType: "video/mp4",
-        dialogTitle: "Exportar vídeo de Motion Analysis",
-        UTI: "public.movie",
+      const uri = await captureRef(viewportRef, {
+        format: "png",
+        quality: 1,
+      });
+      await Sharing.shareAsync(uri, {
+        mimeType: "image/png",
+        dialogTitle: t("motionAnalysis.exportVideo"),
+        UTI: "public.png",
       });
     } catch (err) {
       console.error("[MotionAnalysis] Export failed:", err);
@@ -252,7 +255,7 @@ export default function MotionAnalysisScreen() {
     } finally {
       setIsExporting(false);
     }
-  }, [videoUri, t]);
+  }, [t]);
 
   // ─── Memoize PoseResultTabs props to prevent re-renders ─────
   const resultTabsProps = useMemo(() => {
@@ -384,6 +387,7 @@ export default function MotionAnalysisScreen() {
             <PoseResultTabs
               key={`pose-results-${videoUri}`}
               {...resultTabsProps}
+              viewportRef={viewportRef}
             />
           </ErrorBoundary>
 

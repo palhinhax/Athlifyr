@@ -40,6 +40,8 @@ interface PoseResultTabsProps {
   metrics: PoseMetrics;
   /** Original video aspect ratio (width/height) for correct coordinate mapping */
   videoAspectRatio?: number;
+  /** Optional ref attached to the viewport for screenshot capture */
+  viewportRef?: React.RefObject<View | null>;
 }
 
 const PoseResultTabsComponent = ({
@@ -49,6 +51,7 @@ const PoseResultTabsComponent = ({
   poseFrames,
   metrics,
   videoAspectRatio,
+  viewportRef,
 }: PoseResultTabsProps) => {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("overlay");
@@ -281,6 +284,8 @@ const PoseResultTabsComponent = ({
 
       {/* Viewport */}
       <View
+        ref={viewportRef}
+        collapsable={false}
         style={[styles.viewport, { height: containerLayout.height }]}
         onLayout={(e) =>
           setContainerLayout({

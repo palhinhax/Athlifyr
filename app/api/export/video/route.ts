@@ -2,22 +2,26 @@ import { NextResponse } from "next/server";
 import { randomUUID } from "crypto";
 import {
   createJob,
+  getJob,
   processExportJob,
-  cleanupJobs,
   type MotionOverlayData,
   type LiftOverlayData,
 } from "@/lib/video-export";
 
-// Next.js App Router — allow up to 100MB body & 5 min execution
-export const maxDuration = 300; // 5 min
+// Next.js App Router — allow up to 5 min execution (video rendering is slow)
+export const maxDuration = 300;
 export const dynamic = "force-dynamic";
 
 /**
  * POST /api/export/video
  *
- * Accepts multipart/form-data with a video file + overlay metadata.
- * Returns 202 { jobId } immediately and processes in background.
- * No auth required — the video belongs to the user's local device.
+ * Accepts multipart/form-data with either:
+ *   - `video` (File) — uploaded directly from the client device, OR
+ *   - `videoUrl` (string) — a URL the server will fetch (avoids browser CORS)
+ * Plus overlay metadata fields.
+ *
+ * Processes synchronously and returns { downloadUrl } when done.
+ * (Fire-and-forget + poll was unreliable across serverless instances.)
  */
 export async function POST(request: Request) {
   try {
@@ -25,11 +29,12 @@ export async function POST(request: Request) {
     const formData = await request.formData();
 
     const videoFile = formData.get("video") as File | null;
+    const videoUrl = formData.get("videoUrl") as string | null;
     const type = formData.get("type") as string | null;
 
-    if (!videoFile) {
+    if (!videoFile && !videoUrl) {
       return NextResponse.json(
-        { error: "Missing 'video' file" },
+        { error: "Missing 'video' file or 'videoUrl'" },
         { status: 400 }
       );
     }
@@ -41,22 +46,49 @@ export async function POST(request: Request) {
       );
     }
 
-    // Validate video size (max 100MB)
-    const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
-    if (videoFile.size > MAX_VIDEO_SIZE) {
-      return NextResponse.json(
-        { error: "Video exceeds 100MB limit" },
-        { status: 400 }
-      );
-    }
+    // ── Resolve video buffer ─────────────────────────────────────
+    let videoBuffer: Buffer;
 
-    // Validate content type
-    const validTypes = ["video/mp4", "video/quicktime", "video/webm"];
-    if (!validTypes.includes(videoFile.type)) {
-      return NextResponse.json(
-        { error: `Unsupported video type: ${videoFile.type}` },
-        { status: 400 }
-      );
+    if (videoFile) {
+      const MAX_VIDEO_SIZE = 100 * 1024 * 1024;
+      if (videoFile.size > MAX_VIDEO_SIZE) {
+        return NextResponse.json(
+          { error: "Video exceeds 100MB limit" },
+          { status: 400 }
+        );
+      }
+      const validTypes = ["video/mp4", "video/quicktime", "video/webm"];
+      if (!validTypes.includes(videoFile.type)) {
+        return NextResponse.json(
+          { error: `Unsupported video type: ${videoFile.type}` },
+          { status: 400 }
+        );
+      }
+      videoBuffer = Buffer.from(await videoFile.arrayBuffer());
+    } else {
+      // Fetch from URL server-side — no browser CORS restrictions here
+      let fetchRes: Response;
+      try {
+        fetchRes = await fetch(videoUrl!);
+      } catch (fetchErr) {
+        return NextResponse.json(
+          {
+            error: "Failed to fetch video from URL",
+            details:
+              fetchErr instanceof Error ? fetchErr.message : String(fetchErr),
+          },
+          { status: 400 }
+        );
+      }
+      if (!fetchRes.ok) {
+        return NextResponse.json(
+          {
+            error: `Failed to fetch video from URL: HTTP ${fetchRes.status}`,
+          },
+          { status: 400 }
+        );
+      }
+      videoBuffer = Buffer.from(await fetchRes.arrayBuffer());
     }
 
     // ── Parse overlay data ───────────────────────────────────────
@@ -76,35 +108,27 @@ export async function POST(request: Request) {
       }
 
       try {
-        const segment = JSON.parse(segmentStr) as {
-          startMs: number;
-          endMs: number;
-        };
-        const videoMeta = videoMetaStr
-          ? (JSON.parse(videoMetaStr) as {
-              videoWidth: number;
-              videoHeight: number;
-            })
-          : { videoWidth: 0, videoHeight: 0 };
-        const poseFrames = JSON.parse(poseFramesStr) as Array<{
-          t: number;
-          keypoints: Array<{
-            name: string;
-            x: number;
-            y: number;
-            score: number;
-          }>;
-        }>;
-        const metrics = metricsStr
-          ? (JSON.parse(metricsStr) as Record<string, unknown>)
-          : {};
-
         overlay = {
           type: "motion",
-          segment,
-          videoMeta,
-          poseFrames,
-          metrics,
+          segment: JSON.parse(segmentStr) as { startMs: number; endMs: number },
+          videoMeta: videoMetaStr
+            ? (JSON.parse(videoMetaStr) as {
+                videoWidth: number;
+                videoHeight: number;
+              })
+            : { videoWidth: 0, videoHeight: 0 },
+          poseFrames: JSON.parse(poseFramesStr) as Array<{
+            t: number;
+            keypoints: Array<{
+              name: string;
+              x: number;
+              y: number;
+              score: number;
+            }>;
+          }>,
+          metrics: metricsStr
+            ? (JSON.parse(metricsStr) as Record<string, unknown>)
+            : {},
         };
       } catch (parseErr) {
         return NextResponse.json(
@@ -117,7 +141,6 @@ export async function POST(request: Request) {
         );
       }
     } else {
-      // lift
       const durationMsStr = formData.get("durationMs") as string | null;
       const barPathStr = formData.get("barPath") as string | null;
 
@@ -129,17 +152,14 @@ export async function POST(request: Request) {
       }
 
       try {
-        const barPath = JSON.parse(barPathStr) as Array<{
-          t: number;
-          x: number;
-          y: number;
-        }>;
-        const durationMs = durationMsStr ? parseInt(durationMsStr, 10) : 0;
-
         overlay = {
           type: "lift",
-          durationMs,
-          barPath,
+          durationMs: durationMsStr ? parseInt(durationMsStr, 10) : 0,
+          barPath: JSON.parse(barPathStr) as Array<{
+            t: number;
+            x: number;
+            y: number;
+          }>,
         };
       } catch (parseErr) {
         return NextResponse.json(
@@ -153,24 +173,25 @@ export async function POST(request: Request) {
       }
     }
 
-    // ── Create job & start processing ────────────────────────────
+    // ── Process synchronously and return result ──────────────────
+    // We await the full pipeline here — maxDuration = 300s keeps this alive.
+    // In-memory jobs across serverless instances are unreliable, so we return
+    // the downloadUrl directly instead of using a job-poll pattern.
     const jobId = randomUUID();
-    createJob(jobId);
+    createJob(jobId); // register job in store so updateJob/getJob work
+    await processExportJob(jobId, videoBuffer, overlay);
 
-    // Read video into buffer
-    const videoBytes = await videoFile.arrayBuffer();
-    const videoBuffer = Buffer.from(videoBytes);
+    // processExportJob writes the result into the in-memory job store
+    const job = getJob(jobId);
 
-    // Start processing in background (fire and forget)
-    // The client will poll GET /api/export/video/:jobId for status
-    processExportJob(jobId, videoBuffer, overlay).catch((err) => {
-      console.error(`[export/video] Background processing failed:`, err);
-    });
+    if (!job || job.status === "error") {
+      return NextResponse.json(
+        { error: job?.error ?? "Export processing failed" },
+        { status: 500 }
+      );
+    }
 
-    // Cleanup old jobs periodically
-    cleanupJobs();
-
-    return NextResponse.json({ jobId }, { status: 202 });
+    return NextResponse.json({ downloadUrl: job.downloadUrl }, { status: 200 });
   } catch (error) {
     console.error("[export/video] POST error:", error);
     return NextResponse.json(

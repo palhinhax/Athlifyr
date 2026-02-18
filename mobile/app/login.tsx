@@ -30,7 +30,7 @@ export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const login = useAuthStore((s) => s.login);
-  const { signIn: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
+  const { promptAsync: googleSignIn, isReady: isGoogleReady } = useGoogleAuth();
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");

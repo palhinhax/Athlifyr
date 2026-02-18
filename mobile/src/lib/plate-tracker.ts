@@ -95,6 +95,15 @@ export interface TrackingResult {
   durationMs: number;
 }
 
+export interface DetectedCircle {
+  /** Center x coordinate (normalized 0-1) */
+  x: number;
+  /** Center y coordinate (normalized 0-1) */
+  y: number;
+  /** Radius (normalized 0-1) */
+  radius: number;
+}
+
 // ── Constants ────────────────────────────────────────────────────────
 
 /**
@@ -108,6 +117,12 @@ const TEMPLATE_HALF_NORM = 0.06;
  * 0.15 → ±15 % of frame width.
  */
 const SEARCH_RADIUS_NORM = 0.15;
+
+/**
+ * Search radius (normalized 0-1) around tap point when detecting circles.
+ * 0.2 → search within ±20% of frame width/height around tap.
+ */
+const CIRCLE_DETECTION_RADIUS_NORM = 0.2;
 
 // ── Helpers ──────────────────────────────────────────────────────────
 
@@ -137,6 +152,156 @@ function matSize(mat: Mat): { cols: number; rows: number } {
   const { OpenCV } = getOpenCV();
   const info = OpenCV.matToBuffer(mat, "uint8");
   return { cols: info.cols, rows: info.rows };
+}
+
+// ── Circle Detection ─────────────────────────────────────────────────
+
+/**
+ * Detect circular objects (barbell plates) near a tap point in a video frame.
+ *
+ * Uses OpenCV's HoughCircles algorithm to find circular shapes in the region
+ * around the tap coordinates. This provides immediate visual feedback to confirm
+ * the user tapped on an actual plate/weight disc.
+ *
+ * @param videoUri    Local URI of the video
+ * @param tapNorm     Normalized {x, y} coordinates of the tap (0-1)
+ * @param timeMs      Timestamp in video to extract frame (default 0)
+ * @returns           Detected circle closest to tap point, or null if none found
+ */
+export async function detectCircleAtPoint(
+  videoUri: string,
+  tapNorm: { x: number; y: number },
+  timeMs = 0
+): Promise<DetectedCircle | null> {
+  try {
+    const { OpenCV, ObjectType, ColorConversionCodes, DataTypes } = getOpenCV();
+    const VT = getVideoThumbnails();
+
+    // Extract frame at specified time
+    const result = await VT.getThumbnailAsync(videoUri, {
+      time: timeMs,
+      quality: 0.7,
+    });
+
+    // Load frame and convert to grayscale
+    const src = await loadMat(result.uri);
+    const gray = OpenCV.createObject(ObjectType.Mat, 1, 1, DataTypes.CV_8UC1);
+    OpenCV.invoke("cvtColor", src, gray, ColorConversionCodes.COLOR_BGR2GRAY);
+
+    const { cols: imgW, rows: imgH } = matSize(gray);
+
+    // Apply Gaussian blur to reduce noise (helps HoughCircles work better)
+    const blurred = OpenCV.createObject(ObjectType.Mat, 1, 1, DataTypes.CV_8UC1);
+    OpenCV.invoke("GaussianBlur", gray, blurred, [9, 9], 2, 2);
+
+    // Define search region around tap point
+    const searchRadPx = Math.round(CIRCLE_DETECTION_RADIUS_NORM * imgW);
+    const tapXpx = Math.round(tapNorm.x * imgW);
+    const tapYpx = Math.round(tapNorm.y * imgH);
+
+    const roiLeft = Math.max(0, tapXpx - searchRadPx);
+    const roiTop = Math.max(0, tapYpx - searchRadPx);
+    const roiRight = Math.min(imgW, tapXpx + searchRadPx);
+    const roiBottom = Math.min(imgH, tapYpx + searchRadPx);
+    const roiW = roiRight - roiLeft;
+    const roiH = roiBottom - roiTop;
+
+    if (roiW < 50 || roiH < 50) {
+      OpenCV.clearBuffers();
+      return null;
+    }
+
+    // Crop search region
+    const roi = OpenCV.createObject(ObjectType.Mat, 1, 1, DataTypes.CV_8UC1);
+    const roiRect = OpenCV.createObject(
+      ObjectType.Rect,
+      roiLeft,
+      roiTop,
+      roiW,
+      roiH
+    );
+    OpenCV.invoke("crop", blurred, roi, roiRect);
+
+    // Run HoughCircles detection
+    // Parameters:
+    // - dp=1: inverse ratio of accumulator resolution
+    // - minDist=30: minimum distance between circle centers (pixels)
+    // - param1=100: upper threshold for Canny edge detector
+    // - param2=30: threshold for circle detection (lower = more circles)
+    // - minRadius=10: minimum circle radius in pixels
+    // - maxRadius=Math.min(roiW, roiH)/2: maximum radius
+    const circles = OpenCV.createObject(
+      ObjectType.Mat,
+      1,
+      1,
+      DataTypes.CV_32FC3
+    );
+
+    const minRadius = 10;
+    const maxRadius = Math.round(Math.min(roiW, roiH) / 2);
+
+    OpenCV.invoke("HoughCircles", roi, circles, 3, 1, 30, 100, 30, [
+      minRadius,
+      maxRadius,
+    ]);
+
+    // Extract circle data
+    const circleData = OpenCV.matToBuffer(circles, "float32");
+
+    if (circleData.cols === 0 || circleData.rows === 0) {
+      OpenCV.clearBuffers();
+      return null;
+    }
+
+    // Parse circles (each circle is [x, y, radius] in float32)
+    const detected: Array<{ x: number; y: number; radius: number }> = [];
+    for (let i = 0; i < circleData.cols; i++) {
+      const offset = i * 3;
+      const cx = circleData.data[offset];
+      const cy = circleData.data[offset + 1];
+      const r = circleData.data[offset + 2];
+
+      // Convert ROI coordinates back to full image coordinates
+      const fullX = roiLeft + cx;
+      const fullY = roiTop + cy;
+
+      detected.push({ x: fullX, y: fullY, radius: r });
+    }
+
+    if (detected.length === 0) {
+      OpenCV.clearBuffers();
+      return null;
+    }
+
+    // Find circle closest to tap point
+    let closest: { x: number; y: number; radius: number } | null = null;
+    let minDist = Infinity;
+
+    for (const circle of detected) {
+      const dx = circle.x - tapXpx;
+      const dy = circle.y - tapYpx;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      if (dist < minDist) {
+        minDist = dist;
+        closest = circle;
+      }
+    }
+
+    OpenCV.clearBuffers();
+
+    if (!closest) return null;
+
+    // Return normalized coordinates
+    return {
+      x: closest.x / imgW,
+      y: closest.y / imgH,
+      radius: closest.radius / imgW,
+    };
+  } catch (err) {
+    console.warn("[PlateTracker] Circle detection failed:", err);
+    return null;
+  }
 }
 
 // ── Main entry ───────────────────────────────────────────────────────

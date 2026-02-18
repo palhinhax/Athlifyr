@@ -714,7 +714,9 @@
       "horizontalDrift": "Max. horizontale Abweichung",
       "avgSpeed": "Durchschnittsgeschwindigkeit",
       "maxSpeed": "Höchstgeschwindigkeit"
-    }
+    },
+    "detectingCircle": "Erkenne kreisförmiges Objekt…",
+    "noCircleDetected": "Kein kreisförmiges Objekt an diesem Ort erkannt. Versuche direkt auf die Hantelscheibe zu tippen."
   },
   "motionAnalysis": {
     "trimTitle": "Video Trimmen",

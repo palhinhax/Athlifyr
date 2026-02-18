@@ -14,7 +14,11 @@ const nextConfig = {
     },
   },
   // Keep native binaries out of the webpack bundle — they are resolved by Node at runtime
-  serverExternalPackages: ["ffmpeg-static", "@ffprobe-installer/ffprobe", "sharp"],
+  serverExternalPackages: [
+    "ffmpeg-static",
+    "@ffprobe-installer/ffprobe",
+    "sharp",
+  ],
   images: {
     qualities: [75, 90],
     // Cache optimized images for 30 days (TTL in seconds)

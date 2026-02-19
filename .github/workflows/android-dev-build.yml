@@ -71,11 +71,11 @@ jobs:
           script: |
             const sha = context.sha;
             const message = `✅ **Android Dev APK Build Successful!**
-            
+
             📱 **Download your APK:** [EAS Build Dashboard](https://expo.dev/accounts/joaomduart/projects/athlifyr/builds)
-            
+
             Build triggered by commit: \`${sha.substring(0, 7)}\``;
-            
+
             github.rest.repos.createCommitComment({
               owner: context.repo.owner,
               repo: context.repo.repo,

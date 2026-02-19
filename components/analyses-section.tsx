@@ -10,6 +10,7 @@ import {
   Play,
   Download,
   Loader2,
+  Plus,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -875,6 +877,7 @@ export function AnalysesSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [openMotion, setOpenMotion] = useState<AnalysisRecord | null>(null);
   const [openLift, setOpenLift] = useState<AnalysisRecord | null>(null);
+  const [uploadType, setUploadType] = useState<"lift" | "motion" | null>(null);
 
   const fetchAnalyses = useCallback(async () => {
     setIsLoading(true);
@@ -904,10 +907,75 @@ export function AnalysesSection() {
 
   const totalCount = motionAnalyses.length + liftAnalyses.length;
 
-  if (!isLoading && totalCount === 0) return null;
+  // Don't hide section completely even when empty - show empty state with call to action
+  if (!isLoading && totalCount === 0) {
+    return (
+      <>
+        <VideoAnalysisUpload
+          type={uploadType ?? "motion"}
+          open={uploadType !== null}
+          onOpenChange={(open) => !open && setUploadType(null)}
+          onSuccess={fetchAnalyses}
+        />
+
+        <div className="mt-12">
+          <h2 className="mb-6 flex items-center justify-between gap-2 text-2xl font-bold">
+            <span className="flex items-center gap-2">
+              <Activity className="h-6 w-6 text-primary" />
+              {t("analyses.title")}
+            </span>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setUploadType("motion")}
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                Nova Análise Movimento
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setUploadType("lift")}
+              >
+                <Plus className="mr-1.5 h-4 w-4" />
+                Nova Análise Levantamento
+              </Button>
+            </div>
+          </h2>
+
+          <div className="rounded-lg border bg-card p-12 text-center text-card-foreground shadow-sm">
+            <Activity className="mx-auto mb-4 h-12 w-12 text-muted-foreground/30" />
+            <p className="font-medium text-muted-foreground">
+              {t("analyses.noAnalyses")}
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {t("analyses.noAnalysesDesc")}
+            </p>
+            <div className="mt-6 flex justify-center gap-3">
+              <Button onClick={() => setUploadType("motion")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Análise Movimento
+              </Button>
+              <Button variant="outline" onClick={() => setUploadType("lift")}>
+                <Plus className="mr-2 h-4 w-4" />
+                Criar Análise Levantamento
+              </Button>
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
+      <VideoAnalysisUpload
+        type={uploadType ?? "motion"}
+        open={uploadType !== null}
+        onOpenChange={(open) => !open && setUploadType(null)}
+        onSuccess={fetchAnalyses}
+      />
       <MotionVideoModal
         record={openMotion}
         onClose={() => setOpenMotion(null)}
@@ -915,14 +983,38 @@ export function AnalysesSection() {
       <LiftVideoModal record={openLift} onClose={() => setOpenLift(null)} />
 
       <div className="mt-12">
-        <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-          <Activity className="h-6 w-6 text-primary" />
-          {t("analyses.title")}
-          {totalCount > 0 && (
-            <span className="ml-1 text-base font-normal text-muted-foreground">
-              ({totalCount})
-            </span>
-          )}
+        <h2 className="mb-6 flex items-center justify-between gap-2 text-2xl font-bold">
+          <span className="flex items-center gap-2">
+            <Activity className="h-6 w-6 text-primary" />
+            {t("analyses.title")}
+            {totalCount > 0 && (
+              <span className="ml-1 text-base font-normal text-muted-foreground">
+                ({totalCount})
+              </span>
+            )}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setUploadType("motion")}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">Nova Análise Movimento</span>
+              <span className="sm:hidden">Movimento</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => setUploadType("lift")}
+            >
+              <Plus className="mr-1.5 h-4 w-4" />
+              <span className="hidden sm:inline">
+                Nova Análise Levantamento
+              </span>
+              <span className="sm:hidden">Levantamento</span>
+            </Button>
+          </div>
         </h2>
 
         {isLoading ? (

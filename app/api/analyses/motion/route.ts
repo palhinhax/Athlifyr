@@ -10,6 +10,11 @@
  *   - video        : file (video/mp4 | video/quicktime | video/webm)  ≤ 200MB
  *   - localId      : string  — device-generated UUID (idempotency key)
  *   - label        : string? — optional user label
+ *
+ * Mode 1 (web upload — full proxy response):
+ *   - analysisData : JSON — full MotionAnalysisProcessResponse (includes skeletonFrames)
+ *
+ * Mode 2 (legacy / mobile — individual fields):
  *   - segment      : JSON { startMs, endMs }
  *   - sampleFps    : string (number)
  *   - videoMeta    : JSON { videoWidth, videoHeight }
@@ -91,47 +96,69 @@ export async function POST(request: Request) {
 
   // ── Parse JSON fields ──────────────────────────────────────────────────────
   const label = formData.get("label");
-  const segmentRaw = formData.get("segment");
-  const sampleFpsRaw = formData.get("sampleFps");
-  const videoMetaRaw = formData.get("videoMeta");
-  const poseFramesRaw = formData.get("poseFrames");
-  const metricsRaw = formData.get("metrics");
 
-  for (const [key, value] of [
-    ["segment", segmentRaw],
-    ["sampleFps", sampleFpsRaw],
-    ["poseFrames", poseFramesRaw],
-    ["metrics", metricsRaw],
-  ] as [string, FormDataEntryValue | null][]) {
-    if (!value) {
+  // Support two modes:
+  // 1. `analysisData` — full proxy response JSON (used by web upload)
+  // 2. Individual fields — legacy format (used by mobile)
+  const analysisDataRaw = formData.get("analysisData");
+  let analysisJson: Prisma.InputJsonValue;
+
+  if (analysisDataRaw && typeof analysisDataRaw === "string") {
+    // ── Mode 1: Full analysis response ────────────────────────────────────
+    try {
+      analysisJson = JSON.parse(analysisDataRaw) as Prisma.InputJsonValue;
+    } catch {
       return NextResponse.json(
-        { error: `${key} is required` },
+        { error: "Invalid JSON in analysisData" },
         { status: 400 }
       );
     }
-  }
+  } else {
+    // ── Mode 2: Individual fields (backward compatible) ──────────────────
+    const segmentRaw = formData.get("segment");
+    const sampleFpsRaw = formData.get("sampleFps");
+    const videoMetaRaw = formData.get("videoMeta");
+    const poseFramesRaw = formData.get("poseFrames");
+    const metricsRaw = formData.get("metrics");
 
-  let segment: Prisma.InputJsonValue,
-    videoMeta: Prisma.InputJsonValue | null,
-    poseFrames: Prisma.InputJsonValue,
-    metrics: Prisma.InputJsonValue;
-  try {
-    segment = JSON.parse(segmentRaw as string) as Prisma.InputJsonValue;
-    videoMeta = videoMetaRaw
-      ? (JSON.parse(videoMetaRaw as string) as Prisma.InputJsonValue)
-      : null;
-    poseFrames = JSON.parse(poseFramesRaw as string) as Prisma.InputJsonValue;
-    metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON in one of the fields" },
-      { status: 400 }
-    );
-  }
+    for (const [key, value] of [
+      ["segment", segmentRaw],
+      ["sampleFps", sampleFpsRaw],
+      ["poseFrames", poseFramesRaw],
+      ["metrics", metricsRaw],
+    ] as [string, FormDataEntryValue | null][]) {
+      if (!value) {
+        return NextResponse.json(
+          { error: `${key} is required` },
+          { status: 400 }
+        );
+      }
+    }
 
-  const sampleFps = Number(sampleFpsRaw);
-  if (!Number.isFinite(sampleFps)) {
-    return NextResponse.json({ error: "Invalid sampleFps" }, { status: 400 });
+    let segment: Prisma.InputJsonValue,
+      videoMeta: Prisma.InputJsonValue | null,
+      poseFrames: Prisma.InputJsonValue,
+      metrics: Prisma.InputJsonValue;
+    try {
+      segment = JSON.parse(segmentRaw as string) as Prisma.InputJsonValue;
+      videoMeta = videoMetaRaw
+        ? (JSON.parse(videoMetaRaw as string) as Prisma.InputJsonValue)
+        : null;
+      poseFrames = JSON.parse(poseFramesRaw as string) as Prisma.InputJsonValue;
+      metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON in one of the fields" },
+        { status: 400 }
+      );
+    }
+
+    const sampleFps = Number(sampleFpsRaw);
+    if (!Number.isFinite(sampleFps)) {
+      return NextResponse.json({ error: "Invalid sampleFps" }, { status: 400 });
+    }
+
+    analysisJson = { segment, sampleFps, videoMeta, poseFrames, metrics };
   }
 
   // ── Upload video to B2 ────────────────────────────────────────────────────
@@ -151,13 +178,7 @@ export async function POST(request: Request) {
       label: typeof label === "string" && label.trim() ? label.trim() : null,
       videoUrl: uploadResult.url,
       videoB2Key: uploadResult.fileName,
-      analysisJson: {
-        segment,
-        sampleFps,
-        videoMeta,
-        poseFrames,
-        metrics,
-      },
+      analysisJson,
     },
     select: { id: true, videoUrl: true, createdAt: true },
   });

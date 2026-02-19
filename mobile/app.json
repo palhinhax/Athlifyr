@@ -2,7 +2,7 @@
   "expo": {
     "name": "Athlifyr",
     "slug": "athlifyr",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.athlifyr.app",
-      "buildNumber": "6",
+      "buildNumber": "8",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -27,7 +27,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 6,
+      "versionCode": 8,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

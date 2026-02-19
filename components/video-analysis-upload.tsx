@@ -193,9 +193,10 @@ export function VideoAnalysisUpload({
         setUploadState({ status: "processing" });
 
         const saveFormData = new FormData();
-        saveFormData.append("video", selectedFile);
         saveFormData.append("localId", crypto.randomUUID());
         saveFormData.append("analysisData", JSON.stringify(result));
+        // Use the video URL from processing result instead of re-uploading
+        saveFormData.append("videoUrl", result.videoUrl);
 
         const saveResponse = await fetch("/api/analyses/lift", {
           method: "POST",
@@ -229,9 +230,10 @@ export function VideoAnalysisUpload({
         setUploadState({ status: "processing" });
 
         const saveFormData = new FormData();
-        saveFormData.append("video", selectedFile);
         saveFormData.append("localId", crypto.randomUUID());
         saveFormData.append("analysisData", JSON.stringify(result));
+        // Use the video URL from processing result instead of re-uploading
+        saveFormData.append("videoUrl", result.videoUrl);
 
         const saveResponse = await fetch("/api/analyses/motion", {
           method: "POST",

@@ -7,10 +7,10 @@ const nextConfig = {
   // SEO: Disable trailing slashes for consistent URL structure
   // This prevents duplicate URLs like /events/ vs /events
   trailingSlash: false,
-  // Allow large body uploads for video export API (up to 100MB)
+  // Allow large body uploads for video analysis APIs (up to 500MB)
   experimental: {
     serverActions: {
-      bodySizeLimit: "100mb",
+      bodySizeLimit: "500mb",
     },
   },
   // Keep native binaries out of the webpack bundle — they are resolved by Node at runtime

@@ -1,0 +1,19 @@
+{
+  "functions": {
+    "app/api/motion-analysis/process/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/lift-analysis/process/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/analyses/motion/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/analyses/lift/route.ts": {
+      "maxDuration": 120
+    },
+    "app/api/export/video/route.ts": {
+      "maxDuration": 300
+    }
+  }
+}

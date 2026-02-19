@@ -138,6 +138,25 @@ export function VideoAnalysisUpload({
     [uploadState]
   );
 
+  const handleClose = useCallback(() => {
+    if (
+      uploadState.status === "uploading" ||
+      uploadState.status === "processing"
+    ) {
+      return; // Don't close while processing
+    }
+
+    // Cleanup
+    if (uploadState.status === "selecting-seed") {
+      URL.revokeObjectURL(uploadState.videoUrl);
+    }
+
+    setUploadState({ status: "idle" });
+    setSelectedFile(null);
+    setSeedPoint(null);
+    onOpenChange(false);
+  }, [uploadState, onOpenChange]);
+
   const handleSubmit = useCallback(async () => {
     if (!selectedFile) return;
 
@@ -245,25 +264,6 @@ export function VideoAnalysisUpload({
       });
     }
   }, [selectedFile, seedPoint, isLift, onSuccess, handleClose]);
-
-  const handleClose = useCallback(() => {
-    if (
-      uploadState.status === "uploading" ||
-      uploadState.status === "processing"
-    ) {
-      return; // Don't close while processing
-    }
-
-    // Cleanup
-    if (uploadState.status === "selecting-seed") {
-      URL.revokeObjectURL(uploadState.videoUrl);
-    }
-
-    setUploadState({ status: "idle" });
-    setSelectedFile(null);
-    setSeedPoint(null);
-    onOpenChange(false);
-  }, [uploadState, onOpenChange]);
 
   const canSubmit =
     selectedFile &&

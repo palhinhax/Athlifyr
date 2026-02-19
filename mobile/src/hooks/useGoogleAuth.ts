@@ -1,26 +1,18 @@
-import * as AuthSession from "expo-auth-session";
+import * as Google from "expo-auth-session/providers/google";
 import * as WebBrowser from "expo-web-browser";
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import * as SecureStore from "expo-secure-store";
-import { Platform } from "react-native";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 
-// Ensure any in-progress auth sessions can complete their redirect
+// Required — lets the in-app browser close and return the result
 WebBrowser.maybeCompleteAuthSession();
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
 const TOKEN_EXPIRY_KEY = "token-expiry";
 
-// Google OAuth endpoints for PKCE authorization code flow
-const discovery: AuthSession.DiscoveryDocument = {
-  authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
-  tokenEndpoint: "https://oauth2.googleapis.com/token",
-  revocationEndpoint: "https://oauth2.googleapis.com/revoke",
-};
-
-interface ExchangeResponse {
+interface AuthResponse {
   token: string;
   refreshToken?: string;
   expiresIn?: number;
@@ -34,31 +26,24 @@ interface ExchangeResponse {
 }
 
 /**
- * Returns the correct Google client ID for the current platform.
- * For PKCE authorization code flow on mobile, use the platform-specific
- * client ID (Android/iOS). Falls back to web client ID.
- */
-function getClientId(): string {
-  const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || "";
-  const androidClientId =
-    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || "";
-  const iosClientId = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID || "";
-
-  if (Platform.OS === "android" && androidClientId) return androidClientId;
-  if (Platform.OS === "ios" && iosClientId) return iosClientId;
-  return webClientId;
-}
-
-/**
- * Google OAuth login hook using Authorization Code + PKCE flow.
+ * Google OAuth hook using expo-auth-session/providers/google.
  *
- * Flow:
- * 1. Opens Google consent screen in a secure browser.
- * 2. Google redirects back to the app via deep link (athlifyr://redirect).
- * 3. App sends the authorization code + code verifier to the backend.
- * 4. Backend exchanges the code with Google (server-to-server) and returns
- *    session tokens.
- * 5. Tokens are stored in SecureStore.
+ * This provider automatically picks the right redirect URI and client ID:
+ *   • Expo Go          → uses Web Client ID + auth.expo.io proxy redirect
+ *   • Standalone APK   → uses Android Client ID + com.athlifyr.app:/ redirect
+ *   • Standalone IPA   → uses iOS Client ID     + com.athlifyr.app:/ redirect
+ *
+ * Required Google Cloud Console setup
+ * ─────────────────────────────────────
+ * Web Client ID (849323427488-4oo3r0ia80ces1bqfo5c46qs8fb2vbk9):
+ *   Authorised JavaScript origins:
+ *     https://auth.expo.io
+ *   Authorised redirect URIs:
+ *     https://auth.expo.io/@joaomduart/athlifyr
+ *
+ * Android Client ID (849323427488-b3e26goccuvhndhfn8hiptfecr3q5bqq):
+ *   Package name: com.athlifyr.app
+ *   SHA-1: B0:39:5A:EB:12:19:3D:DC:04:A9:83:8D:9C:37:BF:5A:62:5D:66:EF
  */
 export function useGoogleAuth() {
   const [isLoading, setIsLoading] = useState(false);
@@ -66,163 +51,72 @@ export function useGoogleAuth() {
   const setUser = useAuthStore((s) => s.setUser);
   const processingRef = useRef(false);
 
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: "athlifyr",
-    path: "redirect",
+  const [request, response, promptAsync] = Google.useAuthRequest({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    scopes: ["openid", "profile", "email"],
   });
 
-  const clientId = getClientId();
+  const handleGoogleToken = async (accessToken: string) => {
+    setIsLoading(true);
+    setError(null);
 
-  // Validate required env vars on mount
-  useEffect(() => {
-    const missing: string[] = [];
-    if (!process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID)
-      missing.push("EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID");
-    if (
-      Platform.OS === "android" &&
-      !process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID
-    )
-      missing.push("EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID");
-    if (Platform.OS === "ios" && !process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID)
-      missing.push("EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID");
+    try {
+      const res = await api.post<AuthResponse>("/auth/google-mobile", {
+        accessToken,
+      });
 
-    if (missing.length > 0) {
-      console.error("❌ Missing Google OAuth env vars:", missing);
-    }
+      const { token, refreshToken, user, expiresIn } = res.data;
 
-    console.log("Google Auth PKCE Config:", {
-      redirectUri,
-      clientId: clientId ? clientId.substring(0, 20) + "..." : "MISSING",
-      platform: Platform.OS,
-    });
-  }, [redirectUri, clientId]);
-
-  // Create the PKCE auth request
-  const [request, response, promptAsync] = AuthSession.useAuthRequest(
-    {
-      clientId,
-      redirectUri,
-      scopes: ["openid", "profile", "email"],
-      responseType: AuthSession.ResponseType.Code,
-      usePKCE: true,
-      extraParams: {
-        // Ensures we get a refresh token from Google
-        access_type: "offline",
-        prompt: "consent",
-      },
-    },
-    discovery
-  );
-
-  /**
-   * Exchange the authorization code with our backend.
-   * The backend handles the Google token exchange server-to-server.
-   */
-  const exchangeCodeWithBackend = useCallback(
-    async (code: string, codeVerifier: string) => {
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const platform = Platform.OS === "ios" ? "ios" : "android";
-
-        const res = await api.post<ExchangeResponse>("/auth/google/exchange", {
-          code,
-          codeVerifier,
-          redirectUri,
-          platform,
-        });
-
-        const { token, refreshToken, user, expiresIn } = res.data;
-
-        // Store tokens securely
-        await SecureStore.setItemAsync(TOKEN_KEY, token);
-        if (refreshToken) {
-          await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
-        }
-        if (expiresIn) {
-          const expiryDate = Date.now() + expiresIn * 1000;
-          await SecureStore.setItemAsync(
-            TOKEN_EXPIRY_KEY,
-            expiryDate.toString()
-          );
-        }
-
-        // Update auth state
-        setUser(user);
-        useAuthStore.setState({
-          token,
-          isAuthenticated: true,
-          isLoading: false,
-        });
-
-        console.log("✅ Google PKCE auth successful for user:", user.id);
-      } catch (err) {
-        const message =
-          err instanceof Error ? err.message : "Authentication failed";
-        console.error("❌ Google PKCE exchange error:", message);
-        setError(message);
-
-        // Clean up on error
-        await SecureStore.deleteItemAsync(TOKEN_KEY);
-        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-        await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
-        throw err;
-      } finally {
-        setIsLoading(false);
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
+      if (refreshToken) {
+        await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
       }
-    },
-    [redirectUri, setUser]
-  );
+      if (expiresIn) {
+        const expiry = Date.now() + expiresIn * 1000;
+        await SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, expiry.toString());
+      }
 
-  // Handle the auth response when it arrives
+      setUser(user);
+      useAuthStore.setState({ token, isAuthenticated: true, isLoading: false });
+
+      console.log("✅ Google auth successful, user:", user.id);
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Authentication failed";
+      console.error("❌ Google auth error:", message);
+      setError(message);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
     if (!response || processingRef.current) return;
 
-    switch (response.type) {
-      case "success": {
-        const { code } = response.params;
-        const codeVerifier = request?.codeVerifier;
-
-        if (!code) {
-          console.error("❌ Auth success but no authorization code received");
-          setError("No authorization code received");
-          break;
-        }
-
-        if (!codeVerifier) {
-          console.error("❌ Auth success but no code verifier available");
-          setError("PKCE code verifier missing");
-          break;
-        }
-
-        processingRef.current = true;
-        console.log("✅ Got authorization code, exchanging with backend...");
-        exchangeCodeWithBackend(code, codeVerifier).finally(() => {
-          processingRef.current = false;
-        });
-        break;
+    if (response.type === "success") {
+      const accessToken = response.authentication?.accessToken;
+      if (!accessToken) {
+        console.error("❌ Google success but no access token received");
+        setError("No access token received");
+        return;
       }
-
-      case "error":
-        console.error("❌ Google Auth error:", {
-          error: response.error,
-          params: response.params,
-        });
-        setError(
-          response.params?.error_description ||
-            response.error?.message ||
-            "Authentication error"
-        );
-        break;
-
-      case "cancel":
-        console.log("ℹ️ Google Auth cancelled by user");
-        setError(null);
-        break;
-
-      default:
-        console.log("ℹ️ Unhandled auth response type:", response.type);
+      processingRef.current = true;
+      console.log("✅ Got Google access token, sending to backend...");
+      handleGoogleToken(accessToken).finally(() => {
+        processingRef.current = false;
+      });
+    } else if (response.type === "error") {
+      console.error("❌ Google auth error:", response.error);
+      setError(response.error?.message ?? "Authentication error");
+    } else if (response.type === "cancel") {
+      console.log("ℹ️ Google auth cancelled by user");
+      setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response]);

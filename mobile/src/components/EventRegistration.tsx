@@ -179,9 +179,7 @@ export function EventRegistration({
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>
-          {t("events.registration.willYouGo")}
-        </Text>
+        <Text style={styles.title}>{t("events.registration.willYouGo")}</Text>
         <View style={styles.countContainer}>
           <Users size={16} color={theme.colors.textSecondary} />
           <Text style={styles.countText}>
@@ -292,10 +290,7 @@ export function EventRegistration({
                 activeOpacity={0.8}
               >
                 {isLoading ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.error}
-                  />
+                  <ActivityIndicator size="small" color={theme.colors.error} />
                 ) : (
                   <>
                     <X size={18} color={theme.colors.error} />

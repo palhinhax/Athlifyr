@@ -65,9 +65,7 @@ export default function FeedScreen() {
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
         ListHeaderComponent={
-          user ? (
-            <CreatePostBox onPostCreated={refetch} />
-          ) : null
+          user ? <CreatePostBox onPostCreated={refetch} /> : null
         }
         ListEmptyComponent={<EmptyFeed />}
         contentContainerStyle={

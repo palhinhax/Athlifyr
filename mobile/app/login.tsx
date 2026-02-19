@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -34,7 +34,9 @@ export default function LoginScreen() {
     promptAsync: googleSignIn,
     isReady: isGoogleReady,
     isLoading: isGoogleLoading,
+    error: googleError,
   } = useGoogleAuth();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { showToast } = useToast();
 
   const [email, setEmail] = useState("");
@@ -73,12 +75,26 @@ export default function LoginScreen() {
     }
   };
 
+  // Navigate back when authentication succeeds (Google flow is async via useEffect)
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.back();
+    }
+  }, [isAuthenticated, router]);
+
+  // Show toast on Google auth error
+  useEffect(() => {
+    if (googleError) {
+      showToast(t("login.googleError"), "error");
+    }
+  }, [googleError, showToast, t]);
+
   const handleGoogleSignIn = async () => {
     if (!isGoogleReady || isGoogleLoading) return;
     try {
       await googleSignIn();
-      // Navigate back after successful Google sign-in (same as email login)
-      router.back();
+      // Auth result is handled asynchronously in useGoogleAuth hook.
+      // Navigation happens via the isAuthenticated useEffect above.
     } catch {
       showToast(t("login.googleError"), "error");
     }

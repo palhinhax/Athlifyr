@@ -115,14 +115,14 @@ export function ProfileGallery() {
       } as unknown as Blob);
       formData.append("folder", "profiles");
 
-      const uploadResponse = await api.post<{ file?: { url: string }; url?: string }>(
-        "/upload",
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
+      const uploadResponse = await api.post<{
+        file?: { url: string };
+        url?: string;
+      }>("/upload", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-      const imageUrl =
-        uploadResponse.data.file?.url ?? uploadResponse.data.url;
+      const imageUrl = uploadResponse.data.file?.url ?? uploadResponse.data.url;
       if (!imageUrl) throw new Error("Upload returned no URL");
 
       // 2. Save photo record in DB
@@ -142,10 +142,7 @@ export function ProfileGallery() {
       );
     } catch (err) {
       console.error("[ProfileGallery] upload error:", err);
-      Alert.alert(
-        t("common.error"),
-        t("profile.gallery.uploadError")
-      );
+      Alert.alert(t("common.error"), t("profile.gallery.uploadError"));
     } finally {
       setIsUploading(false);
     }
@@ -261,9 +258,7 @@ export function ProfileGallery() {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>
-              {t("profile.publishPhoto")}
-            </Text>
+            <Text style={styles.modalTitle}>{t("profile.publishPhoto")}</Text>
 
             {pendingUri && (
               <Image

@@ -114,7 +114,8 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
     }
   };
 
-  const canSubmit = (content.trim().length > 0 || !!mediaUri) && !isSubmitting && !isUploading;
+  const canSubmit =
+    (content.trim().length > 0 || !!mediaUri) && !isSubmitting && !isUploading;
 
   return (
     <View style={styles.container}>
@@ -151,7 +152,13 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
       {mediaUri && (
         <View style={styles.previewContainer}>
           {/* eslint-disable-next-line @typescript-eslint/no-require-imports */}
-          <Image source={{ uri: mediaUri }} style={styles.preview} resizeMode="cover" accessibilityLabel="" />
+          <Image
+            source={{ uri: mediaUri }}
+            style={styles.preview}
+            resizeMode="cover"
+            alt=""
+            accessibilityLabel=""
+          />
           <TouchableOpacity
             style={styles.removeMedia}
             onPress={() => setMediaUri(null)}
@@ -169,7 +176,9 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           disabled={isSubmitting || isUploading}
         >
           <ImagePlus size={18} color={colors.textSecondary} />
-          <Text style={styles.mediaBtnText}>{t("feed.createPost.addMedia")}</Text>
+          <Text style={styles.mediaBtnText}>
+            {t("feed.createPost.addMedia")}
+          </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -182,7 +191,9 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           ) : (
             <>
               <Send size={14} color={colors.white} />
-              <Text style={styles.submitBtnText}>{t("feed.createPost.publish")}</Text>
+              <Text style={styles.submitBtnText}>
+                {t("feed.createPost.publish")}
+              </Text>
             </>
           )}
         </TouchableOpacity>

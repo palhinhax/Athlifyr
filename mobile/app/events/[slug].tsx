@@ -28,6 +28,7 @@ import { EventMetaInfo } from "@/src/components/EventMetaInfo";
 import { EventVariantsList } from "@/src/components/EventVariantsList";
 import { EventLocationMap } from "@/src/components/EventLocationMap";
 import { EventFAQ } from "@/src/components/EventFAQ";
+import { EventRegistration } from "@/src/components/EventRegistration";
 import type { Event } from "@/src/types";
 
 export default function EventDetailScreen() {
@@ -220,6 +221,14 @@ export default function EventDetailScreen() {
           {/* Variants List */}
           {event.variants && event.variants.length > 0 && (
             <EventVariantsList variants={event.variants} />
+          )}
+
+          {/* Registration / Going */}
+          {!event.cancelled && (
+            <EventRegistration
+              eventId={event.id}
+              variants={event.variants || []}
+            />
           )}
 
           {/* Location Map */}

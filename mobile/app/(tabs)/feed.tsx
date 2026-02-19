@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next";
 import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
+import { CreatePostBox } from "@/src/components/CreatePostBox";
+import { useAuthStore } from "@/src/lib/auth-store";
 import { theme } from "@/src/constants/theme";
 
 // ─── Empty State ───────────────────────────────────────────────
@@ -34,6 +36,7 @@ function EmptyFeed() {
 
 export default function FeedScreen() {
   const { posts, isLoading, refetch } = useFeedPosts();
+  const user = useAuthStore((s) => s.user);
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -61,6 +64,11 @@ export default function FeedScreen() {
         data={posts}
         keyExtractor={(item) => item.id}
         renderItem={renderPost}
+        ListHeaderComponent={
+          user ? (
+            <CreatePostBox onPostCreated={refetch} />
+          ) : null
+        }
         ListEmptyComponent={<EmptyFeed />}
         contentContainerStyle={
           posts.length === 0 ? styles.emptyListContent : styles.listContent

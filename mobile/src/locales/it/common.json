@@ -300,7 +300,14 @@
     "deleteCommentConfirm": "Sei sicuro di voler eliminare questo commento?",
     "playVideo": "Tocca per riprodurre il video",
     "loginToInteract": "Accesso richiesto",
-    "loginToInteractDescription": "Accedi per mettere mi piace ai post e lasciare commenti."
+    "loginToInteractDescription": "Accedi per mettere mi piace ai post e lasciare commenti.",
+    "createPost": {
+      "placeholder": "Condividi qualcosa con la community...",
+      "addMedia": "Aggiungi foto/video",
+      "publish": "Pubblica",
+      "uploadError": "Caricamento fallito. Riprova.",
+      "submitError": "Creazione del post fallita. Riprova."
+    }
   },
   "venues": {
     "title": "Luoghi",

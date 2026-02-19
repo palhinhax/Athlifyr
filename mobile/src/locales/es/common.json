@@ -300,7 +300,14 @@
     "deleteCommentConfirm": "¿Estás seguro de que quieres eliminar este comentario?",
     "playVideo": "Toca para reproducir vídeo",
     "loginToInteract": "Inicio de sesión necesario",
-    "loginToInteractDescription": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios."
+    "loginToInteractDescription": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios.",
+    "createPost": {
+      "placeholder": "Comparte algo con la comunidad...",
+      "addMedia": "Añadir foto/vídeo",
+      "publish": "Publicar",
+      "uploadError": "Error al subir el archivo. Inténtalo de nuevo.",
+      "submitError": "Error al crear la publicación. Inténtalo de nuevo."
+    }
   },
   "venues": {
     "title": "Lugares",

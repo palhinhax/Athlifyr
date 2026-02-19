@@ -300,7 +300,14 @@
     "deleteCommentConfirm": "Bist du sicher, dass du diesen Kommentar löschen möchtest?",
     "playVideo": "Tippe, um Video abzuspielen",
     "loginToInteract": "Anmeldung erforderlich",
-    "loginToInteractDescription": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen."
+    "loginToInteractDescription": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen.",
+    "createPost": {
+      "placeholder": "Teile etwas mit der Community...",
+      "addMedia": "Foto/Video hinzufügen",
+      "publish": "Veröffentlichen",
+      "uploadError": "Upload fehlgeschlagen. Versuche es erneut.",
+      "submitError": "Post konnte nicht erstellt werden. Versuche es erneut."
+    }
   },
   "venues": {
     "title": "Orte",

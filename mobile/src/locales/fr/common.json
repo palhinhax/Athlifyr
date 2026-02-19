@@ -300,7 +300,14 @@
     "deleteCommentConfirm": "Es-tu sûr de vouloir supprimer ce commentaire ?",
     "playVideo": "Appuie pour lire la vidéo",
     "loginToInteract": "Connexion requise",
-    "loginToInteractDescription": "Connecte-toi pour aimer des publications et laisser des commentaires."
+    "loginToInteractDescription": "Connecte-toi pour aimer des publications et laisser des commentaires.",
+    "createPost": {
+      "placeholder": "Partage quelque chose avec la communauté...",
+      "addMedia": "Ajouter photo/vidéo",
+      "publish": "Publier",
+      "uploadError": "Échec du téléchargement. Réessaie.",
+      "submitError": "Échec de la création du post. Réessaie."
+    }
   },
   "venues": {
     "title": "Lieux",

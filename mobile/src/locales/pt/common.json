@@ -31,6 +31,24 @@
     "loadingMore": "A carregar mais eventos...",
     "allEventsLoaded": "Todos os eventos carregados",
     "eventCancelled": "Este evento foi cancelado",
+    "registration": {
+      "willYouGo": "Vais participar?",
+      "participants": "participantes",
+      "loginToParticipate": "Inicia sessão para marcares a tua participação neste evento.",
+      "selectVariant": "Seleciona a tua prova",
+      "selectVariantRequired": "Seleciona uma prova",
+      "selectVariantRequiredDesc": "Escolhe em que prova vais participar.",
+      "authRequired": "Início de sessão necessário",
+      "authRequiredDesc": "Precisas de iniciar sessão para marcar a tua participação.",
+      "registered": "Vais participar!",
+      "markAsGoing": "Vou participar",
+      "cancelParticipation": "Cancelar participação",
+      "cancelParticipationDesc": "Tens a certeza de que queres cancelar a tua participação neste evento?",
+      "markedAsParticipant": "Participação marcada",
+      "participationRegistered": "A tua participação foi registada.",
+      "registrationError": "Não foi possível registar a tua participação. Tenta novamente.",
+      "cancellationError": "Não foi possível cancelar a tua participação. Tenta novamente."
+    },
     "filters": {
       "searchPlaceholder": "Pesquisar eventos...",
       "searchingGlobally": "A pesquisar todos os eventos",
@@ -300,7 +318,14 @@
     "deleteCommentConfirm": "Tens a certeza que queres apagar este comentário?",
     "playVideo": "Toca para reproduzir vídeo",
     "loginToInteract": "Início de sessão necessário",
-    "loginToInteractDescription": "Inicia sessão para gostar de publicações e deixar comentários."
+    "loginToInteractDescription": "Inicia sessão para gostar de publicações e deixar comentários.",
+    "createPost": {
+      "placeholder": "Partilha algo com a comunidade...",
+      "addMedia": "Adicionar foto/vídeo",
+      "publish": "Publicar",
+      "uploadError": "Falhou o upload do media. Tenta novamente.",
+      "submitError": "Falhou a criação do post. Tenta novamente."
+    }
   },
   "venues": {
     "title": "Locais",

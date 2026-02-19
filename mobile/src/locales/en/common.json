@@ -31,6 +31,24 @@
     "loadingMore": "Loading more events...",
     "allEventsLoaded": "All events loaded",
     "eventCancelled": "This event has been cancelled",
+    "registration": {
+      "willYouGo": "Will you go?",
+      "participants": "participants",
+      "loginToParticipate": "Sign in to mark your participation in this event.",
+      "selectVariant": "Select your race",
+      "selectVariantRequired": "Please select a race",
+      "selectVariantRequiredDesc": "Choose which race you will participate in.",
+      "authRequired": "Sign in required",
+      "authRequiredDesc": "You need to sign in to mark your participation.",
+      "registered": "You're going!",
+      "markAsGoing": "I'm going",
+      "cancelParticipation": "Cancel participation",
+      "cancelParticipationDesc": "Are you sure you want to cancel your participation in this event?",
+      "markedAsParticipant": "Marked as going",
+      "participationRegistered": "Your participation has been registered.",
+      "registrationError": "Failed to register your participation. Please try again.",
+      "cancellationError": "Failed to cancel your participation. Please try again."
+    },
     "filters": {
       "searchPlaceholder": "Search events...",
       "searchingGlobally": "Searching all events",
@@ -300,7 +318,14 @@
     "deleteCommentConfirm": "Are you sure you want to delete this comment?",
     "playVideo": "Tap to play video",
     "loginToInteract": "Sign in required",
-    "loginToInteractDescription": "Sign in to like posts and leave comments."
+    "loginToInteractDescription": "Sign in to like posts and leave comments.",
+    "createPost": {
+      "placeholder": "Share something with the community...",
+      "addMedia": "Add photo/video",
+      "publish": "Publish",
+      "uploadError": "Failed to upload media. Please try again.",
+      "submitError": "Failed to create post. Please try again."
+    }
   },
   "venues": {
     "title": "Venues",

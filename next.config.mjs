@@ -26,6 +26,14 @@ const nextConfig = {
     }
     return config;
   },
+  // Turbopack alias (used by `next dev` in Next.js 15+/16)
+  // Same purpose: force single React instance for @react-three/fiber
+  turbopack: {
+    resolveAlias: {
+      react: "./node_modules/react",
+      "react-dom": "./node_modules/react-dom",
+    },
+  },
   // Keep native binaries out of the webpack bundle — they are resolved by Node at runtime
   serverExternalPackages: [
     "ffmpeg-static",

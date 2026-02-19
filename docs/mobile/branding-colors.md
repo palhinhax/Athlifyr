@@ -18,15 +18,17 @@ Fim (direita):      #f5c356B3 (accent com 70% opacidade)
 **Ficheiro:** `/mobile/src/components/HeaderLogo.tsx`
 
 **React Native (LinearGradient):**
+
 ```tsx
 <LinearGradient
-  colors={['#f5c356', '#f5c356B3']}
+  colors={["#f5c356", "#f5c356B3"]}
   start={{ x: 0, y: 0 }}
   end={{ x: 1, y: 0 }}
 />
 ```
 
 Ou usando a constante do tema:
+
 ```tsx
 <LinearGradient
   colors={[theme.colors.accent, `${theme.colors.accent}B3`]}
@@ -36,8 +38,9 @@ Ou usando a constante do tema:
 ```
 
 **CSS (Web):**
+
 ```css
-background: linear-gradient(90deg, #f5c356 0%, #f5c356B3 100%);
+background: linear-gradient(90deg, #f5c356 0%, #f5c356b3 100%);
 -webkit-background-clip: text;
 -webkit-text-fill-color: transparent;
 ```
@@ -132,16 +135,14 @@ import MaskedView from "@react-native-masked-view/masked-view";
 import { LinearGradient } from "expo-linear-gradient";
 import { theme } from "@/src/constants/theme";
 
-<MaskedView
-  maskElement={<Text style={styles.logoText}>Athlifyr</Text>}
->
+<MaskedView maskElement={<Text style={styles.logoText}>Athlifyr</Text>}>
   <LinearGradient
     colors={[theme.colors.accent, `${theme.colors.accent}B3`]}
     start={{ x: 0, y: 0 }}
     end={{ x: 1, y: 0 }}
     style={styles.gradient}
   />
-</MaskedView>
+</MaskedView>;
 ```
 
 ---

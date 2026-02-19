@@ -9,7 +9,6 @@ import {
   GestureResponderEvent,
   ScrollView,
 } from "react-native";
-import Svg, { Circle as SvgCircle } from "react-native-svg";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -35,10 +34,10 @@ import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import {
-  trackPlate,
-  detectCircleAtPoint,
+  trackBarbell,
+  checkApiHealth,
   type TrackingProgress,
-} from "@/src/lib/plate-tracker";
+} from "@/src/lib/barbell-api";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
@@ -82,12 +81,6 @@ export default function LiftAnalysisScreen() {
   const [seedPoint, setSeedPoint] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [detectedCircle, setDetectedCircle] = useState<{
-    x: number;
-    y: number;
-    radius: number;
-  } | null>(null);
-  const [isDetecting, setIsDetecting] = useState(false);
 
   // Result
   const [barPath, setBarPath] = useState<BarPathPoint[]>([]);
@@ -145,34 +138,17 @@ export default function LiftAnalysisScreen() {
     );
   }, []);
 
-  // ─── Debug: check OpenCV availability on mount ───────────────
+  // ─── Debug: check API availability on mount ───────────────
   useEffect(() => {
     addLog(`videoUri: ${videoUri ? videoUri.slice(-40) : "(empty)"}`);
     addLog(`providedDuration: ${providedDuration ?? "none"}`);
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const cv = require("react-native-fast-opencv") as { OpenCV?: unknown };
-      if (cv?.OpenCV) {
-        addLog("✅ react-native-fast-opencv: LOADED + LINKED");
+    checkApiHealth().then((healthy) => {
+      if (healthy) {
+        addLog("✅ Barbell Path Tracker API: ONLINE");
       } else {
-        addLog(
-          "⚠️ react-native-fast-opencv: loaded but OpenCV is null/unlinked"
-        );
+        addLog("⚠️ Barbell Path Tracker API: OFFLINE or unreachable");
       }
-    } catch (e) {
-      addLog(
-        `❌ react-native-fast-opencv: FAILED TO LOAD — ${e instanceof Error ? e.message : String(e)}`
-      );
-    }
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      require("expo-video-thumbnails");
-      addLog("✅ expo-video-thumbnails: LOADED");
-    } catch (e) {
-      addLog(
-        `❌ expo-video-thumbnails: FAILED — ${e instanceof Error ? e.message : String(e)}`
-      );
-    }
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -272,8 +248,8 @@ export default function LiftAnalysisScreen() {
   // ─── Phase: Seed ─────────────────────────────────────────────
 
   const handleSeedTap = useCallback(
-    async (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
-      if (phase !== "seed" || isDetecting) return;
+    (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
+      if (phase !== "seed") return;
 
       const nx = evt.nativeEvent.locationX / containerLayout.width;
       const ny = evt.nativeEvent.locationY / containerLayout.height;
@@ -284,80 +260,50 @@ export default function LiftAnalysisScreen() {
 
       // Set tap point immediately for visual feedback
       setSeedPoint({ x: nx, y: ny });
-      setDetectedCircle(null);
-      setIsDetecting(true);
-
-      try {
-        // Detect circular object at tap point
-        const currentTimeMs = Math.round((scrubTime || 0) * 1000);
-        addLog(`🔍 detectCircleAtPoint @ ${currentTimeMs}ms …`);
-        const circle = await detectCircleAtPoint(
-          videoUri,
-          { x: nx, y: ny },
-          currentTimeMs,
-          addLog
-        );
-
-        if (circle) {
-          // Circle detected - show it
-          addLog(
-            `✅ circle detected: center (${circle.x.toFixed(3)}, ${circle.y.toFixed(3)}) radius=${circle.radius.toFixed(3)}`
-          );
-          setDetectedCircle(circle);
-          // Update seed point to circle center for more accurate tracking
-          setSeedPoint({ x: circle.x, y: circle.y });
-        } else {
-          addLog("⚠️ no circle detected near tap point");
-          // No circle detected near tap point
-          setModalConfig({
-            visible: true,
-            type: "error",
-            title: t("common.error"),
-            message: t("liftAnalysis.noCircleDetected"),
-          });
-          setSeedPoint(null);
-        }
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        addLog(`❌ detectCircleAtPoint ERROR: ${msg}`);
-        console.error("[LiftAnalysis] Circle detection failed:", err);
-        // On detection error, still allow manual point selection as fallback
-        setDetectedCircle(null);
-      } finally {
-        setIsDetecting(false);
-      }
     },
-    [phase, containerLayout, scrubTime, videoUri, t, isDetecting, addLog]
+    [phase, containerLayout, addLog]
   );
 
   const confirmSeed = useCallback(async () => {
     if (!seedPoint) return;
 
-    // Use detected circle center if available, otherwise use tap point
-    const trackingPoint = detectedCircle
-      ? { x: detectedCircle.x, y: detectedCircle.y }
-      : seedPoint;
-
     addLog(
-      `🚀 confirmSeed — trackingPoint (${trackingPoint.x.toFixed(3)}, ${trackingPoint.y.toFixed(3)}) | durationMs=${videoDurationMs}`
+      `🚀 confirmSeed — seedPoint (${seedPoint.x.toFixed(3)}, ${seedPoint.y.toFixed(3)}) | durationMs=${videoDurationMs}`
     );
 
-    // Switch to tracking phase and run automatic CV tracking
+    // Switch to tracking phase and send video to external API
     setPhase("tracking");
-    setTrackingProgress({ current: 0, total: 1, step: "extracting" });
+    setTrackingProgress({ current: 0, total: 2, step: "uploading" });
 
     try {
-      const result = await trackPlate(
+      // Use container layout as approximation for video dimensions
+      // The API needs pixel coordinates for the seed point
+      const videoW = containerLayout.width;
+      const videoH = containerLayout.height;
+
+      addLog(`📤 Uploading video to Barbell Tracker API…`);
+      const result = await trackBarbell(
         videoUri,
-        trackingPoint,
+        seedPoint,
         videoDurationMs,
+        videoW,
+        videoH,
         (p) => {
           setTrackingProgress(p);
           addLog(`📊 ${p.step} ${p.current}/${p.total}`);
         }
       );
 
-      addLog(`✅ trackPlate done — ${result.barPath.length} points`);
+      addLog(`✅ API tracking done — ${result.barPath.length} points`);
+      if (result.summary) {
+        addLog(
+          `📈 Success rate: ${result.summary.trackingSuccessRate}% | Tracked: ${result.summary.trackedFrames}/${result.summary.totalFrames} frames`
+        );
+      }
+      if (result.processedVideoUrl) {
+        addLog(`🎬 Processed video: ${result.processedVideoUrl}`);
+      }
+
       setBarPath(result.barPath);
       setPhase("playback");
       setTrackingProgress(null);
@@ -369,25 +315,26 @@ export default function LiftAnalysisScreen() {
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
-      addLog(`❌ trackPlate ERROR: ${msg}`);
+      addLog(`❌ API tracking ERROR: ${msg}`);
       console.error("[LiftAnalysis] Tracking failed:", err);
-      const isNativeModuleError =
-        err instanceof Error &&
-        (err.message.includes("not linked") ||
-          err.message.includes("not available") ||
-          err.message.includes("react-native-fast-opencv"));
       setModalConfig({
         visible: true,
         type: "error",
         title: t("common.error"),
-        message: isNativeModuleError
-          ? "O tracking de placas requer uma development build. Esta funcionalidade não está disponível no Expo Go."
-          : t("liftAnalysis.trackingError"),
+        message: t("liftAnalysis.trackingError"),
       });
       setPhase("seed");
       setTrackingProgress(null);
     }
-  }, [seedPoint, detectedCircle, videoDurationMs, videoUri, player, t, addLog]);
+  }, [
+    seedPoint,
+    videoDurationMs,
+    videoUri,
+    player,
+    t,
+    addLog,
+    containerLayout,
+  ]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
@@ -690,48 +637,16 @@ export default function LiftAnalysisScreen() {
             )}
 
             {/* Seed point indicator */}
-            {phase === "seed" && seedPoint && !isDetecting && (
-              <>
-                {/* Center dot */}
-                <View
-                  style={[
-                    styles.seedDot,
-                    {
-                      left: seedPoint.x * containerLayout.width - 12,
-                      top: seedPoint.y * containerLayout.height - 12,
-                    },
-                  ]}
-                />
-
-                {/* Detected circle outline (if detected) */}
-                {detectedCircle && (
-                  <Svg
-                    style={StyleSheet.absoluteFill}
-                    pointerEvents="none"
-                    width={containerLayout.width}
-                    height={containerLayout.height}
-                  >
-                    <SvgCircle
-                      cx={detectedCircle.x * containerLayout.width}
-                      cy={detectedCircle.y * containerLayout.height}
-                      r={detectedCircle.radius * containerLayout.width}
-                      stroke="#00FF88"
-                      strokeWidth={3}
-                      fill="none"
-                    />
-                  </Svg>
-                )}
-              </>
-            )}
-
-            {/* Detection in progress indicator */}
-            {phase === "seed" && isDetecting && (
-              <View style={styles.detectingOverlay} pointerEvents="none">
-                <ActivityIndicator size="large" color="#00FF88" />
-                <Text style={styles.detectingText}>
-                  {t("liftAnalysis.detectingCircle")}
-                </Text>
-              </View>
+            {phase === "seed" && seedPoint && (
+              <View
+                style={[
+                  styles.seedDot,
+                  {
+                    left: seedPoint.x * containerLayout.width - 12,
+                    top: seedPoint.y * containerLayout.height - 12,
+                  },
+                ]}
+              />
             )}
 
             {/* Tracking progress overlay */}
@@ -739,9 +654,9 @@ export default function LiftAnalysisScreen() {
               <View style={styles.trackingOverlay} pointerEvents="none">
                 <ActivityIndicator size="large" color="#00FF88" />
                 <Text style={styles.trackingOverlayText}>
-                  {trackingProgress?.step === "extracting"
-                    ? t("liftAnalysis.extractingFrames")
-                    : t("liftAnalysis.trackingObject")}
+                  {trackingProgress?.step === "uploading"
+                    ? t("liftAnalysis.uploadingVideo")
+                    : t("liftAnalysis.processingTracking")}
                 </Text>
               </View>
             )}
@@ -890,9 +805,9 @@ export default function LiftAnalysisScreen() {
           {phase === "tracking" && (
             <View style={styles.phaseContent}>
               <Text style={styles.instruction}>
-                {trackingProgress?.step === "extracting"
-                  ? t("liftAnalysis.extractingFrames")
-                  : t("liftAnalysis.trackingObject")}
+                {trackingProgress?.step === "uploading"
+                  ? t("liftAnalysis.uploadingVideo")
+                  : t("liftAnalysis.processingTracking")}
               </Text>
               <View style={styles.progressRow}>
                 <View style={styles.progressBarBg}>
@@ -1255,19 +1170,6 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   trackingOverlayText: {
-    color: "#fff",
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.medium,
-  },
-  detectingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-    zIndex: 10,
-  },
-  detectingText: {
     color: "#fff",
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,

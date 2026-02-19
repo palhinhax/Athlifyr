@@ -726,8 +726,8 @@
     "prevFrame": "Prec.",
     "nextFrame": "Succ.",
     "finishTracking": "Termina",
-    "extractingFrames": "Estrazione fotogrammi…",
-    "trackingObject": "Tracciamento oggetto…",
+    "uploadingVideo": "Caricamento video…",
+    "processingTracking": "Elaborazione tracciamento…",
     "trackingError": "Tracciamento fallito. Riprova.",
     "saveAnalysis": "Salva Analisi",
     "saved": "Analisi Salvata",
@@ -751,9 +751,7 @@
       "horizontalDrift": "Deviazione Orizzontale Max.",
       "avgSpeed": "Velocità Media",
       "maxSpeed": "Velocità Massima"
-    },
-    "detectingCircle": "Rilevamento oggetto circolare…",
-    "noCircleDetected": "Nessun oggetto circolare rilevato in questa posizione. Prova a toccare direttamente sul disco del bilanciere."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Taglia Video",

@@ -726,8 +726,8 @@
     "prevFrame": "Préc.",
     "nextFrame": "Suiv.",
     "finishTracking": "Terminer",
-    "extractingFrames": "Extraction des images…",
-    "trackingObject": "Suivi de l'objet…",
+    "uploadingVideo": "Envoi de la vidéo…",
+    "processingTracking": "Traitement du suivi…",
     "trackingError": "Le suivi a échoué. Veuillez réessayer.",
     "saveAnalysis": "Enregistrer l'Analyse",
     "saved": "Analyse Enregistrée",
@@ -751,9 +751,7 @@
       "horizontalDrift": "Dérive Horizontale Max.",
       "avgSpeed": "Vitesse Moyenne",
       "maxSpeed": "Vitesse Maximale"
-    },
-    "detectingCircle": "Détection d'objet circulaire…",
-    "noCircleDetected": "Aucun objet circulaire détecté à cet emplacement. Essayez de toucher directement sur le disque de la barre."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Couper la Vidéo",

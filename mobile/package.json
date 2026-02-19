@@ -50,7 +50,6 @@
     "react": "19.1.0",
     "react-i18next": "^16.5.3",
     "react-native": "0.81.5",
-    "react-native-fast-opencv": "^0.4.7",
     "react-native-maps": "^1.20.1",
     "react-native-markdown-display": "^7.0.2",
     "react-native-safe-area-context": "^5.6.2",

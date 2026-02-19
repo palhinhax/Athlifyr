@@ -726,8 +726,8 @@
     "prevFrame": "Ant.",
     "nextFrame": "Seg.",
     "finishTracking": "Concluir",
-    "extractingFrames": "A extrair frames…",
-    "trackingObject": "A seguir objeto…",
+    "uploadingVideo": "A enviar vídeo…",
+    "processingTracking": "A processar tracking…",
     "trackingError": "O rastreamento falhou. Tenta novamente.",
     "saveAnalysis": "Guardar Análise",
     "saved": "Análise Guardada",
@@ -754,9 +754,7 @@
       "horizontalDrift": "Desvio Horizontal Máx.",
       "avgSpeed": "Velocidade Média",
       "maxSpeed": "Velocidade Máxima"
-    },
-    "detectingCircle": "A detetar objeto circular…",
-    "noCircleDetected": "Nenhum objeto circular detetado nesta localização. Tenta tocar diretamente na anilha da barra."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Cortar Vídeo",

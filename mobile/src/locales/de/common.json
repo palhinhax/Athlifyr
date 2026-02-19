@@ -726,8 +726,8 @@
     "prevFrame": "Zurück",
     "nextFrame": "Vor",
     "finishTracking": "Abschließen",
-    "extractingFrames": "Bilder werden extrahiert…",
-    "trackingObject": "Objekt wird verfolgt…",
+    "uploadingVideo": "Video wird hochgeladen…",
+    "processingTracking": "Tracking wird verarbeitet…",
     "trackingError": "Verfolgung fehlgeschlagen. Bitte erneut versuchen.",
     "saveAnalysis": "Analyse speichern",
     "saved": "Analyse gespeichert",
@@ -751,9 +751,7 @@
       "horizontalDrift": "Max. horizontale Abweichung",
       "avgSpeed": "Durchschnittsgeschwindigkeit",
       "maxSpeed": "Höchstgeschwindigkeit"
-    },
-    "detectingCircle": "Erkenne kreisförmiges Objekt…",
-    "noCircleDetected": "Kein kreisförmiges Objekt an diesem Ort erkannt. Versuche direkt auf die Hantelscheibe zu tippen."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Video Trimmen",

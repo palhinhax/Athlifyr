@@ -12,9 +12,9 @@ function getWebVersion() {
     const rootPkg = JSON.parse(
       fs.readFileSync(path.resolve(__dirname, "../package.json"), "utf8")
     );
-    return rootPkg.version || "1.0.0";
+    return rootPkg.version || "1.1.0";
   } catch {
-    return "1.0.0";
+    return "1.1.0";
   }
 }
 

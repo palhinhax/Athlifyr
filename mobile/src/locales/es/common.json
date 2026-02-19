@@ -31,6 +31,24 @@
     "loadingMore": "Cargando más eventos...",
     "allEventsLoaded": "Todos los eventos cargados",
     "eventCancelled": "Este evento ha sido cancelado",
+    "registration": {
+      "willYouGo": "¿Vas a participar?",
+      "participants": "participantes",
+      "loginToParticipate": "Inicia sesión para marcar tu participación en este evento.",
+      "selectVariant": "Selecciona tu carrera",
+      "selectVariantRequired": "Selecciona una carrera",
+      "selectVariantRequiredDesc": "Elige en qué carrera vas a participar.",
+      "authRequired": "Inicio de sesión necesario",
+      "authRequiredDesc": "Necesitas iniciar sesión para marcar tu participación.",
+      "registered": "¡Vas a participar!",
+      "markAsGoing": "Voy a participar",
+      "cancelParticipation": "Cancelar participación",
+      "cancelParticipationDesc": "¿Estás seguro de que quieres cancelar tu participación en este evento?",
+      "markedAsParticipant": "Participación marcada",
+      "participationRegistered": "Tu participación ha sido registrada.",
+      "registrationError": "No se pudo registrar tu participación. Inténtalo de nuevo.",
+      "cancellationError": "No se pudo cancelar tu participación. Inténtalo de nuevo."
+    },
     "filters": {
       "searchPlaceholder": "Buscar eventos...",
       "searchingGlobally": "Buscando todos los eventos",
@@ -110,7 +128,19 @@
     "noUpcomingEventsDescription": "Explora eventos y regístrate para participar.",
     "pastEventsCount": "Eventos Pasados ({{count}})",
     "noPastEvents": "Sin eventos pasados",
-    "noPastEventsDescription": "Tu historial de eventos aparecerá aquí."
+    "noPastEventsDescription": "Tu historial de eventos aparecerá aquí.",
+    "gallery": {
+      "captionLabel": "Descripción (opcional)",
+      "captionPlaceholder": "Describe tu foto...",
+      "publishedTitle": "Foto Publicada",
+      "publishedMessage": "Tu foto ha sido publicada con éxito.",
+      "uploadError": "No se pudo publicar tu foto. Inténtalo de nuevo.",
+      "deleteTitle": "Eliminar Foto",
+      "deleteConfirm": "¿Estás seguro de que quieres eliminar esta foto?",
+      "deleteError": "No se pudo eliminar la foto. Inténtalo de nuevo.",
+      "permissionTitle": "Permiso de Galería Requerido",
+      "permissionMessage": "Permite que Athlifyr acceda a tu biblioteca de fotos para publicar fotos."
+    }
   },
   "login": {
     "title": "Iniciar Sesión",
@@ -300,7 +330,14 @@
     "deleteCommentConfirm": "¿Estás seguro de que quieres eliminar este comentario?",
     "playVideo": "Toca para reproducir vídeo",
     "loginToInteract": "Inicio de sesión necesario",
-    "loginToInteractDescription": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios."
+    "loginToInteractDescription": "Inicia sesión para dar me gusta a publicaciones y dejar comentarios.",
+    "createPost": {
+      "placeholder": "Comparte algo con la comunidad...",
+      "addMedia": "Añadir foto/vídeo",
+      "publish": "Publicar",
+      "uploadError": "Error al subir el archivo. Inténtalo de nuevo.",
+      "submitError": "Error al crear la publicación. Inténtalo de nuevo."
+    }
   },
   "venues": {
     "title": "Lugares",
@@ -689,8 +726,8 @@
     "prevFrame": "Ant.",
     "nextFrame": "Sig.",
     "finishTracking": "Finalizar",
-    "extractingFrames": "Extrayendo fotogramas…",
-    "trackingObject": "Siguiendo objeto…",
+    "uploadingVideo": "Subiendo vídeo…",
+    "processingTracking": "Procesando seguimiento…",
     "trackingError": "El seguimiento falló. Inténtalo de nuevo.",
     "saveAnalysis": "Guardar Análisis",
     "saved": "Análisis Guardado",
@@ -714,9 +751,7 @@
       "horizontalDrift": "Desvío Horizontal Máx.",
       "avgSpeed": "Velocidad Media",
       "maxSpeed": "Velocidad Máxima"
-    },
-    "detectingCircle": "Detectando objeto circular…",
-    "noCircleDetected": "No se detectó ningún objeto circular en esta ubicación. Intenta tocar directamente sobre el disco de la barra."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Recortar Vídeo",

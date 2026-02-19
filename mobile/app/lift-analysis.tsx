@@ -7,8 +7,8 @@ import {
   Dimensions,
   ActivityIndicator,
   GestureResponderEvent,
+  ScrollView,
 } from "react-native";
-import Svg, { Circle as SvgCircle } from "react-native-svg";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
@@ -34,10 +34,10 @@ import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import {
-  trackPlate,
-  detectCircleAtPoint,
+  trackBarbell,
+  checkApiHealth,
   type TrackingProgress,
-} from "@/src/lib/plate-tracker";
+} from "@/src/lib/barbell-api";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
@@ -81,12 +81,6 @@ export default function LiftAnalysisScreen() {
   const [seedPoint, setSeedPoint] = useState<{ x: number; y: number } | null>(
     null
   );
-  const [detectedCircle, setDetectedCircle] = useState<{
-    x: number;
-    y: number;
-    radius: number;
-  } | null>(null);
-  const [isDetecting, setIsDetecting] = useState(false);
 
   // Result
   const [barPath, setBarPath] = useState<BarPathPoint[]>([]);
@@ -125,6 +119,39 @@ export default function LiftAnalysisScreen() {
   const scrubBarRef = useRef<View>(null);
   const scrubBarWidth = useRef(0);
 
+  // ─── Debug log panel ─────────────────────────────────────────
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const debugScrollRef = useRef<ScrollView>(null);
+
+  const addLog = useCallback((msg: string) => {
+    const ts = new Date().toISOString().slice(11, 22); // HH:MM:SS.mmm
+    const line = `${ts} ${msg}`;
+    console.log(`[DBG] ${line}`);
+    setDebugLogs((prev) => {
+      const next = [...prev.slice(-49), line]; // keep last 50 lines
+      return next;
+    });
+    // Auto-scroll to bottom on next tick
+    setTimeout(
+      () => debugScrollRef.current?.scrollToEnd({ animated: false }),
+      0
+    );
+  }, []);
+
+  // ─── Debug: check API availability on mount ───────────────
+  useEffect(() => {
+    addLog(`videoUri: ${videoUri ? videoUri.slice(-40) : "(empty)"}`);
+    addLog(`providedDuration: ${providedDuration ?? "none"}`);
+    checkApiHealth().then((healthy) => {
+      if (healthy) {
+        addLog("✅ Barbell Path Tracker API: ONLINE");
+      } else {
+        addLog("⚠️ Barbell Path Tracker API: OFFLINE or unreachable");
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // ─── Video player (expo-video) ───────────────────────────────
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = false;
@@ -138,9 +165,14 @@ export default function LiftAnalysisScreen() {
     if (!player) return;
 
     const sub = player.addListener("statusChange", (payload) => {
+      addLog(`player status → ${payload.status}`);
       if (payload.status === "readyToPlay") {
-        if (player.duration && player.duration > 0) {
-          setVideoDurationMs(Math.round(player.duration * 1000));
+        const dur = player.duration;
+        addLog(
+          `✅ video ready — duration: ${dur != null ? `${dur.toFixed(3)}s` : "unknown"}`
+        );
+        if (dur && dur > 0) {
+          setVideoDurationMs(Math.round(dur * 1000));
         }
         // Only do this ONCE on first ready — don't keep resetting
         setIsVideoReady((prev) => {
@@ -152,11 +184,13 @@ export default function LiftAnalysisScreen() {
           }
           return true;
         });
+      } else if (payload.status === "error") {
+        addLog(`❌ player error: ${JSON.stringify(payload)}`);
       }
     });
 
     return () => sub.remove();
-  }, [player, phase]);
+  }, [player, phase, addLog]);
 
   // ─── Seed scrubbing controls ─────────────────────────────────
 
@@ -214,66 +248,61 @@ export default function LiftAnalysisScreen() {
   // ─── Phase: Seed ─────────────────────────────────────────────
 
   const handleSeedTap = useCallback(
-    async (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
-      if (phase !== "seed" || isDetecting) return;
+    (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
+      if (phase !== "seed") return;
 
       const nx = evt.nativeEvent.locationX / containerLayout.width;
       const ny = evt.nativeEvent.locationY / containerLayout.height;
 
+      addLog(
+        `👆 tap → norm (${nx.toFixed(3)}, ${ny.toFixed(3)}) | container ${containerLayout.width}×${containerLayout.height}`
+      );
+
       // Set tap point immediately for visual feedback
       setSeedPoint({ x: nx, y: ny });
-      setDetectedCircle(null);
-      setIsDetecting(true);
-
-      try {
-        // Detect circular object at tap point
-        const currentTimeMs = Math.round((scrubTime || 0) * 1000);
-        const circle = await detectCircleAtPoint(
-          videoUri,
-          { x: nx, y: ny },
-          currentTimeMs
-        );
-
-        if (circle) {
-          // Circle detected - show it and snap to center
-          setDetectedCircle(circle);
-          setSeedPoint({ x: circle.x, y: circle.y });
-        } else {
-          // No circle detected — keep the manual tap point so user can still
-          // confirm and proceed with template-matching from wherever they tapped
-          setDetectedCircle(null);
-          setSeedPoint({ x: nx, y: ny });
-        }
-      } catch (err) {
-        console.error("[LiftAnalysis] Circle detection failed:", err);
-        // On detection error, still allow manual point selection as fallback
-        setDetectedCircle(null);
-      } finally {
-        setIsDetecting(false);
-      }
     },
-    [phase, containerLayout, scrubTime, videoUri, t, isDetecting]
+    [phase, containerLayout, addLog]
   );
 
   const confirmSeed = useCallback(async () => {
     if (!seedPoint) return;
 
-    // Use detected circle center if available, otherwise use tap point
-    const trackingPoint = detectedCircle
-      ? { x: detectedCircle.x, y: detectedCircle.y }
-      : seedPoint;
+    addLog(
+      `🚀 confirmSeed — seedPoint (${seedPoint.x.toFixed(3)}, ${seedPoint.y.toFixed(3)}) | durationMs=${videoDurationMs}`
+    );
 
-    // Switch to tracking phase and run automatic CV tracking
+    // Switch to tracking phase and send video to external API
     setPhase("tracking");
-    setTrackingProgress({ current: 0, total: 1, step: "extracting" });
+    setTrackingProgress({ current: 0, total: 2, step: "uploading" });
 
     try {
-      const result = await trackPlate(
+      // Use container layout as approximation for video dimensions
+      // The API needs pixel coordinates for the seed point
+      const videoW = containerLayout.width;
+      const videoH = containerLayout.height;
+
+      addLog(`📤 Uploading video to Barbell Tracker API…`);
+      const result = await trackBarbell(
         videoUri,
-        trackingPoint,
+        seedPoint,
         videoDurationMs,
-        (p) => setTrackingProgress(p)
+        videoW,
+        videoH,
+        (p) => {
+          setTrackingProgress(p);
+          addLog(`📊 ${p.step} ${p.current}/${p.total}`);
+        }
       );
+
+      addLog(`✅ API tracking done — ${result.barPath.length} points`);
+      if (result.summary) {
+        addLog(
+          `📈 Success rate: ${result.summary.trackingSuccessRate}% | Tracked: ${result.summary.trackedFrames}/${result.summary.totalFrames} frames`
+        );
+      }
+      if (result.processedVideoUrl) {
+        addLog(`🎬 Processed video: ${result.processedVideoUrl}`);
+      }
 
       setBarPath(result.barPath);
       setPhase("playback");
@@ -285,24 +314,27 @@ export default function LiftAnalysisScreen() {
         player.play();
       }
     } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      addLog(`❌ API tracking ERROR: ${msg}`);
       console.error("[LiftAnalysis] Tracking failed:", err);
-      const isNativeModuleError =
-        err instanceof Error &&
-        (err.message.includes("not linked") ||
-          err.message.includes("not available") ||
-          err.message.includes("react-native-fast-opencv"));
       setModalConfig({
         visible: true,
         type: "error",
         title: t("common.error"),
-        message: isNativeModuleError
-          ? "O tracking de placas requer uma development build. Esta funcionalidade não está disponível no Expo Go."
-          : t("liftAnalysis.trackingError"),
+        message: t("liftAnalysis.trackingError"),
       });
       setPhase("seed");
       setTrackingProgress(null);
     }
-  }, [seedPoint, detectedCircle, videoDurationMs, videoUri, player, t]);
+  }, [
+    seedPoint,
+    videoDurationMs,
+    videoUri,
+    player,
+    t,
+    addLog,
+    containerLayout,
+  ]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
@@ -605,48 +637,16 @@ export default function LiftAnalysisScreen() {
             )}
 
             {/* Seed point indicator */}
-            {phase === "seed" && seedPoint && !isDetecting && (
-              <>
-                {/* Center dot */}
-                <View
-                  style={[
-                    styles.seedDot,
-                    {
-                      left: seedPoint.x * containerLayout.width - 12,
-                      top: seedPoint.y * containerLayout.height - 12,
-                    },
-                  ]}
-                />
-
-                {/* Detected circle outline (if detected) */}
-                {detectedCircle && (
-                  <Svg
-                    style={StyleSheet.absoluteFill}
-                    pointerEvents="none"
-                    width={containerLayout.width}
-                    height={containerLayout.height}
-                  >
-                    <SvgCircle
-                      cx={detectedCircle.x * containerLayout.width}
-                      cy={detectedCircle.y * containerLayout.height}
-                      r={detectedCircle.radius * containerLayout.width}
-                      stroke="#00FF88"
-                      strokeWidth={3}
-                      fill="none"
-                    />
-                  </Svg>
-                )}
-              </>
-            )}
-
-            {/* Detection in progress indicator */}
-            {phase === "seed" && isDetecting && (
-              <View style={styles.detectingOverlay} pointerEvents="none">
-                <ActivityIndicator size="large" color="#00FF88" />
-                <Text style={styles.detectingText}>
-                  {t("liftAnalysis.detectingCircle")}
-                </Text>
-              </View>
+            {phase === "seed" && seedPoint && (
+              <View
+                style={[
+                  styles.seedDot,
+                  {
+                    left: seedPoint.x * containerLayout.width - 12,
+                    top: seedPoint.y * containerLayout.height - 12,
+                  },
+                ]}
+              />
             )}
 
             {/* Tracking progress overlay */}
@@ -654,9 +654,9 @@ export default function LiftAnalysisScreen() {
               <View style={styles.trackingOverlay} pointerEvents="none">
                 <ActivityIndicator size="large" color="#00FF88" />
                 <Text style={styles.trackingOverlayText}>
-                  {trackingProgress?.step === "extracting"
-                    ? t("liftAnalysis.extractingFrames")
-                    : t("liftAnalysis.trackingObject")}
+                  {trackingProgress?.step === "uploading"
+                    ? t("liftAnalysis.uploadingVideo")
+                    : t("liftAnalysis.processingTracking")}
                 </Text>
               </View>
             )}
@@ -770,15 +770,44 @@ export default function LiftAnalysisScreen() {
                   </Text>
                 </TouchableOpacity>
               )}
+
+              {/* ── DEBUG LOG PANEL ── */}
+              <View style={styles.debugPanel}>
+                <View style={styles.debugHeader}>
+                  <Text style={styles.debugHeaderText}>🐛 DEBUG LOG</Text>
+                  <TouchableOpacity
+                    onPress={() => setDebugLogs([])}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Text style={styles.debugClearText}>LIMPAR</Text>
+                  </TouchableOpacity>
+                </View>
+                <ScrollView
+                  ref={debugScrollRef}
+                  style={styles.debugScroll}
+                  contentContainerStyle={styles.debugScrollContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {debugLogs.length === 0 ? (
+                    <Text style={styles.debugLine}>— sem logs ainda —</Text>
+                  ) : (
+                    debugLogs.map((line, i) => (
+                      <Text key={i} style={styles.debugLine}>
+                        {line}
+                      </Text>
+                    ))
+                  )}
+                </ScrollView>
+              </View>
             </View>
           )}
 
           {phase === "tracking" && (
             <View style={styles.phaseContent}>
               <Text style={styles.instruction}>
-                {trackingProgress?.step === "extracting"
-                  ? t("liftAnalysis.extractingFrames")
-                  : t("liftAnalysis.trackingObject")}
+                {trackingProgress?.step === "uploading"
+                  ? t("liftAnalysis.uploadingVideo")
+                  : t("liftAnalysis.processingTracking")}
               </Text>
               <View style={styles.progressRow}>
                 <View style={styles.progressBarBg}>
@@ -796,6 +825,25 @@ export default function LiftAnalysisScreen() {
                     ? `${trackingProgress.current} / ${trackingProgress.total}`
                     : "…"}
                 </Text>
+              </View>
+
+              {/* ── DEBUG LOG PANEL (tracking) ── */}
+              <View style={styles.debugPanel}>
+                <View style={styles.debugHeader}>
+                  <Text style={styles.debugHeaderText}>🐛 DEBUG LOG</Text>
+                </View>
+                <ScrollView
+                  ref={debugScrollRef}
+                  style={styles.debugScroll}
+                  contentContainerStyle={styles.debugScrollContent}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {debugLogs.map((line, i) => (
+                    <Text key={i} style={styles.debugLine}>
+                      {line}
+                    </Text>
+                  ))}
+                </ScrollView>
               </View>
             </View>
           )}
@@ -1126,17 +1174,50 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,
   },
-  detectingOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(0,0,0,0.55)",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-    zIndex: 10,
+
+  // ── Debug log panel ──────────────────────────────────────────
+  debugPanel: {
+    marginTop: theme.spacing.sm,
+    marginHorizontal: theme.spacing.md,
+    borderRadius: theme.borderRadius.sm,
+    backgroundColor: "#0d1117",
+    borderWidth: 1,
+    borderColor: "#30363d",
+    overflow: "hidden",
   },
-  detectingText: {
-    color: "#fff",
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: theme.typography.fontWeight.medium,
+  debugHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#161b22",
+    borderBottomWidth: 1,
+    borderBottomColor: "#30363d",
+  },
+  debugHeaderText: {
+    color: "#58a6ff",
+    fontSize: 11,
+    fontFamily: "monospace",
+    fontWeight: "600",
+  },
+  debugClearText: {
+    color: "#f85149",
+    fontSize: 10,
+    fontFamily: "monospace",
+  },
+  debugScroll: {
+    maxHeight: 140,
+    minHeight: 60,
+  },
+  debugScrollContent: {
+    padding: 6,
+    gap: 1,
+  },
+  debugLine: {
+    color: "#e6edf3",
+    fontSize: 10,
+    fontFamily: "monospace",
+    lineHeight: 16,
   },
 });

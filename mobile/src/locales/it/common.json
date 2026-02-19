@@ -37,7 +37,25 @@
       "resultsCount": "{{count}} eventi trovati",
       "dateRange": "Intervallo di Date"
     },
-    "eventCancelled": "Questo evento è stato cancellato"
+    "eventCancelled": "Questo evento è stato cancellato",
+    "registration": {
+      "willYouGo": "Parteciperai?",
+      "participants": "partecipanti",
+      "loginToParticipate": "Accedi per segnare la tua partecipazione a questo evento.",
+      "selectVariant": "Seleziona la tua gara",
+      "selectVariantRequired": "Seleziona una gara",
+      "selectVariantRequiredDesc": "Scegli a quale gara parteciperai.",
+      "authRequired": "Accesso richiesto",
+      "authRequiredDesc": "Devi accedere per segnare la tua partecipazione.",
+      "registered": "Parteciperai!",
+      "markAsGoing": "Parteciperò",
+      "cancelParticipation": "Annulla partecipazione",
+      "cancelParticipationDesc": "Sei sicuro di voler annullare la tua partecipazione a questo evento?",
+      "markedAsParticipant": "Partecipazione segnata",
+      "participationRegistered": "La tua partecipazione è stata registrata.",
+      "registrationError": "Impossibile registrare la tua partecipazione. Riprova.",
+      "cancellationError": "Impossibile annullare la tua partecipazione. Riprova."
+    }
   },
   "common": {
     "loading": "Caricamento...",
@@ -110,7 +128,19 @@
     "noUpcomingEventsDescription": "Esplora gli eventi e registrati per partecipare.",
     "pastEventsCount": "Eventi Passati ({{count}})",
     "noPastEvents": "Nessun evento passato",
-    "noPastEventsDescription": "La tua cronologia eventi apparirà qui."
+    "noPastEventsDescription": "La tua cronologia eventi apparirà qui.",
+    "gallery": {
+      "captionLabel": "Didascalia (opzionale)",
+      "captionPlaceholder": "Descrivi la tua foto...",
+      "publishedTitle": "Foto Pubblicata",
+      "publishedMessage": "La tua foto è stata pubblicata con successo.",
+      "uploadError": "Impossibile pubblicare la tua foto. Riprova.",
+      "deleteTitle": "Elimina Foto",
+      "deleteConfirm": "Sei sicuro/a di voler eliminare questa foto?",
+      "deleteError": "Impossibile eliminare la foto. Riprova.",
+      "permissionTitle": "Autorizzazione Galleria Richiesta",
+      "permissionMessage": "Consenti ad Athlifyr di accedere alla tua libreria foto per pubblicare foto."
+    }
   },
   "login": {
     "title": "Accedi",
@@ -300,7 +330,14 @@
     "deleteCommentConfirm": "Sei sicuro di voler eliminare questo commento?",
     "playVideo": "Tocca per riprodurre il video",
     "loginToInteract": "Accesso richiesto",
-    "loginToInteractDescription": "Accedi per mettere mi piace ai post e lasciare commenti."
+    "loginToInteractDescription": "Accedi per mettere mi piace ai post e lasciare commenti.",
+    "createPost": {
+      "placeholder": "Condividi qualcosa con la community...",
+      "addMedia": "Aggiungi foto/video",
+      "publish": "Pubblica",
+      "uploadError": "Caricamento fallito. Riprova.",
+      "submitError": "Creazione del post fallita. Riprova."
+    }
   },
   "venues": {
     "title": "Luoghi",
@@ -689,8 +726,8 @@
     "prevFrame": "Prec.",
     "nextFrame": "Succ.",
     "finishTracking": "Termina",
-    "extractingFrames": "Estrazione fotogrammi…",
-    "trackingObject": "Tracciamento oggetto…",
+    "uploadingVideo": "Caricamento video…",
+    "processingTracking": "Elaborazione tracciamento…",
     "trackingError": "Tracciamento fallito. Riprova.",
     "saveAnalysis": "Salva Analisi",
     "saved": "Analisi Salvata",
@@ -714,9 +751,7 @@
       "horizontalDrift": "Deviazione Orizzontale Max.",
       "avgSpeed": "Velocità Media",
       "maxSpeed": "Velocità Massima"
-    },
-    "detectingCircle": "Rilevamento oggetto circolare…",
-    "noCircleDetected": "Nessun oggetto circolare rilevato in questa posizione. Prova a toccare direttamente sul disco del bilanciere."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Taglia Video",

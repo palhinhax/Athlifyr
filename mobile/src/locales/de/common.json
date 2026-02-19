@@ -37,7 +37,25 @@
       "resultsCount": "{{count}} Events gefunden",
       "dateRange": "Datumsbereich"
     },
-    "eventCancelled": "Dieses Event wurde abgesagt"
+    "eventCancelled": "Dieses Event wurde abgesagt",
+    "registration": {
+      "willYouGo": "Nimmst du teil?",
+      "participants": "Teilnehmer",
+      "loginToParticipate": "Melde dich an, um deine Teilnahme an diesem Event zu markieren.",
+      "selectVariant": "Wähle dein Rennen",
+      "selectVariantRequired": "Bitte wähle ein Rennen",
+      "selectVariantRequiredDesc": "Wähle aus, an welchem Rennen du teilnehmen wirst.",
+      "authRequired": "Anmeldung erforderlich",
+      "authRequiredDesc": "Du musst dich anmelden, um deine Teilnahme zu markieren.",
+      "registered": "Du nimmst teil!",
+      "markAsGoing": "Ich nehme teil",
+      "cancelParticipation": "Teilnahme absagen",
+      "cancelParticipationDesc": "Bist du sicher, dass du deine Teilnahme an diesem Event absagen möchtest?",
+      "markedAsParticipant": "Teilnahme markiert",
+      "participationRegistered": "Deine Teilnahme wurde registriert.",
+      "registrationError": "Deine Teilnahme konnte nicht registriert werden. Bitte versuche es erneut.",
+      "cancellationError": "Deine Teilnahme konnte nicht abgesagt werden. Bitte versuche es erneut."
+    }
   },
   "common": {
     "loading": "Laden...",
@@ -110,7 +128,19 @@
     "noUpcomingEventsDescription": "Erkunde Events und melde dich zur Teilnahme an.",
     "pastEventsCount": "Vergangene Events ({{count}})",
     "noPastEvents": "Keine vergangenen Events",
-    "noPastEventsDescription": "Deine Event-Historie wird hier angezeigt."
+    "noPastEventsDescription": "Deine Event-Historie wird hier angezeigt.",
+    "gallery": {
+      "captionLabel": "Beschriftung (optional)",
+      "captionPlaceholder": "Beschreibe dein Foto...",
+      "publishedTitle": "Foto Veröffentlicht",
+      "publishedMessage": "Dein Foto wurde erfolgreich veröffentlicht.",
+      "uploadError": "Dein Foto konnte nicht veröffentlicht werden. Versuche es erneut.",
+      "deleteTitle": "Foto Löschen",
+      "deleteConfirm": "Bist du sicher, dass du dieses Foto löschen möchtest?",
+      "deleteError": "Das Foto konnte nicht gelöscht werden. Versuche es erneut.",
+      "permissionTitle": "Galerie-Berechtigung Erforderlich",
+      "permissionMessage": "Erlaube Athlifyr den Zugriff auf deine Fotobibliothek, um Fotos zu veröffentlichen."
+    }
   },
   "login": {
     "title": "Anmelden",
@@ -300,7 +330,14 @@
     "deleteCommentConfirm": "Bist du sicher, dass du diesen Kommentar löschen möchtest?",
     "playVideo": "Tippe, um Video abzuspielen",
     "loginToInteract": "Anmeldung erforderlich",
-    "loginToInteractDescription": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen."
+    "loginToInteractDescription": "Melde dich an, um Beiträge zu liken und Kommentare zu hinterlassen.",
+    "createPost": {
+      "placeholder": "Teile etwas mit der Community...",
+      "addMedia": "Foto/Video hinzufügen",
+      "publish": "Veröffentlichen",
+      "uploadError": "Upload fehlgeschlagen. Versuche es erneut.",
+      "submitError": "Post konnte nicht erstellt werden. Versuche es erneut."
+    }
   },
   "venues": {
     "title": "Orte",
@@ -689,8 +726,8 @@
     "prevFrame": "Zurück",
     "nextFrame": "Vor",
     "finishTracking": "Abschließen",
-    "extractingFrames": "Bilder werden extrahiert…",
-    "trackingObject": "Objekt wird verfolgt…",
+    "uploadingVideo": "Video wird hochgeladen…",
+    "processingTracking": "Tracking wird verarbeitet…",
     "trackingError": "Verfolgung fehlgeschlagen. Bitte erneut versuchen.",
     "saveAnalysis": "Analyse speichern",
     "saved": "Analyse gespeichert",
@@ -714,9 +751,7 @@
       "horizontalDrift": "Max. horizontale Abweichung",
       "avgSpeed": "Durchschnittsgeschwindigkeit",
       "maxSpeed": "Höchstgeschwindigkeit"
-    },
-    "detectingCircle": "Erkenne kreisförmiges Objekt…",
-    "noCircleDetected": "Kein kreisförmiges Objekt an diesem Ort erkannt. Versuche direkt auf die Hantelscheibe zu tippen."
+    }
   },
   "motionAnalysis": {
     "trimTitle": "Video Trimmen",

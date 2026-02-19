@@ -7,10 +7,13 @@ on:
 
 jobs:
   build_android:
-    type: build # This job type creates a production build for Android
+    name: Build Android AAB
+    type: build
     params:
       platform: android
+
   build_ios:
-    type: build # This job type creates a production build for iOS
+    name: Build iOS IPA
+    type: build
     params:
       platform: ios

@@ -37,7 +37,25 @@
       "resultsCount": "{{count}} événements trouvés",
       "dateRange": "Plage de Dates"
     },
-    "eventCancelled": "Cet événement a été annulé"
+    "eventCancelled": "Cet événement a été annulé",
+    "registration": {
+      "willYouGo": "Allez-vous y participer ?",
+      "participants": "participants",
+      "loginToParticipate": "Connectez-vous pour marquer votre participation à cet événement.",
+      "selectVariant": "Sélectionnez votre course",
+      "selectVariantRequired": "Veuillez sélectionner une course",
+      "selectVariantRequiredDesc": "Choisissez à quelle course vous allez participer.",
+      "authRequired": "Connexion requise",
+      "authRequiredDesc": "Vous devez vous connecter pour marquer votre participation.",
+      "registered": "Vous participez !",
+      "markAsGoing": "Je participe",
+      "cancelParticipation": "Annuler la participation",
+      "cancelParticipationDesc": "Êtes-vous sûr de vouloir annuler votre participation à cet événement ?",
+      "markedAsParticipant": "Participation marquée",
+      "participationRegistered": "Votre participation a été enregistrée.",
+      "registrationError": "Impossible d'enregistrer votre participation. Veuillez réessayer.",
+      "cancellationError": "Impossible d'annuler votre participation. Veuillez réessayer."
+    }
   },
   "common": {
     "loading": "Chargement...",

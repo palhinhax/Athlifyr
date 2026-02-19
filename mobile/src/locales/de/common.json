@@ -37,7 +37,25 @@
       "resultsCount": "{{count}} Events gefunden",
       "dateRange": "Datumsbereich"
     },
-    "eventCancelled": "Dieses Event wurde abgesagt"
+    "eventCancelled": "Dieses Event wurde abgesagt",
+    "registration": {
+      "willYouGo": "Nimmst du teil?",
+      "participants": "Teilnehmer",
+      "loginToParticipate": "Melde dich an, um deine Teilnahme an diesem Event zu markieren.",
+      "selectVariant": "Wähle dein Rennen",
+      "selectVariantRequired": "Bitte wähle ein Rennen",
+      "selectVariantRequiredDesc": "Wähle aus, an welchem Rennen du teilnehmen wirst.",
+      "authRequired": "Anmeldung erforderlich",
+      "authRequiredDesc": "Du musst dich anmelden, um deine Teilnahme zu markieren.",
+      "registered": "Du nimmst teil!",
+      "markAsGoing": "Ich nehme teil",
+      "cancelParticipation": "Teilnahme absagen",
+      "cancelParticipationDesc": "Bist du sicher, dass du deine Teilnahme an diesem Event absagen möchtest?",
+      "markedAsParticipant": "Teilnahme markiert",
+      "participationRegistered": "Deine Teilnahme wurde registriert.",
+      "registrationError": "Deine Teilnahme konnte nicht registriert werden. Bitte versuche es erneut.",
+      "cancellationError": "Deine Teilnahme konnte nicht abgesagt werden. Bitte versuche es erneut."
+    }
   },
   "common": {
     "loading": "Laden...",

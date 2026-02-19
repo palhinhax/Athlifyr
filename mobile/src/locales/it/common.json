@@ -37,7 +37,25 @@
       "resultsCount": "{{count}} eventi trovati",
       "dateRange": "Intervallo di Date"
     },
-    "eventCancelled": "Questo evento è stato cancellato"
+    "eventCancelled": "Questo evento è stato cancellato",
+    "registration": {
+      "willYouGo": "Parteciperai?",
+      "participants": "partecipanti",
+      "loginToParticipate": "Accedi per segnare la tua partecipazione a questo evento.",
+      "selectVariant": "Seleziona la tua gara",
+      "selectVariantRequired": "Seleziona una gara",
+      "selectVariantRequiredDesc": "Scegli a quale gara parteciperai.",
+      "authRequired": "Accesso richiesto",
+      "authRequiredDesc": "Devi accedere per segnare la tua partecipazione.",
+      "registered": "Parteciperai!",
+      "markAsGoing": "Parteciperò",
+      "cancelParticipation": "Annulla partecipazione",
+      "cancelParticipationDesc": "Sei sicuro di voler annullare la tua partecipazione a questo evento?",
+      "markedAsParticipant": "Partecipazione segnata",
+      "participationRegistered": "La tua partecipazione è stata registrata.",
+      "registrationError": "Impossibile registrare la tua partecipazione. Riprova.",
+      "cancellationError": "Impossibile annullare la tua partecipazione. Riprova."
+    }
   },
   "common": {
     "loading": "Caricamento...",

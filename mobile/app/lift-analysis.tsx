@@ -7,7 +7,6 @@ import {
   Dimensions,
   ActivityIndicator,
   GestureResponderEvent,
-  ScrollView,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -33,11 +32,7 @@ import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
-import {
-  trackBarbell,
-  checkApiHealth,
-  type TrackingProgress,
-} from "@/src/lib/barbell-api";
+import { trackBarbell, type TrackingProgress } from "@/src/lib/barbell-api";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
@@ -119,39 +114,6 @@ export default function LiftAnalysisScreen() {
   const scrubBarRef = useRef<View>(null);
   const scrubBarWidth = useRef(0);
 
-  // ─── Debug log panel ─────────────────────────────────────────
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const debugScrollRef = useRef<ScrollView>(null);
-
-  const addLog = useCallback((msg: string) => {
-    const ts = new Date().toISOString().slice(11, 22); // HH:MM:SS.mmm
-    const line = `${ts} ${msg}`;
-    console.log(`[DBG] ${line}`);
-    setDebugLogs((prev) => {
-      const next = [...prev.slice(-49), line]; // keep last 50 lines
-      return next;
-    });
-    // Auto-scroll to bottom on next tick
-    setTimeout(
-      () => debugScrollRef.current?.scrollToEnd({ animated: false }),
-      0
-    );
-  }, []);
-
-  // ─── Debug: check API availability on mount ───────────────
-  useEffect(() => {
-    addLog(`videoUri: ${videoUri ? videoUri.slice(-40) : "(empty)"}`);
-    addLog(`providedDuration: ${providedDuration ?? "none"}`);
-    checkApiHealth().then((healthy) => {
-      if (healthy) {
-        addLog("✅ Barbell Path Tracker API: ONLINE");
-      } else {
-        addLog("⚠️ Barbell Path Tracker API: OFFLINE or unreachable");
-      }
-    });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   // ─── Video player (expo-video) ───────────────────────────────
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = false;
@@ -165,12 +127,8 @@ export default function LiftAnalysisScreen() {
     if (!player) return;
 
     const sub = player.addListener("statusChange", (payload) => {
-      addLog(`player status → ${payload.status}`);
       if (payload.status === "readyToPlay") {
         const dur = player.duration;
-        addLog(
-          `✅ video ready — duration: ${dur != null ? `${dur.toFixed(3)}s` : "unknown"}`
-        );
         if (dur && dur > 0) {
           setVideoDurationMs(Math.round(dur * 1000));
         }
@@ -184,13 +142,11 @@ export default function LiftAnalysisScreen() {
           }
           return true;
         });
-      } else if (payload.status === "error") {
-        addLog(`❌ player error: ${JSON.stringify(payload)}`);
       }
     });
 
     return () => sub.remove();
-  }, [player, phase, addLog]);
+  }, [player, phase]);
 
   // ─── Seed scrubbing controls ─────────────────────────────────
 
@@ -254,22 +210,14 @@ export default function LiftAnalysisScreen() {
       const nx = evt.nativeEvent.locationX / containerLayout.width;
       const ny = evt.nativeEvent.locationY / containerLayout.height;
 
-      addLog(
-        `👆 tap → norm (${nx.toFixed(3)}, ${ny.toFixed(3)}) | container ${containerLayout.width}×${containerLayout.height}`
-      );
-
       // Set tap point immediately for visual feedback
       setSeedPoint({ x: nx, y: ny });
     },
-    [phase, containerLayout, addLog]
+    [phase, containerLayout]
   );
 
   const confirmSeed = useCallback(async () => {
     if (!seedPoint) return;
-
-    addLog(
-      `🚀 confirmSeed — seedPoint (${seedPoint.x.toFixed(3)}, ${seedPoint.y.toFixed(3)}) | durationMs=${videoDurationMs}`
-    );
 
     // Switch to tracking phase and send video to external API
     setPhase("tracking");
@@ -281,28 +229,15 @@ export default function LiftAnalysisScreen() {
       const videoW = containerLayout.width;
       const videoH = containerLayout.height;
 
-      addLog(`📤 Uploading video to Barbell Tracker API…`);
       const result = await trackBarbell(
         videoUri,
         seedPoint,
-        videoDurationMs,
         videoW,
         videoH,
-        (p) => {
+        (p: TrackingProgress) => {
           setTrackingProgress(p);
-          addLog(`📊 ${p.step} ${p.current}/${p.total}`);
         }
       );
-
-      addLog(`✅ API tracking done — ${result.barPath.length} points`);
-      if (result.summary) {
-        addLog(
-          `📈 Success rate: ${result.summary.trackingSuccessRate}% | Tracked: ${result.summary.trackedFrames}/${result.summary.totalFrames} frames`
-        );
-      }
-      if (result.processedVideoUrl) {
-        addLog(`🎬 Processed video: ${result.processedVideoUrl}`);
-      }
 
       setBarPath(result.barPath);
       setPhase("playback");
@@ -314,8 +249,6 @@ export default function LiftAnalysisScreen() {
         player.play();
       }
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      addLog(`❌ API tracking ERROR: ${msg}`);
       console.error("[LiftAnalysis] Tracking failed:", err);
       setModalConfig({
         visible: true,
@@ -326,15 +259,7 @@ export default function LiftAnalysisScreen() {
       setPhase("seed");
       setTrackingProgress(null);
     }
-  }, [
-    seedPoint,
-    videoDurationMs,
-    videoUri,
-    player,
-    t,
-    addLog,
-    containerLayout,
-  ]);
+  }, [seedPoint, videoDurationMs, videoUri, player, t, containerLayout]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
@@ -770,35 +695,6 @@ export default function LiftAnalysisScreen() {
                   </Text>
                 </TouchableOpacity>
               )}
-
-              {/* ── DEBUG LOG PANEL ── */}
-              <View style={styles.debugPanel}>
-                <View style={styles.debugHeader}>
-                  <Text style={styles.debugHeaderText}>🐛 DEBUG LOG</Text>
-                  <TouchableOpacity
-                    onPress={() => setDebugLogs([])}
-                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-                  >
-                    <Text style={styles.debugClearText}>LIMPAR</Text>
-                  </TouchableOpacity>
-                </View>
-                <ScrollView
-                  ref={debugScrollRef}
-                  style={styles.debugScroll}
-                  contentContainerStyle={styles.debugScrollContent}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {debugLogs.length === 0 ? (
-                    <Text style={styles.debugLine}>— sem logs ainda —</Text>
-                  ) : (
-                    debugLogs.map((line, i) => (
-                      <Text key={i} style={styles.debugLine}>
-                        {line}
-                      </Text>
-                    ))
-                  )}
-                </ScrollView>
-              </View>
             </View>
           )}
 
@@ -825,25 +721,6 @@ export default function LiftAnalysisScreen() {
                     ? `${trackingProgress.current} / ${trackingProgress.total}`
                     : "…"}
                 </Text>
-              </View>
-
-              {/* ── DEBUG LOG PANEL (tracking) ── */}
-              <View style={styles.debugPanel}>
-                <View style={styles.debugHeader}>
-                  <Text style={styles.debugHeaderText}>🐛 DEBUG LOG</Text>
-                </View>
-                <ScrollView
-                  ref={debugScrollRef}
-                  style={styles.debugScroll}
-                  contentContainerStyle={styles.debugScrollContent}
-                  showsVerticalScrollIndicator={false}
-                >
-                  {debugLogs.map((line, i) => (
-                    <Text key={i} style={styles.debugLine}>
-                      {line}
-                    </Text>
-                  ))}
-                </ScrollView>
               </View>
             </View>
           )}
@@ -1173,51 +1050,5 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,
-  },
-
-  // ── Debug log panel ──────────────────────────────────────────
-  debugPanel: {
-    marginTop: theme.spacing.sm,
-    marginHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.sm,
-    backgroundColor: "#0d1117",
-    borderWidth: 1,
-    borderColor: "#30363d",
-    overflow: "hidden",
-  },
-  debugHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    backgroundColor: "#161b22",
-    borderBottomWidth: 1,
-    borderBottomColor: "#30363d",
-  },
-  debugHeaderText: {
-    color: "#58a6ff",
-    fontSize: 11,
-    fontFamily: "monospace",
-    fontWeight: "600",
-  },
-  debugClearText: {
-    color: "#f85149",
-    fontSize: 10,
-    fontFamily: "monospace",
-  },
-  debugScroll: {
-    maxHeight: 140,
-    minHeight: 60,
-  },
-  debugScrollContent: {
-    padding: 6,
-    gap: 1,
-  },
-  debugLine: {
-    color: "#e6edf3",
-    fontSize: 10,
-    fontFamily: "monospace",
-    lineHeight: 16,
   },
 });

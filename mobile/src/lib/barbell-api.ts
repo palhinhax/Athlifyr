@@ -7,6 +7,8 @@
  * All video processing happens externally via /api/lift-analysis/process
  */
 
+import type { BarPathPoint } from "@/src/types/lift-analysis";
+
 // ── API base URL ─────────────────────────────────────────────────────
 
 // Use the Athlifyr backend API (not the external service directly)
@@ -17,8 +19,10 @@ const API_BASE_URL = __DEV__
 // ── Types ────────────────────────────────────────────────────────────
 
 export interface TrackingProgress {
-  /** Upload progress 0-100 */
-  progress: number;
+  /** Current step number */
+  current: number;
+  /** Total steps */
+  total: number;
   /** Label for the current step */
   step: "uploading" | "processing";
 }
@@ -37,30 +41,57 @@ export interface PoseAngles {
   torsoInclination?: number;
 }
 
-export interface TrackingData {
-  success: boolean;
-  autoDetected: boolean;
-  detectedCenter: { x: number | null; y: number | null };
-  detectedRadius: number | null;
-  totalTravelPx: number | null;
-  maxVerticalDisplacementPx: number | null;
-  maxHorizontalDisplacementPx: number | null;
-}
-
-export interface PoseData {
-  framesProcessed: number;
-  framesWithPose: number;
-  detectionRate: number;
-  durationSec: number;
-  averageAngles: PoseAngles | null;
+export interface TrackingSummary {
+  trackingSuccessRate: number;
+  trackedFrames: number;
+  totalFrames: number;
 }
 
 export interface TrackingResult {
+  /** Tracked bar path points (normalized coordinates) */
+  barPath: BarPathPoint[];
+  /** URL to the processed video with overlay */
+  processedVideoUrl: string | null;
+  /** Tracking summary statistics */
+  summary: TrackingSummary | null;
+}
+
+// ── Raw API response types ───────────────────────────────────────────
+
+interface RawApiResponse {
   success: boolean;
   message: string;
   videoUrl: string | null;
-  tracking: TrackingData;
-  pose: PoseData;
+  tracking: {
+    success: boolean;
+    autoDetected: boolean;
+    detectedCenter: { x: number | null; y: number | null };
+    detectedRadius: number | null;
+    totalTravelPx: number | null;
+    maxVerticalDisplacementPx: number | null;
+    maxHorizontalDisplacementPx: number | null;
+  };
+  pose: {
+    framesProcessed: number;
+    framesWithPose: number;
+    detectionRate: number;
+    durationSec: number;
+    averageAngles: PoseAngles | null;
+  };
+  skeletonFrames?: Array<{
+    frameWidth: number;
+    frameHeight: number;
+    landmarks: Array<{
+      name: string;
+      index: number;
+      x: number;
+      y: number;
+      z: number;
+      visibility: number;
+      pixelX: number;
+      pixelY: number;
+    }>;
+  }>;
 }
 
 // ── Health check ─────────────────────────────────────────────────────
@@ -90,6 +121,49 @@ export async function checkApiHealth(): Promise<boolean> {
 // ── Main tracking function ───────────────────────────────────────────
 
 /**
+ * Extract bar path from skeleton frames using wrist positions.
+ * The barbell position is approximated as the midpoint between left and right wrists.
+ */
+function extractBarPathFromSkeletonFrames(
+  skeletonFrames: RawApiResponse["skeletonFrames"],
+  durationSec: number
+): BarPathPoint[] {
+  if (!skeletonFrames || skeletonFrames.length === 0) {
+    return [];
+  }
+
+  const barPath: BarPathPoint[] = [];
+  const frameInterval = (durationSec * 1000) / skeletonFrames.length;
+
+  for (let i = 0; i < skeletonFrames.length; i++) {
+    const frame = skeletonFrames[i];
+    const leftWrist = frame.landmarks.find((lm) => lm.name === "left_wrist");
+    const rightWrist = frame.landmarks.find((lm) => lm.name === "right_wrist");
+
+    if (leftWrist && rightWrist) {
+      // Midpoint between wrists as bar position (normalized coords)
+      const x = (leftWrist.x + rightWrist.x) / 2;
+      const y = (leftWrist.y + rightWrist.y) / 2;
+      barPath.push({ t: Math.round(i * frameInterval), x, y });
+    } else if (leftWrist) {
+      barPath.push({
+        t: Math.round(i * frameInterval),
+        x: leftWrist.x,
+        y: leftWrist.y,
+      });
+    } else if (rightWrist) {
+      barPath.push({
+        t: Math.round(i * frameInterval),
+        x: rightWrist.x,
+        y: rightWrist.y,
+      });
+    }
+  }
+
+  return barPath;
+}
+
+/**
  * Send video to the centralized lift analysis API for processing.
  * Combines barbell tracking + pose estimation.
  *
@@ -108,7 +182,7 @@ export async function trackBarbell(
   onProgress?: (p: TrackingProgress) => void
 ): Promise<TrackingResult> {
   // ── 1. Build multipart form data ─────────────────────────────────
-  onProgress?.({ progress: 0, step: "uploading" });
+  onProgress?.({ current: 0, total: 100, step: "uploading" });
 
   const seedX = Math.round(seedNorm.x * videoWidth);
   const seedY = Math.round(seedNorm.y * videoHeight);
@@ -130,7 +204,7 @@ export async function trackBarbell(
   formData.append("max_duration_sec", "60");
 
   // ── 2. Send to API ───────────────────────────────────────────────
-  onProgress?.({ progress: 10, step: "uploading" });
+  onProgress?.({ current: 10, total: 100, step: "uploading" });
 
   const controller = new AbortController();
   // 5 minute timeout for video processing
@@ -158,13 +232,31 @@ export async function trackBarbell(
   }
 
   // ── 3. Parse response ────────────────────────────────────────────
-  onProgress?.({ progress: 100, step: "processing" });
+  onProgress?.({ current: 100, total: 100, step: "processing" });
 
-  const result = (await response.json()) as TrackingResult;
+  const rawResult = (await response.json()) as RawApiResponse;
 
-  if (!result.success) {
-    throw new Error(result.message || "Analysis failed");
+  if (!rawResult.success) {
+    throw new Error(rawResult.message || "Analysis failed");
   }
 
-  return result;
+  // ── 4. Transform response to expected format ─────────────────────
+  const barPath = extractBarPathFromSkeletonFrames(
+    rawResult.skeletonFrames,
+    rawResult.pose.durationSec
+  );
+
+  const summary: TrackingSummary | null = rawResult.tracking
+    ? {
+        trackingSuccessRate: rawResult.pose.detectionRate * 100,
+        trackedFrames: rawResult.pose.framesWithPose,
+        totalFrames: rawResult.pose.framesProcessed,
+      }
+    : null;
+
+  return {
+    barPath,
+    processedVideoUrl: rawResult.videoUrl,
+    summary,
+  };
 }

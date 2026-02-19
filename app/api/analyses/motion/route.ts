@@ -84,8 +84,41 @@ export async function POST(request: Request) {
     typeof videoUrlParam === "string" &&
     videoUrlParam.startsWith("http")
   ) {
-    // Use provided video URL (from processing API result)
-    finalVideoUrl = videoUrlParam;
+    // Download video from external URL and upload to B2
+    try {
+      console.log(`[MotionAnalysis] Downloading video from: ${videoUrlParam}`);
+      const videoResponse = await fetch(videoUrlParam);
+      if (!videoResponse.ok) {
+        return NextResponse.json(
+          { error: `Failed to download video: ${videoResponse.status}` },
+          { status: 400 }
+        );
+      }
+      const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
+      console.log(
+        `[MotionAnalysis] Downloaded ${videoBuffer.length} bytes, uploading to B2...`
+      );
+
+      const uploadResult = await uploadToB2({
+        file: videoBuffer,
+        fileName: `motion_${localId}.mp4`,
+        contentType: "video/mp4",
+        folder: "analyses",
+      });
+
+      finalVideoUrl = uploadResult.url;
+      videoB2Key = uploadResult.fileName;
+      console.log(`[MotionAnalysis] Uploaded to B2: ${finalVideoUrl}`);
+    } catch (error) {
+      console.error(
+        "[MotionAnalysis] Error downloading/uploading video:",
+        error
+      );
+      return NextResponse.json(
+        { error: "Failed to download and store processed video" },
+        { status: 500 }
+      );
+    }
   } else if (videoFile && videoFile instanceof File) {
     // Upload video file to B2
     const allowedTypes = ["video/mp4", "video/quicktime", "video/webm"];

@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
+import { Loader2 } from "lucide-react";
 import {
   Play,
   Pause,
@@ -22,8 +23,53 @@ const Skeleton3DViewer = dynamic(
     import("@/components/skeleton-3d-viewer").then(
       (mod) => mod.Skeleton3DViewer
     ),
-  { ssr: false }
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[400px] items-center justify-center rounded-lg border bg-muted/10">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
 );
+
+// ── Error Boundary for 3D Viewer ─────────────────────────────────────────
+
+import { Component, type ReactNode, type ErrorInfo } from "react";
+
+interface ErrorBoundaryState {
+  hasError: boolean;
+}
+
+interface ErrorBoundaryProps {
+  children: ReactNode;
+  fallback: ReactNode;
+}
+
+class Skeleton3DErrorBoundary extends Component<
+  ErrorBoundaryProps,
+  ErrorBoundaryState
+> {
+  constructor(props: ErrorBoundaryProps) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(): ErrorBoundaryState {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+    console.error("[Skeleton3DViewer] Error:", error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
 
 // ── Types ────────────────────────────────────────────────────────────────
 

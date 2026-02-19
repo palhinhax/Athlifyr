@@ -1,22 +1,22 @@
 /**
- * Barbell Path Tracker — External API client.
+ * Motion Analysis — External API client.
  *
- * Sends the video + seed point to the centralized Athlifyr API
- * which forwards to the barbell-path-tracker service.
+ * Sends the video to the centralized Athlifyr API for full body pose estimation.
+ * All video processing happens externally via /api/motion-analysis/process
  *
- * All video processing happens externally via /api/lift-analysis/process
+ * Replaces the previous on-device TensorFlow.js + MoveNet implementation.
  */
 
 // ── API base URL ─────────────────────────────────────────────────────
 
-// Use the Athlifyr backend API (not the external service directly)
+// Use the Athlifyr backend API
 const API_BASE_URL = __DEV__
   ? "http://localhost:3000" // Development
   : "https://athlifyr.com"; // Production
 
 // ── Types ────────────────────────────────────────────────────────────
 
-export interface TrackingProgress {
+export interface MotionAnalysisProgress {
   /** Upload progress 0-100 */
   progress: number;
   /** Label for the current step */
@@ -37,16 +37,6 @@ export interface PoseAngles {
   torsoInclination?: number;
 }
 
-export interface TrackingData {
-  success: boolean;
-  autoDetected: boolean;
-  detectedCenter: { x: number | null; y: number | null };
-  detectedRadius: number | null;
-  totalTravelPx: number | null;
-  maxVerticalDisplacementPx: number | null;
-  maxHorizontalDisplacementPx: number | null;
-}
-
 export interface PoseData {
   framesProcessed: number;
   framesWithPose: number;
@@ -55,26 +45,25 @@ export interface PoseData {
   averageAngles: PoseAngles | null;
 }
 
-export interface TrackingResult {
+export interface MotionAnalysisResult {
   success: boolean;
   message: string;
   videoUrl: string | null;
-  tracking: TrackingData;
   pose: PoseData;
 }
 
 // ── Health check ─────────────────────────────────────────────────────
 
 /**
- * Check if the lift analysis API is online.
+ * Check if the motion analysis API is online.
  * @returns true if healthy, false otherwise
  */
-export async function checkApiHealth(): Promise<boolean> {
+export async function checkMotionApiHealth(): Promise<boolean> {
   try {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5_000);
 
-    const res = await fetch(`${API_BASE_URL}/api/lift-analysis/process`, {
+    const res = await fetch(`${API_BASE_URL}/api/motion-analysis/process`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
@@ -87,31 +76,22 @@ export async function checkApiHealth(): Promise<boolean> {
   }
 }
 
-// ── Main tracking function ───────────────────────────────────────────
+// ── Main analysis function ───────────────────────────────────────────
 
 /**
- * Send video to the centralized lift analysis API for processing.
- * Combines barbell tracking + pose estimation.
+ * Send video to the centralized motion analysis API for processing.
+ * Full body pose estimation without barbell tracking.
  *
  * @param videoUri       Local URI of the recorded video
- * @param seedNorm       Normalised {x, y} of the user tap (0–1)
- * @param videoWidth     Width of the video frame in pixels
- * @param videoHeight    Height of the video frame in pixels
  * @param onProgress     Optional progress callback
- * @returns              Full analysis result with tracking + pose data
+ * @returns              Full analysis result with pose data
  */
-export async function trackBarbell(
+export async function analyzeMotion(
   videoUri: string,
-  seedNorm: { x: number; y: number },
-  videoWidth: number,
-  videoHeight: number,
-  onProgress?: (p: TrackingProgress) => void
-): Promise<TrackingResult> {
-  // ── 1. Build multipart form data ─────────────────────────────────
+  onProgress?: (p: MotionAnalysisProgress) => void
+): Promise<MotionAnalysisResult> {
+  // ── 1. Build multipart form data ─────────────────────────────────────────
   onProgress?.({ progress: 0, step: "uploading" });
-
-  const seedX = Math.round(seedNorm.x * videoWidth);
-  const seedY = Math.round(seedNorm.y * videoHeight);
 
   const formData = new FormData();
 
@@ -119,17 +99,13 @@ export async function trackBarbell(
   formData.append("video", {
     uri: videoUri,
     type: "video/mp4",
-    name: "lift-video.mp4",
+    name: "motion-video.mp4",
   } as unknown as Blob);
 
-  formData.append("seed_x", seedX.toString());
-  formData.append("seed_y", seedY.toString());
-  formData.append("seed_frame", "0");
   formData.append("show_angles", "true");
-  formData.append("auto_detect", "true");
   formData.append("max_duration_sec", "60");
 
-  // ── 2. Send to API ───────────────────────────────────────────────
+  // ── 2. Send to API ───────────────────────────────────────────────────────
   onProgress?.({ progress: 10, step: "uploading" });
 
   const controller = new AbortController();
@@ -138,7 +114,7 @@ export async function trackBarbell(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/lift-analysis/process`, {
+    response = await fetch(`${API_BASE_URL}/api/motion-analysis/process`, {
       method: "POST",
       body: formData,
       headers: {
@@ -157,10 +133,10 @@ export async function trackBarbell(
     throw new Error(errorMsg);
   }
 
-  // ── 3. Parse response ────────────────────────────────────────────
+  // ── 3. Parse response ────────────────────────────────────────────────────
   onProgress?.({ progress: 100, step: "processing" });
 
-  const result = (await response.json()) as TrackingResult;
+  const result = (await response.json()) as MotionAnalysisResult;
 
   if (!result.success) {
     throw new Error(result.message || "Analysis failed");

@@ -1,4 +1,5 @@
 import createNextIntlPlugin from "next-intl/plugin";
+import path from "path";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -12,6 +13,18 @@ const nextConfig = {
     serverActions: {
       bodySizeLimit: "500mb",
     },
+  },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      // Force a single React instance to prevent @react-three/fiber
+      // from creating a second reconciler with a different React copy
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        react: path.resolve("./node_modules/react"),
+        "react-dom": path.resolve("./node_modules/react-dom"),
+      };
+    }
+    return config;
   },
   // Keep native binaries out of the webpack bundle — they are resolved by Node at runtime
   serverExternalPackages: [

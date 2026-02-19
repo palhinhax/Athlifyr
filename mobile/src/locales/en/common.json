@@ -128,7 +128,19 @@
     "noUpcomingEventsDescription": "Explore events and register to participate.",
     "pastEventsCount": "Past Events ({{count}})",
     "noPastEvents": "No past events",
-    "noPastEventsDescription": "Your event history will appear here."
+    "noPastEventsDescription": "Your event history will appear here.",
+    "gallery": {
+      "captionLabel": "Caption (optional)",
+      "captionPlaceholder": "Describe your photo...",
+      "publishedTitle": "Photo Published",
+      "publishedMessage": "Your photo has been published successfully.",
+      "uploadError": "Could not publish your photo. Please try again.",
+      "deleteTitle": "Delete Photo",
+      "deleteConfirm": "Are you sure you want to delete this photo?",
+      "deleteError": "Could not delete the photo. Please try again.",
+      "permissionTitle": "Gallery Permission Required",
+      "permissionMessage": "Allow Athlifyr to access your photo library to publish photos."
+    }
   },
   "login": {
     "title": "Sign In",

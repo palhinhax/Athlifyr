@@ -128,7 +128,19 @@
     "noUpcomingEventsDescription": "Explore les événements et inscris-toi pour participer.",
     "pastEventsCount": "Événements Passés ({{count}})",
     "noPastEvents": "Aucun événement passé",
-    "noPastEventsDescription": "Ton historique d'événements apparaîtra ici."
+    "noPastEventsDescription": "Ton historique d'événements apparaîtra ici.",
+    "gallery": {
+      "captionLabel": "Légende (optionnelle)",
+      "captionPlaceholder": "Décris ta photo...",
+      "publishedTitle": "Photo Publiée",
+      "publishedMessage": "Ta photo a été publiée avec succès.",
+      "uploadError": "Impossible de publier ta photo. Réessaie.",
+      "deleteTitle": "Supprimer la Photo",
+      "deleteConfirm": "Es-tu sûr(e) de vouloir supprimer cette photo ?",
+      "deleteError": "Impossible de supprimer la photo. Réessaie.",
+      "permissionTitle": "Autorisation de la Galerie Requise",
+      "permissionMessage": "Autorise Athlifyr à accéder à ta photothèque pour publier des photos."
+    }
   },
   "login": {
     "title": "Se Connecter",

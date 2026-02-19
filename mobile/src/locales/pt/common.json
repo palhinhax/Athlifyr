@@ -128,7 +128,19 @@
     "noUpcomingEventsDescription": "Explora eventos e inscreve-te para participar.",
     "pastEventsCount": "Eventos Passados ({{count}})",
     "noPastEvents": "Sem eventos passados",
-    "noPastEventsDescription": "O teu histórico de eventos aparecerá aqui."
+    "noPastEventsDescription": "O teu histórico de eventos aparecerá aqui.",
+    "gallery": {
+      "captionLabel": "Legenda (opcional)",
+      "captionPlaceholder": "Descreve a tua foto...",
+      "publishedTitle": "Foto Publicada",
+      "publishedMessage": "A tua foto foi publicada com sucesso.",
+      "uploadError": "Não foi possível publicar a tua foto. Tenta novamente.",
+      "deleteTitle": "Eliminar Foto",
+      "deleteConfirm": "Tens a certeza que queres eliminar esta foto?",
+      "deleteError": "Não foi possível eliminar a foto. Tenta novamente.",
+      "permissionTitle": "Permissão da Galeria Necessária",
+      "permissionMessage": "Permite que o Athlifyr aceda à tua biblioteca de fotos para publicar fotos."
+    }
   },
   "login": {
     "title": "Iniciar Sessão",

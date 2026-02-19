@@ -128,7 +128,19 @@
     "noUpcomingEventsDescription": "Esplora gli eventi e registrati per partecipare.",
     "pastEventsCount": "Eventi Passati ({{count}})",
     "noPastEvents": "Nessun evento passato",
-    "noPastEventsDescription": "La tua cronologia eventi apparirà qui."
+    "noPastEventsDescription": "La tua cronologia eventi apparirà qui.",
+    "gallery": {
+      "captionLabel": "Didascalia (opzionale)",
+      "captionPlaceholder": "Descrivi la tua foto...",
+      "publishedTitle": "Foto Pubblicata",
+      "publishedMessage": "La tua foto è stata pubblicata con successo.",
+      "uploadError": "Impossibile pubblicare la tua foto. Riprova.",
+      "deleteTitle": "Elimina Foto",
+      "deleteConfirm": "Sei sicuro/a di voler eliminare questa foto?",
+      "deleteError": "Impossibile eliminare la foto. Riprova.",
+      "permissionTitle": "Autorizzazione Galleria Richiesta",
+      "permissionMessage": "Consenti ad Athlifyr di accedere alla tua libreria foto per pubblicare foto."
+    }
   },
   "login": {
     "title": "Accedi",

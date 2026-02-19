@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import {
   Activity,
@@ -11,7 +12,26 @@ import {
   Download,
   Loader2,
   Plus,
+  Video,
+  Box,
 } from "lucide-react";
+import type { SkeletonFrame } from "@/types/lift-analysis";
+
+// Dynamic import for Three.js component to prevent SSR issues
+const Skeleton3DViewer = dynamic(
+  () =>
+    import("@/components/skeleton-3d-viewer").then(
+      (mod) => mod.Skeleton3DViewer
+    ),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex h-[300px] items-center justify-center rounded-lg border bg-muted/10">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    ),
+  }
+);
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -45,6 +65,7 @@ interface PoseFrame {
 }
 
 interface MotionAnalysisJson {
+  // Legacy format (mobile)
   sampleFps?: number;
   poseFrames?: PoseFrame[];
   metrics?: {
@@ -53,6 +74,27 @@ interface MotionAnalysisJson {
   };
   segment?: { startMs: number; endMs: number };
   videoMeta?: { videoWidth: number; videoHeight: number };
+  // New format (web) - full MotionAnalysisProcessResponse
+  pose?: {
+    framesProcessed: number;
+    framesWithPose: number;
+    detectionRate: number;
+    durationSec: number;
+    averageAngles: {
+      leftKnee: number | null;
+      rightKnee: number | null;
+      leftHip: number | null;
+      rightHip: number | null;
+      leftElbow: number | null;
+      rightElbow: number | null;
+      leftShoulder: number | null;
+      rightShoulder: number | null;
+      leftAnkle: number | null;
+      rightAnkle: number | null;
+      torsoInclination: number | null;
+    } | null;
+  };
+  skeletonFrames?: SkeletonFrame[];
 }
 
 interface LiftAnalysisJson {
@@ -361,6 +403,8 @@ function ExportButton({
 
 // ── Motion Video Modal ────────────────────────────────────────────────────────
 
+type ViewMode = "video" | "skeleton" | "split";
+
 function MotionVideoModal({
   record,
   onClose,
@@ -371,23 +415,48 @@ function MotionVideoModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoSize, setVideoSize] = useState({ w: 0, h: 0, left: 0, top: 0 });
   const [currentMs, setCurrentMs] = useState(0);
+  const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>("video");
 
   const json = record?.analysisJson as MotionAnalysisJson | undefined;
+
+  // Support both old (poseFrames) and new (skeletonFrames) formats
   const poseFrames = json?.poseFrames ?? [];
+  const skeletonFrames = json?.skeletonFrames ?? [];
+  const hasSkeletonData = skeletonFrames.length > 0;
+
+  // Get metrics from either new or old format
+  const legacyMetrics = json?.metrics ?? {};
+  const newPose = json?.pose;
+  const averageAngles = newPose?.averageAngles;
+
   const segmentStartMs = json?.segment?.startMs ?? 0;
-  const metrics = json?.metrics ?? {};
-  const frameCount = poseFrames.length;
+  const frameCount = hasSkeletonData
+    ? skeletonFrames.length
+    : poseFrames.length;
   const durationMs = json?.segment
     ? json.segment.endMs - json.segment.startMs
-    : null;
+    : newPose?.durationSec
+      ? newPose.durationSec * 1000
+      : null;
+
+  // Count frames with actual skeleton data
+  const framesWithData = useMemo(
+    () => skeletonFrames.filter((f) => f.landmarks.length > 0).length,
+    [skeletonFrames]
+  );
 
   // Reset on open
   useEffect(() => {
-    if (record) setCurrentMs(0);
-  }, [record]);
+    if (record) {
+      setCurrentMs(0);
+      setCurrentFrameIndex(0);
+      // Auto-select view mode based on data
+      setViewMode(hasSkeletonData ? "split" : "video");
+    }
+  }, [record, hasSkeletonData]);
 
   // Compute the actual rendered video frame rect inside the letterboxed element.
-  // object-contain preserves aspect ratio and may add horizontal or vertical bars.
   const updateVideoSize = useCallback(() => {
     const el = videoRef.current;
     if (!el || !el.videoWidth || !el.videoHeight) return;
@@ -397,11 +466,9 @@ function MotionVideoModal({
     const elRatio = elW / elH;
     let rendW: number, rendH: number;
     if (intrinsicRatio > elRatio) {
-      // pillarboxed (bars on top/bottom)
       rendW = elW;
       rendH = elW / intrinsicRatio;
     } else {
-      // letterboxed (bars on left/right)
       rendH = elH;
       rendW = elH * intrinsicRatio;
     }
@@ -418,8 +485,25 @@ function MotionVideoModal({
     return () => ro.disconnect();
   }, [updateVideoSize, record]);
 
+  // Sync skeleton frame to video time
+  const handleTimeUpdate = useCallback(
+    (currentTime: number) => {
+      setCurrentMs(currentTime);
+      if (hasSkeletonData && durationMs) {
+        const fps = frameCount / (durationMs / 1000);
+        const frameIdx = Math.min(
+          Math.floor(currentTime * fps),
+          frameCount - 1
+        );
+        setCurrentFrameIndex(Math.max(0, frameIdx));
+      }
+    },
+    [hasSkeletonData, durationMs, frameCount]
+  );
+
   const absoluteMs = segmentStartMs + currentMs * 1000;
 
+  // For legacy overlay (old format)
   const frame =
     poseFrames.length > 0
       ? poseFrames.reduce((best, f) =>
@@ -434,7 +518,11 @@ function MotionVideoModal({
 
   return (
     <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80">
+      <DialogContent
+        className={`gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
+          viewMode === "split" ? "max-w-5xl" : "max-w-2xl"
+        }`}
+      >
         {/* Dark header */}
         <div className="flex items-start gap-3 bg-black px-5 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
@@ -458,8 +546,48 @@ function MotionVideoModal({
                   {frameCount} frames
                 </>
               )}
+              {newPose && (
+                <>
+                  <span className="text-white/30">·</span>
+                  {newPose.detectionRate.toFixed(0)}% deteção
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
+
+          {/* View mode toggle - only show if 3D data available */}
+          {hasSkeletonData && (
+            <div className="flex gap-1 rounded-lg border border-white/20 bg-white/5 p-0.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "video" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("video")}
+                title="Vídeo"
+              >
+                <Video className="h-3.5 w-3.5 text-white" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "split" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("split")}
+                title="Vídeo + 3D"
+              >
+                <Activity className="h-3.5 w-3.5 text-white" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "skeleton" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("skeleton")}
+                title="Esqueleto 3D"
+              >
+                <Box className="h-3.5 w-3.5 text-white" />
+              </Button>
+            </div>
+          )}
+
           <div className="shrink-0 pr-6">
             <ExportButton exportState={exportState} onStart={startExport} />
           </div>
@@ -472,56 +600,136 @@ function MotionVideoModal({
           </div>
         )}
 
-        {/* Video area — overlay is positioned relative to the video element itself */}
-        <div className="relative flex w-full justify-center bg-black">
-          {record && (
-            <>
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-              <video
-                ref={videoRef}
-                key={record.id}
-                src={record.videoUrl}
-                controls
-                autoPlay
-                playsInline
-                className="max-h-[60vh] w-full object-contain"
-                onLoadedMetadata={updateVideoSize}
-                onTimeUpdate={(e) => setCurrentMs(e.currentTarget.currentTime)}
+        {/* Main content area */}
+        <div
+          className={`grid gap-0 bg-black ${
+            viewMode === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
+          }`}
+        >
+          {/* Video panel */}
+          {viewMode !== "skeleton" && (
+            <div className="relative flex w-full justify-center bg-black">
+              {record && (
+                <>
+                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                  <video
+                    ref={videoRef}
+                    key={record.id}
+                    src={record.videoUrl}
+                    controls
+                    autoPlay
+                    playsInline
+                    className="max-h-[60vh] w-full object-contain"
+                    onLoadedMetadata={updateVideoSize}
+                    onTimeUpdate={(e) =>
+                      handleTimeUpdate(e.currentTarget.currentTime)
+                    }
+                  />
+                  {/* Legacy skeleton overlay for old format */}
+                  {!hasSkeletonData && (
+                    <SkeletonOverlay
+                      frame={frame}
+                      width={videoSize.w}
+                      height={videoSize.h}
+                      left={videoSize.left}
+                      top={videoSize.top}
+                    />
+                  )}
+                </>
+              )}
+            </div>
+          )}
+
+          {/* 3D Skeleton panel */}
+          {viewMode !== "video" && framesWithData > 0 && (
+            <div className="flex items-center justify-center bg-muted/5 p-2">
+              <Skeleton3DViewer
+                frames={skeletonFrames}
+                currentFrameIndex={currentFrameIndex}
+                height={viewMode === "skeleton" ? 500 : 400}
+                className="w-full overflow-hidden rounded-lg border"
               />
-              <SkeletonOverlay
-                frame={frame}
-                width={videoSize.w}
-                height={videoSize.h}
-                left={videoSize.left}
-                top={videoSize.top}
-              />
-            </>
+            </div>
+          )}
+
+          {/* No skeleton data fallback */}
+          {viewMode !== "video" && framesWithData === 0 && (
+            <div className="flex h-[300px] items-center justify-center bg-muted/10 text-sm text-muted-foreground">
+              Sem dados de esqueleto 3D disponíveis
+            </div>
           )}
         </div>
 
-        {/* Metrics footer */}
-        {(metrics.kneeFlexionDeg !== undefined ||
-          metrics.torsoRangeDeg !== undefined) && (
-          <div className="grid grid-cols-2 divide-x border-t bg-muted/30">
-            {metrics.kneeFlexionDeg !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-6 py-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+        {/* Metrics footer - support both old and new formats */}
+        {(legacyMetrics.kneeFlexionDeg !== undefined ||
+          legacyMetrics.torsoRangeDeg !== undefined ||
+          averageAngles) && (
+          <div className="grid grid-cols-2 divide-x border-t bg-muted/30 md:grid-cols-4">
+            {/* Legacy format metrics */}
+            {legacyMetrics.kneeFlexionDeg !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
                   Flexão do Joelho
                 </p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {metrics.kneeFlexionDeg.toFixed(1)}°
+                <p className="text-xl font-bold tabular-nums">
+                  {legacyMetrics.kneeFlexionDeg.toFixed(1)}°
                 </p>
               </div>
             )}
-            {metrics.torsoRangeDeg !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-6 py-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+            {legacyMetrics.torsoRangeDeg !== undefined && (
+              <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
                   Amplitude do Tronco
                 </p>
-                <p className="text-2xl font-bold tabular-nums">
-                  {metrics.torsoRangeDeg.toFixed(1)}°
+                <p className="text-xl font-bold tabular-nums">
+                  {legacyMetrics.torsoRangeDeg.toFixed(1)}°
                 </p>
               </div>
+            )}
+            {/* New format metrics */}
+            {averageAngles && (
+              <>
+                {averageAngles.leftKnee !== null && (
+                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Joelho E
+                    </p>
+                    <p className="text-xl font-bold tabular-nums">
+                      {averageAngles.leftKnee.toFixed(1)}°
+                    </p>
+                  </div>
+                )}
+                {averageAngles.rightKnee !== null && (
+                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Joelho D
+                    </p>
+                    <p className="text-xl font-bold tabular-nums">
+                      {averageAngles.rightKnee.toFixed(1)}°
+                    </p>
+                  </div>
+                )}
+                {averageAngles.torsoInclination !== null && (
+                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Tronco
+                    </p>
+                    <p className="text-xl font-bold tabular-nums">
+                      {averageAngles.torsoInclination.toFixed(1)}°
+                    </p>
+                  </div>
+                )}
+                {averageAngles.leftHip !== null && (
+                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
+                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                      Anca E
+                    </p>
+                    <p className="text-xl font-bold tabular-nums">
+                      {averageAngles.leftHip.toFixed(1)}°
+                    </p>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}

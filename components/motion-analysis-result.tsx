@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect, useMemo } from "react";
+import dynamic from "next/dynamic";
 import {
   Play,
   Pause,
@@ -13,8 +14,16 @@ import {
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton3DViewer } from "@/components/skeleton-3d-viewer";
 import type { MotionAnalysisProcessResponse } from "@/types/lift-analysis";
+
+// Dynamic import for Three.js component to prevent SSR issues
+const Skeleton3DViewer = dynamic(
+  () =>
+    import("@/components/skeleton-3d-viewer").then(
+      (mod) => mod.Skeleton3DViewer
+    ),
+  { ssr: false }
+);
 
 // ── Types ────────────────────────────────────────────────────────────────
 

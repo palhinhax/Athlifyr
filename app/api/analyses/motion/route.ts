@@ -2,14 +2,17 @@
  * POST /api/analyses/motion
  *
  * Save a motion (pose) analysis to the database.
- * Uploads the video to B2 "analyses" folder and stores the JSON data in the DB.
+ * Can either upload a video to B2 OR use an existing video URL from processing.
  *
  * Requires authentication (Bearer JWT or NextAuth session).
  *
  * Body: multipart/form-data
- *   - video        : file (video/mp4 | video/quicktime | video/webm)  ≤ 200MB
  *   - localId      : string  — device-generated UUID (idempotency key)
  *   - label        : string? — optional user label
+ *
+ * Video source (one required):
+ *   - video        : file (video/mp4 | video/quicktime | video/webm)  ≤ 200MB
+ *   - videoUrl     : string — existing video URL (e.g., from processing API)
  *
  * Mode 1 (web upload — full proxy response):
  *   - analysisData : JSON — full MotionAnalysisProcessResponse (includes skeletonFrames)
@@ -69,27 +72,51 @@ export async function POST(request: Request) {
     return NextResponse.json(existing, { status: 200 });
   }
 
-  // ── Validate video ──────────────────────────────────────────────────────────
+  // ── Get video source (file OR URL) ─────────────────────────────────────────
   const videoFile = formData.get("video");
-  if (!videoFile || !(videoFile instanceof File)) {
-    return NextResponse.json(
-      { error: "video file is required" },
-      { status: 400 }
-    );
-  }
+  const videoUrlParam = formData.get("videoUrl");
 
-  const allowedTypes = ["video/mp4", "video/quicktime", "video/webm"];
-  if (!allowedTypes.includes(videoFile.type)) {
-    return NextResponse.json(
-      { error: "Only mp4, mov, and webm videos are supported" },
-      { status: 400 }
-    );
-  }
+  let finalVideoUrl: string;
+  let videoB2Key: string | null = null;
 
-  const maxBytes = 200 * 1024 * 1024; // 200 MB
-  if (videoFile.size > maxBytes) {
+  if (
+    videoUrlParam &&
+    typeof videoUrlParam === "string" &&
+    videoUrlParam.startsWith("http")
+  ) {
+    // Use provided video URL (from processing API result)
+    finalVideoUrl = videoUrlParam;
+  } else if (videoFile && videoFile instanceof File) {
+    // Upload video file to B2
+    const allowedTypes = ["video/mp4", "video/quicktime", "video/webm"];
+    if (!allowedTypes.includes(videoFile.type)) {
+      return NextResponse.json(
+        { error: "Only mp4, mov, and webm videos are supported" },
+        { status: 400 }
+      );
+    }
+
+    const maxBytes = 200 * 1024 * 1024; // 200 MB
+    if (videoFile.size > maxBytes) {
+      return NextResponse.json(
+        { error: "Video exceeds 200 MB limit" },
+        { status: 400 }
+      );
+    }
+
+    const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
+    const uploadResult = await uploadToB2({
+      file: videoBuffer,
+      fileName: `motion_${localId}.mp4`,
+      contentType: videoFile.type || "video/mp4",
+      folder: "analyses",
+    });
+
+    finalVideoUrl = uploadResult.url;
+    videoB2Key = uploadResult.fileName;
+  } else {
     return NextResponse.json(
-      { error: "Video exceeds 200 MB limit" },
+      { error: "Either video file or videoUrl is required" },
       { status: 400 }
     );
   }
@@ -161,23 +188,14 @@ export async function POST(request: Request) {
     analysisJson = { segment, sampleFps, videoMeta, poseFrames, metrics };
   }
 
-  // ── Upload video to B2 ────────────────────────────────────────────────────
-  const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
-  const uploadResult = await uploadToB2({
-    file: videoBuffer,
-    fileName: `motion_${localId}.mp4`,
-    contentType: videoFile.type || "video/mp4",
-    folder: "analyses",
-  });
-
   // ── Save to DB ────────────────────────────────────────────────────────────
   const record = await prisma.motionAnalysisRecord.create({
     data: {
       userId: user.id,
       localId,
       label: typeof label === "string" && label.trim() ? label.trim() : null,
-      videoUrl: uploadResult.url,
-      videoB2Key: uploadResult.fileName,
+      videoUrl: finalVideoUrl,
+      videoB2Key: videoB2Key,
       analysisJson,
     },
     select: { id: true, videoUrl: true, createdAt: true },

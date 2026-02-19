@@ -34,14 +34,9 @@
  *     framesWithPose: number,
  *     detectionRate: number,
  *     durationSec: number,
- *     averageAngles: {
- *       leftElbow?: number,
- *       rightElbow?: number,
- *       leftKnee?: number,
- *       rightKnee?: number,
- *       backAngle?: number
- *     }
- *   }
+ *     averageAngles: { ... }
+ *   },
+ *   skeletonFrames: SkeletonFrame[]  // 3D landmark data per frame
  * }
  *
  * Response 400: { error: string }
@@ -68,6 +63,35 @@ interface PoseAngles {
   left_ankle?: number;
   right_ankle?: number;
   torso_inclination?: number;
+  back_angle?: number;
+}
+
+interface ExternalLandmark {
+  name: string;
+  index: number;
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+  pixel_x: number;
+  pixel_y: number;
+  world_x: number | null;
+  world_y: number | null;
+  world_z: number | null;
+}
+
+interface ExternalBone {
+  start_index: number;
+  end_index: number;
+  start_name: string;
+  end_name: string;
+}
+
+interface ExternalSkeletonFrame {
+  landmarks: ExternalLandmark[];
+  bones: ExternalBone[];
+  frame_width: number;
+  frame_height: number;
 }
 
 interface ExternalApiResponse {
@@ -87,6 +111,7 @@ interface ExternalApiResponse {
   pose_detection_rate: number;
   duration_sec: number;
   average_angles?: PoseAngles;
+  skeleton_frames?: ExternalSkeletonFrame[];
   error?: string;
 }
 
@@ -245,6 +270,31 @@ export async function POST(request: Request) {
       ? `${BARBELL_API_URL}${result.video_url}`
       : null;
 
+    // Transform skeleton_frames from snake_case to camelCase
+    const skeletonFrames = (result.skeleton_frames ?? []).map((frame) => ({
+      frameWidth: frame.frame_width,
+      frameHeight: frame.frame_height,
+      landmarks: frame.landmarks.map((lm) => ({
+        name: lm.name,
+        index: lm.index,
+        x: lm.x,
+        y: lm.y,
+        z: lm.z,
+        visibility: lm.visibility,
+        pixelX: lm.pixel_x,
+        pixelY: lm.pixel_y,
+        worldX: lm.world_x,
+        worldY: lm.world_y,
+        worldZ: lm.world_z,
+      })),
+      bones: frame.bones.map((bone) => ({
+        startIndex: bone.start_index,
+        endIndex: bone.end_index,
+        startName: bone.start_name,
+        endName: bone.end_name,
+      })),
+    }));
+
     return NextResponse.json(
       {
         success: true,
@@ -282,10 +332,13 @@ export async function POST(request: Request) {
                 leftAnkle: result.average_angles.left_ankle ?? null,
                 rightAnkle: result.average_angles.right_ankle ?? null,
                 torsoInclination:
-                  result.average_angles.torso_inclination ?? null,
+                  result.average_angles.torso_inclination ??
+                  result.average_angles.back_angle ??
+                  null,
               }
             : null,
         },
+        skeletonFrames,
       },
       { status: 200 }
     );

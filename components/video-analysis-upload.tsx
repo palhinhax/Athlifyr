@@ -16,6 +16,7 @@ import {
   processLiftAnalysis,
   processMotionAnalysis,
 } from "@/lib/lift-analysis-client";
+import { MotionAnalysisResult } from "@/components/motion-analysis-result";
 import type {
   LiftAnalysisProcessResponse,
   MotionAnalysisProcessResponse,
@@ -175,11 +176,7 @@ export function VideoAnalysisUpload({
         const saveFormData = new FormData();
         saveFormData.append("video", selectedFile);
         saveFormData.append("localId", crypto.randomUUID());
-        saveFormData.append("durationMs", String(result.duration_ms));
-        saveFormData.append("fpsSample", String(result.fps_sample));
-        saveFormData.append("seedPoint", JSON.stringify(result.seed_point));
-        saveFormData.append("barPath", JSON.stringify(result.bar_path));
-        saveFormData.append("metrics", JSON.stringify(result.metrics || {}));
+        saveFormData.append("analysisData", JSON.stringify(result));
 
         const saveResponse = await fetch("/api/analyses/lift", {
           method: "POST",
@@ -215,13 +212,7 @@ export function VideoAnalysisUpload({
         const saveFormData = new FormData();
         saveFormData.append("video", selectedFile);
         saveFormData.append("localId", crypto.randomUUID());
-        saveFormData.append("segment", JSON.stringify(result.segment));
-        saveFormData.append("sampleFps", String(result.sample_fps));
-        if (result.video_meta) {
-          saveFormData.append("videoMeta", JSON.stringify(result.video_meta));
-        }
-        saveFormData.append("poseFrames", JSON.stringify(result.pose_frames));
-        saveFormData.append("metrics", JSON.stringify(result.metrics || {}));
+        saveFormData.append("analysisData", JSON.stringify(result));
 
         const saveResponse = await fetch("/api/analyses/motion", {
           method: "POST",
@@ -236,11 +227,16 @@ export function VideoAnalysisUpload({
         setUploadState({ status: "success", result });
       }
 
-      // Call success callback after a delay
-      setTimeout(() => {
+      // For lift analysis, auto-close after success
+      // For motion, we show the result viewer — user closes manually
+      if (isLift) {
+        setTimeout(() => {
+          onSuccess?.();
+          handleClose();
+        }, 2000);
+      } else {
         onSuccess?.();
-        handleClose();
-      }, 2000);
+      }
     } catch (error) {
       setUploadState({
         status: "error",
@@ -277,7 +273,13 @@ export function VideoAnalysisUpload({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent
+        className={
+          uploadState.status === "success" && !isLift
+            ? "max-h-[90vh] max-w-6xl overflow-y-auto"
+            : "max-w-2xl"
+        }
+      >
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
           <DialogDescription>{description}</DialogDescription>
@@ -372,8 +374,16 @@ export function VideoAnalysisUpload({
             </div>
           )}
 
-          {/* Success */}
-          {uploadState.status === "success" && (
+          {/* Success — Motion: show result viewer */}
+          {uploadState.status === "success" && !isLift && (
+            <MotionAnalysisResult
+              result={uploadState.result as MotionAnalysisProcessResponse}
+              onClose={handleClose}
+            />
+          )}
+
+          {/* Success — Lift: simple confirmation */}
+          {uploadState.status === "success" && isLift && (
             <Alert>
               <CheckCircle className="h-4 w-4" />
               <AlertDescription>
@@ -399,6 +409,11 @@ export function VideoAnalysisUpload({
                 uploadState.status === "processing"
                   ? "A processar..."
                   : "Cancelar"}
+              </Button>
+            )}
+            {uploadState.status === "success" && !isLift && (
+              <Button variant="outline" onClick={handleClose}>
+                Fechar
               </Button>
             )}
             {canSubmit && (

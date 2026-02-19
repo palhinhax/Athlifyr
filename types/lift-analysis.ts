@@ -4,6 +4,9 @@
  * These types are used for the centralized video analysis features:
  * - Lift Analysis: Barbell tracking + pose estimation (/analyze/full)
  * - Motion Analysis: Full body pose estimation (/analyze/body)
+ *
+ * Both endpoints return skeleton_frames with 3D landmark data per frame,
+ * allowing frontend 3D skeleton rendering (e.g., Three.js, SceneKit).
  */
 
 // ── Request Types ────────────────────────────────────────────────────────
@@ -22,6 +25,62 @@ export interface MotionAnalysisProcessRequest {
   video: File | Blob;
   showAngles?: boolean;
   maxDurationSec?: number;
+}
+
+// ── 3D Skeleton Types ────────────────────────────────────────────────────
+
+/** A single 3D landmark (body point) detected by MediaPipe Pose. */
+export interface Landmark3D {
+  /** Landmark name (e.g., "left_shoulder", "right_knee") */
+  name: string;
+  /** Landmark index (0-32, MediaPipe Pose indices) */
+  index: number;
+
+  /** Normalized x coordinate (0 = left, 1 = right) */
+  x: number;
+  /** Normalized y coordinate (0 = top, 1 = bottom) */
+  y: number;
+  /** Normalized z coordinate (negative = closer to camera) */
+  z: number;
+
+  /** Detection confidence (0-1, use threshold of 0.5) */
+  visibility: number;
+
+  /** Pixel x coordinate in the original frame */
+  pixelX: number;
+  /** Pixel y coordinate in the original frame */
+  pixelY: number;
+
+  /** World x coordinate in meters (null if unavailable) */
+  worldX: number | null;
+  /** World y coordinate in meters, origin = hip center (null if unavailable) */
+  worldY: number | null;
+  /** World z coordinate in meters (null if unavailable) */
+  worldZ: number | null;
+}
+
+/** A bone connection between two landmarks. */
+export interface SkeletonBone {
+  /** Index of the start landmark */
+  startIndex: number;
+  /** Index of the end landmark */
+  endIndex: number;
+  /** Name of the start landmark */
+  startName: string;
+  /** Name of the end landmark */
+  endName: string;
+}
+
+/** Skeleton data for a single frame. */
+export interface SkeletonFrame {
+  /** 33 landmarks (or empty array if no pose detected in this frame) */
+  landmarks: Landmark3D[];
+  /** 35 bone connections */
+  bones: SkeletonBone[];
+  /** Width of the original video frame in pixels */
+  frameWidth: number;
+  /** Height of the original video frame in pixels */
+  frameHeight: number;
 }
 
 // ── Response Types ───────────────────────────────────────────────────────
@@ -67,6 +126,8 @@ export interface LiftAnalysisProcessResponse {
   videoUrl: string | null;
   tracking: TrackingData;
   pose: PoseData;
+  /** 3D skeleton data per frame for rendering */
+  skeletonFrames: SkeletonFrame[];
 }
 
 export interface MotionAnalysisProcessResponse {
@@ -74,6 +135,8 @@ export interface MotionAnalysisProcessResponse {
   message: string;
   videoUrl: string | null;
   pose: PoseData;
+  /** 3D skeleton data per frame for rendering */
+  skeletonFrames: SkeletonFrame[];
 }
 
 // ── Error Types ──────────────────────────────────────────────────────────

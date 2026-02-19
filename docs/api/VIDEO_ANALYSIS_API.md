@@ -17,6 +17,7 @@ As APIs centralizadas de análise de vídeo processam vídeos de fitness/desport
 - ✅ **Barbell tracking** com linha dourada mostrando caminho da barra
 - ✅ **Pose estimation** com esqueleto verde néon
 - ✅ **Ângulos das articulações** (anca, joelho, cotovelo, ombro, tornozelo, tronco)
+- ✅ **3D Skeleton frames** com landmarks MediaPipe por frame (33 landmarks, 35 bones)
 - ✅ **Watermark "Athlifyr"** em todos os vídeos processados
 - ✅ **Mobile & Web** suportados (iOS, Android, Browser)
 - ✅ **Vídeos até 500MB** e 120 segundos de duração
@@ -81,7 +82,29 @@ POST /api/lift-analysis/process
       rightAnkle: 87.2,
       torsoInclination: 12.5
     }
-  }
+  },
+  skeletonFrames: [
+    {
+      frameWidth: 1920,
+      frameHeight: 1080,
+      landmarks: [
+        {
+          name: "left_shoulder",
+          index: 11,
+          x: 0.45, y: 0.35, z: -0.12,
+          visibility: 0.98,
+          pixelX: 864, pixelY: 378,
+          worldX: -0.15, worldY: 0.42, worldZ: -0.08
+        }
+        // ... 33 landmarks total (MediaPipe Pose)
+      ],
+      bones: [
+        { startIndex: 11, endIndex: 13, startName: "left_shoulder", endName: "left_elbow" }
+        // ... 35 bones total
+      ]
+    }
+    // ... one SkeletonFrame per video frame
+  ]
 }
 ```
 
@@ -142,7 +165,29 @@ POST /api/motion-analysis/process
       rightAnkle: 91.5,
       torsoInclination: 5.2
     }
-  }
+  },
+  skeletonFrames: [
+    {
+      frameWidth: 1280,
+      frameHeight: 720,
+      landmarks: [
+        {
+          name: "left_hip",
+          index: 23,
+          x: 0.52, y: 0.58, z: -0.05,
+          visibility: 0.95,
+          pixelX: 665, pixelY: 417,
+          worldX: 0.02, worldY: -0.01, worldZ: -0.03
+        }
+        // ... 33 landmarks total
+      ],
+      bones: [
+        { startIndex: 23, endIndex: 25, startName: "left_hip", endName: "left_knee" }
+        // ... 35 bones total
+      ]
+    }
+    // ... one SkeletonFrame per video frame
+  ]
 }
 ```
 
@@ -469,6 +514,9 @@ import type {
   TrackingData,
   PoseData,
   PoseAngles,
+  Landmark3D,
+  SkeletonBone,
+  SkeletonFrame,
 } from "@/types/lift-analysis";
 
 // Motion Analysis Types
@@ -531,7 +579,98 @@ import { analyzeMotion } from "@/src/lib/motion-api";
 
 ---
 
+## 🦴 3D Skeleton Data (skeleton_frames)
+
+Ambos os endpoints devolvem `skeletonFrames` — um array com dados de esqueleto 3D por frame de vídeo. Estes dados permitem rendering de esqueleto em 3D (Three.js, SceneKit, etc.).
+
+### Estrutura
+
+Cada `SkeletonFrame` contém:
+
+- **33 landmarks** (pontos do corpo MediaPipe Pose)
+- **35 bones** (conexões entre landmarks)
+- **Dimensões do frame** original
+
+### Landmark3D
+
+| Campo                        | Tipo           | Descrição                                           |
+| ---------------------------- | -------------- | --------------------------------------------------- |
+| `name`                       | string         | Nome do landmark (e.g., "left_shoulder")            |
+| `index`                      | number         | Índice MediaPipe (0-32)                             |
+| `x`, `y`, `z`                | number         | Coordenadas normalizadas (0-1, z: negativo = perto) |
+| `visibility`                 | number         | Confiança da deteção (0-1, threshold: 0.5)          |
+| `pixelX`, `pixelY`           | number         | Coordenadas em pixéis no frame original             |
+| `worldX`, `worldY`, `worldZ` | number \| null | Coordenadas em metros (origem: centro da anca)      |
+
+### SkeletonBone
+
+| Campo        | Tipo   | Descrição                  |
+| ------------ | ------ | -------------------------- |
+| `startIndex` | number | Índice do landmark inicial |
+| `endIndex`   | number | Índice do landmark final   |
+| `startName`  | string | Nome do landmark inicial   |
+| `endName`    | string | Nome do landmark final     |
+
+### Exemplo de Uso (Three.js)
+
+```typescript
+import type { SkeletonFrame, Landmark3D } from "@/types/lift-analysis";
+
+function renderSkeleton(frame: SkeletonFrame) {
+  // Render landmarks como esferas
+  for (const lm of frame.landmarks) {
+    if (lm.visibility > 0.5 && lm.worldX !== null) {
+      addSphere(lm.worldX, lm.worldY!, lm.worldZ!, 0.02);
+    }
+  }
+
+  // Render bones como linhas
+  for (const bone of frame.bones) {
+    const start = frame.landmarks[bone.startIndex];
+    const end = frame.landmarks[bone.endIndex];
+    if (start.visibility > 0.5 && end.visibility > 0.5) {
+      addLine(
+        start.worldX!,
+        start.worldY!,
+        start.worldZ!,
+        end.worldX!,
+        end.worldY!,
+        end.worldZ!
+      );
+    }
+  }
+}
+```
+
+### Landmarks MediaPipe Pose (33 pontos)
+
+```
+0: nose                 11: left_shoulder      23: left_hip
+1: left_eye_inner       12: right_shoulder     24: right_hip
+2: left_eye             13: left_elbow         25: left_knee
+3: left_eye_outer       14: right_elbow        26: right_knee
+4: right_eye_inner      15: left_wrist         27: left_ankle
+5: right_eye            16: right_wrist        28: right_ankle
+6: right_eye_outer      17: left_pinky         29: left_heel
+7: left_ear             18: right_pinky        30: right_heel
+8: right_ear            19: left_index         31: left_foot_index
+9: mouth_left           20: right_index        32: right_foot_index
+10: mouth_right         21: left_thumb
+                        22: right_thumb
+```
+
+---
+
 ## 📝 Changelog
+
+### v2.1.0 (Current)
+
+- ✨ Suporte para **skeleton_frames** com dados 3D por frame
+- ✨ 33 landmarks MediaPipe Pose por frame (coordenadas normalizadas + world em metros)
+- ✨ 35 conexões de ossos (bone connections) para rendering de esqueleto
+- ✨ Save endpoints agora aceitam `analysisData` (resposta completa do proxy incluindo skeletonFrames)
+- ✨ Upload web guarda toda a resposta da análise incluindo dados 3D
+- 📚 Documentação atualizada com tipos 3D e exemplos
 
 ### v2.0.0 (19 Fevereiro 2026)
 

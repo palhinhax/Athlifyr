@@ -10,6 +10,11 @@
  *   - video        : file (video/mp4 | video/quicktime | video/webm)  ≤ 200MB
  *   - localId      : string  — device-generated UUID (idempotency key)
  *   - label        : string? — optional user label
+ *
+ * Mode 1 (web upload — full proxy response):
+ *   - analysisData : JSON — full LiftAnalysisProcessResponse (includes skeletonFrames)
+ *
+ * Mode 2 (legacy / mobile — individual fields):
  *   - durationMs   : string (number)
  *   - fpsSample    : string (number)
  *   - seedPoint    : JSON { x, y }
@@ -90,48 +95,70 @@ export async function POST(request: Request) {
 
   // ── Parse JSON fields ──────────────────────────────────────────────────────
   const label = formData.get("label");
-  const durationMsRaw = formData.get("durationMs");
-  const fpsSampleRaw = formData.get("fpsSample");
-  const seedPointRaw = formData.get("seedPoint");
-  const barPathRaw = formData.get("barPath");
-  const metricsRaw = formData.get("metrics");
 
-  for (const [key, value] of [
-    ["durationMs", durationMsRaw],
-    ["fpsSample", fpsSampleRaw],
-    ["seedPoint", seedPointRaw],
-    ["barPath", barPathRaw],
-    ["metrics", metricsRaw],
-  ] as [string, FormDataEntryValue | null][]) {
-    if (!value) {
+  // Support two modes:
+  // 1. `analysisData` — full proxy response JSON (used by web upload)
+  // 2. Individual fields — legacy format (used by mobile)
+  const analysisDataRaw = formData.get("analysisData");
+  let analysisJson: Prisma.InputJsonValue;
+
+  if (analysisDataRaw && typeof analysisDataRaw === "string") {
+    // ── Mode 1: Full analysis response ────────────────────────────────────
+    try {
+      analysisJson = JSON.parse(analysisDataRaw) as Prisma.InputJsonValue;
+    } catch {
       return NextResponse.json(
-        { error: `${key} is required` },
+        { error: "Invalid JSON in analysisData" },
         { status: 400 }
       );
     }
-  }
+  } else {
+    // ── Mode 2: Individual fields (backward compatible) ──────────────────
+    const durationMsRaw = formData.get("durationMs");
+    const fpsSampleRaw = formData.get("fpsSample");
+    const seedPointRaw = formData.get("seedPoint");
+    const barPathRaw = formData.get("barPath");
+    const metricsRaw = formData.get("metrics");
 
-  let seedPoint: Prisma.InputJsonValue,
-    barPath: Prisma.InputJsonValue,
-    metrics: Prisma.InputJsonValue;
-  try {
-    seedPoint = JSON.parse(seedPointRaw as string) as Prisma.InputJsonValue;
-    barPath = JSON.parse(barPathRaw as string) as Prisma.InputJsonValue;
-    metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON in one of the fields" },
-      { status: 400 }
-    );
-  }
+    for (const [key, value] of [
+      ["durationMs", durationMsRaw],
+      ["fpsSample", fpsSampleRaw],
+      ["seedPoint", seedPointRaw],
+      ["barPath", barPathRaw],
+      ["metrics", metricsRaw],
+    ] as [string, FormDataEntryValue | null][]) {
+      if (!value) {
+        return NextResponse.json(
+          { error: `${key} is required` },
+          { status: 400 }
+        );
+      }
+    }
 
-  const durationMs = Number(durationMsRaw);
-  const fpsSample = Number(fpsSampleRaw);
-  if (!Number.isFinite(durationMs) || !Number.isFinite(fpsSample)) {
-    return NextResponse.json(
-      { error: "Invalid durationMs or fpsSample" },
-      { status: 400 }
-    );
+    let seedPoint: Prisma.InputJsonValue,
+      barPath: Prisma.InputJsonValue,
+      metrics: Prisma.InputJsonValue;
+    try {
+      seedPoint = JSON.parse(seedPointRaw as string) as Prisma.InputJsonValue;
+      barPath = JSON.parse(barPathRaw as string) as Prisma.InputJsonValue;
+      metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON in one of the fields" },
+        { status: 400 }
+      );
+    }
+
+    const durationMs = Number(durationMsRaw);
+    const fpsSample = Number(fpsSampleRaw);
+    if (!Number.isFinite(durationMs) || !Number.isFinite(fpsSample)) {
+      return NextResponse.json(
+        { error: "Invalid durationMs or fpsSample" },
+        { status: 400 }
+      );
+    }
+
+    analysisJson = { durationMs, fpsSample, seedPoint, barPath, metrics };
   }
 
   // ── Upload video to B2 ────────────────────────────────────────────────────
@@ -151,13 +178,7 @@ export async function POST(request: Request) {
       label: typeof label === "string" && label.trim() ? label.trim() : null,
       videoUrl: uploadResult.url,
       videoB2Key: uploadResult.fileName,
-      analysisJson: {
-        durationMs,
-        fpsSample,
-        seedPoint,
-        barPath,
-        metrics,
-      },
+      analysisJson,
     },
     select: { id: true, videoUrl: true, createdAt: true },
   });

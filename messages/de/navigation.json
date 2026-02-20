@@ -27,7 +27,14 @@
     "notifications": "Benachrichtigungen",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
-    "all": "Alle"
+    "all": "Alle",
+    "new": "Neu",
+    "videoAnalysis": "Videoanalyse",
+    "videoAnalysisDescription": "Wählen Sie die Art der Analyse, die Sie an Ihrem Video durchführen möchten.",
+    "motionAnalysis": "Bewegungsanalyse",
+    "motionAnalysisDescription": "Automatische Pose-Analyse mit 3D-Skelettvisualisierung und Gelenkwinkeln.",
+    "liftAnalysis": "Hebeanalyse",
+    "liftAnalysisDescription": "Hantel-Tracking mit Trajektorienanalyse, Geschwindigkeit und Wiederholungserkennung."
   },
   "footer": {
     "privacy": "Datenschutz",

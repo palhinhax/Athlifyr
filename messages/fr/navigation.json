@@ -27,7 +27,14 @@
     "notifications": "Notifications",
     "openMenu": "Ouvrir le menu",
     "closeMenu": "Fermer le menu",
-    "all": "Tous"
+    "all": "Tous",
+    "new": "Nouveau",
+    "videoAnalysis": "Analyse Vidéo",
+    "videoAnalysisDescription": "Choisissez le type d'analyse que vous souhaitez effectuer sur votre vidéo.",
+    "motionAnalysis": "Analyse de Mouvement",
+    "motionAnalysisDescription": "Analyse automatique de pose avec visualisation 3D du squelette et angles articulaires.",
+    "liftAnalysis": "Analyse de Soulevé",
+    "liftAnalysisDescription": "Suivi de barre avec analyse de trajectoire, vitesse et détection de répétitions."
   },
   "footer": {
     "privacy": "Confidentialité",

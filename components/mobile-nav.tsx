@@ -25,6 +25,7 @@ import { GlobalSearch } from "./global-search";
 // import { WallClock } from "./wall-clock"; // TODO: Temporarily hidden
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { useNotifications } from "@/hooks/use-notifications";
+import { AnalysisMobileMenuItem } from "@/components/analysis-button";
 
 export function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
@@ -181,6 +182,8 @@ export function MobileNav() {
                 <Building2Icon className="h-4 w-4" />
                 {t("venues")}
               </Link>
+
+              <AnalysisMobileMenuItem onClick={closeMenu} />
 
               {session?.user?.role === "ADMIN" && (
                 <Link

@@ -10,7 +10,14 @@
     "noUpcomingEventsDescription": "Non abbiamo trovato eventi futuri nella tua regione. Prova a esplorare altri paesi!",
     "exploreAllEvents": "Esplora Tutti gli Eventi",
     "ctaTitle": "Pronto a trovare la tua prossima sfida?",
-    "ctaDescription": "Sfoglia tutti gli eventi disponibili e trova la gara o competizione perfetta per te."
+    "ctaDescription": "Sfoglia tutti gli eventi disponibili e trova la gara o competizione perfetta per te.",
+    "analysisShortcut": "Analisi Video",
+    "analysisNew": "Nuovo",
+    "analysisDescription": "Scegli il tipo di analisi che vuoi eseguire sul tuo video.",
+    "analysisMotionTitle": "Analisi del Movimento",
+    "analysisMotionDescription": "Analisi automatica della posa con visualizzazione 3D dello scheletro e angoli articolari.",
+    "analysisLiftTitle": "Analisi di Sollevamento",
+    "analysisLiftDescription": "Tracciamento del bilanciere con analisi della traiettoria, velocità e rilevamento delle ripetizioni."
   },
   "promo": {
     "intro": "Athlifyr",

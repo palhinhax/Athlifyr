@@ -27,7 +27,14 @@
     "notifications": "Notifiche",
     "openMenu": "Apri menu",
     "closeMenu": "Chiudi menu",
-    "all": "Tutti"
+    "all": "Tutti",
+    "new": "Nuovo",
+    "videoAnalysis": "Analisi Video",
+    "videoAnalysisDescription": "Scegli il tipo di analisi che vuoi eseguire sul tuo video.",
+    "motionAnalysis": "Analisi del Movimento",
+    "motionAnalysisDescription": "Analisi automatica della posa con visualizzazione 3D dello scheletro e angoli articolari.",
+    "liftAnalysis": "Analisi di Sollevamento",
+    "liftAnalysisDescription": "Tracciamento del bilanciere con analisi della traiettoria, velocità e rilevamento delle ripetizioni."
   },
   "footer": {
     "privacy": "Privacy",

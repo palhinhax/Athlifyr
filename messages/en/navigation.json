@@ -27,7 +27,14 @@
     "notifications": "Notifications",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "all": "All"
+    "all": "All",
+    "new": "New",
+    "videoAnalysis": "Video Analysis",
+    "videoAnalysisDescription": "Choose the type of analysis you want to perform on your video.",
+    "motionAnalysis": "Motion Analysis",
+    "motionAnalysisDescription": "Automatic pose analysis with 3D skeleton visualization and joint angles.",
+    "liftAnalysis": "Lift Analysis",
+    "liftAnalysisDescription": "Barbell tracking with trajectory analysis, speed and rep detection."
   },
   "footer": {
     "privacy": "Privacy",

@@ -165,7 +165,6 @@ export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
 
   const handleOpen = () => {
     setIsOpen(true);
-    onClick?.();
     analyticsEvent("MobileNav_Analysis_Click", {
       location: "mobile_nav",
     });
@@ -184,6 +183,9 @@ export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
     if (!open) {
       setIsOpen(false);
       setAnalysisType(null);
+    } else {
+      // Dialog is opening — close the mobile menu overlay
+      onClick?.();
     }
   };
 

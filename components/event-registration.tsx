@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Check, X, Users, Share2, Send } from "lucide-react";
+import { Check, X, Users, Share2, Send, Target } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/components/ui/use-toast";
@@ -56,6 +56,7 @@ export function EventRegistration({
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [isLoading, setIsLoading] = useState(false);
   const [participantsCount, setParticipantsCount] = useState(0);
+  const [interestedCount, setInterestedCount] = useState(0);
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareContent, setShareContent] = useState("");
   const [isSharing, setIsSharing] = useState(false);
@@ -94,6 +95,7 @@ export function EventRegistration({
         if (response.ok) {
           const data = await response.json();
           setParticipantsCount(data.counts.going);
+          setInterestedCount(data.counts.interested || 0);
         }
       } catch (error) {
         console.error("Error fetching counts:", error);
@@ -142,8 +144,12 @@ export function EventRegistration({
       }
 
       const participation = await response.json();
+      const wasInterested = userParticipation?.status === "interested";
       setUserParticipation(participation);
       setParticipantsCount((prev) => prev + 1);
+      if (wasInterested) {
+        setInterestedCount((prev) => Math.max(0, prev - 1));
+      }
 
       // Prepare share content in user's language
       const variantLabel = participation.variant?.name;
@@ -185,19 +191,75 @@ export function EventRegistration({
         throw new Error("Failed to unregister");
       }
 
+      const wasInterested = userParticipation?.status === "interested";
       setUserParticipation(null);
       setSelectedVariantId("");
-      setParticipantsCount((prev) => Math.max(0, prev - 1));
+      // Decrement the correct counter based on previous status
+      if (wasInterested) {
+        setInterestedCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setParticipantsCount((prev) => Math.max(0, prev - 1));
+      }
 
       toast({
-        title: t("participationCancelled"),
-        description: t("participationCancelledDesc"),
+        title: wasInterested ? t("interestRemoved") : t("participationCancelled"),
+        description: wasInterested
+          ? t("interestRemovedDesc")
+          : t("participationCancelledDesc"),
       });
     } catch (error) {
       console.error("Error unregistering:", error);
       toast({
         title: t("error"),
         description: t("cancellationError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleMarkInterested = async () => {
+    if (!session?.user) {
+      toast({
+        title: t("authRequired"),
+        description: t("authRequiredDesc"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await fetch("/api/participations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          eventId,
+          status: "interested",
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to mark as interested");
+      }
+
+      const participation = await response.json();
+      setUserParticipation(participation);
+      setInterestedCount((prev) => prev + 1);
+
+      toast({
+        title: t("markedAsInterested"),
+        description: t("markedAsInterestedDesc"),
+      });
+    } catch (error) {
+      console.error("Error marking interested:", error);
+      toast({
+        title: t("error"),
+        description: t("registrationError"),
         variant: "destructive",
       });
     } finally {
@@ -250,11 +312,21 @@ export function EventRegistration({
     <div className="rounded-lg border bg-card p-6">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-xl font-bold">{t("willYouGo")}</h3>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span>
-            {participantsCount} {t("participants")}
-          </span>
+        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            <span>
+              {participantsCount} {t("participants")}
+            </span>
+          </div>
+          {interestedCount > 0 && (
+            <div className="flex items-center gap-1">
+              <Target className="h-4 w-4" />
+              <span>
+                {interestedCount} {t("interestedCount")}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -303,7 +375,7 @@ export function EventRegistration({
           )}
 
           {/* Current Participation Status */}
-          {userParticipation && (
+          {userParticipation && userParticipation.status === "going" && (
             <div className="rounded-md bg-p-brand/10 p-3 text-sm">
               <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
                 <Check className="h-4 w-4" />
@@ -333,18 +405,64 @@ export function EventRegistration({
             </div>
           )}
 
+          {userParticipation && userParticipation.status === "interested" && (
+            <div className="rounded-md bg-amber-500/10 p-3 text-sm">
+              <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
+                <Target className="h-4 w-4" />
+                {t("markedAsInterested")}
+              </div>
+              <p className="text-muted-foreground">
+                {t("interestedDesc")}
+              </p>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             {!userParticipation ? (
-              <Button
-                onClick={handleRegister}
-                disabled={isLoading}
-                className="flex-1"
-                size="sm"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {t("markAsGoing")}
-              </Button>
+              <>
+                <Button
+                  onClick={handleRegister}
+                  disabled={isLoading}
+                  className="flex-1"
+                  size="sm"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  {t("markAsGoing")}
+                </Button>
+                <Button
+                  onClick={handleMarkInterested}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="flex-1"
+                  size="sm"
+                >
+                  <Target className="mr-2 h-4 w-4" />
+                  {t("markAsInterested")}
+                </Button>
+              </>
+            ) : userParticipation.status === "interested" ? (
+              <>
+                <Button
+                  onClick={handleRegister}
+                  disabled={isLoading}
+                  className="flex-1"
+                  size="sm"
+                >
+                  <Check className="mr-2 h-4 w-4" />
+                  {t("markAsGoing")}
+                </Button>
+                <Button
+                  onClick={handleUnregister}
+                  disabled={isLoading}
+                  variant="outline"
+                  className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
+                  size="sm"
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  {t("removeInterest")}
+                </Button>
+              </>
             ) : (
               <Button
                 onClick={handleUnregister}

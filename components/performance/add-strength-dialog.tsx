@@ -52,7 +52,7 @@ export function AddStrengthDialog({
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
 
   // Debounced search
-  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   const searchExercises = useCallback(async (query: string) => {
     if (query.length < 1) {

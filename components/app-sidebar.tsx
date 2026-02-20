@@ -157,7 +157,7 @@ export function AppSidebar() {
         <TooltipProvider delayDuration={0}>
           <ul className="space-y-1">
             {filteredNavItems.map((item) => {
-              const Icon = item.icon;
+              const Icon = item.icon as React.ComponentType<{ className?: string }>;
               const active = isActive(item.href);
 
               return (

@@ -102,8 +102,12 @@ export function CollapsibleDescription({
     description.length > 400 || description.split("\n\n").length > 3;
 
   const markdownComponents = {
-    img: ({ src, alt }: { src?: string; alt?: string }) => (
-      <MarkdownImage src={src} alt={alt} onImageClick={handleImageClick} />
+    img: ({ src, alt }: { src?: string | Blob; alt?: string }) => (
+      <MarkdownImage
+        src={typeof src === "string" ? src : undefined}
+        alt={alt}
+        onImageClick={handleImageClick}
+      />
     ),
   };
 

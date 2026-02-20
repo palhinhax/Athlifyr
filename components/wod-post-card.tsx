@@ -512,7 +512,7 @@ export function WodPostCard({
           <div className="space-y-3 p-3">
             {(workout.blocks ?? []).map((block) => {
               const config = BLOCK_TYPE_CONFIG[block.type];
-              const Icon = config.icon;
+              const Icon = config.icon as React.ComponentType<{ className?: string; "aria-hidden"?: string }>;
 
               return (
                 <div

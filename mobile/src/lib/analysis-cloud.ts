@@ -91,13 +91,6 @@ async function resolveVideoUri(videoUri: string): Promise<string> {
  * Save a motion analysis to the cloud (B2 + DB).
  * Throws on network/auth errors — caller must handle.
  *
- * Uses Mode 1 (analysisData) when `payload.analysisResult` is provided,
- * which includes skeletonFrames and pose data — same format as the web flow.
- * Falls back to Mode 2 (individual fields) for backward compatibility.
- *
- * When `analysisResult.videoUrl` exists (processed video from Railway),
- * the server downloads and stores it in B2 (avoids re-uploading the local file).
- *
  * @param payload   Analysis data
  * @param authToken  JWT Bearer token from SecureStore
  */
@@ -105,44 +98,22 @@ export async function saveMotionAnalysisToCloud(
   payload: SaveMotionPayload,
   authToken: string
 ): Promise<CloudSaveResult> {
+  const localUri = await resolveVideoUri(payload.videoUri);
+
   const form = new FormData();
+  form.append("video", {
+    uri: localUri,
+    name: "video.mp4",
+    type: "video/mp4",
+  } as unknown as Blob);
 
   form.append("localId", payload.localId);
   if (payload.label) form.append("label", payload.label);
-
-  if (payload.analysisResult) {
-    // ── Mode 1: Full analysis response (same as web) ─────────────────────
-    // Send analysisData JSON with skeletonFrames, pose, etc.
-    form.append("analysisData", JSON.stringify(payload.analysisResult));
-
-    // If the server returned a processed video URL, pass it so the backend
-    // downloads from Railway and uploads to B2 (no need to re-upload local file).
-    if (payload.analysisResult.videoUrl) {
-      form.append("videoUrl", payload.analysisResult.videoUrl);
-    } else {
-      // No processed video URL — upload the local video file
-      const localUri = await resolveVideoUri(payload.videoUri);
-      form.append("video", {
-        uri: localUri,
-        name: "video.mp4",
-        type: "video/mp4",
-      } as unknown as Blob);
-    }
-  } else {
-    // ── Mode 2: Legacy individual fields ─────────────────────────────────
-    const localUri = await resolveVideoUri(payload.videoUri);
-    form.append("video", {
-      uri: localUri,
-      name: "video.mp4",
-      type: "video/mp4",
-    } as unknown as Blob);
-
-    form.append("segment", JSON.stringify(payload.segment));
-    form.append("sampleFps", String(payload.sampleFps ?? 0));
-    form.append("videoMeta", JSON.stringify(payload.videoMeta ?? null));
-    form.append("poseFrames", JSON.stringify(payload.poseFrames ?? []));
-    form.append("metrics", JSON.stringify(payload.metrics));
-  }
+  form.append("segment", JSON.stringify(payload.segment));
+  form.append("sampleFps", String(payload.sampleFps));
+  form.append("videoMeta", JSON.stringify(payload.videoMeta ?? null));
+  form.append("poseFrames", JSON.stringify(payload.poseFrames));
+  form.append("metrics", JSON.stringify(payload.metrics));
 
   const res = await fetch(`${API_URL}/api/analyses/motion`, {
     method: "POST",

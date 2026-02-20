@@ -6,10 +6,10 @@
       "keywords": "analyse vidéo sportive, analyse de mouvement IA, suivi de barre, analyse de levée, squelette 3D, angles articulaires, détection des répétitions, analyse vidéo crossfit, analyse haltérophilie, IA sportive gratuite, estimation de pose, analyse de mouvement"
     },
     "hero": {
-      "badge": "Intelligence Artificielle · 100% Gratuit",
+      "badge": "Analyse Automatique · 100% Gratuit",
       "title": "Analysez Votre",
       "titleHighlight": "Vidéo d'Entraînement",
-      "description": "Téléchargez n'importe quelle vidéo d'entraînement et obtenez un retour instantané par IA. Détectez les schémas de mouvement, suivez le chemin de la barre, mesurez les angles articulaires et comptez les répétitions automatiquement.",
+      "description": "Téléchargez une vidéo d'entraînement et obtenez des données concrètes en quelques secondes. Squelette 3D, angles articulaires, trajectoire de barre et comptage des répétitions — tout automatiquement.",
       "ctaMotion": "Analyse de Mouvement",
       "ctaLift": "Analyse de Levée",
       "trustFree": "Complètement gratuit",
@@ -18,18 +18,18 @@
     },
     "howItWorks": {
       "title": "Comment Ça Fonctionne",
-      "description": "Trois étapes simples pour obtenir une analyse de niveau professionnel de vos mouvements.",
+      "description": "Trois étapes pour obtenir des données concrètes sur votre mouvement.",
       "step1": {
         "title": "Téléchargez Votre Vidéo",
         "description": "Sélectionnez une vidéo d'entraînement depuis votre appareil. Compatible MP4, MOV, AVI, MKV et WebM jusqu'à 100MB."
       },
       "step2": {
-        "title": "L'IA Traite Votre Vidéo",
-        "description": "Notre intelligence artificielle analyse chaque image, détectant votre corps ou la barre avec précision."
+        "title": "Traitement Automatique",
+        "description": "Le système analyse chaque image et détecte automatiquement les points du corps ou la barre."
       },
       "step3": {
-        "title": "Obtenez des Résultats Instantanés",
-        "description": "Visualisez votre squelette 3D, angles articulaires, chemin de la barre, courbes de vitesse et comptage des répétitions — en quelques secondes."
+        "title": "Visualisez les Résultats",
+        "description": "Squelette 3D, angles articulaires, chemin de la barre, courbes de vitesse et comptage des répétitions."
       }
     },
     "types": {
@@ -56,7 +56,7 @@
     },
     "sports": {
       "title": "Fonctionne pour Tout Sport",
-      "description": "Notre modèle IA a été entraîné sur des milliers de mouvements sportifs dans toutes les disciplines.",
+      "description": "La détection de pose fonctionne avec n'importe quel type de mouvement — de l'haltérophilie à la course, la gymnastique ou les arts martiaux.",
       "crossfit": "CrossFit",
       "weightlifting": "Haltérophilie",
       "powerlifting": "Powerlifting",
@@ -73,19 +73,19 @@
     "faq": {
       "title": "Questions Fréquentes",
       "q1": "Qu'est-ce que l'Analyse Vidéo d'Athlifyr ?",
-      "a1": "L'Analyse Vidéo d'Athlifyr est un outil gratuit alimenté par l'IA qui analyse vos vidéos d'entraînement sportif. Il propose l'Analyse de Mouvement (squelette 3D et angles articulaires) et l'Analyse de Levée (trajectoire de barre, vitesse et comptage de répétitions).",
+      "a1": "Un outil gratuit qui analyse automatiquement les vidéos d'entraînement. Nous détectons les points du corps (squelette 3D et angles articulaires) ou suivons la barre (chemin, vitesse et répétitions).",
       "q2": "Comment fonctionne l'Analyse de Mouvement ?",
-      "a2": "Téléchargez une vidéo de n'importe quel mouvement sportif. Notre IA détecte les points clés de votre corps, génère un squelette 3D et calcule les angles articulaires en temps réel.",
+      "a2": "Téléchargez une vidéo de n'importe quel mouvement sportif. Le système détecte les points clés du corps, génère un squelette 3D et calcule les angles articulaires image par image.",
       "q3": "À quoi sert l'Analyse de Levée ?",
-      "a3": "L'Analyse de Levée est conçue pour l'haltérophilie. Téléchargez une vidéo d'un exercice avec barre et obtenez le suivi automatique du chemin de la barre, la vitesse, la détection des répétitions et l'analyse de symétrie.",
+      "a3": "Pour les exercices avec barre — squat, soulevé de terre, arraché, etc. Le système suit automatiquement le chemin de la barre, mesure la vitesse et compte les répétitions.",
       "q4": "L'analyse vidéo est-elle gratuite ?",
-      "a4": "Oui, l'Analyse Vidéo d'Athlifyr est entièrement gratuite.",
+      "a4": "Oui, complètement gratuite. Téléchargez la vidéo et obtenez les résultats.",
       "q5": "Quels formats vidéo sont pris en charge ?",
       "a5": "Nous supportons les fichiers vidéo MP4, MOV, AVI, MKV et WebM jusqu'à 100MB."
     },
     "cta": {
       "title": "Prêt à Analyser Votre Mouvement ?",
-      "description": "Téléchargez votre vidéo maintenant et obtenez un retour professionnel de l'IA sur votre technique — complètement gratuit.",
+      "description": "Téléchargez votre vidéo et obtenez les données en secondes — squelette 3D, angles, trajectoire de barre. Complètement gratuit.",
       "ctaMotion": "Analyse de Mouvement",
       "ctaLift": "Analyse de Levée"
     }

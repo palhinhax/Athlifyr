@@ -6,10 +6,10 @@
       "keywords": "análisis de vídeo deportivo, análisis de movimiento IA, seguimiento de barra, análisis de levantamiento, esqueleto 3D, ángulos articulares, detección de repeticiones, análisis vídeo crossfit, análisis halterofilia, IA deportiva gratis, estimación de pose, análisis de movimiento"
     },
     "hero": {
-      "badge": "Inteligencia Artificial · 100% Gratis",
+      "badge": "Análisis Automático · 100% Gratis",
       "title": "Analiza Tu",
       "titleHighlight": "Vídeo de Entrenamiento",
-      "description": "Sube cualquier vídeo de entrenamiento y obtén feedback instantáneo con IA. Detecta patrones de movimiento, rastrea el camino de la barra, mide ángulos articulares y cuenta repeticiones automáticamente.",
+      "description": "Sube un vídeo de entrenamiento y obtén datos concretos en segundos. Esqueleto 3D, ángulos articulares, trayectoria de la barra y conteo de repeticiones — todo automáticamente.",
       "ctaMotion": "Análisis de Movimiento",
       "ctaLift": "Análisis de Levantamiento",
       "trustFree": "Completamente gratis",
@@ -18,18 +18,18 @@
     },
     "howItWorks": {
       "title": "Cómo Funciona",
-      "description": "Tres sencillos pasos para obtener un análisis de nivel profesional de tus movimientos.",
+      "description": "Tres pasos para obtener datos concretos de tu movimiento.",
       "step1": {
         "title": "Sube Tu Vídeo",
         "description": "Selecciona un vídeo de entrenamiento de tu dispositivo. Compatible con MP4, MOV, AVI, MKV y WebM hasta 100MB."
       },
       "step2": {
-        "title": "La IA Procesa Tu Vídeo",
-        "description": "Nuestra inteligencia artificial analiza cada fotograma, detectando tu cuerpo o la barra con precisión."
+        "title": "Procesamiento Automático",
+        "description": "El sistema analiza cada fotograma y detecta automáticamente los puntos del cuerpo o la barra."
       },
       "step3": {
-        "title": "Obtén Resultados Instantáneos",
-        "description": "Ve tu esqueleto 3D, ángulos articulares, camino de la barra, curvas de velocidad y conteo de repeticiones — en segundos."
+        "title": "Ve los Resultados",
+        "description": "Esqueleto 3D, ángulos articulares, camino de la barra, curvas de velocidad y conteo de repeticiones."
       }
     },
     "types": {
@@ -56,7 +56,7 @@
     },
     "sports": {
       "title": "Funciona para Cualquier Deporte",
-      "description": "Nuestro modelo de IA ha sido entrenado con miles de movimientos deportivos de todas las disciplinas.",
+      "description": "La detección de pose funciona con cualquier tipo de movimiento — desde levantamientos hasta carrera, gimnasia o artes marciales.",
       "crossfit": "CrossFit",
       "weightlifting": "Halterofilia",
       "powerlifting": "Powerlifting",
@@ -73,19 +73,19 @@
     "faq": {
       "title": "Preguntas Frecuentes",
       "q1": "¿Qué es el Análisis de Vídeo de Athlifyr?",
-      "a1": "El Análisis de Vídeo de Athlifyr es una herramienta gratuita impulsada por IA que analiza tus vídeos de entrenamiento deportivo. Ofrece Análisis de Movimiento (esqueleto 3D y ángulos articulares) y Análisis de Levantamiento (trayectoria de barra, velocidad y conteo de repeticiones).",
+      "a1": "Una herramienta gratuita que analiza automáticamente vídeos de entrenamiento. Detectamos los puntos del cuerpo (esqueleto 3D y ángulos articulares) o rastreamos la barra (camino, velocidad y repeticiones).",
       "q2": "¿Cómo funciona el Análisis de Movimiento?",
-      "a2": "Sube un vídeo de cualquier movimiento deportivo. Nuestra IA detecta los puntos clave de tu cuerpo, genera un esqueleto 3D y calcula los ángulos articulares en tiempo real.",
+      "a2": "Sube un vídeo de cualquier movimiento deportivo. El sistema detecta los puntos clave del cuerpo, genera un esqueleto 3D y calcula los ángulos articulares fotograma a fotograma.",
       "q3": "¿Para qué sirve el Análisis de Levantamiento?",
-      "a3": "El Análisis de Levantamiento está diseñado para la halterofilia. Sube un vídeo de un ejercicio con barra y obtén seguimiento automático del camino de la barra, velocidad, detección de repeticiones y análisis de simetría.",
+      "a3": "Para ejercicios con barra — sentadilla, peso muerto, arranque, etc. El sistema rastrea automáticamente el camino de la barra, mide la velocidad y cuenta las repeticiones.",
       "q4": "¿El análisis de vídeo es gratuito?",
-      "a4": "Sí, el Análisis de Vídeo de Athlifyr es completamente gratuito.",
+      "a4": "Sí, completamente gratis. Sube el vídeo y obtén los resultados.",
       "q5": "¿Qué formatos de vídeo son compatibles?",
       "a5": "Admitimos archivos de vídeo MP4, MOV, AVI, MKV y WebM hasta 100MB."
     },
     "cta": {
       "title": "¿Listo para Analizar Tu Movimiento?",
-      "description": "Sube tu vídeo ahora y obtén feedback profesional de la IA sobre tu técnica — completamente gratis.",
+      "description": "Sube tu vídeo y obtén los datos en segundos — esqueleto 3D, ángulos, trayectoria de la barra. Completamente gratis.",
       "ctaMotion": "Análisis de Movimiento",
       "ctaLift": "Análisis de Levantamiento"
     }

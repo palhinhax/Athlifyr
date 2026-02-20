@@ -6,10 +6,10 @@
       "keywords": "analisi video sportiva, analisi del movimento IA, tracciamento bilanciere, analisi sollevamento, scheletro 3D, angoli articolari, rilevamento ripetizioni, analisi video crossfit, analisi sollevamento pesi, IA sportiva gratuita, stima della posa, analisi del movimento"
     },
     "hero": {
-      "badge": "Intelligenza Artificiale · 100% Gratuito",
+      "badge": "Analisi Automatica · 100% Gratuito",
       "title": "Analizza Il Tuo",
       "titleHighlight": "Video di Allenamento",
-      "description": "Carica qualsiasi video di allenamento e ottieni feedback istantaneo dall'IA. Rileva i pattern di movimento, traccia il percorso del bilanciere, misura gli angoli articolari e conta le ripetizioni automaticamente.",
+      "description": "Carica qualsiasi video di allenamento e ottieni dati concreti in pochi secondi. Rileva i pattern di movimento, traccia il percorso del bilanciere, misura gli angoli articolari e conta le ripetizioni automaticamente.",
       "ctaMotion": "Analisi del Movimento",
       "ctaLift": "Analisi del Sollevamento",
       "trustFree": "Completamente gratuito",
@@ -24,8 +24,8 @@
         "description": "Seleziona un video di allenamento dal tuo dispositivo. Supporta MP4, MOV, AVI, MKV e WebM fino a 100MB."
       },
       "step2": {
-        "title": "L'IA Elabora Il Tuo Video",
-        "description": "La nostra intelligenza artificiale analizza ogni fotogramma, rilevando il tuo corpo o il bilanciere con precisione."
+        "title": "Elaborazione Automatica",
+        "description": "Il sistema analizza ogni fotogramma, rilevando i punti chiave del tuo corpo o il bilanciere con precisione."
       },
       "step3": {
         "title": "Ottieni Risultati Istantanei",
@@ -56,7 +56,7 @@
     },
     "sports": {
       "title": "Funziona per Qualsiasi Sport",
-      "description": "Il nostro modello IA è stato addestrato su migliaia di movimenti sportivi di tutte le discipline.",
+      "description": "Il rilevamento della posa funziona con qualsiasi tipo di movimento sportivo — basta caricare il video.",
       "crossfit": "CrossFit",
       "weightlifting": "Sollevamento Pesi",
       "powerlifting": "Powerlifting",
@@ -73,9 +73,9 @@
     "faq": {
       "title": "Domande Frequenti",
       "q1": "Cos'è l'Analisi Video di Athlifyr?",
-      "a1": "L'Analisi Video di Athlifyr è uno strumento gratuito basato su IA che analizza i tuoi video di allenamento sportivo. Offre Analisi del Movimento (scheletro 3D e angoli articolari) e Analisi del Sollevamento (traiettoria del bilanciere, velocità e conteggio delle ripetizioni).",
+      "a1": "L'Analisi Video di Athlifyr è uno strumento gratuito che analizza i tuoi video di allenamento sportivo. Offre Analisi del Movimento (scheletro 3D e angoli articolari) e Analisi del Sollevamento (traiettoria del bilanciere, velocità e conteggio delle ripetizioni).",
       "q2": "Come funziona l'Analisi del Movimento?",
-      "a2": "Carica un video di qualsiasi movimento sportivo. La nostra IA rileva i punti chiave del tuo corpo, genera uno scheletro 3D e calcola gli angoli articolari in tempo reale.",
+      "a2": "Carica un video di qualsiasi movimento sportivo. Il sistema rileva i punti chiave del tuo corpo, genera uno scheletro 3D e calcola gli angoli articolari fotogramma per fotogramma.",
       "q3": "A cosa serve l'Analisi del Sollevamento?",
       "a3": "L'Analisi del Sollevamento è progettata per il sollevamento pesi. Carica un video di un esercizio con bilanciere e ottieni il tracciamento automatico del percorso del bilanciere, velocità, rilevamento delle ripetizioni e analisi della simmetria.",
       "q4": "L'analisi video è gratuita?",
@@ -85,7 +85,7 @@
     },
     "cta": {
       "title": "Pronto ad Analizzare Il Tuo Movimento?",
-      "description": "Carica il tuo video ora e ottieni feedback professionale dall'IA sulla tua tecnica — completamente gratuito.",
+      "description": "Carica il tuo video ora e ottieni scheletro 3D, angoli articolari, percorso del bilanciere e conteggio delle ripetizioni — completamente gratuito.",
       "ctaMotion": "Analisi del Movimento",
       "ctaLift": "Analisi del Sollevamento"
     }

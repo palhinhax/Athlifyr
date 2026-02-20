@@ -6,10 +6,10 @@
       "keywords": "Sport-Videoanalyse, KI-Bewegungsanalyse, Langhantel-Tracking, Hebeanalyse, 3D-Skelett, Gelenkwinkel, Wiederholungserkennung, CrossFit-Videoanalyse, Gewichtheben-Analyse, kostenlose Sport-KI, Pose-Schätzung, Bewegungsanalyse"
     },
     "hero": {
-      "badge": "Künstliche Intelligenz · 100% Kostenlos",
+      "badge": "Automatische Analyse · 100% Kostenlos",
       "title": "Analysiere Dein",
       "titleHighlight": "Trainingsvideo",
-      "description": "Lade ein beliebiges Trainingsvideo hoch und erhalte sofortiges KI-Feedback. Erkenne Bewegungsmuster, verfolge den Langhantel-Pfad, messe Gelenkwinkel und zähle Wiederholungen automatisch.",
+      "description": "Lade ein Trainingsvideo hoch und erhalte konkrete Daten in Sekunden. 3D-Skelett, Gelenkwinkel, Langhantel-Pfad und Wiederholungszählung — alles automatisch.",
       "ctaMotion": "Bewegungsanalyse",
       "ctaLift": "Hebeanalyse",
       "trustFree": "Völlig kostenlos",
@@ -18,18 +18,18 @@
     },
     "howItWorks": {
       "title": "Wie Es Funktioniert",
-      "description": "Drei einfache Schritte für eine professionelle Analyse deiner Bewegungen.",
+      "description": "Drei Schritte für konkrete Daten über deine Bewegung.",
       "step1": {
         "title": "Lade Dein Video Hoch",
         "description": "Wähle ein Trainingsvideo von deinem Gerät. Unterstützt MP4, MOV, AVI, MKV und WebM bis zu 100MB."
       },
       "step2": {
-        "title": "KI Verarbeitet Dein Video",
-        "description": "Unsere künstliche Intelligenz analysiert jeden Frame und erkennt deinen Körper oder die Langhantel mit Präzision."
+        "title": "Automatische Verarbeitung",
+        "description": "Das System analysiert jeden Frame und erkennt automatisch die Körperpunkte oder die Langhantel."
       },
       "step3": {
-        "title": "Erhalte Sofortige Ergebnisse",
-        "description": "Sieh dein 3D-Skelett, Gelenkwinkel, Langhantel-Pfad, Geschwindigkeitskurven und Wiederholungszählung — in Sekunden."
+        "title": "Sieh die Ergebnisse",
+        "description": "3D-Skelett, Gelenkwinkel, Langhantel-Pfad, Geschwindigkeitskurven und Wiederholungszählung."
       }
     },
     "types": {
@@ -56,7 +56,7 @@
     },
     "sports": {
       "title": "Funktioniert für Jeden Sport",
-      "description": "Unser KI-Modell wurde mit Tausenden von Sportbewegungen aus allen Disziplinen trainiert.",
+      "description": "Pose-Erkennung funktioniert mit jeder Art von Bewegung — von Gewichtheben bis Laufen, Turnen oder Kampfsport.",
       "crossfit": "CrossFit",
       "weightlifting": "Gewichtheben",
       "powerlifting": "Powerlifting",
@@ -73,19 +73,19 @@
     "faq": {
       "title": "Häufig Gestellte Fragen",
       "q1": "Was ist die Athlifyr Videoanalyse?",
-      "a1": "Die Athlifyr Videoanalyse ist ein kostenloses KI-Tool, das deine Sporttrainingsvideos analysiert. Es bietet Bewegungsanalyse (3D-Skelett und Gelenkwinkel) und Hebeanalyse (Langhantel-Trajektorie, Geschwindigkeit und Wiederholungserkennung).",
+      "a1": "Ein kostenloses Tool, das Trainingsvideos automatisch analysiert. Wir erkennen Körperpunkte (3D-Skelett und Gelenkwinkel) oder verfolgen die Langhantel (Pfad, Geschwindigkeit und Wiederholungen).",
       "q2": "Wie funktioniert die Bewegungsanalyse?",
-      "a2": "Lade ein Video einer beliebigen Sportbewegung hoch. Unsere KI erkennt die Schlüsselpunkte deines Körpers, erstellt ein 3D-Skelett und berechnet die Gelenkwinkel in Echtzeit.",
+      "a2": "Lade ein Video einer Sportbewegung hoch. Das System erkennt Körperpunkte, erstellt ein 3D-Skelett und berechnet Gelenkwinkel Frame für Frame.",
       "q3": "Wofür wird die Hebeanalyse verwendet?",
-      "a3": "Die Hebeanalyse ist für Gewichtheben konzipiert. Lade ein Video einer Langhantelübung hoch und erhalte automatisches Langhantel-Tracking, Geschwindigkeit, Wiederholungserkennung und Symmetrieanalyse.",
+      "a3": "Für Langhantelübungen — Kniebeuge, Kreuzheben, Reißen, etc. Das System verfolgt automatisch den Langhantel-Pfad, misst die Geschwindigkeit und zählt Wiederholungen.",
       "q4": "Ist die Videoanalyse kostenlos?",
-      "a4": "Ja, die Athlifyr Videoanalyse ist völlig kostenlos.",
+      "a4": "Ja, völlig kostenlos. Lade das Video hoch und erhalte die Ergebnisse.",
       "q5": "Welche Videoformate werden unterstützt?",
       "a5": "Wir unterstützen MP4, MOV, AVI, MKV und WebM Videodateien bis zu 100MB."
     },
     "cta": {
       "title": "Bereit, Deine Bewegung zu Analysieren?",
-      "description": "Lade dein Video jetzt hoch und erhalte professionelles KI-Feedback zu deiner Technik — völlig kostenlos.",
+      "description": "Lade dein Video hoch und erhalte die Daten in Sekunden — 3D-Skelett, Winkel, Langhantel-Pfad. Völlig kostenlos.",
       "ctaMotion": "Bewegungsanalyse",
       "ctaLift": "Hebeanalyse"
     }

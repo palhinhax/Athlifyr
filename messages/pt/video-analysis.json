@@ -1,0 +1,93 @@
+{
+  "videoAnalysisPage": {
+    "meta": {
+      "title": "Análise de Vídeo Desportivo com IA — Movimento e Levantamento | Athlifyr",
+      "description": "Analisa gratuitamente o teu vídeo de treino desportivo com inteligência artificial. Obtém análise de movimento com esqueleto 3D e ângulos articulares, ou rastreio de barra com deteção de repetições.",
+      "keywords": "análise de vídeo desportivo, análise de movimento IA, rastreio de barra, análise de levantamento, esqueleto 3D, ângulos articulares, deteção de repetições, análise vídeo crossfit, análise halterofilia, IA desportiva grátis, estimativa de pose, análise de movimento"
+    },
+    "hero": {
+      "badge": "Inteligência Artificial · 100% Gratuito",
+      "title": "Analisa o Teu",
+      "titleHighlight": "Vídeo de Treino",
+      "description": "Carrega qualquer vídeo de treino e obtém feedback instantâneo com IA. Deteta padrões de movimento, rastreia o caminho da barra, mede ângulos articulares e conta repetições automaticamente.",
+      "ctaMotion": "Análise de Movimento",
+      "ctaLift": "Análise de Levantamento",
+      "trustFree": "Completamente gratuito",
+      "trustLanguages": "Disponível em 6 idiomas",
+      "trustFormats": "MP4, MOV, AVI, WEBM"
+    },
+    "howItWorks": {
+      "title": "Como Funciona",
+      "description": "Três passos simples para obteres uma análise de nível profissional dos teus movimentos.",
+      "step1": {
+        "title": "Carrega o Teu Vídeo",
+        "description": "Seleciona um vídeo de treino do teu dispositivo. Suporta MP4, MOV, AVI, MKV e WebM até 100MB."
+      },
+      "step2": {
+        "title": "A IA Processa o Teu Vídeo",
+        "description": "A nossa inteligência artificial analisa cada fotograma, detetando o teu corpo ou a barra com precisão."
+      },
+      "step3": {
+        "title": "Obtém Resultados Instantâneos",
+        "description": "Vê o teu esqueleto 3D, ângulos articulares, caminho da barra, curvas de velocidade e contagem de repetições — em segundos."
+      }
+    },
+    "types": {
+      "title": "Dois Tipos de Análise",
+      "description": "Escolhe a análise que melhor se adapta ao teu objetivo de treino.",
+      "motion": {
+        "title": "Análise de Movimento",
+        "description": "Análise de movimento do corpo completo com visão computacional. Compreende a tua postura, simetria e técnica em qualquer modalidade.",
+        "f1": "Visualização do esqueleto 3D",
+        "f2": "Medição de ângulos articulares",
+        "f3": "Análise de simetria do movimento",
+        "f4": "Funciona para qualquer desporto",
+        "cta": "Iniciar Análise de Movimento"
+      },
+      "lift": {
+        "title": "Análise de Levantamento",
+        "description": "Rastreio especializado de barra para halterofilia. Mede o caminho da barra, velocidade, timing das repetições e simetria esquerda-direita.",
+        "f1": "Deteção automática da barra",
+        "f2": "Caminho e trajetória da barra",
+        "f3": "Velocidade e deteção de repetições",
+        "f4": "Análise de simetria",
+        "cta": "Iniciar Análise de Levantamento"
+      }
+    },
+    "sports": {
+      "title": "Funciona para Qualquer Desporto",
+      "description": "O nosso modelo de IA foi treinado com milhares de movimentos desportivos de todas as modalidades.",
+      "crossfit": "CrossFit",
+      "weightlifting": "Halterofilia",
+      "powerlifting": "Powerlifting",
+      "running": "Corrida",
+      "swimming": "Natação",
+      "cycling": "Ciclismo",
+      "gymnastics": "Ginástica",
+      "football": "Futebol",
+      "basketball": "Basquetebol",
+      "tennis": "Ténis",
+      "yoga": "Yoga",
+      "martialArts": "Artes Marciais"
+    },
+    "faq": {
+      "title": "Perguntas Frequentes",
+      "q1": "O que é a Análise de Vídeo do Athlifyr?",
+      "a1": "A Análise de Vídeo do Athlifyr é uma ferramenta gratuita baseada em IA que analisa os teus vídeos de treino desportivo. Oferece Análise de Movimento (esqueleto 3D e ângulos articulares) e Análise de Levantamento (trajetória da barra, velocidade e contagem de repetições).",
+      "q2": "Como funciona a Análise de Movimento?",
+      "a2": "Carrega um vídeo de qualquer movimento desportivo. A nossa IA deteta os pontos-chave do teu corpo, gera um esqueleto 3D e calcula os ângulos articulares em tempo real para que possas compreender os teus padrões de movimento.",
+      "q3": "Para que serve a Análise de Levantamento?",
+      "a3": "A Análise de Levantamento foi desenvolvida para a halterofilia. Carrega um vídeo de um exercício com barra (agachamento, peso morto, arranque, etc.) e obtém rastreio automático do caminho da barra, velocidade, deteção de repetições e análise de simetria.",
+      "q4": "A análise de vídeo é gratuita?",
+      "a4": "Sim, a Análise de Vídeo do Athlifyr é completamente gratuita. Basta carregares o teu vídeo e obteres resultados instantâneos.",
+      "q5": "Que formatos de vídeo são suportados?",
+      "a5": "Suportamos ficheiros de vídeo MP4, MOV, AVI, MKV e WebM até 100MB."
+    },
+    "cta": {
+      "title": "Pronto para Analisar o Teu Movimento?",
+      "description": "Carrega o teu vídeo agora e obtém feedback profissional da IA sobre a tua técnica — completamente gratuito.",
+      "ctaMotion": "Análise de Movimento",
+      "ctaLift": "Análise de Levantamento"
+    }
+  }
+}

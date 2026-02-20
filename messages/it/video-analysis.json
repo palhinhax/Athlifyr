@@ -1,0 +1,93 @@
+{
+  "videoAnalysisPage": {
+    "meta": {
+      "title": "Analisi Video Sportiva con IA — Movimento e Sollevamento | Athlifyr",
+      "description": "Analizza gratuitamente il tuo video di allenamento sportivo con intelligenza artificiale. Ottieni analisi del movimento con scheletro 3D e angoli articolari, o tracciamento del bilanciere con rilevamento delle ripetizioni.",
+      "keywords": "analisi video sportiva, analisi del movimento IA, tracciamento bilanciere, analisi sollevamento, scheletro 3D, angoli articolari, rilevamento ripetizioni, analisi video crossfit, analisi sollevamento pesi, IA sportiva gratuita, stima della posa, analisi del movimento"
+    },
+    "hero": {
+      "badge": "Intelligenza Artificiale · 100% Gratuito",
+      "title": "Analizza Il Tuo",
+      "titleHighlight": "Video di Allenamento",
+      "description": "Carica qualsiasi video di allenamento e ottieni feedback istantaneo dall'IA. Rileva i pattern di movimento, traccia il percorso del bilanciere, misura gli angoli articolari e conta le ripetizioni automaticamente.",
+      "ctaMotion": "Analisi del Movimento",
+      "ctaLift": "Analisi del Sollevamento",
+      "trustFree": "Completamente gratuito",
+      "trustLanguages": "Disponibile in 6 lingue",
+      "trustFormats": "MP4, MOV, AVI, WEBM"
+    },
+    "howItWorks": {
+      "title": "Come Funziona",
+      "description": "Tre semplici passaggi per ottenere un'analisi di livello professionale dei tuoi movimenti.",
+      "step1": {
+        "title": "Carica Il Tuo Video",
+        "description": "Seleziona un video di allenamento dal tuo dispositivo. Supporta MP4, MOV, AVI, MKV e WebM fino a 100MB."
+      },
+      "step2": {
+        "title": "L'IA Elabora Il Tuo Video",
+        "description": "La nostra intelligenza artificiale analizza ogni fotogramma, rilevando il tuo corpo o il bilanciere con precisione."
+      },
+      "step3": {
+        "title": "Ottieni Risultati Istantanei",
+        "description": "Visualizza il tuo scheletro 3D, angoli articolari, percorso del bilanciere, curve di velocità e conteggio delle ripetizioni — in pochi secondi."
+      }
+    },
+    "types": {
+      "title": "Due Tipi di Analisi",
+      "description": "Scegli l'analisi più adatta al tuo obiettivo di allenamento.",
+      "motion": {
+        "title": "Analisi del Movimento",
+        "description": "Analisi del movimento di tutto il corpo con visione artificiale. Comprendi la tua postura, simmetria e tecnica in qualsiasi sport.",
+        "f1": "Visualizzazione scheletro 3D",
+        "f2": "Misurazione angoli articolari",
+        "f3": "Analisi della simmetria del movimento",
+        "f4": "Funziona per qualsiasi sport",
+        "cta": "Avvia Analisi del Movimento"
+      },
+      "lift": {
+        "title": "Analisi del Sollevamento",
+        "description": "Tracciamento specializzato del bilanciere per il sollevamento pesi. Misura il percorso del bilanciere, la velocità, il timing delle ripetizioni e la simmetria sinistra-destra.",
+        "f1": "Rilevamento automatico del bilanciere",
+        "f2": "Percorso e traiettoria del bilanciere",
+        "f3": "Velocità e rilevamento delle ripetizioni",
+        "f4": "Analisi della simmetria",
+        "cta": "Avvia Analisi del Sollevamento"
+      }
+    },
+    "sports": {
+      "title": "Funziona per Qualsiasi Sport",
+      "description": "Il nostro modello IA è stato addestrato su migliaia di movimenti sportivi di tutte le discipline.",
+      "crossfit": "CrossFit",
+      "weightlifting": "Sollevamento Pesi",
+      "powerlifting": "Powerlifting",
+      "running": "Corsa",
+      "swimming": "Nuoto",
+      "cycling": "Ciclismo",
+      "gymnastics": "Ginnastica",
+      "football": "Calcio",
+      "basketball": "Pallacanestro",
+      "tennis": "Tennis",
+      "yoga": "Yoga",
+      "martialArts": "Arti Marziali"
+    },
+    "faq": {
+      "title": "Domande Frequenti",
+      "q1": "Cos'è l'Analisi Video di Athlifyr?",
+      "a1": "L'Analisi Video di Athlifyr è uno strumento gratuito basato su IA che analizza i tuoi video di allenamento sportivo. Offre Analisi del Movimento (scheletro 3D e angoli articolari) e Analisi del Sollevamento (traiettoria del bilanciere, velocità e conteggio delle ripetizioni).",
+      "q2": "Come funziona l'Analisi del Movimento?",
+      "a2": "Carica un video di qualsiasi movimento sportivo. La nostra IA rileva i punti chiave del tuo corpo, genera uno scheletro 3D e calcola gli angoli articolari in tempo reale.",
+      "q3": "A cosa serve l'Analisi del Sollevamento?",
+      "a3": "L'Analisi del Sollevamento è progettata per il sollevamento pesi. Carica un video di un esercizio con bilanciere e ottieni il tracciamento automatico del percorso del bilanciere, velocità, rilevamento delle ripetizioni e analisi della simmetria.",
+      "q4": "L'analisi video è gratuita?",
+      "a4": "Sì, l'Analisi Video di Athlifyr è completamente gratuita.",
+      "q5": "Quali formati video sono supportati?",
+      "a5": "Supportiamo file video MP4, MOV, AVI, MKV e WebM fino a 100MB."
+    },
+    "cta": {
+      "title": "Pronto ad Analizzare Il Tuo Movimento?",
+      "description": "Carica il tuo video ora e ottieni feedback professionale dall'IA sulla tua tecnica — completamente gratuito.",
+      "ctaMotion": "Analisi del Movimento",
+      "ctaLift": "Analisi del Sollevamento"
+    }
+  }
+}

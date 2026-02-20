@@ -1,0 +1,93 @@
+{
+  "videoAnalysisPage": {
+    "meta": {
+      "title": "Free AI Sports Video Analysis — Motion & Lift | Athlifyr",
+      "description": "Analyse your sports training video for free with AI. Get instant motion analysis with 3D skeleton and joint angles, or barbell tracking with rep detection and velocity.",
+      "keywords": "sports video analysis, AI motion analysis, barbell tracking, lift analysis, 3D skeleton, joint angles, rep detection, crossfit video analysis, weightlifting analysis, free sports AI, pose estimation, movement analysis"
+    },
+    "hero": {
+      "badge": "AI-Powered · 100% Free",
+      "title": "Analyse Your",
+      "titleHighlight": "Sports Training Video",
+      "description": "Upload any training video and get instant AI-powered feedback. Detect movement patterns, track barbell paths, measure joint angles, and count reps automatically.",
+      "ctaMotion": "Motion Analysis",
+      "ctaLift": "Lift Analysis",
+      "trustFree": "Completely free",
+      "trustLanguages": "Available in 6 languages",
+      "trustFormats": "MP4, MOV, AVI, WEBM"
+    },
+    "howItWorks": {
+      "title": "How It Works",
+      "description": "Three simple steps to get professional-grade analysis of your movements.",
+      "step1": {
+        "title": "Upload Your Video",
+        "description": "Select a training video from your device. Supports MP4, MOV, AVI, MKV and WebM up to 100MB."
+      },
+      "step2": {
+        "title": "AI Processes Your Video",
+        "description": "Our artificial intelligence analyses every frame, detecting your body or barbell with precision."
+      },
+      "step3": {
+        "title": "Get Instant Results",
+        "description": "View your 3D skeleton, joint angles, barbell path, velocity curves and rep count — all in seconds."
+      }
+    },
+    "types": {
+      "title": "Two Types of Analysis",
+      "description": "Choose the analysis that best fits your training goal.",
+      "motion": {
+        "title": "Motion Analysis",
+        "description": "Full-body movement analysis using computer vision. Understand your posture, symmetry, and technique for any sport.",
+        "f1": "3D skeleton visualization",
+        "f2": "Joint angle measurement",
+        "f3": "Movement symmetry analysis",
+        "f4": "Works for any sport",
+        "cta": "Start Motion Analysis"
+      },
+      "lift": {
+        "title": "Lift Analysis",
+        "description": "Specialist barbell tracking for weightlifting. Measure bar path, velocity, rep timing and left-right symmetry.",
+        "f1": "Automatic barbell detection",
+        "f2": "Bar path & trajectory",
+        "f3": "Velocity & rep detection",
+        "f4": "Symmetry analysis",
+        "cta": "Start Lift Analysis"
+      }
+    },
+    "sports": {
+      "title": "Works for Any Sport",
+      "description": "Our AI model has been trained on thousands of sports movements across all disciplines.",
+      "crossfit": "CrossFit",
+      "weightlifting": "Weightlifting",
+      "powerlifting": "Powerlifting",
+      "running": "Running",
+      "swimming": "Swimming",
+      "cycling": "Cycling",
+      "gymnastics": "Gymnastics",
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "yoga": "Yoga",
+      "martialArts": "Martial Arts"
+    },
+    "faq": {
+      "title": "Frequently Asked Questions",
+      "q1": "What is Athlifyr Video Analysis?",
+      "a1": "Athlifyr Video Analysis is a free AI-powered tool that analyses your sports training videos. It offers Motion Analysis (3D skeleton and joint angles) and Lift Analysis (barbell trajectory, speed and rep counting).",
+      "q2": "How does Motion Analysis work?",
+      "a2": "Upload a video of any sport movement. Our AI detects your body's key points, generates a 3D skeleton, and calculates joint angles in real-time so you can understand your movement patterns.",
+      "q3": "What is Lift Analysis used for?",
+      "a3": "Lift Analysis is designed for weightlifting. Upload a video of a barbell exercise (squat, deadlift, snatch, etc.) and get automatic barbell path tracking, bar velocity, rep detection and symmetry analysis.",
+      "q4": "Is the video analysis free?",
+      "a4": "Yes, Athlifyr Video Analysis is completely free to use. Just upload your video and get instant results.",
+      "q5": "Which video formats are supported?",
+      "a5": "We support MP4, MOV, AVI, MKV and WebM video files up to 100MB."
+    },
+    "cta": {
+      "title": "Ready to Analyse Your Movement?",
+      "description": "Upload your video now and get professional AI feedback on your technique — completely free.",
+      "ctaMotion": "Motion Analysis",
+      "ctaLift": "Lift Analysis"
+    }
+  }
+}

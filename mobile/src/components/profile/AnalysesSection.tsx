@@ -18,6 +18,8 @@ import {
   Clock,
   Calendar,
   Share2,
+  Trash2,
+  AlertCircle,
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useAuthStore } from "@/src/lib/auth-store";
@@ -390,10 +392,12 @@ function LiftVideoModal({
 function MotionCard({
   record,
   onPlay,
+  onDelete,
   t,
 }: {
   record: AnalysisRecord;
   onPlay: () => void;
+  onDelete: () => void;
   t: (key: string) => string;
 }) {
   const json = record.analysisJson as MotionAnalysisJson;
@@ -410,12 +414,21 @@ function MotionCard({
           <Text style={styles.cardTitle} numberOfLines={1}>
             {record.label ?? t("motionAnalysis.analysisLabel")}
           </Text>
-          <TouchableOpacity style={styles.playBtn} onPress={onPlay}>
-            <Play size={14} color={theme.colors.primary} />
-            <Text style={styles.playBtnText}>
-              {t("motionAnalysis.myAnalyses")}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.cardActions}>
+            <TouchableOpacity style={styles.playBtn} onPress={onPlay}>
+              <Play size={14} color={theme.colors.primary} />
+              <Text style={styles.playBtnText}>
+                {t("motionAnalysis.myAnalyses")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={onDelete}
+              activeOpacity={0.7}
+            >
+              <Trash2 size={14} color={theme.colors.error} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.cardMeta}>
           <Calendar size={11} color={theme.colors.textSecondary} />
@@ -475,10 +488,12 @@ function MotionCard({
 function LiftCard({
   record,
   onPlay,
+  onDelete,
   t,
 }: {
   record: AnalysisRecord;
   onPlay: () => void;
+  onDelete: () => void;
   t: (key: string) => string;
 }) {
   const json = record.analysisJson as LiftAnalysisJson;
@@ -492,12 +507,21 @@ function LiftCard({
           <Text style={styles.cardTitle} numberOfLines={1}>
             {record.label ?? t("liftAnalysis.analysisLabel")}
           </Text>
-          <TouchableOpacity style={styles.playBtn} onPress={onPlay}>
-            <Play size={14} color={theme.colors.primary} />
-            <Text style={styles.playBtnText}>
-              {t("liftAnalysis.myAnalyses")}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.cardActions}>
+            <TouchableOpacity style={styles.playBtn} onPress={onPlay}>
+              <Play size={14} color={theme.colors.primary} />
+              <Text style={styles.playBtnText}>
+                {t("liftAnalysis.myAnalyses")}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.deleteBtn}
+              onPress={onDelete}
+              activeOpacity={0.7}
+            >
+              <Trash2 size={14} color={theme.colors.error} />
+            </TouchableOpacity>
+          </View>
         </View>
         <View style={styles.cardMeta}>
           <Calendar size={11} color={theme.colors.textSecondary} />
@@ -567,6 +591,14 @@ export function AnalysesSection() {
   const [openMotion, setOpenMotion] = useState<AnalysisRecord | null>(null);
   const [openLift, setOpenLift] = useState<AnalysisRecord | null>(null);
 
+  // Delete confirmation state
+  const [deleteConfirm, setDeleteConfirm] = useState<{
+    visible: boolean;
+    type: "motion" | "lift";
+    record: AnalysisRecord | null;
+  }>({ visible: false, type: "motion", record: null });
+  const [isDeleting, setIsDeleting] = useState(false);
+
   const fetchAnalyses = useCallback(async () => {
     if (!token) {
       setIsLoading(false);
@@ -597,6 +629,62 @@ export function AnalysesSection() {
   useEffect(() => {
     void fetchAnalyses();
   }, [fetchAnalyses]);
+
+  // ── Delete handlers ──────────────────────────────────────────────────────
+  const handleDeleteMotion = useCallback((record: AnalysisRecord) => {
+    setDeleteConfirm({ visible: true, type: "motion", record });
+  }, []);
+
+  const handleDeleteLift = useCallback((record: AnalysisRecord) => {
+    setDeleteConfirm({ visible: true, type: "lift", record });
+  }, []);
+
+  const confirmDelete = useCallback(async () => {
+    if (!deleteConfirm.record || !token) return;
+    setIsDeleting(true);
+
+    try {
+      const endpoint =
+        deleteConfirm.type === "motion"
+          ? `${API_URL}/api/analyses/motion`
+          : `${API_URL}/api/analyses/lift`;
+
+      const res = await fetch(endpoint, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ id: deleteConfirm.record.id }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Delete failed");
+      }
+
+      // Update local state
+      if (deleteConfirm.type === "motion") {
+        setMotionAnalyses((prev) =>
+          prev.filter((a) => a.id !== deleteConfirm.record?.id)
+        );
+      } else {
+        setLiftAnalyses((prev) =>
+          prev.filter((a) => a.id !== deleteConfirm.record?.id)
+        );
+      }
+
+      setDeleteConfirm({ visible: false, type: "motion", record: null });
+    } catch (error) {
+      console.error("Delete analysis error:", error);
+      // TODO: show error toast
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [deleteConfirm, token]);
+
+  const cancelDelete = useCallback(() => {
+    setDeleteConfirm({ visible: false, type: "motion", record: null });
+  }, []);
 
   const totalCount = motionAnalyses.length + liftAnalyses.length;
   if (!isLoading && totalCount === 0) return null;
@@ -629,6 +717,33 @@ export function AnalysesSection() {
       {openLift && (
         <LiftVideoModal record={openLift} onClose={() => setOpenLift(null)} />
       )}
+
+      {/* Delete confirmation modal */}
+      <ConfirmModal
+        visible={deleteConfirm.visible}
+        onClose={cancelDelete}
+        title={t("common.confirmDelete")}
+        message={
+          deleteConfirm.type === "motion"
+            ? t("motionAnalysis.confirmDeleteMessage")
+            : t("liftAnalysis.confirmDeleteMessage")
+        }
+        icon={<AlertCircle size={28} color={theme.colors.error} />}
+        actions={[
+          {
+            label: t("common.delete"),
+            variant: "destructive" as const,
+            onPress: confirmDelete,
+            disabled: isDeleting,
+          },
+          {
+            label: t("common.cancel"),
+            variant: "outline" as const,
+            onPress: cancelDelete,
+            disabled: isDeleting,
+          },
+        ]}
+      />
 
       <View style={styles.container}>
         {/* Section header */}
@@ -694,6 +809,7 @@ export function AnalysesSection() {
                     key={record.id}
                     record={record}
                     onPlay={() => setOpenMotion(record)}
+                    onDelete={() => handleDeleteMotion(record)}
                     t={t}
                   />
                 ))}
@@ -720,6 +836,7 @@ export function AnalysesSection() {
                   key={record.id}
                   record={record}
                   onPlay={() => setOpenLift(record)}
+                  onDelete={() => handleDeleteLift(record)}
                   t={t}
                 />
               ))}
@@ -832,6 +949,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     flex: 1,
   },
+  cardActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
   cardMeta: {
     flexDirection: "row",
     alignItems: "center",
@@ -855,6 +977,13 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: theme.colors.primary,
     fontWeight: "600",
+  },
+  deleteBtn: {
+    padding: 6,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.error,
+    backgroundColor: "rgba(239, 68, 68, 0.05)",
   },
   badges: {
     flexDirection: "row",

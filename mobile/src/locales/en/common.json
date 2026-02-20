@@ -64,6 +64,7 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
+    "confirmDelete": "Delete Item?",
     "edit": "Edit",
     "close": "Close",
     "or": "or",
@@ -746,6 +747,7 @@
     "noAnalyses": "No Analyses Yet",
     "noAnalysesDescription": "Record a lift to get your first bar path analysis.",
     "deleteConfirm": "Are you sure you want to delete this analysis?",
+    "confirmDeleteMessage": "This action cannot be undone. The analysis and video will be permanently deleted.",
     "notFound": "Analysis not found.",
     "metrics": {
       "title": "Metrics",
@@ -804,6 +806,7 @@
     "newAnalysis": "New Analysis",
     "deleteTitle": "Delete Analysis",
     "deleteConfirm": "Are you sure you want to delete this motion analysis?",
+    "confirmDeleteMessage": "This action cannot be undone. The analysis and video will be permanently deleted.",
     "notFound": "Analysis not found.",
     "frames": "frames",
     "confidence": "Confidence",

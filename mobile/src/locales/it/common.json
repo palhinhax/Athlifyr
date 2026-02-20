@@ -64,6 +64,7 @@
     "cancel": "Annulla",
     "save": "Salva",
     "delete": "Elimina",
+    "confirmDelete": "Eliminare elemento?",
     "edit": "Modifica",
     "close": "Chiudi",
     "or": "o",
@@ -743,6 +744,7 @@
     "noAnalyses": "Nessuna Analisi",
     "noAnalysesDescription": "Registra un lift per ottenere la tua prima analisi della traiettoria della sbarra.",
     "deleteConfirm": "Sei sicuro di voler eliminare questa analisi?",
+    "confirmDeleteMessage": "Questa azione non può essere annullata. L'analisi e il video saranno eliminati permanentemente.",
     "notFound": "Analisi non trovata.",
     "metrics": {
       "title": "Metriche",
@@ -801,6 +803,7 @@
     "newAnalysis": "Nuova Analisi",
     "deleteTitle": "Elimina Analisi",
     "deleteConfirm": "Sei sicuro di voler eliminare questa analisi del movimento?",
+    "confirmDeleteMessage": "Questa azione non può essere annullata. L'analisi e il video saranno eliminati permanentemente.",
     "notFound": "Analisi non trovata.",
     "frames": "frame",
     "confidence": "Affidabilità",

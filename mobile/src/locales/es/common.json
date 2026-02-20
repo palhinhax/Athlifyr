@@ -64,6 +64,7 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
+    "confirmDelete": "¿Eliminar elemento?",
     "edit": "Editar",
     "close": "Cerrar",
     "or": "o",
@@ -743,6 +744,7 @@
     "noAnalyses": "Sin Análisis",
     "noAnalysesDescription": "Graba un lift para obtener tu primer análisis de trayectoria de barra.",
     "deleteConfirm": "¿Estás seguro de que deseas eliminar este análisis?",
+    "confirmDeleteMessage": "Esta acción no se puede deshacer. El análisis y el vídeo se eliminarán permanentemente.",
     "notFound": "Análisis no encontrado.",
     "metrics": {
       "title": "Métricas",
@@ -801,6 +803,7 @@
     "newAnalysis": "Nuevo Análisis",
     "deleteTitle": "Eliminar Análisis",
     "deleteConfirm": "¿Estás seguro de que quieres eliminar este análisis de movimiento?",
+    "confirmDeleteMessage": "Esta acción no se puede deshacer. El análisis y el vídeo se eliminarán permanentemente.",
     "notFound": "Análisis no encontrado.",
     "frames": "frames",
     "confidence": "Confianza",

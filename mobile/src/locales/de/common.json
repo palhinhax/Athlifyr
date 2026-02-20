@@ -64,6 +64,7 @@
     "cancel": "Abbrechen",
     "save": "Speichern",
     "delete": "Löschen",
+    "confirmDelete": "Element löschen?",
     "edit": "Bearbeiten",
     "close": "Schließen",
     "or": "oder",
@@ -743,6 +744,7 @@
     "noAnalyses": "Noch keine Analysen",
     "noAnalysesDescription": "Nimm einen Lift auf, um deine erste Stangenweg-Analyse zu erhalten.",
     "deleteConfirm": "Bist du sicher, dass du diese Analyse löschen möchtest?",
+    "confirmDeleteMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Die Analyse und das Video werden dauerhaft gelöscht.",
     "notFound": "Analyse nicht gefunden.",
     "metrics": {
       "title": "Kennzahlen",
@@ -801,6 +803,7 @@
     "newAnalysis": "Neue Analyse",
     "deleteTitle": "Analyse Löschen",
     "deleteConfirm": "Bist du sicher, dass du diese Bewegungsanalyse löschen möchtest?",
+    "confirmDeleteMessage": "Diese Aktion kann nicht rückgängig gemacht werden. Die Analyse und das Video werden dauerhaft gelöscht.",
     "notFound": "Analyse nicht gefunden.",
     "frames": "Frames",
     "confidence": "Zuverlässigkeit",

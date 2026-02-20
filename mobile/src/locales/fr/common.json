@@ -64,6 +64,7 @@
     "cancel": "Annuler",
     "save": "Enregistrer",
     "delete": "Supprimer",
+    "confirmDelete": "Supprimer l'élément?",
     "edit": "Modifier",
     "close": "Fermer",
     "or": "ou",
@@ -743,6 +744,7 @@
     "noAnalyses": "Aucune Analyse",
     "noAnalysesDescription": "Enregistrez un lift pour obtenir votre première analyse de trajectoire de barre.",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette analyse ?",
+    "confirmDeleteMessage": "Cette action ne peut pas être annulée. L'analyse et la vidéo seront supprimées définitivement.",
     "notFound": "Analyse introuvable.",
     "metrics": {
       "title": "Métriques",
@@ -801,6 +803,7 @@
     "newAnalysis": "Nouvelle Analyse",
     "deleteTitle": "Supprimer l'Analyse",
     "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cette analyse de mouvement ?",
+    "confirmDeleteMessage": "Cette action ne peut pas être annulée. L'analyse et la vidéo seront supprimées définitivement.",
     "notFound": "Analyse introuvable.",
     "frames": "images",
     "confidence": "Confiance",

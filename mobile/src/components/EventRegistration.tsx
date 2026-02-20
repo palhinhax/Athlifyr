@@ -7,7 +7,7 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { Check, X, Users } from "lucide-react-native";
+import { Check, X, Users, Target } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { api } from "@/src/lib/api";
@@ -44,6 +44,7 @@ export function EventRegistration({
   const [selectedVariantIndex, setSelectedVariantIndex] = useState<number>(-1);
   const [isLoading, setIsLoading] = useState(false);
   const [participantsCount, setParticipantsCount] = useState(0);
+  const [interestedCount, setInterestedCount] = useState(0);
 
   // Fetch user participation
   const fetchParticipation = useCallback(async () => {
@@ -76,6 +77,7 @@ export function EventRegistration({
       const response = await api.get(`/participations?eventId=${eventId}`);
       const data = response.data;
       setParticipantsCount(data.counts?.going || 0);
+      setInterestedCount(data.counts?.interested || 0);
     } catch (error) {
       console.error("Error fetching counts:", error);
     }
@@ -124,8 +126,12 @@ export function EventRegistration({
         status: "going",
       });
 
+      const wasInterested = userParticipation?.status === "interested";
       setUserParticipation(response.data);
       setParticipantsCount((prev) => prev + 1);
+      if (wasInterested) {
+        setInterestedCount((prev) => Math.max(0, prev - 1));
+      }
 
       Alert.alert(
         t("events.registration.markedAsParticipant"),
@@ -145,9 +151,15 @@ export function EventRegistration({
   const handleUnregister = async () => {
     if (!isAuthenticated) return;
 
+    const isInterested = userParticipation?.status === "interested";
+
     Alert.alert(
-      t("events.registration.cancelParticipation"),
-      t("events.registration.cancelParticipationDesc"),
+      isInterested
+        ? t("events.registration.removeInterest")
+        : t("events.registration.cancelParticipation"),
+      isInterested
+        ? t("events.registration.interestRemovedDesc")
+        : t("events.registration.cancelParticipationDesc"),
       [
         { text: t("common.cancel"), style: "cancel" },
         {
@@ -157,9 +169,14 @@ export function EventRegistration({
             setIsLoading(true);
             try {
               await api.delete(`/participations?eventId=${eventId}`);
+              const prevStatus = userParticipation?.status;
               setUserParticipation(null);
               setSelectedVariantIndex(-1);
-              setParticipantsCount((prev) => Math.max(0, prev - 1));
+              if (prevStatus === "interested") {
+                setInterestedCount((prev) => Math.max(0, prev - 1));
+              } else {
+                setParticipantsCount((prev) => Math.max(0, prev - 1));
+              }
             } catch (error) {
               console.error("Error unregistering:", error);
               Alert.alert(
@@ -175,16 +192,68 @@ export function EventRegistration({
     );
   };
 
+  const handleMarkInterested = async () => {
+    if (!isAuthenticated) {
+      Alert.alert(
+        t("events.registration.authRequired"),
+        t("events.registration.authRequiredDesc"),
+        [
+          { text: t("common.cancel"), style: "cancel" },
+          {
+            text: t("common.signInButton"),
+            onPress: () => router.push("/auth/login"),
+          },
+        ]
+      );
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await api.post("/participations", {
+        eventId,
+        status: "interested",
+      });
+
+      setUserParticipation(response.data);
+      setInterestedCount((prev) => prev + 1);
+
+      Alert.alert(
+        t("events.registration.markedAsInterested"),
+        t("events.registration.markedAsInterestedDesc")
+      );
+    } catch (error) {
+      console.error("Error marking interested:", error);
+      Alert.alert(
+        t("common.error"),
+        t("events.registration.registrationError")
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.title}>{t("events.registration.willYouGo")}</Text>
-        <View style={styles.countContainer}>
-          <Users size={16} color={theme.colors.textSecondary} />
-          <Text style={styles.countText}>
-            {participantsCount} {t("events.registration.participants")}
-          </Text>
+        <View style={styles.countsContainer}>
+          <View style={styles.countContainer}>
+            <Users size={16} color={theme.colors.textSecondary} />
+            <Text style={styles.countText}>
+              {participantsCount} {t("events.registration.participants")}
+            </Text>
+          </View>
+          {interestedCount > 0 && (
+            <View style={styles.countContainer}>
+              <Target size={16} color={theme.colors.textSecondary} />
+              <Text style={styles.countText}>
+                {interestedCount} {t("events.registration.interestedCount")}
+              </Text>
+            </View>
+          )}
         </View>
       </View>
 
@@ -241,7 +310,7 @@ export function EventRegistration({
           )}
 
           {/* Current Participation Status */}
-          {userParticipation && (
+          {userParticipation && userParticipation.status === "going" && (
             <View style={styles.registeredBanner}>
               <View style={styles.registeredIcon}>
                 <Check size={16} color={theme.colors.white} />
@@ -262,26 +331,98 @@ export function EventRegistration({
             </View>
           )}
 
+          {userParticipation && userParticipation.status === "interested" && (
+            <View style={styles.interestedBanner}>
+              <View style={styles.interestedIcon}>
+                <Target size={16} color={theme.colors.white} />
+              </View>
+              <View style={styles.registeredContent}>
+                <Text style={styles.interestedText}>
+                  {t("events.registration.markedAsInterested")}
+                </Text>
+                <Text style={styles.registeredVariant}>
+                  {t("events.registration.interestedDesc")}
+                </Text>
+              </View>
+            </View>
+          )}
+
           {/* Action Buttons */}
           <View style={styles.actionsRow}>
             {!userParticipation ? (
-              <TouchableOpacity
-                style={styles.goingButton}
-                onPress={handleRegister}
-                disabled={isLoading}
-                activeOpacity={0.8}
-              >
-                {isLoading ? (
-                  <ActivityIndicator size="small" color={theme.colors.white} />
-                ) : (
-                  <>
-                    <Check size={18} color={theme.colors.white} />
-                    <Text style={styles.goingButtonText}>
-                      {t("events.registration.markAsGoing")}
-                    </Text>
-                  </>
-                )}
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity
+                  style={styles.goingButton}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.white} />
+                  ) : (
+                    <>
+                      <Check size={18} color={theme.colors.white} />
+                      <Text style={styles.goingButtonText}>
+                        {t("events.registration.markAsGoing")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.interestedButton}
+                  onPress={handleMarkInterested}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.warning} />
+                  ) : (
+                    <>
+                      <Target size={18} color={theme.colors.warning} />
+                      <Text style={styles.interestedButtonText}>
+                        {t("events.registration.markAsInterested")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
+            ) : userParticipation.status === "interested" ? (
+              <>
+                <TouchableOpacity
+                  style={styles.goingButton}
+                  onPress={handleRegister}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.white} />
+                  ) : (
+                    <>
+                      <Check size={18} color={theme.colors.white} />
+                      <Text style={styles.goingButtonText}>
+                        {t("events.registration.markAsGoing")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.interestedButton}
+                  onPress={handleUnregister}
+                  disabled={isLoading}
+                  activeOpacity={0.8}
+                >
+                  {isLoading ? (
+                    <ActivityIndicator size="small" color={theme.colors.warning} />
+                  ) : (
+                    <>
+                      <X size={18} color={theme.colors.warning} />
+                      <Text style={styles.interestedButtonText}>
+                        {t("events.registration.removeInterest")}
+                      </Text>
+                    </>
+                  )}
+                </TouchableOpacity>
+              </>
             ) : (
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -327,6 +468,10 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: "700",
     color: theme.colors.text,
+  },
+  countsContainer: {
+    alignItems: "flex-end",
+    gap: 4,
   },
   countContainer: {
     flexDirection: "row",
@@ -419,6 +564,27 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.success,
   },
+  interestedBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: theme.spacing.sm,
+    backgroundColor: `${theme.colors.warning}15`,
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+  },
+  interestedIcon: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: theme.colors.warning,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  interestedText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.warning,
+  },
   registeredVariant: {
     fontSize: 13,
     color: theme.colors.textSecondary,
@@ -443,6 +609,22 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontWeight: "600",
     color: theme.colors.white,
+  },
+  interestedButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    borderWidth: 1,
+    borderColor: theme.colors.warning,
+    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.sm + 2,
+  },
+  interestedButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.warning,
   },
   cancelButton: {
     flex: 1,

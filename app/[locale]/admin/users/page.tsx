@@ -12,6 +12,8 @@ import {
   Bell,
   Megaphone,
   Smartphone,
+  Mail,
+  BellRing,
 } from "lucide-react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
@@ -50,6 +52,9 @@ interface User {
   locale: string | null;
   createdAt: string;
   isBanned?: boolean;
+  emailVerified?: boolean;
+  emailNotifications?: boolean;
+  pushNotificationsEnabled?: boolean;
   devices?: {
     web: number;
     mobile: number;
@@ -406,6 +411,46 @@ export default function AdminUsersContent() {
                     </span>
                   )}
                 </div>
+                <div className="mt-2 flex items-center gap-1">
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                      user.emailNotifications && user.emailVerified
+                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                        : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
+                    }`}
+                    title={
+                      user.emailNotifications && user.emailVerified
+                        ? "Email ativo"
+                        : !user.emailVerified
+                          ? "Email não verificado"
+                          : "Email desativado"
+                    }
+                  >
+                    <Mail className="h-3 w-3" />
+                    Email
+                  </span>
+                  <span
+                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                      user.pushNotificationsEnabled &&
+                      user.devices &&
+                      user.devices.total > 0
+                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                        : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
+                    }`}
+                    title={
+                      user.pushNotificationsEnabled &&
+                      user.devices &&
+                      user.devices.total > 0
+                        ? `Push ativo (${user.devices.total} dispositivo${user.devices.total !== 1 ? "s" : ""})`
+                        : !user.pushNotificationsEnabled
+                          ? "Push desativado"
+                          : "Sem dispositivos registados"
+                    }
+                  >
+                    <BellRing className="h-3 w-3" />
+                    Push
+                  </span>
+                </div>
                 <span className="text-muted-foreground">
                   {new Date(user.createdAt).toLocaleDateString("pt-PT")}
                 </span>
@@ -432,6 +477,12 @@ export default function AdminUsersContent() {
                 </span>
               </th>
               <th className="px-4 py-3 text-center text-sm font-medium">
+                <span className="inline-flex items-center gap-1">
+                  <Bell className="h-3.5 w-3.5" />
+                  Notificações
+                </span>
+              </th>
+              <th className="px-4 py-3 text-center text-sm font-medium">
                 Língua
               </th>
               <th className="px-4 py-3 text-left text-sm font-medium">
@@ -446,7 +497,7 @@ export default function AdminUsersContent() {
             {users.length === 0 ? (
               <tr>
                 <td
-                  colSpan={7}
+                  colSpan={8}
                   className="px-4 py-8 text-center text-muted-foreground"
                 >
                   Nenhum utilizador encontrado
@@ -523,6 +574,46 @@ export default function AdminUsersContent() {
                         <Smartphone className="h-3 w-3" />0
                       </span>
                     )}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="inline-flex items-center gap-1">
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                          user.emailNotifications && user.emailVerified
+                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+                            : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
+                        }`}
+                        title={
+                          user.emailNotifications && user.emailVerified
+                            ? "Email ativo"
+                            : !user.emailVerified
+                              ? "Email não verificado"
+                              : "Email desativado"
+                        }
+                      >
+                        <Mail className="h-3 w-3" />
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
+                          user.pushNotificationsEnabled &&
+                          user.devices &&
+                          user.devices.total > 0
+                            ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+                            : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
+                        }`}
+                        title={
+                          user.pushNotificationsEnabled &&
+                          user.devices &&
+                          user.devices.total > 0
+                            ? `Push ativo (${user.devices.total} dispositivo${user.devices.total !== 1 ? "s" : ""})`
+                            : !user.pushNotificationsEnabled
+                              ? "Push desativado"
+                              : "Sem dispositivos registados"
+                        }
+                      >
+                        <BellRing className="h-3 w-3" />
+                      </span>
+                    </div>
                   </td>
                   <td className="px-4 py-3 text-center">
                     {user.locale && LOCALE_FLAGS[user.locale] ? (

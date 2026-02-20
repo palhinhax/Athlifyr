@@ -1,11 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import { Bell, Loader2, Send, AlertTriangle, Users, User } from "lucide-react";
+import { useState, useEffect } from "react";
+import {
+  Bell,
+  Loader2,
+  Send,
+  AlertTriangle,
+  Users,
+  User,
+  Mail,
+  BellRing,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +35,11 @@ interface PushResult {
   failed: number;
 }
 
+interface EmailResult {
+  sent: boolean;
+  error?: string;
+}
+
 interface AdminPushNotificationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -33,6 +48,14 @@ interface AdminPushNotificationDialogProps {
     id: string;
     name: string | null;
     email: string | null;
+    emailVerified?: boolean;
+    emailNotifications?: boolean;
+    pushNotificationsEnabled?: boolean;
+    devices?: {
+      web: number;
+      mobile: number;
+      total: number;
+    };
   } | null;
 }
 
@@ -50,18 +73,56 @@ export function AdminPushNotificationDialog({
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [deepLink, setDeepLink] = useState("");
+  const [sendPush, setSendPush] = useState(true);
+  const [sendEmail, setSendEmail] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [showBroadcastConfirm, setShowBroadcastConfirm] = useState(false);
   const [result, setResult] = useState<PushResult | null>(null);
+  const [emailResult, setEmailResult] = useState<EmailResult | null>(null);
   const { toast } = useToast();
+
+  // Determine if user can receive each channel
+  const canReceivePush =
+    audience === "broadcast" ||
+    (targetUser?.pushNotificationsEnabled === true &&
+      targetUser?.devices != null &&
+      targetUser.devices.total > 0);
+  const canReceiveEmail =
+    audience === "broadcast" ||
+    (targetUser?.emailVerified === true && !!targetUser?.email);
+
+  // Reset sendEmail/sendPush when dialog opens or targetUser changes
+  useEffect(() => {
+    if (!open) return;
+
+    if (targetUser) {
+      const userCanPush =
+        targetUser.pushNotificationsEnabled === true &&
+        targetUser.devices != null &&
+        targetUser.devices.total > 0;
+      const userCanEmail =
+        targetUser.emailVerified === true && !!targetUser.email;
+
+      setSendPush(userCanPush);
+      setSendEmail(userCanEmail);
+      setAudience("single");
+    } else {
+      setSendPush(true);
+      setSendEmail(false);
+      setAudience("broadcast");
+    }
+  }, [open, targetUser]);
 
   const resetForm = () => {
     setTitle("");
     setBody("");
     setDeepLink("");
+    setSendPush(true);
+    setSendEmail(false);
     setIsSending(false);
     setShowBroadcastConfirm(false);
     setResult(null);
+    setEmailResult(null);
     setAudience(targetUser ? "single" : "broadcast");
   };
 
@@ -72,7 +133,10 @@ export function AdminPushNotificationDialog({
     onOpenChange(open);
   };
 
-  const isValid = title.trim().length > 0 && body.trim().length > 0;
+  const isValid =
+    title.trim().length > 0 &&
+    body.trim().length > 0 &&
+    (sendPush || sendEmail);
 
   const handleSend = async () => {
     if (!isValid) return;
@@ -85,6 +149,7 @@ export function AdminPushNotificationDialog({
 
     setIsSending(true);
     setResult(null);
+    setEmailResult(null);
 
     try {
       const dataPayload: Record<string, string> = {};
@@ -94,61 +159,114 @@ export function AdminPushNotificationDialog({
         dataPayload.route = deepLink.trim();
       }
 
-      let response: Response;
+      let pushResult: PushResult | null = null;
+      let emailSendResult: EmailResult | null = null;
 
-      if (audience === "single" && targetUser) {
-        response = await fetch("/api/admin/notifications/push/user", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            userId: targetUser.id,
-            title: title.trim(),
-            message: body.trim(),
-            data: Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
-          }),
-        });
-      } else {
-        response = await fetch("/api/admin/notifications/push/broadcast", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: title.trim(),
-            message: body.trim(),
-            data: Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
-            confirmBroadcast: true,
-          }),
-        });
+      // Send Push notification
+      if (sendPush) {
+        let response: Response;
+
+        if (audience === "single" && targetUser) {
+          response = await fetch("/api/admin/notifications/push/user", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: targetUser.id,
+              title: title.trim(),
+              message: body.trim(),
+              data:
+                Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
+            }),
+          });
+        } else {
+          response = await fetch("/api/admin/notifications/push/broadcast", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: title.trim(),
+              message: body.trim(),
+              data:
+                Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
+              confirmBroadcast: true,
+            }),
+          });
+        }
+
+        if (!response.ok) {
+          const err = await response.json();
+          throw new Error(err.error || "Failed to send push notification");
+        }
+
+        const json = await response.json();
+        pushResult = json.data;
       }
 
-      if (!response.ok) {
-        const err = await response.json();
-        throw new Error(err.error || "Failed to send notification");
+      // Send Email notification
+      if (sendEmail) {
+        const emailResponse = await fetch(
+          "/api/admin/notifications/email/user",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId:
+                audience === "single" && targetUser ? targetUser.id : undefined,
+              broadcast: audience === "broadcast",
+              title: title.trim(),
+              message: body.trim(),
+            }),
+          }
+        );
+
+        if (emailResponse.ok) {
+          const emailJson = await emailResponse.json();
+          emailSendResult = {
+            sent: true,
+            ...emailJson.data,
+          };
+        } else {
+          const err = await emailResponse.json();
+          emailSendResult = { sent: false, error: err.error };
+        }
       }
 
-      const json = await response.json();
-      const pushResult: PushResult = json.data;
       setResult(pushResult);
+      setEmailResult(emailSendResult);
 
-      if (pushResult.sent > 0) {
+      // Build toast message
+      const parts: string[] = [];
+
+      if (pushResult && pushResult.sent > 0) {
+        parts.push(
+          audience === "single"
+            ? `Push: ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`
+            : `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""}`
+        );
+      }
+
+      if (emailSendResult?.sent) {
+        parts.push(
+          audience === "single"
+            ? "Email enviado"
+            : `Emails: ${(emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0} enviado${((emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0) !== 1 ? "s" : ""}`
+        );
+      }
+
+      if (parts.length > 0) {
         toast({
           title: "Notificação enviada ✅",
-          description:
-            audience === "single"
-              ? `Enviada para ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`
-              : `Enviada para ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""} (${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""})`,
+          description: parts.join(" · "),
         });
       } else {
         toast({
           variant: "destructive",
-          title: "Sem dispositivos",
+          title: "Sem destinatários",
           description:
-            pushResult.tokensFound === 0
-              ? "Nenhum dispositivo registado para notificações push"
-              : `${pushResult.failed} envio${pushResult.failed !== 1 ? "s" : ""} falhado${pushResult.failed !== 1 ? "s" : ""}`,
+            "Nenhum dispositivo ou email disponível para enviar notificação",
         });
       }
     } catch (error) {
-      console.error("Error sending push notification:", error);
+      console.error("Error sending notification:", error);
       toast({
         variant: "destructive",
         title: "Erro",
@@ -172,9 +290,14 @@ export function AdminPushNotificationDialog({
               Confirmar Envio em Massa
             </DialogTitle>
             <DialogDescription>
-              Vais enviar uma notificação push para <strong>TODOS</strong> os
-              utilizadores com notificações ativas. Esta ação não pode ser
-              revertida.
+              Vais enviar uma notificação
+              {sendPush && sendEmail
+                ? " push e email"
+                : sendEmail
+                  ? " por email"
+                  : " push"}{" "}
+              para <strong>TODOS</strong> os utilizadores com notificações
+              ativas. Esta ação não pode ser revertida.
             </DialogDescription>
           </DialogHeader>
 
@@ -213,7 +336,7 @@ export function AdminPushNotificationDialog({
   }
 
   // Result view
-  if (result) {
+  if (result || emailResult) {
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogContent className="sm:max-w-md">
@@ -225,36 +348,79 @@ export function AdminPushNotificationDialog({
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="rounded-lg border p-3 text-center">
-                <p className="text-2xl font-bold">{result.usersTargeted}</p>
-                <p className="text-xs text-muted-foreground">
-                  Utilizador{result.usersTargeted !== 1 ? "es" : ""}
-                </p>
+            {/* Push Results */}
+            {result && (
+              <div className="space-y-2">
+                <h4 className="flex items-center gap-2 text-sm font-medium">
+                  <BellRing className="h-4 w-4" />
+                  Push
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">
+                      {result.usersTargeted}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Utilizador{result.usersTargeted !== 1 ? "es" : ""}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border p-3 text-center">
+                    <p className="text-2xl font-bold">{result.tokensFound}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Dispositivo{result.tokensFound !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center dark:border-green-900 dark:bg-green-950">
+                    <p className="text-2xl font-bold text-green-700 dark:text-green-400">
+                      {result.sent}
+                    </p>
+                    <p className="text-xs text-green-600 dark:text-green-500">
+                      Enviado{result.sent !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                  <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center dark:border-red-900 dark:bg-red-950">
+                    <p className="text-2xl font-bold text-red-700 dark:text-red-400">
+                      {result.failed}
+                    </p>
+                    <p className="text-xs text-red-600 dark:text-red-500">
+                      Falhado{result.failed !== 1 ? "s" : ""}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="rounded-lg border p-3 text-center">
-                <p className="text-2xl font-bold">{result.tokensFound}</p>
-                <p className="text-xs text-muted-foreground">
-                  Dispositivo{result.tokensFound !== 1 ? "s" : ""}
-                </p>
+            )}
+
+            {/* Email Results */}
+            {emailResult && (
+              <div className="space-y-2">
+                <h4 className="flex items-center gap-2 text-sm font-medium">
+                  <Mail className="h-4 w-4" />
+                  Email
+                </h4>
+                <div className="rounded-lg border p-3 text-center">
+                  {emailResult.sent ? (
+                    <div className="rounded-lg border border-green-200 bg-green-50 p-3 dark:border-green-900 dark:bg-green-950">
+                      <p className="text-sm font-medium text-green-700 dark:text-green-400">
+                        ✅{" "}
+                        {(
+                          emailResult as EmailResult & {
+                            emailsSent?: number;
+                          }
+                        ).emailsSent
+                          ? `${(emailResult as EmailResult & { emailsSent?: number }).emailsSent} email${((emailResult as EmailResult & { emailsSent?: number }).emailsSent || 0) !== 1 ? "s" : ""} enviado${((emailResult as EmailResult & { emailsSent?: number }).emailsSent || 0) !== 1 ? "s" : ""}`
+                          : "Email enviado com sucesso"}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950">
+                      <p className="text-sm font-medium text-red-700 dark:text-red-400">
+                        ❌ {emailResult.error || "Erro ao enviar email"}
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-center dark:border-green-900 dark:bg-green-950">
-                <p className="text-2xl font-bold text-green-700 dark:text-green-400">
-                  {result.sent}
-                </p>
-                <p className="text-xs text-green-600 dark:text-green-500">
-                  Enviado{result.sent !== 1 ? "s" : ""}
-                </p>
-              </div>
-              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-center dark:border-red-900 dark:bg-red-950">
-                <p className="text-2xl font-bold text-red-700 dark:text-red-400">
-                  {result.failed}
-                </p>
-                <p className="text-xs text-red-600 dark:text-red-500">
-                  Falhado{result.failed !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
+            )}
           </div>
 
           <DialogFooter>
@@ -272,10 +438,10 @@ export function AdminPushNotificationDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Enviar Notificação Push
+            Enviar Notificação
           </DialogTitle>
           <DialogDescription>
-            Envia uma notificação push para os dispositivos dos utilizadores.
+            Envia uma notificação para os utilizadores por push, email ou ambos.
           </DialogDescription>
         </DialogHeader>
 
@@ -341,6 +507,58 @@ export function AdminPushNotificationDialog({
                   </div>
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Channel Selector */}
+          <div className="space-y-2">
+            <Label>Canais de envio</Label>
+            <div className="flex flex-col gap-3 rounded-lg border p-3">
+              <label className="flex items-center gap-3">
+                <Checkbox
+                  checked={sendPush}
+                  onCheckedChange={(checked) => setSendPush(!!checked)}
+                  disabled={audience === "single" && !canReceivePush}
+                />
+                <div className="flex items-center gap-2">
+                  <BellRing className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+                  <div>
+                    <span className="text-sm font-medium">Push</span>
+                    {audience === "single" && !canReceivePush && (
+                      <p className="text-xs text-muted-foreground">
+                        {!targetUser?.pushNotificationsEnabled
+                          ? "Push desativado pelo utilizador"
+                          : "Sem dispositivos registados"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </label>
+              <label className="flex items-center gap-3">
+                <Checkbox
+                  checked={sendEmail}
+                  onCheckedChange={(checked) => setSendEmail(!!checked)}
+                  disabled={audience === "single" && !canReceiveEmail}
+                />
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                  <div>
+                    <span className="text-sm font-medium">Email</span>
+                    {audience === "single" && !canReceiveEmail && (
+                      <p className="text-xs text-muted-foreground">
+                        {!targetUser?.emailVerified
+                          ? "Email não verificado"
+                          : "Sem email registado"}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </label>
+            </div>
+            {!sendPush && !sendEmail && (
+              <p className="text-xs text-red-500">
+                Seleciona pelo menos um canal de envio
+              </p>
             )}
           </div>
 

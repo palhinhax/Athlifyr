@@ -58,6 +58,9 @@ export async function GET(request: Request) {
         isBanned: true,
         locale: true,
         createdAt: true,
+        emailVerified: true,
+        emailNotifications: true,
+        pushNotificationsEnabled: true,
         pushTokens: {
           where: { isActive: true },
           select: { platform: true },
@@ -88,6 +91,7 @@ export async function GET(request: Request) {
 
       return {
         ...userData,
+        emailVerified: !!user.emailVerified,
         devices: {
           web: webDevices,
           mobile: mobileDevices,

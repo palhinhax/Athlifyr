@@ -19,7 +19,7 @@ interface BackgroundControlsProps {
   photoUrl: string;
   overlayIntensity: number;
   isUploadingPhoto: boolean;
-  fileInputRef: RefObject<HTMLInputElement>;
+  fileInputRef: RefObject<HTMLInputElement | null>;
   onBackgroundTypeChange: (
     type: "solid" | "gradient" | "photo" | "transparent"
   ) => void;

@@ -9,6 +9,8 @@ import {
   X,
   Search,
 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -67,6 +69,10 @@ export function VideoAnalysisUpload({
   onOpenChange,
   onSuccess,
 }: VideoAnalysisUploadProps) {
+  const { data: session } = useSession();
+  const locale = useLocale();
+  const isLoggedIn = !!session?.user;
+
   const [uploadState, setUploadState] = useState<UploadState>({
     status: "idle",
   });
@@ -436,6 +442,8 @@ export function VideoAnalysisUpload({
             seedY: seedPoint.y,
             showAngles: true,
             autoDetect: true,
+            enableAi: isLoggedIn,
+            language: locale,
           },
           window.location.origin,
           (progress) => {
@@ -457,6 +465,10 @@ export function VideoAnalysisUpload({
 
         console.log(`[VideoUpload] processLiftAnalysis success:`, {
           videoUrl: result.videoUrl,
+          hasAiAnalysis: !!result.aiAnalysis,
+          aiExercise: result.aiAnalysis?.exercise ?? null,
+          aiScore: result.aiAnalysis?.overallScore ?? null,
+          aiTotalReps: result.aiAnalysis?.totalReps ?? null,
         });
 
         // If aborted, don't continue
@@ -508,6 +520,8 @@ export function VideoAnalysisUpload({
           {
             video: selectedFile,
             showAngles: true,
+            enableAi: isLoggedIn,
+            language: locale,
           },
           window.location.origin,
           (progress) => {
@@ -531,6 +545,10 @@ export function VideoAnalysisUpload({
           videoUrl: result.videoUrl,
           framesProcessed: result.pose?.framesProcessed,
           detectionRate: result.pose?.detectionRate,
+          hasAiAnalysis: !!result.aiAnalysis,
+          aiExercise: result.aiAnalysis?.exercise ?? null,
+          aiScore: result.aiAnalysis?.overallScore ?? null,
+          aiTotalReps: result.aiAnalysis?.totalReps ?? null,
         });
 
         // If aborted, don't continue
@@ -589,7 +607,7 @@ export function VideoAnalysisUpload({
     } finally {
       abortControllerRef.current = null;
     }
-  }, [selectedFile, seedPoint, isLift, onSuccess, handleClose]);
+  }, [selectedFile, seedPoint, isLift, isLoggedIn, locale, onSuccess, setUploadStateSynced, type]);
 
   const canSubmit =
     selectedFile &&

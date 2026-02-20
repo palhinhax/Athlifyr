@@ -19,8 +19,16 @@ import {
   ChevronLeft,
   ChevronRight,
   RotateCcw,
+  Sparkles,
+  Target,
+  Timer,
+  Repeat,
+  TrendingUp,
+  ShieldAlert,
+  Lightbulb,
+  CheckCircle2,
 } from "lucide-react";
-import type { SkeletonFrame, PoseAngles } from "@/types/lift-analysis";
+import type { SkeletonFrame, PoseAngles, AIAnalysis } from "@/types/lift-analysis";
 
 // Dynamic import for Three.js component to prevent SSR issues
 const Skeleton3DViewer = dynamic(
@@ -112,6 +120,7 @@ interface MotionAnalysisJson {
     } | null;
   };
   skeletonFrames?: SkeletonFrame[];
+  aiAnalysis?: AIAnalysis | null;
 }
 
 interface LiftAnalysisJson {
@@ -132,6 +141,7 @@ interface LiftAnalysisJson {
     durationSec: number;
     averageAngles: PoseAngles | null;
   };
+  aiAnalysis?: AIAnalysis | null;
 }
 
 interface AnalysisRecord {
@@ -310,10 +320,10 @@ function ExportButton({ videoUrl }: { videoUrl: string }) {
       target="_blank"
       rel="noopener noreferrer"
       download
-      className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium text-white/80 hover:bg-white/10"
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border px-2 text-xs font-medium text-white/80 hover:bg-white/10 sm:px-3"
     >
       <Download className="h-3.5 w-3.5" />
-      Exportar vídeo
+      <span className="hidden sm:inline">Exportar vídeo</span>
     </a>
   );
 }
@@ -520,6 +530,303 @@ function SkeletonPlaybackControls({
   );
 }
 
+// ── AI Analysis Panel (shared by both modals) ────────────────────────────────
+
+/** Circular score gauge */
+function ScoreRing({
+  score,
+  size = 64,
+  stroke = 5,
+}: {
+  score: number;
+  size?: number;
+  stroke?: number;
+}) {
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (score / 10) * circumference;
+  const color =
+    score >= 8
+      ? "text-emerald-500"
+      : score >= 6
+        ? "text-amber-500"
+        : "text-red-500";
+  const bgColor =
+    score >= 8
+      ? "stroke-emerald-500/15"
+      : score >= 6
+        ? "stroke-amber-500/15"
+        : "stroke-red-500/15";
+
+  return (
+    <div className="relative" style={{ width: size, height: size }}>
+      <svg
+        width={size}
+        height={size}
+        className="-rotate-90"
+        viewBox={`0 0 ${size} ${size}`}
+      >
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          strokeWidth={stroke}
+          className={bgColor}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          strokeWidth={stroke}
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          strokeLinecap="round"
+          className={`${color} transition-all duration-700`}
+          style={{ stroke: "currentColor" }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        <span className={`text-lg font-bold tabular-nums ${color}`}>
+          {score}
+        </span>
+        <span className="text-[8px] font-medium uppercase tracking-wider text-muted-foreground">
+          /10
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function AIAnalysisPanel({ ai }: { ai: AIAnalysis }) {
+  const t = useTranslations("profile");
+
+  return (
+    <div className="border-t">
+      {/* ── Header with gradient ─────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-transparent px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 sm:h-9 sm:w-9">
+          <Sparkles className="h-4 w-4 text-violet-500 sm:h-4.5 sm:w-4.5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="text-xs font-semibold tracking-tight sm:text-sm">
+            {t("analyses.ai.title")}
+          </h3>
+          {ai.exercise && (
+            <p className="truncate text-[10px] text-muted-foreground sm:text-xs">
+              {ai.exercise}
+            </p>
+          )}
+        </div>
+        {ai.overallScore !== null && ai.overallScore !== undefined && (
+          <ScoreRing score={ai.overallScore} />
+        )}
+      </div>
+
+      <div className="space-y-3 px-4 pb-4 pt-3 sm:space-y-4 sm:px-6 sm:pb-6 sm:pt-4">
+        {/* ── Quick stats row ──────────────────────────────────────────── */}
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-2.5">
+          {ai.totalReps !== null && ai.totalReps !== undefined && (
+            <div className="flex items-center gap-2.5 rounded-lg border bg-card/50 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
+              <Repeat className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+              <div>
+                <p className="text-xs font-semibold tabular-nums">
+                  {ai.totalReps}
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {t("analyses.ai.reps")}
+                </p>
+              </div>
+            </div>
+          )}
+          {ai.durationSec !== null && ai.durationSec !== undefined && (
+            <div className="flex items-center gap-2.5 rounded-lg border bg-card/50 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
+              <Timer className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+              <div>
+                <p className="text-xs font-semibold tabular-nums">
+                  {ai.durationSec.toFixed(1)}s
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {t("analyses.ai.duration")}
+                </p>
+              </div>
+            </div>
+          )}
+          {ai.tempoAvgSec !== null && ai.tempoAvgSec !== undefined && (
+            <div className="flex items-center gap-2.5 rounded-lg border bg-card/50 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
+              <Target className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+              <div>
+                <p className="text-xs font-semibold tabular-nums">
+                  {ai.tempoAvgSec.toFixed(1)}s
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {t("analyses.ai.tempo")}
+                </p>
+              </div>
+            </div>
+          )}
+          {ai.confidence !== null && ai.confidence !== undefined && (
+            <div className="flex items-center gap-2.5 rounded-lg border bg-card/50 px-3 py-2 sm:gap-3 sm:px-4 sm:py-2.5">
+              <TrendingUp className="h-3.5 w-3.5 shrink-0 text-muted-foreground sm:h-4 sm:w-4" />
+              <div>
+                <p className="text-xs font-semibold tabular-nums">
+                  {(ai.confidence * 100).toFixed(0)}%
+                </p>
+                <p className="text-[10px] text-muted-foreground">
+                  {t("analyses.ai.confidence")}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ── Overall notes ────────────────────────────────────────────── */}
+        {ai.overallNotes && (
+          <p className="rounded-lg bg-muted/30 px-3 py-2.5 text-xs leading-relaxed text-foreground/80 sm:px-4 sm:py-3 sm:text-[13px]">
+            {ai.overallNotes}
+          </p>
+        )}
+
+        {/* ── Strengths / Improvements — side-by-side cards ──────────── */}
+        <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-2">
+          {ai.strengths && ai.strengths.length > 0 && (
+            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
+              <div className="mb-2.5 flex items-center gap-2">
+                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                <h4 className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                  {t("analyses.ai.strengths")}
+                </h4>
+              </div>
+              <ul className="space-y-2">
+                {ai.strengths.map((s, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 text-xs leading-relaxed text-foreground/70"
+                  >
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-emerald-500" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {ai.improvements && ai.improvements.length > 0 && (
+            <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-3 sm:p-4">
+              <div className="mb-2.5 flex items-center gap-2">
+                <Lightbulb className="h-3.5 w-3.5 text-amber-500" />
+                <h4 className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                  {t("analyses.ai.improvements")}
+                </h4>
+              </div>
+              <ul className="space-y-2">
+                {ai.improvements.map((s, i) => (
+                  <li
+                    key={i}
+                    className="flex items-start gap-2.5 text-xs leading-relaxed text-foreground/70"
+                  >
+                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-500" />
+                    {s}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+
+        {/* Safety flags — full width */}
+        {ai.safetyFlags && ai.safetyFlags.length > 0 && (
+          <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 sm:p-4">
+            <div className="mb-2.5 flex items-center gap-2">
+              <ShieldAlert className="h-3.5 w-3.5 text-red-500" />
+              <h4 className="text-xs font-semibold text-red-600 dark:text-red-400">
+                {t("analyses.ai.safetyFlags")}
+              </h4>
+            </div>
+            <ul className="space-y-2">
+              {ai.safetyFlags.map((s, i) => (
+                <li
+                  key={i}
+                  className="flex items-start gap-2.5 text-xs leading-relaxed text-foreground/70"
+                >
+                  <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-red-500" />
+                  {s}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* ── Per-rep breakdown ─────────────────────────────────────────── */}
+        {ai.reps && ai.reps.length > 0 && (
+          <div>
+            <h4 className="mb-3 flex items-center gap-2 text-xs font-semibold">
+              <Activity className="h-3.5 w-3.5 text-muted-foreground" />
+              {t("analyses.ai.repBreakdown")}
+            </h4>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2.5 lg:grid-cols-3">
+              {ai.reps.map((rep) => {
+                const scoreColor =
+                  rep.formScore !== null && rep.formScore !== undefined
+                    ? rep.formScore >= 8
+                      ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
+                      : rep.formScore >= 6
+                        ? "text-amber-500 bg-amber-500/10 border-amber-500/20"
+                        : "text-red-500 bg-red-500/10 border-red-500/20"
+                    : "";
+
+                return (
+                  <div
+                    key={rep.repNumber}
+                    className="rounded-lg border bg-card/50 p-2.5 sm:p-3.5"
+                  >
+                    <div className="mb-1.5 flex items-center justify-between sm:mb-2">
+                      <span className="text-[11px] font-semibold sm:text-xs">
+                        {t("analyses.ai.rep")} {rep.repNumber}
+                      </span>
+                      {rep.formScore !== null &&
+                        rep.formScore !== undefined && (
+                          <span
+                            className={`rounded-md border px-2 py-0.5 text-[10px] font-bold tabular-nums ${scoreColor}`}
+                          >
+                            {rep.formScore}/10
+                          </span>
+                        )}
+                    </div>
+                    {rep.romDegrees !== null &&
+                      rep.romDegrees !== undefined && (
+                        <div className="mb-1.5 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="font-medium">ROM</span>
+                          <span className="tabular-nums">
+                            {rep.romDegrees.toFixed(0)}°
+                          </span>
+                        </div>
+                      )}
+                    {rep.notes && rep.notes.length > 0 && (
+                      <ul className="space-y-1">
+                        {rep.notes.map((note, i) => (
+                          <li
+                            key={i}
+                            className="flex items-start gap-2 text-[11px] leading-snug text-muted-foreground"
+                          >
+                            <span className="mt-[5px] h-0.5 w-0.5 shrink-0 rounded-full bg-muted-foreground/50" />
+                            {note}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Motion Video Modal ────────────────────────────────────────────────────────
 
 type ViewMode = "video" | "skeleton" | "split";
@@ -714,18 +1021,20 @@ function MotionVideoModal({
   return (
     <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className={`max-h-[90vh] gap-0 overflow-y-auto p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
+        className={`max-h-[100dvh] gap-0 overflow-y-auto rounded-none border-0 p-0 sm:max-h-[90vh] sm:rounded-lg sm:border [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
           viewMode === "split" ? "max-w-5xl" : "max-w-2xl"
         }`}
       >
         {/* Dark header */}
-        <div className="sticky top-0 z-10 flex items-start gap-3 bg-black px-5 py-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-            <Activity className="h-5 w-5 text-primary" />
+        <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">
+            <Activity className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
           </div>
-          <DialogHeader className="flex-1 space-y-0.5 text-left">
-            <DialogTitle className="text-base text-white">{title}</DialogTitle>
-            <DialogDescription className="flex items-center gap-1.5 text-xs text-white/50">
+          <DialogHeader className="min-w-0 flex-1 space-y-0.5 text-left">
+            <DialogTitle className="truncate text-sm text-white sm:text-base">
+              {title}
+            </DialogTitle>
+            <DialogDescription className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 sm:gap-1.5 sm:text-xs">
               <CalendarDays className="h-3 w-3" />
               {createdAt}
               {durationMs !== null && (
@@ -752,7 +1061,7 @@ function MotionVideoModal({
 
           {/* View mode toggle - only show if 3D data available */}
           {hasSkeletonData && (
-            <div className="flex gap-1 rounded-lg border border-white/20 bg-white/5 p-0.5">
+            <div className="flex gap-0.5 rounded-lg border border-white/20 bg-white/5 p-0.5 sm:gap-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -797,7 +1106,7 @@ function MotionVideoModal({
           {/* Video panel - always mounted to avoid reload on mode switch */}
           <div
             className={`relative flex w-full items-center justify-center bg-black ${
-              viewMode === "skeleton" ? "hidden" : "min-h-[200px]"
+              viewMode === "skeleton" ? "hidden" : "min-h-[150px] sm:min-h-[200px]"
             }`}
           >
             {record && videoLoading && (
@@ -816,7 +1125,7 @@ function MotionVideoModal({
                   controls
                   autoPlay
                   playsInline
-                  className="max-h-[50vh] min-h-[200px] w-full object-contain"
+                  className="max-h-[70vh] min-h-[150px] w-full object-contain sm:max-h-[50vh] sm:min-h-[200px]"
                   onLoadedMetadata={updateVideoSize}
                   onTimeUpdate={(e) =>
                     handleTimeUpdate(e.currentTarget.currentTime)
@@ -879,24 +1188,24 @@ function MotionVideoModal({
         {(legacyMetrics.kneeFlexionDeg !== undefined ||
           legacyMetrics.torsoRangeDeg !== undefined ||
           averageAngles) && (
-          <div className="grid grid-cols-2 divide-x border-t bg-muted/30 md:grid-cols-4">
+          <div className="grid grid-cols-2 divide-x border-t bg-muted/30 sm:grid-cols-4">
             {/* Legacy format metrics */}
             {legacyMetrics.kneeFlexionDeg !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                   Flexão do Joelho
                 </p>
-                <p className="text-xl font-bold tabular-nums">
+                <p className="text-lg font-bold tabular-nums sm:text-xl">
                   {legacyMetrics.kneeFlexionDeg.toFixed(1)}°
                 </p>
               </div>
             )}
             {legacyMetrics.torsoRangeDeg !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                   Amplitude do Tronco
                 </p>
-                <p className="text-xl font-bold tabular-nums">
+                <p className="text-lg font-bold tabular-nums sm:text-xl">
                   {legacyMetrics.torsoRangeDeg.toFixed(1)}°
                 </p>
               </div>
@@ -905,41 +1214,41 @@ function MotionVideoModal({
             {averageAngles && (
               <>
                 {averageAngles.leftKnee !== null && (
-                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                    <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                       Joelho E
                     </p>
-                    <p className="text-xl font-bold tabular-nums">
+                    <p className="text-lg font-bold tabular-nums sm:text-xl">
                       {averageAngles.leftKnee.toFixed(1)}°
                     </p>
                   </div>
                 )}
                 {averageAngles.rightKnee !== null && (
-                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                    <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                       Joelho D
                     </p>
-                    <p className="text-xl font-bold tabular-nums">
+                    <p className="text-lg font-bold tabular-nums sm:text-xl">
                       {averageAngles.rightKnee.toFixed(1)}°
                     </p>
                   </div>
                 )}
                 {averageAngles.torsoInclination !== null && (
-                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                    <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                       Tronco
                     </p>
-                    <p className="text-xl font-bold tabular-nums">
+                    <p className="text-lg font-bold tabular-nums sm:text-xl">
                       {averageAngles.torsoInclination.toFixed(1)}°
                     </p>
                   </div>
                 )}
                 {averageAngles.leftHip !== null && (
-                  <div className="flex flex-col items-center gap-0.5 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-wide text-muted-foreground">
+                  <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-3">
+                    <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[10px]">
                       Anca E
                     </p>
-                    <p className="text-xl font-bold tabular-nums">
+                    <p className="text-lg font-bold tabular-nums sm:text-xl">
                       {averageAngles.leftHip.toFixed(1)}°
                     </p>
                   </div>
@@ -948,6 +1257,9 @@ function MotionVideoModal({
             )}
           </div>
         )}
+
+        {/* AI Analysis section */}
+        {json?.aiAnalysis && <AIAnalysisPanel ai={json.aiAnalysis} />}
       </DialogContent>
     </Dialog>
   );
@@ -1091,18 +1403,20 @@ function LiftVideoModal({
   return (
     <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className={`max-h-[90vh] gap-0 overflow-y-auto p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
+        className={`max-h-[100dvh] gap-0 overflow-y-auto rounded-none border-0 p-0 sm:max-h-[90vh] sm:rounded-lg sm:border [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
           viewMode === "split" ? "max-w-5xl" : "max-w-2xl"
         }`}
       >
         {/* Dark header */}
-        <div className="sticky top-0 z-10 flex items-start gap-3 bg-black px-5 py-4">
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
-            <Dumbbell className="h-5 w-5 text-primary" />
+        <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">
+            <Dumbbell className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
           </div>
-          <DialogHeader className="flex-1 space-y-0.5 text-left">
-            <DialogTitle className="text-base text-white">{title}</DialogTitle>
-            <DialogDescription className="flex items-center gap-1.5 text-xs text-white/50">
+          <DialogHeader className="min-w-0 flex-1 space-y-0.5 text-left">
+            <DialogTitle className="truncate text-sm text-white sm:text-base">
+              {title}
+            </DialogTitle>
+            <DialogDescription className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 sm:gap-1.5 sm:text-xs">
               <CalendarDays className="h-3 w-3" />
               {createdAt}
               {durationMs !== undefined && (
@@ -1125,7 +1439,7 @@ function LiftVideoModal({
 
           {/* View mode toggle - only show if 3D data available */}
           {hasSkeletonData && (
-            <div className="flex gap-1 rounded-lg border border-white/20 bg-white/5 p-0.5">
+            <div className="flex gap-0.5 rounded-lg border border-white/20 bg-white/5 p-0.5 sm:gap-1">
               <Button
                 variant="ghost"
                 size="sm"
@@ -1170,7 +1484,7 @@ function LiftVideoModal({
           {/* Video panel - always mounted to avoid reload on mode switch */}
           <div
             className={`relative flex w-full items-center justify-center bg-black ${
-              viewMode === "skeleton" ? "hidden" : "min-h-[200px]"
+              viewMode === "skeleton" ? "hidden" : "min-h-[150px] sm:min-h-[200px]"
             }`}
           >
             {record && videoLoading && (
@@ -1189,7 +1503,7 @@ function LiftVideoModal({
                   controls
                   autoPlay
                   playsInline
-                  className="max-h-[50vh] min-h-[200px] w-full object-contain"
+                  className="max-h-[70vh] min-h-[150px] w-full object-contain sm:max-h-[50vh] sm:min-h-[200px]"
                   onLoadedMetadata={updateVideoSize}
                   onTimeUpdate={(e) =>
                     handleTimeUpdate(e.currentTarget.currentTime)
@@ -1255,39 +1569,42 @@ function LiftVideoModal({
             }}
           >
             {metrics.maxHorizontalDrift !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-4">
+                <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                   Desvio Horizontal
                 </p>
-                <p className="text-2xl font-bold tabular-nums">
+                <p className="text-lg font-bold tabular-nums sm:text-2xl">
                   {(metrics.maxHorizontalDrift * 100).toFixed(1)}
-                  <span className="text-base font-normal">%</span>
+                  <span className="text-sm font-normal sm:text-base">%</span>
                 </p>
               </div>
             )}
             {metrics.totalVerticalTravel !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-4">
+                <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                   Viagem Vertical
                 </p>
-                <p className="text-2xl font-bold tabular-nums">
+                <p className="text-lg font-bold tabular-nums sm:text-2xl">
                   {(metrics.totalVerticalTravel * 100).toFixed(1)}
-                  <span className="text-base font-normal">%</span>
+                  <span className="text-sm font-normal sm:text-base">%</span>
                 </p>
               </div>
             )}
             {metrics.averageSpeed !== undefined && (
-              <div className="flex flex-col items-center gap-0.5 px-4 py-4">
-                <p className="text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div className="flex flex-col items-center gap-0.5 px-2 py-2.5 sm:px-4 sm:py-4">
+                <p className="text-center text-[9px] uppercase tracking-wide text-muted-foreground sm:text-[11px]">
                   Velocidade Média
                 </p>
-                <p className="text-2xl font-bold tabular-nums">
+                <p className="text-lg font-bold tabular-nums sm:text-2xl">
                   {metrics.averageSpeed.toFixed(2)}
                 </p>
               </div>
             )}
           </div>
         )}
+
+        {/* AI Analysis section */}
+        {json?.aiAnalysis && <AIAnalysisPanel ai={json.aiAnalysis} />}
       </DialogContent>
     </Dialog>
   );
@@ -1313,7 +1630,16 @@ function MotionCard({
     : null;
   const frameCount = json.poseFrames?.length ?? 0;
   const metrics = json.metrics ?? {};
-  const title = record.label ?? t("analyses.unlabeledMotion");
+  const ai = json.aiAnalysis ?? null;
+
+  console.log(`[MotionCard] id=${record.id}`, {
+    hasAiAnalysis: !!ai,
+    aiExercise: ai?.exercise ?? null,
+    aiScore: ai?.overallScore ?? null,
+  });
+
+  const title =
+    record.label ?? ai?.exercise ?? t("analyses.unlabeledMotion");
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -1425,6 +1751,36 @@ function MotionCard({
           )}
         </div>
       )}
+
+      {ai && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2 text-xs">
+            {ai.overallScore !== null && ai.overallScore !== undefined && (
+              <Badge
+                variant={ai.overallScore >= 7 ? "default" : "secondary"}
+                className="gap-1"
+              >
+                ⭐ {t("analyses.ai.score")}: {ai.overallScore}/10
+              </Badge>
+            )}
+            {ai.totalReps !== null && ai.totalReps !== undefined && (
+              <Badge variant="outline" className="gap-1">
+                🔁 {ai.totalReps} {t("analyses.ai.reps")}
+              </Badge>
+            )}
+            {ai.confidence !== null && ai.confidence !== undefined && (
+              <Badge variant="outline" className="gap-1 text-muted-foreground">
+                {(ai.confidence * 100).toFixed(0)}% {t("analyses.ai.confidence")}
+              </Badge>
+            )}
+          </div>
+          {ai.overallNotes && (
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {ai.overallNotes}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1446,7 +1802,16 @@ function LiftCard({
   const json = record.analysisJson as LiftAnalysisJson;
   const durationMs = json.durationMs;
   const metrics = json.metrics ?? {};
-  const title = record.label ?? t("analyses.unlabeledLift");
+  const ai = json.aiAnalysis ?? null;
+
+  console.log(`[LiftCard] id=${record.id}`, {
+    hasAiAnalysis: !!ai,
+    aiExercise: ai?.exercise ?? null,
+    aiScore: ai?.overallScore ?? null,
+  });
+
+  const title =
+    record.label ?? ai?.exercise ?? t("analyses.unlabeledLift");
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -1559,6 +1924,36 @@ function LiftCard({
                 {metrics.averageSpeed.toFixed(2)}
               </p>
             </div>
+          )}
+        </div>
+      )}
+
+      {ai && (
+        <div className="space-y-2">
+          <div className="flex flex-wrap gap-2 text-xs">
+            {ai.overallScore !== null && ai.overallScore !== undefined && (
+              <Badge
+                variant={ai.overallScore >= 7 ? "default" : "secondary"}
+                className="gap-1"
+              >
+                ⭐ {t("analyses.ai.score")}: {ai.overallScore}/10
+              </Badge>
+            )}
+            {ai.totalReps !== null && ai.totalReps !== undefined && (
+              <Badge variant="outline" className="gap-1">
+                🔁 {ai.totalReps} {t("analyses.ai.reps")}
+              </Badge>
+            )}
+            {ai.confidence !== null && ai.confidence !== undefined && (
+              <Badge variant="outline" className="gap-1 text-muted-foreground">
+                {(ai.confidence * 100).toFixed(0)}% {t("analyses.ai.confidence")}
+              </Badge>
+            )}
+          </div>
+          {ai.overallNotes && (
+            <p className="line-clamp-2 text-xs text-muted-foreground">
+              {ai.overallNotes}
+            </p>
           )}
         </div>
       )}

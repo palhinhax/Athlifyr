@@ -19,12 +19,16 @@ export interface LiftAnalysisProcessRequest {
   showAngles?: boolean;
   maxDurationSec?: number;
   autoDetect?: boolean;
+  enableAi?: boolean;
+  language?: string;
 }
 
 export interface MotionAnalysisProcessRequest {
   video: File | Blob;
   showAngles?: boolean;
   maxDurationSec?: number;
+  enableAi?: boolean;
+  language?: string;
 }
 
 // ── 3D Skeleton Types ────────────────────────────────────────────────────
@@ -85,6 +89,38 @@ export interface SkeletonFrame {
 
 // ── Response Types ───────────────────────────────────────────────────────
 
+// ── AI Analysis Types ────────────────────────────────────────────────────
+
+/** Analysis of a single repetition. */
+export interface RepAnalysis {
+  repNumber: number;
+  startFrame: number | null;
+  endFrame: number | null;
+  phaseEccentricFrames: [number, number] | null;
+  phaseConcentricFrames: [number, number] | null;
+  minKneeAngle: number | null;
+  minHipAngle: number | null;
+  romDegrees: number | null;
+  formScore: number | null;
+  notes: string[];
+}
+
+/** AI-powered exercise analysis (GPT). */
+export interface AIAnalysis {
+  exercise: string | null;
+  exerciseEn: string | null;
+  confidence: number | null;
+  totalReps: number | null;
+  durationSec: number | null;
+  tempoAvgSec: number | null;
+  overallScore: number | null;
+  overallNotes: string | null;
+  reps: RepAnalysis[];
+  strengths: string[];
+  improvements: string[];
+  safetyFlags: string[];
+}
+
 export interface PoseAngles {
   leftKnee: number | null;
   rightKnee: number | null;
@@ -128,6 +164,8 @@ export interface LiftAnalysisProcessResponse {
   pose: PoseData;
   /** 3D skeleton data per frame for rendering */
   skeletonFrames: SkeletonFrame[];
+  /** AI-powered exercise analysis (null when enable_ai=false or unavailable) */
+  aiAnalysis: AIAnalysis | null;
 }
 
 export interface MotionAnalysisProcessResponse {
@@ -137,6 +175,8 @@ export interface MotionAnalysisProcessResponse {
   pose: PoseData;
   /** 3D skeleton data per frame for rendering */
   skeletonFrames: SkeletonFrame[];
+  /** AI-powered exercise analysis (null when enable_ai=false or unavailable) */
+  aiAnalysis: AIAnalysis | null;
 }
 
 // ── Error Types ──────────────────────────────────────────────────────────

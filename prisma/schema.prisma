@@ -79,6 +79,7 @@ model User {
   // Analysis records (motion & lift)
   motionAnalyses        MotionAnalysisRecord[]
   liftAnalyses          LiftAnalysisRecord[]
+  aiAnalysisUsages      AiAnalysisUsage[]
 
   @@index([email])
   @@index([name])
@@ -2032,4 +2033,18 @@ model LiftAnalysisRecord {
 
   @@index([userId])
   @@index([localId])
+}
+
+/// Tracks AI analysis usage per user — max 1 per 24 hours
+model AiAnalysisUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// "motion" or "lift"
+  type      String
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
 }

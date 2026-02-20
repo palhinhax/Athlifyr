@@ -33,6 +33,8 @@
 import { NextResponse } from "next/server";
 import { transcodeToH264, trimVideoStreamCopy } from "@/lib/ffmpeg-utils";
 import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
+import { auth } from "@/lib/auth";
+import { checkAiRateLimit, recordAiUsage } from "@/lib/ai-rate-limit";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes for video processing
@@ -93,7 +95,36 @@ interface ExternalApiResponse {
   duration_sec: number;
   average_angles?: PoseAngles;
   skeleton_frames?: ExternalSkeletonFrame[];
+  ai_analysis?: ExternalAIAnalysis | null;
   error?: string;
+}
+
+interface ExternalRepAnalysis {
+  rep_number: number;
+  start_frame: number | null;
+  end_frame: number | null;
+  phase_eccentric_frames: [number, number] | null;
+  phase_concentric_frames: [number, number] | null;
+  min_knee_angle: number | null;
+  min_hip_angle: number | null;
+  rom_degrees: number | null;
+  form_score: number | null;
+  notes: string[];
+}
+
+interface ExternalAIAnalysis {
+  exercise: string | null;
+  exercise_en: string | null;
+  confidence: number | null;
+  total_reps: number | null;
+  duration_sec: number | null;
+  tempo_avg_sec: number | null;
+  overall_score: number | null;
+  overall_notes: string | null;
+  reps: ExternalRepAnalysis[];
+  strengths: string[];
+  improvements: string[];
+  safety_flags: string[];
 }
 
 export async function POST(request: Request) {
@@ -260,12 +291,44 @@ export async function POST(request: Request) {
     externalFormData.append("show_angles", showAngles.toString());
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
 
+    // Forward AI parameters — enforce server-side rate limit (1 per 24h)
+    const enableAi = formData.get("enable_ai");
+    const language = formData.get("language");
+    let aiAllowed = false;
+
+    if (enableAi?.toString() === "true") {
+      const session = await auth();
+      if (session?.user?.id) {
+        const rateCheck = await checkAiRateLimit(session.user.id);
+        if (rateCheck.allowed) {
+          aiAllowed = true;
+          externalFormData.append("enable_ai", "true");
+          console.log(
+            `[MotionAnalysis] AI enabled for user ${session.user.id}`
+          );
+        } else {
+          console.log(
+            `[MotionAnalysis] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`
+          );
+        }
+      } else {
+        console.log(
+          "[MotionAnalysis] AI requested but user not authenticated"
+        );
+      }
+    }
+    if (language) {
+      externalFormData.append("language", language.toString());
+    }
+
     console.log("[MotionAnalysis] Forwarding to Railway:", {
       filename: safeFilename,
       type: finalVideoFile.type,
       sizeMB: (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
       show_angles: showAngles,
       max_duration_sec: maxDurationSec,
+      enable_ai: aiAllowed ? "true" : "false (rate-limited or not requested)",
+      language: language?.toString() ?? "not set",
     });
 
     // ── Call external API ──────────────────────────────────────────────────
@@ -389,6 +452,51 @@ export async function POST(request: Request) {
       })),
     }));
 
+    // Transform ai_analysis from snake_case to camelCase
+    console.log("[MotionAnalysis] AI analysis from Railway:", {
+      hasAiAnalysis: !!result.ai_analysis,
+      exercise: result.ai_analysis?.exercise ?? null,
+      overallScore: result.ai_analysis?.overall_score ?? null,
+      totalReps: result.ai_analysis?.total_reps ?? null,
+      repsCount: result.ai_analysis?.reps?.length ?? 0,
+    });
+
+    const aiAnalysis = result.ai_analysis
+      ? {
+          exercise: result.ai_analysis.exercise ?? null,
+          exerciseEn: result.ai_analysis.exercise_en ?? null,
+          confidence: result.ai_analysis.confidence ?? null,
+          totalReps: result.ai_analysis.total_reps ?? null,
+          durationSec: result.ai_analysis.duration_sec ?? null,
+          tempoAvgSec: result.ai_analysis.tempo_avg_sec ?? null,
+          overallScore: result.ai_analysis.overall_score ?? null,
+          overallNotes: result.ai_analysis.overall_notes ?? null,
+          reps: (result.ai_analysis.reps ?? []).map((rep) => ({
+            repNumber: rep.rep_number,
+            startFrame: rep.start_frame ?? null,
+            endFrame: rep.end_frame ?? null,
+            phaseEccentricFrames: rep.phase_eccentric_frames ?? null,
+            phaseConcentricFrames: rep.phase_concentric_frames ?? null,
+            minKneeAngle: rep.min_knee_angle ?? null,
+            minHipAngle: rep.min_hip_angle ?? null,
+            romDegrees: rep.rom_degrees ?? null,
+            formScore: rep.form_score ?? null,
+            notes: rep.notes ?? [],
+          })),
+          strengths: result.ai_analysis.strengths ?? [],
+          improvements: result.ai_analysis.improvements ?? [],
+          safetyFlags: result.ai_analysis.safety_flags ?? [],
+        }
+      : null;
+
+    // Record AI usage if AI was actually returned
+    if (aiAnalysis && aiAllowed) {
+      const session = await auth();
+      if (session?.user?.id) {
+        await recordAiUsage(session.user.id, "motion");
+      }
+    }
+
     return NextResponse.json(
       {
         success: true,
@@ -419,6 +527,7 @@ export async function POST(request: Request) {
             : null,
         },
         skeletonFrames,
+        aiAnalysis,
       },
       { status: 200 }
     );

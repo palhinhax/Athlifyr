@@ -62,6 +62,12 @@ export async function processLiftAnalysis(
   if (params.autoDetect !== undefined) {
     formData.append("auto_detect", params.autoDetect.toString());
   }
+  if (params.enableAi !== undefined) {
+    formData.append("enable_ai", params.enableAi.toString());
+  }
+  if (params.language !== undefined) {
+    formData.append("language", params.language);
+  }
 
   // Create XMLHttpRequest for progress tracking (if callback provided)
   if (onProgress && typeof XMLHttpRequest !== "undefined") {
@@ -172,6 +178,12 @@ export async function processMotionAnalysis(
   }
   if (params.maxDurationSec !== undefined) {
     formData.append("max_duration_sec", params.maxDurationSec.toString());
+  }
+  if (params.enableAi !== undefined) {
+    formData.append("enable_ai", params.enableAi.toString());
+  }
+  if (params.language !== undefined) {
+    formData.append("language", params.language);
   }
 
   // Create XMLHttpRequest for progress tracking (if callback provided)

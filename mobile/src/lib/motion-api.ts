@@ -2,17 +2,11 @@
  * Motion Analysis — External API client.
  *
  * Sends the video to the centralized Athlifyr API for full body pose estimation.
- * All video processing happens externally via /api/motion-analysis/process
- *
- * Replaces the previous on-device TensorFlow.js + MoveNet implementation.
+ * All video processing happens server-side via /api/motion-analysis/process
+ * (same API endpoint used by the web application).
  */
 
-// ── API base URL ─────────────────────────────────────────────────────
-
-// Use the Athlifyr backend API
-const API_BASE_URL = __DEV__
-  ? "http://localhost:3000" // Development
-  : "https://athlifyr.com"; // Production
+import { API_URL } from "@/src/lib/api";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -24,17 +18,17 @@ export interface MotionAnalysisProgress {
 }
 
 export interface PoseAngles {
-  leftKnee?: number;
-  rightKnee?: number;
-  leftHip?: number;
-  rightHip?: number;
-  leftElbow?: number;
-  rightElbow?: number;
-  leftShoulder?: number;
-  rightShoulder?: number;
-  leftAnkle?: number;
-  rightAnkle?: number;
-  torsoInclination?: number;
+  leftKnee: number | null;
+  rightKnee: number | null;
+  leftHip: number | null;
+  rightHip: number | null;
+  leftElbow: number | null;
+  rightElbow: number | null;
+  leftShoulder: number | null;
+  rightShoulder: number | null;
+  leftAnkle: number | null;
+  rightAnkle: number | null;
+  torsoInclination: number | null;
 }
 
 export interface PoseData {
@@ -45,11 +39,40 @@ export interface PoseData {
   averageAngles: PoseAngles | null;
 }
 
+export interface SkeletonLandmark {
+  name: string;
+  index: number;
+  x: number;
+  y: number;
+  z: number;
+  visibility: number;
+  pixelX: number;
+  pixelY: number;
+  worldX: number | null;
+  worldY: number | null;
+  worldZ: number | null;
+}
+
+export interface SkeletonBone {
+  startIndex: number;
+  endIndex: number;
+  startName: string;
+  endName: string;
+}
+
+export interface SkeletonFrame {
+  frameWidth: number;
+  frameHeight: number;
+  landmarks: SkeletonLandmark[];
+  bones: SkeletonBone[];
+}
+
 export interface MotionAnalysisResult {
   success: boolean;
   message: string;
   videoUrl: string | null;
   pose: PoseData;
+  skeletonFrames: SkeletonFrame[];
 }
 
 // ── Health check ─────────────────────────────────────────────────────
@@ -63,13 +86,12 @@ export async function checkMotionApiHealth(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5_000);
 
-    const res = await fetch(`${API_BASE_URL}/api/motion-analysis/process`, {
+    const res = await fetch(`${API_URL}/api/motion-analysis/process`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
     clearTimeout(timeout);
 
-    // Accept 200 OK or 405 Method Not Allowed (OPTIONS not implemented)
     return res.ok || res.status === 405;
   } catch {
     return false;
@@ -79,16 +101,18 @@ export async function checkMotionApiHealth(): Promise<boolean> {
 // ── Main analysis function ───────────────────────────────────────────
 
 /**
- * Send video to the centralized motion analysis API for processing.
- * Full body pose estimation without barbell tracking.
+ * Send video to the centralized motion analysis API for full body pose estimation.
+ * This is the same API endpoint used by the web application.
  *
  * @param videoUri       Local URI of the recorded video
  * @param onProgress     Optional progress callback
- * @returns              Full analysis result with pose data
+ * @param trimRange      Optional trim range { startSec, endSec } for server-side trimming
+ * @returns              Full analysis result with pose data and skeleton frames
  */
 export async function analyzeMotion(
   videoUri: string,
-  onProgress?: (p: MotionAnalysisProgress) => void
+  onProgress?: (p: MotionAnalysisProgress) => void,
+  trimRange?: { startSec: number; endSec: number }
 ): Promise<MotionAnalysisResult> {
   // ── 1. Build multipart form data ─────────────────────────────────────────
   onProgress?.({ progress: 0, step: "uploading" });
@@ -103,7 +127,13 @@ export async function analyzeMotion(
   } as unknown as Blob);
 
   formData.append("show_angles", "true");
-  formData.append("max_duration_sec", "60");
+  formData.append("max_duration_sec", "30");
+
+  // Server-side trim — if the user selected a sub-clip
+  if (trimRange) {
+    formData.append("trim_start_sec", trimRange.startSec.toString());
+    formData.append("trim_end_sec", trimRange.endSec.toString());
+  }
 
   // ── 2. Send to API ───────────────────────────────────────────────────────
   onProgress?.({ progress: 10, step: "uploading" });
@@ -114,7 +144,7 @@ export async function analyzeMotion(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/motion-analysis/process`, {
+    response = await fetch(`${API_URL}/api/motion-analysis/process`, {
       method: "POST",
       body: formData,
       headers: {
@@ -122,6 +152,14 @@ export async function analyzeMotion(
       },
       signal: controller.signal,
     });
+  } catch (error) {
+    clearTimeout(timeout);
+
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Request timeout. Video processing took too long.");
+    }
+
+    throw new Error("Failed to connect to video processing service");
   } finally {
     clearTimeout(timeout);
   }
@@ -129,7 +167,8 @@ export async function analyzeMotion(
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));
     const errorMsg =
-      errorData.error || `HTTP ${response.status}: ${response.statusText}`;
+      (errorData as { error?: string }).error ||
+      `HTTP ${response.status}: ${response.statusText}`;
     throw new Error(errorMsg);
   }
 

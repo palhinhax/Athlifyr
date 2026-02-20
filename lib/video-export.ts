@@ -377,13 +377,25 @@ export async function processExportJob(
       throw new Error("ffmpeg extracted 0 frames from the video");
     }
 
+    // ── Detect actual frame dimensions from the first extracted frame ────────
+    // probeVideo returns pre-rotation dimensions from stream metadata.
+    // On iOS/Android portrait videos, ffmpeg applies the rotation tag
+    // automatically when extracting frames, so the actual PNG dimensions
+    // may be transposed (e.g. probe says 1920×1080, frames are 1080×1920).
+    // Reading the real dimensions from the first frame avoids sharp's
+    // "Image to composite must have same dimensions or smaller" error.
+    const firstFramePath = path.join(framesDir, frameFiles[0]);
+    const firstFrameMeta = await sharp(firstFramePath).metadata();
+    const frameWidth = firstFrameMeta.width ?? width;
+    const frameHeight = firstFrameMeta.height ?? height;
+
     updateJob(jobId, { progress: 30 });
 
     // ── 5. Render overlays for each frame ───────────────────────
     const composedDir = path.join(tmpDir, "composed");
     await fs.mkdir(composedDir, { recursive: true });
 
-    const watermarkSvg = renderWatermarkSvg(width, height);
+    const watermarkSvg = renderWatermarkSvg(frameWidth, frameHeight);
     const watermarkBuffer = Buffer.from(watermarkSvg);
 
     for (let i = 0; i < frameFiles.length; i++) {
@@ -400,16 +412,20 @@ export async function processExportJob(
       if (overlay.type === "motion") {
         const closestFrame = findClosestFrame(overlay.poseFrames, frameTimeMs);
         if (closestFrame) {
-          overlaySvg = renderMotionOverlaySvg(closestFrame, width, height);
+          overlaySvg = renderMotionOverlaySvg(
+            closestFrame,
+            frameWidth,
+            frameHeight
+          );
         } else {
-          overlaySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"></svg>`;
+          overlaySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${frameWidth}" height="${frameHeight}"></svg>`;
         }
       } else {
         overlaySvg = renderLiftOverlaySvg(
           overlay.barPath,
           frameTimeMs,
-          width,
-          height
+          frameWidth,
+          frameHeight
         );
       }
 

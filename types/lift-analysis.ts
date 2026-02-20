@@ -181,3 +181,33 @@ export function isMotionAnalysisProcessResponse(
     !("tracking" in response) // Motion analysis doesn't have tracking
   );
 }
+
+// ── Debug Detect Types ───────────────────────────────────────────────────
+
+/** Circle detected by the /debug/detect endpoint. */
+export interface DebugDetectCircle {
+  center_x: number;
+  center_y: number;
+  radius: number;
+  center_x_pct: number;
+  center_y_pct: number;
+  radius_pct: number;
+  confidence: number;
+  area_px: number;
+  bbox: {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  };
+}
+
+/** Response from the /debug/detect endpoint. */
+export interface DebugDetectResponse {
+  detected: boolean;
+  seed_px: { x: number; y: number };
+  seed_pct: { x: number; y: number };
+  frame_size: { width: number; height: number };
+  circle: DebugDetectCircle | null;
+  message?: string;
+}

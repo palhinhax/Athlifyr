@@ -754,15 +754,16 @@
     }
   },
   "motionAnalysis": {
-    "trimTitle": "Recortar Vídeo",
+    "trimTitle": "Análisis de Movimiento",
     "analyzingTitle": "Analizando Pose",
     "resultsTitle": "Análisis de Movimiento",
-    "trimInstruction": "Ajusta los controles para seleccionar el segmento de vídeo que quieres analizar.",
+    "serverAnalysisInstruction": "Tu vídeo será enviado y analizado por nuestro servidor de IA para una estimación precisa de pose corporal.",
     "analyzeButton": "Analizar Movimiento",
     "recordHint": "Graba tu movimiento (máx. 30s) o importa un vídeo.",
-    "loadingModel": "Cargando modelo de IA…",
-    "analyzing": "Detectando pose corporal…",
-    "computing": "Calculando métricas…",
+    "uploadingVideo": "Subiendo vídeo…",
+    "uploadingVideoDesc": "Enviando tu vídeo al servidor de análisis.",
+    "processingServer": "Analizando pose…",
+    "processingServerDesc": "Nuestra IA está detectando puntos corporales y calculando ángulos.",
     "analysisError": "Análisis Fallido",
     "saveAnalysis": "Guardar Análisis",
     "saved": "Análisis Guardado",
@@ -773,6 +774,26 @@
     "loginToSaveAnalysis": "Inicia sesión para guardar",
     "loginToSaveAnalysisMessage": "Para guardar tu análisis en la nube y consultarlo más tarde, necesitas iniciar sesión. Tus datos no se perderán.",
     "loginAndReturn": "Iniciar Sesión y Volver",
+    "exportVideo": "Exportar Vídeo",
+    "exportError": "Ocurrió un error al exportar el vídeo.",
+    "shareNotAvailable": "El uso compartido no está disponible en este dispositivo.",
+    "framesProcessed": "Frames Procesados",
+    "framesWithPose": "Frames con Pose",
+    "detectionRate": "Tasa de Detección",
+    "averageAngles": "Ángulos Promedio",
+    "angles": {
+      "leftKnee": "Rodilla Izquierda",
+      "rightKnee": "Rodilla Derecha",
+      "leftHip": "Cadera Izquierda",
+      "rightHip": "Cadera Derecha",
+      "leftElbow": "Codo Izquierdo",
+      "rightElbow": "Codo Derecho",
+      "leftShoulder": "Hombro Izquierdo",
+      "rightShoulder": "Hombro Derecho",
+      "leftAnkle": "Tobillo Izquierdo",
+      "rightAnkle": "Tobillo Derecho",
+      "torsoInclination": "Inclinación del Torso"
+    },
     "myAnalyses": "Análisis de Movimiento",
     "analysisLabel": "Análisis de Movimiento",
     "noAnalyses": "Sin Análisis de Movimiento",
@@ -791,5 +812,13 @@
     "replayTab": "Repetición",
     "exported": "Datos Exportados",
     "exportedMessage": "Los datos del análisis se han exportado en JSON."
+  },
+  "videoTrimmer": {
+    "title": "Recortar Vídeo",
+    "confirm": "Confirmar",
+    "duration": "Duración",
+    "tooLong": "El vídeo es demasiado largo.",
+    "maxDuration": "Máx: {{seconds}}s",
+    "reset": "Restablecer"
   }
 }

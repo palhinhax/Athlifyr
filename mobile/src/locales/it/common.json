@@ -754,15 +754,16 @@
     }
   },
   "motionAnalysis": {
-    "trimTitle": "Taglia Video",
+    "trimTitle": "Analisi del Movimento",
     "analyzingTitle": "Analisi della Posa",
     "resultsTitle": "Analisi del Movimento",
-    "trimInstruction": "Regola i cursori per selezionare il segmento video da analizzare.",
+    "serverAnalysisInstruction": "Il tuo video sarà inviato e analizzato dal nostro server IA per una stima precisa della posa corporea.",
     "analyzeButton": "Analizza Movimento",
     "recordHint": "Registra il tuo movimento (max. 30s) o importa un video.",
-    "loadingModel": "Caricamento modello IA…",
-    "analyzing": "Rilevamento posa corporea…",
-    "computing": "Calcolo delle metriche…",
+    "uploadingVideo": "Caricamento video…",
+    "uploadingVideoDesc": "Invio del video al server di analisi.",
+    "processingServer": "Analisi della posa…",
+    "processingServerDesc": "La nostra IA sta rilevando i punti corporei e calcolando gli angoli.",
     "analysisError": "Analisi Fallita",
     "saveAnalysis": "Salva Analisi",
     "saved": "Analisi Salvata",
@@ -773,6 +774,26 @@
     "loginToSaveAnalysis": "Accedi per salvare",
     "loginToSaveAnalysisMessage": "Per salvare la tua analisi nel cloud e consultarla in seguito, devi effettuare l'accesso. I tuoi dati non andranno persi.",
     "loginAndReturn": "Accedi e torna indietro",
+    "exportVideo": "Esporta Video",
+    "exportError": "Si è verificato un errore durante l'esportazione del video.",
+    "shareNotAvailable": "La condivisione non è disponibile su questo dispositivo.",
+    "framesProcessed": "Frame Elaborati",
+    "framesWithPose": "Frame con Posa",
+    "detectionRate": "Tasso di Rilevamento",
+    "averageAngles": "Angoli Medi",
+    "angles": {
+      "leftKnee": "Ginocchio Sinistro",
+      "rightKnee": "Ginocchio Destro",
+      "leftHip": "Anca Sinistra",
+      "rightHip": "Anca Destra",
+      "leftElbow": "Gomito Sinistro",
+      "rightElbow": "Gomito Destro",
+      "leftShoulder": "Spalla Sinistra",
+      "rightShoulder": "Spalla Destra",
+      "leftAnkle": "Caviglia Sinistra",
+      "rightAnkle": "Caviglia Destra",
+      "torsoInclination": "Inclinazione del Busto"
+    },
     "myAnalyses": "Analisi di Movimento",
     "analysisLabel": "Analisi del Movimento",
     "noAnalyses": "Nessuna Analisi del Movimento",
@@ -791,5 +812,13 @@
     "replayTab": "Riproduzione",
     "exported": "Dati Esportati",
     "exportedMessage": "I dati dell'analisi sono stati esportati in JSON."
+  },
+  "videoTrimmer": {
+    "title": "Taglia Video",
+    "confirm": "Conferma",
+    "duration": "Durata",
+    "tooLong": "Il video è troppo lungo.",
+    "maxDuration": "Max: {{seconds}}s",
+    "reset": "Ripristina"
   }
 }

@@ -26,17 +26,17 @@ import {
 import * as Crypto from "expo-crypto";
 import * as SecureStore from "expo-secure-store";
 import { theme } from "@/src/constants/theme";
-import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
-import { WatermarkLogo } from "@/src/components/WatermarkLogo";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
-import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
+import { VideoTrimmer, type TrimRange } from "@/src/components/ui/VideoTrimmer";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
 import { trackBarbell, type TrackingProgress } from "@/src/lib/barbell-api";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
-import type { ExportLiftPayload } from "@/src/lib/analysis-export";
+import * as LegacyFS from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import { Paths, File as FSFile } from "expo-file-system";
 import type { BarPathPoint, LiftAnalysis } from "@/src/types/lift-analysis";
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
@@ -47,7 +47,9 @@ const VIDEO_HEIGHT = Math.min(
   Math.round(SCREEN_HEIGHT * 0.45)
 );
 
-type Phase = "seed" | "tracking" | "playback";
+type Phase = "trim" | "seed" | "tracking" | "playback";
+
+const MAX_ANALYSIS_DURATION_SEC = 30;
 
 export default function LiftAnalysisScreen() {
   const { t } = useTranslation();
@@ -68,6 +70,9 @@ export default function LiftAnalysisScreen() {
   // Pending save payload — preserved while user goes to login and comes back
   const pendingSaveRef = useRef<LiftAnalysis | null>(null);
 
+  // Track whether we already did the initial duration check (avoid re-triggering trim)
+  const didInitialDurationCheckRef = useRef(false);
+
   // ─── State ───────────────────────────────────────────────────
   const [phase, setPhase] = useState<Phase>("seed");
   const [videoDurationMs, setVideoDurationMs] = useState<number>(
@@ -76,6 +81,8 @@ export default function LiftAnalysisScreen() {
   const [seedPoint, setSeedPoint] = useState<{ x: number; y: number } | null>(
     null
   );
+  // Trim range — set when user trims, null means no trimming needed
+  const [trimRange, setTrimRange] = useState<TrimRange | null>(null);
 
   // Result
   const [barPath, setBarPath] = useState<BarPathPoint[]>([]);
@@ -96,17 +103,23 @@ export default function LiftAnalysisScreen() {
   const [trackingProgress, setTrackingProgress] =
     useState<TrackingProgress | null>(null);
 
+  // URL of the processed video returned by the Railway API (with bar overlay)
+  const [processedVideoUrl, setProcessedVideoUrl] = useState<string | null>(
+    null
+  );
+
   // Video container layout
   const [containerLayout, setContainerLayout] = useState({
     width: SCREEN_WIDTH,
     height: VIDEO_HEIGHT,
   });
 
-  // Playback time for animated overlay
-  const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
-
   // Track whether the video is ready (first frame visible)
   const [isVideoReady, setIsVideoReady] = useState(false);
+
+  // Target seek position when we next need to pause on a specific frame
+  // (used when returning from trim phase so we pause at trim start, not at 0)
+  const pendingSeekSecRef = useRef<number | null>(null);
 
   // Current scrub position in seed phase (in seconds)
   const [scrubTime, setScrubTime] = useState(0);
@@ -115,6 +128,7 @@ export default function LiftAnalysisScreen() {
   const scrubBarWidth = useRef(0);
 
   // ─── Video player (expo-video) ───────────────────────────────
+  // localPlayer: used for seed/scrubbing (local file URI)
   const player = useVideoPlayer(videoUri, (p) => {
     p.loop = false;
     p.muted = true;
@@ -122,22 +136,49 @@ export default function LiftAnalysisScreen() {
     p.play();
   });
 
+  // processedPlayer: used in playback phase with the Railway-processed video.
+  // Falls back to the local file if the API didn't return a video URL.
+  const processedPlayer = useVideoPlayer(processedVideoUrl ?? videoUri, (p) => {
+    p.loop = true;
+    p.muted = true;
+  });
+
   // Get video duration once status loads; pause to show first frame (ONCE)
   useEffect(() => {
     if (!player) return;
 
     const sub = player.addListener("statusChange", (payload) => {
+      console.log("[LiftAnalysis] Player status:", payload.status);
       if (payload.status === "readyToPlay") {
         const dur = player.duration;
+        console.log("[LiftAnalysis] Video duration (sec):", dur);
         if (dur && dur > 0) {
-          setVideoDurationMs(Math.round(dur * 1000));
+          const durMs = Math.round(dur * 1000);
+          setVideoDurationMs(durMs);
+
+          // If video is too long, switch to trim phase — but only ONCE
+          if (
+            dur > MAX_ANALYSIS_DURATION_SEC &&
+            !didInitialDurationCheckRef.current
+          ) {
+            didInitialDurationCheckRef.current = true;
+            console.log(
+              "[LiftAnalysis] Video too long, switching to trim phase. Duration:",
+              dur,
+              "Max:",
+              MAX_ANALYSIS_DURATION_SEC
+            );
+            setPhase((prev) => (prev === "seed" ? "trim" : prev));
+          }
         }
         // Only do this ONCE on first ready — don't keep resetting
         setIsVideoReady((prev) => {
-          if (!prev && phase === "seed") {
+          if (!prev) {
+            const seekTo = pendingSeekSecRef.current ?? 0;
+            pendingSeekSecRef.current = null;
             setTimeout(() => {
               player.pause();
-              player.currentTime = 0;
+              player.currentTime = seekTo;
             }, 150);
           }
           return true;
@@ -146,7 +187,7 @@ export default function LiftAnalysisScreen() {
     });
 
     return () => sub.remove();
-  }, [player, phase]);
+  }, [player]);
 
   // ─── Seed scrubbing controls ─────────────────────────────────
 
@@ -188,19 +229,6 @@ export default function LiftAnalysisScreen() {
     return `${m}:${s.toString().padStart(2, "0")}`;
   };
 
-  // Playback time tracking for overlay animation
-  useEffect(() => {
-    if (phase !== "playback" || !player) return;
-
-    const interval = setInterval(() => {
-      if (player.currentTime !== undefined) {
-        setPlaybackTimeMs(Math.round(player.currentTime * 1000));
-      }
-    }, 50);
-
-    return () => clearInterval(interval);
-  }, [phase, player]);
-
   // ─── Phase: Seed ─────────────────────────────────────────────
 
   const handleSeedTap = useCallback(
@@ -236,18 +264,26 @@ export default function LiftAnalysisScreen() {
         videoH,
         (p: TrackingProgress) => {
           setTrackingProgress(p);
-        }
+        },
+        trimRange ?? undefined
       );
 
       setBarPath(result.barPath);
+      setProcessedVideoUrl(result.processedVideoUrl ?? null);
       setPhase("playback");
       setTrackingProgress(null);
 
-      // Start playback from beginning
-      if (player) {
-        player.currentTime = 0;
-        player.play();
-      }
+      // Start playback on the processed video player from the beginning.
+      // processedPlayer will auto-update its source when processedVideoUrl changes
+      // because useVideoPlayer is keyed to the URL. Give it a tick to initialise.
+      setTimeout(() => {
+        try {
+          processedPlayer.currentTime = 0;
+          processedPlayer.play();
+        } catch {
+          // ignore — player may not be ready yet
+        }
+      }, 100);
     } catch (err) {
       console.error("[LiftAnalysis] Tracking failed:", err);
       setModalConfig({
@@ -258,8 +294,27 @@ export default function LiftAnalysisScreen() {
       });
       setPhase("seed");
       setTrackingProgress(null);
+
+      // Re-show the first frame after tracking fails — the decoder may have
+      // released the surface, leaving the VideoView black. Briefly play then
+      // pause so expo-video renders the frame again.
+      if (player) {
+        const seekTo = trimRange ? trimRange.startSec : 0;
+        pendingSeekSecRef.current = seekTo;
+        setIsVideoReady(false);
+        player.currentTime = seekTo;
+        player.play();
+      }
     }
-  }, [seedPoint, videoDurationMs, videoUri, player, t, containerLayout]);
+  }, [
+    seedPoint,
+    videoUri,
+    player,
+    processedPlayer,
+    t,
+    containerLayout,
+    trimRange,
+  ]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
@@ -315,6 +370,7 @@ export default function LiftAnalysisScreen() {
         {
           localId: id,
           videoUri,
+          processedVideoUrl,
           durationMs: videoDurationMs,
           fpsSample: analysis.fpsSample,
           seedPoint,
@@ -349,6 +405,7 @@ export default function LiftAnalysisScreen() {
     barPath,
     seedPoint,
     videoUri,
+    processedVideoUrl,
     videoDurationMs,
     isAuthenticated,
     token,
@@ -406,401 +463,482 @@ export default function LiftAnalysisScreen() {
   }, [isAuthenticated, token, saveAnalysis, t, router]);
 
   // ─── Export video ─────────────────────────────────────────
-  const [exportPayload, setExportPayload] = useState<ExportLiftPayload | null>(
-    null
-  );
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportVideo = useCallback(() => {
-    if (!videoUri || barPath.length < 2) return;
-    setExportPayload({
-      type: "lift",
-      videoUri,
-      durationMs: videoDurationMs,
-      barPath,
-    });
-  }, [videoUri, barPath, videoDurationMs]);
+  const handleExportVideo = useCallback(async () => {
+    if (!processedVideoUrl) return;
+
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) {
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: "Sharing is not available on this device",
+      });
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const destFile = new FSFile(
+        Paths.cache,
+        `athlifyr_export_${Date.now()}.mp4`
+      );
+      const result = await LegacyFS.downloadAsync(
+        processedVideoUrl,
+        destFile.uri
+      );
+      if (result.status !== 200) {
+        throw new Error(`Download failed with status ${result.status}`);
+      }
+      await Sharing.shareAsync(destFile.uri, {
+        mimeType: "video/mp4",
+        dialogTitle: "Athlifyr Lift Analysis",
+        UTI: "public.movie",
+      });
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Export failed unexpectedly";
+      setModalConfig({
+        visible: true,
+        type: "error",
+        title: t("common.error"),
+        message: msg,
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  }, [processedVideoUrl, t]);
 
   // ─── Metrics (computed lazily) ───────────────────────────────
   const metrics = barPath.length >= 2 ? computeMetrics(barPath) : null;
 
   // ─── Render ──────────────────────────────────────────────────
 
+  console.log("[LiftAnalysis] ── RENDER ──", {
+    phase,
+    videoUri: videoUri ? videoUri.substring(0, 60) + "…" : "(empty)",
+    videoDurationMs,
+    trimRange,
+    playerExists: !!player,
+  });
+
   return (
     <View style={styles.container}>
-      <SafeAreaView edges={["top"]} style={styles.header}>
-        <TouchableOpacity
-          onPress={() => router.back()}
-          activeOpacity={0.7}
-          style={styles.backBtn}
-        >
-          <ArrowLeft size={24} color={theme.colors.text} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>
-          {phase === "seed"
-            ? t("liftAnalysis.seedTitle")
-            : t("liftAnalysis.playbackTitle")}
-        </Text>
-        <View style={{ width: 40 }} />
-      </SafeAreaView>
-
-      {/* Main content — flex layout, no scroll for seed/tracking */}
-      {phase === "playback" ? (
-        <View style={styles.mainContent}>
-          {/* Video + Overlay Container */}
-          <View
-            style={[styles.videoContainer, { height: containerLayout.height }]}
-            onLayout={(e) => {
-              setContainerLayout({
-                width: e.nativeEvent.layout.width,
-                height: e.nativeEvent.layout.height,
-              });
-            }}
-          >
-            <VideoView
-              player={player}
-              style={StyleSheet.absoluteFill}
-              nativeControls={false}
-            />
-
-            {/* Bar path overlay (playback) */}
-            {barPath.length >= 2 && (
-              <BarPathOverlay
-                path={barPath}
-                width={containerLayout.width}
-                height={containerLayout.height}
-                currentTimeMs={playbackTimeMs}
-                strokeColor="#00FF88"
-                strokeWidth={3}
-              />
-            )}
-
-            {/* Watermark */}
-            <WatermarkLogo />
+      {/* ─── Trim Phase ──────────────────────────────────────── */}
+      {phase === "trim" ? (
+        <SafeAreaView style={styles.trimContainer} edges={["top", "bottom"]}>
+          <View style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              style={styles.backBtn}
+            >
+              <ArrowLeft size={24} color={theme.colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>{t("videoTrimmer.title")}</Text>
+            <View style={{ width: 40 }} />
           </View>
-
-          {metrics && (
-            <SafeAreaView edges={["bottom"]} style={styles.phaseContent}>
-              <LiftMetricsCard metrics={metrics} />
-
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={styles.secondaryButton}
-                  onPress={handleExportVideo}
-                  activeOpacity={0.7}
-                >
-                  <Share2 size={20} color={theme.colors.textSecondary} />
-                  <Text style={styles.secondaryButtonText}>
-                    {t("liftAnalysis.exportVideo")}
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={handleSave}
-                  activeOpacity={0.7}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <ActivityIndicator size="small" color="#fff" />
-                  ) : (
-                    <>
-                      <Save size={20} color="#fff" />
-                      <Text style={styles.primaryButtonText}>
-                        {t("liftAnalysis.saveAnalysis")}
-                      </Text>
-                    </>
-                  )}
-                </TouchableOpacity>
-              </View>
-            </SafeAreaView>
-          )}
-        </View>
-      ) : (
-        <View style={styles.mainContent}>
-          {/* Video + Overlay Container */}
-          <View
-            style={[styles.videoContainer, { height: containerLayout.height }]}
-            onLayout={(e) => {
-              setContainerLayout({
-                width: e.nativeEvent.layout.width,
-                height: e.nativeEvent.layout.height,
-              });
+          <VideoTrimmer
+            videoUri={videoUri}
+            durationMs={videoDurationMs}
+            onConfirm={(range) => {
+              setTrimRange(range);
+              // Mark video as not ready so the loading overlay shows while the
+              // VideoView surface re-attaches (it was hidden during trim phase).
+              const seekTo = range ? range.startSec : 0;
+              pendingSeekSecRef.current = seekTo;
+              setIsVideoReady(false);
+              setPhase("seed");
+              // Seek to trim start and play — the VideoView will become visible
+              // momentarily and expo-video will attach the surface automatically.
+              // The statusChange listener will pause once readyToPlay fires.
+              if (player) {
+                player.currentTime = seekTo;
+                player.play();
+                setScrubTime(seekTo);
+              }
             }}
-          >
-            <VideoView
-              player={player}
-              style={StyleSheet.absoluteFill}
-              nativeControls={false}
-            />
+            onCancel={() => router.back()}
+            confirmLabel={t("videoTrimmer.confirm")}
+            cancelLabel={t("common.cancel")}
+            trimLabel={t("videoTrimmer.duration")}
+            tooLongLabel={t("videoTrimmer.tooLong")}
+            maxDurationLabel={t("videoTrimmer.maxDuration", {
+              seconds: MAX_ANALYSIS_DURATION_SEC,
+            })}
+            resetLabel={t("videoTrimmer.reset")}
+          />
+        </SafeAreaView>
+      ) : (
+        <View style={styles.innerContainer}>
+          <SafeAreaView edges={["top"]} style={styles.header}>
+            <TouchableOpacity
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+              style={styles.backBtn}
+            >
+              <ArrowLeft size={24} color={theme.colors.text} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>
+              {phase === "seed"
+                ? t("liftAnalysis.seedTitle")
+                : t("liftAnalysis.playbackTitle")}
+            </Text>
+            <View style={{ width: 40 }} />
+          </SafeAreaView>
 
-            {/* Loading overlay while video is not yet decoded */}
-            {!isVideoReady && phase === "seed" && (
-              <View style={styles.videoLoadingOverlay}>
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-                <Text style={styles.videoLoadingText}>
-                  {t("common.loading")}
-                </Text>
-              </View>
-            )}
-
-            {/* Tap area for seed */}
-            {phase === "seed" && (
-              <TouchableOpacity
-                style={StyleSheet.absoluteFill}
-                activeOpacity={1}
-                onPress={handleSeedTap}
-              />
-            )}
-
-            {/* Tap hint overlay for seed (before user taps) */}
-            {phase === "seed" && !seedPoint && isVideoReady && (
-              <View style={styles.tapHintOverlay} pointerEvents="none">
-                <View style={styles.tapHintCircle}>
-                  <Text style={styles.tapHintIcon}>👆</Text>
-                </View>
-              </View>
-            )}
-
-            {/* Seed point indicator */}
-            {phase === "seed" && seedPoint && (
+          {/* Main content — flex layout, no scroll for seed/tracking */}
+          {phase === "playback" ? (
+            <View style={styles.mainContent}>
+              {/* Video + Overlay Container */}
               <View
                 style={[
-                  styles.seedDot,
-                  {
-                    left: seedPoint.x * containerLayout.width - 12,
-                    top: seedPoint.y * containerLayout.height - 12,
-                  },
+                  styles.videoContainer,
+                  { height: containerLayout.height },
                 ]}
-              />
-            )}
-
-            {/* Tracking progress overlay */}
-            {phase === "tracking" && (
-              <View style={styles.trackingOverlay} pointerEvents="none">
-                <ActivityIndicator size="large" color="#00FF88" />
-                <Text style={styles.trackingOverlayText}>
-                  {trackingProgress?.step === "uploading"
-                    ? t("liftAnalysis.uploadingVideo")
-                    : t("liftAnalysis.processingTracking")}
-                </Text>
+                onLayout={(e) => {
+                  setContainerLayout({
+                    width: e.nativeEvent.layout.width,
+                    height: e.nativeEvent.layout.height,
+                  });
+                }}
+              >
+                <VideoView
+                  player={processedPlayer}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="contain"
+                  nativeControls={false}
+                />
               </View>
-            )}
-          </View>
 
-          {/* Phase controls — always visible below video */}
-          {phase === "seed" && (
-            <View style={styles.phaseContent}>
-              {/* Video scrubber — navigate to the right frame */}
-              {isVideoReady && (
-                <View style={styles.scrubberSection}>
-                  {/* Time row */}
-                  <View style={styles.scrubTimeRow}>
-                    <Text style={styles.scrubTimeText}>
-                      {formatTime(scrubTime)}
-                    </Text>
-                    <Text style={styles.scrubTimeText}>
-                      {formatTime(durationSec)}
-                    </Text>
-                  </View>
+              {metrics && (
+                <SafeAreaView edges={["bottom"]} style={styles.phaseContent}>
+                  <LiftMetricsCard metrics={metrics} />
 
-                  {/* Scrub bar */}
-                  <View
-                    ref={scrubBarRef}
-                    style={styles.scrubBarTrack}
-                    onLayout={(e) => {
-                      scrubBarWidth.current = e.nativeEvent.layout.width;
-                    }}
-                    onStartShouldSetResponder={() => true}
-                    onMoveShouldSetResponder={() => true}
-                    onResponderGrant={handleScrubBarTouch}
-                    onResponderMove={handleScrubBarTouch}
-                  >
-                    <View
-                      style={[
-                        styles.scrubBarFill,
-                        {
-                          width:
-                            durationSec > 0
-                              ? `${(scrubTime / durationSec) * 100}%`
-                              : "0%",
-                        },
-                      ]}
-                    />
-                    <View
-                      style={[
-                        styles.scrubThumb,
-                        {
-                          left:
-                            durationSec > 0
-                              ? `${(scrubTime / durationSec) * 100}%`
-                              : "0%",
-                        },
-                      ]}
-                    />
-                  </View>
-
-                  {/* Skip buttons */}
-                  <View style={styles.scrubButtonsRow}>
+                  <View style={styles.buttonRow}>
                     <TouchableOpacity
-                      style={styles.scrubBtn}
-                      onPress={() => seekBy(-1)}
+                      style={styles.secondaryButton}
+                      onPress={handleExportVideo}
                       activeOpacity={0.7}
+                      disabled={isExporting || !processedVideoUrl}
                     >
-                      <SkipBack size={18} color={theme.colors.text} />
-                      <Text style={styles.scrubBtnText}>-1s</Text>
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.scrubBtn}
-                      onPress={() => seekBy(-0.1)}
-                      activeOpacity={0.7}
-                    >
-                      <ChevronLeft size={18} color={theme.colors.text} />
-                      <Text style={styles.scrubBtnText}>
-                        {t("liftAnalysis.prevFrame")}
+                      {isExporting ? (
+                        <ActivityIndicator
+                          size="small"
+                          color={theme.colors.textSecondary}
+                        />
+                      ) : (
+                        <Share2 size={20} color={theme.colors.textSecondary} />
+                      )}
+                      <Text style={styles.secondaryButtonText}>
+                        {t("liftAnalysis.exportVideo")}
                       </Text>
                     </TouchableOpacity>
+
                     <TouchableOpacity
-                      style={styles.scrubBtn}
-                      onPress={() => seekBy(0.1)}
+                      style={styles.primaryButton}
+                      onPress={handleSave}
                       activeOpacity={0.7}
+                      disabled={isSaving}
                     >
-                      <Text style={styles.scrubBtnText}>
-                        {t("liftAnalysis.nextFrame")}
-                      </Text>
-                      <ChevronRight size={18} color={theme.colors.text} />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      style={styles.scrubBtn}
-                      onPress={() => seekBy(1)}
-                      activeOpacity={0.7}
-                    >
-                      <Text style={styles.scrubBtnText}>+1s</Text>
-                      <SkipForward size={18} color={theme.colors.text} />
+                      {isSaving ? (
+                        <ActivityIndicator size="small" color="#fff" />
+                      ) : (
+                        <>
+                          <Save size={20} color="#fff" />
+                          <Text style={styles.primaryButtonText}>
+                            {t("liftAnalysis.saveAnalysis")}
+                          </Text>
+                        </>
+                      )}
                     </TouchableOpacity>
                   </View>
-                </View>
-              )}
-
-              <Text style={styles.instruction}>
-                {t("liftAnalysis.seedInstruction")}
-              </Text>
-              {seedPoint && (
-                <TouchableOpacity
-                  style={styles.primaryButton}
-                  onPress={confirmSeed}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.primaryButtonText}>
-                    {t("liftAnalysis.confirmSeed")}
-                  </Text>
-                </TouchableOpacity>
+                </SafeAreaView>
               )}
             </View>
-          )}
+          ) : (
+            <View style={styles.mainContent}>
+              {/* Video + Overlay Container */}
+              <View
+                style={[
+                  styles.videoContainer,
+                  { height: containerLayout.height },
+                ]}
+                onLayout={(e) => {
+                  setContainerLayout({
+                    width: e.nativeEvent.layout.width,
+                    height: e.nativeEvent.layout.height,
+                  });
+                }}
+              >
+                <VideoView
+                  player={player}
+                  style={StyleSheet.absoluteFill}
+                  contentFit="contain"
+                  nativeControls={false}
+                />
 
-          {phase === "tracking" && (
-            <View style={styles.phaseContent}>
-              <Text style={styles.instruction}>
-                {trackingProgress?.step === "uploading"
-                  ? t("liftAnalysis.uploadingVideo")
-                  : t("liftAnalysis.processingTracking")}
-              </Text>
-              <View style={styles.progressRow}>
-                <View style={styles.progressBarBg}>
+                {/* Loading overlay while video is not yet decoded */}
+                {!isVideoReady && phase === "seed" && (
+                  <View style={styles.videoLoadingOverlay}>
+                    <ActivityIndicator
+                      size="large"
+                      color={theme.colors.primary}
+                    />
+                    <Text style={styles.videoLoadingText}>
+                      {t("common.loading")}
+                    </Text>
+                  </View>
+                )}
+
+                {/* Tap area for seed */}
+                {phase === "seed" && (
+                  <TouchableOpacity
+                    style={StyleSheet.absoluteFill}
+                    activeOpacity={1}
+                    onPress={handleSeedTap}
+                  />
+                )}
+
+                {/* Tap hint overlay for seed (before user taps) */}
+                {phase === "seed" && !seedPoint && isVideoReady && (
+                  <View style={styles.tapHintOverlay} pointerEvents="none">
+                    <View style={styles.tapHintCircle}>
+                      <Text style={styles.tapHintIcon}>👆</Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Seed point indicator */}
+                {phase === "seed" && seedPoint && (
                   <View
                     style={[
-                      styles.progressBarFill,
+                      styles.seedDot,
                       {
-                        width: `${trackingProgress ? (trackingProgress.current / Math.max(trackingProgress.total, 1)) * 100 : 0}%`,
+                        left: seedPoint.x * containerLayout.width - 12,
+                        top: seedPoint.y * containerLayout.height - 12,
                       },
                     ]}
                   />
-                </View>
-                <Text style={styles.progressText}>
-                  {trackingProgress
-                    ? `${trackingProgress.current} / ${trackingProgress.total}`
-                    : "…"}
-                </Text>
+                )}
+
+                {/* Tracking progress overlay */}
+                {phase === "tracking" && (
+                  <View style={styles.trackingOverlay} pointerEvents="none">
+                    <ActivityIndicator size="large" color="#00FF88" />
+                    <Text style={styles.trackingOverlayText}>
+                      {trackingProgress?.step === "uploading"
+                        ? t("liftAnalysis.uploadingVideo")
+                        : t("liftAnalysis.processingTracking")}
+                    </Text>
+                  </View>
+                )}
               </View>
+
+              {/* Phase controls — always visible below video */}
+              {phase === "seed" && (
+                <View style={styles.phaseContent}>
+                  {/* Video scrubber — navigate to the right frame */}
+                  {isVideoReady && (
+                    <View style={styles.scrubberSection}>
+                      {/* Time row */}
+                      <View style={styles.scrubTimeRow}>
+                        <Text style={styles.scrubTimeText}>
+                          {formatTime(scrubTime)}
+                        </Text>
+                        <Text style={styles.scrubTimeText}>
+                          {formatTime(durationSec)}
+                        </Text>
+                      </View>
+
+                      {/* Scrub bar */}
+                      <View
+                        ref={scrubBarRef}
+                        style={styles.scrubBarTrack}
+                        onLayout={(e) => {
+                          scrubBarWidth.current = e.nativeEvent.layout.width;
+                        }}
+                        onStartShouldSetResponder={() => true}
+                        onMoveShouldSetResponder={() => true}
+                        onResponderGrant={handleScrubBarTouch}
+                        onResponderMove={handleScrubBarTouch}
+                      >
+                        <View
+                          style={[
+                            styles.scrubBarFill,
+                            {
+                              width:
+                                durationSec > 0
+                                  ? `${(scrubTime / durationSec) * 100}%`
+                                  : "0%",
+                            },
+                          ]}
+                        />
+                        <View
+                          style={[
+                            styles.scrubThumb,
+                            {
+                              left:
+                                durationSec > 0
+                                  ? `${(scrubTime / durationSec) * 100}%`
+                                  : "0%",
+                            },
+                          ]}
+                        />
+                      </View>
+
+                      {/* Skip buttons */}
+                      <View style={styles.scrubButtonsRow}>
+                        <TouchableOpacity
+                          style={styles.scrubBtn}
+                          onPress={() => seekBy(-1)}
+                          activeOpacity={0.7}
+                        >
+                          <SkipBack size={18} color={theme.colors.text} />
+                          <Text style={styles.scrubBtnText}>-1s</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.scrubBtn}
+                          onPress={() => seekBy(-0.1)}
+                          activeOpacity={0.7}
+                        >
+                          <ChevronLeft size={18} color={theme.colors.text} />
+                          <Text style={styles.scrubBtnText}>
+                            {t("liftAnalysis.prevFrame")}
+                          </Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.scrubBtn}
+                          onPress={() => seekBy(0.1)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.scrubBtnText}>
+                            {t("liftAnalysis.nextFrame")}
+                          </Text>
+                          <ChevronRight size={18} color={theme.colors.text} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={styles.scrubBtn}
+                          onPress={() => seekBy(1)}
+                          activeOpacity={0.7}
+                        >
+                          <Text style={styles.scrubBtnText}>+1s</Text>
+                          <SkipForward size={18} color={theme.colors.text} />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  )}
+
+                  <Text style={styles.instruction}>
+                    {t("liftAnalysis.seedInstruction")}
+                  </Text>
+                  {seedPoint && (
+                    <TouchableOpacity
+                      style={styles.primaryButton}
+                      onPress={confirmSeed}
+                      activeOpacity={0.7}
+                    >
+                      <Text style={styles.primaryButtonText}>
+                        {t("liftAnalysis.confirmSeed")}?
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </View>
+              )}
+
+              {phase === "tracking" && (
+                <View style={styles.phaseContent}>
+                  <Text style={styles.instruction}>
+                    {trackingProgress?.step === "uploading"
+                      ? t("liftAnalysis.uploadingVideo")
+                      : t("liftAnalysis.processingTracking")}
+                  </Text>
+                  <View style={styles.progressRow}>
+                    <View style={styles.progressBarBg}>
+                      <View
+                        style={[
+                          styles.progressBarFill,
+                          {
+                            width: `${trackingProgress ? (trackingProgress.current / Math.max(trackingProgress.total, 1)) * 100 : 0}%`,
+                          },
+                        ]}
+                      />
+                    </View>
+                    <Text style={styles.progressText}>
+                      {trackingProgress
+                        ? `${trackingProgress.current} / ${trackingProgress.total}`
+                        : "…"}
+                    </Text>
+                  </View>
+                </View>
+              )}
             </View>
           )}
+
+          {/* Feedback Modal */}
+          <ConfirmModal
+            visible={modalConfig.visible}
+            onClose={() => {
+              if (!modalConfig.loginAction) {
+                const cb = modalConfig.onDismiss;
+                setModalConfig((prev) => ({ ...prev, visible: false }));
+                cb?.();
+              }
+            }}
+            title={modalConfig.title}
+            message={modalConfig.message}
+            icon={
+              modalConfig.type === "success" ? (
+                <CheckCircle2 size={28} color={theme.colors.success} />
+              ) : (
+                <AlertCircle size={28} color={theme.colors.error} />
+              )
+            }
+            actions={
+              modalConfig.loginAction
+                ? [
+                    {
+                      label: t("liftAnalysis.loginAndReturn"),
+                      variant: "primary" as const,
+                      onPress: () => {
+                        setModalConfig((prev) => ({ ...prev, visible: false }));
+                        router.push("/login");
+                      },
+                    },
+                    {
+                      label: t("common.cancel"),
+                      variant: "outline" as const,
+                      onPress: () => {
+                        pendingSaveRef.current = null;
+                        setModalConfig((prev) => ({ ...prev, visible: false }));
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      label: "OK",
+                      variant: "primary" as const,
+                      onPress: () => {
+                        const cb = modalConfig.onDismiss;
+                        setModalConfig((prev) => ({ ...prev, visible: false }));
+                        cb?.();
+                      },
+                    },
+                  ]
+            }
+          />
         </View>
       )}
-
-      {/* Feedback Modal */}
-      <ConfirmModal
-        visible={modalConfig.visible}
-        onClose={() => {
-          if (!modalConfig.loginAction) {
-            const cb = modalConfig.onDismiss;
-            setModalConfig((prev) => ({ ...prev, visible: false }));
-            cb?.();
-          }
-        }}
-        title={modalConfig.title}
-        message={modalConfig.message}
-        icon={
-          modalConfig.type === "success" ? (
-            <CheckCircle2 size={28} color={theme.colors.success} />
-          ) : (
-            <AlertCircle size={28} color={theme.colors.error} />
-          )
-        }
-        actions={
-          modalConfig.loginAction
-            ? [
-                {
-                  label: t("liftAnalysis.loginAndReturn"),
-                  variant: "primary" as const,
-                  onPress: () => {
-                    setModalConfig((prev) => ({ ...prev, visible: false }));
-                    router.push("/login");
-                  },
-                },
-                {
-                  label: t("common.cancel"),
-                  variant: "outline" as const,
-                  onPress: () => {
-                    pendingSaveRef.current = null;
-                    setModalConfig((prev) => ({ ...prev, visible: false }));
-                  },
-                },
-              ]
-            : [
-                {
-                  label: "OK",
-                  variant: "primary" as const,
-                  onPress: () => {
-                    const cb = modalConfig.onDismiss;
-                    setModalConfig((prev) => ({ ...prev, visible: false }));
-                    cb?.();
-                  },
-                },
-              ]
-        }
-      />
-
-      {/* Export Video Modal — backend composition (upload → FFmpeg → share) */}
-      <ExportVideoModal
-        visible={exportPayload !== null}
-        payload={exportPayload}
-        onDone={() => setExportPayload(null)}
-        onError={(msg) => {
-          setExportPayload(null);
-          setModalConfig({
-            visible: true,
-            type: "error",
-            title: t("common.error"),
-            message: msg,
-          });
-        }}
-      />
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: theme.colors.background },
+  innerContainer: { flex: 1 },
+  trimContainer: { flex: 1, backgroundColor: "#000" },
 
   // Header
   header: {

@@ -22,17 +22,13 @@ import {
 import { theme } from "@/src/constants/theme";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { API_URL } from "@/src/lib/api";
+import * as LegacyFS from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import { Paths, File as FSFile } from "expo-file-system";
 import { StickmanRenderer } from "@/src/components/motion-analysis/StickmanRenderer";
 import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
-import { ExportVideoModal } from "@/src/components/motion-analysis/ExportVideoModal";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
-import type { ExportPayload } from "@/src/lib/analysis-export";
-import type {
-  PoseFrame,
-  PoseMetrics,
-  PoseVideoMeta,
-  VideoSegment,
-} from "@/src/types/motion-analysis";
+import type { PoseFrame } from "@/src/types/motion-analysis";
 import type { BarPathPoint } from "@/src/types/lift-analysis";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -177,48 +173,33 @@ function MotionVideoModal({
 }) {
   const { t } = useTranslation();
   const title = record.label ?? t("motionAnalysis.analysisLabel");
-  const json = record.analysisJson as MotionAnalysisJson;
 
-  const [exportPayload, setExportPayload] = useState<ExportPayload | null>(
-    null
-  );
+  const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  function handleExport() {
-    if (!json.poseFrames?.length || !json.segment || !json.videoMeta) return;
-    const payload: ExportPayload = {
-      type: "motion",
-      videoUri: record.videoUrl,
-      segment: json.segment as VideoSegment,
-      videoMeta: json.videoMeta as PoseVideoMeta,
-      poseFrames: json.poseFrames,
-      metrics: {
-        durationMs: json.segment.endMs - json.segment.startMs,
-        avgConfidence: 0,
-        maxKneeFlexion: json.metrics?.kneeFlexionDeg ?? null,
-        torsoAngleRange: null,
-      } as PoseMetrics,
-    };
-    setExportPayload(payload);
+  async function handleExport() {
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) return;
+    setIsExporting(true);
+    try {
+      const dest = new FSFile(Paths.cache, `athlifyr_export_${Date.now()}.mp4`);
+      const result = await LegacyFS.downloadAsync(record.videoUrl, dest.uri);
+      if (result.status !== 200)
+        throw new Error(`Download failed (${result.status})`);
+      await Sharing.shareAsync(dest.uri, {
+        mimeType: "video/mp4",
+        dialogTitle: "Athlifyr Motion Analysis",
+        UTI: "public.movie",
+      });
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setIsExporting(false);
+    }
   }
-
-  const canExport = !!(
-    json.poseFrames?.length &&
-    json.segment &&
-    json.videoMeta
-  );
 
   return (
     <>
-      <ExportVideoModal
-        visible={exportPayload !== null}
-        payload={exportPayload}
-        onDone={() => setExportPayload(null)}
-        onError={(msg) => {
-          setExportPayload(null);
-          setExportError(msg);
-        }}
-      />
       <ConfirmModal
         visible={exportError !== null}
         title={t("common.error")}
@@ -233,14 +214,20 @@ function MotionVideoModal({
                 {title}
               </Text>
               <View style={styles.modalHeaderActions}>
-                {canExport && (
-                  <TouchableOpacity
-                    onPress={handleExport}
-                    style={styles.exportBtn}
-                  >
+                <TouchableOpacity
+                  onPress={handleExport}
+                  style={styles.exportBtn}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                    />
+                  ) : (
                     <Share2 size={18} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                )}
+                  )}
+                </TouchableOpacity>
                 <TouchableOpacity onPress={onClose} style={styles.modalClose}>
                   <X size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
@@ -330,37 +317,33 @@ function LiftVideoModal({
 }) {
   const { t } = useTranslation();
   const title = record.label ?? t("liftAnalysis.analysisLabel");
-  const json = record.analysisJson as LiftAnalysisJson;
 
-  const [exportPayload, setExportPayload] = useState<ExportPayload | null>(
-    null
-  );
+  const [isExporting, setIsExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
 
-  function handleExport() {
-    if (!json.barPath?.length || !json.durationMs) return;
-    const payload: ExportPayload = {
-      type: "lift",
-      videoUri: record.videoUrl,
-      durationMs: json.durationMs,
-      barPath: json.barPath,
-    };
-    setExportPayload(payload);
+  async function handleExport() {
+    const canShare = await Sharing.isAvailableAsync();
+    if (!canShare) return;
+    setIsExporting(true);
+    try {
+      const dest = new FSFile(Paths.cache, `athlifyr_export_${Date.now()}.mp4`);
+      const result = await LegacyFS.downloadAsync(record.videoUrl, dest.uri);
+      if (result.status !== 200)
+        throw new Error(`Download failed (${result.status})`);
+      await Sharing.shareAsync(dest.uri, {
+        mimeType: "video/mp4",
+        dialogTitle: "Athlifyr Lift Analysis",
+        UTI: "public.movie",
+      });
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "Export failed");
+    } finally {
+      setIsExporting(false);
+    }
   }
-
-  const canExport = !!(json.barPath?.length && json.durationMs);
 
   return (
     <>
-      <ExportVideoModal
-        visible={exportPayload !== null}
-        payload={exportPayload}
-        onDone={() => setExportPayload(null)}
-        onError={(msg) => {
-          setExportPayload(null);
-          setExportError(msg);
-        }}
-      />
       <ConfirmModal
         visible={exportError !== null}
         title={t("common.error")}
@@ -375,14 +358,20 @@ function LiftVideoModal({
                 {title}
               </Text>
               <View style={styles.modalHeaderActions}>
-                {canExport && (
-                  <TouchableOpacity
-                    onPress={handleExport}
-                    style={styles.exportBtn}
-                  >
+                <TouchableOpacity
+                  onPress={handleExport}
+                  style={styles.exportBtn}
+                  disabled={isExporting}
+                >
+                  {isExporting ? (
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                    />
+                  ) : (
                     <Share2 size={18} color={theme.colors.primary} />
-                  </TouchableOpacity>
-                )}
+                  )}
+                </TouchableOpacity>
                 <TouchableOpacity onPress={onClose} style={styles.modalClose}>
                   <X size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>

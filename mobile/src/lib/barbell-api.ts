@@ -8,13 +8,7 @@
  */
 
 import type { BarPathPoint } from "@/src/types/lift-analysis";
-
-// ── API base URL ─────────────────────────────────────────────────────
-
-// Use the Athlifyr backend API (not the external service directly)
-const API_BASE_URL = __DEV__
-  ? "http://localhost:3000" // Development
-  : "https://athlifyr.com"; // Production
+import { API_URL } from "@/src/lib/api";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -105,7 +99,7 @@ export async function checkApiHealth(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5_000);
 
-    const res = await fetch(`${API_BASE_URL}/api/lift-analysis/process`, {
+    const res = await fetch(`${API_URL}/api/lift-analysis/process`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
@@ -172,6 +166,7 @@ function extractBarPathFromSkeletonFrames(
  * @param videoWidth     Width of the video frame in pixels
  * @param videoHeight    Height of the video frame in pixels
  * @param onProgress     Optional progress callback
+ * @param trimRange      Optional trim range { startSec, endSec } for server-side trimming
  * @returns              Full analysis result with tracking + pose data
  */
 export async function trackBarbell(
@@ -179,13 +174,15 @@ export async function trackBarbell(
   seedNorm: { x: number; y: number },
   videoWidth: number,
   videoHeight: number,
-  onProgress?: (p: TrackingProgress) => void
+  onProgress?: (p: TrackingProgress) => void,
+  trimRange?: { startSec: number; endSec: number }
 ): Promise<TrackingResult> {
   // ── 1. Build multipart form data ─────────────────────────────────
   onProgress?.({ current: 0, total: 100, step: "uploading" });
 
-  const seedX = Math.round(seedNorm.x * videoWidth);
-  const seedY = Math.round(seedNorm.y * videoHeight);
+  // API expects seed as percentage (0–100) of video dimensions
+  const seedXPercent = Math.min(100, Math.max(0, Math.round(seedNorm.x * 100)));
+  const seedYPercent = Math.min(100, Math.max(0, Math.round(seedNorm.y * 100)));
 
   const formData = new FormData();
 
@@ -196,12 +193,18 @@ export async function trackBarbell(
     name: "lift-video.mp4",
   } as unknown as Blob);
 
-  formData.append("seed_x", seedX.toString());
-  formData.append("seed_y", seedY.toString());
+  formData.append("seed_x", seedXPercent.toString());
+  formData.append("seed_y", seedYPercent.toString());
   formData.append("seed_frame", "0");
   formData.append("show_angles", "true");
   formData.append("auto_detect", "true");
-  formData.append("max_duration_sec", "60");
+  formData.append("max_duration_sec", "30");
+
+  // Server-side trim — if the user selected a sub-clip
+  if (trimRange) {
+    formData.append("trim_start_sec", trimRange.startSec.toString());
+    formData.append("trim_end_sec", trimRange.endSec.toString());
+  }
 
   // ── 2. Send to API ───────────────────────────────────────────────
   onProgress?.({ current: 10, total: 100, step: "uploading" });
@@ -212,17 +215,25 @@ export async function trackBarbell(
 
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/lift-analysis/process`, {
+    // NOTE: Do NOT set Content-Type header manually — fetch must auto-generate
+    // the multipart/form-data boundary. Setting it manually breaks the body.
+    response = await fetch(`${API_URL}/api/lift-analysis/process`, {
       method: "POST",
       body: formData,
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
       signal: controller.signal,
     });
-  } finally {
+  } catch (err) {
     clearTimeout(timeout);
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new Error(
+        "Request timed out. The video may be too large or the server is busy."
+      );
+    }
+    throw new Error(
+      `Failed to connect to the analysis service. Check your internet connection and try again.`
+    );
   }
+  clearTimeout(timeout);
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}));

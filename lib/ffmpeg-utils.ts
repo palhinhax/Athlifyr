@@ -76,18 +76,23 @@ export async function transcodeToH264(inputBuffer: Buffer): Promise<Buffer> {
 }
 
 /**
- * Lossless stream-copy trim: cuts [startSec, endSec] from the input without
- * re-encoding any frames. Much faster and produces no quality loss or size
- * bloat. Works on any container/codec that ffmpeg can stream-copy (MP4, WebM,
- * MOV, etc.).
+ * Trim a video to [startSec, endSec] with frame-accurate re-encode.
  *
- * The input file extension is preserved so ffmpeg picks the right demuxer.
+ * Stream-copy (`-c copy`) cuts at the nearest keyframe, which causes black
+ * frames at the start of the clip whenever the cut point falls between
+ * keyframes (very common on mobile-recorded videos with GOP sizes of 1–3s).
+ *
+ * This function re-encodes the trimmed segment with libx264 (ultrafast) so the
+ * output always starts on a clean intra-frame. The re-encode is fast because
+ * only the short sub-clip is processed, and the ultrafast preset keeps CPU/RAM
+ * usage low enough for a serverless environment.
  *
  * @param inputBuffer  Raw video bytes
  * @param startSec     Trim start in seconds (0-based)
  * @param endSec       Trim end in seconds
- * @param ext          File extension including dot, e.g. ".mp4" or ".webm"
- * @returns            Trimmed video bytes in the same container
+ * @param ext          File extension including dot, e.g. ".mp4" or ".mov"
+ *                     (only used to choose the input demuxer — output is always MP4)
+ * @returns            Trimmed MP4 bytes starting on a clean keyframe
  */
 export async function trimVideoStreamCopy(
   inputBuffer: Buffer,
@@ -99,30 +104,52 @@ export async function trimVideoStreamCopy(
 
   const id = randomUUID();
   const tmpIn = join(tmpdir(), `athlifyr_trim_in_${id}${ext}`);
-  const tmpOut = join(tmpdir(), `athlifyr_trim_out_${id}${ext}`);
+  // Output is always MP4 regardless of input container
+  const tmpOut = join(tmpdir(), `athlifyr_trim_out_${id}.mp4`);
 
   try {
     await writeFile(tmpIn, inputBuffer);
 
+    // -ss BEFORE -i:  fast keyframe seek to the nearest keyframe before startSec
+    // -to after -i:   duration measured from the decoded position (frame-accurate)
+    // Re-encode with libx264 ultrafast so the output starts on a real intra-frame
+    // and has no dependency on frames from before the cut point.
+    // Without re-encode, delta frames at the start of the clip render as black.
     await runFfmpeg(ffmpegPath, [
       "-y",
       "-ss",
-      String(startSec), // seek BEFORE -i for fast keyframe seek
+      String(startSec), // fast input seek (keyframe-aligned)
       "-i",
       tmpIn,
-      "-to",
-      String(endSec - startSec), // duration after seek
-      "-c",
-      "copy", // stream copy — no re-encode, no quality loss
-      "-avoid_negative_ts",
-      "make_zero",
+      "-t",
+      String(endSec - startSec), // duration of the output clip
+      "-vf",
+      // Downscale to max 1080p, keep aspect ratio, ensure even dimensions
+      "scale='min(1080,iw)':'min(1920,ih)':force_original_aspect_ratio=decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2",
+      "-c:v",
+      "libx264",
+      "-profile:v",
+      "baseline",
+      "-level",
+      "3.1",
+      "-pix_fmt",
+      "yuv420p",
+      "-preset",
+      "ultrafast",
+      "-crf",
+      "28",
+      "-threads",
+      "2",
+      "-an", // no audio (analysis only)
+      "-movflags",
+      "+faststart",
       tmpOut,
     ]);
 
     const outputBuffer = await readFile(tmpOut);
     console.log(
-      `[ffmpeg] Trimmed ${inputBuffer.length} → ${outputBuffer.length} bytes ` +
-        `(${startSec.toFixed(2)}s–${endSec.toFixed(2)}s, stream copy)`
+      `[ffmpeg] Trimmed+re-encoded ${inputBuffer.length} → ${outputBuffer.length} bytes ` +
+        `(${startSec.toFixed(2)}s–${endSec.toFixed(2)}s, libx264 ultrafast)`
     );
     return outputBuffer;
   } finally {

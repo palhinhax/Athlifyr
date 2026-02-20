@@ -11,9 +11,6 @@
     },
     "app/api/analyses/lift/route.ts": {
       "maxDuration": 120
-    },
-    "app/api/export/video/route.ts": {
-      "maxDuration": 300
     }
   }
 }

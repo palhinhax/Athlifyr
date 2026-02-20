@@ -31,7 +31,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { transcodeToH264 } from "@/lib/ffmpeg-utils";
+import { transcodeToH264, trimVideoStreamCopy } from "@/lib/ffmpeg-utils";
 import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
 
 export const dynamic = "force-dynamic";
@@ -160,6 +160,54 @@ export async function POST(request: Request) {
     // to H.264 MP4 on the server before forwarding.
     let finalVideoFile: File = videoFile;
     const baseType = videoFile.type.split(";")[0].trim();
+
+    // ── Server-side trim (optional) ───────────────────────────────────────
+    // Mobile clients can send trim_start_sec and trim_end_sec to trim the
+    // video before forwarding to the Railway API. This avoids requiring
+    // native FFmpeg on the mobile side.
+    const trimStartRaw = formData.get("trim_start_sec");
+    const trimEndRaw = formData.get("trim_end_sec");
+    const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
+    const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
+
+    if (
+      trimStartSec !== null &&
+      trimEndSec !== null &&
+      Number.isFinite(trimStartSec) &&
+      Number.isFinite(trimEndSec) &&
+      trimEndSec > trimStartSec
+    ) {
+      try {
+        const ext =
+          baseType === "video/webm"
+            ? ".webm"
+            : baseType === "video/quicktime"
+              ? ".mov"
+              : ".mp4";
+        console.log(
+          `[MotionAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
+        );
+        const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+        const trimmedBuffer = await trimVideoStreamCopy(
+          inputBuffer,
+          trimStartSec,
+          trimEndSec,
+          ext
+        );
+        finalVideoFile = new File(
+          [new Uint8Array(trimmedBuffer)],
+          finalVideoFile.name,
+          { type: finalVideoFile.type }
+        );
+        console.log(
+          `[MotionAnalysis] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes`
+        );
+      } catch (err) {
+        console.error("[MotionAnalysis] Trim failed:", err);
+        // Continue with untrimmed video — Railway will handle max_duration_sec
+      }
+    }
+
     if (baseType === "video/webm") {
       try {
         console.log(

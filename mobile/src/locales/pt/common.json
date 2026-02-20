@@ -757,15 +757,16 @@
     }
   },
   "motionAnalysis": {
-    "trimTitle": "Cortar Vídeo",
+    "trimTitle": "Análise de Movimento",
     "analyzingTitle": "A Analisar Pose",
     "resultsTitle": "Análise de Movimento",
-    "trimInstruction": "Ajusta as pegas para selecionar o segmento de vídeo que queres analisar.",
+    "serverAnalysisInstruction": "O teu vídeo será enviado e analisado pelo nosso servidor de IA para estimativa precisa de pose corporal.",
     "analyzeButton": "Analisar Movimento",
     "recordHint": "Grava o teu movimento (máx. 30s) ou importa um vídeo.",
-    "loadingModel": "A carregar modelo de IA…",
-    "analyzing": "A detetar pose corporal…",
-    "computing": "A calcular métricas…",
+    "uploadingVideo": "A enviar vídeo…",
+    "uploadingVideoDesc": "A enviar o teu vídeo para o servidor de análise.",
+    "processingServer": "A analisar pose…",
+    "processingServerDesc": "A nossa IA está a detetar pontos corporais e a calcular ângulos.",
     "analysisError": "Análise Falhou",
     "saveAnalysis": "Guardar Análise",
     "saved": "Análise Guardada",
@@ -779,6 +780,23 @@
     "exportVideo": "Exportar Vídeo",
     "exportError": "Ocorreu um erro ao exportar o vídeo.",
     "shareNotAvailable": "A partilha não está disponível neste dispositivo.",
+    "framesProcessed": "Frames Processadas",
+    "framesWithPose": "Frames com Pose",
+    "detectionRate": "Taxa de Deteção",
+    "averageAngles": "Ângulos Médios",
+    "angles": {
+      "leftKnee": "Joelho Esquerdo",
+      "rightKnee": "Joelho Direito",
+      "leftHip": "Anca Esquerda",
+      "rightHip": "Anca Direita",
+      "leftElbow": "Cotovelo Esquerdo",
+      "rightElbow": "Cotovelo Direito",
+      "leftShoulder": "Ombro Esquerdo",
+      "rightShoulder": "Ombro Direito",
+      "leftAnkle": "Tornozelo Esquerdo",
+      "rightAnkle": "Tornozelo Direito",
+      "torsoInclination": "Inclinação do Tronco"
+    },
     "myAnalyses": "Análises de Movimento",
     "analysisLabel": "Análise de Movimento",
     "noAnalyses": "Sem Análises de Movimento",
@@ -797,5 +815,13 @@
     "replayTab": "Repetição",
     "exported": "Dados Exportados",
     "exportedMessage": "Os dados da análise foram exportados em JSON."
+  },
+  "videoTrimmer": {
+    "title": "Cortar Vídeo",
+    "confirm": "Confirmar",
+    "duration": "Duração",
+    "tooLong": "O vídeo é demasiado longo.",
+    "maxDuration": "Máx: {{seconds}}s",
+    "reset": "Repor"
   }
 }

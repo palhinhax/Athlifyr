@@ -48,6 +48,9 @@ export interface SaveLiftPayload {
   localId: string;
   label?: string;
   videoUri: string;
+  /** URL of the processed video from Railway — if provided, the server
+   *  downloads and stores it in B2 instead of re-uploading the local file. */
+  processedVideoUrl?: string | null;
   durationMs: number;
   fpsSample: number;
   seedPoint: { x: number; y: number };
@@ -142,14 +145,20 @@ export async function saveLiftAnalysisToCloud(
   payload: SaveLiftPayload,
   authToken: string
 ): Promise<CloudSaveResult> {
-  const localUri = await resolveVideoUri(payload.videoUri);
-
   const form = new FormData();
-  form.append("video", {
-    uri: localUri,
-    name: "video.mp4",
-    type: "video/mp4",
-  } as unknown as Blob);
+
+  if (payload.processedVideoUrl) {
+    // Server already processed the video — pass the Railway URL so the server
+    // downloads it and uploads to B2. Avoids re-uploading the local file.
+    form.append("videoUrl", payload.processedVideoUrl);
+  } else {
+    const localUri = await resolveVideoUri(payload.videoUri);
+    form.append("video", {
+      uri: localUri,
+      name: "video.mp4",
+      type: "video/mp4",
+    } as unknown as Blob);
+  }
 
   form.append("localId", payload.localId);
   if (payload.label) form.append("label", payload.label);

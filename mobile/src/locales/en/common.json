@@ -757,15 +757,16 @@
     }
   },
   "motionAnalysis": {
-    "trimTitle": "Trim Video",
+    "trimTitle": "Motion Analysis",
     "analyzingTitle": "Analyzing Pose",
     "resultsTitle": "Motion Analysis",
-    "trimInstruction": "Adjust the handles to select the video segment you want to analyse.",
+    "serverAnalysisInstruction": "Your video will be uploaded and analysed by our AI server for accurate full-body pose estimation.",
     "analyzeButton": "Analyse Motion",
     "recordHint": "Record your movement (max 30s) or import a video.",
-    "loadingModel": "Loading AI model…",
-    "analyzing": "Detecting body pose…",
-    "computing": "Computing metrics…",
+    "uploadingVideo": "Uploading Video…",
+    "uploadingVideoDesc": "Sending your video to the analysis server.",
+    "processingServer": "Analysing Pose…",
+    "processingServerDesc": "Our AI is detecting body landmarks and computing angles.",
     "analysisError": "Analysis Failed",
     "saveAnalysis": "Save Analysis",
     "saved": "Analysis Saved",
@@ -779,6 +780,23 @@
     "exportVideo": "Export Video",
     "exportError": "An error occurred while exporting the video.",
     "shareNotAvailable": "Sharing is not available on this device.",
+    "framesProcessed": "Frames Processed",
+    "framesWithPose": "Frames with Pose",
+    "detectionRate": "Detection Rate",
+    "averageAngles": "Average Angles",
+    "angles": {
+      "leftKnee": "Left Knee",
+      "rightKnee": "Right Knee",
+      "leftHip": "Left Hip",
+      "rightHip": "Right Hip",
+      "leftElbow": "Left Elbow",
+      "rightElbow": "Right Elbow",
+      "leftShoulder": "Left Shoulder",
+      "rightShoulder": "Right Shoulder",
+      "leftAnkle": "Left Ankle",
+      "rightAnkle": "Right Ankle",
+      "torsoInclination": "Torso Inclination"
+    },
     "myAnalyses": "Motion Analyses",
     "analysisLabel": "Motion Analysis",
     "noAnalyses": "No Motion Analyses Yet",
@@ -797,5 +815,13 @@
     "replayTab": "Replay",
     "exported": "Data Exported",
     "exportedMessage": "The analysis data has been exported as JSON."
+  },
+  "videoTrimmer": {
+    "title": "Trim Video",
+    "confirm": "Confirm",
+    "duration": "Duration",
+    "tooLong": "Video is too long.",
+    "maxDuration": "Max: {{seconds}}s",
+    "reset": "Reset"
   }
 }

@@ -301,128 +301,20 @@ function BarPathOverlay({
   );
 }
 
-// ── Export hook ───────────────────────────────────────────────────────────────
-
-type ExportState =
-  | { status: "idle" }
-  | { status: "processing" } // server rendering — no progress, just waiting
-  | { status: "done"; downloadUrl: string }
-  | { status: "error"; message: string };
-
-function useExportVideo(record: AnalysisRecord | null) {
-  const [exportState, setExportState] = useState<ExportState>({
-    status: "idle",
-  });
-
-  // Reset when the modal closes
-  useEffect(() => {
-    if (!record) setExportState({ status: "idle" });
-  }, [record]);
-
-  const startExport = useCallback(async () => {
-    if (!record) return;
-    const json = record.analysisJson;
-    const isMotion = "poseFrames" in json;
-
-    try {
-      // ── Build FormData — pass videoUrl so the server fetches it ──
-      // (avoids browser CORS restrictions on cross-origin B2 URLs)
-      setExportState({ status: "processing" });
-
-      const fd = new FormData();
-      fd.append("videoUrl", record.videoUrl);
-
-      if (isMotion) {
-        const mJson = json as MotionAnalysisJson;
-        fd.append("type", "motion");
-        fd.append(
-          "segment",
-          JSON.stringify(mJson.segment ?? { startMs: 0, endMs: 0 })
-        );
-        fd.append(
-          "videoMeta",
-          JSON.stringify(mJson.videoMeta ?? { videoWidth: 0, videoHeight: 0 })
-        );
-        fd.append("poseFrames", JSON.stringify(mJson.poseFrames ?? []));
-        fd.append("metrics", JSON.stringify(mJson.metrics ?? {}));
-      } else {
-        const lJson = json as LiftAnalysisJson;
-        fd.append("type", "lift");
-        fd.append("barPath", JSON.stringify(lJson.barPath ?? []));
-        fd.append("durationMs", String(lJson.durationMs ?? 0));
-      }
-
-      // ── Step 2: submit to API and await result ───────────────────
-      // The server processes synchronously and returns { downloadUrl } when done.
-      const submitRes = await fetch("/api/export/video", {
-        method: "POST",
-        body: fd,
-      });
-      if (!submitRes.ok) {
-        const err = await submitRes.json().catch(() => ({}));
-        throw new Error(
-          (err as { error?: string }).error ?? "Erro ao iniciar exportação"
-        );
-      }
-      const { downloadUrl } = (await submitRes.json()) as {
-        downloadUrl: string;
-      };
-      if (!downloadUrl) throw new Error("URL de download em falta na resposta");
-      setExportState({ status: "done", downloadUrl });
-    } catch (e) {
-      setExportState({
-        status: "error",
-        message: e instanceof Error ? e.message : "Erro desconhecido",
-      });
-    }
-  }, [record]);
-
-  return { exportState, startExport };
-}
-
 // ── Export button ─────────────────────────────────────────────────────────────
 
-function ExportButton({
-  exportState,
-  onStart,
-}: {
-  exportState: ExportState;
-  onStart: () => void;
-}) {
-  if (exportState.status === "done") {
-    return (
-      <a
-        href={exportState.downloadUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        download
-        className="inline-flex h-8 items-center gap-1.5 rounded-md bg-primary px-3 text-xs font-medium text-primary-foreground hover:bg-primary/90"
-      >
-        <Download className="h-3.5 w-3.5" />
-        Descarregar
-      </a>
-    );
-  }
-
-  const busy = exportState.status === "processing";
-
+function ExportButton({ videoUrl }: { videoUrl: string }) {
   return (
-    <button
-      onClick={onStart}
-      disabled={busy}
-      className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium text-white/80 hover:bg-white/10 disabled:opacity-50"
+    <a
+      href={videoUrl}
+      target="_blank"
+      rel="noopener noreferrer"
+      download
+      className="inline-flex h-8 items-center gap-1.5 rounded-md border px-3 text-xs font-medium text-white/80 hover:bg-white/10"
     >
-      {busy ? (
-        <>
-          <Loader2 className="h-3.5 w-3.5 animate-spin" />A exportar…
-        </>
-      ) : (
-        <>
-          <Download className="h-3.5 w-3.5" />
-          Exportar vídeo
-        </>
-      )}
-    </button>
+      <Download className="h-3.5 w-3.5" />
+      Exportar vídeo
+    </a>
   );
 }
 
@@ -806,8 +698,6 @@ function MotionVideoModal({
   const title = record?.label ?? "Análise de Movimento";
   const createdAt = record ? formatDate(record.createdAt) : "";
 
-  const { exportState, startExport } = useExportVideo(record);
-
   const {
     isPlaying: skeletonIsPlaying,
     handlePlayPause: skeletonPlayPause,
@@ -894,16 +784,9 @@ function MotionVideoModal({
           )}
 
           <div className="shrink-0 pr-6">
-            <ExportButton exportState={exportState} onStart={startExport} />
+            {record && <ExportButton videoUrl={record.videoUrl} />}
           </div>
         </div>
-
-        {/* Export error strip */}
-        {exportState.status === "error" && (
-          <div className="bg-destructive/10 px-5 py-2 text-xs text-destructive">
-            {exportState.message}
-          </div>
-        )}
 
         {/* Main content area */}
         <div
@@ -1190,8 +1073,6 @@ function LiftVideoModal({
 
   const hasMetrics = Object.values(metrics).some((v) => v !== undefined);
 
-  const { exportState, startExport } = useExportVideo(record);
-
   const liftDurationSec =
     poseData?.durationSec ?? (durationMs ? durationMs / 1000 : 0);
   const {
@@ -1276,16 +1157,9 @@ function LiftVideoModal({
           )}
 
           <div className="shrink-0 pr-6">
-            <ExportButton exportState={exportState} onStart={startExport} />
+            {record && <ExportButton videoUrl={record.videoUrl} />}
           </div>
         </div>
-
-        {/* Export error strip */}
-        {exportState.status === "error" && (
-          <div className="bg-destructive/10 px-5 py-2 text-xs text-destructive">
-            {exportState.message}
-          </div>
-        )}
 
         {/* Main content area */}
         <div

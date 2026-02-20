@@ -1,7 +1,14 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { Upload, Loader2, AlertCircle, CheckCircle, X } from "lucide-react";
+import {
+  Upload,
+  Loader2,
+  AlertCircle,
+  CheckCircle,
+  X,
+  Search,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,6 +27,7 @@ import { MotionAnalysisResult } from "@/components/motion-analysis-result";
 import type {
   LiftAnalysisProcessResponse,
   MotionAnalysisProcessResponse,
+  DebugDetectResponse,
 } from "@/types/lift-analysis";
 import {
   MAX_FILE_BYTES,
@@ -74,9 +82,85 @@ export function VideoAnalysisUpload({
   const [seedPoint, setSeedPoint] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [detectResult, setDetectResult] = useState<DebugDetectResponse | null>(
+    null
+  );
+  const [detectLoading, setDetectLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  /** Capture the current video frame and call /debug/detect for disc feedback. */
+  const callDebugDetect = useCallback(
+    async (video: HTMLVideoElement, seedXPct: number, seedYPct: number) => {
+      setDetectLoading(true);
+      setDetectResult(null);
+
+      try {
+        // Draw current frame onto a canvas to extract an image
+        const canvas = document.createElement("canvas");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext("2d");
+        if (!ctx) {
+          console.warn("[VideoUpload] debug/detect: no canvas context");
+          setDetectLoading(false);
+          return;
+        }
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const blob = await new Promise<Blob | null>((resolve) =>
+          canvas.toBlob(resolve, "image/jpeg", 0.85)
+        );
+        if (!blob) {
+          console.warn(
+            "[VideoUpload] debug/detect: canvas.toBlob returned null"
+          );
+          setDetectLoading(false);
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append("image", blob, "frame.jpg");
+        formData.append("seed_x", seedXPct.toString());
+        formData.append("seed_y", seedYPct.toString());
+
+        console.log("[VideoUpload] Calling debug/detect…", {
+          seedX: seedXPct,
+          seedY: seedYPct,
+          frameW: canvas.width,
+          frameH: canvas.height,
+          blobSize: `${(blob.size / 1024).toFixed(1)} KB`,
+          blobType: blob.type,
+        });
+
+        const res = await fetch("/api/lift-analysis/debug-detect", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (!res.ok) {
+          const errorBody = await res.text().catch(() => "");
+          console.warn("[VideoUpload] debug/detect failed:", {
+            status: res.status,
+            statusText: res.statusText,
+            body: errorBody,
+          });
+          setDetectLoading(false);
+          return;
+        }
+
+        const data: DebugDetectResponse = await res.json();
+        console.log("[VideoUpload] debug/detect result:", data);
+        setDetectResult(data);
+      } catch (err) {
+        console.warn("[VideoUpload] debug/detect error:", err);
+      } finally {
+        setDetectLoading(false);
+      }
+    },
+    []
+  );
 
   const isLift = type === "lift";
   const title = isLift
@@ -274,8 +358,12 @@ export function VideoAnalysisUpload({
       });
 
       setSeedPoint({ x: seedX, y: seedY });
+
+      // Call debug/detect to give visual feedback of the detected disc
+      callDebugDetect(video, seedX, seedY);
     },
-    [uploadState]
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [uploadState, callDebugDetect]
   );
 
   const handleClose = useCallback(() => {
@@ -299,6 +387,8 @@ export function VideoAnalysisUpload({
     setUploadStateSynced({ status: "idle" });
     setSelectedFile(null);
     setSeedPoint(null);
+    setDetectResult(null);
+    setDetectLoading(false);
     onOpenChange(false);
   }, [uploadState, onOpenChange]);
 
@@ -514,7 +604,9 @@ export function VideoAnalysisUpload({
         className={
           uploadState.status === "success"
             ? "max-h-[90vh] max-w-6xl overflow-y-auto"
-            : "max-h-[90vh] max-w-2xl overflow-y-auto"
+            : uploadState.status === "selecting-seed"
+              ? "max-h-[95vh] max-w-4xl overflow-y-auto"
+              : "max-h-[90vh] max-w-2xl overflow-y-auto"
         }
       >
         <DialogHeader>
@@ -596,13 +688,13 @@ export function VideoAnalysisUpload({
                   ref={videoRef}
                   src={uploadState.videoUrl}
                   onClick={handleVideoClick}
-                  className="max-h-64 w-full cursor-crosshair object-contain"
+                  className="max-h-[60vh] min-h-[40vh] w-full cursor-crosshair object-contain"
                   controls={false}
                 />
                 {seedPoint &&
                   videoRef.current &&
                   (() => {
-                    // Calculate the rendered video area to position the dot
+                    // Calculate the rendered video area to position overlays
                     // correctly over the actual video (ignoring black bars).
                     const vid = videoRef.current;
                     const el = vid.getBoundingClientRect();
@@ -620,21 +712,110 @@ export function VideoAnalysisUpload({
                       ox = (el.width - rw) / 2;
                       oy = 0;
                     }
+                    // Seed point position (percentage-based, relative to video area)
                     const pxLeft = ox + (seedPoint.x / 100) * rw;
                     const pxTop = oy + (seedPoint.y / 100) * rh;
+
+                    // Detected circle — use _pct fields from API for positioning
+                    const circle = detectResult?.circle;
+                    const circleCxPx = circle
+                      ? ox + (circle.center_x_pct / 100) * rw
+                      : 0;
+                    const circleCyPx = circle
+                      ? oy + (circle.center_y_pct / 100) * rh
+                      : 0;
+                    // radius_pct is % of the larger dimension
+                    const circleRPx = circle
+                      ? (circle.radius_pct / 100) * Math.max(rw, rh)
+                      : 0;
+
                     return (
-                      <div
-                        className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-primary shadow-lg"
-                        style={{
-                          left: `${(pxLeft / el.width) * 100}%`,
-                          top: `${(pxTop / el.height) * 100}%`,
-                        }}
-                      />
+                      <>
+                        {/* Seed point dot (red dot where user clicked) */}
+                        <div
+                          className="pointer-events-none absolute h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-white bg-red-500 shadow-lg"
+                          style={{
+                            left: `${(pxLeft / el.width) * 100}%`,
+                            top: `${(pxTop / el.height) * 100}%`,
+                          }}
+                        />
+
+                        {/* Detected circle overlay */}
+                        {detectResult?.detected && circle && (
+                          <>
+                            {/* Circle outline */}
+                            <div
+                              className="pointer-events-none absolute rounded-full border-2 border-green-400 shadow-[0_0_8px_rgba(74,222,128,0.5)]"
+                              style={{
+                                left: `${((circleCxPx - circleRPx) / el.width) * 100}%`,
+                                top: `${((circleCyPx - circleRPx) / el.height) * 100}%`,
+                                width: `${((circleRPx * 2) / el.width) * 100}%`,
+                                height: `${((circleRPx * 2) / el.height) * 100}%`,
+                              }}
+                            />
+                            {/* Circle center dot */}
+                            <div
+                              className="pointer-events-none absolute h-2.5 w-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-green-400 shadow-lg"
+                              style={{
+                                left: `${(circleCxPx / el.width) * 100}%`,
+                                top: `${(circleCyPx / el.height) * 100}%`,
+                              }}
+                            />
+                          </>
+                        )}
+
+                        {/* Loading spinner overlay */}
+                        {detectLoading && (
+                          <div className="pointer-events-none absolute right-3 top-3 flex items-center gap-1.5 rounded-full bg-black/70 px-3 py-1.5 text-xs text-white">
+                            <Search className="h-3 w-3 animate-pulse" />A
+                            detetar disco…
+                          </div>
+                        )}
+                      </>
                     );
                   })()}
               </div>
 
-              {seedPoint && (
+              {/* Detection feedback */}
+              {seedPoint && !detectLoading && detectResult && (
+                <Alert
+                  variant={detectResult.detected ? "default" : "destructive"}
+                >
+                  {detectResult.detected ? (
+                    <CheckCircle className="h-4 w-4" />
+                  ) : (
+                    <AlertCircle className="h-4 w-4" />
+                  )}
+                  <AlertDescription>
+                    {detectResult.detected && detectResult.circle ? (
+                      <>
+                        <strong>Disco detetado!</strong> Centro: (
+                        {detectResult.circle.center_x},{" "}
+                        {detectResult.circle.center_y}) · Raio:{" "}
+                        {detectResult.circle.radius}px · Confiança:{" "}
+                        {Math.round(detectResult.circle.confidence * 100)}%
+                      </>
+                    ) : (
+                      <>
+                        <strong>Disco não detetado</strong> nesta posição. O
+                        tracking usará o ponto clicado diretamente. Tente clicar
+                        mais perto do centro do disco.
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {seedPoint && detectLoading && (
+                <Alert>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <AlertDescription>
+                    A verificar deteção do disco…
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {seedPoint && !detectLoading && !detectResult && (
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>

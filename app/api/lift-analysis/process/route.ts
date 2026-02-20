@@ -44,7 +44,7 @@
  */
 
 import { NextResponse } from "next/server";
-import { transcodeToH264 } from "@/lib/ffmpeg-utils";
+import { transcodeToH264, trimVideoStreamCopy } from "@/lib/ffmpeg-utils";
 import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
 
 export const dynamic = "force-dynamic";
@@ -194,12 +194,70 @@ export async function POST(request: Request) {
     // transcode to H.264 MP4 on the server before forwarding.
     let finalVideoFile: File = videoFile;
     const baseType = videoFile.type.split(";")[0].trim();
-    if (baseType === "video/webm") {
+
+    // ── Server-side trim (optional) ───────────────────────────────────────
+    // Mobile clients send trim_start_sec + trim_end_sec so the server crops
+    // the clip before forwarding to Railway.
+    //
+    // trimVideoStreamCopy now does a frame-accurate re-encode with libx264
+    // (ultrafast) so the output always starts on a clean intra-frame and is
+    // already H.264 MP4 — no further transcode step needed after trimming.
+    const trimStartRaw = formData.get("trim_start_sec");
+    const trimEndRaw = formData.get("trim_end_sec");
+    const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
+    const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
+
+    let didTrim = false;
+
+    if (
+      trimStartSec !== null &&
+      trimEndSec !== null &&
+      Number.isFinite(trimStartSec) &&
+      Number.isFinite(trimEndSec) &&
+      trimEndSec > trimStartSec
+    ) {
+      try {
+        const ext =
+          baseType === "video/webm"
+            ? ".webm"
+            : baseType === "video/quicktime"
+              ? ".mov"
+              : ".mp4";
+        console.log(
+          `[LiftAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
+        );
+        const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+        const trimmedBuffer = await trimVideoStreamCopy(
+          inputBuffer,
+          trimStartSec,
+          trimEndSec,
+          ext
+        );
+        // trimVideoStreamCopy now always outputs H.264 MP4
+        finalVideoFile = new File(
+          [new Uint8Array(trimmedBuffer)],
+          finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
+          { type: "video/mp4" }
+        );
+        didTrim = true;
+        console.log(
+          `[LiftAnalysis] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes (H.264 MP4)`
+        );
+      } catch (err) {
+        console.error("[LiftAnalysis] Trim failed:", err);
+        // Continue with untrimmed video — Railway will handle max_duration_sec
+      }
+    }
+
+    // ── Transcode WebM → MP4 if needed (only when no trim was done) ───────
+    // MediaRecorder (client-side) always produces WebM/VP9. If the clip was
+    // already trimmed above it is already H.264 MP4 — skip this block.
+    if (!didTrim && baseType === "video/webm") {
       try {
         console.log(
           "[LiftAnalysis] WebM detected — transcoding to H.264 MP4..."
         );
-        const inputBuffer = Buffer.from(await videoFile.arrayBuffer());
+        const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
         const mp4Buffer = await transcodeToH264(inputBuffer);
         finalVideoFile = new File(
           [new Uint8Array(mp4Buffer)],
@@ -261,36 +319,68 @@ export async function POST(request: Request) {
       max_duration_sec: maxDurationSec,
     });
 
-    // ── Call external API ──────────────────────────────────────────────────
-    const controller = new AbortController();
-    // 4.5 minute timeout (slightly less than maxDuration)
-    const timeout = setTimeout(() => controller.abort(), 270_000);
+    // ── Call external API (with retry on ECONNRESET) ──────────────────────
+    const MAX_RETRIES = 2;
+    let response: Response | null = null;
+    let lastError: unknown = null;
 
-    let response: Response;
-    try {
-      response = await fetch(`${BARBELL_API_URL}/analyze/full`, {
-        method: "POST",
-        body: externalFormData,
-        signal: controller.signal,
-      });
-    } catch (error) {
-      clearTimeout(timeout);
-      console.error("[LiftAnalysis] External API request failed:", error);
+    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+      const controller = new AbortController();
+      // 4.5 minute timeout (slightly less than maxDuration)
+      const timeout = setTimeout(() => controller.abort(), 270_000);
 
-      if (error instanceof Error && error.name === "AbortError") {
-        return NextResponse.json(
-          { error: "Request timeout. Video processing took too long." },
-          { status: 504 }
+      try {
+        console.log(
+          `[LiftAnalysis] Attempt ${attempt}/${MAX_RETRIES} → ${BARBELL_API_URL}/analyze/full`
         );
-      }
+        response = await fetch(`${BARBELL_API_URL}/analyze/full`, {
+          method: "POST",
+          body: externalFormData,
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        break; // success — exit retry loop
+      } catch (error) {
+        clearTimeout(timeout);
+        lastError = error;
 
+        const isConnReset =
+          error instanceof Error &&
+          ("cause" in error
+            ? (error.cause as NodeJS.ErrnoException)?.code === "ECONNRESET"
+            : error.message.includes("ECONNRESET"));
+
+        const isAbort = error instanceof Error && error.name === "AbortError";
+
+        if (isAbort) {
+          console.error("[LiftAnalysis] Request timed out on attempt", attempt);
+          return NextResponse.json(
+            { error: "Request timeout. Video processing took too long." },
+            { status: 504 }
+          );
+        }
+
+        console.error(
+          `[LiftAnalysis] External API request failed (attempt ${attempt}/${MAX_RETRIES}):`,
+          error
+        );
+
+        if (!isConnReset || attempt === MAX_RETRIES) {
+          break; // non-retryable error or max retries reached
+        }
+
+        // Brief back-off before retrying
+        await new Promise((resolve) => setTimeout(resolve, 2_000 * attempt));
+      }
+    }
+
+    if (!response) {
+      console.error("[LiftAnalysis] All attempts failed:", lastError);
       return NextResponse.json(
         { error: "Failed to connect to video processing service" },
         { status: 503 }
       );
     }
-
-    clearTimeout(timeout);
 
     // ── Parse response ─────────────────────────────────────────────────────
     if (!response.ok) {

@@ -754,15 +754,16 @@
     }
   },
   "motionAnalysis": {
-    "trimTitle": "Video Trimmen",
+    "trimTitle": "Bewegungsanalyse",
     "analyzingTitle": "Pose Analysieren",
     "resultsTitle": "Bewegungsanalyse",
-    "trimInstruction": "Passe die Griffe an, um den gewünschten Videoabschnitt auszuwählen.",
+    "serverAnalysisInstruction": "Dein Video wird hochgeladen und von unserem KI-Server für eine präzise Ganzkörper-Pose-Schätzung analysiert.",
     "analyzeButton": "Bewegung Analysieren",
     "recordHint": "Nimm deine Bewegung auf (max. 30s) oder importiere ein Video.",
-    "loadingModel": "KI-Modell wird geladen…",
-    "analyzing": "Körperpose wird erkannt…",
-    "computing": "Kennzahlen werden berechnet…",
+    "uploadingVideo": "Video wird hochgeladen…",
+    "uploadingVideoDesc": "Dein Video wird an den Analyse-Server gesendet.",
+    "processingServer": "Pose wird analysiert…",
+    "processingServerDesc": "Unsere KI erkennt Körperpunkte und berechnet Winkel.",
     "analysisError": "Analyse Fehlgeschlagen",
     "saveAnalysis": "Analyse Speichern",
     "saved": "Analyse Gespeichert",
@@ -773,6 +774,26 @@
     "loginToSaveAnalysis": "Anmelden zum Speichern",
     "loginToSaveAnalysisMessage": "Um deine Analyse in der Cloud zu speichern und später abzurufen, musst du angemeldet sein. Deine Daten gehen nicht verloren.",
     "loginAndReturn": "Anmelden und zurückkehren",
+    "exportVideo": "Video Exportieren",
+    "exportError": "Beim Exportieren des Videos ist ein Fehler aufgetreten.",
+    "shareNotAvailable": "Teilen ist auf diesem Gerät nicht verfügbar.",
+    "framesProcessed": "Verarbeitete Frames",
+    "framesWithPose": "Frames mit Pose",
+    "detectionRate": "Erkennungsrate",
+    "averageAngles": "Durchschnittliche Winkel",
+    "angles": {
+      "leftKnee": "Linkes Knie",
+      "rightKnee": "Rechtes Knie",
+      "leftHip": "Linke Hüfte",
+      "rightHip": "Rechte Hüfte",
+      "leftElbow": "Linker Ellbogen",
+      "rightElbow": "Rechter Ellbogen",
+      "leftShoulder": "Linke Schulter",
+      "rightShoulder": "Rechte Schulter",
+      "leftAnkle": "Linker Knöchel",
+      "rightAnkle": "Rechter Knöchel",
+      "torsoInclination": "Rumpfneigung"
+    },
     "myAnalyses": "Bewegungsanalysen",
     "analysisLabel": "Bewegungsanalyse",
     "noAnalyses": "Keine Bewegungsanalysen",
@@ -791,5 +812,13 @@
     "replayTab": "Wiedergabe",
     "exported": "Daten Exportiert",
     "exportedMessage": "Die Analysedaten wurden als JSON exportiert."
+  },
+  "videoTrimmer": {
+    "title": "Video Zuschneiden",
+    "confirm": "Bestätigen",
+    "duration": "Dauer",
+    "tooLong": "Das Video ist zu lang.",
+    "maxDuration": "Max: {{seconds}}s",
+    "reset": "Zurücksetzen"
   }
 }

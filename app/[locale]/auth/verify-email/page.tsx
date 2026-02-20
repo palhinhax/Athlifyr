@@ -16,7 +16,7 @@ export default async function VerifyEmailPage({
 }: PageProps) {
   const { locale } = await params;
   const { success, error } = await searchParams;
-  const t = await getTranslations({ locale, namespace: "auth.verifyEmail" });
+  const t = await getTranslations({ locale, namespace: "verifyEmail" });
 
   const isSuccess = success === "true";
   const errorType = error as

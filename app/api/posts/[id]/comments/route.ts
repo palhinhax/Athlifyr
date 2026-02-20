@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { requireIntegrity } from "@/lib/verify-integrity";
+import { notifyEventPostComment } from "@/lib/notifications";
 
 // GET /api/posts/[id]/comments - Get comments for a post
 export async function GET(
@@ -62,9 +63,14 @@ export async function POST(
       );
     }
 
-    // Check if post exists
+    // Check if post exists and get event info for notifications
     const post = await prisma.post.findUnique({
       where: { id: postId },
+      include: {
+        event: {
+          select: { id: true, title: true, slug: true },
+        },
+      },
     });
 
     if (!post) {
@@ -87,6 +93,21 @@ export async function POST(
         },
       },
     });
+
+    // Notify post author and other commenters about the new comment (fire-and-forget)
+    if (post.event) {
+      notifyEventPostComment({
+        eventId: post.event.id,
+        eventSlug: post.event.slug,
+        eventTitle: post.event.title,
+        postId,
+        postAuthorId: post.userId,
+        commentAuthorId: user.id,
+        commentAuthorName: user.name || "Someone",
+      }).catch((err: Error) =>
+        console.error("Failed to notify event post comment:", err)
+      );
+    }
 
     return NextResponse.json(comment, { status: 201 });
   } catch (error) {

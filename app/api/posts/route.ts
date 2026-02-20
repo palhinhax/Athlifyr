@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { requireIntegrity } from "@/lib/verify-integrity";
+import { notifyEventNewPost } from "@/lib/notifications";
 
 // Schema for creating a post
 const createPostSchema = z.object({
@@ -160,6 +161,19 @@ export async function POST(request: NextRequest) {
           : undefined,
       },
     });
+
+    // Notify event participants about the new post (fire-and-forget)
+    if (validatedData.eventId && post.event) {
+      notifyEventNewPost({
+        eventId: validatedData.eventId,
+        eventSlug: post.event.slug,
+        eventTitle: post.event.title,
+        authorId: user.id,
+        authorName: user.name || "Someone",
+      }).catch((err: Error) =>
+        console.error("Failed to notify event new post:", err)
+      );
+    }
 
     return NextResponse.json(post, { status: 201 });
   } catch (error) {

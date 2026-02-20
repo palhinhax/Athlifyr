@@ -67,7 +67,10 @@ export default function MotionAnalysisScreen() {
   const { isAuthenticated, token } = useAuthStore();
 
   // Pending save payload — preserved while user goes to login and comes back
-  const pendingSaveRef = useRef<MotionAnalysis | null>(null);
+  const pendingSaveRef = useRef<{
+    analysis: MotionAnalysis;
+    analysisResult: MotionAnalysisResult;
+  } | null>(null);
 
   // Track whether we already did the initial duration check (avoid re-triggering trim)
   const didInitialDurationCheckRef = useRef(false);
@@ -240,7 +243,7 @@ export default function MotionAnalysisScreen() {
 
       if (!isAuthenticated || !token) {
         // Not logged in — store payload and prompt login
-        pendingSaveRef.current = analysis;
+        pendingSaveRef.current = { analysis, analysisResult };
         setIsSaving(false);
         setModalConfig({
           visible: true,
@@ -253,18 +256,14 @@ export default function MotionAnalysisScreen() {
         return;
       }
 
-      // Authenticated → upload to cloud
+      // Authenticated → upload to cloud (Mode 1: full analysisData with skeletonFrames)
       const authToken =
         token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
       await saveMotionAnalysisToCloud(
         {
           localId: id,
           videoUri,
-          segment: { startMs: 0, endMs: durationMs },
-          sampleFps: 0,
-          videoMeta: null,
-          poseFrames: [],
-          metrics: analysis.metrics,
+          analysisResult: analysisResult,
         },
         authToken
       );
@@ -314,17 +313,13 @@ export default function MotionAnalysisScreen() {
           token ?? (await SecureStore.getItemAsync("auth-token")) ?? "";
         await saveMotionAnalysisToCloud(
           {
-            localId: pending.id,
-            videoUri: pending.videoUri,
-            segment: pending.segment,
-            sampleFps: pending.sampleFps,
-            videoMeta: pending.videoMeta ?? null,
-            poseFrames: pending.poseFrames,
-            metrics: pending.metrics,
+            localId: pending.analysis.id,
+            videoUri: pending.analysis.videoUri,
+            analysisResult: pending.analysisResult,
           },
           authToken
         );
-        await saveAnalysis(pending);
+        await saveAnalysis(pending.analysis);
         setModalConfig({
           visible: true,
           type: "success",

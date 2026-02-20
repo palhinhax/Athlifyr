@@ -370,19 +370,22 @@ export function MotionAnalysisResult({
       >
         {/* Video panel */}
         {viewMode !== "skeleton" && (
-          <div className="overflow-hidden rounded-lg border bg-black">
+          <div
+            className="overflow-hidden rounded-lg border bg-black"
+            style={{ minHeight: 200 }}
+          >
             {result.videoUrl ? (
               /* eslint-disable-next-line jsx-a11y/media-has-caption */
               <video
                 ref={videoRef}
-                src={result.videoUrl}
+                src={`/api/video-proxy?url=${encodeURIComponent(result.videoUrl)}`}
                 className="h-full w-full object-contain"
                 style={{
                   maxHeight: viewMode === "video" ? 500 : 400,
+                  minHeight: 200,
                 }}
                 playsInline
                 preload="auto"
-                crossOrigin="anonymous"
               />
             ) : (
               <div className="flex h-[300px] items-center justify-center text-sm text-muted-foreground">
@@ -394,12 +397,22 @@ export function MotionAnalysisResult({
 
         {/* 3D Skeleton panel */}
         {viewMode !== "video" && framesWithData > 0 && (
-          <Skeleton3DViewer
-            frames={result.skeletonFrames}
-            currentFrameIndex={currentFrameIndex}
-            height={viewMode === "skeleton" ? 500 : 400}
-            className="overflow-hidden rounded-lg border"
-          />
+          <Skeleton3DErrorBoundary
+            fallback={
+              <div className="flex h-[300px] items-center justify-center rounded-lg border bg-muted/10 text-sm text-muted-foreground">
+                Erro ao carregar visualização 3D
+              </div>
+            }
+          >
+            <Skeleton3DViewer
+              frames={result.skeletonFrames}
+              currentFrameIndex={currentFrameIndex}
+              videoRef={videoRef}
+              fps={fps}
+              height={viewMode === "skeleton" ? 500 : 400}
+              className="overflow-hidden rounded-lg border"
+            />
+          </Skeleton3DErrorBoundary>
         )}
 
         {/* No skeleton data fallback */}

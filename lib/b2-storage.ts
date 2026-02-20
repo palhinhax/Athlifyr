@@ -144,6 +144,53 @@ export async function deleteFromB2(
 }
 
 /**
+ * Delete a file from Backblaze B2 by its file name (key).
+ * Looks up the fileId via listFileNames, then deletes.
+ * @param fileName The full file name (including folder prefix, e.g. "analyses/12345_motion_xxx.mp4")
+ */
+export async function deleteFromB2ByName(fileName: string): Promise<void> {
+  try {
+    const b2 = await getB2Client();
+    const bucketId = process.env.B2_BUCKET_ID;
+
+    if (!bucketId) {
+      throw new Error("B2_BUCKET_ID environment variable is not set");
+    }
+
+    // List file versions with the exact prefix to find the fileId
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = (await (b2 as any).listFileNames({
+      bucketId,
+      startFileName: fileName,
+      maxFileCount: 1,
+      prefix: fileName,
+    })) as {
+      data: {
+        files: Array<{ fileId: string; fileName: string }>;
+      };
+    };
+
+    const file = response.data.files.find((f) => f.fileName === fileName);
+    if (!file) {
+      console.warn(`[B2] File not found for deletion: ${fileName} — skipping`);
+      return;
+    }
+
+    await b2.deleteFileVersion({
+      fileName: file.fileName,
+      fileId: file.fileId,
+    });
+
+    console.log(`[B2] Deleted file: ${fileName}`);
+  } catch (error) {
+    console.error("Error deleting from B2 by name:", error);
+    throw new Error(
+      `Failed to delete file from B2: ${error instanceof Error ? error.message : "Unknown error"}`
+    );
+  }
+}
+
+/**
  * Validate image file type and size
  * @param file File buffer
  * @param contentType MIME type

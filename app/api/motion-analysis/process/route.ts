@@ -9,7 +9,7 @@
  * Body: multipart/form-data
  *   - video            : file (mp4, mov, avi, mkv, webm) ≤ 500MB
  *   - show_angles      : string (boolean) — Show angles in video (default: true)
- *   - max_duration_sec : string (number) — Max video duration (default: 60, max: 120)
+ *   - max_duration_sec : string (number) — Max video duration (default: 30, max: 30)
  *
  * Response 200:
  * {
@@ -31,6 +31,8 @@
  */
 
 import { NextResponse } from "next/server";
+import { transcodeToH264 } from "@/lib/ffmpeg-utils";
+import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes for video processing
@@ -116,6 +118,13 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("[MotionAnalysis] Received file:", {
+      name: videoFile.name,
+      type: videoFile.type,
+      sizeMB: (videoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+      sizeBytes: videoFile.size,
+    });
+
     const allowedTypes = [
       "video/mp4",
       "video/quicktime",
@@ -124,6 +133,10 @@ export async function POST(request: Request) {
       "video/webm",
     ];
     if (!allowedTypes.includes(videoFile.type)) {
+      console.warn(
+        "[MotionAnalysis] Rejected — unsupported type:",
+        videoFile.type
+      );
       return NextResponse.json(
         { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
         { status: 400 }
@@ -132,24 +145,80 @@ export async function POST(request: Request) {
 
     const maxBytes = 500 * 1024 * 1024; // 500 MB
     if (videoFile.size > maxBytes) {
+      console.warn(
+        "[MotionAnalysis] Rejected — file too large:",
+        videoFile.size
+      );
       return NextResponse.json(
         { error: "Video exceeds 500 MB limit" },
         { status: 400 }
       );
     }
 
+    // ── Transcode WebM → MP4 if needed ────────────────────────────────────
+    // Railway's ffmpeg may not process WebM reliably, so we transcode
+    // to H.264 MP4 on the server before forwarding.
+    let finalVideoFile: File = videoFile;
+    const baseType = videoFile.type.split(";")[0].trim();
+    if (baseType === "video/webm") {
+      try {
+        console.log(
+          "[MotionAnalysis] WebM detected — transcoding to H.264 MP4..."
+        );
+        const inputBuffer = Buffer.from(await videoFile.arrayBuffer());
+        const mp4Buffer = await transcodeToH264(inputBuffer);
+        finalVideoFile = new File(
+          [new Uint8Array(mp4Buffer)],
+          finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
+          { type: "video/mp4" }
+        );
+        console.log(
+          `[MotionAnalysis] Transcoded ${(inputBuffer.length / (1024 * 1024)).toFixed(2)} MB → ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB`
+        );
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error("[MotionAnalysis] Transcode failed:", errMsg);
+        const isOom =
+          errMsg.includes("OOM") ||
+          errMsg.includes("-9") ||
+          errMsg.includes("137");
+        return NextResponse.json(
+          {
+            error: isOom
+              ? "Video resolution is too high to process. Please record in 1080p or lower."
+              : "Failed to convert video. Please try uploading an MP4 file.",
+          },
+          { status: 400 }
+        );
+      }
+    } else {
+      console.log("[MotionAnalysis] No transcode needed — type:", baseType);
+    }
+
     // ── Prepare form data for external API ────────────────────────────────
     const externalFormData = new FormData();
 
-    // Add video file
-    externalFormData.append("video", videoFile);
+    // Add video file — always supply an explicit filename so the multipart
+    // Content-Disposition header includes `filename=...`, which FastAPI
+    // requires to accept the upload (missing filename → 422).
+    const safeFilename = finalVideoFile.name || "video.mp4";
+    externalFormData.append("video", finalVideoFile, safeFilename);
 
     // Add optional parameters with defaults
     const showAngles = formData.get("show_angles") || "true";
-    const maxDurationSec = formData.get("max_duration_sec") || "60";
+    const maxDurationSec =
+      formData.get("max_duration_sec") || String(MAX_DURATION_LIFT_SEC);
 
     externalFormData.append("show_angles", showAngles.toString());
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
+
+    console.log("[MotionAnalysis] Forwarding to Railway:", {
+      filename: safeFilename,
+      type: finalVideoFile.type,
+      sizeMB: (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+      show_angles: showAngles,
+      max_duration_sec: maxDurationSec,
+    });
 
     // ── Call external API ──────────────────────────────────────────────────
     const controller = new AbortController();
@@ -188,13 +257,29 @@ export async function POST(request: Request) {
       console.error(
         "[MotionAnalysis] External API error:",
         response.status,
-        errorText
+        errorText.slice(0, 500)
       );
 
       try {
         const errorJson = JSON.parse(errorText);
+        // FastAPI 422 returns { detail: [{ loc, msg, type }] } — flatten to a readable string
+        let errorMessage: string;
+        if (Array.isArray(errorJson.detail)) {
+          errorMessage = errorJson.detail
+            .map((e: { msg?: string; loc?: string[] }) =>
+              e.loc
+                ? `${e.loc.join(".")} — ${e.msg}`
+                : (e.msg ?? "Validation error")
+            )
+            .join("; ");
+        } else {
+          errorMessage =
+            typeof errorJson.detail === "string"
+              ? errorJson.detail
+              : errorJson.error || "Processing failed";
+        }
         return NextResponse.json(
-          { error: errorJson.detail || errorJson.error || "Processing failed" },
+          { error: errorMessage },
           { status: response.status }
         );
       } catch {
@@ -206,6 +291,17 @@ export async function POST(request: Request) {
     }
 
     const result: ExternalApiResponse = await response.json();
+
+    console.log("[MotionAnalysis] External API response:", {
+      success: result.success,
+      message: result.message,
+      frames_processed: result.frames_processed,
+      frames_with_pose: result.frames_with_pose,
+      pose_detection_rate: result.pose_detection_rate,
+      duration_sec: result.duration_sec,
+      video_url: result.video_url,
+      skeleton_frames_count: result.skeleton_frames?.length ?? 0,
+    });
 
     // ── Transform and return response ──────────────────────────────────────
     if (!result.success) {

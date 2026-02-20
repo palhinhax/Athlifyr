@@ -44,6 +44,8 @@
  */
 
 import { NextResponse } from "next/server";
+import { transcodeToH264 } from "@/lib/ffmpeg-utils";
+import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 300; // 5 minutes for video processing
@@ -137,6 +139,12 @@ export async function POST(request: Request) {
       );
     }
 
+    console.log("[LiftAnalysis] Received file:", {
+      name: videoFile.name,
+      type: videoFile.type,
+      sizeMB: (videoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+    });
+
     const allowedTypes = [
       "video/mp4",
       "video/quicktime",
@@ -180,11 +188,53 @@ export async function POST(request: Request) {
       );
     }
 
+    // ── Transcode WebM → MP4 if needed ────────────────────────────────────
+    // MediaRecorder (client-side trim) always produces WebM/VP9. Railway's
+    // ffmpeg cannot reliably process canvas-captured WebM streams, so we
+    // transcode to H.264 MP4 on the server before forwarding.
+    let finalVideoFile: File = videoFile;
+    const baseType = videoFile.type.split(";")[0].trim();
+    if (baseType === "video/webm") {
+      try {
+        console.log(
+          "[LiftAnalysis] WebM detected — transcoding to H.264 MP4..."
+        );
+        const inputBuffer = Buffer.from(await videoFile.arrayBuffer());
+        const mp4Buffer = await transcodeToH264(inputBuffer);
+        finalVideoFile = new File(
+          [new Uint8Array(mp4Buffer)],
+          videoFile.name.replace(/\.[^.]+$/, ".mp4"),
+          { type: "video/mp4" }
+        );
+        console.log(
+          `[LiftAnalysis] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
+        );
+      } catch (err) {
+        const errMsg = err instanceof Error ? err.message : String(err);
+        console.error("[LiftAnalysis] Transcode failed:", errMsg);
+        const isOom =
+          errMsg.includes("OOM") ||
+          errMsg.includes("-9") ||
+          errMsg.includes("137");
+        return NextResponse.json(
+          {
+            error: isOom
+              ? "Video resolution is too high to process. Please record in 1080p or lower."
+              : "Failed to convert video. Please try uploading an MP4 file.",
+          },
+          { status: 400 }
+        );
+      }
+    }
+
     // ── Prepare form data for external API ────────────────────────────────
     const externalFormData = new FormData();
 
-    // Add video file
-    externalFormData.append("video", videoFile);
+    // Add video file — always supply an explicit filename so the multipart
+    // Content-Disposition header includes `filename=...`, which FastAPI
+    // requires to accept the upload (missing filename → 422).
+    const safeFilename = finalVideoFile.name || "video.mp4";
+    externalFormData.append("video", finalVideoFile, safeFilename);
 
     // Add required parameters
     externalFormData.append("seed_x", seedX.toString());
@@ -193,13 +243,23 @@ export async function POST(request: Request) {
     // Add optional parameters with defaults
     const seedFrame = formData.get("seed_frame") || "0";
     const showAngles = formData.get("show_angles") || "true";
-    const maxDurationSec = formData.get("max_duration_sec") || "60";
+    const maxDurationSec =
+      formData.get("max_duration_sec") || String(MAX_DURATION_LIFT_SEC);
     const autoDetect = formData.get("auto_detect") || "true";
 
     externalFormData.append("seed_frame", seedFrame.toString());
     externalFormData.append("show_angles", showAngles.toString());
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
     externalFormData.append("auto_detect", autoDetect.toString());
+
+    console.log("[LiftAnalysis] Forwarding to Railway:", {
+      filename: safeFilename,
+      type: finalVideoFile.type,
+      sizeMB: (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+      seed_x: seedX,
+      seed_y: seedY,
+      max_duration_sec: maxDurationSec,
+    });
 
     // ── Call external API ──────────────────────────────────────────────────
     const controller = new AbortController();
@@ -243,8 +303,24 @@ export async function POST(request: Request) {
 
       try {
         const errorJson = JSON.parse(errorText);
+        // FastAPI 422 returns { detail: [{ loc, msg, type }] } — flatten to a readable string
+        let errorMessage: string;
+        if (Array.isArray(errorJson.detail)) {
+          errorMessage = errorJson.detail
+            .map((e: { msg?: string; loc?: string[] }) =>
+              e.loc
+                ? `${e.loc.join(".")} — ${e.msg}`
+                : (e.msg ?? "Validation error")
+            )
+            .join("; ");
+        } else {
+          errorMessage =
+            typeof errorJson.detail === "string"
+              ? errorJson.detail
+              : errorJson.error || "Processing failed";
+        }
         return NextResponse.json(
-          { error: errorJson.detail || errorJson.error || "Processing failed" },
+          { error: errorMessage },
           { status: response.status }
         );
       } catch {

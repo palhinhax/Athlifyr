@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef, useMemo, useEffect } from "react";
-import { Canvas } from "@react-three/fiber";
+import { useRef, useMemo, useEffect, type RefObject } from "react";
+import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
 import type { SkeletonFrame } from "@/types/lift-analysis";
@@ -63,23 +63,63 @@ const BONE_COLORS: Record<string, string> = {
 
 const DEFAULT_BONE_COLOR = "#888888";
 
-// ── Skeleton Mesh Component ──────────────────────────────────────────────
+// Pre-convert bone colors to THREE.Color for fast lookup
+const BONE_COLOR_MAP = new Map<string, THREE.Color>(
+  Object.entries(BONE_COLORS).map(([k, v]) => [k, new THREE.Color(v)])
+);
+const DEFAULT_THREE_COLOR = new THREE.Color(DEFAULT_BONE_COLOR);
 
-interface SkeletonMeshProps {
-  frame: SkeletonFrame;
-  useWorldCoords: boolean;
+// ── Build landmark positions for a frame ────────────────────────────────
+
+function buildPositions(
+  frame: SkeletonFrame,
+  useWorldCoords: boolean
+): Map<number, THREE.Vector3> {
+  const positions = new Map<number, THREE.Vector3>();
+  for (const lm of frame.landmarks) {
+    if (lm.visibility < MIN_VISIBILITY) continue;
+    let pos: THREE.Vector3;
+    if (
+      useWorldCoords &&
+      lm.worldX !== null &&
+      lm.worldY !== null &&
+      lm.worldZ !== null
+    ) {
+      pos = new THREE.Vector3(lm.worldX, -lm.worldY, -lm.worldZ);
+    } else {
+      pos = new THREE.Vector3(lm.x - 0.5, -(lm.y - 0.5), -lm.z * 0.3);
+    }
+    positions.set(lm.index, pos);
+  }
+  return positions;
 }
 
-function SkeletonMesh({ frame, useWorldCoords }: SkeletonMeshProps) {
-  const jointsRef = useRef<THREE.InstancedMesh>(null);
-  const bonesGroupRef = useRef<THREE.Group>(null);
+// ── Skeleton Mesh Component — fully imperative, zero React re-renders ─────
 
-  // Pre-create geometry & material for joints
-  const jointGeometry = useMemo(
-    () => new THREE.SphereGeometry(0.012, 12, 12),
-    []
-  );
-  const jointMaterial = useMemo(
+interface SkeletonSceneProps {
+  frames: SkeletonFrame[];
+  useWorldCoords: boolean;
+  /** If provided, frame index is driven by video.currentTime in useFrame (60fps) */
+  videoRef?: RefObject<HTMLVideoElement | null>;
+  /** Fallback: controlled frame index when no videoRef */
+  currentFrameIndex: number;
+  /** fps of the skeleton data, used to map video time → frame index */
+  fps: number;
+}
+
+function SkeletonScene({
+  frames,
+  useWorldCoords,
+  videoRef,
+  currentFrameIndex,
+  fps,
+}: SkeletonSceneProps) {
+  const MAX_JOINTS = 33;
+  const MAX_BONES = 40;
+
+  // ── Joint instanced mesh ──────────────────────────────────────────────
+  const jointGeo = useMemo(() => new THREE.SphereGeometry(0.012, 8, 8), []);
+  const jointMat = useMemo(
     () =>
       new THREE.MeshStandardMaterial({
         color: "#ffffff",
@@ -88,99 +128,121 @@ function SkeletonMesh({ frame, useWorldCoords }: SkeletonMeshProps) {
       }),
     []
   );
+  const jointsRef = useRef<THREE.InstancedMesh>(null);
 
-  // Compute positions for this frame
-  const { positions, boneSegments } = useMemo(() => {
-    const positions = new Map<number, THREE.Vector3>();
+  // ── Bone line segments ────────────────────────────────────────────────
+  // Use LineSegments with a pre-allocated BufferGeometry — just update positions
+  const bonePositionsBuf = useMemo(
+    () => new Float32Array(MAX_BONES * 2 * 3), // 2 vertices × 3 floats per bone
+    []
+  );
+  const boneColorsBuf = useMemo(
+    () => new Float32Array(MAX_BONES * 2 * 3), // color per vertex
+    []
+  );
+  const boneGeo = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute(
+      "position",
+      new THREE.BufferAttribute(bonePositionsBuf, 3)
+    );
+    geo.setAttribute("color", new THREE.BufferAttribute(boneColorsBuf, 3));
+    geo.setDrawRange(0, 0);
+    return geo;
+  }, [bonePositionsBuf, boneColorsBuf]);
+  const boneMat = useMemo(
+    () =>
+      new THREE.LineBasicMaterial({
+        vertexColors: true,
+        linewidth: 2, // only works on WebGL2 / some platforms
+      }),
+    []
+  );
 
-    for (const lm of frame.landmarks) {
-      if (lm.visibility < MIN_VISIBILITY) continue;
+  // Reusable scratch objects to avoid allocations in useFrame
+  const _dummy = useMemo(() => new THREE.Object3D(), []);
+  const lastFrameRef = useRef(-1);
 
-      let pos: THREE.Vector3;
-      if (
-        useWorldCoords &&
-        lm.worldX !== null &&
-        lm.worldY !== null &&
-        lm.worldZ !== null
-      ) {
-        // World coords: X = right, Y = up (negate API Y which is down), Z = toward camera
-        pos = new THREE.Vector3(lm.worldX, -lm.worldY, -lm.worldZ);
-      } else {
-        // Normalized coords: map [0,1] to [-0.5, 0.5], flip Y
-        pos = new THREE.Vector3(lm.x - 0.5, -(lm.y - 0.5), -lm.z * 0.3);
+  // ── Write frame to GPU objects ────────────────────────────────────────
+  const writeFrame = useMemo(
+    () => (frameIdx: number) => {
+      if (frameIdx === lastFrameRef.current) return;
+      lastFrameRef.current = frameIdx;
+
+      const frame = frames[Math.max(0, Math.min(frameIdx, frames.length - 1))];
+      if (!frame) return;
+
+      const joints = jointsRef.current;
+      if (!joints) return;
+
+      const positions = buildPositions(frame, useWorldCoords);
+
+      // Update joint instanced mesh
+      let ji = 0;
+      for (const pos of positions.values()) {
+        _dummy.position.copy(pos);
+        _dummy.updateMatrix();
+        joints.setMatrixAt(ji, _dummy.matrix);
+        ji++;
       }
-      positions.set(lm.index, pos);
-    }
+      joints.count = ji;
+      joints.instanceMatrix.needsUpdate = true;
 
-    const boneSegments: {
-      start: THREE.Vector3;
-      end: THREE.Vector3;
-      key: string;
-    }[] = [];
-    for (const bone of frame.bones) {
-      const start = positions.get(bone.startIndex);
-      const end = positions.get(bone.endIndex);
-      if (start && end) {
-        boneSegments.push({
-          start,
-          end,
-          key: `${bone.startName}_${bone.endName}`,
-        });
+      // Update bone line segments
+      let bi = 0;
+      for (const bone of frame.bones) {
+        const start = positions.get(bone.startIndex);
+        const end = positions.get(bone.endIndex);
+        if (!start || !end) continue;
+        if (bi >= MAX_BONES) break;
+
+        const base = bi * 6;
+        bonePositionsBuf[base] = start.x;
+        bonePositionsBuf[base + 1] = start.y;
+        bonePositionsBuf[base + 2] = start.z;
+        bonePositionsBuf[base + 3] = end.x;
+        bonePositionsBuf[base + 4] = end.y;
+        bonePositionsBuf[base + 5] = end.z;
+
+        const key = `${bone.startName}_${bone.endName}`;
+        const col = BONE_COLOR_MAP.get(key) ?? DEFAULT_THREE_COLOR;
+        boneColorsBuf[base] = col.r;
+        boneColorsBuf[base + 1] = col.g;
+        boneColorsBuf[base + 2] = col.b;
+        boneColorsBuf[base + 3] = col.r;
+        boneColorsBuf[base + 4] = col.g;
+        boneColorsBuf[base + 5] = col.b;
+
+        bi++;
       }
+      boneGeo.setDrawRange(0, bi * 2);
+      (boneGeo.attributes.position as THREE.BufferAttribute).needsUpdate = true;
+      (boneGeo.attributes.color as THREE.BufferAttribute).needsUpdate = true;
+    },
+    [frames, useWorldCoords, bonePositionsBuf, boneColorsBuf, boneGeo, _dummy]
+  );
+
+  // ── Sync to video via useFrame (60fps, no React state) ────────────────
+  useFrame(() => {
+    let frameIdx: number;
+    if (videoRef?.current && fps > 0) {
+      frameIdx = Math.floor(videoRef.current.currentTime * fps);
+    } else {
+      frameIdx = currentFrameIndex;
     }
+    writeFrame(frameIdx);
+  });
 
-    return { positions, boneSegments };
-  }, [frame, useWorldCoords]);
-
-  // Update instanced mesh for joints
+  // Initial write on mount / when frames change
   useEffect(() => {
-    const mesh = jointsRef.current;
-    if (!mesh) return;
-
-    const dummy = new THREE.Object3D();
-    let i = 0;
-    for (const pos of positions.values()) {
-      dummy.position.copy(pos);
-      dummy.updateMatrix();
-      mesh.setMatrixAt(i, dummy.matrix);
-      i++;
-    }
-    mesh.count = i;
-    mesh.instanceMatrix.needsUpdate = true;
-  }, [positions]);
+    lastFrameRef.current = -1; // force redraw
+    writeFrame(currentFrameIndex);
+  }, [frames, writeFrame, currentFrameIndex]);
 
   return (
-    <group ref={bonesGroupRef}>
-      {/* Joints as instanced spheres */}
-      <instancedMesh
-        ref={jointsRef}
-        args={[jointGeometry, jointMaterial, 33]}
-      />
-
-      {/* Bones as cylinders */}
-      {boneSegments.map((seg, i) => {
-        const mid = new THREE.Vector3().lerpVectors(seg.start, seg.end, 0.5);
-        const dir = new THREE.Vector3().subVectors(seg.end, seg.start);
-        const length = dir.length();
-        const quaternion = new THREE.Quaternion();
-        quaternion.setFromUnitVectors(
-          new THREE.Vector3(0, 1, 0),
-          dir.clone().normalize()
-        );
-
-        const color = BONE_COLORS[seg.key] || DEFAULT_BONE_COLOR;
-
-        return (
-          <mesh key={i} position={mid} quaternion={quaternion}>
-            <cylinderGeometry args={[0.005, 0.005, length, 6]} />
-            <meshStandardMaterial
-              color={color}
-              roughness={0.4}
-              metalness={0.1}
-            />
-          </mesh>
-        );
-      })}
+    <group>
+      <instancedMesh ref={jointsRef} args={[jointGeo, jointMat, MAX_JOINTS]} />
+      <lineSegments geometry={boneGeo} material={boneMat} />
     </group>
   );
 }
@@ -262,39 +324,25 @@ function GroundGrid() {
   );
 }
 
-// ── Animation Loop Component ─────────────────────────────────────────────
-
-interface AnimatedSkeletonProps {
-  frames: SkeletonFrame[];
-  currentFrameIndex: number;
-  useWorldCoords: boolean;
-}
-
-function AnimatedSkeleton({
-  frames,
-  currentFrameIndex,
-  useWorldCoords,
-}: AnimatedSkeletonProps) {
-  const clampedIndex = Math.min(
-    Math.max(currentFrameIndex, 0),
-    frames.length - 1
-  );
-  const frame = frames[clampedIndex];
-
-  if (!frame || frame.landmarks.length === 0) {
-    return null;
-  }
-
-  return <SkeletonMesh frame={frame} useWorldCoords={useWorldCoords} />;
-}
-
 // ── Main Exported Component ──────────────────────────────────────────────
 
 interface Skeleton3DViewerProps {
   /** All skeleton frames from the analysis */
   frames: SkeletonFrame[];
-  /** Current frame index to display (synced with video) */
+  /** Current frame index to display (fallback when no videoRef) */
   currentFrameIndex: number;
+  /**
+   * Optional ref to the <video> element. When provided, the 3D view is
+   * driven directly by video.currentTime inside the Three.js render loop
+   * at 60fps — no React state updates, perfectly smooth.
+   */
+  videoRef?: RefObject<HTMLVideoElement | null>;
+  /**
+   * Frames-per-second of the skeleton data.
+   * Used to map video.currentTime → frame index when videoRef is provided.
+   * Defaults to 25 if not given.
+   */
+  fps?: number;
   /** Container width */
   width?: number | string;
   /** Container height */
@@ -308,6 +356,8 @@ interface Skeleton3DViewerProps {
 export function Skeleton3DViewer({
   frames,
   currentFrameIndex,
+  videoRef,
+  fps = 25,
   width = "100%",
   height = 400,
   useWorldCoords = true,
@@ -334,6 +384,7 @@ export function Skeleton3DViewer({
       <Canvas
         gl={{ antialias: true, alpha: true }}
         style={{ background: "#0a0a0a", borderRadius: "0.5rem" }}
+        frameloop="always"
       >
         <PerspectiveCamera makeDefault position={[0, 0, 1.5]} fov={50} />
         <AutoCenter frame={firstValidFrame} useWorldCoords={useWorldCoords} />
@@ -346,11 +397,13 @@ export function Skeleton3DViewer({
         {/* Ground */}
         <GroundGrid />
 
-        {/* Skeleton */}
-        <AnimatedSkeleton
+        {/* Skeleton — imperative, driven by useFrame at 60fps */}
+        <SkeletonScene
           frames={frames}
-          currentFrameIndex={currentFrameIndex}
           useWorldCoords={useWorldCoords}
+          videoRef={videoRef}
+          currentFrameIndex={currentFrameIndex}
+          fps={fps}
         />
       </Canvas>
     </div>

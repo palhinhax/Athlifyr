@@ -2,7 +2,7 @@
  * POST /api/analyses/lift
  *
  * Save a lift (bar path) analysis to the database.
- * Can either upload a video to B2 OR use an existing video URL from processing.
+ * Can upload a video to B2 OR use an existing video URL from processing.
  *
  * Requires authentication (Bearer JWT or NextAuth session).
  *
@@ -34,7 +34,9 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
-import { uploadToB2 } from "@/lib/b2-storage";
+import { uploadToB2, deleteFromB2ByName } from "@/lib/b2-storage";
+import { remuxMp4Faststart } from "@/lib/ffmpeg-utils";
+import { MAX_FILE_BYTES } from "@/lib/video-limits";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
@@ -95,11 +97,23 @@ export async function POST(request: Request) {
       }
       const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
       console.log(
-        `[LiftAnalysis] Downloaded ${videoBuffer.length} bytes, uploading to B2...`
+        `[LiftAnalysis] Downloaded ${videoBuffer.length} bytes, applying faststart...`
       );
 
+      // API already returns H.264 — just remux to move moov atom to start
+      // so browsers can determine duration instantly without buffering the whole file.
+      let uploadBuffer: Buffer = videoBuffer;
+      try {
+        uploadBuffer = await remuxMp4Faststart(videoBuffer);
+      } catch (remuxErr) {
+        console.warn(
+          "[LiftAnalysis] ffmpeg remux failed, uploading original:",
+          remuxErr
+        );
+      }
+
       const uploadResult = await uploadToB2({
-        file: videoBuffer,
+        file: uploadBuffer,
         fileName: `lift_${localId}.mp4`,
         contentType: "video/mp4",
         folder: "analyses",
@@ -117,25 +131,44 @@ export async function POST(request: Request) {
     }
   } else if (videoFile && videoFile instanceof File) {
     // Upload video file to B2
-    const allowedTypes = ["video/mp4", "video/quicktime", "video/webm"];
-    if (!allowedTypes.includes(videoFile.type)) {
+    // Match on the base MIME type (before any codec params like "video/webm;codecs=vp9")
+    const baseType = videoFile.type.split(";")[0].trim();
+    const allowedTypes = [
+      "video/mp4",
+      "video/quicktime",
+      "video/webm",
+      "video/x-msvideo",
+      "video/x-matroska",
+    ];
+    if (!allowedTypes.includes(baseType)) {
       return NextResponse.json(
-        { error: "Only mp4, mov, and webm videos are supported" },
+        { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
         { status: 400 }
       );
     }
 
-    const maxBytes = 200 * 1024 * 1024; // 200 MB
+    const maxBytes = MAX_FILE_BYTES; // 100 MB
     if (videoFile.size > maxBytes) {
       return NextResponse.json(
-        { error: "Video exceeds 200 MB limit" },
+        { error: "Video exceeds 100 MB limit" },
         { status: 400 }
       );
     }
 
     const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
+
+    // Remux to ensure moov atom is at start for instant browser playback
+    let uploadBuffer: Buffer = videoBuffer;
+    try {
+      uploadBuffer = await remuxMp4Faststart(videoBuffer);
+    } catch (remuxErr) {
+      console.warn(
+        "[LiftAnalysis] ffmpeg remux failed on direct upload, using original:",
+        remuxErr
+      );
+    }
     const uploadResult = await uploadToB2({
-      file: videoBuffer,
+      file: uploadBuffer,
       fileName: `lift_${localId}.mp4`,
       contentType: videoFile.type || "video/mp4",
       folder: "analyses",
@@ -259,4 +292,61 @@ export async function GET(request: Request) {
   });
 
   return NextResponse.json({ analyses });
+}
+
+/**
+ * DELETE /api/analyses/lift
+ * Delete a lift analysis by ID. Removes the record from the DB and the video from B2.
+ * Body JSON: { id: string }
+ * Response 200: { success: true }
+ * Response 400: { error }
+ * Response 401: { error: "Unauthorized" }
+ * Response 404: { error: "Not found" }
+ */
+export async function DELETE(request: Request) {
+  const user = await getAuthUser(request);
+  if (!user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let body: { id?: string };
+  try {
+    body = (await request.json()) as { id?: string };
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const { id } = body;
+  if (!id || typeof id !== "string") {
+    return NextResponse.json({ error: "id is required" }, { status: 400 });
+  }
+
+  // Find the record — must belong to the authenticated user
+  const record = await prisma.liftAnalysisRecord.findUnique({
+    where: { id },
+    select: { id: true, userId: true, videoB2Key: true },
+  });
+
+  if (!record || record.userId !== user.id) {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
+  // Delete video from B2 (best-effort — don't block DB deletion)
+  if (record.videoB2Key) {
+    try {
+      await deleteFromB2ByName(record.videoB2Key);
+    } catch (err) {
+      console.error(
+        `[LiftAnalysis] Failed to delete B2 file ${record.videoB2Key}:`,
+        err
+      );
+    }
+  }
+
+  // Delete DB record
+  await prisma.liftAnalysisRecord.delete({
+    where: { id },
+  });
+
+  return NextResponse.json({ success: true });
 }

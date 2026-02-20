@@ -43,21 +43,33 @@ export function useGoogleAuth() {
     Constants.executionEnvironment === "storeClient" ||
     (Constants as unknown as Record<string, string>).appOwnership === "expo";
 
-  // auth.expo.io proxy only works with Authorization Code + PKCE flow.
-  // Standalone APK uses native deep-link with Android Client ID.
-  const redirectUri = isExpoGo
-    ? "https://auth.expo.io/@joaomduart/athlifyr"
-    : AuthSession.makeRedirectUri({ scheme: "com.athlifyr.app" });
+  // Build the redirect URI dynamically:
+  // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected)
+  // - Dev build / Production: athlifyr://redirect  (custom scheme)
+  const redirectUri = AuthSession.makeRedirectUri({
+    scheme: "athlifyr",
+    path: "redirect",
+  });
 
-  // Expo Go -> Web Client ID (proxy flow)
-  // Standalone -> Android Client ID (native flow)
+  // Both environments use PKCE authorization code flow.
+  // Expo Go  → Web Client ID   (web-type credential in Google Cloud Console)
+  //            The redirect URI (exp://...) must be added to the client's
+  //            "Authorized redirect URIs" in Google Cloud Console.
+  // Standalone → Android Client ID (android-type credential)
+  //
+  // The authorization code is exchanged server-side via /auth/google/exchange
+  // which uses GOOGLE_CLIENT_SECRET.
   const clientId = isExpoGo
     ? (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "")
     : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
 
-  console.log("[GoogleAuth]", { isExpoGo, redirectUri, clientId: clientId.substring(0, 30) + "..." });
+  console.log("[GoogleAuth]", {
+    isExpoGo,
+    redirectUri,
+    clientId: clientId.substring(0, 30) + "...",
+  });
 
-  // Authorization Code + PKCE  compatible with auth.expo.io proxy
+  // PKCE Authorization Code flow for all environments
   const [request, response, promptAsync] = AuthSession.useAuthRequest(
     {
       clientId,
@@ -70,7 +82,23 @@ export function useGoogleAuth() {
     discovery
   );
 
-  console.log("[GoogleAuth] ready:", !!request, "| URI:", request?.redirectUri ?? "pending");
+  console.log(
+    "[GoogleAuth] ready:",
+    !!request,
+    "| URI:",
+    request?.redirectUri ?? "pending"
+  );
+
+  // Wrap promptAsync to warn when running in Expo Go
+  const safePromptAsync: typeof promptAsync = async (options) => {
+    if (isExpoGo) {
+      console.warn(
+        "[GoogleAuth] Google Sign-In is not supported in Expo Go. " +
+          "Use a development or preview build (eas build --profile preview)."
+      );
+    }
+    return promptAsync(options);
+  };
 
   useEffect(() => {
     if (!response || processingRef.current) return;
@@ -78,45 +106,49 @@ export function useGoogleAuth() {
     console.log("[GoogleAuth] RESPONSE:", JSON.stringify(response, null, 2));
 
     if (response.type === "success") {
-      const code = response.params?.code;
-      const codeVerifier = request?.codeVerifier;
-
-      if (!code) {
-        setError("No authorization code received");
-        return;
-      }
-      if (!codeVerifier) {
-        setError("PKCE code verifier missing");
-        return;
-      }
-
       processingRef.current = true;
       setIsLoading(true);
       setError(null);
 
-      api
-        .post<AuthResponse>("/auth/google/exchange", {
+      const authenticate = async (): Promise<AuthResponse> => {
+        const code = response.params?.code;
+        const codeVerifier = request?.codeVerifier;
+        if (!code) throw new Error("No authorization code received");
+        if (!codeVerifier) throw new Error("PKCE code verifier missing");
+
+        const res = await api.post<AuthResponse>("/auth/google/exchange", {
           code,
           codeVerifier,
           redirectUri,
           platform: Platform.OS === "ios" ? "ios" : "android",
-        })
-        .then(async (res) => {
-          const { token, refreshToken, user, expiresIn } = res.data;
+        });
+        return res.data;
+      };
 
+      authenticate()
+        .then(async ({ token, refreshToken, user, expiresIn }) => {
           await SecureStore.setItemAsync(TOKEN_KEY, token);
-          if (refreshToken) await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+          if (refreshToken)
+            await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
           if (expiresIn) {
-            await SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, String(Date.now() + expiresIn * 1000));
+            await SecureStore.setItemAsync(
+              TOKEN_EXPIRY_KEY,
+              String(Date.now() + expiresIn * 1000)
+            );
           }
 
           setUser(user);
-          useAuthStore.setState({ token, isAuthenticated: true, isLoading: false });
-          console.log(" Google auth OK, user:", user.id);
+          useAuthStore.setState({
+            token,
+            isAuthenticated: true,
+            isLoading: false,
+          });
+          console.log("✅ Google auth OK, user:", user.id);
         })
         .catch((err: unknown) => {
-          const message = err instanceof Error ? err.message : "Authentication failed";
-          console.error(" Google auth error:", message);
+          const message =
+            err instanceof Error ? err.message : "Authentication failed";
+          console.error("❌ Google auth error:", message);
           setError(message);
           SecureStore.deleteItemAsync(TOKEN_KEY);
           SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
@@ -127,17 +159,17 @@ export function useGoogleAuth() {
           processingRef.current = false;
         });
     } else if (response.type === "error") {
-      console.error(" Google auth error response:", response.error);
+      console.error("❌ Google auth error response:", response.error);
       setError(response.error?.message ?? "Authentication error");
     } else if (response.type === "cancel") {
-      console.log("ℹ Google auth cancelled");
+      console.log("ℹ️ Google auth cancelled");
       setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [response]);
 
   return {
-    promptAsync,
+    promptAsync: safePromptAsync,
     isReady: !!request,
     isLoading,
     error,

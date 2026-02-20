@@ -9,13 +9,18 @@ import {
   CalendarDays,
   Clock,
   Play,
+  Pause,
   Download,
   Loader2,
   Plus,
   Video,
   Box,
+  Trash2,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
 } from "lucide-react";
-import type { SkeletonFrame } from "@/types/lift-analysis";
+import type { SkeletonFrame, PoseAngles } from "@/types/lift-analysis";
 
 // Dynamic import for Three.js component to prevent SSR issues
 const Skeleton3DViewer = dynamic(
@@ -35,6 +40,7 @@ const Skeleton3DViewer = dynamic(
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Slider } from "@/components/ui/slider";
 import {
   Dialog,
   DialogContent,
@@ -42,6 +48,17 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -106,6 +123,14 @@ interface LiftAnalysisJson {
     maxHorizontalDrift?: number;
     totalVerticalTravel?: number;
     averageSpeed?: number;
+  };
+  skeletonFrames?: SkeletonFrame[];
+  pose?: {
+    framesProcessed: number;
+    framesWithPose: number;
+    detectionRate: number;
+    durationSec: number;
+    averageAngles: PoseAngles | null;
   };
 }
 
@@ -401,6 +426,208 @@ function ExportButton({
   );
 }
 
+// ── Skeleton Playback Hook ────────────────────────────────────────────────────
+
+/**
+ * Manages play/pause/seek state for skeleton playback.
+ *
+ * Key insight: the Skeleton3DViewer reads videoRef.current.currentTime
+ * directly in its Three.js useFrame loop at 60fps. So we simply
+ * play/pause the (hidden) video element — no requestAnimationFrame
+ * or React state frame advancement needed.
+ */
+function useSkeletonPlayback({
+  videoRef,
+  totalFrames,
+  durationSec,
+  setCurrentFrameIndex,
+}: {
+  videoRef: React.RefObject<HTMLVideoElement | null>;
+  totalFrames: number;
+  durationSec: number;
+  setCurrentFrameIndex: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Sync isPlaying state from video element events
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const onPlay = () => setIsPlaying(true);
+    const onPause = () => setIsPlaying(false);
+    const onEnded = () => {
+      setIsPlaying(false);
+      setCurrentFrameIndex(0);
+    };
+    video.addEventListener("play", onPlay);
+    video.addEventListener("pause", onPause);
+    video.addEventListener("ended", onEnded);
+    return () => {
+      video.removeEventListener("play", onPlay);
+      video.removeEventListener("pause", onPause);
+      video.removeEventListener("ended", onEnded);
+    };
+  }, [setCurrentFrameIndex, videoRef]);
+
+  // Keep slider position in sync while playing (low-frequency update)
+  useEffect(() => {
+    if (!isPlaying) return;
+    const video = videoRef.current;
+    if (!video) return;
+    const interval = setInterval(() => {
+      const dur = video.duration || durationSec;
+      if (dur > 0 && totalFrames > 0) {
+        const idx = Math.min(
+          Math.floor((video.currentTime / dur) * totalFrames),
+          totalFrames - 1
+        );
+        setCurrentFrameIndex(idx);
+      }
+    }, 250); // 4 updates/sec is plenty for the slider
+    return () => clearInterval(interval);
+  }, [isPlaying, totalFrames, durationSec, setCurrentFrameIndex, videoRef]);
+
+  const handlePlayPause = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      video.play();
+    } else {
+      video.pause();
+    }
+  }, [videoRef]);
+
+  const handleReset = useCallback(() => {
+    const video = videoRef.current;
+    if (video) {
+      video.currentTime = 0;
+      video.pause();
+    }
+    setIsPlaying(false);
+    setCurrentFrameIndex(0);
+  }, [setCurrentFrameIndex, videoRef]);
+
+  const handleFrameSlider = useCallback(
+    (value: number[]) => {
+      const frameIndex = value[0];
+      setCurrentFrameIndex(frameIndex);
+      const video = videoRef.current;
+      if (video && totalFrames > 0) {
+        const dur = video.duration || durationSec;
+        video.currentTime = (frameIndex / totalFrames) * dur;
+      }
+    },
+    [totalFrames, durationSec, setCurrentFrameIndex, videoRef]
+  );
+
+  const handleStepFrame = useCallback(
+    (value: -1 | 1) => {
+      const video = videoRef.current;
+      if (video) video.pause();
+      setIsPlaying(false);
+      setCurrentFrameIndex((prev) => {
+        const next = Math.max(0, Math.min(prev + value, totalFrames - 1));
+        if (video && totalFrames > 0) {
+          const dur = video.duration || durationSec;
+          video.currentTime = (next / totalFrames) * dur;
+        }
+        return next;
+      });
+    },
+    [totalFrames, durationSec, setCurrentFrameIndex, videoRef]
+  );
+
+  return {
+    isPlaying,
+    handlePlayPause,
+    handleReset,
+    handleFrameSlider,
+    handleStepFrame,
+  };
+}
+
+// ── Skeleton Playback Controls UI ─────────────────────────────────────────────
+
+function SkeletonPlaybackControls({
+  isPlaying,
+  currentFrameIndex,
+  totalFrames,
+  onPlayPause,
+  onReset,
+  onFrameSlider,
+  onStepFrame,
+}: {
+  isPlaying: boolean;
+  currentFrameIndex: number;
+  totalFrames: number;
+  onPlayPause: () => void;
+  onReset: () => void;
+  onFrameSlider: (value: number[]) => void;
+  onStepFrame: (direction: -1 | 1) => void;
+}) {
+  return (
+    <div className="flex flex-col gap-2 border-t bg-muted/30 px-4 py-3">
+      {/* Frame slider */}
+      {totalFrames > 1 && (
+        <div className="flex items-center gap-3">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onStepFrame(-1)}
+            disabled={currentFrameIndex === 0}
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </Button>
+
+          <Slider
+            value={[currentFrameIndex]}
+            min={0}
+            max={totalFrames - 1}
+            step={1}
+            onValueChange={onFrameSlider}
+            className="flex-1"
+          />
+
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-7 w-7"
+            onClick={() => onStepFrame(1)}
+            disabled={currentFrameIndex >= totalFrames - 1}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+
+          <span className="min-w-[80px] text-right text-xs text-muted-foreground">
+            {currentFrameIndex + 1} / {totalFrames}
+          </span>
+        </div>
+      )}
+
+      {/* Play controls */}
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onPlayPause}
+          className="gap-1.5"
+        >
+          {isPlaying ? (
+            <Pause className="h-3.5 w-3.5" />
+          ) : (
+            <Play className="h-3.5 w-3.5" />
+          )}
+          {isPlaying ? "Pausar" : "Reproduzir"}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={onReset}>
+          <RotateCcw className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 // ── Motion Video Modal ────────────────────────────────────────────────────────
 
 type ViewMode = "video" | "skeleton" | "split";
@@ -417,12 +644,18 @@ function MotionVideoModal({
   const [currentMs, setCurrentMs] = useState(0);
   const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
   const [viewMode, setViewMode] = useState<ViewMode>("video");
+  const [videoBlobUrl, setVideoBlobUrl] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   const json = record?.analysisJson as MotionAnalysisJson | undefined;
 
   // Support both old (poseFrames) and new (skeletonFrames) formats
   const poseFrames = json?.poseFrames ?? [];
-  const skeletonFrames = json?.skeletonFrames ?? [];
+  const skeletonFrames = useMemo(
+    () => json?.skeletonFrames ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [record?.id]
+  );
   const hasSkeletonData = skeletonFrames.length > 0;
 
   // Get metrics from either new or old format
@@ -445,6 +678,28 @@ function MotionVideoModal({
     () => skeletonFrames.filter((f) => f.landmarks.length > 0).length,
     [skeletonFrames]
   );
+
+  // Use the server-side video proxy to avoid CORS/range-request issues with B2
+  useEffect(() => {
+    if (!record?.videoUrl) {
+      setVideoBlobUrl(null);
+      setVideoLoading(false);
+      return;
+    }
+
+    const proxyUrl = `/api/video-proxy?url=${encodeURIComponent(record.videoUrl)}`;
+    setVideoBlobUrl(proxyUrl);
+    setVideoLoading(false);
+  }, [record?.videoUrl]);
+
+  // Cleanup blob URL on unmount or record change
+  useEffect(() => {
+    return () => {
+      if (videoBlobUrl && videoBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(videoBlobUrl);
+      }
+    };
+  }, [videoBlobUrl]);
 
   // Reset on open
   useEffect(() => {
@@ -501,6 +756,43 @@ function MotionVideoModal({
     [hasSkeletonData, durationMs, frameCount]
   );
 
+  // Debug: log video errors
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const onError = () => {
+      const err = video.error;
+      console.error(
+        "[MotionVideoModal] Video error:",
+        err?.code,
+        err?.message,
+        "src:",
+        video.src
+      );
+    };
+    const onLoadedData = () => {
+      console.log(
+        "[MotionVideoModal] Video loaded — duration:",
+        video.duration,
+        "readyState:",
+        video.readyState
+      );
+    };
+    const onStalled = () => {
+      console.warn("[MotionVideoModal] Video stalled");
+    };
+
+    video.addEventListener("error", onError);
+    video.addEventListener("loadeddata", onLoadedData);
+    video.addEventListener("stalled", onStalled);
+    return () => {
+      video.removeEventListener("error", onError);
+      video.removeEventListener("loadeddata", onLoadedData);
+      video.removeEventListener("stalled", onStalled);
+    };
+  }, [record]);
+
   const absoluteMs = segmentStartMs + currentMs * 1000;
 
   // For legacy overlay (old format)
@@ -516,15 +808,28 @@ function MotionVideoModal({
 
   const { exportState, startExport } = useExportVideo(record);
 
+  const {
+    isPlaying: skeletonIsPlaying,
+    handlePlayPause: skeletonPlayPause,
+    handleReset: skeletonReset,
+    handleFrameSlider: skeletonFrameSlider,
+    handleStepFrame: skeletonStepFrame,
+  } = useSkeletonPlayback({
+    videoRef,
+    totalFrames: skeletonFrames.length,
+    durationSec: durationMs ? durationMs / 1000 : 0,
+    setCurrentFrameIndex,
+  });
+
   return (
     <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
-        className={`gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
+        className={`max-h-[90vh] gap-0 overflow-y-auto p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
           viewMode === "split" ? "max-w-5xl" : "max-w-2xl"
         }`}
       >
         {/* Dark header */}
-        <div className="flex items-start gap-3 bg-black px-5 py-4">
+        <div className="sticky top-0 z-10 flex items-start gap-3 bg-black px-5 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
             <Activity className="h-5 w-5 text-primary" />
           </div>
@@ -606,39 +911,47 @@ function MotionVideoModal({
             viewMode === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
           }`}
         >
-          {/* Video panel */}
-          {viewMode !== "skeleton" && (
-            <div className="relative flex w-full justify-center bg-black">
-              {record && (
-                <>
-                  {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-                  <video
-                    ref={videoRef}
-                    key={record.id}
-                    src={record.videoUrl}
-                    controls
-                    autoPlay
-                    playsInline
-                    className="max-h-[60vh] w-full object-contain"
-                    onLoadedMetadata={updateVideoSize}
-                    onTimeUpdate={(e) =>
-                      handleTimeUpdate(e.currentTarget.currentTime)
-                    }
+          {/* Video panel - always mounted to avoid reload on mode switch */}
+          <div
+            className={`relative flex w-full items-center justify-center bg-black ${
+              viewMode === "skeleton" ? "hidden" : "min-h-[200px]"
+            }`}
+          >
+            {record && videoLoading && (
+              <div className="flex flex-col items-center gap-2 py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                <p className="text-xs text-white/40">A carregar vídeo…</p>
+              </div>
+            )}
+            {record && videoBlobUrl && !videoLoading && (
+              <>
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <video
+                  ref={videoRef}
+                  key={record.id}
+                  src={videoBlobUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-h-[50vh] min-h-[200px] w-full object-contain"
+                  onLoadedMetadata={updateVideoSize}
+                  onTimeUpdate={(e) =>
+                    handleTimeUpdate(e.currentTarget.currentTime)
+                  }
+                />
+                {/* Legacy skeleton overlay for old format */}
+                {!hasSkeletonData && viewMode !== "skeleton" && (
+                  <SkeletonOverlay
+                    frame={frame}
+                    width={videoSize.w}
+                    height={videoSize.h}
+                    left={videoSize.left}
+                    top={videoSize.top}
                   />
-                  {/* Legacy skeleton overlay for old format */}
-                  {!hasSkeletonData && (
-                    <SkeletonOverlay
-                      frame={frame}
-                      width={videoSize.w}
-                      height={videoSize.h}
-                      left={videoSize.left}
-                      top={videoSize.top}
-                    />
-                  )}
-                </>
-              )}
-            </div>
-          )}
+                )}
+              </>
+            )}
+          </div>
 
           {/* 3D Skeleton panel */}
           {viewMode !== "video" && framesWithData > 0 && (
@@ -646,6 +959,12 @@ function MotionVideoModal({
               <Skeleton3DViewer
                 frames={skeletonFrames}
                 currentFrameIndex={currentFrameIndex}
+                videoRef={videoRef}
+                fps={
+                  durationMs && durationMs > 0
+                    ? frameCount / (durationMs / 1000)
+                    : 25
+                }
                 height={viewMode === "skeleton" ? 500 : 400}
                 className="w-full overflow-hidden rounded-lg border"
               />
@@ -659,6 +978,19 @@ function MotionVideoModal({
             </div>
           )}
         </div>
+
+        {/* Skeleton playback controls — shown when video is hidden */}
+        {viewMode === "skeleton" && framesWithData > 0 && (
+          <SkeletonPlaybackControls
+            isPlaying={skeletonIsPlaying}
+            currentFrameIndex={currentFrameIndex}
+            totalFrames={skeletonFrames.length}
+            onPlayPause={skeletonPlayPause}
+            onReset={skeletonReset}
+            onFrameSlider={skeletonFrameSlider}
+            onStepFrame={skeletonStepFrame}
+          />
+        )}
 
         {/* Metrics footer - support both old and new formats */}
         {(legacyMetrics.kneeFlexionDeg !== undefined ||
@@ -750,16 +1082,60 @@ function LiftVideoModal({
   const videoRef = useRef<HTMLVideoElement>(null);
   const [videoSize, setVideoSize] = useState({ w: 0, h: 0, left: 0, top: 0 });
   const [currentMs, setCurrentMs] = useState(0);
+  const [currentFrameIndex, setCurrentFrameIndex] = useState(0);
+  const [viewMode, setViewMode] = useState<ViewMode>("video");
+  const [videoBlobUrl, setVideoBlobUrl] = useState<string | null>(null);
+  const [videoLoading, setVideoLoading] = useState(false);
 
   const json = record?.analysisJson as LiftAnalysisJson | undefined;
   const barPath = json?.barPath ?? [];
   const durationMs = json?.durationMs;
   const metrics = json?.metrics ?? {};
 
+  // Skeleton 3D data
+  const skeletonFrames = useMemo(
+    () => json?.skeletonFrames ?? [],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [record?.id]
+  );
+  const hasSkeletonData = skeletonFrames.length > 0;
+  const poseData = json?.pose;
+
+  const framesWithData = useMemo(
+    () => skeletonFrames.filter((f) => f.landmarks.length > 0).length,
+    [skeletonFrames]
+  );
+
+  // Fetch video as blob to avoid B2 range-request/moov-atom issues
+  useEffect(() => {
+    if (!record?.videoUrl) {
+      setVideoBlobUrl(null);
+      setVideoLoading(false);
+      return;
+    }
+
+    const proxyUrl = `/api/video-proxy?url=${encodeURIComponent(record.videoUrl)}`;
+    setVideoBlobUrl(proxyUrl);
+    setVideoLoading(false);
+  }, [record?.videoUrl]);
+
+  // Cleanup blob URL on unmount or record change
+  useEffect(() => {
+    return () => {
+      if (videoBlobUrl && videoBlobUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(videoBlobUrl);
+      }
+    };
+  }, [videoBlobUrl]);
+
   // Reset on open
   useEffect(() => {
-    if (record) setCurrentMs(0);
-  }, [record]);
+    if (record) {
+      setCurrentMs(0);
+      setCurrentFrameIndex(0);
+      setViewMode(hasSkeletonData ? "split" : "video");
+    }
+  }, [record, hasSkeletonData]);
 
   // Compute the actual rendered video frame rect inside the letterboxed element.
   const updateVideoSize = useCallback(() => {
@@ -790,6 +1166,25 @@ function LiftVideoModal({
     return () => ro.disconnect();
   }, [updateVideoSize, record]);
 
+  const handleTimeUpdate = useCallback(
+    (time: number) => {
+      setCurrentMs(time * 1000);
+      if (skeletonFrames.length > 0) {
+        const totalDuration =
+          poseData?.durationSec ?? (durationMs ? durationMs / 1000 : 0);
+        if (totalDuration > 0) {
+          const progress = time / totalDuration;
+          const idx = Math.min(
+            Math.floor(progress * skeletonFrames.length),
+            skeletonFrames.length - 1
+          );
+          setCurrentFrameIndex(idx);
+        }
+      }
+    },
+    [skeletonFrames.length, poseData?.durationSec, durationMs]
+  );
+
   const title = record?.label ?? "Análise de Levantamento";
   const createdAt = record ? formatDate(record.createdAt) : "";
 
@@ -797,11 +1192,30 @@ function LiftVideoModal({
 
   const { exportState, startExport } = useExportVideo(record);
 
+  const liftDurationSec =
+    poseData?.durationSec ?? (durationMs ? durationMs / 1000 : 0);
+  const {
+    isPlaying: liftIsPlaying,
+    handlePlayPause: liftPlayPause,
+    handleReset: liftReset,
+    handleFrameSlider: liftFrameSlider,
+    handleStepFrame: liftStepFrame,
+  } = useSkeletonPlayback({
+    videoRef,
+    totalFrames: skeletonFrames.length,
+    durationSec: liftDurationSec,
+    setCurrentFrameIndex,
+  });
+
   return (
     <Dialog open={!!record} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl gap-0 overflow-hidden p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80">
+      <DialogContent
+        className={`max-h-[90vh] gap-0 overflow-y-auto p-0 [&>button]:z-10 [&>button]:text-white [&>button]:hover:text-white/80 ${
+          viewMode === "split" ? "max-w-5xl" : "max-w-2xl"
+        }`}
+      >
         {/* Dark header */}
-        <div className="flex items-start gap-3 bg-black px-5 py-4">
+        <div className="sticky top-0 z-10 flex items-start gap-3 bg-black px-5 py-4">
           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/20">
             <Dumbbell className="h-5 w-5 text-primary" />
           </div>
@@ -817,8 +1231,50 @@ function LiftVideoModal({
                   {formatDuration(durationMs)}
                 </>
               )}
+              {poseData && (
+                <>
+                  <span className="text-white/30">·</span>
+                  {poseData.framesProcessed} frames
+                  <span className="text-white/30">·</span>
+                  {poseData.detectionRate.toFixed(0)}% deteção
+                </>
+              )}
             </DialogDescription>
           </DialogHeader>
+
+          {/* View mode toggle - only show if 3D data available */}
+          {hasSkeletonData && (
+            <div className="flex gap-1 rounded-lg border border-white/20 bg-white/5 p-0.5">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "video" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("video")}
+                title="Vídeo"
+              >
+                <Video className="h-3.5 w-3.5 text-white" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "split" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("split")}
+                title="Vídeo + 3D"
+              >
+                <Dumbbell className="h-3.5 w-3.5 text-white" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-7 w-7 p-0 ${viewMode === "skeleton" ? "bg-white/20" : "hover:bg-white/10"}`}
+                onClick={() => setViewMode("skeleton")}
+                title="Esqueleto 3D"
+              >
+                <Box className="h-3.5 w-3.5 text-white" />
+              </Button>
+            </div>
+          )}
+
           <div className="shrink-0 pr-6">
             <ExportButton exportState={exportState} onStart={startExport} />
           </div>
@@ -831,35 +1287,90 @@ function LiftVideoModal({
           </div>
         )}
 
-        {/* Video area — overlay anchored to the video element */}
-        <div className="relative flex w-full justify-center bg-black">
-          {record && (
-            <>
-              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-              <video
-                ref={videoRef}
-                key={record.id}
-                src={record.videoUrl}
-                controls
-                autoPlay
-                playsInline
-                className="max-h-[60vh] w-full object-contain"
-                onLoadedMetadata={updateVideoSize}
-                onTimeUpdate={(e) =>
-                  setCurrentMs(e.currentTarget.currentTime * 1000)
+        {/* Main content area */}
+        <div
+          className={`grid gap-0 bg-black ${
+            viewMode === "split" ? "grid-cols-1 lg:grid-cols-2" : "grid-cols-1"
+          }`}
+        >
+          {/* Video panel - always mounted to avoid reload on mode switch */}
+          <div
+            className={`relative flex w-full items-center justify-center bg-black ${
+              viewMode === "skeleton" ? "hidden" : "min-h-[200px]"
+            }`}
+          >
+            {record && videoLoading && (
+              <div className="flex flex-col items-center gap-2 py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-white/50" />
+                <p className="text-xs text-white/40">A carregar vídeo…</p>
+              </div>
+            )}
+            {record && videoBlobUrl && !videoLoading && (
+              <>
+                {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+                <video
+                  ref={videoRef}
+                  key={record.id}
+                  src={videoBlobUrl}
+                  controls
+                  autoPlay
+                  playsInline
+                  className="max-h-[50vh] min-h-[200px] w-full object-contain"
+                  onLoadedMetadata={updateVideoSize}
+                  onTimeUpdate={(e) =>
+                    handleTimeUpdate(e.currentTarget.currentTime)
+                  }
+                />
+                <BarPathOverlay
+                  path={barPath}
+                  width={videoSize.w}
+                  height={videoSize.h}
+                  left={videoSize.left}
+                  top={videoSize.top}
+                  currentMs={currentMs}
+                />
+              </>
+            )}
+          </div>
+
+          {/* 3D Skeleton panel */}
+          {viewMode !== "video" && framesWithData > 0 && (
+            <div className="flex items-center justify-center bg-muted/5 p-2">
+              <Skeleton3DViewer
+                frames={skeletonFrames}
+                currentFrameIndex={currentFrameIndex}
+                videoRef={videoRef}
+                fps={
+                  poseData?.durationSec && poseData.durationSec > 0
+                    ? skeletonFrames.length / poseData.durationSec
+                    : 25
                 }
+                height={viewMode === "skeleton" ? 500 : 400}
+                className="w-full overflow-hidden rounded-lg border"
               />
-              <BarPathOverlay
-                path={barPath}
-                width={videoSize.w}
-                height={videoSize.h}
-                left={videoSize.left}
-                top={videoSize.top}
-                currentMs={currentMs}
-              />
-            </>
+            </div>
+          )}
+
+          {/* No skeleton data fallback */}
+          {viewMode !== "video" && framesWithData === 0 && (
+            <div className="flex h-[300px] items-center justify-center bg-muted/10 text-sm text-muted-foreground">
+              Sem dados de esqueleto 3D disponíveis
+            </div>
           )}
         </div>
+
+        {/* Skeleton playback controls — shown when video is hidden */}
+        {viewMode === "skeleton" && framesWithData > 0 && (
+          <SkeletonPlaybackControls
+            isPlaying={liftIsPlaying}
+            currentFrameIndex={currentFrameIndex}
+            totalFrames={skeletonFrames.length}
+            onPlayPause={liftPlayPause}
+            onReset={liftReset}
+            onFrameSlider={liftFrameSlider}
+            onStepFrame={liftStepFrame}
+          />
+        )}
 
         {/* Metrics footer */}
         {hasMetrics && (
@@ -913,12 +1424,15 @@ function LiftVideoModal({
 function MotionCard({
   record,
   onOpen,
+  onDelete,
   t,
 }: {
   record: AnalysisRecord;
   onOpen: () => void;
+  onDelete: (id: string) => void;
   t: ReturnType<typeof useTranslations<"profile">>;
 }) {
+  const [isDeleting, setIsDeleting] = useState(false);
   const json = record.analysisJson as MotionAnalysisJson;
   const durationMs = json.segment
     ? json.segment.endMs - json.segment.startMs
@@ -926,6 +1440,24 @@ function MotionCard({
   const frameCount = json.poseFrames?.length ?? 0;
   const metrics = json.metrics ?? {};
   const title = record.label ?? t("analyses.unlabeledMotion");
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/analyses/motion", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: record.id }),
+      });
+      if (res.ok) {
+        onDelete(record.id);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-3 rounded-xl border bg-card p-4">
@@ -937,15 +1469,47 @@ function MotionCard({
             {formatDate(record.createdAt)}
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="shrink-0"
-          onClick={onOpen}
-        >
-          <Play className="mr-1.5 h-3.5 w-3.5" />
-          {t("analyses.viewVideo")}
-        </Button>
+        <div className="flex shrink-0 gap-1">
+          <Button size="sm" variant="outline" onClick={onOpen}>
+            <Play className="mr-1.5 h-3.5 w-3.5" />
+            {t("analyses.viewVideo")}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("analyses.deleteTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("analyses.deleteConfirm")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>
+                  {t("analyses.deleteCancel")}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t("analyses.deleteAction")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       <div className="flex flex-wrap gap-2 text-xs">
@@ -996,16 +1560,37 @@ function MotionCard({
 function LiftCard({
   record,
   onOpen,
+  onDelete,
   t,
 }: {
   record: AnalysisRecord;
   onOpen: () => void;
+  onDelete: (id: string) => void;
   t: ReturnType<typeof useTranslations<"profile">>;
 }) {
+  const [isDeleting, setIsDeleting] = useState(false);
   const json = record.analysisJson as LiftAnalysisJson;
   const durationMs = json.durationMs;
   const metrics = json.metrics ?? {};
   const title = record.label ?? t("analyses.unlabeledLift");
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      const res = await fetch("/api/analyses/lift", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: record.id }),
+      });
+      if (res.ok) {
+        onDelete(record.id);
+      }
+    } catch {
+      // silently fail
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <div className="space-y-3 rounded-xl border bg-card p-4">
@@ -1017,15 +1602,47 @@ function LiftCard({
             {formatDate(record.createdAt)}
           </p>
         </div>
-        <Button
-          size="sm"
-          variant="outline"
-          className="shrink-0"
-          onClick={onOpen}
-        >
-          <Play className="mr-1.5 h-3.5 w-3.5" />
-          {t("analyses.viewVideo")}
-        </Button>
+        <div className="flex shrink-0 gap-1">
+          <Button size="sm" variant="outline" onClick={onOpen}>
+            <Play className="mr-1.5 h-3.5 w-3.5" />
+            {t("analyses.viewVideo")}
+          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                disabled={isDeleting}
+              >
+                {isDeleting ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>{t("analyses.deleteTitle")}</AlertDialogTitle>
+                <AlertDialogDescription>
+                  {t("analyses.deleteConfirm")}
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>
+                  {t("analyses.deleteCancel")}
+                </AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {t("analyses.deleteAction")}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </div>
 
       {durationMs !== undefined && (
@@ -1112,6 +1729,14 @@ export function AnalysesSection() {
   useEffect(() => {
     void fetchAnalyses();
   }, [fetchAnalyses]);
+
+  const handleDeleteMotion = useCallback((id: string) => {
+    setMotionAnalyses((prev) => prev.filter((r) => r.id !== id));
+  }, []);
+
+  const handleDeleteLift = useCallback((id: string) => {
+    setLiftAnalyses((prev) => prev.filter((r) => r.id !== id));
+  }, []);
 
   const totalCount = motionAnalyses.length + liftAnalyses.length;
 
@@ -1291,6 +1916,7 @@ export function AnalysesSection() {
                         key={record.id}
                         record={record}
                         onOpen={() => setOpenMotion(record)}
+                        onDelete={handleDeleteMotion}
                         t={t}
                       />
                     ))}
@@ -1314,6 +1940,7 @@ export function AnalysesSection() {
                         key={record.id}
                         record={record}
                         onOpen={() => setOpenLift(record)}
+                        onDelete={handleDeleteLift}
                         t={t}
                       />
                     ))}

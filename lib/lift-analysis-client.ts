@@ -10,7 +10,6 @@ import type {
   LiftAnalysisProcessResponse,
   MotionAnalysisProcessRequest,
   MotionAnalysisProcessResponse,
-  LiftAnalysisError,
 } from "@/types/lift-analysis";
 
 /**
@@ -25,7 +24,8 @@ import type {
 export async function processLiftAnalysis(
   params: LiftAnalysisProcessRequest,
   apiBaseUrl: string,
-  onProgress?: (progress: { loaded: number; total: number }) => void
+  onProgress?: (progress: { loaded: number; total: number }) => void,
+  signal?: AbortSignal
 ): Promise<LiftAnalysisProcessResponse> {
   const formData = new FormData();
 
@@ -35,6 +35,19 @@ export async function processLiftAnalysis(
   // Add required parameters
   formData.append("seed_x", params.seedX.toString());
   formData.append("seed_y", params.seedY.toString());
+
+  console.log("[LiftAnalysisClient] FormData built:", {
+    seed_x_percent: params.seedX,
+    seed_y_percent: params.seedY,
+    seed_x_str: params.seedX.toString(),
+    seed_y_str: params.seedY.toString(),
+    videoName: params.video instanceof File ? params.video.name : "blob",
+    videoType: params.video instanceof File ? params.video.type : "unknown",
+    videoSize:
+      params.video instanceof File
+        ? `${(params.video.size / (1024 * 1024)).toFixed(2)} MB`
+        : "unknown",
+  });
 
   // Add optional parameters
   if (params.seedFrame !== undefined) {
@@ -55,6 +68,18 @@ export async function processLiftAnalysis(
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
+      // Wire up abort signal
+      if (signal) {
+        if (signal.aborted) {
+          reject(new Error("Cancelled"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          xhr.abort();
+          reject(new Error("Cancelled"));
+        });
+      }
+
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
           onProgress({ loaded: e.loaded, total: e.total });
@@ -71,12 +96,14 @@ export async function processLiftAnalysis(
           }
         } else {
           try {
-            const errorResponse: LiftAnalysisError = JSON.parse(
-              xhr.responseText
-            );
-            reject(
-              new Error(errorResponse.error || `HTTP ${xhr.status} error`)
-            );
+            const errorResponse = JSON.parse(xhr.responseText);
+            const msg =
+              typeof errorResponse.error === "string"
+                ? errorResponse.error
+                : typeof errorResponse.detail === "string"
+                  ? errorResponse.detail
+                  : `HTTP ${xhr.status} error`;
+            reject(new Error(msg));
           } catch {
             reject(new Error(`HTTP ${xhr.status} error`));
           }
@@ -100,12 +127,20 @@ export async function processLiftAnalysis(
   const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process`, {
     method: "POST",
     body: formData,
+    signal,
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error((data as LiftAnalysisError).error || "Processing failed");
+    const errData = data as Record<string, unknown>;
+    const msg =
+      typeof errData.error === "string"
+        ? errData.error
+        : typeof errData.detail === "string"
+          ? errData.detail
+          : "Processing failed";
+    throw new Error(msg);
   }
 
   return data as LiftAnalysisProcessResponse;
@@ -123,7 +158,8 @@ export async function processLiftAnalysis(
 export async function processMotionAnalysis(
   params: MotionAnalysisProcessRequest,
   apiBaseUrl: string,
-  onProgress?: (progress: { loaded: number; total: number }) => void
+  onProgress?: (progress: { loaded: number; total: number }) => void,
+  signal?: AbortSignal
 ): Promise<MotionAnalysisProcessResponse> {
   const formData = new FormData();
 
@@ -143,6 +179,18 @@ export async function processMotionAnalysis(
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
+      // Wire up abort signal
+      if (signal) {
+        if (signal.aborted) {
+          reject(new Error("Cancelled"));
+          return;
+        }
+        signal.addEventListener("abort", () => {
+          xhr.abort();
+          reject(new Error("Cancelled"));
+        });
+      }
+
       xhr.upload.addEventListener("progress", (e) => {
         if (e.lengthComputable) {
           onProgress({ loaded: e.loaded, total: e.total });
@@ -159,12 +207,14 @@ export async function processMotionAnalysis(
           }
         } else {
           try {
-            const errorResponse: LiftAnalysisError = JSON.parse(
-              xhr.responseText
-            );
-            reject(
-              new Error(errorResponse.error || `HTTP ${xhr.status} error`)
-            );
+            const errorResponse = JSON.parse(xhr.responseText);
+            const msg =
+              typeof errorResponse.error === "string"
+                ? errorResponse.error
+                : typeof errorResponse.detail === "string"
+                  ? errorResponse.detail
+                  : `HTTP ${xhr.status} error`;
+            reject(new Error(msg));
           } catch {
             reject(new Error(`HTTP ${xhr.status} error`));
           }
@@ -188,12 +238,20 @@ export async function processMotionAnalysis(
   const response = await fetch(`${apiBaseUrl}/api/motion-analysis/process`, {
     method: "POST",
     body: formData,
+    signal,
   });
 
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error((data as LiftAnalysisError).error || "Processing failed");
+    const errData = data as Record<string, unknown>;
+    const msg =
+      typeof errData.error === "string"
+        ? errData.error
+        : typeof errData.detail === "string"
+          ? errData.detail
+          : "Processing failed";
+    throw new Error(msg);
   }
 
   return data as MotionAnalysisProcessResponse;

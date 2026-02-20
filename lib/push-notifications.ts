@@ -351,11 +351,11 @@ export async function sendEventDateChangeNotification(params: {
 }): Promise<{ success: boolean; totalSent: number; totalFailed: number }> {
   const { eventId, eventTitle, eventSlug, oldDate, newDate } = params;
 
-  // Get all users participating in this event
+  // Get all users participating in this event (going or interested)
   const participations = await prisma.participation.findMany({
     where: {
       eventId,
-      status: "going",
+      status: { in: ["going", "interested"] },
     },
     select: {
       userId: true,

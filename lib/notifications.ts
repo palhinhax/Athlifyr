@@ -141,6 +141,56 @@ const notificationTranslations: Record<
     it: "Motivo: {reason}",
   },
 
+  // Event community notifications
+  "event.newPost.title": {
+    en: "📝 New Post in Event",
+    pt: "📝 Nova Publicação no Evento",
+    es: "📝 Nueva Publicación en el Evento",
+    fr: "📝 Nouvelle Publication dans l'Événement",
+    de: "📝 Neuer Beitrag im Event",
+    it: "📝 Nuovo Post nell'Evento",
+  },
+  "event.newPost.body": {
+    en: '{author} posted in "{event}"',
+    pt: '{author} publicou em "{event}"',
+    es: '{author} publicó en "{event}"',
+    fr: '{author} a publié dans "{event}"',
+    de: '{author} hat in "{event}" gepostet',
+    it: '{author} ha pubblicato in "{event}"',
+  },
+  "event.postComment.title": {
+    en: "💬 New Comment on Your Post",
+    pt: "💬 Novo Comentário na Tua Publicação",
+    es: "💬 Nuevo Comentario en Tu Publicación",
+    fr: "💬 Nouveau Commentaire sur Votre Publication",
+    de: "💬 Neuer Kommentar zu Deinem Beitrag",
+    it: "💬 Nuovo Commento al Tuo Post",
+  },
+  "event.postComment.body": {
+    en: '{author} commented on your post in "{event}"',
+    pt: '{author} comentou na tua publicação em "{event}"',
+    es: '{author} comentó en tu publicación en "{event}"',
+    fr: '{author} a commenté votre publication dans "{event}"',
+    de: '{author} hat deinen Beitrag in "{event}" kommentiert',
+    it: '{author} ha commentato il tuo post in "{event}"',
+  },
+  "event.postCommentAlso.title": {
+    en: "💬 New Comment on a Post You Commented",
+    pt: "💬 Novo Comentário numa Publicação que Comentaste",
+    es: "💬 Nuevo Comentario en una Publicación que Comentaste",
+    fr: "💬 Nouveau Commentaire sur une Publication que Vous Avez Commentée",
+    de: "💬 Neuer Kommentar zu einem Beitrag, den Du Kommentiert Hast",
+    it: "💬 Nuovo Commento su un Post che Hai Commentato",
+  },
+  "event.postCommentAlso.body": {
+    en: '{author} also commented on a post in "{event}"',
+    pt: '{author} também comentou numa publicação em "{event}"',
+    es: '{author} también comentó en una publicación en "{event}"',
+    fr: '{author} a aussi commenté une publication dans "{event}"',
+    de: '{author} hat auch einen Beitrag in "{event}" kommentiert',
+    it: '{author} ha anche commentato un post in "{event}"',
+  },
+
   // Venue notifications
   "venue.invite.title": {
     en: "Venue Staff Invitation",
@@ -433,6 +483,8 @@ function getDefaultChannelId(type: NotificationType): string {
       return "chat-messages";
     case NotificationType.EVENT_DATE_CHANGE:
     case NotificationType.EVENT_CANCELLED:
+    case NotificationType.EVENT_NEW_POST:
+    case NotificationType.EVENT_POST_COMMENT:
       return "event-updates";
     case NotificationType.FRIEND_REQUEST:
     case NotificationType.FRIEND_ACCEPTED:
@@ -641,11 +693,11 @@ export async function notifyEventDateChange(params: {
 }): Promise<{ totalCreated: number; totalPushSent: number }> {
   const { eventId, eventTitle, eventSlug, oldDate, newDate } = params;
 
-  // Get all users participating in this event
+  // Get all users participating in this event (going OR interested)
   const participations = await prisma.participation.findMany({
     where: {
       eventId,
-      status: "going",
+      status: { in: ["going", "interested"] },
     },
     select: {
       userId: true,
@@ -708,11 +760,11 @@ export async function notifyEventCancelled(params: {
 }): Promise<{ totalCreated: number; totalPushSent: number }> {
   const { eventId, eventSlug, eventTitle, cancellationReason } = params;
 
-  // Find all users who marked as "going" to this event
+  // Find all users who marked as "going" or "interested" in this event
   const participations = await prisma.participation.findMany({
     where: {
       eventId,
-      status: "going",
+      status: { in: ["going", "interested"] },
     },
     select: {
       userId: true,
@@ -796,4 +848,168 @@ export async function notifyVenueInvite(params: {
       screen: "venue",
     },
   });
+}
+
+/**
+ * Notify going/interested users about a new post in an event
+ */
+export async function notifyEventNewPost(params: {
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  authorId: string;
+  authorName: string;
+}): Promise<{ totalCreated: number; totalPushSent: number }> {
+  const { eventId, eventSlug, eventTitle, authorId, authorName } = params;
+
+  // Get all users going or interested in this event, excluding the post author
+  const participations = await prisma.participation.findMany({
+    where: {
+      eventId,
+      status: { in: ["going", "interested"] },
+      userId: { not: authorId },
+    },
+    select: {
+      userId: true,
+    },
+  });
+
+  if (participations.length === 0) {
+    return { totalCreated: 0, totalPushSent: 0 };
+  }
+
+  const userIds = participations.map((p) => p.userId);
+  const grouped = await getUsersGroupedByLocale(userIds);
+
+  let totalCreated = 0;
+  let totalPushSent = 0;
+
+  for (const [locale, localeUserIds] of grouped) {
+    const result = await createNotificationsForUsers(localeUserIds, {
+      type: NotificationType.EVENT_NEW_POST,
+      title: t("event.newPost.title", locale),
+      body: t("event.newPost.body", locale, {
+        author: authorName,
+        event: eventTitle,
+      }),
+      data: {
+        eventId,
+        eventSlug,
+        eventTitle,
+        senderId: authorId,
+        senderName: authorName,
+        route: `/events/${eventSlug}`,
+        screen: "event",
+      },
+      pushChannelId: "event-updates",
+    });
+
+    totalCreated += result.created;
+    totalPushSent += result.pushSent;
+  }
+
+  console.log(
+    `Event new post notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
+  );
+
+  return { totalCreated, totalPushSent };
+}
+
+/**
+ * Notify post author and other commenters about a new comment on an event post
+ */
+export async function notifyEventPostComment(params: {
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  postId: string;
+  postAuthorId: string;
+  commentAuthorId: string;
+  commentAuthorName: string;
+}): Promise<{ totalCreated: number; totalPushSent: number }> {
+  const {
+    eventId,
+    eventSlug,
+    eventTitle,
+    postId,
+    postAuthorId,
+    commentAuthorId,
+    commentAuthorName,
+  } = params;
+
+  let totalCreated = 0;
+  let totalPushSent = 0;
+
+  // 1. Notify the post author (if they are not the commenter)
+  if (postAuthorId !== commentAuthorId) {
+    const locale = await getUserLocale(postAuthorId);
+    const result = await createNotification({
+      userId: postAuthorId,
+      type: NotificationType.EVENT_POST_COMMENT,
+      title: t("event.postComment.title", locale),
+      body: t("event.postComment.body", locale, {
+        author: commentAuthorName,
+        event: eventTitle,
+      }),
+      data: {
+        eventId,
+        eventSlug,
+        eventTitle,
+        senderId: commentAuthorId,
+        senderName: commentAuthorName,
+        route: `/events/${eventSlug}`,
+        screen: "event",
+      },
+      pushChannelId: "event-updates",
+    });
+    totalCreated++;
+    if (result.pushSent) totalPushSent++;
+  }
+
+  // 2. Notify other users who also commented on this post
+  const otherCommenters = await prisma.postComment.findMany({
+    where: {
+      postId,
+      userId: { notIn: [commentAuthorId, postAuthorId] },
+    },
+    select: {
+      userId: true,
+    },
+    distinct: ["userId"],
+  });
+
+  if (otherCommenters.length > 0) {
+    const otherUserIds = otherCommenters.map((c) => c.userId);
+    const grouped = await getUsersGroupedByLocale(otherUserIds);
+
+    for (const [locale, localeUserIds] of grouped) {
+      const result = await createNotificationsForUsers(localeUserIds, {
+        type: NotificationType.EVENT_POST_COMMENT,
+        title: t("event.postCommentAlso.title", locale),
+        body: t("event.postCommentAlso.body", locale, {
+          author: commentAuthorName,
+          event: eventTitle,
+        }),
+        data: {
+          eventId,
+          eventSlug,
+          eventTitle,
+          senderId: commentAuthorId,
+          senderName: commentAuthorName,
+          route: `/events/${eventSlug}`,
+          screen: "event",
+        },
+        pushChannelId: "event-updates",
+      });
+
+      totalCreated += result.created;
+      totalPushSent += result.pushSent;
+    }
+  }
+
+  console.log(
+    `Event post comment notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
+  );
+
+  return { totalCreated, totalPushSent };
 }

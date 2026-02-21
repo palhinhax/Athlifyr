@@ -3,7 +3,13 @@
     "app/api/motion-analysis/process/route.ts": {
       "maxDuration": 300
     },
+    "app/api/motion-analysis/process-b2/route.ts": {
+      "maxDuration": 300
+    },
     "app/api/lift-analysis/process/route.ts": {
+      "maxDuration": 300
+    },
+    "app/api/lift-analysis/process-b2/route.ts": {
       "maxDuration": 300
     },
     "app/api/analyses/motion/route.ts": {

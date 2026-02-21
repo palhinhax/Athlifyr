@@ -1,0 +1,585 @@
+{
+  "info": {
+    "_postman_id": "athlifyr-api-v2",
+    "name": "Athlifyr Video Analysis API v2.3",
+    "description": "API para análise de vídeos de fitness com tracking de barra, pose estimation e análise AI.\n\nv2.3 — seed_x/seed_y normalizados (0–1), result_upload_url para PUT do vídeo processado para B2.\nv2.2 — Novos endpoints URL-based (/analyze/full/url e /analyze/body/url) para fluxo Backblaze B2.\nv2.1 — Adicionados parâmetros enable_ai e language para análise inteligente com OpenAI GPT.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000", "type": "string" },
+    {
+      "key": "railway_url",
+      "value": "https://barbell-path-tracker-production.up.railway.app",
+      "type": "string"
+    },
+    {
+      "key": "b2_bucket_url",
+      "value": "https://f003.backblazeb2.com",
+      "type": "string"
+    },
+    {
+      "key": "b2_bucket_name",
+      "value": "athlifyr",
+      "type": "string"
+    },
+    {
+      "key": "test_video_url",
+      "value": "https://s3.us-east-005.backblazeb2.com/athlifyr/uploads/test/sample.mp4",
+      "type": "string",
+      "description": "Replace with a real presigned B2 download URL for testing"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "Health - Local",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/health",
+              "host": ["{{base_url}}"],
+              "path": ["health"]
+            }
+          }
+        },
+        {
+          "name": "Health - Railway",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{railway_url}}/health",
+              "host": ["{{railway_url}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analyze Full",
+      "description": "Análise completa com tracking de barra + pose de perfil.\nParâmetros enable_ai e language controlam a análise AI (desligada por default).",
+      "item": [
+        {
+          "name": "Analyze Full - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de perfil (.mp4, .mov, .avi)"
+                },
+                {
+                  "key": "seed_x",
+                  "value": "50",
+                  "type": "text",
+                  "description": "Posição X do peso em % (0-100)"
+                },
+                {
+                  "key": "seed_y",
+                  "value": "60",
+                  "type": "text",
+                  "description": "Posição Y do peso em % (0-100)"
+                },
+                {
+                  "key": "seed_frame",
+                  "value": "0",
+                  "type": "text",
+                  "description": "Frame onde o ponto foi selecionado"
+                },
+                {
+                  "key": "show_angles",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Mostrar ângulos no vídeo"
+                },
+                {
+                  "key": "auto_detect",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Auto-detectar centro do disco"
+                },
+                {
+                  "key": "enable_ai",
+                  "value": "false",
+                  "type": "text",
+                  "description": "🆕 Activar análise AI (default: false)"
+                },
+                {
+                  "key": "language",
+                  "value": "pt",
+                  "type": "text",
+                  "description": "🆕 Língua da resposta AI: pt, en, es, fr, de, it"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full"]
+            },
+            "description": "Análise completa sem AI (comportamento padrão)."
+          }
+        },
+        {
+          "name": "Analyze Full + AI (PT) - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de perfil (.mp4, .mov, .avi)"
+                },
+                {
+                  "key": "seed_x",
+                  "value": "50",
+                  "type": "text",
+                  "description": "Posição X do peso em % (0-100)"
+                },
+                {
+                  "key": "seed_y",
+                  "value": "60",
+                  "type": "text",
+                  "description": "Posição Y do peso em % (0-100)"
+                },
+                { "key": "seed_frame", "value": "0", "type": "text" },
+                { "key": "show_angles", "value": "true", "type": "text" },
+                { "key": "auto_detect", "value": "true", "type": "text" },
+                {
+                  "key": "enable_ai",
+                  "value": "true",
+                  "type": "text",
+                  "description": "AI activada"
+                },
+                {
+                  "key": "language",
+                  "value": "pt",
+                  "type": "text",
+                  "description": "Resposta em Português"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full"]
+            },
+            "description": "Análise completa COM AI em Português. O campo ai_analysis terá exercício, reps, score e coaching."
+          }
+        },
+        {
+          "name": "Analyze Full + AI (EN) - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de perfil (.mp4, .mov, .avi)"
+                },
+                {
+                  "key": "seed_x",
+                  "value": "50",
+                  "type": "text",
+                  "description": "Posição X do peso em % (0-100)"
+                },
+                {
+                  "key": "seed_y",
+                  "value": "60",
+                  "type": "text",
+                  "description": "Posição Y do peso em % (0-100)"
+                },
+                { "key": "seed_frame", "value": "0", "type": "text" },
+                { "key": "show_angles", "value": "true", "type": "text" },
+                { "key": "auto_detect", "value": "true", "type": "text" },
+                {
+                  "key": "enable_ai",
+                  "value": "true",
+                  "type": "text",
+                  "description": "AI activada"
+                },
+                {
+                  "key": "language",
+                  "value": "en",
+                  "type": "text",
+                  "description": "Resposta em English"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full"]
+            },
+            "description": "Análise completa COM AI em Inglês."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analyze Body",
+      "description": "Análise corporal com pose estimation (sem tracking de barra).\nParâmetros enable_ai e language controlam a análise AI (desligada por default).",
+      "item": [
+        {
+          "name": "Analyze Body - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de qualquer ângulo (.mp4, .mov, .avi)"
+                },
+                {
+                  "key": "show_angles",
+                  "value": "true",
+                  "type": "text",
+                  "description": "Mostrar ângulos no vídeo"
+                },
+                {
+                  "key": "enable_ai",
+                  "value": "false",
+                  "type": "text",
+                  "description": "🆕 Activar análise AI (default: false)"
+                },
+                {
+                  "key": "language",
+                  "value": "pt",
+                  "type": "text",
+                  "description": "🆕 Língua da resposta AI: pt, en, es, fr, de, it"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body"]
+            },
+            "description": "Análise corporal sem AI (comportamento padrão)."
+          }
+        },
+        {
+          "name": "Analyze Body + AI (PT) - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de qualquer ângulo (.mp4, .mov, .avi)"
+                },
+                { "key": "show_angles", "value": "true", "type": "text" },
+                {
+                  "key": "enable_ai",
+                  "value": "true",
+                  "type": "text",
+                  "description": "AI activada"
+                },
+                {
+                  "key": "language",
+                  "value": "pt",
+                  "type": "text",
+                  "description": "Resposta em Português"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body"]
+            },
+            "description": "Análise corporal COM AI em Português."
+          }
+        },
+        {
+          "name": "Analyze Body + AI (EN) - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "video",
+                  "type": "file",
+                  "src": "",
+                  "description": "Vídeo de qualquer ângulo (.mp4, .mov, .avi)"
+                },
+                { "key": "show_angles", "value": "true", "type": "text" },
+                {
+                  "key": "enable_ai",
+                  "value": "true",
+                  "type": "text",
+                  "description": "AI activada"
+                },
+                {
+                  "key": "language",
+                  "value": "en",
+                  "type": "text",
+                  "description": "Resposta em English"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body"]
+            },
+            "description": "Análise corporal COM AI em Inglês."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analyze Full (URL)",
+      "description": "🆕 Análise completa via URL presigned (Backblaze B2).\nO servidor descarrega o vídeo — Vercel envia apenas JSON (~1 KB).\nEndpoint: POST /analyze/full/url",
+      "item": [
+        {
+          "name": "Analyze Full URL - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"seed_x\": 0.52,\n  \"seed_y\": 0.38,\n  \"seed_frame\": 0,\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"auto_detect\": true,\n  \"enable_ai\": false,\n  \"language\": \"en\",\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full", "url"]
+            },
+            "description": "Análise completa via URL (sem AI). Substituir test_video_url por uma presigned URL B2 válida."
+          }
+        },
+        {
+          "name": "Analyze Full URL + AI (PT) - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"seed_x\": 0.52,\n  \"seed_y\": 0.38,\n  \"seed_frame\": 0,\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"auto_detect\": true,\n  \"enable_ai\": true,\n  \"language\": \"pt\",\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full", "url"]
+            },
+            "description": "Análise completa via URL COM AI em Português."
+          }
+        },
+        {
+          "name": "Analyze Full URL + Trim - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"seed_x\": 0.52,\n  \"seed_y\": 0.38,\n  \"seed_frame\": 0,\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"auto_detect\": true,\n  \"enable_ai\": false,\n  \"language\": \"en\",\n  \"trim_start_sec\": 2.0,\n  \"trim_end_sec\": 8.0,\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/full/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "full", "url"]
+            },
+            "description": "Análise completa via URL com trim (corta o vídeo entre 2s e 8s antes de processar)."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analyze Body (URL)",
+      "description": "🆕 Análise corporal via URL presigned (Backblaze B2).\nO servidor descarrega o vídeo — Vercel envia apenas JSON (~1 KB).\nEndpoint: POST /analyze/body/url",
+      "item": [
+        {
+          "name": "Analyze Body URL - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"enable_ai\": false,\n  \"language\": \"en\",\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body", "url"]
+            },
+            "description": "Análise corporal via URL (sem AI)."
+          }
+        },
+        {
+          "name": "Analyze Body URL + AI (PT) - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"enable_ai\": true,\n  \"language\": \"pt\",\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body", "url"]
+            },
+            "description": "Análise corporal via URL COM AI em Português."
+          }
+        },
+        {
+          "name": "Analyze Body URL + Trim - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/mp4\",\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"enable_ai\": false,\n  \"language\": \"en\",\n  \"trim_start_sec\": 1.0,\n  \"trim_end_sec\": 6.0,\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body", "url"]
+            },
+            "description": "Análise corporal via URL com trim (corta entre 1s e 6s)."
+          }
+        },
+        {
+          "name": "Analyze Body URL - WebM Transcode - Railway",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"video_url\": \"{{test_video_url}}\",\n  \"content_type\": \"video/webm\",\n  \"show_angles\": true,\n  \"max_duration_sec\": 30,\n  \"enable_ai\": false,\n  \"language\": \"en\",\n  \"result_upload_url\": null\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{railway_url}}/analyze/body/url",
+              "host": ["{{railway_url}}"],
+              "path": ["analyze", "body", "url"]
+            },
+            "description": "Teste de transcode WebM → MP4 via URL. Substituir test_video_url por uma URL de ficheiro .webm."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Debug",
+      "description": "Endpoints de debug e diagnóstico.",
+      "item": [
+        {
+          "name": "Debug Detect - Railway",
+          "request": {
+            "method": "POST",
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": "",
+                  "description": "Imagem do frame (.jpg, .png)"
+                },
+                {
+                  "key": "seed_x",
+                  "value": "50",
+                  "type": "text",
+                  "description": "Posição X em % (0-100)"
+                },
+                {
+                  "key": "seed_y",
+                  "value": "60",
+                  "type": "text",
+                  "description": "Posição Y em % (0-100)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{railway_url}}/debug/detect",
+              "host": ["{{railway_url}}"],
+              "path": ["debug", "detect"]
+            },
+            "description": "Testar deteção do disco/peso numa imagem estática. Retorna JSON com coordenadas e percentagens."
+          }
+        },
+        {
+          "name": "Debug AI - Railway",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{railway_url}}/debug/ai?language=pt",
+              "host": ["{{railway_url}}"],
+              "path": ["debug", "ai"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "pt",
+                  "description": "Língua do teste (pt, en, es, fr, de, it)"
+                }
+              ]
+            },
+            "description": "Testa se a análise AI está configurada: verifica OPENAI_API_KEY, pacote openai, e faz uma chamada de teste ao modelo."
+          }
+        },
+        {
+          "name": "Debug AI (EN) - Railway",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{railway_url}}/debug/ai?language=en",
+              "host": ["{{railway_url}}"],
+              "path": ["debug", "ai"],
+              "query": [
+                {
+                  "key": "language",
+                  "value": "en",
+                  "description": "Teste em inglês"
+                }
+              ]
+            },
+            "description": "Testa AI com resposta em inglês."
+          }
+        }
+      ]
+    },
+    {
+      "name": "Download",
+      "item": [
+        {
+          "name": "Download - Railway",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{railway_url}}/download/filename.mp4",
+              "host": ["{{railway_url}}"],
+              "path": ["download", "filename.mp4"]
+            },
+            "description": "Download do vídeo processado. Substituir 'filename.mp4' pelo valor de video_url da resposta."
+          }
+        }
+      ]
+    }
+  ]
+}

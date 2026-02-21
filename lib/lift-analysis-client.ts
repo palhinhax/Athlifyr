@@ -1,8 +1,13 @@
 /**
  * Client-side helpers to call the centralized video analysis APIs.
  *
- * This can be used from both web and mobile (React Native) applications.
- * For React Native, ensure you're using a compatible FormData implementation.
+ * New flow (bypasses Vercel's 4.5 MB body limit):
+ *   1. POST /api/uploads/presign → get a presigned PUT URL for B2
+ *   2. PUT video directly to Backblaze B2 (with XHR progress)
+ *   3. POST /api/{lift,motion}-analysis/process-b2 with just the key + metadata
+ *
+ * Falls back to the legacy direct-upload endpoint for localhost dev if the
+ * presign endpoint is not configured.
  */
 
 import type {
@@ -12,69 +17,54 @@ import type {
   MotionAnalysisProcessResponse,
 } from "@/types/lift-analysis";
 
+// ── Presign types ─────────────────────────────────────────────────────────
+
+interface PresignResponse {
+  uploadUrl: string;
+  key: string;
+  expiresIn: number;
+}
+
+// ── Internal: presign + direct upload to B2 ──────────────────────────────
+
 /**
- * Process a lift video with barbell tracking + pose estimation.
- *
- * @param params - Video file and seed point coordinates
- * @param apiBaseUrl - Base URL of your API (e.g., 'https://athlifyr.com' or 'http://localhost:3000')
- * @param onProgress - Optional progress callback for upload tracking
- * @returns Processing results with video URL and analysis data
- * @throws Error if the request fails
+ * Step 1 + 2: Request a presigned URL, then upload the video directly to B2.
+ * Returns the B2 object key.
  */
-export async function processLiftAnalysis(
-  params: LiftAnalysisProcessRequest,
+async function uploadVideoToB2(
+  video: File | Blob,
   apiBaseUrl: string,
   onProgress?: (progress: { loaded: number; total: number }) => void,
   signal?: AbortSignal
-): Promise<LiftAnalysisProcessResponse> {
-  const formData = new FormData();
+): Promise<{ key: string; contentType: string }> {
+  const contentType =
+    video instanceof File ? video.type || "video/mp4" : "video/mp4";
+  const fileExt =
+    video instanceof File ? (video.name.split(".").pop() ?? "mp4") : "mp4";
 
-  // Add video file
-  formData.append("video", params.video);
-
-  // Add required parameters
-  formData.append("seed_x", params.seedX.toString());
-  formData.append("seed_y", params.seedY.toString());
-
-  console.log("[LiftAnalysisClient] FormData built:", {
-    seed_x_percent: params.seedX,
-    seed_y_percent: params.seedY,
-    seed_x_str: params.seedX.toString(),
-    seed_y_str: params.seedY.toString(),
-    videoName: params.video instanceof File ? params.video.name : "blob",
-    videoType: params.video instanceof File ? params.video.type : "unknown",
-    videoSize:
-      params.video instanceof File
-        ? `${(params.video.size / (1024 * 1024)).toFixed(2)} MB`
-        : "unknown",
+  // Step 1: Get presigned URL
+  const presignRes = await fetch(`${apiBaseUrl}/api/uploads/presign`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ contentType, fileExt }),
+    signal,
   });
 
-  // Add optional parameters
-  if (params.seedFrame !== undefined) {
-    formData.append("seed_frame", params.seedFrame.toString());
-  }
-  if (params.showAngles !== undefined) {
-    formData.append("show_angles", params.showAngles.toString());
-  }
-  if (params.maxDurationSec !== undefined) {
-    formData.append("max_duration_sec", params.maxDurationSec.toString());
-  }
-  if (params.autoDetect !== undefined) {
-    formData.append("auto_detect", params.autoDetect.toString());
-  }
-  if (params.enableAi !== undefined) {
-    formData.append("enable_ai", params.enableAi.toString());
-  }
-  if (params.language !== undefined) {
-    formData.append("language", params.language);
+  if (!presignRes.ok) {
+    const err = await presignRes.json().catch(() => ({}));
+    throw new Error(
+      (err as { error?: string }).error ||
+        `Presign failed: HTTP ${presignRes.status}`
+    );
   }
 
-  // Create XMLHttpRequest for progress tracking (if callback provided)
+  const { uploadUrl, key } = (await presignRes.json()) as PresignResponse;
+
+  // Step 2: Upload directly to B2 (with progress via XHR if available)
   if (onProgress && typeof XMLHttpRequest !== "undefined") {
-    return new Promise((resolve, reject) => {
+    await new Promise<void>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
-      // Wire up abort signal
       if (signal) {
         if (signal.aborted) {
           reject(new Error("Cancelled"));
@@ -94,45 +84,91 @@ export async function processLiftAnalysis(
 
       xhr.addEventListener("load", () => {
         if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response);
-          } catch {
-            reject(new Error("Failed to parse response"));
-          }
+          resolve();
         } else {
-          try {
-            const errorResponse = JSON.parse(xhr.responseText);
-            const msg =
-              typeof errorResponse.error === "string"
-                ? errorResponse.error
-                : typeof errorResponse.detail === "string"
-                  ? errorResponse.detail
-                  : `HTTP ${xhr.status} error`;
-            reject(new Error(msg));
-          } catch {
-            reject(new Error(`HTTP ${xhr.status} error`));
-          }
+          reject(
+            new Error(`B2 upload failed: HTTP ${xhr.status} ${xhr.statusText}`)
+          );
         }
       });
 
-      xhr.addEventListener("error", () => {
-        reject(new Error("Network error"));
-      });
+      xhr.addEventListener("error", () =>
+        reject(new Error("Network error during B2 upload"))
+      );
+      xhr.addEventListener("timeout", () =>
+        reject(new Error("B2 upload timeout"))
+      );
 
-      xhr.addEventListener("timeout", () => {
-        reject(new Error("Request timeout"));
-      });
-
-      xhr.open("POST", `${apiBaseUrl}/api/lift-analysis/process`);
-      xhr.send(formData);
+      xhr.open("PUT", uploadUrl);
+      xhr.setRequestHeader("Content-Type", contentType);
+      xhr.send(video);
     });
+  } else {
+    // Fallback: fetch (no progress tracking)
+    const putRes = await fetch(uploadUrl, {
+      method: "PUT",
+      headers: { "Content-Type": contentType },
+      body: video,
+      signal,
+    });
+    if (!putRes.ok) {
+      throw new Error(`B2 upload failed: HTTP ${putRes.status}`);
+    }
   }
 
-  // Use fetch API (no progress tracking)
-  const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process`, {
+  return { key, contentType };
+}
+
+// ── Public API ────────────────────────────────────────────────────────────
+
+/**
+ * Process a lift video with barbell tracking + pose estimation.
+ *
+ * Flow: presign → upload to B2 → POST key + metadata to process-b2
+ */
+export async function processLiftAnalysis(
+  params: LiftAnalysisProcessRequest,
+  apiBaseUrl: string,
+  onProgress?: (progress: { loaded: number; total: number }) => void,
+  signal?: AbortSignal
+): Promise<LiftAnalysisProcessResponse> {
+  console.log("[LiftClient] Starting B2 upload flow…", {
+    videoSize:
+      params.video instanceof File
+        ? `${(params.video.size / (1024 * 1024)).toFixed(2)} MB`
+        : "unknown",
+    seedX: params.seedX,
+    seedY: params.seedY,
+  });
+
+  // Step 1+2: Upload video to B2
+  const { key, contentType } = await uploadVideoToB2(
+    params.video,
+    apiBaseUrl,
+    onProgress,
+    signal
+  );
+
+  console.log("[LiftClient] B2 upload complete, key:", key);
+
+  // Step 3: Send key + metadata to process-b2 endpoint
+  const processBody = {
+    key,
+    contentType,
+    seed_x: params.seedX,
+    seed_y: params.seedY,
+    seed_frame: params.seedFrame ?? 0,
+    show_angles: params.showAngles ?? true,
+    max_duration_sec: params.maxDurationSec,
+    auto_detect: params.autoDetect ?? true,
+    enable_ai: params.enableAi ?? false,
+    language: params.language,
+  };
+
+  const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process-b2`, {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(processBody),
     signal,
   });
 
@@ -155,11 +191,7 @@ export async function processLiftAnalysis(
 /**
  * Process a motion video with full body pose estimation (no barbell tracking).
  *
- * @param params - Video file and processing options
- * @param apiBaseUrl - Base URL of your API (e.g., 'https://athlifyr.com' or 'http://localhost:3000')
- * @param onProgress - Optional progress callback for upload tracking
- * @returns Processing results with video URL and pose analysis data
- * @throws Error if the request fails
+ * Flow: presign → upload to B2 → POST key + metadata to process-b2
  */
 export async function processMotionAnalysis(
   params: MotionAnalysisProcessRequest,
@@ -167,89 +199,37 @@ export async function processMotionAnalysis(
   onProgress?: (progress: { loaded: number; total: number }) => void,
   signal?: AbortSignal
 ): Promise<MotionAnalysisProcessResponse> {
-  const formData = new FormData();
+  console.log("[MotionClient] Starting B2 upload flow…", {
+    videoSize:
+      params.video instanceof File
+        ? `${(params.video.size / (1024 * 1024)).toFixed(2)} MB`
+        : "unknown",
+  });
 
-  // Add video file
-  formData.append("video", params.video);
+  // Step 1+2: Upload video to B2
+  const { key, contentType } = await uploadVideoToB2(
+    params.video,
+    apiBaseUrl,
+    onProgress,
+    signal
+  );
 
-  // Add optional parameters
-  if (params.showAngles !== undefined) {
-    formData.append("show_angles", params.showAngles.toString());
-  }
-  if (params.maxDurationSec !== undefined) {
-    formData.append("max_duration_sec", params.maxDurationSec.toString());
-  }
-  if (params.enableAi !== undefined) {
-    formData.append("enable_ai", params.enableAi.toString());
-  }
-  if (params.language !== undefined) {
-    formData.append("language", params.language);
-  }
+  console.log("[MotionClient] B2 upload complete, key:", key);
 
-  // Create XMLHttpRequest for progress tracking (if callback provided)
-  if (onProgress && typeof XMLHttpRequest !== "undefined") {
-    return new Promise((resolve, reject) => {
-      const xhr = new XMLHttpRequest();
+  // Step 3: Send key + metadata to process-b2 endpoint
+  const processBody = {
+    key,
+    contentType,
+    show_angles: params.showAngles ?? true,
+    max_duration_sec: params.maxDurationSec,
+    enable_ai: params.enableAi ?? false,
+    language: params.language,
+  };
 
-      // Wire up abort signal
-      if (signal) {
-        if (signal.aborted) {
-          reject(new Error("Cancelled"));
-          return;
-        }
-        signal.addEventListener("abort", () => {
-          xhr.abort();
-          reject(new Error("Cancelled"));
-        });
-      }
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          onProgress({ loaded: e.loaded, total: e.total });
-        }
-      });
-
-      xhr.addEventListener("load", () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          try {
-            const response = JSON.parse(xhr.responseText);
-            resolve(response);
-          } catch {
-            reject(new Error("Failed to parse response"));
-          }
-        } else {
-          try {
-            const errorResponse = JSON.parse(xhr.responseText);
-            const msg =
-              typeof errorResponse.error === "string"
-                ? errorResponse.error
-                : typeof errorResponse.detail === "string"
-                  ? errorResponse.detail
-                  : `HTTP ${xhr.status} error`;
-            reject(new Error(msg));
-          } catch {
-            reject(new Error(`HTTP ${xhr.status} error`));
-          }
-        }
-      });
-
-      xhr.addEventListener("error", () => {
-        reject(new Error("Network error"));
-      });
-
-      xhr.addEventListener("timeout", () => {
-        reject(new Error("Request timeout"));
-      });
-
-      xhr.open("POST", `${apiBaseUrl}/api/motion-analysis/process`);
-      xhr.send(formData);
-    });
-  }
-
-  // Use fetch API (no progress tracking)
-  const response = await fetch(`${apiBaseUrl}/api/motion-analysis/process`, {
+  const response = await fetch(`${apiBaseUrl}/api/motion-analysis/process-b2`, {
     method: "POST",
-    body: formData,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(processBody),
     signal,
   });
 
@@ -271,9 +251,6 @@ export async function processMotionAnalysis(
 
 /**
  * Check if the lift analysis API is available.
- *
- * @param apiBaseUrl - Base URL of your API
- * @returns true if API is reachable
  */
 export async function checkLiftAnalysisApiHealth(
   apiBaseUrl: string
@@ -282,13 +259,13 @@ export async function checkLiftAnalysisApiHealth(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5000);
 
-    const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process`, {
+    const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process-b2`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
 
     clearTimeout(timeout);
-    return response.ok || response.status === 405; // 405 = Method Not Allowed (OPTIONS not implemented)
+    return response.ok || response.status === 405;
   } catch {
     return false;
   }

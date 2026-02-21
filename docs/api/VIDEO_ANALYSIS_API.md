@@ -6,14 +6,19 @@ As APIs centralizadas de análise de vídeo processam vídeos de fitness/desport
 
 ### Endpoints Disponíveis
 
-| Endpoint                       | Tipo           | Quando Usar                                                 |
-| ------------------------------ | -------------- | ----------------------------------------------------------- |
-| `/api/lift-analysis/process`   | Barbell + Pose | Deadlift, Squat, Clean, Snatch, Bench Press (vista lateral) |
-| `/api/motion-analysis/process` | Full Body Pose | Yoga, Mobilidade, Stretching, Cardio, Form Check            |
+| Endpoint                          | Tipo           | Quando Usar                                                 |
+| --------------------------------- | -------------- | ----------------------------------------------------------- |
+| `/api/lift-analysis/process`      | Barbell + Pose | Legacy: upload direto multipart (dev local / mobile antigo) |
+| `/api/motion-analysis/process`    | Full Body Pose | Legacy: upload direto multipart (dev local / mobile antigo) |
+| `/api/lift-analysis/process-b2`   | Barbell + Pose | **Produção**: via B2 presigned URL (web + mobile)           |
+| `/api/motion-analysis/process-b2` | Full Body Pose | **Produção**: via B2 presigned URL (web + mobile)           |
+| `/api/uploads/presign`            | Upload         | Gera presigned PUT URL para upload direto ao B2             |
 
 ### Características
 
 - ✅ **Processamento 100% externo** via `https://barbell-path-tracker-production.up.railway.app`
+- ✅ **Upload direto ao B2** — vídeo nunca passa pelo Vercel (evita limite de 4.5 MB)
+- ✅ **Railway descarrega o vídeo** diretamente do B2 via presigned URL
 - ✅ **Barbell tracking** com linha dourada mostrando caminho da barra
 - ✅ **Pose estimation** com esqueleto verde néon
 - ✅ **Ângulos das articulações** (anca, joelho, cotovelo, ombro, tornozelo, tronco)
@@ -540,13 +545,39 @@ import { analyzeMotion } from "@/src/lib/motion-api";
 
 ## 🔗 Arquitetura
 
+### Produção (B2 + Railway URL — recomendado)
+
+```
+┌─────────────┐   PUT presigned URL    ┌──────────────────┐
+│   Client    │ ─────────────────────► │  Backblaze B2    │
+│ (Browser /  │   (upload direto)      │  (S3-compatible) │
+│  Mobile)    │                        └────────┬─────────┘
+└──────┬──────┘                                 │
+       │ POST JSON {key, params}                │ GET presigned URL
+       ▼                                        ▼
+┌──────────────┐   POST JSON            ┌──────────────────────┐
+│   Vercel     │ ─────────────────────► │ barbell-path-tracker │
+│  (thin proxy │   {video_url, params}  │  Railway Service     │
+│   ~1KB JSON) │                        │                      │
+│              │ ◄───────────────────── │  1. Download video   │
+│              │   JSON response        │  2. Trim/transcode   │
+└──────────────┘                        │  3. Process (OpenCV  │
+                                        │     + MediaPipe)     │
+                                        │  4. Return results   │
+                                        └──────────────────────┘
+```
+
+**Nota:** Vercel **nunca toca nos bytes do vídeo**. Gera apenas um presigned URL e envia JSON ao Railway.
+
+### Legacy / Desenvolvimento Local
+
 ```
 ┌─────────────┐
 │   Mobile    │
 │  iOS/Android│
 └──────┬──────┘
        │
-       │ POST /api/lift-analysis/process
+       │ POST /api/lift-analysis/process   (multipart/form-data)
        │ POST /api/motion-analysis/process
        ▼
 ┌─────────────┐
@@ -555,7 +586,7 @@ import { analyzeMotion } from "@/src/lib/motion-api";
 │ (proxy only)│
 └──────┬──────┘
        │
-       │ POST /analyze/full
+       │ POST /analyze/full   (multipart/form-data)
        │ POST /analyze/body
        ▼
 ┌──────────────────────┐
@@ -566,7 +597,7 @@ import { analyzeMotion } from "@/src/lib/motion-api";
 └──────────────────────┘
 ```
 
-**Nota:** A app Athlifyr **NÃO processa vídeos localmente**. Serve apenas como proxy para o serviço externo Railway.
+**⚠️ O fluxo legacy funciona apenas para vídeos < 4.5 MB em produção (Vercel).** Para vídeos maiores, usar o fluxo B2.
 
 ---
 
@@ -663,7 +694,20 @@ function renderSkeleton(frame: SkeletonFrame) {
 
 ## 📝 Changelog
 
-### v2.1.0 (Current)
+### v3.0.0 (Current)
+
+- 🚀 **Upload direto ao Backblaze B2** — vídeo nunca passa pelo Vercel
+- 🚀 **Railway descarrega o vídeo** via presigned URL (novos endpoints `/analyze/full/url` e `/analyze/body/url`)
+- 🚀 **Railway faz upload do vídeo resultado** diretamente ao B2 via presigned PUT URL (`result_upload_url`)
+- 🚀 **Vercel é um thin JSON proxy** (~1 KB) — resolve o erro `FUNCTION_PAYLOAD_TOO_LARGE`
+- 🚀 **Zero bytes de vídeo passam pelo Vercel** — nem input, nem output
+- ✨ Endpoint `/api/uploads/presign` para gerar presigned PUT URLs
+- ✨ Endpoints `/api/lift-analysis/process-b2` e `/api/motion-analysis/process-b2`
+- ✨ Trim e transcode delegados ao Railway
+- ✨ Save routes detectam vídeo já no B2 e evitam download desnecessário
+- 📚 Documentação Railway: `docs/api/RAILWAY_URL_ENDPOINTS.md`
+
+### v2.1.0
 
 - ✨ Suporte para **skeleton_frames** com dados 3D por frame
 - ✨ 33 landmarks MediaPipe Pose por frame (coordenadas normalizadas + world em metros)
@@ -685,5 +729,5 @@ function renderSkeleton(frame: SkeletonFrame) {
 
 ---
 
-**Última atualização:** 19 de Fevereiro de 2026  
-**Versão da API:** 2.0.0
+**Última atualização:** 21 de Fevereiro de 2026  
+**Versão da API:** 3.0.0

@@ -86,52 +86,71 @@ export async function POST(request: Request) {
     typeof videoUrlParam === "string" &&
     videoUrlParam.startsWith("http")
   ) {
-    // Download video from external URL and upload to B2
-    try {
-      console.log(`[MotionAnalysis] Downloading video from: ${videoUrlParam}`);
-      const videoResponse = await fetch(videoUrlParam);
-      if (!videoResponse.ok) {
-        return NextResponse.json(
-          { error: `Failed to download video: ${videoResponse.status}` },
-          { status: 400 }
-        );
-      }
-      const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
+    // Check if the video is already on B2 (uploaded directly by Railway)
+    const isAlreadyOnB2 = videoUrlParam.includes("backblazeb2.com/file/");
+
+    if (isAlreadyOnB2) {
+      // Video was uploaded directly to B2 by Railway — no need to download
+      // and re-upload. Just use the URL as-is.
+      finalVideoUrl = videoUrlParam;
+      // Extract the B2 key from the URL:
+      // e.g. "https://f005.backblazeb2.com/file/athlifyr-videos/results/userId/uuid.mp4"
+      // → "results/userId/uuid.mp4"
+      const fileMatch = videoUrlParam.match(/\/file\/[^/]+\/(.+)$/);
+      videoB2Key = fileMatch ? fileMatch[1] : videoUrlParam;
       console.log(
-        `[MotionAnalysis] Downloaded ${videoBuffer.length} bytes, applying faststart...`
+        `[MotionAnalysis] Video already on B2, skipping download: ${finalVideoUrl}`
       );
-
-      // API already returns H.264 — just remux to move moov atom to start
-      // so browsers can determine duration instantly without buffering the whole file.
-      let uploadBuffer: Buffer = videoBuffer;
+    } else {
+      // Legacy flow: Download video from external URL (Railway) and upload to B2
       try {
-        uploadBuffer = await remuxMp4Faststart(videoBuffer);
-      } catch (remuxErr) {
-        console.warn(
-          "[MotionAnalysis] ffmpeg remux failed, uploading original:",
-          remuxErr
+        console.log(
+          `[MotionAnalysis] Downloading video from: ${videoUrlParam}`
+        );
+        const videoResponse = await fetch(videoUrlParam);
+        if (!videoResponse.ok) {
+          return NextResponse.json(
+            { error: `Failed to download video: ${videoResponse.status}` },
+            { status: 400 }
+          );
+        }
+        const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
+        console.log(
+          `[MotionAnalysis] Downloaded ${videoBuffer.length} bytes, applying faststart...`
+        );
+
+        // API already returns H.264 — just remux to move moov atom to start
+        // so browsers can determine duration instantly without buffering the whole file.
+        let uploadBuffer: Buffer = videoBuffer;
+        try {
+          uploadBuffer = await remuxMp4Faststart(videoBuffer);
+        } catch (remuxErr) {
+          console.warn(
+            "[MotionAnalysis] ffmpeg remux failed, uploading original:",
+            remuxErr
+          );
+        }
+
+        const uploadResult = await uploadToB2({
+          file: uploadBuffer,
+          fileName: `motion_${localId}.mp4`,
+          contentType: "video/mp4",
+          folder: "analyses",
+        });
+
+        finalVideoUrl = uploadResult.url;
+        videoB2Key = uploadResult.fileName;
+        console.log(`[MotionAnalysis] Uploaded to B2: ${finalVideoUrl}`);
+      } catch (error) {
+        console.error(
+          "[MotionAnalysis] Error downloading/uploading video:",
+          error
+        );
+        return NextResponse.json(
+          { error: "Failed to download and store processed video" },
+          { status: 500 }
         );
       }
-
-      const uploadResult = await uploadToB2({
-        file: uploadBuffer,
-        fileName: `motion_${localId}.mp4`,
-        contentType: "video/mp4",
-        folder: "analyses",
-      });
-
-      finalVideoUrl = uploadResult.url;
-      videoB2Key = uploadResult.fileName;
-      console.log(`[MotionAnalysis] Uploaded to B2: ${finalVideoUrl}`);
-    } catch (error) {
-      console.error(
-        "[MotionAnalysis] Error downloading/uploading video:",
-        error
-      );
-      return NextResponse.json(
-        { error: "Failed to download and store processed video" },
-        { status: 500 }
-      );
     }
   } else if (videoFile && videoFile instanceof File) {
     // Upload video file to B2

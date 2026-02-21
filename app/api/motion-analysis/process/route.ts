@@ -569,8 +569,12 @@ export async function POST(request: Request) {
     console.error("[MotionAnalysis] ── Unexpected top-level error ──", {
       name: error instanceof Error ? error.name : "unknown",
       message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
-      cause: error instanceof Error && "cause" in error ? String(error.cause) : undefined,
+      stack:
+        error instanceof Error ? error.stack?.substring(0, 500) : undefined,
+      cause:
+        error instanceof Error && "cause" in error
+          ? String(error.cause)
+          : undefined,
     });
     return NextResponse.json(
       {

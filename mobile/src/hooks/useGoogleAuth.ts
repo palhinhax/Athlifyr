@@ -103,8 +103,6 @@ export function useGoogleAuth() {
   useEffect(() => {
     if (!response || processingRef.current) return;
 
-    console.log("[GoogleAuth] RESPONSE:", JSON.stringify(response, null, 2));
-
     if (response.type === "success") {
       processingRef.current = true;
       setIsLoading(true);

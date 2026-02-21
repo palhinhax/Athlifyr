@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -18,6 +18,7 @@ import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import { useToast } from "@/src/hooks/useToast";
+import { isAxiosError } from "axios";
 import {
   colors,
   typography,
@@ -52,6 +53,7 @@ export default function RegisterScreen() {
     isLoading: isGoogleLoading,
   } = useGoogleAuth();
   const logout = useAuthStore((s) => s.logout);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { showToast } = useToast();
 
   const [name, setName] = useState("");
@@ -112,22 +114,31 @@ export default function RegisterScreen() {
       router.back();
       setTimeout(() => router.push("/login"), 100);
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : t("register.registrationFailed");
+      const message = isAxiosError(error)
+        ? (error.response?.data as { error?: string; message?: string })
+            ?.error ??
+          (error.response?.data as { error?: string; message?: string })
+            ?.message ??
+          t("register.registrationFailed")
+        : t("register.registrationFailed");
       showToast(message, "error");
     } finally {
       setIsLoading(false);
     }
   };
 
+  // Navigate when Google auth succeeds (async flow handled in useGoogleAuth hook)
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.back();
+    }
+  }, [isAuthenticated, router]);
+
   const handleGoogleSignIn = async () => {
     if (!isGoogleReady || isGoogleLoading) return;
     try {
       await googleSignIn();
-      // Navigate back after successful Google sign-in
-      router.back();
+      // Navigation happens via the isAuthenticated useEffect above
     } catch {
       showToast(t("login.googleError"), "error");
     }

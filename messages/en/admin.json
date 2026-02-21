@@ -12,7 +12,8 @@
         "instagram": "Instagram",
         "exercises": "Exercises",
         "reports": "Reports",
-        "appStoreAssets": "Store Assets"
+        "appStoreAssets": "Store Assets",
+        "giveaways": "Giveaways"
       }
     },
     "contacts": {
@@ -312,6 +313,59 @@
         "exporting": "Exporting…",
         "exportDone": "Export complete",
         "exportCount": "{count} images exported"
+      }
+    },
+    "giveaways": {
+      "title": "Giveaways",
+      "description": "Manage ticket giveaways and raffles for events",
+      "new": "New Giveaway",
+      "noGiveaways": "No giveaways",
+      "noGiveawaysDescription": "Create a giveaway linked to an event to get started",
+      "status": {
+        "DRAFT": "Draft",
+        "SCHEDULED": "Scheduled",
+        "DRAWING": "Drawing",
+        "DRAWN": "Drawn",
+        "CANCELLED": "Cancelled"
+      },
+      "fields": {
+        "event": "Event",
+        "drawAt": "Draw Date & Time",
+        "prizeCount": "Number of Prizes",
+        "status": "Status",
+        "participants": "Participants",
+        "winners": "Winners"
+      },
+      "form": {
+        "title": "Title",
+        "details": "Details",
+        "translations": "Translations",
+        "saveChanges": "Save Changes",
+        "create": "Create Giveaway",
+        "cancel": "Cancel"
+      },
+      "detail": {
+        "participants": "Participants",
+        "winners": "Winners",
+        "drawNow": "Draw Now",
+        "cancelGiveaway": "Cancel Giveaway",
+        "noWinners": "No winners yet",
+        "noParticipants": "No participants yet",
+        "rank": "Rank"
+      },
+      "toast": {
+        "created": "Giveaway created",
+        "createdDesc": "The giveaway was successfully created.",
+        "updated": "Giveaway updated",
+        "updatedDesc": "The giveaway was successfully updated.",
+        "drawn": "Draw complete",
+        "drawnDesc": "The draw was performed successfully.",
+        "cancelled": "Giveaway cancelled",
+        "cancelledDesc": "The giveaway was cancelled.",
+        "error": "Error",
+        "createError": "Failed to create giveaway.",
+        "updateError": "Failed to update giveaway.",
+        "drawError": "Failed to perform draw."
       }
     }
   }

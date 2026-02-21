@@ -81,6 +81,10 @@ model User {
   liftAnalyses          LiftAnalysisRecord[]
   aiAnalysisUsages      AiAnalysisUsage[]
 
+  // Giveaway relations
+  giveawayParticipations GiveawayParticipation[]
+  giveawayWins           GiveawayWinner[]
+
   @@index([email])
   @@index([name])
 }
@@ -167,6 +171,7 @@ model Event {
   posts                Post[]
   pricingPhases        PricingPhase[]
   results              Result[]
+  giveaways            Giveaway[]
 
   @@index([sportTypes])
   @@index([startDate])
@@ -2047,4 +2052,80 @@ model AiAnalysisUsage {
   createdAt DateTime @default(now())
 
   @@index([userId, createdAt])
+}
+
+// ============================================================================
+// GIVEAWAYS / SORTEIOS
+// ============================================================================
+
+model Giveaway {
+  id                String          @id @default(cuid())
+  eventId           String
+  status            GiveawayStatus  @default(DRAFT)
+  drawAt            DateTime?
+  prizeCount        Int             @default(1)
+  maxWinnersPerUser Int             @default(1)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  event         Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  translations  GiveawayTranslation[]
+  participations GiveawayParticipation[]
+  winners       GiveawayWinner[]
+
+  @@index([eventId])
+  @@index([status])
+  @@index([drawAt])
+}
+
+model GiveawayTranslation {
+  id         String   @id @default(cuid())
+  giveawayId String
+  lang       Language
+  title      String
+  details    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+
+  @@unique([giveawayId, lang])
+  @@index([giveawayId])
+}
+
+model GiveawayParticipation {
+  id         String   @id @default(cuid())
+  giveawayId String
+  userId     String
+  createdAt  DateTime @default(now())
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([giveawayId, userId])
+  @@index([giveawayId])
+  @@index([userId])
+}
+
+model GiveawayWinner {
+  id         String   @id @default(cuid())
+  giveawayId String
+  userId     String
+  rank       Int
+  createdAt  DateTime @default(now())
+
+  giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([giveawayId, userId])
+  @@index([giveawayId])
+  @@index([userId])
+}
+
+enum GiveawayStatus {
+  DRAFT
+  SCHEDULED
+  DRAWING
+  DRAWN
+  CANCELLED
 }

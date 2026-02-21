@@ -220,6 +220,23 @@
           "MIXED": "Gemischt"
         }
       }
+    },
+    "giveaway": {
+      "title": "Gewinnspiel",
+      "participate": "Teilnehmen",
+      "alreadyParticipating": "Bereits angemeldet",
+      "drawEnded": "Ziehung beendet",
+      "viewWinners": "Gewinner anzeigen",
+      "drawDate": "Ziehdatum",
+      "prizes": "{count} Preis | {count} Preise",
+      "prizeCount": "{count} Preis",
+      "prizeCountPlural": "{count} Preise",
+      "participants": "{count} Teilnehmer",
+      "participantsCount": "{count} Teilnehmer",
+      "participantsCountPlural": "{count} Teilnehmer",
+      "loginToParticipate": "Anmelden, um teilzunehmen",
+      "joinSuccess": "Du nimmst jetzt am Gewinnspiel teil!",
+      "joinError": "Teilnahme fehlgeschlagen. Bitte versuche es erneut."
     }
   },
   "eventsPage": {

@@ -220,6 +220,23 @@
       "fog": "Fog",
       "haze": "Haze",
       "thunderstorm": "Thunderstorm"
+    },
+    "giveaway": {
+      "title": "Giveaway",
+      "participate": "Participate",
+      "alreadyParticipating": "Already participating",
+      "drawEnded": "Draw ended",
+      "viewWinners": "View winners",
+      "drawDate": "Draw date",
+      "prizes": "{count} prize | {count} prizes",
+      "prizeCount": "{count} prize",
+      "prizeCountPlural": "{count} prizes",
+      "participants": "{count} participant | {count} participants",
+      "participantsCount": "{count} participant",
+      "participantsCountPlural": "{count} participants",
+      "loginToParticipate": "Log in to participate",
+      "joinSuccess": "You are now participating in the giveaway!",
+      "joinError": "Failed to join the giveaway. Please try again."
     }
   },
   "eventsPage": {

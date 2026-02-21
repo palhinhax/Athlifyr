@@ -220,6 +220,23 @@
       "fog": "Nevoeiro",
       "haze": "Neblina",
       "thunderstorm": "Trovoada"
+    },
+    "giveaway": {
+      "title": "Sorteio",
+      "participate": "Participar",
+      "alreadyParticipating": "Já estás a participar",
+      "drawEnded": "Sorteio terminado",
+      "viewWinners": "Ver vencedores",
+      "drawDate": "Data do sorteio",
+      "prizes": "{count} prémio | {count} prémios",
+      "prizeCount": "{count} prémio",
+      "prizeCountPlural": "{count} prémios",
+      "participants": "{count} participante | {count} participantes",
+      "participantsCount": "{count} participante",
+      "participantsCountPlural": "{count} participantes",
+      "loginToParticipate": "Inicia sessão para participar",
+      "joinSuccess": "Estás agora a participar no sorteio!",
+      "joinError": "Falha ao entrar no sorteio. Tenta novamente."
     }
   },
   "eventsPage": {

@@ -4,6 +4,7 @@ import { formatDate } from "@/lib/event-utils";
 import type { Metadata } from "next";
 import { EventRegistration } from "@/components/event-registration";
 import { EventPastParticipation } from "@/components/event-past-participation";
+import { GiveawayCard } from "@/components/giveaway-card";
 import { auth } from "@/lib/auth";
 import {
   generateSportsEventSchema,
@@ -423,6 +424,13 @@ export default async function EventPage({ params }: PageProps) {
                 goToWebsite: t("goToWebsite"),
               }}
             />
+
+            {/* Giveaway Card */}
+            {!event.cancelled && (
+              <div className="mt-8">
+                <GiveawayCard eventId={event.id} />
+              </div>
+            )}
 
             {/* Event Registration */}
             {!event.cancelled && (

@@ -12,7 +12,8 @@
         "instagram": "Instagram",
         "exercises": "Exercícios",
         "reports": "Denúncias",
-        "appStoreAssets": "Imagens Loja"
+        "appStoreAssets": "Imagens Loja",
+        "giveaways": "Sorteios"
       }
     },
     "contacts": {
@@ -312,6 +313,59 @@
         "exporting": "A exportar…",
         "exportDone": "Exportação concluída",
         "exportCount": "{count} imagens exportadas"
+      }
+    },
+    "giveaways": {
+      "title": "Sorteios",
+      "description": "Gerir sorteios e rifas para eventos",
+      "new": "Novo Sorteio",
+      "noGiveaways": "Sem sorteios",
+      "noGiveawaysDescription": "Cria um sorteio associado a um evento para começar",
+      "status": {
+        "DRAFT": "Rascunho",
+        "SCHEDULED": "Agendado",
+        "DRAWING": "A Sortear",
+        "DRAWN": "Sorteado",
+        "CANCELLED": "Cancelado"
+      },
+      "fields": {
+        "event": "Evento",
+        "drawAt": "Data e Hora do Sorteio",
+        "prizeCount": "Número de Prémios",
+        "status": "Estado",
+        "participants": "Participantes",
+        "winners": "Vencedores"
+      },
+      "form": {
+        "title": "Título",
+        "details": "Detalhes",
+        "translations": "Traduções",
+        "saveChanges": "Guardar Alterações",
+        "create": "Criar Sorteio",
+        "cancel": "Cancelar"
+      },
+      "detail": {
+        "participants": "Participantes",
+        "winners": "Vencedores",
+        "drawNow": "Sortear Agora",
+        "cancelGiveaway": "Cancelar Sorteio",
+        "noWinners": "Ainda sem vencedores",
+        "noParticipants": "Ainda sem participantes",
+        "rank": "Posição"
+      },
+      "toast": {
+        "created": "Sorteio criado",
+        "createdDesc": "O sorteio foi criado com sucesso.",
+        "updated": "Sorteio atualizado",
+        "updatedDesc": "O sorteio foi atualizado com sucesso.",
+        "drawn": "Sorteio concluído",
+        "drawnDesc": "O sorteio foi realizado com sucesso.",
+        "cancelled": "Sorteio cancelado",
+        "cancelledDesc": "O sorteio foi cancelado.",
+        "error": "Erro",
+        "createError": "Falha ao criar sorteio.",
+        "updateError": "Falha ao atualizar sorteio.",
+        "drawError": "Falha ao realizar sorteio."
       }
     }
   }

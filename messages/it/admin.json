@@ -12,7 +12,8 @@
         "instagram": "Instagram",
         "exercises": "Esercizi",
         "reports": "Segnalazioni",
-        "appStoreAssets": "Immagini Store"
+        "appStoreAssets": "Immagini Store",
+        "giveaways": "Sorteggi"
       }
     },
     "contacts": {
@@ -309,6 +310,59 @@
         "exporting": "Esportazione…",
         "exportDone": "Esportazione completata",
         "exportCount": "{count} immagini esportate"
+      }
+    },
+    "giveaways": {
+      "title": "Sorteggi",
+      "description": "Gestisci sorteggi e lotterie per gli eventi",
+      "new": "Nuovo Sorteggio",
+      "noGiveaways": "Nessun sorteggio",
+      "noGiveawaysDescription": "Crea un sorteggio collegato a un evento per iniziare",
+      "status": {
+        "DRAFT": "Bozza",
+        "SCHEDULED": "Programmato",
+        "DRAWING": "In corso",
+        "DRAWN": "Estratto",
+        "CANCELLED": "Annullato"
+      },
+      "fields": {
+        "event": "Evento",
+        "drawAt": "Data e ora del sorteggio",
+        "prizeCount": "Numero di premi",
+        "status": "Stato",
+        "participants": "Partecipanti",
+        "winners": "Vincitori"
+      },
+      "form": {
+        "title": "Titolo",
+        "details": "Dettagli",
+        "translations": "Traduzioni",
+        "saveChanges": "Salva modifiche",
+        "create": "Crea sorteggio",
+        "cancel": "Annulla"
+      },
+      "detail": {
+        "participants": "Partecipanti",
+        "winners": "Vincitori",
+        "drawNow": "Estrai ora",
+        "cancelGiveaway": "Annulla sorteggio",
+        "noWinners": "Ancora nessun vincitore",
+        "noParticipants": "Ancora nessun partecipante",
+        "rank": "Posizione"
+      },
+      "toast": {
+        "created": "Sorteggio creato",
+        "createdDesc": "Il sorteggio è stato creato con successo.",
+        "updated": "Sorteggio aggiornato",
+        "updatedDesc": "Il sorteggio è stato aggiornato con successo.",
+        "drawn": "Sorteggio completato",
+        "drawnDesc": "Il sorteggio è stato eseguito con successo.",
+        "cancelled": "Sorteggio annullato",
+        "cancelledDesc": "Il sorteggio è stato annullato.",
+        "error": "Errore",
+        "createError": "Impossibile creare il sorteggio.",
+        "updateError": "Impossibile aggiornare il sorteggio.",
+        "drawError": "Impossibile eseguire il sorteggio."
       }
     }
   }

@@ -12,7 +12,8 @@
         "instagram": "Instagram",
         "exercises": "Übungen",
         "reports": "Meldungen",
-        "appStoreAssets": "Store-Bilder"
+        "appStoreAssets": "Store-Bilder",
+        "giveaways": "Gewinnspiele"
       }
     },
     "contacts": {
@@ -312,6 +313,59 @@
         "exporting": "Wird exportiert…",
         "exportDone": "Export abgeschlossen",
         "exportCount": "{count} Bilder exportiert"
+      }
+    },
+    "giveaways": {
+      "title": "Gewinnspiele",
+      "description": "Gewinnspiele und Verlosungen für Veranstaltungen verwalten",
+      "new": "Neues Gewinnspiel",
+      "noGiveaways": "Keine Gewinnspiele",
+      "noGiveawaysDescription": "Erstelle ein Gewinnspiel verknüpft mit einer Veranstaltung",
+      "status": {
+        "DRAFT": "Entwurf",
+        "SCHEDULED": "Geplant",
+        "DRAWING": "Ziehung läuft",
+        "DRAWN": "Gezogen",
+        "CANCELLED": "Abgebrochen"
+      },
+      "fields": {
+        "event": "Veranstaltung",
+        "drawAt": "Datum und Uhrzeit der Ziehung",
+        "prizeCount": "Anzahl der Preise",
+        "status": "Status",
+        "participants": "Teilnehmer",
+        "winners": "Gewinner"
+      },
+      "form": {
+        "title": "Titel",
+        "details": "Details",
+        "translations": "Übersetzungen",
+        "saveChanges": "Änderungen speichern",
+        "create": "Gewinnspiel erstellen",
+        "cancel": "Abbrechen"
+      },
+      "detail": {
+        "participants": "Teilnehmer",
+        "winners": "Gewinner",
+        "drawNow": "Jetzt ziehen",
+        "cancelGiveaway": "Gewinnspiel abbrechen",
+        "noWinners": "Noch keine Gewinner",
+        "noParticipants": "Noch keine Teilnehmer",
+        "rank": "Rang"
+      },
+      "toast": {
+        "created": "Gewinnspiel erstellt",
+        "createdDesc": "Das Gewinnspiel wurde erfolgreich erstellt.",
+        "updated": "Gewinnspiel aktualisiert",
+        "updatedDesc": "Das Gewinnspiel wurde erfolgreich aktualisiert.",
+        "drawn": "Ziehung abgeschlossen",
+        "drawnDesc": "Die Ziehung wurde erfolgreich durchgeführt.",
+        "cancelled": "Gewinnspiel abgebrochen",
+        "cancelledDesc": "Das Gewinnspiel wurde abgebrochen.",
+        "error": "Fehler",
+        "createError": "Fehler beim Erstellen des Gewinnspiels.",
+        "updateError": "Fehler beim Aktualisieren des Gewinnspiels.",
+        "drawError": "Fehler bei der Ziehung."
       }
     }
   }

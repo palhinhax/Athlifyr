@@ -12,7 +12,8 @@
         "instagram": "Instagram",
         "exercises": "Exercices",
         "reports": "Signalements",
-        "appStoreAssets": "Images Boutique"
+        "appStoreAssets": "Images Boutique",
+        "giveaways": "Tirages"
       }
     },
     "contacts": {
@@ -312,6 +313,59 @@
         "exporting": "Exportation…",
         "exportDone": "Exportation terminée",
         "exportCount": "{count} images exportées"
+      }
+    },
+    "giveaways": {
+      "title": "Tirages au sort",
+      "description": "Gérer les tirages au sort et les tombolas pour les événements",
+      "new": "Nouveau Tirage",
+      "noGiveaways": "Aucun tirage",
+      "noGiveawaysDescription": "Créez un tirage lié à un événement pour commencer",
+      "status": {
+        "DRAFT": "Brouillon",
+        "SCHEDULED": "Planifié",
+        "DRAWING": "En cours",
+        "DRAWN": "Tiré",
+        "CANCELLED": "Annulé"
+      },
+      "fields": {
+        "event": "Événement",
+        "drawAt": "Date et heure du tirage",
+        "prizeCount": "Nombre de prix",
+        "status": "Statut",
+        "participants": "Participants",
+        "winners": "Gagnants"
+      },
+      "form": {
+        "title": "Titre",
+        "details": "Détails",
+        "translations": "Traductions",
+        "saveChanges": "Enregistrer",
+        "create": "Créer le tirage",
+        "cancel": "Annuler"
+      },
+      "detail": {
+        "participants": "Participants",
+        "winners": "Gagnants",
+        "drawNow": "Tirer maintenant",
+        "cancelGiveaway": "Annuler le tirage",
+        "noWinners": "Pas encore de gagnants",
+        "noParticipants": "Pas encore de participants",
+        "rank": "Rang"
+      },
+      "toast": {
+        "created": "Tirage créé",
+        "createdDesc": "Le tirage a été créé avec succès.",
+        "updated": "Tirage mis à jour",
+        "updatedDesc": "Le tirage a été mis à jour avec succès.",
+        "drawn": "Tirage terminé",
+        "drawnDesc": "Le tirage a été effectué avec succès.",
+        "cancelled": "Tirage annulé",
+        "cancelledDesc": "Le tirage a été annulé.",
+        "error": "Erreur",
+        "createError": "Échec de la création du tirage.",
+        "updateError": "Échec de la mise à jour du tirage.",
+        "drawError": "Échec du tirage."
       }
     }
   }

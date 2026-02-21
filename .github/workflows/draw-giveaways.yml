@@ -1,0 +1,75 @@
+name: Daily Giveaway Draw
+
+on:
+  schedule:
+    # Run every day at 12:05 UTC (12:05 WET / 13:05 WEST depending on DST)
+    # The API endpoint handles Europe/Lisbon timezone matching internally
+    - cron: "5 12 * * *"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  draw-giveaways:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate Secrets
+        run: |
+          echo "🔐 Validating required secrets..."
+
+          if [ -z "${{ secrets.APP_URL }}" ]; then
+            echo "❌ ERROR: APP_URL secret is not configured"
+            exit 1
+          fi
+          echo "✅ APP_URL is configured"
+
+          if [ -z "${{ secrets.GIVEAWAY_DRAW_SECRET }}" ]; then
+            echo "❌ ERROR: GIVEAWAY_DRAW_SECRET secret is not configured"
+            exit 1
+          fi
+          echo "✅ GIVEAWAY_DRAW_SECRET is configured"
+
+          echo ""
+          echo "📍 Target URL: ${{ secrets.APP_URL }}/api/giveaways/draw"
+
+      - name: Run Giveaway Draw
+        run: |
+          echo "🎰 Starting daily giveaway draw..."
+          echo "📅 Current time: $(date -u '+%Y-%m-%d %H:%M:%S UTC')"
+          echo ""
+
+          response=$(curl -sS -L -w "\n---HTTP_CODE---%{http_code}---TIME_TOTAL---%{time_total}s" \
+            -X POST "${{ secrets.APP_URL }}/api/giveaways/draw" \
+            -H "Authorization: Bearer ${{ secrets.GIVEAWAY_DRAW_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          body=$(echo "$response" | sed 's/---HTTP_CODE---.*//g')
+          http_code=$(echo "$response" | grep -oP '(?<=---HTTP_CODE---)\d+')
+          time_total=$(echo "$response" | grep -oP '(?<=---TIME_TOTAL---).*')
+
+          echo "📊 Request Details:"
+          echo "   HTTP Status: $http_code"
+          echo "   Time: $time_total"
+          echo ""
+          echo "📦 Response:"
+          echo "$body" | jq . 2>/dev/null || echo "$body"
+          echo ""
+
+          if [ "$http_code" != "200" ]; then
+            echo "❌ Draw job failed with HTTP status $http_code"
+            exit 1
+          fi
+
+          processed=$(echo "$body" | jq -r '.processed // "N/A"')
+          echo "🏆 Giveaways processed: $processed"
+
+          if echo "$body" | jq -e '.results' > /dev/null 2>&1; then
+            echo ""
+            echo "📋 Draw Results:"
+            echo "$body" | jq -r '.results[] | "  - Giveaway \(.giveawayId): \(.participantsCount) participants, \(.winnersCount) winners\(if .error then " [ERROR: \(.error)]" else "" end)"'
+          fi
+
+          echo ""
+          echo "✅ Daily giveaway draw completed!"
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+          GIVEAWAY_DRAW_SECRET: ${{ secrets.GIVEAWAY_DRAW_SECRET }}

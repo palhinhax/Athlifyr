@@ -220,6 +220,23 @@
           "MIXED": "Misto"
         }
       }
+    },
+    "giveaway": {
+      "title": "Sorteggio",
+      "participate": "Partecipa",
+      "alreadyParticipating": "Stai già partecipando",
+      "drawEnded": "Sorteggio terminato",
+      "viewWinners": "Vedi vincitori",
+      "drawDate": "Data del sorteggio",
+      "prizes": "{count} premio | {count} premi",
+      "prizeCount": "{count} premio",
+      "prizeCountPlural": "{count} premi",
+      "participants": "{count} partecipante | {count} partecipanti",
+      "participantsCount": "{count} partecipante",
+      "participantsCountPlural": "{count} partecipanti",
+      "loginToParticipate": "Accedi per partecipare",
+      "joinSuccess": "Stai ora partecipando al sorteggio!",
+      "joinError": "Impossibile partecipare al sorteggio. Riprova."
     }
   },
   "eventsPage": {

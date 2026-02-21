@@ -220,6 +220,23 @@
       "fog": "Brouillard",
       "haze": "Brume Légère",
       "thunderstorm": "Orage"
+    },
+    "giveaway": {
+      "title": "Tirage au sort",
+      "participate": "Participer",
+      "alreadyParticipating": "Déjà inscrit",
+      "drawEnded": "Tirage terminé",
+      "viewWinners": "Voir les gagnants",
+      "drawDate": "Date du tirage",
+      "prizes": "{count} prix",
+      "prizeCount": "{count} prix",
+      "prizeCountPlural": "{count} prix",
+      "participants": "{count} participant | {count} participants",
+      "participantsCount": "{count} participant",
+      "participantsCountPlural": "{count} participants",
+      "loginToParticipate": "Connectez-vous pour participer",
+      "joinSuccess": "Vous participez maintenant au tirage au sort !",
+      "joinError": "Échec de l'inscription. Veuillez réessayer."
     }
   },
   "eventsPage": {

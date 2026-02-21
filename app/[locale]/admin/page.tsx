@@ -16,6 +16,7 @@ import {
   Dumbbell,
   Bug,
   Smartphone,
+  Gift,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -32,6 +33,7 @@ const AdminExercisesContent = lazy(() => import("./exercises/page"));
 const AdminAppStoreAssetsContent = lazy(
   () => import("./app-store-assets/page")
 );
+const AdminGiveawaysContent = lazy(() => import("./giveaways/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -127,6 +129,10 @@ function AdminContent() {
             <TabsTrigger value="debug" className="flex-1 gap-2">
               <Bug className="h-4 w-4" />
               <span className="hidden sm:inline">Debug</span>
+            </TabsTrigger>
+            <TabsTrigger value="giveaways" className="flex-1 gap-2">
+              <Gift className="h-4 w-4" />
+              <span className="hidden sm:inline">{t("tabs.giveaways")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -243,6 +249,18 @@ function AdminContent() {
           <div className="space-y-4">
             <AdminPushDebug />
           </div>
+        </TabsContent>
+
+        <TabsContent value="giveaways">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminGiveawaysContent />
+          </Suspense>
         </TabsContent>
       </Tabs>
     </div>

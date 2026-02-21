@@ -52,8 +52,8 @@ interface Giveaway {
   status: GiveawayStatus;
   drawAt: string | null;
   prizeCount: number;
-  commitHash: string | null;
-  revealedSecret: string | null;
+  secretHash: string | null;
+  secretRevealed: string | null;
   event: { id: string; title: string; slug: string };
   translations: GiveawayTranslation[];
   _count: { participations: number; winners: number };
@@ -95,7 +95,7 @@ export default function AdminGiveawaysPage() {
     }>
   >([]);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
-  const [revealedSecretInput, setRevealedSecretInput] = useState("");
+  const [secretRevealedInput, setRevealedSecretInput] = useState("");
   const [isSavingSecret, setIsSavingSecret] = useState(false);
 
   const [formData, setFormData] = useState({
@@ -103,7 +103,7 @@ export default function AdminGiveawaysPage() {
     drawAt: "",
     prizeCount: 1,
     status: GiveawayStatus.DRAFT as GiveawayStatus,
-    commitHash: "",
+    secretHash: "",
     translations: LANGUAGES.map((lang) => ({ lang, title: "", details: "" })),
   });
 
@@ -165,7 +165,7 @@ export default function AdminGiveawaysPage() {
         drawAt: "",
         prizeCount: 1,
         status: GiveawayStatus.DRAFT,
-        commitHash: "",
+        secretHash: "",
         translations: LANGUAGES.map((lang) => ({
           lang,
           title: "",
@@ -227,7 +227,7 @@ export default function AdminGiveawaysPage() {
 
   const openDetail = async (giveaway: Giveaway) => {
     setSelectedGiveaway(giveaway);
-    setRevealedSecretInput(giveaway.revealedSecret ?? "");
+    setRevealedSecretInput(giveaway.secretRevealed ?? "");
     setIsDetailOpen(true);
     setIsLoadingParticipants(true);
     try {
@@ -251,7 +251,7 @@ export default function AdminGiveawaysPage() {
       const res = await fetch(`/api/admin/giveaways/${selectedGiveaway.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ revealedSecret: revealedSecretInput }),
+        body: JSON.stringify({ secretRevealed: secretRevealedInput }),
       });
       if (!res.ok) throw new Error("Failed to save revealed secret");
       toast({
@@ -448,16 +448,16 @@ export default function AdminGiveawaysPage() {
               </Select>
             </div>
             <div>
-              <Label>{t("form.commitHash")}</Label>
+              <Label>{t("form.secretHash")}</Label>
               <Input
                 placeholder="SHA-256 hash"
-                value={formData.commitHash}
+                value={formData.secretHash}
                 onChange={(e) =>
-                  setFormData((p) => ({ ...p, commitHash: e.target.value }))
+                  setFormData((p) => ({ ...p, secretHash: e.target.value }))
                 }
               />
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("form.commitHashHelp")}
+                {t("form.secretHashHelp")}
               </p>
             </div>
             <div>
@@ -615,15 +615,15 @@ export default function AdminGiveawaysPage() {
                 {selectedGiveaway.status === GiveawayStatus.DRAWN && (
                   <div>
                     <h3 className="mb-1 font-medium">
-                      {t("form.revealedSecret")}
+                      {t("form.secretRevealed")}
                     </h3>
                     <p className="mb-2 text-xs text-muted-foreground">
-                      {t("form.revealedSecretHelp")}
+                      {t("form.secretRevealedHelp")}
                     </p>
                     <div className="flex gap-2">
                       <Input
                         placeholder="secret value"
-                        value={revealedSecretInput}
+                        value={secretRevealedInput}
                         onChange={(e) => setRevealedSecretInput(e.target.value)}
                         className="font-mono text-xs"
                       />

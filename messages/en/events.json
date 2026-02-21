@@ -241,13 +241,17 @@
         "transparency": "Transparency",
         "howItWorks": "How it works",
         "howItWorksExplanation": "At draw time we reveal the secret. Anyone can verify: SHA-256(secret) == commitHash.",
-        "commitHash": "Commit hash",
-        "commitHashExplanation": "This hash proves the draw secret was fixed before the draw.",
-        "revealedSecret": "Revealed secret",
-        "yourPosition": "Your current position: #{position}",
-        "positionNote": "Position may change as new participants join.",
-        "verifyWinner": "Verify the draw"
-      }
+        "verifyWinner": "Verify the draw",
+        "secretHash": "Commit hash",
+        "secretHashExplanation": "This hash proves the draw secret was fixed before the draw.",
+        "secretRevealed": "Revealed secret",
+        "yourTicketNumber": "Your ticket: #{number}",
+        "ticketPermanentNote": "This number is permanent — it will not change.",
+        "winningTicketNumber": "Winning ticket: #{number}",
+        "finalParticipantsCount": "Total participants at draw: {count}",
+        "verifyFormula": "Verify: SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+      },
+      "winner": "Winner"
     }
   },
   "eventsPage": {

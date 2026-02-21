@@ -42,29 +42,21 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ giveaway: null });
     }
 
-    // Check if current user has joined and find their position
+    // Check if current user has joined and get their permanent ticket number
     let hasJoined = false;
-    let userPosition: number | null = null;
+    let ticketNumber: number | null = null;
     if (user) {
       const participation = await prisma.giveawayParticipation.findUnique({
         where: {
           giveawayId_userId: { giveawayId: giveaway.id, userId: user.id },
         },
+        select: { ticketNumber: true },
       });
       hasJoined = !!participation;
-      if (participation) {
-        // Count how many participants joined before this user (1-based position)
-        const participantPosition = await prisma.giveawayParticipation.count({
-          where: {
-            giveawayId: giveaway.id,
-            createdAt: { lte: participation.createdAt },
-          },
-        });
-        userPosition = participantPosition;
-      }
+      ticketNumber = participation?.ticketNumber ?? null;
     }
 
-    // Get localized translation (fallback: en -> pt)
+    // Get localized translation (fallback: lang -> en -> pt)
     const searchParams = request.nextUrl.searchParams;
     const lang = (searchParams.get("lang") as Language) || Language.en;
 
@@ -80,13 +72,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         id: giveaway.id,
         status: giveaway.status,
         drawAt: giveaway.drawAt,
+        drawnAt: giveaway.drawnAt,
         prizeCount: giveaway.prizeCount,
         participantsCount: giveaway._count.participations,
-        commitHash: giveaway.commitHash,
-        revealedSecret: giveaway.revealedSecret,
+        secretHash: giveaway.secretHash,
+        secretRevealed: giveaway.secretRevealed,
+        finalParticipantsCount: giveaway.finalParticipantsCount,
+        winningTicketNumber: giveaway.winningTicketNumber,
         translation,
         hasJoined,
-        userPosition,
+        ticketNumber,
       },
     });
   } catch (error) {

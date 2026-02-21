@@ -343,10 +343,10 @@
         "saveChanges": "Enregistrer",
         "create": "Créer le tirage",
         "cancel": "Annuler",
-        "commitHash": "Hash d'engagement",
-        "commitHashHelp": "Optionnel. Hash SHA-256 du secret du tirage. Publiez-le avant le tirage pour prouver la transparence.",
-        "revealedSecret": "Secret révélé",
-        "revealedSecretHelp": "Révélez après le tirage pour que les participants puissent vérifier : SHA-256(secret) == commitHash."
+        "secretHash": "Hash du secret",
+        "secretHashHelp": "SHA-256 du secret du tirage. Publiez avant le tirage.",
+        "secretRevealed": "Secret révélé",
+        "secretRevealedHelp": "Révélez après le tirage pour vérification."
       },
       "detail": {
         "participants": "Participants",

@@ -343,10 +343,10 @@
         "saveChanges": "Save Changes",
         "create": "Create Giveaway",
         "cancel": "Cancel",
-        "commitHash": "Commit Hash",
-        "commitHashHelp": "Optional. SHA-256 hash of your draw secret. Publish this before the draw to prove fairness.",
-        "revealedSecret": "Revealed Secret",
-        "revealedSecretHelp": "Reveal after draw so participants can verify: SHA-256(secret) == commitHash."
+        "secretHash": "Secret Hash",
+        "secretHashHelp": "SHA-256 of your draw secret. Publish this before the draw to prove fairness.",
+        "secretRevealed": "Revealed Secret",
+        "secretRevealedHelp": "Reveal after draw so participants can verify: SHA-256(secret+\"|1|0\") % N + 1 = winning ticket."
       },
       "detail": {
         "participants": "Participants",

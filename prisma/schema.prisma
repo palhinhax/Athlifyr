@@ -2059,21 +2059,24 @@ model AiAnalysisUsage {
 // ============================================================================
 
 model Giveaway {
-  id                String          @id @default(cuid())
-  eventId           String
-  status            GiveawayStatus  @default(DRAFT)
-  drawAt            DateTime?
-  prizeCount        Int             @default(1)
-  maxWinnersPerUser Int             @default(1)
-  commitHash        String?
-  revealedSecret    String?
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  id                   String          @id @default(cuid())
+  eventId              String
+  status               GiveawayStatus  @default(DRAFT)
+  drawAt               DateTime?
+  drawnAt              DateTime?
+  prizeCount           Int             @default(1)
+  maxWinnersPerUser    Int             @default(1)
+  secretHash           String?
+  secretRevealed       String?
+  finalParticipantsCount Int?
+  winningTicketNumber  Int?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
 
-  event         Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  translations  GiveawayTranslation[]
+  event          Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  translations   GiveawayTranslation[]
   participations GiveawayParticipation[]
-  winners       GiveawayWinner[]
+  winners        GiveawayWinner[]
 
   @@index([eventId])
   @@index([status])
@@ -2096,16 +2099,19 @@ model GiveawayTranslation {
 }
 
 model GiveawayParticipation {
-  id         String   @id @default(cuid())
-  giveawayId String
-  userId     String
-  createdAt  DateTime @default(now())
+  id           String   @id @default(cuid())
+  giveawayId   String
+  userId       String
+  ticketNumber Int
+  createdAt    DateTime @default(now())
 
   giveaway Giveaway @relation(fields: [giveawayId], references: [id], onDelete: Cascade)
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([giveawayId, userId])
+  @@unique([giveawayId, ticketNumber])
   @@index([giveawayId])
+  @@index([giveawayId, ticketNumber])
   @@index([userId])
 }
 

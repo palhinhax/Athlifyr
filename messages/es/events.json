@@ -241,13 +241,17 @@
         "transparency": "Transparencia",
         "howItWorks": "Cómo funciona",
         "howItWorksExplanation": "En el momento del sorteo revelamos el secreto. Cualquiera puede verificar: SHA-256(secreto) == commitHash.",
-        "commitHash": "Hash de compromiso",
-        "commitHashExplanation": "Este hash demuestra que el secreto del sorteo se fijó antes del sorteo.",
-        "revealedSecret": "Secreto revelado",
-        "yourPosition": "Tu posición actual: #{position}",
-        "positionNote": "La posición puede cambiar a medida que se unan nuevos participantes.",
-        "verifyWinner": "Verificar el sorteo"
-      }
+        "verifyWinner": "Verificar el sorteo",
+        "secretHash": "Hash de compromiso",
+        "secretHashExplanation": "Este hash demuestra que el secreto del sorteo se fijó antes del sorteo.",
+        "secretRevealed": "Secreto revelado",
+        "yourTicketNumber": "Tu número: #{number}",
+        "ticketPermanentNote": "Este número es permanente — no cambiará.",
+        "winningTicketNumber": "Boleto ganador: #{number}",
+        "finalParticipantsCount": "Total de participantes en el sorteo: {count}",
+        "verifyFormula": "Verificar: SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+      },
+      "winner": "Ganador"
     }
   },
   "eventsPage": {

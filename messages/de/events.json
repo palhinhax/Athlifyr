@@ -241,13 +241,17 @@
         "transparency": "Transparenz",
         "howItWorks": "Wie es funktioniert",
         "howItWorksExplanation": "Zum Zeitpunkt der Ziehung enthüllen wir das Geheimnis. Jeder kann verifizieren: SHA-256(Geheimnis) == commitHash.",
-        "commitHash": "Commitment-Hash",
-        "commitHashExplanation": "Dieser Hash beweist, dass das Ziehungsgeheimnis vor der Ziehung festgelegt wurde.",
-        "revealedSecret": "Enthülltes Geheimnis",
-        "yourPosition": "Deine aktuelle Position: #{position}",
-        "positionNote": "Die Position kann sich ändern, wenn neue Teilnehmer beitreten.",
-        "verifyWinner": "Ziehung verifizieren"
-      }
+        "verifyWinner": "Ziehung verifizieren",
+        "secretHash": "Commitment-Hash",
+        "secretHashExplanation": "Dieser Hash beweist, dass das Ziehungsgeheimnis vor der Ziehung festgelegt wurde.",
+        "secretRevealed": "Enthülltes Geheimnis",
+        "yourTicketNumber": "Deine Nummer: #{number}",
+        "ticketPermanentNote": "Diese Nummer ist dauerhaft — sie wird sich nicht ändern.",
+        "winningTicketNumber": "Gewinn-Ticket: #{number}",
+        "finalParticipantsCount": "Gesamte Teilnehmer bei der Ziehung: {count}",
+        "verifyFormula": "Verifizieren: SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+      },
+      "winner": "Gewinner"
     }
   },
   "eventsPage": {

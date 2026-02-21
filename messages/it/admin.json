@@ -340,10 +340,10 @@
         "saveChanges": "Salva modifiche",
         "create": "Crea sorteggio",
         "cancel": "Annulla",
-        "commitHash": "Hash di impegno",
-        "commitHashHelp": "Opzionale. Hash SHA-256 del segreto del sorteggio. Pubblica prima del sorteggio per dimostrare correttezza.",
-        "revealedSecret": "Segreto rivelato",
-        "revealedSecretHelp": "Rivela dopo il sorteggio affinché i partecipanti possano verificare: SHA-256(segreto) == commitHash."
+        "secretHash": "Hash del segreto",
+        "secretHashHelp": "SHA-256 del segreto del sorteggio. Pubblica prima del sorteggio.",
+        "secretRevealed": "Segreto rivelato",
+        "secretRevealedHelp": "Rivela dopo il sorteggio per verifica."
       },
       "detail": {
         "participants": "Partecipanti",

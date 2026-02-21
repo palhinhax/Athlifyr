@@ -18,6 +18,7 @@ import {
   Loader2,
   ShieldCheck,
   ChevronDown,
+  Ticket,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
@@ -33,13 +34,16 @@ interface GiveawayData {
   id: string;
   status: GiveawayStatus;
   drawAt: string | null;
+  drawnAt: string | null;
   prizeCount: number;
   participantsCount: number;
-  commitHash: string | null;
-  revealedSecret: string | null;
+  secretHash: string | null;
+  secretRevealed: string | null;
+  finalParticipantsCount: number | null;
+  winningTicketNumber: number | null;
   translation: GiveawayTranslation | null;
   hasJoined: boolean;
-  userPosition: number | null;
+  ticketNumber: number | null;
 }
 
 interface GiveawayCardProps {
@@ -85,9 +89,19 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
         method: "POST",
       });
       if (!res.ok) throw new Error("Failed to join");
+      const data = await res.json();
       toast({ title: t("joinSuccess") });
-      // Re-fetch to get updated position and participant count
-      await fetchGiveaway();
+      // Update state with ticket number from response + re-fetch for full state
+      setGiveaway((prev) =>
+        prev
+          ? {
+              ...prev,
+              hasJoined: true,
+              ticketNumber: data.ticketNumber,
+              participantsCount: data.currentParticipantsCount,
+            }
+          : prev
+      );
     } catch {
       toast({
         title: t("joinError"),
@@ -117,7 +131,13 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
     : null;
 
   const shouldShowTransparencySection =
-    !!giveaway.commitHash || !!giveaway.revealedSecret;
+    !!giveaway.secretHash || !!giveaway.secretRevealed;
+
+  const isWinner =
+    isDrawn &&
+    giveaway.ticketNumber !== null &&
+    giveaway.winningTicketNumber !== null &&
+    giveaway.ticketNumber === giveaway.winningTicketNumber;
 
   return (
     <Card className="border-primary/20 bg-primary/5">
@@ -164,6 +184,23 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
           )}
         </div>
 
+        {/* Permanent ticket number — shown prominently once joined */}
+        {giveaway.hasJoined && giveaway.ticketNumber !== null && (
+          <div className="mb-4 flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-3 py-2">
+            <Ticket className="h-4 w-4 text-primary" />
+            <span className="text-sm font-semibold text-primary">
+              {t("transparency.yourTicketNumber", {
+                number: giveaway.ticketNumber,
+              })}
+            </span>
+            {isWinner && (
+              <Badge className="ml-auto bg-yellow-500 text-yellow-950">
+                🏆 {t("winner")}
+              </Badge>
+            )}
+          </div>
+        )}
+
         {isActive && (
           <Button
             className="w-full"
@@ -205,44 +242,56 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                 </p>
               </div>
 
-              {/* Commit hash */}
-              {giveaway.commitHash && (
+              {/* Secret hash (public before draw) */}
+              {giveaway.secretHash && (
                 <div>
                   <p className="mb-1 font-medium text-foreground">
-                    {t("transparency.commitHash")}
+                    {t("transparency.secretHash")}
                   </p>
                   <p className="mb-1 text-xs text-muted-foreground">
-                    {t("transparency.commitHashExplanation")}
+                    {t("transparency.secretHashExplanation")}
                   </p>
                   <code className="block break-all rounded bg-muted px-2 py-1.5 font-mono text-xs">
-                    {giveaway.commitHash}
+                    {giveaway.secretHash}
                   </code>
                 </div>
               )}
 
-              {/* Current participants + user position (before draw) */}
-              {isActive &&
-                giveaway.hasJoined &&
-                giveaway.userPosition !== null && (
-                  <p className="text-muted-foreground">
-                    {t("transparency.yourPosition", {
-                      position: giveaway.userPosition,
-                    })}
-                    <span className="ml-1 text-xs">
-                      ({t("transparency.positionNote")})
-                    </span>
-                  </p>
-                )}
+              {/* After draw: final participant count + winning ticket */}
+              {isDrawn && giveaway.finalParticipantsCount !== null && (
+                <p className="text-muted-foreground">
+                  {t("transparency.finalParticipantsCount", {
+                    count: giveaway.finalParticipantsCount,
+                  })}
+                </p>
+              )}
+              {isDrawn && giveaway.winningTicketNumber !== null && (
+                <p className="font-medium text-foreground">
+                  {t("transparency.winningTicketNumber", {
+                    number: giveaway.winningTicketNumber,
+                  })}
+                </p>
+              )}
 
-              {/* Revealed secret (after draw) */}
-              {isDrawn && giveaway.revealedSecret && (
+              {/* Revealed secret + verify formula (after draw) */}
+              {isDrawn && giveaway.secretRevealed && (
                 <div>
                   <p className="mb-1 font-medium text-foreground">
-                    {t("transparency.revealedSecret")}
+                    {t("transparency.secretRevealed")}
                   </p>
                   <code className="block break-all rounded bg-muted px-2 py-1.5 font-mono text-xs">
-                    {giveaway.revealedSecret}
+                    {giveaway.secretRevealed}
                   </code>
+                  {giveaway.finalParticipantsCount !== null &&
+                    giveaway.winningTicketNumber !== null && (
+                      <p className="mt-2 break-all font-mono text-xs text-muted-foreground">
+                        {t("transparency.verifyFormula", {
+                          secret: giveaway.secretRevealed,
+                          total: giveaway.finalParticipantsCount,
+                          winning: giveaway.winningTicketNumber,
+                        })}
+                      </p>
+                    )}
                 </div>
               )}
             </CollapsibleContent>

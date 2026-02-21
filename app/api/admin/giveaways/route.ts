@@ -67,13 +67,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, drawAt, prizeCount, status, translations, commitHash } =
+    const { eventId, drawAt, prizeCount, status, translations, secretHash } =
       body as {
         eventId: string;
         drawAt?: string;
         prizeCount?: number;
         status?: GiveawayStatus;
-        commitHash?: string;
+        secretHash?: string;
         translations?: Array<{
           lang: Language;
           title: string;
@@ -101,7 +101,7 @@ export async function POST(request: NextRequest) {
         drawAt: drawAt ? new Date(drawAt) : undefined,
         prizeCount: prizeCount ?? 1,
         status: status ?? GiveawayStatus.DRAFT,
-        commitHash: commitHash ?? undefined,
+        secretHash: secretHash ?? undefined,
         translations: translations
           ? {
               createMany: {

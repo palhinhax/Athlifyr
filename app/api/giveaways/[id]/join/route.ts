@@ -7,7 +7,7 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// POST - Join a giveaway
+// POST - Join a giveaway (assigns a permanent sequential ticket number)
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthenticatedUser(request);
@@ -39,14 +39,56 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Upsert participation (idempotent)
-    await prisma.giveawayParticipation.upsert({
+    // Check if user already joined (fast path before transaction)
+    const existing = await prisma.giveawayParticipation.findUnique({
       where: { giveawayId_userId: { giveawayId: id, userId: user.id } },
-      update: {},
-      create: { giveawayId: id, userId: user.id },
     });
+    if (existing) {
+      const currentCount = await prisma.giveawayParticipation.count({
+        where: { giveawayId: id },
+      });
+      return NextResponse.json({
+        success: true,
+        hasJoined: true,
+        ticketNumber: existing.ticketNumber,
+        currentParticipantsCount: currentCount,
+      });
+    }
 
-    return NextResponse.json({ success: true, hasJoined: true });
+    // Atomically assign the next sequential ticket number using a transaction.
+    // We use serializable isolation to guarantee no two users get the same ticket.
+    const participation = await prisma.$transaction(
+      async (tx) => {
+        // Find the current max ticket number for this giveaway
+        const maxResult = await tx.giveawayParticipation.aggregate({
+          where: { giveawayId: id },
+          _max: { ticketNumber: true },
+        });
+        const nextTicket = (maxResult._max.ticketNumber ?? 0) + 1;
+
+        // Create participation with the new ticket number
+        const created = await tx.giveawayParticipation.create({
+          data: {
+            giveawayId: id,
+            userId: user.id,
+            ticketNumber: nextTicket,
+          },
+        });
+        // Count inside the transaction so the returned value is consistent
+        const currentParticipantsCount = await tx.giveawayParticipation.count({
+          where: { giveawayId: id },
+        });
+        return { created, currentParticipantsCount };
+      },
+      { isolationLevel: "Serializable" }
+    );
+
+    return NextResponse.json({
+      success: true,
+      hasJoined: true,
+      ticketNumber: participation.created.ticketNumber,
+      currentParticipantsCount: participation.currentParticipantsCount,
+    });
   } catch (error) {
     console.error("Error joining giveaway:", error);
     return NextResponse.json(

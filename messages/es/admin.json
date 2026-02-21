@@ -343,10 +343,10 @@
         "saveChanges": "Guardar Cambios",
         "create": "Crear Sorteo",
         "cancel": "Cancelar",
-        "commitHash": "Hash de Compromiso",
-        "commitHashHelp": "Opcional. Hash SHA-256 del secreto del sorteo. Publícalo antes del sorteo para demostrar transparencia.",
-        "revealedSecret": "Secreto Revelado",
-        "revealedSecretHelp": "Revela después del sorteo para que los participantes puedan verificar: SHA-256(secreto) == commitHash."
+        "secretHash": "Hash del Secreto",
+        "secretHashHelp": "SHA-256 del secreto del sorteo. Publícalo antes del sorteo.",
+        "secretRevealed": "Secreto Revelado",
+        "secretRevealedHelp": "Revela después del sorteo para verificación."
       },
       "detail": {
         "participants": "Participantes",

@@ -343,10 +343,10 @@
         "saveChanges": "Änderungen speichern",
         "create": "Gewinnspiel erstellen",
         "cancel": "Abbrechen",
-        "commitHash": "Commitment-Hash",
-        "commitHashHelp": "Optional. SHA-256-Hash des Ziehungsgeheimnisses. Veröffentliche vor der Ziehung, um Fairness nachzuweisen.",
-        "revealedSecret": "Enthülltes Geheimnis",
-        "revealedSecretHelp": "Nach der Ziehung enthüllen, damit Teilnehmer verifizieren können: SHA-256(Geheimnis) == commitHash."
+        "secretHash": "Geheimnis-Hash",
+        "secretHashHelp": "SHA-256 des Ziehungsgeheimnisses. Vor der Ziehung veröffentlichen.",
+        "secretRevealed": "Enthülltes Geheimnis",
+        "secretRevealedHelp": "Nach der Ziehung enthüllen für Verifizierung."
       },
       "detail": {
         "participants": "Teilnehmer",

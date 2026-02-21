@@ -2,24 +2,54 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GiveawayStatus } from "@prisma/client";
-import { randomBytes } from "crypto";
+import { randomBytes, createHash } from "crypto";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
 /**
- * Cryptographically secure Fisher-Yates shuffle
+ * Pick winning ticket numbers in a verifiable way.
+ *
+ * If the giveaway has a secretRevealed set by the admin, derive winning
+ * tickets deterministically from SHA-256(secretRevealed + "|" + rank).
+ * This allows anyone to verify the outcome.
+ *
+ * Otherwise fall back to cryptographically strong random selection.
  */
-function secureShuffle<T>(array: T[]): T[] {
-  const arr = [...array];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const bytes = randomBytes(4);
-    const randomValue = bytes.readUInt32BE(0);
-    const j = randomValue % (i + 1);
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+function pickWinningTickets(
+  totalTickets: number,
+  prizeCount: number,
+  secretRevealed: string | null
+): number[] {
+  const count = Math.min(prizeCount, totalTickets);
+  const winners: number[] = [];
+  const used = new Set<number>();
+
+  for (let rank = 1; rank <= count; rank++) {
+    let ticket: number;
+    if (secretRevealed) {
+      // Deterministic: SHA-256(secret + "|" + rank) % N + 1
+      let attempt = 0;
+      do {
+        const hash = createHash("sha256")
+          .update(`${secretRevealed}|${rank}|${attempt}`)
+          .digest("hex");
+        ticket = Number(BigInt("0x" + hash) % BigInt(totalTickets)) + 1;
+        attempt++;
+      } while (used.has(ticket));
+    } else {
+      // Random fallback
+      do {
+        const bytes = randomBytes(4);
+        const rand = bytes.readUInt32BE(0);
+        ticket = (rand % totalTickets) + 1;
+      } while (used.has(ticket));
+    }
+    used.add(ticket);
+    winners.push(ticket);
   }
-  return arr;
+  return winners;
 }
 
 // POST - Manually trigger draw for a giveaway (admin override)
@@ -73,7 +103,6 @@ export async function performDraw(giveawayId: string) {
     );
   }
 
-  // Perform draw in transaction
   const result = await prisma.$transaction(async (tx) => {
     // Lock by setting status to DRAWING
     await tx.giveaway.update({
@@ -81,48 +110,61 @@ export async function performDraw(giveawayId: string) {
       data: { status: GiveawayStatus.DRAWING },
     });
 
-    // Fetch all participants
+    // Fetch all participants ordered by ticketNumber
     const participations = await tx.giveawayParticipation.findMany({
       where: { giveawayId },
-      select: { userId: true },
+      select: { userId: true, ticketNumber: true },
+      orderBy: { ticketNumber: "asc" },
     });
 
-    const participantIds = participations.map((p) => p.userId);
-    const participantsCount = participantIds.length;
-
+    const participantsCount = participations.length;
+    const drawnAt = new Date();
     let winnersCount = 0;
+    let winningTicketNumber: number | null = null;
 
     if (participantsCount > 0) {
-      // Randomly select winners using secure randomness
-      const shuffled = secureShuffle(participantIds);
-      const winnerIds = shuffled.slice(
-        0,
-        Math.min(giveaway.prizeCount, participantsCount)
+      // Build ticket→userId map
+      const ticketMap = new Map<number, string>(
+        participations.map((p) => [p.ticketNumber, p.userId])
       );
 
-      // Insert winners with rank
+      // Pick winning ticket numbers
+      const winningTickets = pickWinningTickets(
+        participantsCount,
+        giveaway.prizeCount,
+        giveaway.secretRevealed
+      );
+
+      winningTicketNumber = winningTickets[0] ?? null;
+
+      // Insert GiveawayWinner rows by ticket number rank
       await tx.giveawayWinner.createMany({
-        data: winnerIds.map((userId, index) => ({
+        data: winningTickets.map((ticket, index) => ({
           giveawayId,
-          userId,
+          userId: ticketMap.get(ticket)!,
           rank: index + 1,
         })),
       });
 
-      winnersCount = winnerIds.length;
+      winnersCount = winningTickets.length;
     }
 
-    // Set status to DRAWN
+    // Set status to DRAWN and snapshot proof fields
     await tx.giveaway.update({
       where: { id: giveawayId },
-      data: { status: GiveawayStatus.DRAWN },
+      data: {
+        status: GiveawayStatus.DRAWN,
+        drawnAt,
+        finalParticipantsCount: participantsCount,
+        winningTicketNumber,
+      },
     });
 
     console.log(
-      `✅ Draw complete for giveaway ${giveawayId}: ${participantsCount} participants, ${winnersCount} winners`
+      `✅ Draw complete for giveaway ${giveawayId}: ${participantsCount} participants, ${winnersCount} winners, winning ticket #${winningTicketNumber}`
     );
 
-    return { participantsCount, winnersCount };
+    return { participantsCount, winnersCount, winningTicketNumber };
   });
 
   return NextResponse.json({ success: true, ...result });

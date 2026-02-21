@@ -1,0 +1,45 @@
+====================
+VERSION: 1.1.0
+DATE: 2026-02-21
+
+<pt>
+- Corrigido feedback de login na app mobile — ao inserir password errada agora aparece uma mensagem de erro (toast)
+- Adicionado componente Toast em todos os ecrãs mobile que usavam notificações: login, registo, esqueci-me da password, definições, notificações e formulários de performance
+- Melhorias de formatação e consistência de código em vários componentes web e mobile
+- Adicionado template de release notes multi-idioma para a equipa
+</pt>
+
+<en>
+- Fixed login feedback on mobile app — entering a wrong password now shows an error message (toast)
+- Added Toast component to all mobile screens using notifications: login, register, forgot password, settings, notifications and performance forms
+- Code formatting and consistency improvements across multiple web and mobile components
+- Added multi-language release notes template for the team
+</en>
+
+<es>
+- Corregido feedback de inicio de sesión en la app móvil — al introducir una contraseña incorrecta ahora aparece un mensaje de error (toast)
+- Añadido componente Toast en todas las pantallas móviles que usaban notificaciones: login, registro, olvidé mi contraseña, configuración, notificaciones y formularios de rendimiento
+- Mejoras de formato y consistencia de código en varios componentes web y móvil
+- Añadida plantilla de notas de versión multiidioma para el equipo
+</es>
+
+<fr>
+- Correction du retour d'information de connexion sur l'app mobile — la saisie d'un mauvais mot de passe affiche désormais un message d'erreur (toast)
+- Ajout du composant Toast dans tous les écrans mobiles utilisant des notifications : connexion, inscription, mot de passe oublié, paramètres, notifications et formulaires de performance
+- Améliorations du formatage et de la cohérence du code dans plusieurs composants web et mobile
+- Ajout d'un modèle de notes de version multilingue pour l'équipe
+</fr>
+
+<de>
+- Login-Feedback in der mobilen App behoben — bei Eingabe eines falschen Passworts wird nun eine Fehlermeldung (Toast) angezeigt
+- Toast-Komponente in allen mobilen Bildschirmen mit Benachrichtigungen hinzugefügt: Login, Registrierung, Passwort vergessen, Einstellungen, Benachrichtigungen und Performance-Formulare
+- Verbesserungen der Codeformatierung und -konsistenz in mehreren Web- und Mobilkomponenten
+- Mehrsprachige Release-Notes-Vorlage für das Team hinzugefügt
+</de>
+
+<it>
+- Corretto il feedback di login nell'app mobile — inserendo una password errata ora viene mostrato un messaggio di errore (toast)
+- Aggiunto componente Toast in tutte le schermate mobile che utilizzavano notifiche: login, registrazione, password dimenticata, impostazioni, notifiche e moduli di performance
+- Miglioramenti della formattazione e della coerenza del codice in diversi componenti web e mobile
+- Aggiunto modello di note di rilascio multilingua per il team
+</it>

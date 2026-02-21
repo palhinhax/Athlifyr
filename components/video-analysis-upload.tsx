@@ -607,7 +607,16 @@ export function VideoAnalysisUpload({
     } finally {
       abortControllerRef.current = null;
     }
-  }, [selectedFile, seedPoint, isLift, isLoggedIn, locale, onSuccess, setUploadStateSynced, type]);
+  }, [
+    selectedFile,
+    seedPoint,
+    isLift,
+    isLoggedIn,
+    locale,
+    onSuccess,
+    setUploadStateSynced,
+    type,
+  ]);
 
   const canSubmit =
     selectedFile &&

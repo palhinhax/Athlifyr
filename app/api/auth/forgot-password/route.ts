@@ -23,10 +23,7 @@ export async function POST(request: Request) {
     const { email } = await request.json();
 
     if (!email) {
-      return NextResponse.json(
-        { code: "EMAIL_REQUIRED" },
-        { status: 400 }
-      );
+      return NextResponse.json({ code: "EMAIL_REQUIRED" }, { status: 400 });
     }
 
     // Check if user exists
@@ -84,9 +81,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Error in forgot-password:", error);
-    return NextResponse.json(
-      { code: "INTERNAL_ERROR" },
-      { status: 500 }
-    );
+    return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

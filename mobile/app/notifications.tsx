@@ -29,6 +29,7 @@ import {
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { CachedAvatar } from "@/src/components/CachedImage";
 import {
@@ -302,7 +303,7 @@ export default function NotificationsScreen() {
   const { notifications, pendingCount, isLoading, refetch } =
     useNotifications();
   const invalidate = useInvalidateNotifications();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -443,6 +444,14 @@ export default function NotificationsScreen() {
           ItemSeparatorComponent={() => <View style={styles.separator} />}
         />
       )}
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </SafeAreaView>
   );
 }

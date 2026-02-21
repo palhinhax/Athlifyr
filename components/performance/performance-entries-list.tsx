@@ -176,8 +176,8 @@ export function PerformanceEntriesList({
                     {entry.reps != null && <span>{entry.reps} reps</span>}
                     {entry.weightKg && entry.reps && (
                       <span>
-                        e1RM {(entry.weightKg * (1 + entry.reps / 30)).toFixed(1)}{" "}
-                        kg
+                        e1RM{" "}
+                        {(entry.weightKg * (1 + entry.reps / 30)).toFixed(1)} kg
                       </span>
                     )}
                   </div>

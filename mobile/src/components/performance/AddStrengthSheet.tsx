@@ -17,6 +17,7 @@ import { X, Search, Plus } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { API_URL } from "@/src/lib/api";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import * as SecureStore from "expo-secure-store";
 import { usePerformance } from "@/src/hooks/usePerformance";
 
@@ -35,7 +36,7 @@ interface AddStrengthSheetProps {
 export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [exerciseQuery, setExerciseQuery] = useState("");
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -323,6 +324,14 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </Modal>
   );
 }

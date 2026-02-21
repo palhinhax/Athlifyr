@@ -353,9 +353,7 @@ export async function POST(request: Request) {
         if (rateCheck.allowed) {
           aiAllowed = true;
           externalFormData.append("enable_ai", "true");
-          console.log(
-            `[LiftAnalysis] AI enabled for user ${session.user.id}`
-          );
+          console.log(`[LiftAnalysis] AI enabled for user ${session.user.id}`);
         } else {
           console.log(
             `[LiftAnalysis] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`

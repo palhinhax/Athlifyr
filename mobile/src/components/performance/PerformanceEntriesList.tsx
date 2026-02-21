@@ -11,6 +11,7 @@ import { Trash2, ChevronDown, ChevronUp } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import {
   usePerformance,
   formatTime,
@@ -31,7 +32,7 @@ export function PerformanceEntriesList({
 }: PerformanceEntriesListProps) {
   const { t } = useTranslation();
   const { deleteEntry, isDeleting } = usePerformance();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
   const [expanded, setExpanded] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [entryToDelete, setEntryToDelete] = useState<string | null>(null);
@@ -205,6 +206,14 @@ export function PerformanceEntriesList({
             onPress: confirmDelete,
           },
         ]}
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
       />
     </View>
   );

@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import { isAxiosError } from "axios";
 import {
   colors,
@@ -38,7 +39,7 @@ export default function LoginScreen() {
     error: googleError,
   } = useGoogleAuth();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -278,6 +279,14 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </SafeAreaView>
   );
 }

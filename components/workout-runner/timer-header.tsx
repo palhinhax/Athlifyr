@@ -112,7 +112,7 @@ export function TimerHeader({
         </div>
       </div>
       {/* Row 2 (mobile) / Right side (desktop): action icons */}
-      <div className="flex items-center gap-1 self-end sm:self-auto sm:gap-2">
+      <div className="flex items-center gap-1 self-end sm:gap-2 sm:self-auto">
         <Button
           variant="ghost"
           size="icon"

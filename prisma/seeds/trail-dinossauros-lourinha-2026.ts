@@ -1,6 +1,6 @@
 /**
  * Seed: Trail Running Trilho dos Dinossauros 2026 - 8ª Edição
- * 
+ *
  * Event: Trail running races in Lourinhã (Dinosaur Trail)
  * Location: Praia da Areia Branca, Lourinhã
  * Date: April 11, 2026 (postponed from original date)
@@ -30,7 +30,8 @@ async function main() {
     data: {
       title: "Trail Running Trilho dos Dinossauros 2026 - 8ª Edição",
       slug: "trail-dinossauros-lourinha-2026",
-      description: "8ª Edição do Trail Running Trilho dos Dinossauros na Lourinhã",
+      description:
+        "8ª Edição do Trail Running Trilho dos Dinossauros na Lourinhã",
       sportTypes: [SportType.TRAIL],
       startDate: new Date("2026-04-11T09:10:00Z"),
       endDate: new Date("2026-04-11T18:00:00Z"),
@@ -255,8 +256,10 @@ Os escalões são definidos pela idade que o atleta terá a **30 de Setembro de 
 
 *Corra entre Dinossauros na 8ª Edição deste evento único!* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Trail Dinossauros 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Abril",
-      metaDescription: "Trail Running Trilho dos Dinossauros 2026 - 8ª Edição no dia 11 de abril na Lourinhã. Provas: Trail 31K, Sprint 20K, Jovem 11K, Caminhada 10K e Kids. Camisola Compressport e medalha incluídas. Inscrições esgotadas!",
+      metaTitle:
+        "Trail Dinossauros 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Abril",
+      metaDescription:
+        "Trail Running Trilho dos Dinossauros 2026 - 8ª Edição no dia 11 de abril na Lourinhã. Provas: Trail 31K, Sprint 20K, Jovem 11K, Caminhada 10K e Kids. Camisola Compressport e medalha incluídas. Inscrições esgotadas!",
     },
     en: {
       title: "Dinosaur Trail Running 2026 - 8th Edition",
@@ -464,8 +467,10 @@ Categories are defined by the athlete's age on **September 30, 2026**:
 
 *Run among Dinosaurs at the 8th Edition of this unique event!* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Dinosaur Trail 2026 - 8th Ed. | Praia Areia Branca, Lourinhã | April 11",
-      metaDescription: "Dinosaur Trail Running 2026 - 8th Edition on April 11 in Lourinhã. Races: Trail 31K, Sprint 20K, Youth 11K, Walk 10K and Kids. Compressport shirt and medal included. Sold out!",
+      metaTitle:
+        "Dinosaur Trail 2026 - 8th Ed. | Praia Areia Branca, Lourinhã | April 11",
+      metaDescription:
+        "Dinosaur Trail Running 2026 - 8th Edition on April 11 in Lourinhã. Races: Trail 31K, Sprint 20K, Youth 11K, Walk 10K and Kids. Compressport shirt and medal included. Sold out!",
     },
     es: {
       title: "Trail de los Dinosaurios 2026 - 8ª Edición",
@@ -567,8 +572,10 @@ Categories are defined by the athlete's age on **September 30, 2026**:
 
 *¡Corre entre Dinosaurios en la 8ª Edición de este evento único!* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Trail Dinosaurios 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Abril",
-      metaDescription: "Trail de los Dinosaurios 2026 - 8ª Edición el 11 de abril en Lourinhã. Carreras: Trail 31K, Sprint 20K, Joven 11K, Caminata 10K y Kids. Camiseta Compressport y medalla incluidas. ¡Inscripciones agotadas!",
+      metaTitle:
+        "Trail Dinosaurios 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Abril",
+      metaDescription:
+        "Trail de los Dinosaurios 2026 - 8ª Edición el 11 de abril en Lourinhã. Carreras: Trail 31K, Sprint 20K, Joven 11K, Caminata 10K y Kids. Camiseta Compressport y medalla incluidas. ¡Inscripciones agotadas!",
     },
     fr: {
       title: "Trail des Dinosaures 2026 - 8e Édition",
@@ -666,8 +673,10 @@ Categories are defined by the athlete's age on **September 30, 2026**:
 
 *Courez parmi les Dinosaures à la 8e Édition de cet événement unique !* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Trail Dinosaures 2026 - 8e Éd. | Praia Areia Branca, Lourinhã | 11 Avril",
-      metaDescription: "Trail des Dinosaures 2026 - 8e Édition le 11 avril à Lourinhã. Courses : Trail 31K, Sprint 20K, Jeune 11K, Marche 10K et Kids. T-shirt Compressport et médaille inclus. Inscriptions complètes !",
+      metaTitle:
+        "Trail Dinosaures 2026 - 8e Éd. | Praia Areia Branca, Lourinhã | 11 Avril",
+      metaDescription:
+        "Trail des Dinosaures 2026 - 8e Édition le 11 avril à Lourinhã. Courses : Trail 31K, Sprint 20K, Jeune 11K, Marche 10K et Kids. T-shirt Compressport et médaille inclus. Inscriptions complètes !",
     },
     de: {
       title: "Dinosaurier Trail 2026 - 8. Ausgabe",
@@ -765,8 +774,10 @@ Categories are defined by the athlete's age on **September 30, 2026**:
 
 *Laufen Sie zwischen Dinosauriern bei der 8. Ausgabe dieser einzigartigen Veranstaltung!* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Dinosaurier Trail 2026 - 8. Ausg. | Praia Areia Branca, Lourinhã | 11. April",
-      metaDescription: "Dinosaurier Trail 2026 - 8. Ausgabe am 11. April in Lourinhã. Läufe: Trail 31K, Sprint 20K, Jugend 11K, Wanderung 10K und Kids. Compressport-Shirt und Medaille inklusive. Ausgebucht!",
+      metaTitle:
+        "Dinosaurier Trail 2026 - 8. Ausg. | Praia Areia Branca, Lourinhã | 11. April",
+      metaDescription:
+        "Dinosaurier Trail 2026 - 8. Ausgabe am 11. April in Lourinhã. Läufe: Trail 31K, Sprint 20K, Jugend 11K, Wanderung 10K und Kids. Compressport-Shirt und Medaille inklusive. Ausgebucht!",
     },
     it: {
       title: "Trail dei Dinosauri 2026 - 8ª Edizione",
@@ -864,14 +875,16 @@ Categories are defined by the athlete's age on **September 30, 2026**:
 
 *Corri tra i Dinosauri all'8ª Edizione di questo evento unico!* 🦖`,
       city: "Lourinhã",
-      metaTitle: "Trail Dinosauri 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Aprile",
-      metaDescription: "Trail dei Dinosauri 2026 - 8ª Edizione l'11 aprile a Lourinhã. Gare: Trail 31K, Sprint 20K, Giovani 11K, Camminata 10K e Kids. Maglietta Compressport e medaglia incluse. Iscrizioni esaurite!",
+      metaTitle:
+        "Trail Dinosauri 2026 - 8ª Ed. | Praia Areia Branca, Lourinhã | 11 Aprile",
+      metaDescription:
+        "Trail dei Dinosauri 2026 - 8ª Edizione l'11 aprile a Lourinhã. Gare: Trail 31K, Sprint 20K, Giovani 11K, Camminata 10K e Kids. Maglietta Compressport e medaglia incluse. Iscrizioni esaurite!",
     },
   };
 
   // Create translations for all languages
   const languages: Language[] = ["pt", "en", "es", "fr", "de", "it"];
-  
+
   for (const lang of languages) {
     const translation = translations[lang];
     await prisma.eventTranslation.upsert({

@@ -358,7 +358,10 @@ export function EventRegistration({
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color={theme.colors.white} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.white}
+                    />
                   ) : (
                     <>
                       <Check size={18} color={theme.colors.white} />
@@ -375,7 +378,10 @@ export function EventRegistration({
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color={theme.colors.warning} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.warning}
+                    />
                   ) : (
                     <>
                       <Target size={18} color={theme.colors.warning} />
@@ -395,7 +401,10 @@ export function EventRegistration({
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color={theme.colors.white} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.white}
+                    />
                   ) : (
                     <>
                       <Check size={18} color={theme.colors.white} />
@@ -412,7 +421,10 @@ export function EventRegistration({
                   activeOpacity={0.8}
                 >
                   {isLoading ? (
-                    <ActivityIndicator size="small" color={theme.colors.warning} />
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.warning}
+                    />
                   ) : (
                     <>
                       <X size={18} color={theme.colors.warning} />

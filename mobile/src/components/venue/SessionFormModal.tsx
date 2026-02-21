@@ -16,6 +16,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import { theme } from "@/src/constants/theme";
 import { api } from "@/src/lib/api";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import type { VenueSession } from "@/src/hooks/useVenueSessions";
 import { format } from "date-fns";
 
@@ -41,7 +42,7 @@ export function SessionFormModal({
   onSuccess,
 }: SessionFormModalProps) {
   const { t } = useTranslation();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
   const isEditing = !!session;
 
   const [title, setTitle] = useState("");
@@ -337,6 +338,14 @@ export function SessionFormModal({
           </View>
         </View>
       </View>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </Modal>
   );
 }

@@ -357,9 +357,7 @@ export function AdminPushNotificationDialog({
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg border p-3 text-center">
-                    <p className="text-2xl font-bold">
-                      {result.usersTargeted}
-                    </p>
+                    <p className="text-2xl font-bold">{result.usersTargeted}</p>
                     <p className="text-xs text-muted-foreground">
                       Utilizador{result.usersTargeted !== 1 ? "es" : ""}
                     </p>

@@ -33,6 +33,7 @@ import { useAuthStore } from "@/src/lib/auth-store";
 import { api, API_URL } from "@/src/lib/api";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import { theme } from "@/src/constants/theme";
 import i18n from "@/src/lib/i18n";
 import { File as ExpoFile, Paths } from "expo-file-system";
@@ -107,7 +108,7 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, logout } = useAuthStore();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -631,6 +632,14 @@ export default function SettingsScreen() {
             onPress: confirmDeleteAccount,
           },
         ]}
+      />
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
       />
     </SafeAreaView>
   );

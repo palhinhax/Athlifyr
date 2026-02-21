@@ -125,72 +125,68 @@ export function WorkoutCard({
       <Card className="flex flex-col transition-colors hover:border-accent/30 hover:shadow-md">
         <CardHeader className="pb-3">
           {/* Actions row — always top right */}
-          <div className="flex justify-end gap-1 -mt-2 -mr-1 mb-1">
-              <WorkoutPreviewDialog workout={workout}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  title={t("preview.title")}
-                >
-                  <EyeIcon className="h-4 w-4" />
-                </Button>
-              </WorkoutPreviewDialog>
-              {canSave && (
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-8 w-8"
-                  onClick={handleToggleSave}
-                  disabled={isSaving}
-                >
-                  {isSaving ? (
-                    <Loader2Icon className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <BookmarkIcon
-                      className={`h-4 w-4 ${isSaved ? "fill-current text-accent" : ""}`}
-                    />
+          <div className="-mr-1 -mt-2 mb-1 flex justify-end gap-1">
+            <WorkoutPreviewDialog workout={workout}>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                title={t("preview.title")}
+              >
+                <EyeIcon className="h-4 w-4" />
+              </Button>
+            </WorkoutPreviewDialog>
+            {canSave && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={handleToggleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : (
+                  <BookmarkIcon
+                    className={`h-4 w-4 ${isSaved ? "fill-current text-accent" : ""}`}
+                  />
+                )}
+              </Button>
+            )}
+            {(canEdit || canAssignToSessions) && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVerticalIcon className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {canAssignToSessions && (
+                    <DropdownMenuItem onClick={() => setShowAssignDialog(true)}>
+                      <CalendarPlusIcon className="mr-2 h-4 w-4" />
+                      {t("assignToSessions")}
+                    </DropdownMenuItem>
                   )}
-                </Button>
-              )}
-              {(canEdit || canAssignToSessions) && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVerticalIcon className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    {canAssignToSessions && (
-                      <DropdownMenuItem
-                        onClick={() => setShowAssignDialog(true)}
-                      >
-                        <CalendarPlusIcon className="mr-2 h-4 w-4" />
-                        {t("assignToSessions")}
+                  {canAssignToSessions && canEdit && <DropdownMenuSeparator />}
+                  {canEdit && (
+                    <>
+                      <DropdownMenuItem onClick={onEdit}>
+                        <PencilIcon className="mr-2 h-4 w-4" />
+                        {t("editWorkout")}
                       </DropdownMenuItem>
-                    )}
-                    {canAssignToSessions && canEdit && (
-                      <DropdownMenuSeparator />
-                    )}
-                    {canEdit && (
-                      <>
-                        <DropdownMenuItem onClick={onEdit}>
-                          <PencilIcon className="mr-2 h-4 w-4" />
-                          {t("editWorkout")}
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          className="text-destructive"
-                          onClick={() => setShowDeleteDialog(true)}
-                        >
-                          <TrashIcon className="mr-2 h-4 w-4" />
-                          {t("deleteWorkout")}
-                        </DropdownMenuItem>
-                      </>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-            </div>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => setShowDeleteDialog(true)}
+                      >
+                        <TrashIcon className="mr-2 h-4 w-4" />
+                        {t("deleteWorkout")}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
+          </div>
           {/* Title & description below icons */}
           <CardTitle className="line-clamp-1 text-lg">{workout.name}</CardTitle>
           {workout.description && (

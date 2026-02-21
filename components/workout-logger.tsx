@@ -624,7 +624,10 @@ export function WorkoutLogger({
                       {blockResults[blockIndex].exerciseResults[
                         exerciseIndex
                       ].sets.map((set, setIndex) => (
-                        <div key={setIndex} className="rounded-md bg-muted/30 p-2">
+                        <div
+                          key={setIndex}
+                          className="rounded-md bg-muted/30 p-2"
+                        >
                           {/* Set label + trash */}
                           <div className="mb-1 flex items-center justify-between">
                             <span className="text-sm font-medium">
@@ -659,7 +662,9 @@ export function WorkoutLogger({
                                 )
                               }
                             />
-                            <span className="shrink-0 text-muted-foreground">×</span>
+                            <span className="shrink-0 text-muted-foreground">
+                              ×
+                            </span>
                             <Input
                               type="number"
                               min={0}
@@ -672,7 +677,9 @@ export function WorkoutLogger({
                                   exerciseIndex,
                                   setIndex,
                                   "weight",
-                                  e.target.value ? parseFloat(e.target.value) : 0
+                                  e.target.value
+                                    ? parseFloat(e.target.value)
+                                    : 0
                                 )
                               }
                             />

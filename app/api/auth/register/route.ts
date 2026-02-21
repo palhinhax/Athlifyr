@@ -75,8 +75,14 @@ export async function POST(req: NextRequest) {
     if (error instanceof z.ZodError) {
       const issue = error.issues[0];
       const codeMap: Record<string, string> = {
-        too_small: issue.path[0] === "name" ? "NAME_TOO_SHORT" : issue.path[0] === "password" ? "PASSWORD_TOO_SHORT" : "VALIDATION_ERROR",
-        invalid_string: issue.path[0] === "email" ? "EMAIL_INVALID" : "VALIDATION_ERROR",
+        too_small:
+          issue.path[0] === "name"
+            ? "NAME_TOO_SHORT"
+            : issue.path[0] === "password"
+              ? "PASSWORD_TOO_SHORT"
+              : "VALIDATION_ERROR",
+        invalid_string:
+          issue.path[0] === "email" ? "EMAIL_INVALID" : "VALIDATION_ERROR",
       };
       return NextResponse.json(
         { code: codeMap[issue.code] ?? "VALIDATION_ERROR" },

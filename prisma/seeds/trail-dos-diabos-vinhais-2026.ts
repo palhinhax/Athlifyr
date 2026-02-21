@@ -1,6 +1,6 @@
 /**
  * Seed: Trail dos Diabos 2026 - Vinhais
- * 
+ *
  * Event: Trail running in Parque Natural de Montesinho
  * Location: Vinhais, Bragança
  * Date: February 21, 2026
@@ -39,7 +39,7 @@ async function main() {
       city: "Vinhais",
       country: "Portugal",
       latitude: 41.8333,
-      longitude: -7.0000,
+      longitude: -7.0,
       isFeatured: true,
       cancelled: false,
     },
@@ -273,7 +273,8 @@ O **Parque Natural de Montesinho** é uma das maiores áreas protegidas de Portu
 *Corra pelos trilhos mágicos de Montesinho e viva a tradição dos Diabos de Vinhais!* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Trail dos Diabos 2026 | Vinhais, Bragança | 21 Fevereiro",
-      metaDescription: "Trail dos Diabos 2026 no dia 21 de fevereiro em Vinhais, Parque Natural de Montesinho. Provas: Trail 16K e Caminhada gratuita. Celebração da tradição dos Diabos na Quarta-feira de Cinzas. T-shirt incluída.",
+      metaDescription:
+        "Trail dos Diabos 2026 no dia 21 de fevereiro em Vinhais, Parque Natural de Montesinho. Provas: Trail 16K e Caminhada gratuita. Celebração da tradição dos Diabos na Quarta-feira de Cinzas. T-shirt incluída.",
     },
     en: {
       title: "Devils Trail 2026 - Vinhais",
@@ -406,7 +407,8 @@ Categories defined by age range:
 *Run through the magical trails of Montesinho and experience the Devils tradition of Vinhais!* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Devils Trail 2026 | Vinhais, Bragança | February 21",
-      metaDescription: "Devils Trail 2026 on February 21 in Vinhais, Montesinho Natural Park. Races: Trail 16K and free Walk. Celebration of the Devils tradition on Ash Wednesday. T-shirt included.",
+      metaDescription:
+        "Devils Trail 2026 on February 21 in Vinhais, Montesinho Natural Park. Races: Trail 16K and free Walk. Celebration of the Devils tradition on Ash Wednesday. T-shirt included.",
     },
     es: {
       title: "Trail de los Diablos 2026 - Vinhais",
@@ -489,7 +491,8 @@ Categories defined by age range:
 *¡Corre por los senderos mágicos de Montesinho y vive la tradición de los Diablos de Vinhais!* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Trail de los Diablos 2026 | Vinhais, Bragança | 21 Febrero",
-      metaDescription: "Trail de los Diablos 2026 el 21 de febrero en Vinhais, Parque Natural de Montesinho. Carreras: Trail 16K y Caminata gratuita. Celebración de la tradición de los Diablos en Miércoles de Ceniza. Camiseta incluida.",
+      metaDescription:
+        "Trail de los Diablos 2026 el 21 de febrero en Vinhais, Parque Natural de Montesinho. Carreras: Trail 16K y Caminata gratuita. Celebración de la tradición de los Diablos en Miércoles de Ceniza. Camiseta incluida.",
     },
     fr: {
       title: "Trail des Diables 2026 - Vinhais",
@@ -572,7 +575,8 @@ Categories defined by age range:
 *Courez sur les sentiers magiques de Montesinho et vivez la tradition des Diables de Vinhais !* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Trail des Diables 2026 | Vinhais, Bragança | 21 Février",
-      metaDescription: "Trail des Diables 2026 le 21 février à Vinhais, Parc Naturel de Montesinho. Courses : Trail 16K et Marche gratuite. Célébration de la tradition des Diables le Mercredi des Cendres. T-shirt inclus.",
+      metaDescription:
+        "Trail des Diables 2026 le 21 février à Vinhais, Parc Naturel de Montesinho. Courses : Trail 16K et Marche gratuite. Célébration de la tradition des Diables le Mercredi des Cendres. T-shirt inclus.",
     },
     de: {
       title: "Teufelstrail 2026 - Vinhais",
@@ -655,7 +659,8 @@ Categories defined by age range:
 *Laufen Sie durch die magischen Wege von Montesinho und erleben Sie die Teufels-Tradition von Vinhais!* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Teufelstrail 2026 | Vinhais, Bragança | 21. Februar",
-      metaDescription: "Teufelstrail 2026 am 21. Februar in Vinhais, Naturpark Montesinho. Läufe: Trail 16K und kostenlose Wanderung. Feier der Teufels-Tradition am Aschermittwoch. T-Shirt inklusive.",
+      metaDescription:
+        "Teufelstrail 2026 am 21. Februar in Vinhais, Naturpark Montesinho. Läufe: Trail 16K und kostenlose Wanderung. Feier der Teufels-Tradition am Aschermittwoch. T-Shirt inklusive.",
     },
     it: {
       title: "Trail dei Diavoli 2026 - Vinhais",
@@ -738,13 +743,14 @@ Categories defined by age range:
 *Corri sui sentieri magici di Montesinho e vivi la tradizione dei Diavoli di Vinhais!* 👹🏔️`,
       city: "Vinhais",
       metaTitle: "Trail dei Diavoli 2026 | Vinhais, Bragança | 21 Febbraio",
-      metaDescription: "Trail dei Diavoli 2026 il 21 febbraio a Vinhais, Parco Naturale di Montesinho. Gare: Trail 16K e Camminata gratuita. Celebrazione della tradizione dei Diavoli il Mercoledì delle Ceneri. Maglietta inclusa.",
+      metaDescription:
+        "Trail dei Diavoli 2026 il 21 febbraio a Vinhais, Parco Naturale di Montesinho. Gare: Trail 16K e Camminata gratuita. Celebrazione della tradizione dei Diavoli il Mercoledì delle Ceneri. Maglietta inclusa.",
     },
   };
 
   // Create translations for all languages
   const languages: Language[] = ["pt", "en", "es", "fr", "de", "it"];
-  
+
   for (const lang of languages) {
     const translation = translations[lang];
     await prisma.eventTranslation.upsert({

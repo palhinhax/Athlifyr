@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { X } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import {
   usePerformance,
   parseTimeToSeconds,
@@ -34,7 +35,7 @@ export function AddRunSheet({
 }: AddRunSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [distance, setDistance] = useState("");
   const [time, setTime] = useState("");
@@ -173,6 +174,14 @@ export function AddRunSheet({
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </Modal>
   );
 }

@@ -80,9 +80,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Login error:", error);
-    return NextResponse.json(
-      { code: "INTERNAL_ERROR" },
-      { status: 500 }
-    );
+    return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

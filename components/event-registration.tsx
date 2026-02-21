@@ -202,7 +202,9 @@ export function EventRegistration({
       }
 
       toast({
-        title: wasInterested ? t("interestRemoved") : t("participationCancelled"),
+        title: wasInterested
+          ? t("interestRemoved")
+          : t("participationCancelled"),
         description: wasInterested
           ? t("interestRemovedDesc")
           : t("participationCancelledDesc"),
@@ -411,9 +413,7 @@ export function EventRegistration({
                 <Target className="h-4 w-4" />
                 {t("markedAsInterested")}
               </div>
-              <p className="text-muted-foreground">
-                {t("interestedDesc")}
-              </p>
+              <p className="text-muted-foreground">{t("interestedDesc")}</p>
             </div>
           )}
 

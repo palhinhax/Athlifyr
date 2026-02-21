@@ -20,7 +20,10 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({ locale, namespace: "videoAnalysisPage.meta" });
+  const t = await getTranslations({
+    locale,
+    namespace: "videoAnalysisPage.meta",
+  });
 
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";

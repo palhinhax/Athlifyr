@@ -312,9 +312,7 @@ export async function POST(request: Request) {
           );
         }
       } else {
-        console.log(
-          "[MotionAnalysis] AI requested but user not authenticated"
-        );
+        console.log("[MotionAnalysis] AI requested but user not authenticated");
       }
     }
     if (language) {

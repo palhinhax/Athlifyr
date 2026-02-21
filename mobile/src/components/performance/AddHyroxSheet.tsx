@@ -15,6 +15,7 @@ import { useTranslation } from "react-i18next";
 import { X, ChevronDown } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import { usePerformance, parseTimeToSeconds } from "@/src/hooks/usePerformance";
 
 const HYROX_CATEGORIES = [
@@ -41,7 +42,7 @@ interface AddHyroxSheetProps {
 export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
   const { t } = useTranslation();
   const { createEntry, isCreating } = usePerformance();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [category, setCategory] = useState("OPEN_MEN");
   const [time, setTime] = useState("");
@@ -217,6 +218,14 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </Modal>
   );
 }

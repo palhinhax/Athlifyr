@@ -1,6 +1,6 @@
 /**
  * Seed: 9º Terrugem Trail 2026
- * 
+ *
  * Event: Trail running races in Terrugem, Sintra
  * Location: Terrugem, Sintra
  * Date: March 1, 2026
@@ -329,7 +329,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *Viva novas experiências em trilhos distintos de Terrugem e Sintra!* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9º Terrugem Trail 2026 | Terrugem, Sintra | 1 Março",
-      metaDescription: "9º Terrugem Trail 2026 no dia 1 de março em Terrugem, Sintra. Provas: Trail Longo 25K, Trail Curto 17K, Mini Trail 12K e Caminhada 12K. Circuitos CTF e AAL. T-shirt e lembrança finisher incluídas.",
+      metaDescription:
+        "9º Terrugem Trail 2026 no dia 1 de março em Terrugem, Sintra. Provas: Trail Longo 25K, Trail Curto 17K, Mini Trail 12K e Caminhada 12K. Circuitos CTF e AAL. T-shirt e lembrança finisher incluídas.",
     },
     en: {
       title: "9th Terrugem Trail 2026",
@@ -435,7 +436,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *Experience new sensations on distinct trails of Terrugem and Sintra!* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9th Terrugem Trail 2026 | Terrugem, Sintra | March 1",
-      metaDescription: "9th Terrugem Trail 2026 on March 1 in Terrugem, Sintra. Races: Long Trail 25K, Short Trail 17K, Mini Trail 12K and Walk 12K. CTF and AAL circuits. T-shirt and finisher souvenir included.",
+      metaDescription:
+        "9th Terrugem Trail 2026 on March 1 in Terrugem, Sintra. Races: Long Trail 25K, Short Trail 17K, Mini Trail 12K and Walk 12K. CTF and AAL circuits. T-shirt and finisher souvenir included.",
     },
     es: {
       title: "9º Terrugem Trail 2026",
@@ -484,7 +486,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *¡Vive nuevas experiencias en senderos distintos de Terrugem y Sintra!* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9º Terrugem Trail 2026 | Terrugem, Sintra | 1 Marzo",
-      metaDescription: "9º Terrugem Trail 2026 el 1 de marzo en Terrugem, Sintra. Carreras: Trail Largo 25K, Trail Corto 17K, Mini Trail 12K y Caminata 12K. Circuitos CTF y AAL. Camiseta y recuerdo finisher incluidos.",
+      metaDescription:
+        "9º Terrugem Trail 2026 el 1 de marzo en Terrugem, Sintra. Carreras: Trail Largo 25K, Trail Corto 17K, Mini Trail 12K y Caminata 12K. Circuitos CTF y AAL. Camiseta y recuerdo finisher incluidos.",
     },
     fr: {
       title: "9e Terrugem Trail 2026",
@@ -533,7 +536,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *Vivez de nouvelles expériences sur les sentiers distincts de Terrugem et Sintra !* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9e Terrugem Trail 2026 | Terrugem, Sintra | 1er Mars",
-      metaDescription: "9e Terrugem Trail 2026 le 1er mars à Terrugem, Sintra. Courses : Trail Long 25K, Trail Court 17K, Mini Trail 12K et Marche 12K. Circuits CTF et AAL. T-shirt et souvenir finisher inclus.",
+      metaDescription:
+        "9e Terrugem Trail 2026 le 1er mars à Terrugem, Sintra. Courses : Trail Long 25K, Trail Court 17K, Mini Trail 12K et Marche 12K. Circuits CTF et AAL. T-shirt et souvenir finisher inclus.",
     },
     de: {
       title: "9. Terrugem Trail 2026",
@@ -582,7 +586,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *Erleben Sie neue Erfahrungen auf den unterschiedlichen Wegen von Terrugem und Sintra!* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9. Terrugem Trail 2026 | Terrugem, Sintra | 1. März",
-      metaDescription: "9. Terrugem Trail 2026 am 1. März in Terrugem, Sintra. Läufe: Langer Trail 25K, Kurzer Trail 17K, Mini Trail 12K und Wanderung 12K. CTF- und AAL-Circuits. T-Shirt und Finisher-Andenken inklusive.",
+      metaDescription:
+        "9. Terrugem Trail 2026 am 1. März in Terrugem, Sintra. Läufe: Langer Trail 25K, Kurzer Trail 17K, Mini Trail 12K und Wanderung 12K. CTF- und AAL-Circuits. T-Shirt und Finisher-Andenken inklusive.",
     },
     it: {
       title: "9º Terrugem Trail 2026",
@@ -631,13 +636,14 @@ O evento valoriza e divulga o território, promovendo a região através do desp
 *Vivi nuove esperienze sui sentieri distinti di Terrugem e Sintra!* 🏃🏔️`,
       city: "Terrugem, Sintra",
       metaTitle: "9º Terrugem Trail 2026 | Terrugem, Sintra | 1 Marzo",
-      metaDescription: "9º Terrugem Trail 2026 il 1 marzo a Terrugem, Sintra. Gare: Trail Lungo 25K, Trail Corto 17K, Mini Trail 12K e Camminata 12K. Circuiti CTF e AAL. Maglietta e ricordo finisher inclusi.",
+      metaDescription:
+        "9º Terrugem Trail 2026 il 1 marzo a Terrugem, Sintra. Gare: Trail Lungo 25K, Trail Corto 17K, Mini Trail 12K e Camminata 12K. Circuiti CTF e AAL. Maglietta e ricordo finisher inclusi.",
     },
   };
 
   // Create translations for all languages
   const languages: Language[] = ["pt", "en", "es", "fr", "de", "it"];
-  
+
   for (const lang of languages) {
     const translation = translations[lang];
     await prisma.eventTranslation.upsert({

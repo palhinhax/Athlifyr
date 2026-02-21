@@ -15,6 +15,7 @@ import { ArrowLeft, Mail, CheckCircle } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
 import { useToast } from "@/src/hooks/useToast";
+import { Toast } from "@/src/components/ui/Toast";
 import { isAxiosError } from "axios";
 import {
   colors,
@@ -27,7 +28,7 @@ import {
 export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const { showToast } = useToast();
+  const { toast, showToast, hideToast } = useToast();
 
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -187,6 +188,14 @@ export default function ForgotPasswordScreen() {
           </TouchableOpacity>
         </View>
       </KeyboardAvoidingView>
+
+      {/* Toast notifications */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </SafeAreaView>
   );
 }

@@ -11,7 +11,8 @@
         "media": "Media",
         "instagram": "Instagram",
         "exercises": "Exercises",
-        "reports": "Reports"
+        "reports": "Reports",
+        "appStoreAssets": "Store Assets"
       }
     },
     "contacts": {
@@ -255,6 +256,62 @@
         "userUnbannedDesc": "{name} was unbanned from the platform",
         "error": "Error",
         "errorDesc": "An error occurred while processing the request"
+      }
+    },
+    "appStoreAssets": {
+      "title": "App Store Assets Builder",
+      "description": "Create promotional images and screenshots for Google Play and App Store",
+      "platforms": {
+        "google": "Google Play",
+        "ios": "App Store (iOS)"
+      },
+      "modes": {
+        "design": "Design Builder",
+        "resize": "Resize Image"
+      },
+      "designer": {
+        "preview": "Preview",
+        "assetSize": "Asset Size",
+        "background": "Background",
+        "bgSolid": "Solid Color",
+        "bgGradient": "Gradient",
+        "bgImage": "Image",
+        "color": "Color",
+        "from": "From",
+        "to": "To",
+        "angle": "Angle",
+        "uploadBg": "Upload Background",
+        "overlay": "Overlay",
+        "overlayColor": "Overlay Color",
+        "device": "Device Mockup",
+        "showDevice": "Show Device",
+        "uploadScreen": "Upload Screenshot",
+        "scale": "Scale",
+        "offsetX": "Horizontal Offset",
+        "offsetY": "Vertical Offset",
+        "text": "Text",
+        "headline": "Headline",
+        "subheadline": "Subheadline",
+        "fontSize": "Size",
+        "export": "Export",
+        "textPosition": "Position"
+      },
+      "export": {
+        "success": "Image exported successfully",
+        "error": "Failed to export image"
+      },
+      "resize": {
+        "title": "Image Resizer",
+        "description": "Upload an image and export it resized to all required store dimensions",
+        "dropHere": "Click or drop an image here",
+        "maxSize": "max 15 MB",
+        "outputSizes": "Output Sizes",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "exportSelected": "Export {count} sizes",
+        "exporting": "Exporting…",
+        "exportDone": "Export complete",
+        "exportCount": "{count} images exported"
       }
     }
   }

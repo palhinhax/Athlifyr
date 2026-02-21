@@ -11,7 +11,8 @@
         "media": "Media",
         "instagram": "Instagram",
         "exercises": "Exercícios",
-        "reports": "Denúncias"
+        "reports": "Denúncias",
+        "appStoreAssets": "Imagens Loja"
       }
     },
     "contacts": {
@@ -255,6 +256,62 @@
         "userUnbannedDesc": "{name} foi desbanido da plataforma",
         "error": "Erro",
         "errorDesc": "Ocorreu um erro ao processar o pedido"
+      }
+    },
+    "appStoreAssets": {
+      "title": "Construtor de Imagens para Lojas",
+      "description": "Cria imagens promocionais e capturas de ecrã para Google Play e App Store",
+      "platforms": {
+        "google": "Google Play",
+        "ios": "App Store (iOS)"
+      },
+      "modes": {
+        "design": "Construtor",
+        "resize": "Redimensionar"
+      },
+      "designer": {
+        "preview": "Pré-visualização",
+        "assetSize": "Tamanho do Recurso",
+        "background": "Fundo",
+        "bgSolid": "Cor Sólida",
+        "bgGradient": "Gradiente",
+        "bgImage": "Imagem",
+        "color": "Cor",
+        "from": "De",
+        "to": "Para",
+        "angle": "Ângulo",
+        "uploadBg": "Carregar Fundo",
+        "overlay": "Sobreposição",
+        "overlayColor": "Cor da Sobreposição",
+        "device": "Dispositivo",
+        "showDevice": "Mostrar Dispositivo",
+        "uploadScreen": "Carregar Captura de Ecrã",
+        "scale": "Escala",
+        "offsetX": "Posição Horizontal",
+        "offsetY": "Posição Vertical",
+        "text": "Texto",
+        "headline": "Título",
+        "subheadline": "Subtítulo",
+        "fontSize": "Tamanho",
+        "export": "Exportar",
+        "textPosition": "Posição"
+      },
+      "export": {
+        "success": "Imagem exportada com sucesso",
+        "error": "Falha ao exportar imagem"
+      },
+      "resize": {
+        "title": "Redimensionador de Imagens",
+        "description": "Carrega uma imagem e exporta-a redimensionada para todas as dimensões necessárias",
+        "dropHere": "Clica ou arrasta uma imagem para aqui",
+        "maxSize": "máx. 15 MB",
+        "outputSizes": "Tamanhos de Saída",
+        "selectAll": "Selecionar Tudo",
+        "deselectAll": "Desselecionar Tudo",
+        "exportSelected": "Exportar {count} tamanhos",
+        "exporting": "A exportar…",
+        "exportDone": "Exportação concluída",
+        "exportCount": "{count} imagens exportadas"
       }
     }
   }

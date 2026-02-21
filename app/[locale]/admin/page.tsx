@@ -15,6 +15,7 @@ import {
   Flag,
   Dumbbell,
   Bug,
+  Smartphone,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -28,6 +29,9 @@ const AdminVenuesContent = lazy(() => import("./venues/page"));
 const AdminUsersContent = lazy(() => import("./users/page"));
 const AdminReportsContent = lazy(() => import("./reports/page"));
 const AdminExercisesContent = lazy(() => import("./exercises/page"));
+const AdminAppStoreAssetsContent = lazy(
+  () => import("./app-store-assets/page")
+);
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -113,6 +117,12 @@ function AdminContent() {
             <TabsTrigger value="reports" className="flex-1 gap-2">
               <Flag className="h-4 w-4" />
               <span className="hidden sm:inline">{t("tabs.reports")}</span>
+            </TabsTrigger>
+            <TabsTrigger value="app-store-assets" className="flex-1 gap-2">
+              <Smartphone className="h-4 w-4" />
+              <span className="hidden sm:inline">
+                {t("tabs.appStoreAssets")}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="debug" className="flex-1 gap-2">
               <Bug className="h-4 w-4" />
@@ -214,6 +224,18 @@ function AdminContent() {
             }
           >
             <AdminReportsContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="app-store-assets">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminAppStoreAssetsContent />
           </Suspense>
         </TabsContent>
 

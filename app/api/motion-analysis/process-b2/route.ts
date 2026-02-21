@@ -13,6 +13,7 @@
  *   "key":              "uploads/<userId>/<uuid>.mp4",
  *   "contentType":      "video/mp4",
  *   "show_angles":      true,
+ *   "show_body":        true,
  *   "max_duration_sec":  30,
  *   "enable_ai":        false,
  *   "language":         "en",
@@ -132,6 +133,7 @@ interface ProcessB2Body {
   key: string;
   contentType: string;
   show_angles?: boolean;
+  show_body?: boolean;
   max_duration_sec?: number;
   enable_ai?: boolean;
   language?: string;
@@ -198,6 +200,7 @@ export async function POST(request: Request) {
       video_url: videoDownloadUrl,
       content_type: contentType,
       show_angles: body.show_angles ?? true,
+      show_body: body.show_body ?? true,
       max_duration_sec: body.max_duration_sec ?? MAX_DURATION_LIFT_SEC,
       enable_ai: aiAllowed,
       language: body.language ?? "en",
@@ -397,12 +400,7 @@ export async function POST(request: Request) {
         error instanceof Error ? error.stack?.substring(0, 500) : undefined,
     });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-      },
+      { error: "Video processing failed" },
       { status: 500 }
     );
   }

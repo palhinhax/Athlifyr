@@ -193,7 +193,8 @@ async function uploadVideoToB2(
 export async function analyzeMotion(
   videoUri: string,
   onProgress?: (p: MotionAnalysisProgress) => void,
-  trimRange?: { startSec: number; endSec: number }
+  trimRange?: { startSec: number; endSec: number },
+  showBody?: boolean
 ): Promise<MotionAnalysisResult> {
   // ── 1+2. Upload video to B2 via presigned URL ────────────────
   onProgress?.({ progress: 0, step: "uploading" });
@@ -209,6 +210,7 @@ export async function analyzeMotion(
     key,
     contentType,
     show_angles: true,
+    show_body: showBody ?? true,
     max_duration_sec: 30,
     enable_ai: false,
     ...(trimRange

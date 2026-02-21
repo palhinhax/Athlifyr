@@ -16,6 +16,7 @@
  *   "seed_y":           0.38,
  *   "seed_frame":       0,
  *   "show_angles":      true,
+ *   "show_body":        true,
  *   "max_duration_sec":  30,
  *   "auto_detect":      true,
  *   "enable_ai":        false,
@@ -147,6 +148,7 @@ interface ProcessB2Body {
   seed_y: number;
   seed_frame?: number;
   show_angles?: boolean;
+  show_body?: boolean;
   max_duration_sec?: number;
   auto_detect?: boolean;
   enable_ai?: boolean;
@@ -238,6 +240,7 @@ export async function POST(request: Request) {
       seed_y: seedY,
       seed_frame: body.seed_frame ?? 0,
       show_angles: body.show_angles ?? true,
+      show_body: body.show_body ?? true,
       max_duration_sec: body.max_duration_sec ?? MAX_DURATION_LIFT_SEC,
       auto_detect: body.auto_detect ?? true,
       enable_ai: aiAllowed,
@@ -474,12 +477,7 @@ export async function POST(request: Request) {
         error instanceof Error ? error.stack?.substring(0, 500) : undefined,
     });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred",
-      },
+      { error: "Video processing failed" },
       { status: 500 }
     );
   }

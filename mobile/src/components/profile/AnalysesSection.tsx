@@ -28,7 +28,6 @@ import * as LegacyFS from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { Paths, File as FSFile } from "expo-file-system";
 import { StickmanRenderer } from "@/src/components/motion-analysis/StickmanRenderer";
-import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import type { PoseFrame } from "@/src/types/motion-analysis";
 import type { BarPathPoint } from "@/src/types/lift-analysis";
@@ -250,30 +249,14 @@ function LiftVideoModalContent({ record }: { record: AnalysisRecord }) {
   const containerWidth = Math.min(screenWidth - 32, 500);
   const containerHeight = containerWidth * (16 / 9);
 
-  const json = record.analysisJson as LiftAnalysisJson;
-  const barPath = json.barPath ?? [];
-
-  const [currentMs, setCurrentMs] = useState(0);
-
   const player = useVideoPlayer(record.videoUrl, (p) => {
     p.loop = true;
     p.muted = true;
     p.play();
   });
 
-  // Poll at ~30fps — timeUpdate fires too infrequently to animate bar path
-  useEffect(() => {
-    const interval = setInterval(() => {
-      try {
-        if (player.currentTime !== undefined) {
-          setCurrentMs(Math.round(player.currentTime * 1000));
-        }
-      } catch {
-        // ignore
-      }
-    }, 33);
-    return () => clearInterval(interval);
-  }, [player]);
+  // The processed video from Railway already has the bar path overlay
+  // baked into the video — no need for a BarPathOverlay component on top.
 
   return (
     <View
@@ -290,22 +273,6 @@ function LiftVideoModalContent({ record }: { record: AnalysisRecord }) {
         nativeControls
         contentFit="contain"
       />
-      {barPath.length > 0 && (
-        <View
-          style={[
-            StyleSheet.absoluteFill,
-            { width: containerWidth, height: containerHeight },
-          ]}
-          pointerEvents="none"
-        >
-          <BarPathOverlay
-            path={barPath}
-            width={containerWidth}
-            height={containerHeight}
-            currentTimeMs={currentMs}
-          />
-        </View>
-      )}
     </View>
   );
 }

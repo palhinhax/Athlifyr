@@ -303,10 +303,12 @@ export async function POST(request: Request) {
 
     // Add optional parameters with defaults
     const showAngles = formData.get("show_angles") || "true";
+    const showBody = formData.get("show_body") || "true";
     const maxDurationSec =
       formData.get("max_duration_sec") || String(MAX_DURATION_LIFT_SEC);
 
     externalFormData.append("show_angles", showAngles.toString());
+    externalFormData.append("show_body", showBody.toString());
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
 
     // Forward AI parameters — enforce server-side rate limit (1 per 24h)

@@ -13,6 +13,7 @@
 import type { BarPathPoint } from "@/src/types/lift-analysis";
 import { API_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
+import * as VideoThumbnails from "expo-video-thumbnails";
 
 // ── Types ────────────────────────────────────────────────────────────
 
@@ -121,6 +122,96 @@ export async function checkApiHealth(): Promise<boolean> {
     return res.ok || res.status === 405;
   } catch {
     return false;
+  }
+}
+
+// ── Debug Detect (disc detection feedback) ───────────────────────────
+
+/** Circle detected by the debug/detect endpoint. */
+export interface DebugDetectCircle {
+  center_x: number;
+  center_y: number;
+  radius: number;
+  center_x_pct: number;
+  center_y_pct: number;
+  radius_pct: number;
+  confidence: number;
+  area_px: number;
+}
+
+/** Response from the debug/detect endpoint. */
+export interface DebugDetectResult {
+  detected: boolean;
+  circle: DebugDetectCircle | null;
+  frame_size: { width: number; height: number };
+}
+
+/**
+ * Extract a frame from the video at the given time and call the
+ * debug/detect endpoint to check if a disc/plate is detected at the
+ * seed point.
+ *
+ * @param videoUri     Local video URI
+ * @param seedNorm     Normalised {x, y} of the tap (0–1)
+ * @param timeSec      Time in seconds of the current frame
+ * @returns            Detection result, or null on failure
+ */
+export async function detectDisc(
+  videoUri: string,
+  seedNorm: { x: number; y: number },
+  timeSec: number
+): Promise<DebugDetectResult | null> {
+  try {
+    // 1. Extract frame thumbnail at the given time
+    const timeMs = Math.round(timeSec * 1000);
+    const { uri: frameUri } = await VideoThumbnails.getThumbnailAsync(
+      videoUri,
+      { time: timeMs, quality: 0.85 }
+    );
+
+    // 2. Build FormData for the API
+    const seedXPct = Math.min(100, Math.max(0, seedNorm.x * 100));
+    const seedYPct = Math.min(100, Math.max(0, seedNorm.y * 100));
+
+    const formData = new FormData();
+    formData.append("image", {
+      uri: frameUri,
+      type: "image/jpeg",
+      name: "frame.jpg",
+    } as unknown as Blob);
+    formData.append("seed_x", seedXPct.toFixed(2));
+    formData.append("seed_y", seedYPct.toFixed(2));
+
+    // 4. Call API
+    const authToken = await SecureStore.getItemAsync("auth-token");
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 10_000);
+
+    const res = await fetch(`${API_URL}/api/lift-analysis/debug-detect`, {
+      method: "POST",
+      headers: {
+        ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+      },
+      body: formData,
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
+    if (!res.ok) {
+      console.warn("[detectDisc] API error:", res.status);
+      return null;
+    }
+
+    const data = (await res.json()) as DebugDetectResult;
+    console.log("[detectDisc] Result:", {
+      detected: data.detected,
+      confidence: data.circle?.confidence,
+    });
+    return data;
+  } catch (err) {
+    console.warn("[detectDisc] Error:", err);
+    return null;
   }
 }
 
@@ -254,7 +345,8 @@ export async function trackBarbell(
   videoWidth: number,
   videoHeight: number,
   onProgress?: (p: TrackingProgress) => void,
-  trimRange?: { startSec: number; endSec: number }
+  trimRange?: { startSec: number; endSec: number },
+  showBody?: boolean
 ): Promise<TrackingResult> {
   // ── 1+2. Upload video to B2 via presigned URL ────────────────
   onProgress?.({ current: 0, total: 100, step: "uploading" });
@@ -277,13 +369,19 @@ export async function trackBarbell(
     seed_y: seedYPercent,
     seed_frame: 0,
     show_angles: true,
+    show_body: showBody ?? true,
     max_duration_sec: 30,
     auto_detect: true,
     enable_ai: false,
+    // Railway validates trimmed duration >= max_duration_sec, so shave 0.1s
+    // off the trim end to avoid rejecting videos trimmed to exactly 30.0s.
     ...(trimRange
       ? {
           trim_start_sec: trimRange.startSec,
-          trim_end_sec: trimRange.endSec,
+          trim_end_sec: Math.max(
+            trimRange.startSec + 1,
+            trimRange.endSec - 0.1
+          ),
         }
       : {}),
   };

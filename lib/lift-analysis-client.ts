@@ -159,10 +159,13 @@ export async function processLiftAnalysis(
     seed_y: params.seedY,
     seed_frame: params.seedFrame ?? 0,
     show_angles: params.showAngles ?? true,
+    show_body: params.showBody ?? true,
     max_duration_sec: params.maxDurationSec,
     auto_detect: params.autoDetect ?? true,
     enable_ai: params.enableAi ?? false,
     language: params.language,
+    trim_start_sec: params.trimStartSec ?? null,
+    trim_end_sec: params.trimEndSec ?? null,
   };
 
   const response = await fetch(`${apiBaseUrl}/api/lift-analysis/process-b2`, {
@@ -221,9 +224,12 @@ export async function processMotionAnalysis(
     key,
     contentType,
     show_angles: params.showAngles ?? true,
+    show_body: params.showBody ?? true,
     max_duration_sec: params.maxDurationSec,
     enable_ai: params.enableAi ?? false,
     language: params.language,
+    trim_start_sec: params.trimStartSec ?? null,
+    trim_end_sec: params.trimEndSec ?? null,
   };
 
   const response = await fetch(`${apiBaseUrl}/api/motion-analysis/process-b2`, {

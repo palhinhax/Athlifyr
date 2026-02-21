@@ -350,12 +350,14 @@ export async function POST(request: Request) {
     // Add optional parameters with defaults
     const seedFrame = formData.get("seed_frame") || "0";
     const showAngles = formData.get("show_angles") || "true";
+    const showBody = formData.get("show_body") || "true";
     const maxDurationSec =
       formData.get("max_duration_sec") || String(MAX_DURATION_LIFT_SEC);
     const autoDetect = formData.get("auto_detect") || "true";
 
     externalFormData.append("seed_frame", seedFrame.toString());
     externalFormData.append("show_angles", showAngles.toString());
+    externalFormData.append("show_body", showBody.toString());
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
     externalFormData.append("auto_detect", autoDetect.toString());
 

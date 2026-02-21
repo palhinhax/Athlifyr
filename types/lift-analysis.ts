@@ -17,18 +17,24 @@ export interface LiftAnalysisProcessRequest {
   seedY: number;
   seedFrame?: number;
   showAngles?: boolean;
+  showBody?: boolean;
   maxDurationSec?: number;
   autoDetect?: boolean;
   enableAi?: boolean;
   language?: string;
+  trimStartSec?: number | null;
+  trimEndSec?: number | null;
 }
 
 export interface MotionAnalysisProcessRequest {
   video: File | Blob;
   showAngles?: boolean;
+  showBody?: boolean;
   maxDurationSec?: number;
   enableAi?: boolean;
   language?: string;
+  trimStartSec?: number | null;
+  trimEndSec?: number | null;
 }
 
 // ── 3D Skeleton Types ────────────────────────────────────────────────────

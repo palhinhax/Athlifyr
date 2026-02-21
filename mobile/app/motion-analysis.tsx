@@ -180,10 +180,7 @@ export default function MotionAnalysisScreen() {
         visible: true,
         type: "error",
         title: t("motionAnalysis.analysisError"),
-        message:
-          error instanceof Error
-            ? error.message
-            : t("motionAnalysis.analysisError"),
+        message: t("motionAnalysis.analysisError"),
       });
     }
   }, [videoUri, t, trimRange]);
@@ -363,11 +360,12 @@ export default function MotionAnalysisScreen() {
         UTI: "public.movie",
       });
     } catch (err) {
+      console.error("Export video error:", err);
       setModalConfig({
         visible: true,
         type: "error",
         title: t("common.error"),
-        message: err instanceof Error ? err.message : "Export failed",
+        message: t("motionAnalysis.exportError"),
       });
     } finally {
       setIsExporting(false);

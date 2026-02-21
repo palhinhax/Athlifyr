@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   processLiftAnalysis,
   processMotionAnalysis,
@@ -37,12 +39,18 @@ import {
   MAX_DURATION_LIFT_SEC,
   ACCEPTED_FORMATS_LABEL,
 } from "@/lib/video-limits";
+import { VideoTrimmer, type TrimRange } from "@/components/video-trimmer";
 
 type AnalysisType = "lift" | "motion";
 
 type UploadState =
   | { status: "idle" }
   | { status: "selected"; videoUrl: string; fileName: string }
+  | {
+      status: "trimming";
+      videoUrl: string;
+      durationSec: number;
+    }
   | {
       status: "selecting-seed";
       videoUrl: string;
@@ -92,6 +100,8 @@ export function VideoAnalysisUpload({
     null
   );
   const [detectLoading, setDetectLoading] = useState(false);
+  const [showBody, setShowBody] = useState(true);
+  const [trimRange, setTrimRange] = useState<TrimRange | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -222,19 +232,27 @@ export function VideoAnalysisUpload({
           needsTrim: tooBig || tooLong,
         });
 
-        if (tooBig || tooLong) {
-          console.warn(
-            `[VideoUpload] Rejected — tooBig=${tooBig}, tooLong=${tooLong}`
-          );
+        // File too large by size — reject outright (can't trim file size)
+        if (tooBig) {
+          console.warn(`[VideoUpload] Rejected — file too large`);
           URL.revokeObjectURL(videoUrl);
           setSelectedFile(null);
-          const reasons: string[] = [];
-          if (tooBig) reasons.push(`tamanho máximo: ${MAX_FILE_LABEL}`);
-          if (tooLong)
-            reasons.push(`duração máxima: ${MAX_DURATION_LIFT_SEC}s`);
           setUploadStateSynced({
             status: "error",
-            message: `O vídeo é demasiado grande. ${reasons.join(", ")}. Grava um vídeo mais curto.`,
+            message: `O vídeo é demasiado grande. Tamanho máximo: ${MAX_FILE_LABEL}. Grava um vídeo mais curto.`,
+          });
+          return;
+        }
+
+        // Video too long — go to trimmer (server-side trim)
+        if (tooLong) {
+          console.log(
+            `[VideoUpload] → trimming (duration ${duration.toFixed(1)}s > ${MAX_DURATION_LIFT_SEC}s)`
+          );
+          setUploadStateSynced({
+            status: "trimming",
+            videoUrl,
+            durationSec: duration,
           });
           return;
         }
@@ -389,14 +407,83 @@ export function VideoAnalysisUpload({
     if (uploadState.status === "selected") {
       URL.revokeObjectURL(uploadState.videoUrl);
     }
+    if (uploadState.status === "trimming") {
+      URL.revokeObjectURL(uploadState.videoUrl);
+    }
 
     setUploadStateSynced({ status: "idle" });
     setSelectedFile(null);
     setSeedPoint(null);
     setDetectResult(null);
     setDetectLoading(false);
+    setShowBody(true);
+    setTrimRange(null);
     onOpenChange(false);
   }, [uploadState, onOpenChange]);
+
+  /** Called when the user confirms a trim selection from the VideoTrimmer. */
+  const handleTrimConfirm = useCallback(
+    (range: TrimRange) => {
+      if (uploadState.status !== "trimming") return;
+
+      console.log(`[VideoUpload] Trim confirmed:`, range);
+      setTrimRange(range);
+
+      // After trimming, proceed to the next step
+      const videoUrl = uploadState.videoUrl;
+      const video = document.createElement("video");
+      video.src = videoUrl;
+      video.preload = "metadata";
+
+      // Wait for metadata so the video element is ready for seed selection
+      video.onloadedmetadata = () => {
+        if (isLift) {
+          console.log(`[VideoUpload] → selecting-seed (after trim)`);
+          setUploadStateSynced({
+            status: "selecting-seed",
+            videoUrl,
+            videoElement: video,
+          });
+        } else {
+          console.log(`[VideoUpload] → selected (after trim)`);
+          setUploadStateSynced({
+            status: "selected",
+            videoUrl,
+            fileName: selectedFile?.name ?? "video.mp4",
+          });
+        }
+      };
+
+      video.onerror = () => {
+        // Proceed anyway
+        if (isLift) {
+          setUploadStateSynced({
+            status: "selecting-seed",
+            videoUrl,
+            videoElement: video,
+          });
+        } else {
+          setUploadStateSynced({
+            status: "selected",
+            videoUrl,
+            fileName: selectedFile?.name ?? "video.mp4",
+          });
+        }
+      };
+    },
+    [uploadState, isLift, selectedFile, setUploadStateSynced]
+  );
+
+  /** Called when the user cancels the trim. */
+  const handleTrimCancel = useCallback(() => {
+    if (uploadState.status === "trimming") {
+      URL.revokeObjectURL(uploadState.videoUrl);
+    }
+    setUploadStateSynced({ status: "idle" });
+    setSelectedFile(null);
+    setTrimRange(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }, [uploadState, setUploadStateSynced]);
 
   const handleSubmit = useCallback(async () => {
     if (!selectedFile) return;
@@ -433,6 +520,7 @@ export function VideoAnalysisUpload({
           seedY: seedPoint.y,
           showAngles: true,
           autoDetect: true,
+          trimRange,
         });
 
         const result = await processLiftAnalysis(
@@ -441,9 +529,14 @@ export function VideoAnalysisUpload({
             seedX: seedPoint.x,
             seedY: seedPoint.y,
             showAngles: true,
+            showBody,
             autoDetect: true,
             enableAi: isLoggedIn,
             language: locale,
+            trimStartSec: trimRange?.startSec ?? null,
+            trimEndSec: trimRange
+              ? Math.max(trimRange.startSec + 1, trimRange.endSec - 0.1)
+              : null,
           },
           window.location.origin,
           (progress) => {
@@ -514,14 +607,20 @@ export function VideoAnalysisUpload({
 
         console.log(`[VideoUpload] Calling processMotionAnalysis…`, {
           showAngles: true,
+          trimRange,
         });
 
         const result = await processMotionAnalysis(
           {
             video: selectedFile,
             showAngles: true,
+            showBody,
             enableAi: isLoggedIn,
             language: locale,
+            trimStartSec: trimRange?.startSec ?? null,
+            trimEndSec: trimRange
+              ? Math.max(trimRange.startSec + 1, trimRange.endSec - 0.1)
+              : null,
           },
           window.location.origin,
           (progress) => {
@@ -616,12 +715,15 @@ export function VideoAnalysisUpload({
     onSuccess,
     setUploadStateSynced,
     type,
+    showBody,
+    trimRange,
   ]);
 
   const canSubmit =
     selectedFile &&
     uploadState.status !== "uploading" &&
     uploadState.status !== "processing" &&
+    uploadState.status !== "trimming" &&
     (uploadState.status === "selected" ||
       (isLift && uploadState.status === "selecting-seed" && !!seedPoint));
 
@@ -633,7 +735,9 @@ export function VideoAnalysisUpload({
             ? "max-h-[90vh] max-w-6xl overflow-y-auto"
             : uploadState.status === "selecting-seed"
               ? "max-h-[95vh] max-w-4xl overflow-y-auto"
-              : "max-h-[90vh] max-w-2xl overflow-y-auto"
+              : uploadState.status === "trimming"
+                ? "max-h-[95vh] max-w-3xl overflow-y-auto"
+                : "max-h-[90vh] max-w-2xl overflow-y-auto"
         }
       >
         <DialogHeader>
@@ -666,6 +770,16 @@ export function VideoAnalysisUpload({
                 </div>
               </button>
             </div>
+          )}
+
+          {/* Video trimmer (when video is too long) */}
+          {uploadState.status === "trimming" && (
+            <VideoTrimmer
+              videoUrl={uploadState.videoUrl}
+              durationSec={uploadState.durationSec}
+              onConfirm={handleTrimConfirm}
+              onCancel={handleTrimCancel}
+            />
           )}
 
           {/* Motion analysis: video preview after file selected */}
@@ -893,38 +1007,59 @@ export function VideoAnalysisUpload({
             </Alert>
           )}
 
+          {/* Show body skeleton toggle */}
+          {canSubmit && (
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="show-body" className="text-sm font-medium">
+                  Esqueleto corporal
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Mostrar a sobreposição do esqueleto no vídeo processado
+                </p>
+              </div>
+              <Switch
+                id="show-body"
+                checked={showBody}
+                onCheckedChange={setShowBody}
+              />
+            </div>
+          )}
+
           {/* Actions */}
-          <div className="flex justify-end gap-2">
-            {uploadState.status !== "success" && (
-              <Button
-                variant={
-                  uploadState.status === "uploading" ||
-                  uploadState.status === "processing"
-                    ? "destructive"
-                    : "outline"
-                }
-                onClick={handleClose}
-              >
-                {uploadState.status === "uploading" ||
-                uploadState.status === "processing" ? (
-                  <>
-                    <X className="mr-1.5 h-3.5 w-3.5" />
-                    Cancelar
-                  </>
-                ) : (
-                  "Cancelar"
-                )}
-              </Button>
-            )}
-            {uploadState.status === "success" && (
-              <Button variant="outline" onClick={handleClose}>
-                Fechar
-              </Button>
-            )}
-            {canSubmit && (
-              <Button onClick={handleSubmit}>Iniciar Análise</Button>
-            )}
-          </div>
+          {uploadState.status !== "trimming" && (
+            <div className="flex justify-end gap-2">
+              {uploadState.status !== "success" && (
+                <Button
+                  variant={
+                    uploadState.status === "uploading" ||
+                    uploadState.status === "processing"
+                      ? "destructive"
+                      : "outline"
+                  }
+                  onClick={handleClose}
+                >
+                  {uploadState.status === "uploading" ||
+                  uploadState.status === "processing" ? (
+                    <>
+                      <X className="mr-1.5 h-3.5 w-3.5" />
+                      Cancelar
+                    </>
+                  ) : (
+                    "Cancelar"
+                  )}
+                </Button>
+              )}
+              {uploadState.status === "success" && (
+                <Button variant="outline" onClick={handleClose}>
+                  Fechar
+                </Button>
+              )}
+              {canSubmit && (
+                <Button onClick={handleSubmit}>Iniciar Análise</Button>
+              )}
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

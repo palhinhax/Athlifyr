@@ -7,11 +7,13 @@ import {
   Dimensions,
   ActivityIndicator,
   GestureResponderEvent,
+  Switch,
 } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
+import * as VideoThumbnails from "expo-video-thumbnails";
 import {
   ArrowLeft,
   Save,
@@ -30,8 +32,12 @@ import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard"
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { VideoTrimmer, type TrimRange } from "@/src/components/ui/VideoTrimmer";
 import { computeMetrics } from "@/src/lib/bar-path-utils";
-import { trackBarbell, type TrackingProgress } from "@/src/lib/barbell-api";
-import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
+import {
+  trackBarbell,
+  detectDisc,
+  type TrackingProgress,
+  type DebugDetectResult,
+} from "@/src/lib/barbell-api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { saveLiftAnalysisToCloud } from "@/src/lib/analysis-cloud";
 import * as LegacyFS from "expo-file-system/legacy";
@@ -64,7 +70,6 @@ export default function LiftAnalysisScreen() {
     ? parseInt(params.durationMs, 10)
     : null;
 
-  const saveAnalysis = useLiftAnalysisStore((s) => s.save);
   const { isAuthenticated, token } = useAuthStore();
 
   // Pending save payload — preserved while user goes to login and comes back
@@ -108,18 +113,33 @@ export default function LiftAnalysisScreen() {
     null
   );
 
+  // Disc detection feedback state
+  const [detectResult, setDetectResult] = useState<DebugDetectResult | null>(
+    null
+  );
+  const [detectLoading, setDetectLoading] = useState(false);
+
+  // Show body skeleton overlay toggle (sent to Railway API)
+  const [showBody, setShowBody] = useState(true);
+
   // Video container layout
   const [containerLayout, setContainerLayout] = useState({
     width: SCREEN_WIDTH,
     height: VIDEO_HEIGHT,
   });
 
-  // Track whether the video is ready (first frame visible)
+  // Track whether the video surface has rendered its first frame.
+  // We use the VideoView's `onFirstFrameRender` callback (the official
+  // expo-video signal) instead of listening to player status changes, which
+  // can be unreliable after the VideoView is unmounted/remounted (e.g. when
+  // returning from the trim phase on Android).
   const [isVideoReady, setIsVideoReady] = useState(false);
 
-  // Target seek position when we next need to pause on a specific frame
-  // (used when returning from trim phase so we pause at trim start, not at 0)
-  const pendingSeekSecRef = useRef<number | null>(null);
+  // Natural video dimensions (width × height) for accurate "contain" mapping
+  const [naturalVideoSize, setNaturalVideoSize] = useState<{
+    width: number;
+    height: number;
+  } | null>(null);
 
   // Current scrub position in seed phase (in seconds)
   const [scrubTime, setScrubTime] = useState(0);
@@ -156,6 +176,23 @@ export default function LiftAnalysisScreen() {
           const durMs = Math.round(dur * 1000);
           setVideoDurationMs(durMs);
 
+          // Capture natural video dimensions for accurate contain-fit mapping
+          try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const size = (player as any).videoSize;
+            if (size && size.width > 0 && size.height > 0) {
+              console.log(
+                "[LiftAnalysis] Video natural size:",
+                size.width,
+                "x",
+                size.height
+              );
+              setNaturalVideoSize({ width: size.width, height: size.height });
+            }
+          } catch {
+            /* expo-video may not expose videoSize on all platforms */
+          }
+
           // If video is too long, switch to trim phase — but only ONCE
           if (
             dur > MAX_ANALYSIS_DURATION_SEC &&
@@ -171,23 +208,35 @@ export default function LiftAnalysisScreen() {
             setPhase((prev) => (prev === "seed" ? "trim" : prev));
           }
         }
-        // Only do this ONCE on first ready — don't keep resetting
-        setIsVideoReady((prev) => {
-          if (!prev) {
-            const seekTo = pendingSeekSecRef.current ?? 0;
-            pendingSeekSecRef.current = null;
-            setTimeout(() => {
-              player.pause();
-              player.currentTime = seekTo;
-            }, 150);
-          }
-          return true;
-        });
+        // Pause so the user can see the first frame
+        player.pause();
       }
     });
 
-    return () => sub.remove();
+    return () => {
+      sub.remove();
+    };
   }, [player]);
+
+  // Fallback: if videoSize wasn't captured from player, use a thumbnail to get dimensions
+  useEffect(() => {
+    if (naturalVideoSize || !videoUri) return;
+    VideoThumbnails.getThumbnailAsync(videoUri, { time: 0 })
+      .then((thumb) => {
+        if (thumb.width > 0 && thumb.height > 0) {
+          console.log(
+            "[LiftAnalysis] Video size from thumbnail:",
+            thumb.width,
+            "x",
+            thumb.height
+          );
+          setNaturalVideoSize({ width: thumb.width, height: thumb.height });
+        }
+      })
+      .catch(() => {
+        /* ignore — we'll fall back to container dimensions */
+      });
+  }, [videoUri, naturalVideoSize]);
 
   // ─── Seed scrubbing controls ─────────────────────────────────
 
@@ -231,17 +280,63 @@ export default function LiftAnalysisScreen() {
 
   // ─── Phase: Seed ─────────────────────────────────────────────
 
+  /**
+   * Compute the rendered video rect inside the container when using
+   * contentFit="contain".  If we don't know the natural size, fall back
+   * to the full container (previous behaviour).
+   */
+  const getVideoRect = useCallback(() => {
+    const cw = containerLayout.width;
+    const ch = containerLayout.height;
+
+    if (!naturalVideoSize) return { x: 0, y: 0, w: cw, h: ch };
+
+    const vAspect = naturalVideoSize.width / naturalVideoSize.height;
+    const cAspect = cw / ch;
+
+    let w: number, h: number;
+    if (vAspect > cAspect) {
+      // Video is wider than container → pillarbox (black on top/bottom)
+      w = cw;
+      h = cw / vAspect;
+    } else {
+      // Video is taller than container → letterbox (black on left/right)
+      h = ch;
+      w = ch * vAspect;
+    }
+
+    return { x: (cw - w) / 2, y: (ch - h) / 2, w, h };
+  }, [containerLayout, naturalVideoSize]);
+
   const handleSeedTap = useCallback(
     (evt: { nativeEvent: { locationX: number; locationY: number } }) => {
       if (phase !== "seed") return;
 
-      const nx = evt.nativeEvent.locationX / containerLayout.width;
-      const ny = evt.nativeEvent.locationY / containerLayout.height;
+      const { x: ox, y: oy, w: vw, h: vh } = getVideoRect();
+      const tapX = evt.nativeEvent.locationX;
+      const tapY = evt.nativeEvent.locationY;
+
+      // Ignore taps outside the actual video area (letterbox/pillarbox)
+      if (tapX < ox || tapX > ox + vw || tapY < oy || tapY > oy + vh) return;
+
+      // Normalise to 0..1 within the real video area
+      const nx = (tapX - ox) / vw;
+      const ny = (tapY - oy) / vh;
 
       // Set tap point immediately for visual feedback
       setSeedPoint({ x: nx, y: ny });
+
+      // Call debug/detect API for disc detection feedback
+      setDetectResult(null);
+      setDetectLoading(true);
+      detectDisc(videoUri, { x: nx, y: ny }, scrubTime)
+        .then((result) => setDetectResult(result))
+        .catch(() => {
+          /* silently ignore — detection is optional feedback */
+        })
+        .finally(() => setDetectLoading(false));
     },
-    [phase, containerLayout]
+    [phase, getVideoRect, videoUri, scrubTime]
   );
 
   const confirmSeed = useCallback(async () => {
@@ -252,10 +347,11 @@ export default function LiftAnalysisScreen() {
     setTrackingProgress({ current: 0, total: 2, step: "uploading" });
 
     try {
-      // Use container layout as approximation for video dimensions
-      // The API needs pixel coordinates for the seed point
-      const videoW = containerLayout.width;
-      const videoH = containerLayout.height;
+      // Use the real rendered video dimensions (not the container)
+      // so percentage-based seed coordinates map correctly
+      const vr = getVideoRect();
+      const videoW = vr.w;
+      const videoH = vr.h;
 
       const result = await trackBarbell(
         videoUri,
@@ -265,7 +361,8 @@ export default function LiftAnalysisScreen() {
         (p: TrackingProgress) => {
           setTrackingProgress(p);
         },
-        trimRange ?? undefined
+        trimRange ?? undefined,
+        showBody
       );
 
       setBarPath(result.barPath);
@@ -295,15 +392,11 @@ export default function LiftAnalysisScreen() {
       setPhase("seed");
       setTrackingProgress(null);
 
-      // Re-show the first frame after tracking fails — the decoder may have
-      // released the surface, leaving the VideoView black. Briefly play then
-      // pause so expo-video renders the frame again.
+      // Re-show the video after tracking fails — reload the source so the
+      // VideoView surface re-attaches and `onFirstFrameRender` fires again.
       if (player) {
-        const seekTo = trimRange ? trimRange.startSec : 0;
-        pendingSeekSecRef.current = seekTo;
         setIsVideoReady(false);
-        player.currentTime = seekTo;
-        player.play();
+        player.replace(videoUri);
       }
     }
   }, [
@@ -312,17 +405,18 @@ export default function LiftAnalysisScreen() {
     player,
     processedPlayer,
     t,
-    containerLayout,
+    getVideoRect,
     trimRange,
+    showBody,
   ]);
 
   // ─── Phase: Playback ────────────────────────────────────────
 
   /**
    * Save flow:
-   * 1. Build the LiftAnalysis object (always saved locally too)
+   * 1. Build the LiftAnalysis object
    * 2. If not authenticated → show login gate modal; store payload in ref
-   * 3. If authenticated → upload video + JSON to cloud, then also save locally
+   * 3. If authenticated → upload video + JSON to cloud
    * 4. After login, `useEffect` detects `isAuthenticated` became true and
    *    retries the pending save automatically.
    */
@@ -380,9 +474,6 @@ export default function LiftAnalysisScreen() {
         authToken
       );
 
-      // Also save locally (offline access)
-      await saveAnalysis(analysis);
-
       setModalConfig({
         visible: true,
         type: "success",
@@ -409,7 +500,6 @@ export default function LiftAnalysisScreen() {
     videoDurationMs,
     isAuthenticated,
     token,
-    saveAnalysis,
     t,
     router,
   ]);
@@ -438,7 +528,6 @@ export default function LiftAnalysisScreen() {
           },
           authToken
         );
-        await saveAnalysis(pending);
         setModalConfig({
           visible: true,
           type: "success",
@@ -460,7 +549,7 @@ export default function LiftAnalysisScreen() {
     };
 
     retry();
-  }, [isAuthenticated, token, saveAnalysis, t, router]);
+  }, [isAuthenticated, token, t, router]);
 
   // ─── Export video ─────────────────────────────────────────
   const [isExporting, setIsExporting] = useState(false);
@@ -498,13 +587,12 @@ export default function LiftAnalysisScreen() {
         UTI: "public.movie",
       });
     } catch (err) {
-      const msg =
-        err instanceof Error ? err.message : "Export failed unexpectedly";
+      console.error("Export video error:", err);
       setModalConfig({
         visible: true,
         type: "error",
         title: t("common.error"),
-        message: msg,
+        message: t("liftAnalysis.exportError"),
       });
     } finally {
       setIsExporting(false);
@@ -545,19 +633,18 @@ export default function LiftAnalysisScreen() {
             durationMs={videoDurationMs}
             onConfirm={(range) => {
               setTrimRange(range);
-              // Mark video as not ready so the loading overlay shows while the
-              // VideoView surface re-attaches (it was hidden during trim phase).
               const seekTo = range ? range.startSec : 0;
-              pendingSeekSecRef.current = seekTo;
+              setScrubTime(seekTo);
+              // Show loading overlay until the VideoView renders its first
+              // frame (handled by `onFirstFrameRender` on the VideoView).
               setIsVideoReady(false);
               setPhase("seed");
-              // Seek to trim start and play — the VideoView will become visible
-              // momentarily and expo-video will attach the surface automatically.
-              // The statusChange listener will pause once readyToPlay fires.
+              // Force the player to fully reload the source so it goes through
+              // the idle → loading → readyToPlay cycle again. This guarantees
+              // that the newly mounted VideoView will get a fresh surface
+              // attached and `onFirstFrameRender` will fire.
               if (player) {
-                player.currentTime = seekTo;
-                player.play();
-                setScrubTime(seekTo);
+                player.replace(videoUri);
               }
             }}
             onCancel={() => router.back()}
@@ -609,7 +696,7 @@ export default function LiftAnalysisScreen() {
                   player={processedPlayer}
                   style={StyleSheet.absoluteFill}
                   contentFit="contain"
-                  nativeControls={false}
+                  nativeControls
                 />
               </View>
 
@@ -678,6 +765,17 @@ export default function LiftAnalysisScreen() {
                   style={StyleSheet.absoluteFill}
                   contentFit="contain"
                   nativeControls={false}
+                  onFirstFrameRender={() => {
+                    // The native surface has rendered a frame — the video is
+                    // visible.  Seek to the trim start (or 0) and pause so the
+                    // user can see the frame and tap on the barbell.
+                    console.log("[LiftAnalysis] onFirstFrameRender (seed)");
+                    const seekTo = trimRange ? trimRange.startSec : 0;
+                    player.pause();
+                    player.currentTime = seekTo;
+                    setScrubTime(seekTo);
+                    setIsVideoReady(true);
+                  }}
                 />
 
                 {/* Loading overlay while video is not yet decoded */}
@@ -711,17 +809,63 @@ export default function LiftAnalysisScreen() {
                   </View>
                 )}
 
-                {/* Seed point indicator */}
-                {phase === "seed" && seedPoint && (
-                  <View
-                    style={[
-                      styles.seedDot,
-                      {
-                        left: seedPoint.x * containerLayout.width - 12,
-                        top: seedPoint.y * containerLayout.height - 12,
-                      },
-                    ]}
-                  />
+                {/* Seed point indicator — hide when disc detection circle is shown */}
+                {phase === "seed" &&
+                  seedPoint &&
+                  !(detectResult?.detected && detectResult.circle) &&
+                  (() => {
+                    const vr = getVideoRect();
+                    return (
+                      <View
+                        style={[
+                          styles.seedDot,
+                          {
+                            left: vr.x + seedPoint.x * vr.w - 12,
+                            top: vr.y + seedPoint.y * vr.h - 12,
+                          },
+                        ]}
+                      />
+                    );
+                  })()}
+
+                {/* Detected circle overlay (green ring from debug/detect API) */}
+                {phase === "seed" &&
+                  detectResult?.detected &&
+                  detectResult.circle &&
+                  (() => {
+                    const vr = getVideoRect();
+                    const maxDim = Math.max(vr.w, vr.h);
+                    const radiusPx =
+                      (detectResult.circle.radius_pct / 100) * maxDim;
+                    return (
+                      <View
+                        style={[
+                          styles.detectCircle,
+                          {
+                            left:
+                              vr.x +
+                              (detectResult.circle.center_x_pct / 100) * vr.w -
+                              radiusPx,
+                            top:
+                              vr.y +
+                              (detectResult.circle.center_y_pct / 100) * vr.h -
+                              radiusPx,
+                            width: radiusPx * 2,
+                            height: radiusPx * 2,
+                          },
+                        ]}
+                      />
+                    );
+                  })()}
+
+                {/* Detection loading spinner (top-right) */}
+                {phase === "seed" && detectLoading && (
+                  <View style={styles.detectLoadingBadge} pointerEvents="none">
+                    <ActivityIndicator size="small" color="#fff" />
+                    <Text style={styles.detectLoadingText}>
+                      {t("liftAnalysis.detecting")}
+                    </Text>
+                  </View>
                 )}
 
                 {/* Tracking progress overlay */}
@@ -834,14 +978,69 @@ export default function LiftAnalysisScreen() {
                   <Text style={styles.instruction}>
                     {t("liftAnalysis.seedInstruction")}
                   </Text>
+
+                  {/* Detection feedback */}
+                  {seedPoint && !detectLoading && detectResult && (
+                    <View
+                      style={[
+                        styles.detectFeedback,
+                        detectResult.detected
+                          ? styles.detectFeedbackSuccess
+                          : styles.detectFeedbackError,
+                      ]}
+                    >
+                      {detectResult.detected ? (
+                        <CheckCircle2 size={16} color={theme.colors.success} />
+                      ) : (
+                        <AlertCircle size={16} color={theme.colors.error} />
+                      )}
+                      <Text
+                        style={[
+                          styles.detectFeedbackText,
+                          detectResult.detected
+                            ? styles.detectFeedbackTextSuccess
+                            : styles.detectFeedbackTextError,
+                        ]}
+                      >
+                        {detectResult.detected && detectResult.circle
+                          ? `${t("liftAnalysis.discDetected")} · ${t("liftAnalysis.confidence")}: ${Math.round(detectResult.circle.confidence * 100)}%`
+                          : t("liftAnalysis.discNotDetected")}
+                      </Text>
+                    </View>
+                  )}
+
+                  {seedPoint && (
+                    <View style={styles.toggleRow}>
+                      <View style={styles.toggleLabelContainer}>
+                        <Text style={styles.toggleLabel}>
+                          {t("liftAnalysis.showBody")}
+                        </Text>
+                        <Text style={styles.toggleDescription}>
+                          {t("liftAnalysis.showBodyDescription")}
+                        </Text>
+                      </View>
+                      <Switch
+                        value={showBody}
+                        onValueChange={setShowBody}
+                        trackColor={{
+                          false: theme.colors.border,
+                          true: theme.colors.primaryLight,
+                        }}
+                        thumbColor={
+                          showBody ? theme.colors.primary : theme.colors.muted
+                        }
+                      />
+                    </View>
+                  )}
+
                   {seedPoint && (
                     <TouchableOpacity
-                      style={styles.primaryButton}
+                      style={[styles.primaryButton, { flex: undefined }]}
                       onPress={confirmSeed}
                       activeOpacity={0.7}
                     >
                       <Text style={styles.primaryButtonText}>
-                        {t("liftAnalysis.confirmSeed")}?
+                        {t("liftAnalysis.confirmSeed")}
                       </Text>
                     </TouchableOpacity>
                   )}
@@ -868,7 +1067,7 @@ export default function LiftAnalysisScreen() {
                     </View>
                     <Text style={styles.progressText}>
                       {trackingProgress
-                        ? `${trackingProgress.current} / ${trackingProgress.total}`
+                        ? `${Math.round((trackingProgress.current / Math.max(trackingProgress.total, 1)) * 100)}%`
                         : "…"}
                     </Text>
                   </View>
@@ -1015,6 +1214,64 @@ const styles = StyleSheet.create({
     borderWidth: 3,
     borderColor: "#00FF88",
     backgroundColor: "rgba(0,255,136,0.3)",
+  },
+
+  // Detected circle overlay (green ring from API)
+  detectCircle: {
+    position: "absolute",
+    borderRadius: 9999,
+    borderWidth: 2,
+    borderColor: "#4ade80",
+    backgroundColor: "rgba(74,222,128,0.12)",
+  },
+
+  // Detection loading badge (top-right spinner)
+  detectLoadingBadge: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    backgroundColor: "rgba(0,0,0,0.7)",
+    borderRadius: 16,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  detectLoadingText: {
+    color: "#fff",
+    fontSize: 11,
+    fontWeight: "500",
+  },
+
+  // Detection feedback banner (below video controls)
+  detectFeedback: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    borderWidth: 1,
+  },
+  detectFeedbackSuccess: {
+    backgroundColor: "rgba(74,222,128,0.1)",
+    borderColor: "rgba(74,222,128,0.3)",
+  },
+  detectFeedbackError: {
+    backgroundColor: "rgba(239,68,68,0.1)",
+    borderColor: "rgba(239,68,68,0.3)",
+  },
+  detectFeedbackText: {
+    fontSize: 13,
+    fontWeight: "500",
+    flex: 1,
+  },
+  detectFeedbackTextSuccess: {
+    color: "#4ade80",
+  },
+  detectFeedbackTextError: {
+    color: "#ef4444",
   },
 
   // Crosshair
@@ -1188,5 +1445,30 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: theme.typography.fontSize.base,
     fontWeight: theme.typography.fontWeight.medium,
+  },
+
+  // Show body toggle
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: theme.colors.muted,
+    borderRadius: theme.borderRadius.sm,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+  },
+  toggleLabelContainer: {
+    flex: 1,
+    marginRight: 12,
+  },
+  toggleLabel: {
+    fontSize: theme.typography.fontSize.base,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: theme.colors.text,
+  },
+  toggleDescription: {
+    fontSize: theme.typography.fontSize.sm,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
   },
 });

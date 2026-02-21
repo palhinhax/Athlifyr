@@ -8,13 +8,9 @@ interface LiftAnalysisState {
   analyses: LiftAnalysis[];
   isLoaded: boolean;
 
-  /** Load saved analyses from AsyncStorage */
   load: () => Promise<void>;
-  /** Add (or update) a single analysis */
   save: (analysis: LiftAnalysis) => Promise<void>;
-  /** Delete an analysis by id */
   remove: (id: string) => Promise<void>;
-  /** Get a single analysis by id */
   getById: (id: string) => LiftAnalysis | undefined;
 }
 
@@ -30,7 +26,6 @@ export const useLiftAnalysisStore = create<LiftAnalysisState>((set, get) => ({
     try {
       const raw = await AsyncStorage.getItem(STORAGE_KEY);
       const parsed: LiftAnalysis[] = raw ? JSON.parse(raw) : [];
-      // Sort newest first
       parsed.sort(
         (a, b) =>
           new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -61,7 +56,5 @@ export const useLiftAnalysisStore = create<LiftAnalysisState>((set, get) => ({
     await persistAll(updated);
   },
 
-  getById: (id) => {
-    return get().analyses.find((a) => a.id === id);
-  },
+  getById: (id) => get().analyses.find((a) => a.id === id),
 }));

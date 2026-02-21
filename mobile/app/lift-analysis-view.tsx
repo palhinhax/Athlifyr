@@ -14,7 +14,6 @@ import { useTranslation } from "react-i18next";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { ArrowLeft, Trash2, Play, Pause } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
-import { BarPathOverlay } from "@/src/components/lift-analysis/BarPathOverlay";
 import { LiftMetricsCard } from "@/src/components/lift-analysis/LiftMetricsCard";
 import { useLiftAnalysisStore } from "@/src/lib/lift-analysis-store";
 import { WatermarkLogo } from "@/src/components/WatermarkLogo";
@@ -43,22 +42,10 @@ export default function LiftAnalysisViewScreen() {
   });
 
   const [isPlaying, setIsPlaying] = useState(false);
-  const [playbackTimeMs, setPlaybackTimeMs] = useState(0);
   const [containerLayout, setContainerLayout] = useState({
     width: SCREEN_WIDTH,
     height: VIDEO_HEIGHT,
   });
-
-  // Track playback time
-  useEffect(() => {
-    if (!player) return;
-    const interval = setInterval(() => {
-      if (player.currentTime !== undefined) {
-        setPlaybackTimeMs(Math.round(player.currentTime * 1000));
-      }
-    }, 50);
-    return () => clearInterval(interval);
-  }, [player]);
 
   const togglePlayback = useCallback(() => {
     if (!player) return;
@@ -157,15 +144,8 @@ export default function LiftAnalysisViewScreen() {
           <VideoView
             player={player}
             style={StyleSheet.absoluteFill}
+            contentFit="contain"
             nativeControls={false}
-          />
-          <BarPathOverlay
-            path={analysis.barPath}
-            width={containerLayout.width}
-            height={containerLayout.height}
-            currentTimeMs={playbackTimeMs}
-            strokeColor="#00FF88"
-            strokeWidth={3}
           />
           <WatermarkLogo />
 

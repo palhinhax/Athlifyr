@@ -18,8 +18,12 @@ import {
   CheckCircle,
   XCircle,
   UserPlus,
+  UserCheck,
   Building2,
   User,
+  CalendarX2,
+  CalendarClock,
+  MessageCircle,
 } from "lucide-react-native";
 import {
   useNotifications,
@@ -44,6 +48,7 @@ import {
 function NotificationIcon({ notification }: { notification: AppNotification }) {
   switch (notification.type) {
     case "TRIAL_REQUEST":
+    case "TRIAL_ACCEPTED":
       return <GraduationCap size={16} color="#16a34a" />;
     case "TRIAL_RESPONSE":
       return notification.responseStatus === "BOOKED" ? (
@@ -51,12 +56,23 @@ function NotificationIcon({ notification }: { notification: AppNotification }) {
       ) : (
         <XCircle size={16} color={colors.error} />
       );
+    case "TRIAL_REJECTED":
+      return <XCircle size={16} color={colors.error} />;
     case "FRIEND_REQUEST":
       return <UserPlus size={16} color={colors.info} />;
+    case "FRIEND_ACCEPTED":
+      return <UserCheck size={16} color="#16a34a" />;
     case "VENUE_INVITE":
+    case "VENUE_INVITE_ACCEPTED":
       return <Building2 size={16} color="#9333ea" />;
+    case "EVENT_CANCELLED":
+      return <CalendarX2 size={16} color={colors.error} />;
+    case "EVENT_DATE_CHANGE":
+      return <CalendarClock size={16} color={colors.warning ?? "#f59e0b"} />;
+    case "CHAT_MESSAGE":
+      return <MessageCircle size={16} color={colors.info} />;
     default:
-      return <Bell size={16} color={colors.textSecondary} />;
+      return <Bell size={16} color={colors.primary} />;
   }
 }
 
@@ -65,9 +81,11 @@ function NotificationIcon({ notification }: { notification: AppNotification }) {
 function NotificationAvatar({
   image,
   name,
+  isGeneric,
 }: {
   image: string | null;
   name: string | null;
+  isGeneric?: boolean;
 }) {
   if (image) {
     return (
@@ -80,21 +98,30 @@ function NotificationAvatar({
     );
   }
 
+  // Generic / broadcast notifications — show a Bell icon instead of initials
+  if (isGeneric || !name) {
+    return (
+      <View
+        style={[styles.avatarPlaceholder, { backgroundColor: colors.primary }]}
+      >
+        <Bell size={18} color={colors.white} />
+      </View>
+    );
+  }
+
   const initials = name
-    ? name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "?";
+    .split(" ")
+    .map((n) => n[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 
   return (
     <View style={styles.avatarPlaceholder}>
-      {initials === "?" ? (
-        <User size={18} color={colors.white} />
-      ) : (
+      {initials ? (
         <Text style={styles.avatarText}>{initials}</Text>
+      ) : (
+        <User size={18} color={colors.white} />
       )}
     </View>
   );
@@ -154,7 +181,8 @@ function NotificationItem({
           venue: notification.venueName ?? "?",
         });
       default:
-        return "";
+        // Generic / broadcast notifications — use the title from the API
+        return notification.title || t("notifications.notifications");
     }
   };
 
@@ -171,7 +199,8 @@ function NotificationItem({
           role: notification.role ?? "COACH",
         });
       default:
-        return "";
+        // Generic / broadcast notifications — use the body from the API
+        return notification.body || "";
     }
   };
 
@@ -180,11 +209,15 @@ function NotificationItem({
     notification.type === "FRIEND_REQUEST" ||
     notification.type === "VENUE_INVITE";
 
+  // Notifications without a sender user (broadcast, system, push-test, etc.)
+  const isGeneric = !notification.userImage && !notification.userName;
+
   return (
     <View style={styles.notificationItem}>
       <NotificationAvatar
         image={notification.userImage}
         name={notification.userName}
+        isGeneric={isGeneric}
       />
 
       <View style={styles.notificationContent}>
@@ -195,9 +228,11 @@ function NotificationItem({
           </Text>
         </View>
 
-        <Text style={styles.notificationSubtitle} numberOfLines={1}>
-          {getSubtitle()}
-        </Text>
+        {!!getSubtitle() && (
+          <Text style={styles.notificationSubtitle} numberOfLines={2}>
+            {getSubtitle()}
+          </Text>
+        )}
 
         {(notification.type === "TRIAL_REQUEST" ||
           notification.type === "TRIAL_RESPONSE") &&
@@ -545,34 +580,35 @@ const styles = StyleSheet.create({
   },
   notificationContent: {
     flex: 1,
-    gap: 2,
+    gap: spacing.xs,
   },
   titleRow: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: spacing.xs,
+    marginBottom: 2,
   },
   notificationTitle: {
     flex: 1,
     fontSize: typography.fontSize.sm,
     fontWeight: "600",
     color: colors.text,
-    lineHeight: typography.fontSize.sm * 1.4,
+    lineHeight: typography.fontSize.sm * 1.5,
   },
   notificationSubtitle: {
     fontSize: typography.fontSize.xs,
     color: colors.textSecondary,
-    marginTop: 1,
+    lineHeight: typography.fontSize.xs * 1.4,
   },
   sessionDate: {
     fontSize: typography.fontSize.xs,
     color: colors.textTertiary,
-    marginTop: 2,
+    lineHeight: typography.fontSize.xs * 1.4,
   },
   timeAgo: {
     fontSize: typography.fontSize.xs - 1,
     color: colors.textTertiary,
-    marginTop: 2,
+    lineHeight: (typography.fontSize.xs - 1) * 1.4,
   },
 
   // Actions

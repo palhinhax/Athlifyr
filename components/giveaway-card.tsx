@@ -5,7 +5,20 @@ import { useSession } from "next-auth/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Gift, Calendar, Trophy, Users, Loader2 } from "lucide-react";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
+  Gift,
+  Calendar,
+  Trophy,
+  Users,
+  Loader2,
+  ShieldCheck,
+  ChevronDown,
+} from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
 import { GiveawayStatus } from "@prisma/client";
@@ -22,8 +35,11 @@ interface GiveawayData {
   drawAt: string | null;
   prizeCount: number;
   participantsCount: number;
+  commitHash: string | null;
+  revealedSecret: string | null;
   translation: GiveawayTranslation | null;
   hasJoined: boolean;
+  userPosition: number | null;
 }
 
 interface GiveawayCardProps {
@@ -38,6 +54,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
   const [giveaway, setGiveaway] = useState<GiveawayData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
+  const [isTransparencyOpen, setIsTransparencyOpen] = useState(false);
 
   const fetchGiveaway = useCallback(async () => {
     try {
@@ -69,15 +86,8 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
       });
       if (!res.ok) throw new Error("Failed to join");
       toast({ title: t("joinSuccess") });
-      setGiveaway((prev) =>
-        prev
-          ? {
-              ...prev,
-              hasJoined: true,
-              participantsCount: prev.participantsCount + 1,
-            }
-          : prev
-      );
+      // Re-fetch to get updated position and participant count
+      await fetchGiveaway();
     } catch {
       toast({
         title: t("joinError"),
@@ -105,6 +115,9 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
         timeZone: "Europe/Lisbon",
       }).format(new Date(giveaway.drawAt))
     : null;
+
+  const shouldShowTransparencySection =
+    !!giveaway.commitHash || !!giveaway.revealedSecret;
 
   return (
     <Card className="border-primary/20 bg-primary/5">
@@ -163,6 +176,77 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
             ) : null}
             {giveaway.hasJoined ? t("alreadyParticipating") : t("participate")}
           </Button>
+        )}
+
+        {/* Transparency Section - collapsed by default */}
+        {shouldShowTransparencySection && (
+          <Collapsible
+            open={isTransparencyOpen}
+            onOpenChange={setIsTransparencyOpen}
+            className="mt-4 border-t pt-3"
+          >
+            <CollapsibleTrigger className="flex w-full items-center justify-between text-sm text-muted-foreground hover:text-foreground">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="h-4 w-4" />
+                {t("transparency.transparency")}
+              </span>
+              <ChevronDown
+                className={`h-4 w-4 transition-transform ${isTransparencyOpen ? "rotate-180" : ""}`}
+              />
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3 space-y-3 text-sm">
+              {/* How it works */}
+              <div className="rounded-md bg-muted/50 p-3">
+                <p className="mb-1 font-medium text-foreground">
+                  {t("transparency.howItWorks")}
+                </p>
+                <p className="text-muted-foreground">
+                  {t("transparency.howItWorksExplanation")}
+                </p>
+              </div>
+
+              {/* Commit hash */}
+              {giveaway.commitHash && (
+                <div>
+                  <p className="mb-1 font-medium text-foreground">
+                    {t("transparency.commitHash")}
+                  </p>
+                  <p className="mb-1 text-xs text-muted-foreground">
+                    {t("transparency.commitHashExplanation")}
+                  </p>
+                  <code className="block break-all rounded bg-muted px-2 py-1.5 font-mono text-xs">
+                    {giveaway.commitHash}
+                  </code>
+                </div>
+              )}
+
+              {/* Current participants + user position (before draw) */}
+              {isActive &&
+                giveaway.hasJoined &&
+                giveaway.userPosition !== null && (
+                  <p className="text-muted-foreground">
+                    {t("transparency.yourPosition", {
+                      position: giveaway.userPosition,
+                    })}
+                    <span className="ml-1 text-xs">
+                      ({t("transparency.positionNote")})
+                    </span>
+                  </p>
+                )}
+
+              {/* Revealed secret (after draw) */}
+              {isDrawn && giveaway.revealedSecret && (
+                <div>
+                  <p className="mb-1 font-medium text-foreground">
+                    {t("transparency.revealedSecret")}
+                  </p>
+                  <code className="block break-all rounded bg-muted px-2 py-1.5 font-mono text-xs">
+                    {giveaway.revealedSecret}
+                  </code>
+                </div>
+              )}
+            </CollapsibleContent>
+          </Collapsible>
         )}
       </CardContent>
     </Card>

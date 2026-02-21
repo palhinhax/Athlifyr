@@ -236,7 +236,18 @@
       "participantsCountPlural": "{count} Teilnehmer",
       "loginToParticipate": "Anmelden, um teilzunehmen",
       "joinSuccess": "Du nimmst jetzt am Gewinnspiel teil!",
-      "joinError": "Teilnahme fehlgeschlagen. Bitte versuche es erneut."
+      "joinError": "Teilnahme fehlgeschlagen. Bitte versuche es erneut.",
+      "transparency": {
+        "transparency": "Transparenz",
+        "howItWorks": "Wie es funktioniert",
+        "howItWorksExplanation": "Zum Zeitpunkt der Ziehung enthüllen wir das Geheimnis. Jeder kann verifizieren: SHA-256(Geheimnis) == commitHash.",
+        "commitHash": "Commitment-Hash",
+        "commitHashExplanation": "Dieser Hash beweist, dass das Ziehungsgeheimnis vor der Ziehung festgelegt wurde.",
+        "revealedSecret": "Enthülltes Geheimnis",
+        "yourPosition": "Deine aktuelle Position: #{position}",
+        "positionNote": "Die Position kann sich ändern, wenn neue Teilnehmer beitreten.",
+        "verifyWinner": "Ziehung verifizieren"
+      }
     }
   },
   "eventsPage": {

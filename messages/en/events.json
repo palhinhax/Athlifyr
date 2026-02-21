@@ -236,7 +236,18 @@
       "participantsCountPlural": "{count} participants",
       "loginToParticipate": "Log in to participate",
       "joinSuccess": "You are now participating in the giveaway!",
-      "joinError": "Failed to join the giveaway. Please try again."
+      "joinError": "Failed to join the giveaway. Please try again.",
+      "transparency": {
+        "transparency": "Transparency",
+        "howItWorks": "How it works",
+        "howItWorksExplanation": "At draw time we reveal the secret. Anyone can verify: SHA-256(secret) == commitHash.",
+        "commitHash": "Commit hash",
+        "commitHashExplanation": "This hash proves the draw secret was fixed before the draw.",
+        "revealedSecret": "Revealed secret",
+        "yourPosition": "Your current position: #{position}",
+        "positionNote": "Position may change as new participants join.",
+        "verifyWinner": "Verify the draw"
+      }
     }
   },
   "eventsPage": {

@@ -2065,6 +2065,8 @@ model Giveaway {
   drawAt            DateTime?
   prizeCount        Int             @default(1)
   maxWinnersPerUser Int             @default(1)
+  commitHash        String?
+  revealedSecret    String?
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
 

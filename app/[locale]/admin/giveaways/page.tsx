@@ -52,6 +52,8 @@ interface Giveaway {
   status: GiveawayStatus;
   drawAt: string | null;
   prizeCount: number;
+  commitHash: string | null;
+  revealedSecret: string | null;
   event: { id: string; title: string; slug: string };
   translations: GiveawayTranslation[];
   _count: { participations: number; winners: number };
@@ -93,12 +95,15 @@ export default function AdminGiveawaysPage() {
     }>
   >([]);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
+  const [revealedSecretInput, setRevealedSecretInput] = useState("");
+  const [isSavingSecret, setIsSavingSecret] = useState(false);
 
   const [formData, setFormData] = useState({
     eventId: "",
     drawAt: "",
     prizeCount: 1,
     status: GiveawayStatus.DRAFT as GiveawayStatus,
+    commitHash: "",
     translations: LANGUAGES.map((lang) => ({ lang, title: "", details: "" })),
   });
 
@@ -160,6 +165,7 @@ export default function AdminGiveawaysPage() {
         drawAt: "",
         prizeCount: 1,
         status: GiveawayStatus.DRAFT,
+        commitHash: "",
         translations: LANGUAGES.map((lang) => ({
           lang,
           title: "",
@@ -221,6 +227,7 @@ export default function AdminGiveawaysPage() {
 
   const openDetail = async (giveaway: Giveaway) => {
     setSelectedGiveaway(giveaway);
+    setRevealedSecretInput(giveaway.revealedSecret ?? "");
     setIsDetailOpen(true);
     setIsLoadingParticipants(true);
     try {
@@ -234,6 +241,32 @@ export default function AdminGiveawaysPage() {
       setParticipants([]);
     } finally {
       setIsLoadingParticipants(false);
+    }
+  };
+
+  const handleSaveRevealedSecret = async () => {
+    if (!selectedGiveaway) return;
+    try {
+      setIsSavingSecret(true);
+      const res = await fetch(`/api/admin/giveaways/${selectedGiveaway.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ revealedSecret: revealedSecretInput }),
+      });
+      if (!res.ok) throw new Error("Failed to save revealed secret");
+      toast({
+        title: t("toast.updated"),
+        description: t("toast.updatedDesc"),
+      });
+      fetchGiveaways();
+    } catch {
+      toast({
+        title: t("toast.error"),
+        description: t("toast.updateError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingSecret(false);
     }
   };
 
@@ -415,6 +448,19 @@ export default function AdminGiveawaysPage() {
               </Select>
             </div>
             <div>
+              <Label>{t("form.commitHash")}</Label>
+              <Input
+                placeholder="SHA-256 hash"
+                value={formData.commitHash}
+                onChange={(e) =>
+                  setFormData((p) => ({ ...p, commitHash: e.target.value }))
+                }
+              />
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("form.commitHashHelp")}
+              </p>
+            </div>
+            <div>
               <Label>{t("form.translations")}</Label>
               <div className="mt-2 space-y-4">
                 {LANGUAGES.map((lang) => {
@@ -564,6 +610,37 @@ export default function AdminGiveawaysPage() {
                     </div>
                   )}
                 </div>
+
+                {/* Transparency — Reveal secret (after draw) */}
+                {selectedGiveaway.status === GiveawayStatus.DRAWN && (
+                  <div>
+                    <h3 className="mb-1 font-medium">
+                      {t("form.revealedSecret")}
+                    </h3>
+                    <p className="mb-2 text-xs text-muted-foreground">
+                      {t("form.revealedSecretHelp")}
+                    </p>
+                    <div className="flex gap-2">
+                      <Input
+                        placeholder="secret value"
+                        value={revealedSecretInput}
+                        onChange={(e) => setRevealedSecretInput(e.target.value)}
+                        className="font-mono text-xs"
+                      />
+                      <Button
+                        size="sm"
+                        onClick={handleSaveRevealedSecret}
+                        disabled={isSavingSecret}
+                      >
+                        {isSavingSecret ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          t("form.saveChanges")
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter className="flex-wrap gap-2">
                 {selectedGiveaway.status !== GiveawayStatus.DRAWN &&

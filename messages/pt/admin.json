@@ -342,7 +342,11 @@
         "translations": "Traduções",
         "saveChanges": "Guardar Alterações",
         "create": "Criar Sorteio",
-        "cancel": "Cancelar"
+        "cancel": "Cancelar",
+        "commitHash": "Hash de Compromisso",
+        "commitHashHelp": "Opcional. Hash SHA-256 do segredo do sorteio. Publica antes do sorteio para provar transparência.",
+        "revealedSecret": "Segredo Revelado",
+        "revealedSecretHelp": "Revela após o sorteio para que os participantes possam verificar: SHA-256(segredo) == commitHash."
       },
       "detail": {
         "participants": "Participantes",

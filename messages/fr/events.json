@@ -236,7 +236,18 @@
       "participantsCountPlural": "{count} participants",
       "loginToParticipate": "Connectez-vous pour participer",
       "joinSuccess": "Vous participez maintenant au tirage au sort !",
-      "joinError": "Échec de l'inscription. Veuillez réessayer."
+      "joinError": "Échec de l'inscription. Veuillez réessayer.",
+      "transparency": {
+        "transparency": "Transparence",
+        "howItWorks": "Comment ça marche",
+        "howItWorksExplanation": "Au moment du tirage, nous révélons le secret. N'importe qui peut vérifier : SHA-256(secret) == commitHash.",
+        "commitHash": "Hash d'engagement",
+        "commitHashExplanation": "Ce hash prouve que le secret du tirage a été fixé avant le tirage.",
+        "revealedSecret": "Secret révélé",
+        "yourPosition": "Votre position actuelle : #{position}",
+        "positionNote": "La position peut changer à mesure que de nouveaux participants s'inscrivent.",
+        "verifyWinner": "Vérifier le tirage"
+      }
     }
   },
   "eventsPage": {

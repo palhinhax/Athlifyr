@@ -342,7 +342,11 @@
         "translations": "Traductions",
         "saveChanges": "Enregistrer",
         "create": "Créer le tirage",
-        "cancel": "Annuler"
+        "cancel": "Annuler",
+        "commitHash": "Hash d'engagement",
+        "commitHashHelp": "Optionnel. Hash SHA-256 du secret du tirage. Publiez-le avant le tirage pour prouver la transparence.",
+        "revealedSecret": "Secret révélé",
+        "revealedSecretHelp": "Révélez après le tirage pour que les participants puissent vérifier : SHA-256(secret) == commitHash."
       },
       "detail": {
         "participants": "Participants",

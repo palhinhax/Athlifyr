@@ -42,8 +42,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ giveaway: null });
     }
 
-    // Check if current user has joined
+    // Check if current user has joined and find their position
     let hasJoined = false;
+    let userPosition: number | null = null;
     if (user) {
       const participation = await prisma.giveawayParticipation.findUnique({
         where: {
@@ -51,6 +52,16 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         },
       });
       hasJoined = !!participation;
+      if (participation) {
+        // Count how many participants joined before this user (1-based position)
+        const participantPosition = await prisma.giveawayParticipation.count({
+          where: {
+            giveawayId: giveaway.id,
+            createdAt: { lte: participation.createdAt },
+          },
+        });
+        userPosition = participantPosition;
+      }
     }
 
     // Get localized translation (fallback: en -> pt)
@@ -71,8 +82,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         drawAt: giveaway.drawAt,
         prizeCount: giveaway.prizeCount,
         participantsCount: giveaway._count.participations,
+        commitHash: giveaway.commitHash,
+        revealedSecret: giveaway.revealedSecret,
         translation,
         hasJoined,
+        userPosition,
       },
     });
   } catch (error) {

@@ -61,10 +61,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await request.json();
-    const { drawAt, prizeCount, status, translations } = body as {
+    const {
+      drawAt,
+      prizeCount,
+      status,
+      translations,
+      commitHash,
+      revealedSecret,
+    } = body as {
       drawAt?: string | null;
       prizeCount?: number;
       status?: GiveawayStatus;
+      commitHash?: string | null;
+      revealedSecret?: string | null;
       translations?: Array<{ lang: Language; title: string; details: string }>;
     };
 
@@ -101,11 +110,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       drawAt?: Date | null;
       prizeCount?: number;
       status?: GiveawayStatus;
+      commitHash?: string | null;
+      revealedSecret?: string | null;
     } = {};
     if (drawAt !== undefined)
       updateData.drawAt = drawAt ? new Date(drawAt) : null;
     if (prizeCount !== undefined) updateData.prizeCount = prizeCount;
     if (status !== undefined) updateData.status = status;
+    if (commitHash !== undefined) updateData.commitHash = commitHash;
+    if (revealedSecret !== undefined)
+      updateData.revealedSecret = revealedSecret;
 
     const giveaway = await prisma.giveaway.update({
       where: { id },

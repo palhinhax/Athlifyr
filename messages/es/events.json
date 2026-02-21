@@ -236,7 +236,18 @@
       "participantsCountPlural": "{count} participantes",
       "loginToParticipate": "Inicia sesión para participar",
       "joinSuccess": "¡Ya estás participando en el sorteo!",
-      "joinError": "Error al unirse al sorteo. Inténtalo de nuevo."
+      "joinError": "Error al unirse al sorteo. Inténtalo de nuevo.",
+      "transparency": {
+        "transparency": "Transparencia",
+        "howItWorks": "Cómo funciona",
+        "howItWorksExplanation": "En el momento del sorteo revelamos el secreto. Cualquiera puede verificar: SHA-256(secreto) == commitHash.",
+        "commitHash": "Hash de compromiso",
+        "commitHashExplanation": "Este hash demuestra que el secreto del sorteo se fijó antes del sorteo.",
+        "revealedSecret": "Secreto revelado",
+        "yourPosition": "Tu posición actual: #{position}",
+        "positionNote": "La posición puede cambiar a medida que se unan nuevos participantes.",
+        "verifyWinner": "Verificar el sorteo"
+      }
     }
   },
   "eventsPage": {

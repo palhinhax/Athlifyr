@@ -96,21 +96,23 @@ export function TimerHeader({
 
   // Normal header
   return (
-    <div className="flex items-center justify-between border-b px-4 py-2">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" asChild>
+    <div className="flex flex-col border-b px-4 py-2 sm:flex-row sm:items-center sm:justify-between">
+      {/* Row 1 (mobile) / Left side (desktop): back + title */}
+      <div className="flex min-w-0 items-center gap-3">
+        <Button variant="ghost" size="icon" className="shrink-0" asChild>
           <Link href={returnTo || "/workouts"}>
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-lg font-semibold">{workoutName}</h1>
+        <div className="min-w-0">
+          <h1 className="truncate text-lg font-semibold">{workoutName}</h1>
           <p className="text-sm text-muted-foreground">
             {t("runner.inProgress")}
           </p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      {/* Row 2 (mobile) / Right side (desktop): action icons */}
+      <div className="flex items-center gap-1 self-end sm:self-auto sm:gap-2">
         <Button
           variant="ghost"
           size="icon"

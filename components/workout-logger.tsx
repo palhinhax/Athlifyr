@@ -323,19 +323,23 @@ export function WorkoutLogger({
               borderLeftWidth: "4px",
             }}
           >
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <Badge
-                  style={{
-                    backgroundColor: `${BLOCK_TYPE_INFO[block.type].color}20`,
-                    color: BLOCK_TYPE_INFO[block.type].color,
-                  }}
-                >
-                  {t(`blocks.types.${block.type}`)}
-                </Badge>
-                {block.name && (
-                  <span className="font-medium">{block.name}</span>
-                )}
+            <CardHeader className="p-3 pb-2 sm:px-6 sm:pb-2 sm:pt-6">
+              <div className="flex flex-col gap-0.5">
+                {/* Badge + name row */}
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge
+                    style={{
+                      backgroundColor: `${BLOCK_TYPE_INFO[block.type].color}20`,
+                      color: BLOCK_TYPE_INFO[block.type].color,
+                    }}
+                  >
+                    {t(`blocks.types.${block.type}`)}
+                  </Badge>
+                  {block.name && (
+                    <span className="font-medium">{block.name}</span>
+                  )}
+                </div>
+                {/* Meta row */}
                 {block.timeCap && (
                   <span className="text-sm text-muted-foreground">
                     {t("blocks.timeCap")}: {formatTime(block.timeCap)}
@@ -343,7 +347,7 @@ export function WorkoutLogger({
                 )}
               </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
               {/* Block-level results based on type */}
               {(block.type === "AMRAP" || block.type === "CHIPPER") && (
                 <div className="grid gap-4 sm:grid-cols-2">
@@ -620,73 +624,79 @@ export function WorkoutLogger({
                       {blockResults[blockIndex].exerciseResults[
                         exerciseIndex
                       ].sets.map((set, setIndex) => (
-                        <div key={setIndex} className="flex items-center gap-2">
-                          <span className="w-16 text-sm font-medium">
-                            {t("log.set")} {setIndex + 1}
-                          </span>
-                          <Input
-                            type="number"
-                            min={0}
-                            className="h-8 w-20"
-                            placeholder="Reps"
-                            value={set.reps || ""}
-                            onChange={(e) =>
-                              updateSet(
-                                blockIndex,
-                                exerciseIndex,
-                                setIndex,
-                                "reps",
-                                e.target.value ? parseInt(e.target.value) : 0
-                              )
-                            }
-                          />
-                          <span className="text-muted-foreground">×</span>
-                          <Input
-                            type="number"
-                            min={0}
-                            className="h-8 w-20"
-                            placeholder="Weight"
-                            value={set.weight || ""}
-                            onChange={(e) =>
-                              updateSet(
-                                blockIndex,
-                                exerciseIndex,
-                                setIndex,
-                                "weight",
-                                e.target.value ? parseFloat(e.target.value) : 0
-                              )
-                            }
-                          />
-                          <Select
-                            value={set.weightUnit || "KG"}
-                            onValueChange={(v) =>
-                              updateSet(
-                                blockIndex,
-                                exerciseIndex,
-                                setIndex,
-                                "weightUnit",
-                                v as WeightUnit
-                              )
-                            }
-                          >
-                            <SelectTrigger className="h-8 w-16">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="KG">kg</SelectItem>
-                              <SelectItem value="LB">lb</SelectItem>
-                            </SelectContent>
-                          </Select>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() =>
-                              removeSet(blockIndex, exerciseIndex, setIndex)
-                            }
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </Button>
+                        <div key={setIndex} className="rounded-md bg-muted/30 p-2">
+                          {/* Set label + trash */}
+                          <div className="mb-1 flex items-center justify-between">
+                            <span className="text-sm font-medium">
+                              {t("log.set")} {setIndex + 1}
+                            </span>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7"
+                              onClick={() =>
+                                removeSet(blockIndex, exerciseIndex, setIndex)
+                              }
+                            >
+                              <TrashIcon className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                          {/* Inputs row — fluid widths */}
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="number"
+                              min={0}
+                              className="h-8 min-w-0 flex-1"
+                              placeholder="Reps"
+                              value={set.reps || ""}
+                              onChange={(e) =>
+                                updateSet(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  setIndex,
+                                  "reps",
+                                  e.target.value ? parseInt(e.target.value) : 0
+                                )
+                              }
+                            />
+                            <span className="shrink-0 text-muted-foreground">×</span>
+                            <Input
+                              type="number"
+                              min={0}
+                              className="h-8 min-w-0 flex-1"
+                              placeholder="Weight"
+                              value={set.weight || ""}
+                              onChange={(e) =>
+                                updateSet(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  setIndex,
+                                  "weight",
+                                  e.target.value ? parseFloat(e.target.value) : 0
+                                )
+                              }
+                            />
+                            <Select
+                              value={set.weightUnit || "KG"}
+                              onValueChange={(v) =>
+                                updateSet(
+                                  blockIndex,
+                                  exerciseIndex,
+                                  setIndex,
+                                  "weightUnit",
+                                  v as WeightUnit
+                                )
+                              }
+                            >
+                              <SelectTrigger className="h-8 w-14 shrink-0">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="KG">kg</SelectItem>
+                                <SelectItem value="LB">lb</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                       ))}
                       <Button
@@ -708,10 +718,10 @@ export function WorkoutLogger({
 
       {/* Feedback */}
       <Card>
-        <CardHeader>
+        <CardHeader className="p-3 pb-2 sm:px-6 sm:pb-2 sm:pt-6">
           <CardTitle>{t("log.notes")}</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 p-3 pt-0 sm:p-6 sm:pt-0">
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
               <Label>{t("log.feeling")}</Label>

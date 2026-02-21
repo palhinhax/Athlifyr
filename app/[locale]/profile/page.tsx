@@ -269,15 +269,19 @@ export default async function ProfilePage({ params }: PageProps) {
                         {participation.event.country}
                       </div>
                       {participation.variant && (
-                        <div className="flex items-center gap-2">
-                          <Trophy className="h-4 w-4" />
-                          {participation.variant.name}
-                          {participation.variant.distanceKm &&
-                            ` - ${participation.variant.distanceKm} km`}
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="h-4 w-4 shrink-0" />
+                            <span>
+                              {participation.variant.name}
+                              {participation.variant.distanceKm &&
+                                ` - ${participation.variant.distanceKm} km`}
+                            </span>
+                          </div>
                           {participation.variant.startDate &&
                             participation.variant.startDate !==
                               participation.event.startDate && (
-                              <span className="ml-1 text-xs">
+                              <span className="pl-6 text-xs">
                                 (
                                 {formatDate(
                                   participation.variant.startDate,
@@ -327,15 +331,19 @@ export default async function ProfilePage({ params }: PageProps) {
                         {formatDate(participation.event.startDate, locale)}
                       </div>
                       {participation.variant && (
-                        <div className="flex items-center gap-2">
-                          <Trophy className="h-4 w-4" />
-                          {participation.variant.name}
-                          {participation.variant.distanceKm &&
-                            ` - ${participation.variant.distanceKm} km`}
+                        <div className="flex flex-col gap-0.5">
+                          <div className="flex items-center gap-2">
+                            <Trophy className="h-4 w-4 shrink-0" />
+                            <span>
+                              {participation.variant.name}
+                              {participation.variant.distanceKm &&
+                                ` - ${participation.variant.distanceKm} km`}
+                            </span>
+                          </div>
                           {participation.variant.startDate &&
                             participation.variant.startDate !==
                               participation.event.startDate && (
-                              <span className="ml-1 text-xs">
+                              <span className="pl-6 text-xs">
                                 (
                                 {formatDate(
                                   participation.variant.startDate,

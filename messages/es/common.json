@@ -28,15 +28,15 @@
     "optional": "opcional",
     "noResults": "No se encontraron resultados",
     "typeToSearch": "Escribe para buscar...",
-    "interested": "interesados"
-  },
-  "time": {
-    "hours": "Horas",
-    "minutes": "Minutos",
-    "seconds": "Segundos",
-    "h": "h",
-    "m": "m",
-    "s": "s"
+    "interested": "interesados",
+    "time": {
+      "hours": "Horas",
+      "minutes": "Minutos",
+      "seconds": "Segundos",
+      "h": "h",
+      "m": "m",
+      "s": "s"
+    }
   },
   "upload": {
     "uploadImage": "Subir Imagen",

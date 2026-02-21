@@ -394,7 +394,7 @@ export function FriendsSection() {
                 {friends.map((friend) => (
                   <Card
                     key={friend.friendshipId}
-                    className="flex items-center gap-3 p-4"
+                    className="flex min-w-0 items-center gap-3 p-4"
                   >
                     <Link
                       href={`/user/${friend.id}`}

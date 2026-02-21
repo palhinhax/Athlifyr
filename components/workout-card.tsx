@@ -124,23 +124,13 @@ export function WorkoutCard({
     <>
       <Card className="flex flex-col transition-colors hover:border-accent/30 hover:shadow-md">
         <CardHeader className="pb-3">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <CardTitle className="line-clamp-1 text-lg">
-                {workout.name}
-              </CardTitle>
-              {workout.description && (
-                <CardDescription className="mt-1 line-clamp-2">
-                  {workout.description}
-                </CardDescription>
-              )}
-            </div>
-            <div className="flex items-center gap-1">
+          {/* Actions row — always top right */}
+          <div className="flex justify-end gap-1 -mt-2 -mr-1 mb-1">
               <WorkoutPreviewDialog workout={workout}>
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="-mt-2"
+                  className="h-8 w-8"
                   title={t("preview.title")}
                 >
                   <EyeIcon className="h-4 w-4" />
@@ -150,7 +140,7 @@ export function WorkoutCard({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="-mr-1 -mt-2"
+                  className="h-8 w-8"
                   onClick={handleToggleSave}
                   disabled={isSaving}
                 >
@@ -166,7 +156,7 @@ export function WorkoutCard({
               {(canEdit || canAssignToSessions) && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="-mr-2 -mt-2">
+                    <Button variant="ghost" size="icon" className="h-8 w-8">
                       <MoreVerticalIcon className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -201,7 +191,13 @@ export function WorkoutCard({
                 </DropdownMenu>
               )}
             </div>
-          </div>
+          {/* Title & description below icons */}
+          <CardTitle className="line-clamp-1 text-lg">{workout.name}</CardTitle>
+          {workout.description && (
+            <CardDescription className="mt-1 line-clamp-2">
+              {workout.description}
+            </CardDescription>
+          )}
         </CardHeader>
 
         <CardContent className="flex-1 space-y-3 pb-3">

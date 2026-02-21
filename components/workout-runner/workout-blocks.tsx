@@ -127,32 +127,40 @@ export function WorkoutBlocks({
           >
             <CardHeader className="pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge
-                    style={{
-                      backgroundColor: `${BLOCK_TYPE_INFO[block.type].color}20`,
-                      color: BLOCK_TYPE_INFO[block.type].color,
-                    }}
-                  >
-                    {t(`blocks.types.${block.type}`)}
-                  </Badge>
-                  {block.name && (
-                    <span className="font-medium">{block.name}</span>
-                  )}
-                  {block.rounds && (
-                    <span className="text-sm text-muted-foreground">
-                      {block.rounds} {t("blocks.rounds")}
-                    </span>
-                  )}
-                  {block.timeCap && (
-                    <span className="text-sm text-muted-foreground">
-                      {t("blocks.timeCap")}: {formatTime(block.timeCap)}
-                    </span>
-                  )}
-                  {block.workTime && (
-                    <span className="text-sm text-muted-foreground">
-                      {t("blocks.workTime")}: {formatTime(block.workTime)}
-                    </span>
+                <div className="flex flex-col gap-0.5">
+                  {/* Badge + name row */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Badge
+                      style={{
+                        backgroundColor: `${BLOCK_TYPE_INFO[block.type].color}20`,
+                        color: BLOCK_TYPE_INFO[block.type].color,
+                      }}
+                    >
+                      {t(`blocks.types.${block.type}`)}
+                    </Badge>
+                    {block.name && (
+                      <span className="font-medium">{block.name}</span>
+                    )}
+                  </div>
+                  {/* Meta row: rounds / timeCap / workTime */}
+                  {(block.rounds || block.timeCap || block.workTime) && (
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+                      {block.rounds && (
+                        <span className="text-sm text-muted-foreground">
+                          {block.rounds} {t("blocks.rounds")}
+                        </span>
+                      )}
+                      {block.timeCap && (
+                        <span className="text-sm text-muted-foreground">
+                          {t("blocks.timeCap")}: {formatTime(block.timeCap)}
+                        </span>
+                      )}
+                      {block.workTime && (
+                        <span className="text-sm text-muted-foreground">
+                          {t("blocks.workTime")}: {formatTime(block.workTime)}
+                        </span>
+                      )}
+                    </div>
                   )}
                 </div>
                 {/* Play button for compatible blocks */}

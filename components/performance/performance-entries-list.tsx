@@ -111,7 +111,103 @@ export function PerformanceEntriesList({
         </span>
       </div>
 
-      <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
+      {/* Mobile card layout */}
+      <div className="space-y-2 sm:hidden">
+        {displayedEntries.map((entry) => (
+          <div
+            key={entry.id}
+            className="flex items-start justify-between rounded-md border p-3"
+          >
+            <div className="min-w-0 flex-1 space-y-1">
+              <div className="text-xs text-muted-foreground">
+                {new Date(entry.performedAt).toLocaleDateString(undefined, {
+                  day: "numeric",
+                  month: "short",
+                  year: "numeric",
+                })}
+              </div>
+              {type === "RUN" || type === "TRAIL" ? (
+                <>
+                  {entry.eventResult && (
+                    <Link
+                      href={`/events/${entry.eventResult.eventSlug}`}
+                      className="group flex items-center gap-1 hover:text-primary"
+                    >
+                      <span className="line-clamp-1 text-sm font-medium">
+                        {entry.eventResult.eventTitle}
+                      </span>
+                      <ExternalLink className="h-3 w-3 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
+                    </Link>
+                  )}
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
+                    {entry.distanceKm != null && (
+                      <span className="font-medium">
+                        {entry.distanceKm.toFixed(1)} km
+                      </span>
+                    )}
+                    {entry.timeSeconds != null && (
+                      <span>{formatTime(entry.timeSeconds)}</span>
+                    )}
+                    {entry.distanceKm && entry.timeSeconds && (
+                      <span className="text-muted-foreground">
+                        {formatPace(entry.timeSeconds / entry.distanceKm)}/km
+                      </span>
+                    )}
+                    {entry.elevationGainM != null &&
+                      entry.elevationGainM > 0 && (
+                        <span className="text-muted-foreground">
+                          ↑{entry.elevationGainM}m
+                        </span>
+                      )}
+                  </div>
+                  {entry.eventResult?.position && (
+                    <span className="inline-flex items-center gap-0.5 text-xs text-muted-foreground">
+                      <Medal className="h-3 w-3" />#{entry.eventResult.position}
+                    </span>
+                  )}
+                </>
+              ) : (
+                <div className="flex flex-col gap-0.5 text-sm">
+                  <span className="font-medium">
+                    {entry.exerciseName || "-"}
+                  </span>
+                  <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-muted-foreground">
+                    {entry.weightKg != null && <span>{entry.weightKg} kg</span>}
+                    {entry.reps != null && <span>{entry.reps} reps</span>}
+                    {entry.weightKg && entry.reps && (
+                      <span>
+                        e1RM {(entry.weightKg * (1 + entry.reps / 30)).toFixed(1)}{" "}
+                        kg
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="ml-2 flex shrink-0 items-center gap-0.5">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setEditEntry(entry)}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-destructive hover:text-destructive"
+                onClick={() => setDeleteId(entry.id)}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop table layout */}
+      <div className="hidden sm:block">
         <Table>
           <TableHeader>
             <TableRow>

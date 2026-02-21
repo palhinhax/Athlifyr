@@ -28,7 +28,11 @@ import {
   Lightbulb,
   CheckCircle2,
 } from "lucide-react";
-import type { SkeletonFrame, PoseAngles, AIAnalysis } from "@/types/lift-analysis";
+import type {
+  SkeletonFrame,
+  PoseAngles,
+  AIAnalysis,
+} from "@/types/lift-analysis";
 
 // Dynamic import for Three.js component to prevent SSR issues
 const Skeleton3DViewer = dynamic(
@@ -607,7 +611,7 @@ function AIAnalysisPanel({ ai }: { ai: AIAnalysis }) {
       {/* ── Header with gradient ─────────────────────────────────────────── */}
       <div className="flex items-center gap-3 bg-gradient-to-r from-violet-500/10 via-purple-500/5 to-transparent px-4 py-3 sm:gap-4 sm:px-6 sm:py-4">
         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-violet-500/15 sm:h-9 sm:w-9">
-          <Sparkles className="h-4 w-4 text-violet-500 sm:h-4.5 sm:w-4.5" />
+          <Sparkles className="sm:h-4.5 sm:w-4.5 h-4 w-4 text-violet-500" />
         </div>
         <div className="min-w-0 flex-1">
           <h3 className="text-xs font-semibold tracking-tight sm:text-sm">
@@ -689,7 +693,7 @@ function AIAnalysisPanel({ ai }: { ai: AIAnalysis }) {
         )}
 
         {/* ── Strengths / Improvements — side-by-side cards ──────────── */}
-        <div className="grid gap-2.5 sm:gap-3 sm:grid-cols-2">
+        <div className="grid gap-2.5 sm:grid-cols-2 sm:gap-3">
           {ai.strengths && ai.strengths.length > 0 && (
             <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-3 sm:p-4">
               <div className="mb-2.5 flex items-center gap-2">
@@ -1106,7 +1110,9 @@ function MotionVideoModal({
           {/* Video panel - always mounted to avoid reload on mode switch */}
           <div
             className={`relative flex w-full items-center justify-center bg-black ${
-              viewMode === "skeleton" ? "hidden" : "min-h-[150px] sm:min-h-[200px]"
+              viewMode === "skeleton"
+                ? "hidden"
+                : "min-h-[150px] sm:min-h-[200px]"
             }`}
           >
             {record && videoLoading && (
@@ -1484,7 +1490,9 @@ function LiftVideoModal({
           {/* Video panel - always mounted to avoid reload on mode switch */}
           <div
             className={`relative flex w-full items-center justify-center bg-black ${
-              viewMode === "skeleton" ? "hidden" : "min-h-[150px] sm:min-h-[200px]"
+              viewMode === "skeleton"
+                ? "hidden"
+                : "min-h-[150px] sm:min-h-[200px]"
             }`}
           >
             {record && videoLoading && (
@@ -1638,8 +1646,7 @@ function MotionCard({
     aiScore: ai?.overallScore ?? null,
   });
 
-  const title =
-    record.label ?? ai?.exercise ?? t("analyses.unlabeledMotion");
+  const title = record.label ?? ai?.exercise ?? t("analyses.unlabeledMotion");
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -1661,54 +1668,65 @@ function MotionCard({
 
   return (
     <div className="space-y-3 rounded-xl border bg-card p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{title}</p>
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <CalendarDays className="h-3 w-3" />
-            {formatDate(record.createdAt)}
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-1">
-          <Button size="sm" variant="outline" onClick={onOpen}>
-            <Play className="mr-0 h-3.5 w-3.5 sm:mr-1.5" />
-            <span className="hidden sm:inline">{t("analyses.viewVideo")}</span>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="h-3.5 w-3.5" />
-                )}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t("analyses.deleteTitle")}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t("analyses.deleteConfirm")}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>
-                  {t("analyses.deleteCancel")}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold">{title}</p>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <CalendarDays className="h-3 w-3" />
+              {formatDate(record.createdAt)}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onOpen}
+              className="gap-1.5"
+            >
+              <Play className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">
+                {t("analyses.viewVideo")}
+              </span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  disabled={isDeleting}
                 >
-                  {t("analyses.deleteAction")}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {isDeleting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t("analyses.deleteTitle")}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("analyses.deleteConfirm")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    {t("analyses.deleteCancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {t("analyses.deleteAction")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
 
@@ -1770,7 +1788,8 @@ function MotionCard({
             )}
             {ai.confidence !== null && ai.confidence !== undefined && (
               <Badge variant="outline" className="gap-1 text-muted-foreground">
-                {(ai.confidence * 100).toFixed(0)}% {t("analyses.ai.confidence")}
+                {(ai.confidence * 100).toFixed(0)}%{" "}
+                {t("analyses.ai.confidence")}
               </Badge>
             )}
           </div>
@@ -1810,8 +1829,7 @@ function LiftCard({
     aiScore: ai?.overallScore ?? null,
   });
 
-  const title =
-    record.label ?? ai?.exercise ?? t("analyses.unlabeledLift");
+  const title = record.label ?? ai?.exercise ?? t("analyses.unlabeledLift");
 
   const handleDelete = async () => {
     setIsDeleting(true);
@@ -1833,54 +1851,65 @@ function LiftCard({
 
   return (
     <div className="space-y-3 rounded-xl border bg-card p-4">
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <p className="truncate font-semibold">{title}</p>
-          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
-            <CalendarDays className="h-3 w-3" />
-            {formatDate(record.createdAt)}
-          </p>
-        </div>
-        <div className="flex shrink-0 gap-1">
-          <Button size="sm" variant="outline" onClick={onOpen}>
-            <Play className="mr-0 h-3.5 w-3.5 sm:mr-1.5" />
-            <span className="hidden sm:inline">{t("analyses.viewVideo")}</span>
-          </Button>
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-                disabled={isDeleting}
-              >
-                {isDeleting ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="h-3.5 w-3.5" />
-                )}
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>{t("analyses.deleteTitle")}</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {t("analyses.deleteConfirm")}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>
-                  {t("analyses.deleteCancel")}
-                </AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={handleDelete}
-                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+      <div className="flex min-w-0 flex-col gap-2">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0 flex-1">
+            <p className="truncate font-semibold">{title}</p>
+            <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+              <CalendarDays className="h-3 w-3" />
+              {formatDate(record.createdAt)}
+            </p>
+          </div>
+          <div className="flex shrink-0 gap-1">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onOpen}
+              className="gap-1.5"
+            >
+              <Play className="h-3.5 w-3.5" />
+              <span className="hidden sm:inline">
+                {t("analyses.viewVideo")}
+              </span>
+            </Button>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  className="text-destructive hover:bg-destructive/10 hover:text-destructive"
+                  disabled={isDeleting}
                 >
-                  {t("analyses.deleteAction")}
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
+                  {isDeleting ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Trash2 className="h-3.5 w-3.5" />
+                  )}
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>
+                    {t("analyses.deleteTitle")}
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                    {t("analyses.deleteConfirm")}
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>
+                    {t("analyses.deleteCancel")}
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  >
+                    {t("analyses.deleteAction")}
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          </div>
         </div>
       </div>
 
@@ -1946,7 +1975,8 @@ function LiftCard({
             )}
             {ai.confidence !== null && ai.confidence !== undefined && (
               <Badge variant="outline" className="gap-1 text-muted-foreground">
-                {(ai.confidence * 100).toFixed(0)}% {t("analyses.ai.confidence")}
+                {(ai.confidence * 100).toFixed(0)}%{" "}
+                {t("analyses.ai.confidence")}
               </Badge>
             )}
           </div>
@@ -2181,7 +2211,7 @@ export function AnalysesSection() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {motionAnalyses.map((record) => (
                       <MotionCard
                         key={record.id}
@@ -2205,7 +2235,7 @@ export function AnalysesSection() {
                     </p>
                   </div>
                 ) : (
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                     {liftAnalyses.map((record) => (
                       <LiftCard
                         key={record.id}

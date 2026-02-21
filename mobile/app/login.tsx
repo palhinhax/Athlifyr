@@ -17,6 +17,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
 import { useToast } from "@/src/hooks/useToast";
+import { isAxiosError } from "axios";
 import {
   colors,
   typography,
@@ -68,8 +69,18 @@ export default function LoginScreen() {
     try {
       await login(email.trim(), password);
       router.back();
-    } catch {
-      showToast(t("login.invalidCredentials"), "error");
+    } catch (error) {
+      const code = isAxiosError(error)
+        ? (error.response?.data as { code?: string })?.code
+        : undefined;
+
+      const codeToKey: Record<string, string> = {
+        INVALID_CREDENTIALS: "login.invalidCredentials",
+        MISSING_CREDENTIALS: "login.invalidCredentials",
+      };
+
+      const key = (code && codeToKey[code]) ?? "login.invalidCredentials";
+      showToast(t(key), "error");
     } finally {
       setIsLoading(false);
     }

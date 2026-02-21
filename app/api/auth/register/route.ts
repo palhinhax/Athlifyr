@@ -6,9 +6,9 @@ import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { requireIntegrity } from "@/lib/verify-integrity";
 
 const registerSchema = z.object({
-  name: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  password: z.string().min(6, "Password deve ter pelo menos 6 caracteres"),
+  name: z.string().min(2),
+  email: z.string().email(),
+  password: z.string().min(6),
 });
 
 export async function POST(req: NextRequest) {
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
 
     if (existingUser) {
       return NextResponse.json(
-        { error: "Email já está em uso" },
+        { code: "EMAIL_ALREADY_IN_USE" },
         { status: 400 }
       );
     }
@@ -73,13 +73,18 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
+      const issue = error.issues[0];
+      const codeMap: Record<string, string> = {
+        too_small: issue.path[0] === "name" ? "NAME_TOO_SHORT" : issue.path[0] === "password" ? "PASSWORD_TOO_SHORT" : "VALIDATION_ERROR",
+        invalid_string: issue.path[0] === "email" ? "EMAIL_INVALID" : "VALIDATION_ERROR",
+      };
       return NextResponse.json(
-        { error: error.issues[0].message },
+        { code: codeMap[issue.code] ?? "VALIDATION_ERROR" },
         { status: 400 }
       );
     }
 
     console.error("Register error:", error);
-    return NextResponse.json({ error: "Erro ao criar conta" }, { status: 500 });
+    return NextResponse.json({ code: "INTERNAL_ERROR" }, { status: 500 });
   }
 }

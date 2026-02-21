@@ -190,7 +190,11 @@
     "passwordMinLength": "Passwort muss mindestens 6 Zeichen haben",
     "registrationFailed": "Fehler beim Erstellen des Kontos",
     "registrationSuccess": "Konto erfolgreich erstellt!",
-    "nowYouCanSignIn": "Du kannst dich jetzt anmelden"
+    "nowYouCanSignIn": "Du kannst dich jetzt anmelden",
+    "emailAlreadyInUse": "Diese E-Mail wird bereits verwendet",
+    "nameMinLength": "Der Name muss mindestens 2 Zeichen haben",
+    "emailInvalid": "Ungültige E-Mail-Adresse",
+    "passwordMinLengthServer": "Das Passwort muss mindestens 6 Zeichen haben"
   },
   "forgotPassword": {
     "title": "Passwort vergessen?",

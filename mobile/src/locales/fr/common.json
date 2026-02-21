@@ -190,7 +190,11 @@
     "passwordMinLength": "Le mot de passe doit contenir au moins 6 caractères",
     "registrationFailed": "Erreur lors de la création du compte",
     "registrationSuccess": "Compte créé avec succès !",
-    "nowYouCanSignIn": "Vous pouvez maintenant vous connecter"
+    "nowYouCanSignIn": "Vous pouvez maintenant vous connecter",
+    "emailAlreadyInUse": "Cet email est déjà utilisé",
+    "nameMinLength": "Le nom doit contenir au moins 2 caractères",
+    "emailInvalid": "Adresse email invalide",
+    "passwordMinLengthServer": "Le mot de passe doit contenir au moins 6 caractères"
   },
   "forgotPassword": {
     "title": "Mot de passe oublié ?",

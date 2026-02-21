@@ -24,7 +24,7 @@ export async function POST(request: Request) {
 
     if (!email) {
       return NextResponse.json(
-        { error: "Email é obrigatório" },
+        { code: "EMAIL_REQUIRED" },
         { status: 400 }
       );
     }
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error("Error in forgot-password:", error);
     return NextResponse.json(
-      { error: "Erro ao processar pedido" },
+      { code: "INTERNAL_ERROR" },
       { status: 500 }
     );
   }

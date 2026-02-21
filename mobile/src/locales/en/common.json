@@ -190,7 +190,11 @@
     "passwordMinLength": "Password must be at least 6 characters",
     "registrationFailed": "Error creating account",
     "registrationSuccess": "Account created successfully!",
-    "nowYouCanSignIn": "You can now sign in"
+    "nowYouCanSignIn": "You can now sign in",
+    "emailAlreadyInUse": "This email is already in use",
+    "nameMinLength": "Name must be at least 2 characters",
+    "emailInvalid": "Invalid email address",
+    "passwordMinLengthServer": "Password must be at least 6 characters"
   },
   "forgotPassword": {
     "title": "Forgot your password?",

@@ -15,6 +15,7 @@ import { ArrowLeft, Mail, CheckCircle } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { api } from "@/src/lib/api";
 import { useToast } from "@/src/hooks/useToast";
+import { isAxiosError } from "axios";
 import {
   colors,
   typography,
@@ -48,8 +49,16 @@ export default function ForgotPasswordScreen() {
       });
 
       setIsSubmitted(true);
-    } catch {
-      showToast(t("forgotPassword.sendError"), "error");
+    } catch (error) {
+      const code = isAxiosError(error)
+        ? (error.response?.data as { code?: string })?.code
+        : undefined;
+
+      if (code === "EMAIL_REQUIRED") {
+        setError(t("forgotPassword.emailRequired"));
+      } else {
+        showToast(t("forgotPassword.sendError"), "error");
+      }
     } finally {
       setIsLoading(false);
     }

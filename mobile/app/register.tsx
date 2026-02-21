@@ -114,14 +114,19 @@ export default function RegisterScreen() {
       router.back();
       setTimeout(() => router.push("/login"), 100);
     } catch (error) {
-      const message = isAxiosError(error)
-        ? (error.response?.data as { error?: string; message?: string })
-            ?.error ??
-          (error.response?.data as { error?: string; message?: string })
-            ?.message ??
-          t("register.registrationFailed")
-        : t("register.registrationFailed");
-      showToast(message, "error");
+      const code = isAxiosError(error)
+        ? (error.response?.data as { code?: string })?.code
+        : undefined;
+
+      const codeToKey: Record<string, string> = {
+        EMAIL_ALREADY_IN_USE: "register.emailAlreadyInUse",
+        NAME_TOO_SHORT: "register.nameMinLength",
+        EMAIL_INVALID: "register.emailInvalid",
+        PASSWORD_TOO_SHORT: "register.passwordMinLengthServer",
+      };
+
+      const key = (code && codeToKey[code]) ?? "register.registrationFailed";
+      showToast(t(key), "error");
     } finally {
       setIsLoading(false);
     }

@@ -130,7 +130,8 @@ function formatDayKey(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-function getCalendarDays(currentMonth: Date): Date[] {
+/** Returns calendar days grouped into weeks (rows of exactly 7 days). */
+function getCalendarWeeks(currentMonth: Date): Date[][] {
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
 
@@ -154,14 +155,23 @@ function getCalendarDays(currentMonth: Date): Date[] {
   const calendarEnd = new Date(lastDay);
   calendarEnd.setDate(calendarEnd.getDate() + (6 - endDayOfWeek));
 
-  const days: Date[] = [];
+  const weeks: Date[][] = [];
+  let week: Date[] = [];
   const current = new Date(calendarStart);
   while (current <= calendarEnd) {
-    days.push(new Date(current));
+    week.push(new Date(current));
+    if (week.length === 7) {
+      weeks.push(week);
+      week = [];
+    }
     current.setDate(current.getDate() + 1);
   }
+  // Push any remaining partial week (shouldn't happen with the logic above)
+  if (week.length > 0) {
+    weeks.push(week);
+  }
 
-  return days;
+  return weeks;
 }
 
 export function MonthCalendarGrid({
@@ -180,8 +190,8 @@ export function MonthCalendarGrid({
 
   const today = useMemo(() => new Date(), []);
 
-  const calendarDays = useMemo(
-    () => getCalendarDays(currentMonth),
+  const calendarWeeks = useMemo(
+    () => getCalendarWeeks(currentMonth),
     [currentMonth]
   );
 
@@ -227,54 +237,62 @@ export function MonthCalendarGrid({
         ))}
       </View>
 
-      {/* Calendar grid */}
+      {/* Calendar grid — render week by week to guarantee 7 columns */}
       <View style={styles.daysGrid}>
-        {calendarDays.map((day) => {
-          const dayKey = formatDayKey(day);
-          const count = activitiesByDay[dayKey] || 0;
-          const isSelected = isSameDay(day, selectedDay);
-          const isToday = isSameDay(day, today);
-          const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+        {calendarWeeks.map((week, weekIdx) => (
+          <View key={weekIdx} style={styles.weekRow}>
+            {week.map((day) => {
+              const dayKey = formatDayKey(day);
+              const count = activitiesByDay[dayKey] || 0;
+              const isSelected = isSameDay(day, selectedDay);
+              const isToday = isSameDay(day, today);
+              const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
 
-          return (
-            <TouchableOpacity
-              key={dayKey}
-              onPress={() => onDaySelect(day)}
-              activeOpacity={0.6}
-              style={[
-                styles.dayCell,
-                isSelected && styles.dayCellSelected,
-                !isCurrentMonth && styles.dayCellOutside,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.dayText,
-                  isToday && styles.dayTextToday,
-                  isSelected && styles.dayTextSelected,
-                  !isCurrentMonth && styles.dayTextOutside,
-                ]}
-              >
-                {day.getDate()}
-              </Text>
+              return (
+                <TouchableOpacity
+                  key={dayKey}
+                  onPress={() => onDaySelect(day)}
+                  activeOpacity={0.6}
+                  style={[
+                    styles.dayCell,
+                    isSelected && styles.dayCellSelected,
+                    !isCurrentMonth && styles.dayCellOutside,
+                  ]}
+                >
+                  <Text
+                    style={[
+                      styles.dayText,
+                      isToday && styles.dayTextToday,
+                      isSelected && styles.dayTextSelected,
+                      !isCurrentMonth && styles.dayTextOutside,
+                    ]}
+                  >
+                    {day.getDate()}
+                  </Text>
 
-              {/* Activity dots */}
-              {count > 0 && (
-                <View style={styles.dotsRow}>
-                  {Array.from({ length: Math.min(count, 3) }).map((_, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.dot,
-                        isSelected ? styles.dotSelected : styles.dotDefault,
-                      ]}
-                    />
-                  ))}
-                </View>
-              )}
-            </TouchableOpacity>
-          );
-        })}
+                  {/* Activity dots */}
+                  {count > 0 && (
+                    <View style={styles.dotsRow}>
+                      {Array.from({ length: Math.min(count, 3) }).map(
+                        (_, i) => (
+                          <View
+                            key={i}
+                            style={[
+                              styles.dot,
+                              isSelected
+                                ? styles.dotSelected
+                                : styles.dotDefault,
+                            ]}
+                          />
+                        )
+                      )}
+                    </View>
+                  )}
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
       </View>
     </View>
   );
@@ -345,18 +363,20 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   daysGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
     paddingHorizontal: spacing.sm,
     paddingBottom: spacing.sm,
   },
+  weekRow: {
+    flexDirection: "row",
+  },
   dayCell: {
-    width: `${100 / 7}%` as unknown as number,
+    flex: 1,
     aspectRatio: 1,
     alignItems: "center",
     justifyContent: "center",
     borderRadius: borderRadius.md,
     position: "relative",
+    paddingTop: spacing.xs,
   },
   dayCellSelected: {
     borderWidth: 2,
@@ -384,7 +404,7 @@ const styles = StyleSheet.create({
   dotsRow: {
     flexDirection: "row",
     position: "absolute",
-    bottom: 4,
+    bottom: 2,
     gap: 2,
   },
   dot: {

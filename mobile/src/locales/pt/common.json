@@ -75,6 +75,7 @@
     "edit": "Editar",
     "close": "Fechar",
     "or": "ou",
+    "event": "Evento",
     "signInButton": "Iniciar Sessão",
     "authTitle": "Autenticação necessária",
     "authDescription": "Inicia sessão para acederes a esta funcionalidade e personalizares a tua experiência."
@@ -498,7 +499,8 @@
     "event": "Evento",
     "locale": "pt-PT",
     "signInRequired": "Inicia sessão para veres o teu calendário",
-    "signInButton": "Iniciar Sessão"
+    "signInButton": "Iniciar Sessão",
+    "noActivitiesThisDay": "Sem atividades neste dia"
   },
   "performance": {
     "title": "Performance",

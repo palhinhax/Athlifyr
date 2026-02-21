@@ -75,6 +75,7 @@
     "edit": "Edit",
     "close": "Close",
     "or": "or",
+    "event": "Event",
     "signInButton": "Sign In",
     "authTitle": "Sign in required",
     "authDescription": "Sign in to access this feature and personalise your experience."
@@ -498,7 +499,8 @@
     "event": "Event",
     "locale": "en-US",
     "signInRequired": "Sign in to see your calendar",
-    "signInButton": "Sign In"
+    "signInButton": "Sign In",
+    "noActivitiesThisDay": "No activities on this day"
   },
   "performance": {
     "title": "Performance",

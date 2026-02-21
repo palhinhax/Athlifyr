@@ -129,11 +129,29 @@ interface ExternalAIAnalysis {
 
 export async function POST(request: Request) {
   try {
+    // ── Debug: Log incoming request details ─────────────────────────────────
+    const contentLength = request.headers.get("content-length");
+    const contentType = request.headers.get("content-type");
+    console.log("[MotionAnalysis] ── Incoming request ──", {
+      method: request.method,
+      url: request.url,
+      contentLength: contentLength
+        ? `${contentLength} bytes (${(Number(contentLength) / (1024 * 1024)).toFixed(2)} MB)`
+        : "not set",
+      contentType: contentType?.substring(0, 80),
+      userAgent: request.headers.get("user-agent")?.substring(0, 100),
+      xForwardedFor: request.headers.get("x-forwarded-for"),
+      xVercelId: request.headers.get("x-vercel-id"),
+    });
+
     // ── Parse multipart form data ──────────────────────────────────────────
     let formData: FormData;
     try {
+      console.log("[MotionAnalysis] Parsing formData...");
       formData = await request.formData();
-    } catch {
+      console.log("[MotionAnalysis] formData parsed successfully");
+    } catch (parseError) {
+      console.error("[MotionAnalysis] formData parse FAILED:", parseError);
       return NextResponse.json(
         { error: "Invalid multipart body" },
         { status: 400 }
@@ -334,6 +352,16 @@ export async function POST(request: Request) {
     // 4.5 minute timeout (slightly less than maxDuration)
     const timeout = setTimeout(() => controller.abort(), 270_000);
 
+    // Debug: Log the size of the external form data being sent to Railway
+    console.log("[MotionAnalysis] External FormData prepared:", {
+      finalVideoSizeMB:
+        (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+      finalVideoSizeBytes: finalVideoFile.size,
+      finalVideoType: finalVideoFile.type,
+      finalVideoName: safeFilename,
+      targetUrl: `${BARBELL_API_URL}/analyze/body`,
+    });
+
     let response: Response;
     try {
       response = await fetch(`${BARBELL_API_URL}/analyze/body`, {
@@ -361,6 +389,14 @@ export async function POST(request: Request) {
     clearTimeout(timeout);
 
     // ── Parse response ─────────────────────────────────────────────────────
+    console.log("[MotionAnalysis] ── Railway response ──", {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get("content-type"),
+      contentLength: response.headers.get("content-length"),
+      server: response.headers.get("server"),
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(
@@ -530,7 +566,12 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("[MotionAnalysis] Unexpected error:", error);
+    console.error("[MotionAnalysis] ── Unexpected top-level error ──", {
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
+      cause: error instanceof Error && "cause" in error ? String(error.cause) : undefined,
+    });
     return NextResponse.json(
       {
         error:

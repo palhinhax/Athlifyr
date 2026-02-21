@@ -150,11 +150,29 @@ interface ExternalAIAnalysis {
 
 export async function POST(request: Request) {
   try {
+    // ── Debug: Log incoming request details ─────────────────────────────────
+    const contentLength = request.headers.get("content-length");
+    const contentType = request.headers.get("content-type");
+    console.log("[LiftAnalysis] ── Incoming request ──", {
+      method: request.method,
+      url: request.url,
+      contentLength: contentLength
+        ? `${contentLength} bytes (${(Number(contentLength) / (1024 * 1024)).toFixed(2)} MB)`
+        : "not set",
+      contentType: contentType?.substring(0, 80),
+      userAgent: request.headers.get("user-agent")?.substring(0, 100),
+      xForwardedFor: request.headers.get("x-forwarded-for"),
+      xVercelId: request.headers.get("x-vercel-id"),
+    });
+
     // ── Parse multipart form data ──────────────────────────────────────────
     let formData: FormData;
     try {
+      console.log("[LiftAnalysis] Parsing formData...");
       formData = await request.formData();
-    } catch {
+      console.log("[LiftAnalysis] formData parsed successfully");
+    } catch (parseError) {
+      console.error("[LiftAnalysis] formData parse FAILED:", parseError);
       return NextResponse.json(
         { error: "Invalid multipart body" },
         { status: 400 }
@@ -383,6 +401,16 @@ export async function POST(request: Request) {
     let response: Response | null = null;
     let lastError: unknown = null;
 
+    // Debug: Log the size of the external form data being sent to Railway
+    console.log("[LiftAnalysis] External FormData prepared:", {
+      finalVideoSizeMB:
+        (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
+      finalVideoSizeBytes: finalVideoFile.size,
+      finalVideoType: finalVideoFile.type,
+      finalVideoName: safeFilename,
+      targetUrl: `${BARBELL_API_URL}/analyze/full`,
+    });
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
       const controller = new AbortController();
       // 4.5 minute timeout (slightly less than maxDuration)
@@ -442,12 +470,20 @@ export async function POST(request: Request) {
     }
 
     // ── Parse response ─────────────────────────────────────────────────────
+    console.log("[LiftAnalysis] ── Railway response ──", {
+      status: response.status,
+      statusText: response.statusText,
+      contentType: response.headers.get("content-type"),
+      contentLength: response.headers.get("content-length"),
+      server: response.headers.get("server"),
+    });
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error(
         "[LiftAnalysis] External API error:",
         response.status,
-        errorText
+        errorText.substring(0, 500)
       );
 
       try {
@@ -614,7 +650,12 @@ export async function POST(request: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("[LiftAnalysis] Unexpected error:", error);
+    console.error("[LiftAnalysis] ── Unexpected top-level error ──", {
+      name: error instanceof Error ? error.name : "unknown",
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
+      cause: error instanceof Error && "cause" in error ? String(error.cause) : undefined,
+    });
     return NextResponse.json(
       {
         error:

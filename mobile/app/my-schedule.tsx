@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import {
   View,
   Text,
@@ -11,22 +11,13 @@ import {
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { SafeAreaView } from "react-native-safe-area-context";
-import {
-  ArrowLeft,
-  CalendarClock,
-  MapPin,
-  Clock,
-  Users,
-} from "lucide-react-native";
+import { ArrowLeft, CalendarClock } from "lucide-react-native";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
-import {
-  colors,
-  typography,
-  spacing,
-  borderRadius,
-} from "@/src/constants/theme";
+import { MonthCalendarGrid } from "@/src/components/schedule/MonthCalendarGrid";
+import { DayDetailPanel } from "@/src/components/schedule/DayDetailPanel";
+import { colors, typography, spacing } from "@/src/constants/theme";
 
 interface ScheduleSession {
   id: string;
@@ -53,101 +44,148 @@ interface ScheduleEvent {
   variantDistance: number | null;
 }
 
+function formatDayKey(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+function isSameDay(a: Date, b: Date): boolean {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
 export default function MyScheduleScreen() {
   const router = useRouter();
   const { t } = useTranslation();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+
   const [sessions, setSessions] = useState<ScheduleSession[]>([]);
   const [events, setEvents] = useState<ScheduleEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
+  const [selectedDay, setSelectedDay] = useState(() => new Date());
 
-  const fetchSchedule = async () => {
-    if (!isAuthenticated) {
-      setLoading(false);
-      return;
-    }
+  const fetchSchedule = useCallback(
+    async (month: Date) => {
+      if (!isAuthenticated) {
+        setLoading(false);
+        return;
+      }
 
-    try {
-      const now = new Date();
-      const futureDate = new Date();
-      futureDate.setMonth(futureDate.getMonth() + 2);
+      try {
+        // Fetch a range covering 1 month before and 1 month after the current month
+        const from = new Date(month.getFullYear(), month.getMonth() - 1, 1);
+        const to = new Date(month.getFullYear(), month.getMonth() + 2, 0);
 
-      const response = await api.get(
-        `/my-schedule?from=${now.toISOString()}&to=${futureDate.toISOString()}`
-      );
+        const response = await api.get(
+          `/my-schedule?from=${from.toISOString()}&to=${to.toISOString()}`
+        );
 
-      const data = response.data;
+        const data = response.data;
 
-      // Combine coach and client sessions
-      const allSessions = [
-        ...(data.sessions || []),
-        ...(data.clientSessions || []),
-      ];
-
-      // Filter future only and sort
-      const futureSessions = allSessions
-        .filter((s: ScheduleSession) => new Date(s.startsAt) > now)
-        .sort(
+        // Combine coach and client sessions
+        const allSessions: ScheduleSession[] = [
+          ...(data.sessions || []),
+          ...(data.clientSessions || []),
+        ].sort(
           (a: ScheduleSession, b: ScheduleSession) =>
             new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
-        )
-        .slice(0, 20); // Limit to 20 items
+        );
 
-      const futureEvents = (data.events || [])
-        .filter((e: ScheduleEvent) => new Date(e.startsAt) > now)
-        .sort(
+        const allEvents: ScheduleEvent[] = (data.events || []).sort(
           (a: ScheduleEvent, b: ScheduleEvent) =>
             new Date(a.startsAt).getTime() - new Date(b.startsAt).getTime()
-        )
-        .slice(0, 20); // Limit to 20 items
+        );
 
-      setSessions(futureSessions);
-      setEvents(futureEvents);
-    } catch (error) {
-      console.error("Error fetching schedule:", error);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
+        setSessions(allSessions);
+        setEvents(allEvents);
+      } catch (error) {
+        console.error("Error fetching schedule:", error);
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [isAuthenticated]
+  );
 
   useEffect(() => {
-    fetchSchedule();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated]);
+    fetchSchedule(currentMonth);
+  }, [fetchSchedule, currentMonth]);
 
-  const onRefresh = () => {
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchSchedule();
-  };
+    fetchSchedule(currentMonth);
+  }, [fetchSchedule, currentMonth]);
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr);
-    const now = new Date();
-    const tomorrow = new Date(now);
-    tomorrow.setDate(tomorrow.getDate() + 1);
+  // Build a map of day → activity count for the calendar dots
+  const activitiesByDay = useMemo(() => {
+    const map: Record<string, number> = {};
 
-    if (date.toDateString() === now.toDateString()) {
-      return t("schedule.today");
-    } else if (date.toDateString() === tomorrow.toDateString()) {
-      return t("schedule.tomorrow");
-    } else {
-      return date.toLocaleDateString(undefined, {
-        weekday: "short",
-        day: "numeric",
-        month: "short",
-      });
-    }
-  };
-
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr);
-    return date.toLocaleTimeString(undefined, {
-      hour: "2-digit",
-      minute: "2-digit",
+    sessions.forEach((s) => {
+      const key = formatDayKey(new Date(s.startsAt));
+      map[key] = (map[key] || 0) + 1;
     });
-  };
+
+    events.forEach((e) => {
+      const key = formatDayKey(new Date(e.startsAt));
+      map[key] = (map[key] || 0) + 1;
+    });
+
+    return map;
+  }, [sessions, events]);
+
+  // Filter sessions and events for the selected day
+  const selectedDaySessions = useMemo(
+    () => sessions.filter((s) => isSameDay(new Date(s.startsAt), selectedDay)),
+    [sessions, selectedDay]
+  );
+
+  const selectedDayEvents = useMemo(
+    () => events.filter((e) => isSameDay(new Date(e.startsAt), selectedDay)),
+    [events, selectedDay]
+  );
+
+  const handlePreviousMonth = useCallback(() => {
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+    );
+  }, []);
+
+  const handleNextMonth = useCallback(() => {
+    setCurrentMonth(
+      (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+    );
+  }, []);
+
+  const handleToday = useCallback(() => {
+    const today = new Date();
+    setCurrentMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+    setSelectedDay(today);
+  }, []);
+
+  const handleDaySelect = useCallback((day: Date) => {
+    setSelectedDay(day);
+    // If selecting a day in a different month, navigate to that month
+    setCurrentMonth((prev) => {
+      if (
+        day.getMonth() !== prev.getMonth() ||
+        day.getFullYear() !== prev.getFullYear()
+      ) {
+        return new Date(day.getFullYear(), day.getMonth(), 1);
+      }
+      return prev;
+    });
+  }, []);
 
   // Not authenticated → show sign in required
   if (!isAuthenticated) {
@@ -212,107 +250,23 @@ export default function MyScheduleScreen() {
           />
         }
       >
-        {/* Upcoming Events */}
-        {events.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {t("schedule.upcomingEvents")}
-            </Text>
-            {events.map((event) => (
-              <View key={event.id} style={[styles.card, styles.eventCard]}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardDate}>
-                    {formatDate(event.startsAt)}
-                  </Text>
-                  <View style={styles.badge}>
-                    <Text style={styles.badgeText}>{t("common.event")}</Text>
-                  </View>
-                </View>
-                <Text style={styles.cardTitle}>{event.title}</Text>
-                {event.variantName && (
-                  <Text style={styles.cardSubtitle}>
-                    {event.variantName}
-                    {event.variantDistance && ` • ${event.variantDistance}km`}
-                  </Text>
-                )}
-                <View style={styles.cardFooter}>
-                  <MapPin size={14} color={colors.textSecondary} />
-                  <Text style={styles.cardLocation}>
-                    {event.city}, {event.country}
-                  </Text>
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
+        {/* Month Calendar Grid */}
+        <MonthCalendarGrid
+          currentMonth={currentMonth}
+          selectedDay={selectedDay}
+          activitiesByDay={activitiesByDay}
+          onDaySelect={handleDaySelect}
+          onPreviousMonth={handlePreviousMonth}
+          onNextMonth={handleNextMonth}
+          onToday={handleToday}
+        />
 
-        {/* Upcoming Sessions */}
-        {sessions.length > 0 && (
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>
-              {t("schedule.upcomingSessions")}
-            </Text>
-            {sessions.map((session) => (
-              <View key={session.id} style={styles.card}>
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardDate}>
-                    {formatDate(session.startsAt)}
-                  </Text>
-                  <View
-                    style={[
-                      styles.badge,
-                      session.userRole === "COACH" && styles.badgePrimary,
-                    ]}
-                  >
-                    <Text style={styles.badgeText}>
-                      {session.userRole === "COACH"
-                        ? t("schedule.asCoach")
-                        : t("schedule.asParticipant")}
-                    </Text>
-                  </View>
-                </View>
-                <Text style={styles.cardTitle}>{session.title}</Text>
-                <Text style={styles.cardSubtitle}>{session.venue.name}</Text>
-                <View style={styles.cardFooter}>
-                  <Clock size={14} color={colors.textSecondary} />
-                  <Text style={styles.cardTime}>
-                    {formatTime(session.startsAt)} -{" "}
-                    {formatTime(session.endsAt)}
-                  </Text>
-                  {session.capacity && (
-                    <>
-                      <Users
-                        size={14}
-                        color={colors.textSecondary}
-                        style={{ marginLeft: 12 }}
-                      />
-                      <Text style={styles.cardCapacity}>
-                        {session._count.bookings}/{session.capacity}
-                      </Text>
-                    </>
-                  )}
-                </View>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {/* Empty State */}
-        {sessions.length === 0 && events.length === 0 && (
-          <View style={styles.emptyState}>
-            <CalendarClock
-              size={64}
-              color={colors.textSecondary}
-              style={{ opacity: 0.3 }}
-            />
-            <Text style={styles.emptyTitle}>
-              {t("schedule.noUpcomingSessions")}
-            </Text>
-            <Text style={styles.emptyDescription}>
-              {t("schedule.noUpcomingEvents")}
-            </Text>
-          </View>
-        )}
+        {/* Selected Day Detail */}
+        <DayDetailPanel
+          selectedDay={selectedDay}
+          sessions={selectedDaySessions}
+          events={selectedDayEvents}
+        />
       </ScrollView>
     </SafeAreaView>
   );
@@ -346,115 +300,5 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-  },
-  section: {
-    paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
-  },
-  sectionTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: "700",
-    color: colors.text,
-    marginBottom: spacing.md,
-  },
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
-    marginBottom: spacing.md,
-    borderWidth: 1,
-    borderColor: colors.border,
-  },
-  eventCard: {
-    borderLeftWidth: 4,
-    borderLeftColor: colors.accent,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: spacing.sm,
-  },
-  cardDate: {
-    fontSize: typography.fontSize.sm,
-    fontWeight: "600",
-    color: colors.primary,
-  },
-  badge: {
-    backgroundColor: colors.secondary + "20",
-    paddingHorizontal: spacing.sm,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
-  },
-  badgePrimary: {
-    backgroundColor: colors.primary + "20",
-  },
-  badgeText: {
-    fontSize: typography.fontSize.xs,
-    fontWeight: "600",
-    color: colors.text,
-  },
-  cardTitle: {
-    fontSize: typography.fontSize.base,
-    fontWeight: "600",
-    color: colors.text,
-    marginBottom: 4,
-  },
-  cardSubtitle: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginBottom: spacing.sm,
-  },
-  cardFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: spacing.xs,
-  },
-  cardLocation: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  cardTime: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  cardCapacity: {
-    fontSize: typography.fontSize.sm,
-    color: colors.textSecondary,
-    marginLeft: spacing.xs,
-  },
-  emptyState: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.xl * 3,
-  },
-  emptyTitle: {
-    fontSize: typography.fontSize.lg,
-    fontWeight: "600",
-    color: colors.text,
-    marginTop: spacing.lg,
-    textAlign: "center",
-  },
-  emptyDescription: {
-    fontSize: typography.fontSize.base,
-    color: colors.textSecondary,
-    marginTop: spacing.sm,
-    textAlign: "center",
-  },
-  signInButton: {
-    marginTop: spacing.lg,
-    backgroundColor: colors.primary,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.lg,
-  },
-  signInButtonText: {
-    fontSize: typography.fontSize.base,
-    fontWeight: "600",
-    color: colors.white,
   },
 });

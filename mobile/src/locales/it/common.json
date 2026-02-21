@@ -75,6 +75,7 @@
     "edit": "Modifica",
     "close": "Chiudi",
     "or": "o",
+    "event": "Evento",
     "signInButton": "Accedi",
     "authTitle": "Autenticazione richiesta",
     "authDescription": "Accedi per utilizzare questa funzionalità e personalizzare la tua esperienza."
@@ -498,7 +499,8 @@
     "event": "Evento",
     "locale": "it-IT",
     "signInRequired": "Accedi per vedere il tuo calendario",
-    "signInButton": "Accedi"
+    "signInButton": "Accedi",
+    "noActivitiesThisDay": "Nessuna attività in questo giorno"
   },
   "performance": {
     "title": "Performance",

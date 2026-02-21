@@ -75,6 +75,7 @@
     "edit": "Bearbeiten",
     "close": "Schließen",
     "or": "oder",
+    "event": "Veranstaltung",
     "signInButton": "Anmelden",
     "authTitle": "Anmeldung erforderlich",
     "authDescription": "Melde dich an, um auf diese Funktion zuzugreifen und dein Erlebnis zu personalisieren."
@@ -498,7 +499,8 @@
     "event": "Event",
     "locale": "de-DE",
     "signInRequired": "Melde dich an, um deinen Kalender zu sehen",
-    "signInButton": "Anmelden"
+    "signInButton": "Anmelden",
+    "noActivitiesThisDay": "Keine Aktivitäten an diesem Tag"
   },
   "performance": {
     "title": "Leistung",

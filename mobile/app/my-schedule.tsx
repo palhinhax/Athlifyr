@@ -131,9 +131,9 @@ export default function MyScheduleScreen() {
     if (date.toDateString() === now.toDateString()) {
       return t("schedule.today");
     } else if (date.toDateString() === tomorrow.toDateString()) {
-      return t("common.tomorrow");
+      return t("schedule.tomorrow");
     } else {
-      return date.toLocaleDateString(t("common.locale"), {
+      return date.toLocaleDateString(undefined, {
         weekday: "short",
         day: "numeric",
         month: "short",
@@ -143,7 +143,7 @@ export default function MyScheduleScreen() {
 
   const formatTime = (dateStr: string) => {
     const date = new Date(dateStr);
-    return date.toLocaleTimeString(t("common.locale"), {
+    return date.toLocaleTimeString(undefined, {
       hour: "2-digit",
       minute: "2-digit",
     });

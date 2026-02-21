@@ -78,6 +78,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     hasMore: false,
   });
   const observerTarget = useRef<HTMLDivElement>(null);
+  const fetchingPageRef = useRef<number | null>(null);
 
   // Date range slider state for map view
   const today = useMemo(() => {
@@ -127,6 +128,9 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
   const fetchEvents = useCallback(
     async (page: number = 1, append: boolean = false) => {
+      // Prevent duplicate requests for the same page
+      if (fetchingPageRef.current === page) return;
+      fetchingPageRef.current = page;
       try {
         if (page === 1) {
           setLoading(true);
@@ -189,7 +193,13 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
 
         // Append or replace events
         if (append) {
-          setEvents((prev) => [...prev, ...fetchedEvents]);
+          setEvents((prev) => {
+            const existingIds = new Set(prev.map((e) => e.id));
+            const newEvents = fetchedEvents.filter(
+              (e) => !existingIds.has(e.id)
+            );
+            return [...prev, ...newEvents];
+          });
         } else {
           setEvents(fetchedEvents);
         }
@@ -215,6 +225,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         console.error("Error fetching events:", err);
         setError(err instanceof Error ? err.message : "Failed to load events");
       } finally {
+        fetchingPageRef.current = null;
         setLoading(false);
         setLoadingMore(false);
       }

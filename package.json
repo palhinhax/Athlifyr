@@ -12,7 +12,7 @@
     "test:coverage": "jest --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "typecheck": "NODE_OPTIONS='--max-old-space-size=4096' tsc --noEmit",
+    "typecheck": "cross-env NODE_OPTIONS=--max-old-space-size=4096 tsc --noEmit",
     "db:migrate": "prisma migrate dev",
     "db:migrate:deploy": "prisma migrate deploy",
     "db:push": "prisma db push",

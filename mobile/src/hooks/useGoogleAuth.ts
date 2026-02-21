@@ -44,18 +44,25 @@ export function useGoogleAuth() {
     (Constants as unknown as Record<string, string>).appOwnership === "expo";
 
   // Build the redirect URI dynamically:
-  // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected)
-  // - Dev build / Production: athlifyr://redirect  (custom scheme)
-  const redirectUri = AuthSession.makeRedirectUri({
-    scheme: "athlifyr",
-    path: "redirect",
-  });
+  // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected, uses Web Client ID)
+  // - Dev build / Production (Android): com.athlifyr.app:/oauth2redirect
+  //     This is the reverse-DNS scheme required by Android OAuth Client IDs.
+  //     Google validates it automatically via package name + SHA-1 fingerprint.
+  //     Custom URI schemes (athlifyr://...) are rejected by Android-type clients.
+  const redirectUri = isExpoGo
+    ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
+    : AuthSession.makeRedirectUri({
+        scheme: "com.athlifyr.app",
+        path: "oauth2redirect",
+      });
 
   // Both environments use PKCE authorization code flow.
   // Expo Go  → Web Client ID   (web-type credential in Google Cloud Console)
   //            The redirect URI (exp://...) must be added to the client's
   //            "Authorized redirect URIs" in Google Cloud Console.
   // Standalone → Android Client ID (android-type credential)
+  //              Uses reverse-DNS redirect URI (com.athlifyr.app:/oauth2redirect)
+  //              which Google validates automatically - no manual registration needed.
   //
   // The authorization code is exchanged server-side via /auth/google/exchange
   // which uses GOOGLE_CLIENT_SECRET.

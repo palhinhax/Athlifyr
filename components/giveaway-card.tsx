@@ -184,16 +184,14 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                   ? t("prizeCount", { count: giveaway.prizeCount })
                   : t("prizeCountPlural", { count: giveaway.prizeCount })}
               </span>
-              <span className="flex items-center gap-1">
-                <Users className="h-3 w-3" />
-                {giveaway.participantsCount === 1
-                  ? t("participantsCount", {
-                      count: giveaway.participantsCount,
-                    })
-                  : t("participantsCountPlural", {
-                      count: giveaway.participantsCount,
-                    })}
-              </span>
+              {giveaway.participantsCount >= 10 && (
+                <span className="flex items-center gap-1">
+                  <Users className="h-3 w-3" />
+                  {t("participantsCountPlural", {
+                    count: giveaway.participantsCount,
+                  })}
+                </span>
+              )}
               {drawDate && <span>{drawDate}</span>}
             </div>
           </div>

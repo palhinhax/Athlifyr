@@ -179,12 +179,14 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                       })}
                 </Text>
               </View>
-              <View style={styles.metaItem}>
-                <Users size={12} color={theme.colors.mutedForeground} />
-                <Text style={styles.metaText}>
-                  {giveaway.participantsCount}
-                </Text>
-              </View>
+              {giveaway.participantsCount >= 10 && (
+                <View style={styles.metaItem}>
+                  <Users size={12} color={theme.colors.mutedForeground} />
+                  <Text style={styles.metaText}>
+                    {giveaway.participantsCount}
+                  </Text>
+                </View>
+              )}
               {drawDate && <Text style={styles.metaText}>{drawDate}</Text>}
             </View>
           </View>

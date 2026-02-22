@@ -10,7 +10,8 @@ export type TemplateKey =
   | "T9"
   | "T10"
   | "T11"
-  | "T12";
+  | "T12"
+  | "T13";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -165,6 +166,17 @@ export interface GiveawayPromoPayload {
   background: Background;
 }
 
+// Template T13: App Download Promo (Google Play / App Store promotion)
+export interface AppDownloadPayload {
+  headline: string; // required, max 50 chars - main headline
+  subheadline: string; // required, max 60 chars - supporting text
+  features: string[]; // 2-4 feature highlights, each max 40 chars
+  badgeUrl: string; // Google Play badge image path (default: /images/badges/google-play-pt.png)
+  legalText?: string; // optional, trademark attribution
+  cta?: string; // optional, max 30 chars
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
@@ -177,7 +189,8 @@ export type TemplatePayload =
   | VerticalChallengePayload
   | HookCtaPayload
   | VenuePromoPayload
-  | GiveawayPromoPayload;
+  | GiveawayPromoPayload
+  | AppDownloadPayload;
 
 export interface InstagramDraft {
   id: string;

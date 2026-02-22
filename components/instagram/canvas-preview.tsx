@@ -16,6 +16,7 @@ import { TemplateVerticalChallenge } from "./template-vertical-challenge";
 import { TemplateHookCta } from "./template-hook-cta";
 import { TemplateVenuePromo } from "./template-venue-promo";
 import { TemplateGiveawayPromo } from "./template-giveaway-promo";
+import { TemplateAppDownload } from "./template-app-download";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -178,10 +179,21 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T13":
+          return (
+            <TemplateAppDownload
+              payload={
+                payload as Parameters<typeof TemplateAppDownload>[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1-T12.
+              Unknown template: {templateKey}. Expected T1-T13.
             </div>
           );
       }

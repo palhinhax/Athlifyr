@@ -1,4 +1,5 @@
 import createNextIntlPlugin from "next-intl/plugin";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
@@ -74,4 +75,28 @@ const nextConfig = {
   },
 };
 
-export default withNextIntl(nextConfig);
+export default withSentryConfig(withNextIntl(nextConfig), {
+  // Sentry organization and project (set in environment or CI)
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+
+  // Only print logs for uploading source maps in CI
+  silent: !process.env.CI,
+
+  // Automatically instrument Next.js App Router routes and API routes
+  autoInstrumentServerFunctions: true,
+  autoInstrumentMiddleware: true,
+  autoInstrumentAppDirectory: true,
+
+  // Upload source maps during build for readable stack traces
+  // Auth token should be set via SENTRY_AUTH_TOKEN env var (server-side only)
+  sourcemaps: {
+    disable: false,
+  },
+
+  // Hides the Sentry SDK from the client bundle name to reduce noise
+  hideSourceMaps: true,
+
+  // Disable Sentry telemetry (usage stats)
+  telemetry: false,
+});

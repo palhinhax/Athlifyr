@@ -4,6 +4,7 @@ import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as Sentry from "@sentry/nextjs";
 
 function SessionSync() {
   const { data: session } = useSession();
@@ -14,6 +15,13 @@ function SessionSync() {
       localStorage.setItem("userEmail", session.user.email);
     } else {
       localStorage.removeItem("userEmail");
+    }
+
+    // Set Sentry user context: only attach pseudonymous id, never email by default
+    if (session?.user?.id) {
+      Sentry.setUser({ id: session.user.id });
+    } else {
+      Sentry.setUser(null);
     }
   }, [session]);
 

@@ -93,6 +93,22 @@ export default async function PrivacyPage({ params }: PrivacyPageProps) {
               imagens
             </li>
             <li>
+              <strong>Sentry:</strong> Para monitorização de erros e
+              estabilidade da aplicação. Recolhemos dados técnicos como
+              informação do dispositivo/navegador, versão da aplicação, stack
+              trace de erros, timestamps e um identificador de utilizador
+              pseudónimo (sem email). Os dados são conservados até 90 dias.
+              Consulta a{" "}
+              <a
+                href="https://sentry.io/privacy/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Política de Privacidade da Sentry
+              </a>
+              .
+            </li>
+            <li>
               <strong>Autoridades:</strong> Quando exigido por lei ou para
               proteger direitos
             </li>

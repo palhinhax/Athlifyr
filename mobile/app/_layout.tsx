@@ -11,6 +11,10 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/src/lib/i18n";
 import { initIntegrity } from "@/src/lib/integrity";
 import { useAuthStore } from "@/src/lib/auth-store";
+import { initSentry, setSentryUser, clearSentryUser } from "@/src/lib/sentry";
+
+// Initialise Sentry as early as possible (before any navigation)
+initSentry();
 
 // ── React Query + React Native AppState integration ────────────────────
 // By default, refetchOnWindowFocus only works in browsers.
@@ -25,12 +29,22 @@ const queryClient = new QueryClient();
 
 export default function RootLayout() {
   const loadStoredAuth = useAuthStore((s) => s.loadStoredAuth);
+  const user = useAuthStore((s) => s.user);
 
   // Restore auth session + initialize Play Integrity on app launch
   useEffect(() => {
     loadStoredAuth();
     initIntegrity();
   }, [loadStoredAuth]);
+
+  // Sync Sentry user context whenever auth state changes
+  useEffect(() => {
+    if (user?.id) {
+      setSentryUser(user.id);
+    } else {
+      clearSentryUser();
+    }
+  }, [user]);
 
   // Subscribe to AppState changes so React Query refetches on foreground
   useEffect(() => {

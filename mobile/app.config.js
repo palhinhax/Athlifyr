@@ -35,6 +35,14 @@ const config = ({ config }) => {
     plugins: [
       "expo-router",
       [
+        "@sentry/react-native/expo",
+        {
+          organization: process.env.SENTRY_ORG || "your-sentry-org",
+          project: process.env.SENTRY_PROJECT || "athlifyr-mobile",
+          // Auth token is read from SENTRY_AUTH_TOKEN env var at build time
+        },
+      ],
+      [
         "expo-camera",
         {
           cameraPermission:

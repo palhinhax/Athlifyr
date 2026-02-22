@@ -195,7 +195,12 @@ export async function GET(request: NextRequest) {
           },
         },
         _count: {
-          select: { comments: true },
+          select: {
+            comments: true,
+            giveaways: {
+              where: { status: "SCHEDULED" },
+            },
+          },
         },
       },
       orderBy: search

@@ -24,7 +24,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Plus, Gift, Users, Trophy, Calendar } from "lucide-react";
+import {
+  Loader2,
+  Plus,
+  Gift,
+  Users,
+  Trophy,
+  Calendar,
+  Pencil,
+  Trash2,
+  Send,
+} from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
 import { GiveawayStatus, Language } from "@prisma/client";
@@ -72,6 +82,9 @@ const STATUS_COLORS: Record<GiveawayStatus, string> = {
   CANCELLED: "secondary",
 };
 
+// Valid state transitions — prevents going backwards
+// (Used only for API validation, UI uses action buttons instead)
+
 export default function AdminGiveawaysPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -84,6 +97,11 @@ export default function AdminGiveawaysPage() {
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingGiveawayId, setEditingGiveawayId] = useState<string | null>(
+    null
+  );
+  const [editingOriginalStatus, setEditingOriginalStatus] =
+    useState<GiveawayStatus | null>(null);
   const [selectedGiveaway, setSelectedGiveaway] = useState<Giveaway | null>(
     null
   );
@@ -95,15 +113,26 @@ export default function AdminGiveawaysPage() {
     }>
   >([]);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
-  const [secretRevealedInput, setRevealedSecretInput] = useState("");
-  const [isSavingSecret, setIsSavingSecret] = useState(false);
+  const [winners, setWinners] = useState<
+    Array<{
+      id: string;
+      rank: number;
+      user: {
+        id: string;
+        name: string | null;
+        email: string;
+        image: string | null;
+      };
+    }>
+  >([]);
+  const [winningTicketNumbers, setWinningTicketNumbers] = useState<number[]>(
+    []
+  );
 
   const [formData, setFormData] = useState({
     eventId: "",
     drawAt: "",
     prizeCount: 1,
-    status: GiveawayStatus.DRAFT as GiveawayStatus,
-    secretHash: "",
     translations: LANGUAGES.map((lang) => ({ lang, title: "", details: "" })),
   });
 
@@ -147,25 +176,50 @@ export default function AdminGiveawaysPage() {
   const handleCreate = async () => {
     try {
       setIsSubmitting(true);
-      const res = await fetch("/api/admin/giveaways", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          translations: formData.translations.filter(
-            (t) => t.title.trim() && t.details.trim()
-          ),
-        }),
-      });
-      if (!res.ok) throw new Error("Failed to create");
-      toast({ title: t("toast.created"), description: t("toast.createdDesc") });
+
+      // Convert date-only input (YYYY-MM-DD) to full ISO with fixed time 12:00 UTC
+      const drawAtISO = formData.drawAt ? `${formData.drawAt}T12:00:00Z` : null;
+      const payload = {
+        ...formData,
+        drawAt: drawAtISO,
+        translations: formData.translations.filter(
+          (t) => t.title.trim() && t.details.trim()
+        ),
+      };
+
+      if (editingGiveawayId) {
+        // Update existing giveaway
+        const res = await fetch(`/api/admin/giveaways/${editingGiveawayId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Failed to update");
+        toast({
+          title: t("toast.updated"),
+          description: t("toast.updatedDesc"),
+        });
+      } else {
+        // Create new giveaway
+        const res = await fetch("/api/admin/giveaways", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        if (!res.ok) throw new Error("Failed to create");
+        toast({
+          title: t("toast.created"),
+          description: t("toast.createdDesc"),
+        });
+      }
+
       setIsCreateOpen(false);
+      setEditingGiveawayId(null);
+      setEditingOriginalStatus(null);
       setFormData({
         eventId: "",
         drawAt: "",
         prizeCount: 1,
-        status: GiveawayStatus.DRAFT,
-        secretHash: "",
         translations: LANGUAGES.map((lang) => ({
           lang,
           title: "",
@@ -176,7 +230,9 @@ export default function AdminGiveawaysPage() {
     } catch {
       toast({
         title: t("toast.error"),
-        description: t("toast.createError"),
+        description: editingGiveawayId
+          ? t("toast.updateError")
+          : t("toast.createError"),
         variant: "destructive",
       });
     } finally {
@@ -225,48 +281,98 @@ export default function AdminGiveawaysPage() {
     }
   };
 
-  const openDetail = async (giveaway: Giveaway) => {
-    setSelectedGiveaway(giveaway);
-    setRevealedSecretInput(giveaway.secretRevealed ?? "");
-    setIsDetailOpen(true);
-    setIsLoadingParticipants(true);
+  const handlePublish = async (id: string) => {
     try {
-      const res = await fetch(
-        `/api/admin/giveaways/${giveaway.id}/participants`
-      );
-      if (!res.ok) throw new Error("Failed");
-      const data = await res.json();
-      setParticipants(data.participations);
-    } catch {
-      setParticipants([]);
-    } finally {
-      setIsLoadingParticipants(false);
-    }
-  };
-
-  const handleSaveRevealedSecret = async () => {
-    if (!selectedGiveaway) return;
-    try {
-      setIsSavingSecret(true);
-      const res = await fetch(`/api/admin/giveaways/${selectedGiveaway.id}`, {
+      const res = await fetch(`/api/admin/giveaways/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ secretRevealed: secretRevealedInput }),
+        body: JSON.stringify({ status: GiveawayStatus.SCHEDULED }),
       });
-      if (!res.ok) throw new Error("Failed to save revealed secret");
+      if (!res.ok) throw new Error("Failed to publish");
       toast({
         title: t("toast.updated"),
         description: t("toast.updatedDesc"),
       });
       fetchGiveaways();
+      if (selectedGiveaway?.id === id) setIsDetailOpen(false);
     } catch {
       toast({
         title: t("toast.error"),
         description: t("toast.updateError"),
         variant: "destructive",
       });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const res = await fetch(`/api/admin/giveaways/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Failed to delete");
+      toast({
+        title: t("toast.deleted"),
+        description: t("toast.deletedDesc"),
+      });
+      fetchGiveaways();
+      if (selectedGiveaway?.id === id) setIsDetailOpen(false);
+    } catch {
+      toast({
+        title: t("toast.error"),
+        description: t("toast.deleteError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const openEditForm = (giveaway: Giveaway) => {
+    setEditingGiveawayId(giveaway.id);
+    setEditingOriginalStatus(giveaway.status);
+    setFormData({
+      eventId: giveaway.eventId,
+      drawAt: giveaway.drawAt
+        ? new Date(giveaway.drawAt).toISOString().slice(0, 10)
+        : "",
+      prizeCount: giveaway.prizeCount,
+      translations: LANGUAGES.map((lang) => {
+        const existing = giveaway.translations.find((t) => t.lang === lang);
+        return {
+          lang,
+          title: existing?.title || "",
+          details: existing?.details || "",
+        };
+      }),
+    });
+    setIsDetailOpen(false);
+    setIsCreateOpen(true);
+  };
+
+  const openDetail = async (giveaway: Giveaway) => {
+    setSelectedGiveaway(giveaway);
+    setIsDetailOpen(true);
+    setIsLoadingParticipants(true);
+    setWinners([]);
+    setWinningTicketNumbers([]);
+    try {
+      const [participantsRes, detailRes] = await Promise.all([
+        fetch(`/api/admin/giveaways/${giveaway.id}/participants`),
+        fetch(`/api/admin/giveaways/${giveaway.id}`),
+      ]);
+      if (participantsRes.ok) {
+        const data = await participantsRes.json();
+        setParticipants(data.participations);
+      } else {
+        setParticipants([]);
+      }
+      if (detailRes.ok) {
+        const detailData = await detailRes.json();
+        setWinners(detailData.giveaway.winners || []);
+        setWinningTicketNumbers(detailData.giveaway.winningTicketNumbers || []);
+      }
+    } catch {
+      setParticipants([]);
     } finally {
-      setIsSavingSecret(false);
+      setIsLoadingParticipants(false);
     }
   };
 
@@ -373,11 +479,32 @@ export default function AdminGiveawaysPage() {
         </div>
       )}
 
-      {/* Create Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+      {/* Create/Edit Dialog */}
+      <Dialog
+        open={isCreateOpen}
+        onOpenChange={(open) => {
+          setIsCreateOpen(open);
+          if (!open) {
+            setEditingGiveawayId(null);
+            setEditingOriginalStatus(null);
+            setFormData({
+              eventId: "",
+              drawAt: "",
+              prizeCount: 1,
+              translations: LANGUAGES.map((lang) => ({
+                lang,
+                title: "",
+                details: "",
+              })),
+            });
+          }
+        }}
+      >
         <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{t("new")}</DialogTitle>
+            <DialogTitle>
+              {editingGiveawayId ? t("edit") : t("new")}
+            </DialogTitle>
             <DialogDescription>{t("description")}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -387,6 +514,10 @@ export default function AdminGiveawaysPage() {
                 value={formData.eventId}
                 onValueChange={(v) =>
                   setFormData((p) => ({ ...p, eventId: v }))
+                }
+                disabled={
+                  editingOriginalStatus !== null &&
+                  editingOriginalStatus !== GiveawayStatus.DRAFT
                 }
               >
                 <SelectTrigger>
@@ -405,10 +536,14 @@ export default function AdminGiveawaysPage() {
               <div>
                 <Label>{t("fields.drawAt")}</Label>
                 <Input
-                  type="datetime-local"
+                  type="date"
                   value={formData.drawAt}
                   onChange={(e) =>
                     setFormData((p) => ({ ...p, drawAt: e.target.value }))
+                  }
+                  disabled={
+                    editingOriginalStatus !== null &&
+                    editingOriginalStatus !== GiveawayStatus.DRAFT
                   }
                 />
               </div>
@@ -424,42 +559,14 @@ export default function AdminGiveawaysPage() {
                       prizeCount: parseInt(e.target.value) || 1,
                     }))
                   }
+                  disabled={
+                    editingOriginalStatus !== null &&
+                    editingOriginalStatus !== GiveawayStatus.DRAFT
+                  }
                 />
               </div>
             </div>
-            <div>
-              <Label>{t("fields.status")}</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(v) =>
-                  setFormData((p) => ({ ...p, status: v as GiveawayStatus }))
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.values(GiveawayStatus).map((s) => (
-                    <SelectItem key={s} value={s}>
-                      {t(`status.${s}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label>{t("form.secretHash")}</Label>
-              <Input
-                placeholder="SHA-256 hash"
-                value={formData.secretHash}
-                onChange={(e) =>
-                  setFormData((p) => ({ ...p, secretHash: e.target.value }))
-                }
-              />
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("form.secretHashHelp")}
-              </p>
-            </div>
+            {/* Secret and hash are now auto-generated on creation */}
             <div>
               <Label>{t("form.translations")}</Label>
               <div className="mt-2 space-y-4">
@@ -496,7 +603,13 @@ export default function AdminGiveawaysPage() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setIsCreateOpen(false);
+                setEditingGiveawayId(null);
+              }}
+            >
               {t("form.cancel")}
             </Button>
             <Button
@@ -506,7 +619,7 @@ export default function AdminGiveawaysPage() {
               {isSubmitting ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : null}
-              {t("form.create")}
+              {editingGiveawayId ? t("form.saveChanges") : t("form.create")}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -572,10 +685,37 @@ export default function AdminGiveawaysPage() {
                     <p className="text-sm text-muted-foreground">
                       {t("detail.noWinners")}
                     </p>
+                  ) : winners.length === 0 ? (
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    <p className="text-sm">
-                      {selectedGiveaway._count.winners} winners
-                    </p>
+                    <div className="max-h-48 overflow-y-auto rounded-md border">
+                      {winners.map((w) => (
+                        <div
+                          key={w.id}
+                          className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
+                        >
+                          <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="shrink-0">
+                              #{w.rank}
+                            </Badge>
+                            <div>
+                              <p className="text-sm font-medium">
+                                {w.user.name || "—"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {w.user.email}
+                              </p>
+                            </div>
+                          </div>
+                          {winningTicketNumbers[w.rank - 1] !== undefined && (
+                            <Badge variant="secondary" className="shrink-0">
+                              {t("detail.ticket")} #
+                              {winningTicketNumbers[w.rank - 1]}
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   )}
                 </div>
 
@@ -610,55 +750,64 @@ export default function AdminGiveawaysPage() {
                     </div>
                   )}
                 </div>
-
-                {/* Transparency — Reveal secret (after draw) */}
-                {selectedGiveaway.status === GiveawayStatus.DRAWN && (
-                  <div>
-                    <h3 className="mb-1 font-medium">
-                      {t("form.secretRevealed")}
-                    </h3>
-                    <p className="mb-2 text-xs text-muted-foreground">
-                      {t("form.secretRevealedHelp")}
-                    </p>
-                    <div className="flex gap-2">
-                      <Input
-                        placeholder="secret value"
-                        value={secretRevealedInput}
-                        onChange={(e) => setRevealedSecretInput(e.target.value)}
-                        className="font-mono text-xs"
-                      />
-                      <Button
-                        size="sm"
-                        onClick={handleSaveRevealedSecret}
-                        disabled={isSavingSecret}
-                      >
-                        {isSavingSecret ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          t("form.saveChanges")
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-                )}
               </div>
               <DialogFooter className="flex-wrap gap-2">
-                {selectedGiveaway.status !== GiveawayStatus.DRAWN &&
-                  selectedGiveaway.status !== GiveawayStatus.CANCELLED && (
+                {/* DRAFT actions: Edit, Publish, Draw Now, Delete */}
+                {selectedGiveaway.status === GiveawayStatus.DRAFT && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => openEditForm(selectedGiveaway)}
+                    >
+                      <Pencil className="mr-2 h-4 w-4" />
+                      {t("detail.edit")}
+                    </Button>
+                    <Button
+                      variant="default"
+                      onClick={() => handlePublish(selectedGiveaway.id)}
+                    >
+                      <Send className="mr-2 h-4 w-4" />
+                      {t("detail.publish")}
+                    </Button>
+                    <Button onClick={() => handleDraw(selectedGiveaway.id)}>
+                      <Trophy className="mr-2 h-4 w-4" />
+                      {t("detail.drawNow")}
+                    </Button>
+                    <Button
+                      variant="destructive"
+                      onClick={() => handleDelete(selectedGiveaway.id)}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      {t("detail.deleteGiveaway")}
+                    </Button>
+                  </>
+                )}
+
+                {/* SCHEDULED actions: Draw Now, Cancel */}
+                {selectedGiveaway.status === GiveawayStatus.SCHEDULED && (
+                  <>
+                    <Button onClick={() => handleDraw(selectedGiveaway.id)}>
+                      <Trophy className="mr-2 h-4 w-4" />
+                      {t("detail.drawNow")}
+                    </Button>
                     <Button
                       variant="outline"
                       onClick={() => handleCancel(selectedGiveaway.id)}
                     >
                       {t("detail.cancelGiveaway")}
                     </Button>
-                  )}
-                {(selectedGiveaway.status === GiveawayStatus.SCHEDULED ||
-                  selectedGiveaway.status === GiveawayStatus.DRAFT) && (
+                  </>
+                )}
+
+                {/* DRAWING — retry draw if stuck */}
+                {selectedGiveaway.status === GiveawayStatus.DRAWING && (
                   <Button onClick={() => handleDraw(selectedGiveaway.id)}>
                     <Trophy className="mr-2 h-4 w-4" />
                     {t("detail.drawNow")}
                   </Button>
                 )}
+
+                {/* DRAWN / CANCELLED — no status actions */}
               </DialogFooter>
             </>
           )}

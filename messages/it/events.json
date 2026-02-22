@@ -222,10 +222,12 @@
       }
     },
     "giveaway": {
+      "badge": "Sorteggio",
       "title": "Sorteggio",
       "participate": "Partecipa",
       "alreadyParticipating": "Stai già partecipando",
       "drawEnded": "Sorteggio terminato",
+      "drawPending": "Sorteggio in attesa",
       "viewWinners": "Vedi vincitori",
       "drawDate": "Data del sorteggio",
       "prizes": "{count} premio | {count} premi",
@@ -248,10 +250,12 @@
         "yourTicketNumber": "Il tuo numero: #{number}",
         "ticketPermanentNote": "Questo numero è permanente — non cambierà.",
         "winningTicketNumber": "Biglietto vincente: #{number}",
+        "winningTickets": "Biglietti vincenti",
         "finalParticipantsCount": "Totale partecipanti al sorteggio: {count}",
-        "verifyFormula": "Verifica: SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+        "verifyFormula": "SHA-256(\"{secret}|{rank}|0\") % {total} + 1 = #{winning}"
       },
-      "winner": "Vincitore"
+      "winner": "Vincitore",
+      "youWon": "🎉 Complimenti, hai vinto il sorteggio!"
     }
   },
   "eventsPage": {

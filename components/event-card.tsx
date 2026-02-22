@@ -10,6 +10,7 @@ import {
   CheckCircle,
   MessageCircle,
   Ban,
+  Gift,
 } from "lucide-react";
 import { formatDateRange } from "@/lib/event-utils";
 import type { Event, EventVariant } from "@prisma/client";
@@ -20,7 +21,7 @@ import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 interface EventCardProps {
   event: Event & {
     variants?: EventVariant[];
-    _count?: { comments: number };
+    _count?: { comments: number; giveaways?: number };
   };
   isParticipating?: boolean;
   trackingContext?: string; // Where the card is being displayed (e.g., "homepage", "events_page", "profile")
@@ -82,6 +83,12 @@ export function EventCard({
             <div className="absolute left-2 top-2 flex items-center gap-1 rounded-full bg-green-500 px-3 py-1 text-sm font-medium text-white">
               <CheckCircle className="h-4 w-4" />
               {t("going")}
+            </div>
+          )}
+          {event._count && (event._count.giveaways ?? 0) > 0 && (
+            <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-primary px-2.5 py-1 text-xs font-semibold text-primary-foreground shadow-md">
+              <Gift className="h-3.5 w-3.5" />
+              {t("giveaway.badge")}
             </div>
           )}
         </div>

@@ -319,6 +319,7 @@
       "title": "Gewinnspiele",
       "description": "Gewinnspiele und Verlosungen für Veranstaltungen verwalten",
       "new": "Neues Gewinnspiel",
+      "edit": "Gewinnspiel bearbeiten",
       "noGiveaways": "Keine Gewinnspiele",
       "noGiveawaysDescription": "Erstelle ein Gewinnspiel verknüpft mit einer Veranstaltung",
       "status": {
@@ -330,7 +331,7 @@
       },
       "fields": {
         "event": "Veranstaltung",
-        "drawAt": "Datum und Uhrzeit der Ziehung",
+        "drawAt": "Datum der Ziehung",
         "prizeCount": "Anzahl der Preise",
         "status": "Status",
         "participants": "Teilnehmer",
@@ -352,10 +353,14 @@
         "participants": "Teilnehmer",
         "winners": "Gewinner",
         "drawNow": "Jetzt ziehen",
+        "edit": "Bearbeiten",
+        "publish": "Veröffentlichen",
+        "deleteGiveaway": "Löschen",
         "cancelGiveaway": "Gewinnspiel abbrechen",
         "noWinners": "Noch keine Gewinner",
         "noParticipants": "Noch keine Teilnehmer",
-        "rank": "Rang"
+        "rank": "Rang",
+        "ticket": "Los"
       },
       "toast": {
         "created": "Gewinnspiel erstellt",
@@ -366,10 +371,13 @@
         "drawnDesc": "Die Ziehung wurde erfolgreich durchgeführt.",
         "cancelled": "Gewinnspiel abgebrochen",
         "cancelledDesc": "Das Gewinnspiel wurde abgebrochen.",
+        "deleted": "Gewinnspiel gelöscht",
+        "deletedDesc": "Das Gewinnspiel wurde erfolgreich gelöscht.",
         "error": "Fehler",
         "createError": "Fehler beim Erstellen des Gewinnspiels.",
         "updateError": "Fehler beim Aktualisieren des Gewinnspiels.",
-        "drawError": "Fehler bei der Ziehung."
+        "drawError": "Fehler bei der Ziehung.",
+        "deleteError": "Fehler beim Löschen des Gewinnspiels."
       }
     }
   }

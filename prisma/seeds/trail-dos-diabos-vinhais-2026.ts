@@ -796,37 +796,8 @@ Categories defined by age range:
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trilhos de montanha no Parque Natural de Montesinho",
-        difficulty: "Média/Alta",
-        minimumAge: 16,
-        ageRestriction: "Idade mínima: 16 anos",
-        terrain: "Terra batida, pedra, trilho natural",
-        ageCategories: [
-          "Sub-20 Masculino (16-19 anos)",
-          "Sub-20 Feminino (16-19 anos)",
-          "Senior Masculino (20-39 anos)",
-          "Senior Feminino (20-39 anos)",
-          "Veteranos 40 Masculino (40-49 anos)",
-          "Veteranos 40 Feminino (40-49 anos)",
-          "Veteranos 50 Masculino (50-59 anos)",
-          "Veteranos 50 Feminino (50-59 anos)",
-          "Veteranos 60 Masculino (60-69 anos)",
-          "Veteranos 60 Feminino (60-69 anos)",
-          "Veteranos 70+ Masculino (70-90 anos)",
-          "Veteranos 70+ Feminino (70-90 anos)",
-        ],
-        includedInPrice: [
-          "T-shirt técnica",
-          "Número de dorsal",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-        ],
-        optionalExtras: [
-          "Almoço Atleta: 8€",
-          "Opção com almoço incluído: 15€ (em vez de 7€)",
-        ],
-      }),
+      description:
+        "Superfície: Trilhos de montanha no Parque Natural de Montesinho · Dificuldade: Média/Alta · Idade mínima: 16 anos · Categorias: Sub-20, Seniores, Veteranos 40-70+ (M/F) · Inclui: T-shirt técnica, Dorsal, Chip, Seguro · Opção com almoço: 15€",
       pricingPhases: [
         {
           name: "Inscrição",
@@ -851,22 +822,8 @@ Categories defined by age range:
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Caminhos acessíveis, mista (estrada, caminhos)",
-        difficulty: "Baixa",
-        minimumAge: 2,
-        ageRestriction: "Idade mínima: 2 anos (ambos os géneros)",
-        timing: "Não cronometrada",
-        competitive: false,
-        ageCategories: ["Caminhada Não Cronometrada (Ambos, 2-90 anos)"],
-        includedInPrice: [
-          "T-shirt técnica (oferta)",
-          "Número de dorsal",
-          "Seguro desportivo",
-        ],
-        optionalExtras: ["Almoço: 15€"],
-        note: "Inscrição GRATUITA! 🎉",
-      }),
+      description:
+        "Superfície: Caminhos acessíveis, mista (estrada, caminhos) · Não competitivo · Sem cronometragem · Idade mínima: 2 anos · Inscrição GRATUITA 🎉 · Inclui: T-shirt técnica, Dorsal, Seguro · Almoço opcional: 15€",
       pricingPhases: [
         {
           name: "Inscrição Gratuita",

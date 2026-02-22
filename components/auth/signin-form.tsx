@@ -2,7 +2,7 @@
 
 import { signIn } from "next-auth/react";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { Button } from "@/components/ui/button";
@@ -62,6 +62,8 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState<string | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const { toast } = useToast();
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
@@ -89,7 +91,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           title: `Bem-vindo, ${user.name}!`,
           description: `A entrar como ${user.role}...`,
         });
-        router.push("/");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -127,7 +129,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           title: "Login efetuado",
           description: "Bem-vindo de volta!",
         });
-        router.push("/");
+        router.push(callbackUrl);
         router.refresh();
       }
     } catch {
@@ -143,7 +145,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
 
   const handleGoogleSignIn = async () => {
     try {
-      await signInWithGoogle("/");
+      await signInWithGoogle(callbackUrl);
     } catch {
       toast({
         title: "Erro",
@@ -326,7 +328,10 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
           Não tens conta?{" "}
-          <Link href="/auth/signup" className="text-primary hover:underline">
+          <Link
+            href={`/auth/signup${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+            className="text-primary hover:underline"
+          >
             Criar conta
           </Link>
         </p>

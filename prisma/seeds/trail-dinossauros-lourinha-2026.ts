@@ -930,20 +930,8 @@ Categories are defined by the athlete's age on **September 30, 2026**:
       maxParticipants: 1000, // Part of the 1000 total limit
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail entre dinossauros e praias",
-        difficulty: "Trail Longo",
-        minimumAge: 20,
-        ageRestriction: "Sub-23 M/F (20-22 anos) mínimo",
-        included: [
-          "Camisola técnica by Compressport",
-          "Meias técnicas Socksby",
-          "Gola",
-          "Medalha finisher",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-        ],
-      }),
+      description:
+        "Superfície: Trail entre dinossauros e praias · Idade mínima: 20 anos (Sub-23 M/F) · Inclui: Camisola técnica Compressport, Meias Socksby, Gola, Medalha finisher, Chip, Seguro",
       pricingPhases: [
         {
           name: "Fase Promocional",
@@ -984,20 +972,8 @@ Categories are defined by the athlete's age on **September 30, 2026**:
       maxParticipants: 1000, // Part of the 1000 total limit
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail acessível",
-        difficulty: "Trail Sprint (Curto)",
-        minimumAge: 18,
-        ageRestriction: "Juniores M/F (18-19 anos) mínimo, até 25 km",
-        included: [
-          "Camisola técnica by Compressport",
-          "Meias técnicas Socksby",
-          "Gola",
-          "Medalha finisher",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-        ],
-      }),
+      description:
+        "Superfície: Trail acessível · Idade mínima: 18 anos (Juniores M/F, até 25km) · Inclui: Camisola técnica Compressport, Meias Socksby, Gola, Medalha finisher, Chip, Seguro",
       pricingPhases: [
         {
           name: "Fase Promocional",
@@ -1038,20 +1014,8 @@ Categories are defined by the athlete's age on **September 30, 2026**:
       maxParticipants: 1000, // Part of the 1000 total limit
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail para jovens",
-        difficulty: "Trail Jovem (Mini Trail)",
-        minimumAge: 16,
-        ageRestriction: "Juvenis M/F (16-17 anos), até 15 km",
-        included: [
-          "Camisola técnica by Compressport",
-          "Meias técnicas Socksby",
-          "Gola",
-          "Medalha finisher",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-        ],
-      }),
+      description:
+        "Superfície: Trail para jovens · Idade mínima: 16 anos (Juvenis M/F, até 15km) · Inclui: Camisola técnica Compressport, Meias Socksby, Gola, Medalha finisher, Chip, Seguro",
       pricingPhases: [
         {
           name: "Fase Promocional",
@@ -1092,19 +1056,8 @@ Categories are defined by the athlete's age on **September 30, 2026**:
       maxParticipants: 75,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Caminhada entre dinossauros",
-        difficulty: "Não competitivo",
-        minimumAge: null,
-        included: [
-          "Camisola técnica",
-          "Meias técnicas Socksby",
-          "Gola",
-          "Medalha finisher",
-          "Seguro desportivo",
-        ],
-        note: "Prova não competitiva, sem classificação",
-      }),
+      description:
+        "Caminhada entre dinossauros · Não competitivo, sem classificação · Todas as idades · Inclui: Camisola técnica, Meias Socksby, Gola, Medalha finisher, Seguro",
       pricingPhases: [
         {
           name: "Fase Promocional",
@@ -1145,13 +1098,8 @@ Categories are defined by the athlete's age on **September 30, 2026**:
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail para crianças",
-        difficulty: "Kids",
-        minimumAge: null,
-        included: ["Medalha finisher", "Seguro desportivo"],
-        note: "Inscrição GRATUITA para crianças! 🎉",
-      }),
+      description:
+        "Trail para crianças · Inscrição GRATUITA 🎉 · Inclui: Medalha finisher, Seguro",
       pricingPhases: [
         {
           name: "Inscrição Gratuita",

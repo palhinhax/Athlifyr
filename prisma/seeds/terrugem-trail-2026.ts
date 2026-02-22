@@ -689,31 +689,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trilhos, caminhos agrícolas e florestais, linhas de água",
-        difficulty: "Alta - Atletas experientes",
-        minimumAge: 18,
-        ageRestriction: "Juniores M/F (18-19 anos) mínimo",
-        terrain: "Trilhos técnicos e exigentes",
-        circuits: ["Circuito Longo do CTF - Circuito de Trail das Freguesias"],
-        mandatoryEquipment: [
-          "Telemóvel com bateria carregada",
-          "Água/Reservatório mínimo de 0,5L",
-          "Apito de emergência",
-          "Manta térmica",
-          "Copo reutilizável (obrigatório em todos os postos)",
-        ],
-        included: [
-          "Seguro de Acidentes Pessoais e RC",
-          "Banhos",
-          "Dorsal personalizado",
-          "Chip integrado",
-          "Avitalhamentos líquidos e sólidos",
-          "Reforço alimentar",
-          "Lembrança finisher oficial",
-          "T-shirt técnica (opcional)",
-        ],
-      }),
+      description:
+        "Superfície: Trilhos, caminhos agrícolas e florestais, linhas de água · Dificuldade: Alta - Atletas experientes · Idade mínima: 18 anos (Juniores M/F) · Circuito Longo do CTF · Equipamento obrigatório: Telemóvel carregado, Água mín. 0,5L, Apito, Manta térmica, Copo reutilizável · Inclui: Seguro, Banhos, Dorsal, Chip, Avitalhamentos, Lembrança finisher",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -746,32 +723,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trilhos, caminhos agrícolas e florestais, linhas de água",
-        difficulty: "Média/Alta - Elevado grau de exigência",
-        minimumAge: 18,
-        ageRestriction: "Juniores M/F (18-19 anos) mínimo",
-        terrain: "Exigente a vários níveis",
-        circuits: [
-          "Circuito Curto do CTF - Circuito de Trail das Freguesias",
-          "Circuito Curto da AAL - Circuito de Trail de Lisboa",
-        ],
-        mandatoryEquipment: [
-          "Telemóvel com bateria carregada",
-          "Água/Reservatório mínimo de 0,5L",
-          "Copo reutilizável (obrigatório em todos os postos)",
-        ],
-        included: [
-          "Seguro de Acidentes Pessoais e RC",
-          "Banhos",
-          "Dorsal personalizado",
-          "Chip integrado",
-          "Avitalhamentos líquidos e sólidos",
-          "Reforço alimentar",
-          "Lembrança finisher oficial",
-          "T-shirt técnica (opcional)",
-        ],
-      }),
+      description:
+        "Superfície: Trilhos, caminhos agrícolas e florestais, linhas de água · Dificuldade: Média/Alta · Idade mínima: 18 anos (Juniores M/F) · Circuito Curto do CTF · Circuito Curto da AAL · Equipamento obrigatório: Telemóvel carregado, Água mín. 0,5L, Copo reutilizável · Inclui: Seguro, Banhos, Dorsal, Chip, Avitalhamentos, Lembrança finisher",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -804,33 +757,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trilhos, caminhos rurais, zonas de grande beleza natural",
-        difficulty: "Média - Desafiante mas acessível",
-        minimumAge: 14,
-        ageRestriction: "Iniciados M/F (14-15 anos) mínimo",
-        terrain: "Percurso desafiante mas acessível",
-        circuits: ["Circuito Curto da AAL - Circuito de Trail de Lisboa"],
-        suitableFor: [
-          "Iniciantes no Trail Running",
-          "Atletas menos experientes",
-          "Velocistas em distâncias curtas",
-        ],
-        mandatoryEquipment: [
-          "Copo reutilizável (obrigatório em todos os postos)",
-        ],
-        included: [
-          "Seguro de Acidentes Pessoais e RC",
-          "Banhos",
-          "Dorsal personalizado",
-          "Chip integrado",
-          "Avitalhamentos líquidos e sólidos",
-          "Reforço alimentar",
-          "Lembrança finisher oficial",
-          "T-shirt técnica (opcional)",
-        ],
-        note: "Excelente oportunidade para experimentar Trail Running em segurança",
-      }),
+      description:
+        "Superfície: Trilhos, caminhos rurais, zonas de grande beleza natural · Dificuldade: Média - Desafiante mas acessível · Idade mínima: 14 anos · Circuito Curto da AAL · Ideal para iniciantes no Trail Running · Equipamento obrigatório: Copo reutilizável · Inclui: Seguro, Banhos, Dorsal, Chip, Avitalhamentos, Lembrança finisher",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -863,26 +791,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Caminhos acessíveis",
-        difficulty: "Baixa - Não competitivo",
-        minimumAge: null,
-        ageRestriction: "Todas as idades",
-        terrain: "Percurso acessível",
-        competitive: false,
-        objective: "Promoção de hábitos de vida saudáveis",
-        timing: "Não cronometrada",
-        included: [
-          "Seguro de Acidentes Pessoais e RC",
-          "Banhos",
-          "Dorsal personalizado",
-          "Avitalhamentos líquidos e sólidos",
-          "Reforço alimentar",
-          "Lembrança finisher oficial",
-          "T-shirt técnica (opcional)",
-        ],
-        note: "Prova não competitiva para promoção de hábitos saudáveis",
-      }),
+      description:
+        "Superfície: Caminhos acessíveis · Não competitivo · Sem cronometragem · Todas as idades · Promoção de hábitos de vida saudáveis · Inclui: Seguro, Banhos, Dorsal, Avitalhamentos, Lembrança finisher",
       pricingPhases: [
         {
           name: "1ª Fase",

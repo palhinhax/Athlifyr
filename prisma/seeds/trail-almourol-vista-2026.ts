@@ -761,11 +761,8 @@ Giovani M/F (16-17 anni, fino a 15km) | Juniores M/F (18-19 anni, fino a 25km) |
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail",
-        chipTiming: true,
-        ageRestriction: "Juniores (18-19 anos) até 25km",
-      }),
+      description:
+        "Superfície: Trail · Cronometragem por chip · Restrição de idade: Juniores (18-19 anos) até 25km",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -798,11 +795,8 @@ Giovani M/F (16-17 anni, fino a 15km) | Juniores M/F (18-19 anni, fino a 25km) |
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail",
-        chipTiming: true,
-        ageRestriction: "Juniores (18-19 anos) até 25km",
-      }),
+      description:
+        "Superfície: Trail · Cronometragem por chip · Restrição de idade: Juniores (18-19 anos) até 25km",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -835,11 +829,8 @@ Giovani M/F (16-17 anni, fino a 15km) | Juniores M/F (18-19 anni, fino a 25km) |
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail",
-        chipTiming: true,
-        ageRestriction: "Juvenil (16-17 anos) até 15km",
-      }),
+      description:
+        "Superfície: Trail · Cronometragem por chip · Restrição de idade: Juvenil (16-17 anos) até 15km",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -872,11 +863,8 @@ Giovani M/F (16-17 anni, fino a 15km) | Juniores M/F (18-19 anni, fino a 25km) |
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Trail",
-        chipTiming: false,
-        nonCompetitive: true,
-      }),
+      description:
+        "Superfície: Trail · Não competitivo · Sem cronometragem por chip",
       pricingPhases: [
         {
           name: "1ª Fase",

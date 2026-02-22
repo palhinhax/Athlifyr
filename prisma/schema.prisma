@@ -1074,6 +1074,7 @@ enum NotificationType {
   VENUE_INVITE_ACCEPTED
   CHAT_MESSAGE
   ADMIN_ANNOUNCEMENT
+  GIVEAWAY_WON
 }
 
 enum SportType {
@@ -2066,10 +2067,11 @@ model Giveaway {
   drawnAt              DateTime?
   prizeCount           Int             @default(1)
   maxWinnersPerUser    Int             @default(1)
-  secretHash           String?
-  secretRevealed       String?
+  secret               String?         // Private: random secret used in draw algorithm (stored until draw)
+  secretHash           String?         // Public: SHA-256 hash of secret (published before draw for transparency)
+  secretRevealed       String?         // Public: revealed secret after draw (proves fairness)
   finalParticipantsCount Int?
-  winningTicketNumber  Int?
+  winningTicketNumbers Int[]           // All winning ticket numbers (one per prize)
   createdAt            DateTime        @default(now())
   updatedAt            DateTime        @updatedAt
 

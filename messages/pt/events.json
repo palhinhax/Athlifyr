@@ -222,10 +222,12 @@
       "thunderstorm": "Trovoada"
     },
     "giveaway": {
+      "badge": "Sorteio",
       "title": "Sorteio",
       "participate": "Participar",
       "alreadyParticipating": "Já estás a participar",
       "drawEnded": "Sorteio terminado",
+      "drawPending": "Sorteio pendente",
       "viewWinners": "Ver vencedores",
       "drawDate": "Data do sorteio",
       "prizes": "{count} prémio | {count} prémios",
@@ -248,10 +250,12 @@
         "yourTicketNumber": "O teu número: #{number}",
         "ticketPermanentNote": "Este número é permanente — não vai mudar.",
         "winningTicketNumber": "Bilhete vencedor: #{number}",
+        "winningTickets": "Bilhetes vencedores",
         "finalParticipantsCount": "Total de participantes no sorteio: {count}",
-        "verifyFormula": "Verificar: SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+        "verifyFormula": "SHA-256(\"{secret}|{rank}|0\") % {total} + 1 = #{winning}"
       },
-      "winner": "Vencedor"
+      "winner": "Vencedor",
+      "youWon": "🎉 Parabéns, ganhaste o sorteio!"
     }
   },
   "eventsPage": {

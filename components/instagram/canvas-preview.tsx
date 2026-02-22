@@ -15,6 +15,7 @@ import { TemplateTestimonialStats } from "./template-testimonial-stats";
 import { TemplateVerticalChallenge } from "./template-vertical-challenge";
 import { TemplateHookCta } from "./template-hook-cta";
 import { TemplateVenuePromo } from "./template-venue-promo";
+import { TemplateGiveawayPromo } from "./template-giveaway-promo";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -164,10 +165,23 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T12":
+          return (
+            <TemplateGiveawayPromo
+              payload={
+                payload as Parameters<
+                  typeof TemplateGiveawayPromo
+                >[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1-T11.
+              Unknown template: {templateKey}. Expected T1-T12.
             </div>
           );
       }

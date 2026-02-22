@@ -85,12 +85,62 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // ── State transition validation ──
+    // Valid transitions:
+    //   DRAFT     → SCHEDULED, CANCELLED
+    //   SCHEDULED → DRAWING, CANCELLED
+    //   DRAWING   → DRAWN
+    //   DRAWN     → (no status change allowed)
+    //   CANCELLED → (terminal state)
+    const VALID_TRANSITIONS: Record<GiveawayStatus, GiveawayStatus[]> = {
+      DRAFT: [GiveawayStatus.SCHEDULED, GiveawayStatus.CANCELLED],
+      SCHEDULED: [GiveawayStatus.DRAWING, GiveawayStatus.CANCELLED],
+      DRAWING: [GiveawayStatus.DRAWN],
+      DRAWN: [],
+      CANCELLED: [],
+    };
+
+    if (status !== undefined && status !== existing.status) {
+      const allowed = VALID_TRANSITIONS[existing.status] ?? [];
+      if (!allowed.includes(status)) {
+        return NextResponse.json(
+          {
+            error: `Invalid status transition: ${existing.status} → ${status}`,
+          },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Only DRAFT giveaways can have core fields edited (event, prizeCount, drawAt)
     if (
-      existing.status === GiveawayStatus.DRAWN &&
-      status !== GiveawayStatus.CANCELLED
+      existing.status !== GiveawayStatus.DRAFT &&
+      (drawAt !== undefined || prizeCount !== undefined)
     ) {
-      // Only allow cancellation on drawn giveaways (besides translation updates)
-      if (drawAt !== undefined || prizeCount !== undefined) {
+      return NextResponse.json(
+        {
+          error:
+            "Cannot edit core fields after the giveaway leaves DRAFT status",
+        },
+        { status: 400 }
+      );
+    }
+
+    // CANCELLED and DRAWN are terminal — only allow secretRevealed on DRAWN
+    if (existing.status === GiveawayStatus.CANCELLED) {
+      return NextResponse.json(
+        { error: "Cannot modify a cancelled giveaway" },
+        { status: 400 }
+      );
+    }
+
+    if (existing.status === GiveawayStatus.DRAWN) {
+      // Only allow revealing the secret and updating translations
+      if (
+        drawAt !== undefined ||
+        prizeCount !== undefined ||
+        secretHash !== undefined
+      ) {
         return NextResponse.json(
           { error: "Cannot edit core fields after DRAWN" },
           { status: 400 }
@@ -154,6 +204,49 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     console.error("Error updating giveaway:", error);
     return NextResponse.json(
       { error: "Failed to update giveaway" },
+      { status: 500 }
+    );
+  }
+}
+
+// DELETE - Delete a giveaway (only DRAFT allowed)
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+  try {
+    const session = await auth();
+    if (!session?.user || session.user.role !== "ADMIN") {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { id } = await params;
+
+    const existing = await prisma.giveaway.findUnique({ where: { id } });
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Giveaway not found" },
+        { status: 404 }
+      );
+    }
+
+    if (existing.status !== GiveawayStatus.DRAFT) {
+      return NextResponse.json(
+        { error: "Only DRAFT giveaways can be deleted" },
+        { status: 400 }
+      );
+    }
+
+    // Delete related records first, then the giveaway
+    await prisma.$transaction([
+      prisma.giveawayTranslation.deleteMany({ where: { giveawayId: id } }),
+      prisma.giveawayParticipation.deleteMany({ where: { giveawayId: id } }),
+      prisma.giveawayWinner.deleteMany({ where: { giveawayId: id } }),
+      prisma.giveaway.delete({ where: { id } }),
+    ]);
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting giveaway:", error);
+    return NextResponse.json(
+      { error: "Failed to delete giveaway" },
       { status: 500 }
     );
   }

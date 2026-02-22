@@ -319,6 +319,7 @@
       "title": "Tirages au sort",
       "description": "Gérer les tirages au sort et les tombolas pour les événements",
       "new": "Nouveau Tirage",
+      "edit": "Modifier le Tirage",
       "noGiveaways": "Aucun tirage",
       "noGiveawaysDescription": "Créez un tirage lié à un événement pour commencer",
       "status": {
@@ -330,7 +331,7 @@
       },
       "fields": {
         "event": "Événement",
-        "drawAt": "Date et heure du tirage",
+        "drawAt": "Date du tirage",
         "prizeCount": "Nombre de prix",
         "status": "Statut",
         "participants": "Participants",
@@ -352,10 +353,14 @@
         "participants": "Participants",
         "winners": "Gagnants",
         "drawNow": "Tirer maintenant",
+        "edit": "Modifier",
+        "publish": "Publier",
+        "deleteGiveaway": "Supprimer",
         "cancelGiveaway": "Annuler le tirage",
         "noWinners": "Pas encore de gagnants",
         "noParticipants": "Pas encore de participants",
-        "rank": "Rang"
+        "rank": "Rang",
+        "ticket": "Billet"
       },
       "toast": {
         "created": "Tirage créé",
@@ -366,10 +371,13 @@
         "drawnDesc": "Le tirage a été effectué avec succès.",
         "cancelled": "Tirage annulé",
         "cancelledDesc": "Le tirage a été annulé.",
+        "deleted": "Tirage supprimé",
+        "deletedDesc": "Le tirage a été supprimé avec succès.",
         "error": "Erreur",
         "createError": "Échec de la création du tirage.",
         "updateError": "Échec de la mise à jour du tirage.",
-        "drawError": "Échec du tirage."
+        "drawError": "Échec du tirage.",
+        "deleteError": "Échec de la suppression du tirage."
       }
     }
   }

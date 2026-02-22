@@ -319,6 +319,7 @@
       "title": "Giveaways",
       "description": "Manage ticket giveaways and raffles for events",
       "new": "New Giveaway",
+      "edit": "Edit Giveaway",
       "noGiveaways": "No giveaways",
       "noGiveawaysDescription": "Create a giveaway linked to an event to get started",
       "status": {
@@ -330,7 +331,7 @@
       },
       "fields": {
         "event": "Event",
-        "drawAt": "Draw Date & Time",
+        "drawAt": "Draw Date",
         "prizeCount": "Number of Prizes",
         "status": "Status",
         "participants": "Participants",
@@ -352,10 +353,14 @@
         "participants": "Participants",
         "winners": "Winners",
         "drawNow": "Draw Now",
+        "edit": "Edit",
+        "publish": "Publish",
+        "deleteGiveaway": "Delete",
         "cancelGiveaway": "Cancel Giveaway",
         "noWinners": "No winners yet",
         "noParticipants": "No participants yet",
-        "rank": "Rank"
+        "rank": "Rank",
+        "ticket": "Ticket"
       },
       "toast": {
         "created": "Giveaway created",
@@ -366,10 +371,13 @@
         "drawnDesc": "The draw was performed successfully.",
         "cancelled": "Giveaway cancelled",
         "cancelledDesc": "The giveaway was cancelled.",
+        "deleted": "Giveaway deleted",
+        "deletedDesc": "The giveaway was successfully deleted.",
         "error": "Error",
         "createError": "Failed to create giveaway.",
         "updateError": "Failed to update giveaway.",
-        "drawError": "Failed to perform draw."
+        "drawError": "Failed to perform draw.",
+        "deleteError": "Failed to delete giveaway."
       }
     }
   }

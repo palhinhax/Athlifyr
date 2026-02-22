@@ -371,6 +371,13 @@ export default async function EventPage({ params }: PageProps) {
         <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
           {/* Main Content - Left Column */}
           <div className="min-w-0 overflow-hidden">
+            {/* Giveaway Banner - Top of Content */}
+            {!event.cancelled && (
+              <div className="mb-6">
+                <GiveawayCard eventId={event.id} />
+              </div>
+            )}
+
             {/* Meta Info - Date and Location */}
             <EventMetaInfo
               startDate={event.startDate}
@@ -424,13 +431,6 @@ export default async function EventPage({ params }: PageProps) {
                 goToWebsite: t("goToWebsite"),
               }}
             />
-
-            {/* Giveaway Card */}
-            {!event.cancelled && (
-              <div className="mt-8">
-                <GiveawayCard eventId={event.id} />
-              </div>
-            )}
 
             {/* Event Registration */}
             {!event.cancelled && (

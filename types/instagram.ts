@@ -9,7 +9,8 @@ export type TemplateKey =
   | "T8"
   | "T9"
   | "T10"
-  | "T11";
+  | "T11"
+  | "T12";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -153,6 +154,17 @@ export interface VenuePromoPayload {
   background: Background;
 }
 
+// Template T12: Giveaway Promo (Giveaway/Sorteio announcement)
+export interface GiveawayPromoPayload {
+  eventName: string; // required, max 50 chars - event name
+  giveawayTitle: string; // required, max 40 chars - e.g., "SORTEIO"
+  prize: string; // required, max 60 chars - what's being given away
+  drawDate?: string; // optional, max 30 chars - e.g., "15 Mar 2026"
+  howToEnter: string[]; // 2-4 steps, each max 40 chars
+  cta?: string; // optional, max 30 chars
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
@@ -164,7 +176,8 @@ export type TemplatePayload =
   | TestimonialStatsPayload
   | VerticalChallengePayload
   | HookCtaPayload
-  | VenuePromoPayload;
+  | VenuePromoPayload
+  | GiveawayPromoPayload;
 
 export interface InstagramDraft {
   id: string;

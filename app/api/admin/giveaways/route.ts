@@ -2,6 +2,20 @@ import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GiveawayStatus, Language } from "@prisma/client";
+import crypto from "crypto";
+
+/**
+ * Generates a random secret and its SHA-256 hash for giveaway transparency.
+ * The secret should be kept private until after the draw.
+ * The hash is published before the draw to prove fairness.
+ */
+function generateSecretAndHash(): { secret: string; hash: string } {
+  // Generate a cryptographically secure random secret (32 bytes = 256 bits)
+  const secret = crypto.randomBytes(32).toString("hex");
+  // Create SHA-256 hash of the secret
+  const hash = crypto.createHash("sha256").update(secret).digest("hex");
+  return { secret, hash };
+}
 
 // GET - List all giveaways for admin
 export async function GET(request: NextRequest) {
@@ -67,19 +81,17 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, drawAt, prizeCount, status, translations, secretHash } =
-      body as {
-        eventId: string;
-        drawAt?: string;
-        prizeCount?: number;
-        status?: GiveawayStatus;
-        secretHash?: string;
-        translations?: Array<{
-          lang: Language;
-          title: string;
-          details: string;
-        }>;
-      };
+    const { eventId, drawAt, prizeCount, status, translations } = body as {
+      eventId: string;
+      drawAt?: string;
+      prizeCount?: number;
+      status?: GiveawayStatus;
+      translations?: Array<{
+        lang: Language;
+        title: string;
+        details: string;
+      }>;
+    };
 
     if (!eventId) {
       return NextResponse.json(
@@ -95,13 +107,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Generate secret and hash automatically for transparency
+    const { secret, hash } = generateSecretAndHash();
+    console.log("🎲 Generated giveaway secret (KEEP PRIVATE):", secret);
+    console.log("🔒 Generated hash (PUBLIC):", hash);
+
     const giveaway = await prisma.giveaway.create({
       data: {
         eventId,
         drawAt: drawAt ? new Date(drawAt) : undefined,
         prizeCount: prizeCount ?? 1,
         status: status ?? GiveawayStatus.DRAFT,
-        secretHash: secretHash ?? undefined,
+        secret, // Store the secret privately (used in draw algorithm)
+        secretHash: hash, // Store the hash publicly (proves transparency)
         translations: translations
           ? {
               createMany: {

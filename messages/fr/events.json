@@ -222,10 +222,12 @@
       "thunderstorm": "Orage"
     },
     "giveaway": {
+      "badge": "Tirage",
       "title": "Tirage au sort",
       "participate": "Participer",
       "alreadyParticipating": "Déjà inscrit",
       "drawEnded": "Tirage terminé",
+      "drawPending": "Tirage en attente",
       "viewWinners": "Voir les gagnants",
       "drawDate": "Date du tirage",
       "prizes": "{count} prix",
@@ -248,10 +250,12 @@
         "yourTicketNumber": "Ton numéro : #{number}",
         "ticketPermanentNote": "Ce numéro est permanent — il ne changera pas.",
         "winningTicketNumber": "Ticket gagnant : #{number}",
+        "winningTickets": "Tickets gagnants",
         "finalParticipantsCount": "Nombre total de participants au tirage : {count}",
-        "verifyFormula": "Vérifier : SHA-256(\"{secret}|1|0\") % {total} + 1 = #{winning}"
+        "verifyFormula": "SHA-256(\"{secret}|{rank}|0\") % {total} + 1 = #{winning}"
       },
-      "winner": "Gagnant"
+      "winner": "Gagnant",
+      "youWon": "🎉 Félicitations, tu as gagné le tirage !"
     }
   },
   "eventsPage": {

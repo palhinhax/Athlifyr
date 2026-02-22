@@ -885,18 +885,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 6,
-      description: JSON.stringify({
-        surface: "Trail (80%), Estrada (20%)",
-        difficulty: "Grau 2 - Ultra Endurance XL",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Geo localizador",
-          "Apito",
-        ],
-        qualifications: ["Qualificação Western States 2027"],
-      }),
+      description:
+        "Superfície: Trail (80%), Estrada (20%) · Dificuldade: Grau 2 - Ultra Endurance XL · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Geo localizador, Apito · Qualificação Western States 2027",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -937,20 +927,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 5,
-      description: JSON.stringify({
-        surface: "Trail (75%), Estrada (25%)",
-        difficulty: "Grau 2 - Ultra Endurance",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Geo localizador",
-          "Apito",
-        ],
-        qualifications: [
-          "Qualificação Western States 2027 (se concluído em 24h)",
-        ],
-      }),
+      description:
+        "Superfície: Trail (75%), Estrada (25%) · Dificuldade: Grau 2 - Ultra Endurance · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Geo localizador, Apito · Qualificação Western States 2027 (se concluído em 24h)",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -991,17 +969,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 3,
-      description: JSON.stringify({
-        surface: "Trail (70%), Estrada (30%)",
-        difficulty: "Grau 2 - Ultra Médio",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Apito",
-        ],
-        qualifications: ["Campeonato Distrital de Coimbra", "ADAC"],
-      }),
+      description:
+        "Superfície: Trail (70%), Estrada (30%) · Dificuldade: Grau 2 - Ultra Médio · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Apito · Campeonato Distrital de Coimbra · ADAC",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1042,16 +1011,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 2,
-      description: JSON.stringify({
-        surface: "Trail (65%), Estrada (35%)",
-        difficulty: "Grau 2 - Trail Longo",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Apito",
-        ],
-      }),
+      description:
+        "Superfície: Trail (65%), Estrada (35%) · Dificuldade: Grau 2 - Trail Longo · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Apito",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1092,16 +1053,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 1,
-      description: JSON.stringify({
-        surface: "Trail (60%), Estrada (40%)",
-        difficulty: "Grau 2 - Trail Sprint",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Apito",
-        ],
-      }),
+      description:
+        "Superfície: Trail (60%), Estrada (40%) · Dificuldade: Grau 2 - Trail Sprint · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Apito",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1142,16 +1095,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 0,
-      description: JSON.stringify({
-        surface: "Trail (55%), Estrada (45%)",
-        difficulty: "Grau 2 - Trail Jovem",
-        minimumEquipment: [
-          "Manta térmica",
-          "Telemóvel carregado",
-          "Copo reutilizável",
-          "Apito",
-        ],
-      }),
+      description:
+        "Superfície: Trail (55%), Estrada (45%) · Dificuldade: Grau 2 - Trail Jovem · Equipamento obrigatório: Manta térmica, Telemóvel carregado, Copo reutilizável, Apito",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1192,11 +1137,8 @@ Trofei per i primi 3 classificati (maschili e femminili) in:
       maxParticipants: null,
       atrpGrade: 2,
       itraPoints: 0,
-      description: JSON.stringify({
-        surface: "Trail (50%), Estrada (50%)",
-        difficulty: "Grau 2 - Não Competitivo",
-        minimumEquipment: ["Copo reutilizável"],
-      }),
+      description:
+        "Superfície: Trail (50%), Estrada (50%) · Dificuldade: Grau 2 - Não Competitivo · Equipamento obrigatório: Copo reutilizável",
       pricingPhases: [
         {
           name: "Preço Único",

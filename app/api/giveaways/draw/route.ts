@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { GiveawayStatus } from "@prisma/client";
 import { randomBytes, createHash } from "crypto";
+import { notifyGiveawayWinners } from "@/lib/notifications";
 
 const GIVEAWAY_DRAW_SECRET = process.env.GIVEAWAY_DRAW_SECRET;
 
@@ -66,45 +67,21 @@ export async function POST(request: Request) {
       day: "2-digit",
     }).format(nowUtc);
 
-    // Today's date range in UTC aligned to Lisbon midnight
-    const todayLisbonStart = new Date(`${lisbon}T00:00:00`);
-    const todayLisbonEnd = new Date(`${lisbon}T23:59:59`);
-    const lisbonOffsetMs =
-      nowUtc.getTime() -
-      new Date(
-        new Intl.DateTimeFormat("en-CA", {
-          timeZone: "Europe/Lisbon",
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          hour: "2-digit",
-          minute: "2-digit",
-          second: "2-digit",
-          hour12: false,
-        })
-          .format(nowUtc)
-          .replace(
-            /(\d+)\/(\d+)\/(\d+), (\d+):(\d+):(\d+)/,
-            "$3-$1-$2T$4:$5:$6"
-          )
-      ).getTime();
-
-    const startUtc = new Date(todayLisbonStart.getTime() + lisbonOffsetMs);
-    const endUtc = new Date(todayLisbonEnd.getTime() + lisbonOffsetMs);
-
     console.log(
       `🎰 Auto draw job started at ${nowUtc.toISOString()} (Lisbon date: ${lisbon})`
     );
 
+    // Find all SCHEDULED giveaways whose draw date has passed (drawAt <= now)
     const dueGiveaways = await prisma.giveaway.findMany({
       where: {
         status: GiveawayStatus.SCHEDULED,
-        drawAt: { gte: startUtc, lte: endUtc },
+        drawAt: { lte: nowUtc },
       },
       select: {
         id: true,
         prizeCount: true,
-        secretRevealed: true,
+        secret: true,
+        event: { select: { id: true, slug: true, title: true } },
       },
     });
 
@@ -114,7 +91,7 @@ export async function POST(request: Request) {
       giveawayId: string;
       participantsCount: number;
       winnersCount: number;
-      winningTicketNumber: number | null;
+      winningTicketNumbers: number[];
       error?: string;
     }> = [];
 
@@ -132,7 +109,7 @@ export async function POST(request: Request) {
             giveawayId: giveaway.id,
             participantsCount: 0,
             winnersCount: existingWinners,
-            winningTicketNumber: null,
+            winningTicketNumbers: [],
           });
           continue;
         }
@@ -152,20 +129,20 @@ export async function POST(request: Request) {
           const participantsCount = participations.length;
           const drawnAt = new Date();
           let winnersCount = 0;
-          let winningTicketNumber: number | null = null;
+          let winningTicketNumbers: number[] = [];
+
+          const ticketMap = new Map<number, string>(
+            participations.map((p) => [p.ticketNumber, p.userId])
+          );
 
           if (participantsCount > 0) {
-            const ticketMap = new Map<number, string>(
-              participations.map((p) => [p.ticketNumber, p.userId])
-            );
-
             const winningTickets = pickWinningTickets(
               participantsCount,
               giveaway.prizeCount,
-              giveaway.secretRevealed
+              giveaway.secret
             );
 
-            winningTicketNumber = winningTickets[0] ?? null;
+            winningTicketNumbers = winningTickets;
 
             await tx.giveawayWinner.createMany({
               data: winningTickets.map((ticket, index) => ({
@@ -184,17 +161,48 @@ export async function POST(request: Request) {
               status: GiveawayStatus.DRAWN,
               drawnAt,
               finalParticipantsCount: participantsCount,
-              winningTicketNumber,
+              winningTicketNumbers,
+              secretRevealed: giveaway.secret,
             },
           });
 
-          return { participantsCount, winnersCount, winningTicketNumber };
+          return {
+            participantsCount,
+            winnersCount,
+            winningTicketNumbers,
+            winnerDetails: winningTicketNumbers.map((ticket) => ({
+              userId: ticketMap.get(ticket)!,
+              ticketNumber: ticket,
+            })),
+          };
         });
 
         console.log(
-          `✅ Giveaway ${giveaway.id}: ${drawResult.participantsCount} participants, ${drawResult.winnersCount} winners, winning ticket #${drawResult.winningTicketNumber}`
+          `✅ Giveaway ${giveaway.id}: ${drawResult.participantsCount} participants, ${drawResult.winnersCount} winners, winning tickets: ${drawResult.winningTicketNumbers.map((t) => `#${t}`).join(", ")}`
         );
-        results.push({ giveawayId: giveaway.id, ...drawResult });
+
+        // Send notifications to winners (fire and forget)
+        if (drawResult.winnerDetails.length > 0) {
+          notifyGiveawayWinners({
+            giveawayId: giveaway.id,
+            eventId: giveaway.event.id,
+            eventSlug: giveaway.event.slug,
+            eventTitle: giveaway.event.title,
+            winners: drawResult.winnerDetails,
+          }).catch((err) =>
+            console.error(
+              `Failed to send giveaway winner notifications for ${giveaway.id}:`,
+              err
+            )
+          );
+        }
+
+        results.push({
+          giveawayId: giveaway.id,
+          participantsCount: drawResult.participantsCount,
+          winnersCount: drawResult.winnersCount,
+          winningTicketNumbers: drawResult.winningTicketNumbers,
+        });
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err);
         console.error(`❌ Failed to draw giveaway ${giveaway.id}:`, errMsg);
@@ -202,7 +210,7 @@ export async function POST(request: Request) {
           giveawayId: giveaway.id,
           participantsCount: 0,
           winnersCount: 0,
-          winningTicketNumber: null,
+          winningTicketNumbers: [],
           error: errMsg,
         });
       }

@@ -109,18 +109,29 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             });
           }
 
-          // Ensure the user object has normalized email for new account creation
+          // For new users, ensure normalized email is used in account creation
           if (user.email) {
             user.email = normalizedEmail;
           }
+          // For existing users, ensure profile has correct ID reference
+          if (existingUser && !user.id) {
+            user.id = existingUser.id;
+          }
         }
 
-        // Sync Google profile image on every sign-in
+        // Sync Google profile image on every sign-in (only if user already exists)
         if (profile?.picture && user?.id) {
-          await prisma.user.update({
+          // Check if user exists before updating
+          const existingUser = await prisma.user.findUnique({
             where: { id: user.id },
-            data: { image: profile.picture },
           });
+
+          if (existingUser) {
+            await prisma.user.update({
+              where: { id: user.id },
+              data: { image: profile.picture },
+            });
+          }
         }
       }
       return true;

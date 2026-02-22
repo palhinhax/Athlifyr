@@ -23,7 +23,12 @@ async function getUpcomingEvents(country: string) {
     include: {
       variants: true,
       _count: {
-        select: { comments: true },
+        select: {
+          comments: true,
+          giveaways: {
+            where: { status: "SCHEDULED" },
+          },
+        },
       },
     },
     orderBy: {

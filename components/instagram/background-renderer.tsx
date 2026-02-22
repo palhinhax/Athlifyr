@@ -5,6 +5,17 @@ interface BackgroundRendererProps {
 }
 
 /**
+ * Proxy external image URLs through our API to avoid CORS issues
+ * when rendering on canvas for export (html-to-image).
+ */
+function getProxiedUrl(url: string): string {
+  if (url.includes("backblazeb2.com")) {
+    return `/api/image-proxy?url=${encodeURIComponent(url)}`;
+  }
+  return url;
+}
+
+/**
  * BackgroundRenderer handles all background types: solid, gradient, photo, transparent
  * Used by all Instagram templates to render backgrounds consistently
  */
@@ -20,7 +31,7 @@ export function BackgroundRenderer({ background }: BackgroundRendererProps) {
       <>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={background.value}
+          src={getProxiedUrl(background.value)}
           alt=""
           className="absolute inset-0 z-0 h-full w-full object-cover"
           crossOrigin="anonymous"

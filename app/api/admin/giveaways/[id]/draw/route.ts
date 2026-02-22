@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { GiveawayStatus } from "@prisma/client";
 import { randomBytes, createHash } from "crypto";
+import { notifyGiveawayWinners } from "@/lib/notifications";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -74,7 +75,10 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
 export async function performDraw(giveawayId: string) {
   const giveaway = await prisma.giveaway.findUnique({
     where: { id: giveawayId },
-    include: { _count: { select: { winners: true } } },
+    include: {
+      _count: { select: { winners: true } },
+      event: { select: { id: true, slug: true, title: true } },
+    },
   });
 
   if (!giveaway) {
@@ -120,22 +124,22 @@ export async function performDraw(giveawayId: string) {
     const participantsCount = participations.length;
     const drawnAt = new Date();
     let winnersCount = 0;
-    let winningTicketNumber: number | null = null;
+    let winningTicketNumbers: number[] = [];
+
+    // Build ticket→userId map
+    const ticketMap = new Map<number, string>(
+      participations.map((p) => [p.ticketNumber, p.userId])
+    );
 
     if (participantsCount > 0) {
-      // Build ticket→userId map
-      const ticketMap = new Map<number, string>(
-        participations.map((p) => [p.ticketNumber, p.userId])
-      );
-
-      // Pick winning ticket numbers
+      // Pick winning ticket numbers using the auto-generated secret
       const winningTickets = pickWinningTickets(
         participantsCount,
         giveaway.prizeCount,
-        giveaway.secretRevealed
+        giveaway.secret
       );
 
-      winningTicketNumber = winningTickets[0] ?? null;
+      winningTicketNumbers = winningTickets;
 
       // Insert GiveawayWinner rows by ticket number rank
       await tx.giveawayWinner.createMany({
@@ -149,23 +153,50 @@ export async function performDraw(giveawayId: string) {
       winnersCount = winningTickets.length;
     }
 
-    // Set status to DRAWN and snapshot proof fields
+    // Set status to DRAWN, snapshot proof fields, and auto-reveal the secret
     await tx.giveaway.update({
       where: { id: giveawayId },
       data: {
         status: GiveawayStatus.DRAWN,
         drawnAt,
         finalParticipantsCount: participantsCount,
-        winningTicketNumber,
+        winningTicketNumbers,
+        secretRevealed: giveaway.secret,
       },
     });
 
     console.log(
-      `✅ Draw complete for giveaway ${giveawayId}: ${participantsCount} participants, ${winnersCount} winners, winning ticket #${winningTicketNumber}`
+      `✅ Draw complete for giveaway ${giveawayId}: ${participantsCount} participants, ${winnersCount} winners, winning tickets: ${winningTicketNumbers.map((t) => `#${t}`).join(", ")}`
     );
 
-    return { participantsCount, winnersCount, winningTicketNumber };
+    return {
+      participantsCount,
+      winnersCount,
+      winningTicketNumbers,
+      winnerDetails: winningTicketNumbers.map((ticket) => ({
+        userId: ticketMap.get(ticket)!,
+        ticketNumber: ticket,
+      })),
+    };
   });
 
-  return NextResponse.json({ success: true, ...result });
+  // Send notifications to winners (after transaction commits)
+  if (result.winnerDetails.length > 0) {
+    notifyGiveawayWinners({
+      giveawayId,
+      eventId: giveaway.event.id,
+      eventSlug: giveaway.event.slug,
+      eventTitle: giveaway.event.title,
+      winners: result.winnerDetails,
+    }).catch((err) =>
+      console.error("Failed to send giveaway winner notifications:", err)
+    );
+  }
+
+  return NextResponse.json({
+    success: true,
+    participantsCount: result.participantsCount,
+    winnersCount: result.winnersCount,
+    winningTicketNumbers: result.winningTicketNumbers,
+  });
 }

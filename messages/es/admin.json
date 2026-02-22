@@ -319,6 +319,7 @@
       "title": "Sorteos",
       "description": "Gestionar sorteos y rifas para eventos",
       "new": "Nuevo Sorteo",
+      "edit": "Editar Sorteo",
       "noGiveaways": "Sin sorteos",
       "noGiveawaysDescription": "Crea un sorteo vinculado a un evento para empezar",
       "status": {
@@ -330,7 +331,7 @@
       },
       "fields": {
         "event": "Evento",
-        "drawAt": "Fecha y Hora del Sorteo",
+        "drawAt": "Fecha del Sorteo",
         "prizeCount": "Número de Premios",
         "status": "Estado",
         "participants": "Participantes",
@@ -352,10 +353,14 @@
         "participants": "Participantes",
         "winners": "Ganadores",
         "drawNow": "Sortear Ahora",
+        "edit": "Editar",
+        "publish": "Publicar",
+        "deleteGiveaway": "Eliminar",
         "cancelGiveaway": "Cancelar Sorteo",
         "noWinners": "Aún sin ganadores",
         "noParticipants": "Aún sin participantes",
-        "rank": "Posición"
+        "rank": "Posición",
+        "ticket": "Boleto"
       },
       "toast": {
         "created": "Sorteo creado",
@@ -366,10 +371,13 @@
         "drawnDesc": "El sorteo se realizó con éxito.",
         "cancelled": "Sorteo cancelado",
         "cancelledDesc": "El sorteo fue cancelado.",
+        "deleted": "Sorteo eliminado",
+        "deletedDesc": "El sorteo fue eliminado con éxito.",
         "error": "Error",
         "createError": "Error al crear el sorteo.",
         "updateError": "Error al actualizar el sorteo.",
-        "drawError": "Error al realizar el sorteo."
+        "drawError": "Error al realizar el sorteo.",
+        "deleteError": "Error al eliminar el sorteo."
       }
     }
   }

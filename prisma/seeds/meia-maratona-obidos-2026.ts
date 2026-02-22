@@ -963,31 +963,8 @@ Le categorie sono definite dall'età dell'atleta il giorno della gara:
       maxParticipants: 1500,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Urbano e paisagístico",
-        difficulty: "Meia Maratona oficial",
-        minimumAge: 18,
-        ageCategories: [
-          "Juniores (18-19)",
-          "Seniores (20-34)",
-          "V35 (35-39)",
-          "V40 (40-44)",
-          "V45 (45-49)",
-          "V50 (50-54)",
-          "V55 (55-59)",
-          "V60 (60-64)",
-          "V65 (65-69)",
-          "V70 (70-74)",
-          "V75 (75+)",
-        ],
-        included: [
-          "T-shirt técnica",
-          "Medalha finisher",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-          "Abastecimento",
-        ],
-      }),
+      description:
+        "Superfície: Urbano e paisagístico · Meia Maratona oficial · Idade mínima: 18 anos · Categorias: Juniores, Seniores, V35 a V75+ · Inclui: T-shirt técnica, Medalha finisher, Chip, Seguro, Abastecimento",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1036,24 +1013,8 @@ Le categorie sono definite dall'età dell'atleta il giorno della gara:
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Urbano e acessível",
-        difficulty: "Corrida para todos os níveis",
-        minimumAge: 16,
-        ageCategories: [
-          "Juvenis (16-17)",
-          "Juniores (18-19)",
-          "Seniores (20-34)",
-          "Veteranos (35+)",
-        ],
-        included: [
-          "T-shirt técnica",
-          "Medalha finisher",
-          "Chip de cronometragem",
-          "Seguro desportivo",
-          "Abastecimento",
-        ],
-      }),
+      description:
+        "Superfície: Urbano e acessível · Corrida para todos os níveis · Idade mínima: 16 anos · Categorias: Juvenis, Juniores, Seniores, Veteranos · Inclui: T-shirt técnica, Medalha finisher, Chip, Seguro, Abastecimento",
       pricingPhases: [
         {
           name: "1ª Fase",
@@ -1102,17 +1063,8 @@ Le categorie sono definite dall'età dell'atleta il giorno della gara:
       maxParticipants: null,
       atrpGrade: null,
       itraPoints: null,
-      description: JSON.stringify({
-        surface: "Urbano e familiar",
-        difficulty: "Não competitivo",
-        minimumAge: null,
-        included: [
-          "T-shirt técnica unissexo",
-          "Medalha finisher",
-          "Seguro desportivo",
-        ],
-        note: "Prova não competitiva, sem classificação",
-      }),
+      description:
+        "Superfície: Urbano e familiar · Não competitivo, sem classificação · Todas as idades · Inclui: T-shirt técnica unissexo, Medalha finisher, Seguro",
       pricingPhases: [
         {
           name: "1ª Fase",

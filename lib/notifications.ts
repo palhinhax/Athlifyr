@@ -208,6 +208,24 @@ const notificationTranslations: Record<
     de: "{inviter} hat dich eingeladen, {venue} als {role} beizutreten",
     it: "{inviter} ti ha invitato a unirti a {venue} come {role}",
   },
+
+  // Giveaway notifications
+  "giveaway.won.title": {
+    en: "🎉 You Won a Giveaway!",
+    pt: "🎉 Ganhaste um Sorteio!",
+    es: "🎉 ¡Ganaste un Sorteo!",
+    fr: "🎉 Tu as Gagné un Tirage !",
+    de: "🎉 Du hast eine Verlosung Gewonnen!",
+    it: "🎉 Hai Vinto un Sorteggio!",
+  },
+  "giveaway.won.body": {
+    en: 'Congratulations! Your ticket #{ticket} won the giveaway for "{event}"',
+    pt: 'Parabéns! O teu bilhete #{ticket} ganhou o sorteio de "{event}"',
+    es: '¡Felicidades! Tu boleto #{ticket} ganó el sorteo de "{event}"',
+    fr: 'Félicitations ! Ton ticket #{ticket} a gagné le tirage de "{event}"',
+    de: 'Herzlichen Glückwunsch! Dein Ticket #{ticket} hat die Verlosung von "{event}" gewonnen',
+    it: 'Complimenti! Il tuo biglietto #{ticket} ha vinto il sorteggio di "{event}"',
+  },
 };
 
 /**
@@ -495,6 +513,8 @@ function getDefaultChannelId(type: NotificationType): string {
     case NotificationType.VENUE_INVITE:
     case NotificationType.VENUE_INVITE_ACCEPTED:
       return "venue-updates";
+    case NotificationType.GIVEAWAY_WON:
+      return "event-updates";
     default:
       return "default";
   }
@@ -1009,6 +1029,58 @@ export async function notifyEventPostComment(params: {
 
   console.log(
     `Event post comment notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
+  );
+
+  return { totalCreated, totalPushSent };
+}
+
+/**
+ * Notify giveaway winners — each winner gets a notification in their language
+ */
+export async function notifyGiveawayWinners(params: {
+  giveawayId: string;
+  eventId: string;
+  eventSlug: string;
+  eventTitle: string;
+  winners: Array<{ userId: string; ticketNumber: number }>;
+}): Promise<{ totalCreated: number; totalPushSent: number }> {
+  const { eventId, eventSlug, eventTitle, winners } = params;
+
+  if (winners.length === 0) {
+    return { totalCreated: 0, totalPushSent: 0 };
+  }
+
+  let totalCreated = 0;
+  let totalPushSent = 0;
+
+  // Send individually — each winner has a unique ticket number
+  for (const winner of winners) {
+    const locale = await getUserLocale(winner.userId);
+
+    const result = await createNotification({
+      userId: winner.userId,
+      type: NotificationType.GIVEAWAY_WON,
+      title: t("giveaway.won.title", locale),
+      body: t("giveaway.won.body", locale, {
+        ticket: String(winner.ticketNumber),
+        event: eventTitle,
+      }),
+      data: {
+        eventId,
+        eventSlug,
+        eventTitle,
+        route: `/events/${eventSlug}`,
+        screen: "event",
+      },
+      pushChannelId: "event-updates",
+    });
+
+    if (result.pushSent) totalPushSent++;
+    totalCreated++;
+  }
+
+  console.log(
+    `Giveaway winner notification for "${eventTitle}": ${totalCreated} created, ${totalPushSent} push sent`
   );
 
   return { totalCreated, totalPushSent };

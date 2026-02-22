@@ -316,6 +316,7 @@
       "title": "Sorteggi",
       "description": "Gestisci sorteggi e lotterie per gli eventi",
       "new": "Nuovo Sorteggio",
+      "edit": "Modifica Sorteggio",
       "noGiveaways": "Nessun sorteggio",
       "noGiveawaysDescription": "Crea un sorteggio collegato a un evento per iniziare",
       "status": {
@@ -327,7 +328,7 @@
       },
       "fields": {
         "event": "Evento",
-        "drawAt": "Data e ora del sorteggio",
+        "drawAt": "Data del sorteggio",
         "prizeCount": "Numero di premi",
         "status": "Stato",
         "participants": "Partecipanti",
@@ -349,10 +350,14 @@
         "participants": "Partecipanti",
         "winners": "Vincitori",
         "drawNow": "Estrai ora",
+        "edit": "Modifica",
+        "publish": "Pubblica",
+        "deleteGiveaway": "Elimina",
         "cancelGiveaway": "Annulla sorteggio",
         "noWinners": "Ancora nessun vincitore",
         "noParticipants": "Ancora nessun partecipante",
-        "rank": "Posizione"
+        "rank": "Posizione",
+        "ticket": "Biglietto"
       },
       "toast": {
         "created": "Sorteggio creato",
@@ -363,10 +368,13 @@
         "drawnDesc": "Il sorteggio è stato eseguito con successo.",
         "cancelled": "Sorteggio annullato",
         "cancelledDesc": "Il sorteggio è stato annullato.",
+        "deleted": "Sorteggio eliminato",
+        "deletedDesc": "Il sorteggio è stato eliminato con successo.",
         "error": "Errore",
         "createError": "Impossibile creare il sorteggio.",
         "updateError": "Impossibile aggiornare il sorteggio.",
-        "drawError": "Impossibile eseguire il sorteggio."
+        "drawError": "Impossibile eseguire il sorteggio.",
+        "deleteError": "Impossibile eliminare il sorteggio."
       }
     }
   }

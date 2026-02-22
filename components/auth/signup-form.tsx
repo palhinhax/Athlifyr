@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import { useLocale } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
@@ -39,6 +39,8 @@ export function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const { toast } = useToast();
   const { signInWithGoogle, isLoading: isGoogleLoading } = useGoogleAuth();
 
@@ -93,7 +95,9 @@ export function SignUpForm() {
         description: "Agora podes fazer login",
       });
 
-      router.push(`/${locale}/auth/signin`);
+      router.push(
+        `/${locale}/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`
+      );
     } catch (error) {
       toast({
         title: "Erro ao criar conta",
@@ -112,7 +116,7 @@ export function SignUpForm() {
     });
 
     try {
-      await signInWithGoogle("/");
+      await signInWithGoogle(callbackUrl);
     } catch {
       // Track Google signup failure
       analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
@@ -267,7 +271,10 @@ export function SignUpForm() {
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
           Já tens conta?{" "}
-          <Link href="/auth/signin" className="text-primary hover:underline">
+          <Link
+            href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+            className="text-primary hover:underline"
+          >
             Fazer login
           </Link>
         </p>

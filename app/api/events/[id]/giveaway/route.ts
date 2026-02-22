@@ -4,13 +4,13 @@ import { prisma } from "@/lib/prisma";
 import { GiveawayStatus, Language } from "@prisma/client";
 
 interface RouteParams {
-  params: Promise<{ eventId: string }>;
+  params: Promise<{ id: string }>;
 }
 
 // GET - Get active giveaway for an event (public + user join status)
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { eventId } = await params;
+    const { id: eventId } = await params;
     const user = await getAuthenticatedUser(request);
 
     // Fetch the most recent active giveaway for this event
@@ -78,7 +78,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         secretHash: giveaway.secretHash,
         secretRevealed: giveaway.secretRevealed,
         finalParticipantsCount: giveaway.finalParticipantsCount,
-        winningTicketNumber: giveaway.winningTicketNumber,
+        winningTicketNumbers: giveaway.winningTicketNumbers,
+        isWinner:
+          Array.isArray(giveaway.winners) && giveaway.winners.length > 0,
         translation,
         hasJoined,
         ticketNumber,

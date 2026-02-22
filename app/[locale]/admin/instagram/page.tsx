@@ -31,6 +31,7 @@ import { TestimonialStatsForm } from "@/components/instagram/testimonial-stats-f
 import { VerticalChallengeForm } from "@/components/instagram/vertical-challenge-form";
 import { HookCtaForm } from "@/components/instagram/hook-cta-form";
 import { VenuePromoForm } from "@/components/instagram/venue-promo-form";
+import { GiveawayPromoForm } from "@/components/instagram/giveaway-promo-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -46,6 +47,7 @@ import {
   type VerticalChallengePayload,
   type HookCtaPayload,
   type VenuePromoPayload,
+  type GiveawayPromoPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -216,6 +218,18 @@ export default function InstagramGeneratorPage() {
   const [t11LogoUrl, setT11LogoUrl] = useState<string | undefined>();
   const [t11Cta, setT11Cta] = useState("Descobre na Athlifyr");
   const [t11Instagram, setT11Instagram] = useState<string | undefined>();
+
+  // T12: Giveaway Promo
+  const [t12EventName, setT12EventName] = useState("");
+  const [t12GiveawayTitle, setT12GiveawayTitle] = useState("SORTEIO");
+  const [t12Prize, setT12Prize] = useState("1 Inscrição");
+  const [t12DrawDate, setT12DrawDate] = useState("");
+  const [t12HowToEnter, setT12HowToEnter] = useState<string[]>([
+    "Cria conta na Athlifyr",
+    "Visita a página do evento",
+    "Clica em Participar",
+  ]);
+  const [t12Cta, setT12Cta] = useState("Participa Já");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -596,8 +610,19 @@ export default function InstagramGeneratorPage() {
           background,
         } as VenuePromoPayload;
 
+      case "T12":
+        return {
+          eventName: t12EventName,
+          giveawayTitle: t12GiveawayTitle,
+          prize: t12Prize,
+          drawDate: t12DrawDate || undefined,
+          howToEnter: t12HowToEnter.filter((s) => s.trim()),
+          cta: t12Cta || undefined,
+          background,
+        } as GiveawayPromoPayload;
+
       default:
-        throw new Error(`Unknown template: ${templateKey}. Expected T1-T11.`);
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T12.`);
     }
   };
 
@@ -1008,6 +1033,23 @@ export default function InstagramGeneratorPage() {
                   setT11Cta(payload.cta || "Descobre na Athlifyr");
                   setT11Instagram(payload.instagram);
                 }}
+              />
+            )}
+
+            {templateKey === "T12" && (
+              <GiveawayPromoForm
+                eventName={t12EventName}
+                giveawayTitle={t12GiveawayTitle}
+                prize={t12Prize}
+                drawDate={t12DrawDate}
+                howToEnter={t12HowToEnter}
+                cta={t12Cta}
+                onEventNameChange={setT12EventName}
+                onGiveawayTitleChange={setT12GiveawayTitle}
+                onPrizeChange={setT12Prize}
+                onDrawDateChange={setT12DrawDate}
+                onHowToEnterChange={setT12HowToEnter}
+                onCtaChange={setT12Cta}
               />
             )}
           </Card>

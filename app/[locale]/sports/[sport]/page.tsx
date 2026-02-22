@@ -57,7 +57,12 @@ async function getSportEvents(sportType: SportType, locale: Language) {
       },
       variants: true,
       _count: {
-        select: { comments: true },
+        select: {
+          comments: true,
+          giveaways: {
+            where: { status: "SCHEDULED" },
+          },
+        },
       },
     },
     orderBy: {

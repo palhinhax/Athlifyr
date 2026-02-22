@@ -62,6 +62,27 @@
       "noResults": "No events match your filters. Try adjusting your search.",
       "resultsCount": "{{count}} events found",
       "dateRange": "Date Range"
+    },
+    "giveaway": {
+      "badge": "Giveaway",
+      "title": "Giveaway",
+      "participate": "Participate",
+      "alreadyParticipating": "Participating",
+      "drawEnded": "Draw ended",
+      "drawPending": "Draw pending",
+      "drawDate": "Draw: {{date}}",
+      "prizeCount": "{{count}} prize",
+      "prizeCountPlural": "{{count}} prizes",
+      "participantsCount": "{{count}} participant",
+      "participantsCountPlural": "{{count}} participants",
+      "joinSuccess": "You're in the draw!",
+      "joinError": "Could not join the giveaway. Please try again.",
+      "loginToParticipate": "Sign in",
+      "youWon": "🎉 You won!",
+      "transparency": {
+        "winningTickets": "Winning tickets",
+        "yourTicketNumber": "Your ticket number: #{{number}}"
+      }
     }
   },
   "common": {

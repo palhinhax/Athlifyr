@@ -62,6 +62,27 @@
       "noResults": "Nenhum evento corresponde aos teus filtros. Tenta ajustar a pesquisa.",
       "resultsCount": "{{count}} eventos encontrados",
       "dateRange": "Intervalo de Datas"
+    },
+    "giveaway": {
+      "badge": "Sorteio",
+      "title": "Sorteio",
+      "participate": "Participar",
+      "alreadyParticipating": "A participar",
+      "drawEnded": "Sorteio terminado",
+      "drawPending": "Sorteio pendente",
+      "drawDate": "Sorteio: {{date}}",
+      "prizeCount": "{{count}} prémio",
+      "prizeCountPlural": "{{count}} prémios",
+      "participantsCount": "{{count}} participante",
+      "participantsCountPlural": "{{count}} participantes",
+      "joinSuccess": "Estás no sorteio!",
+      "joinError": "Não foi possível participar no sorteio. Tenta novamente.",
+      "loginToParticipate": "Iniciar sessão",
+      "youWon": "🎉 Ganhaste!",
+      "transparency": {
+        "winningTickets": "Bilhetes vencedores",
+        "yourTicketNumber": "O teu número de bilhete: #{{number}}"
+      }
     }
   },
   "common": {

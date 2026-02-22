@@ -62,6 +62,27 @@
       "participationRegistered": "Votre participation a été enregistrée.",
       "registrationError": "Impossible d'enregistrer votre participation. Veuillez réessayer.",
       "cancellationError": "Impossible d'annuler votre participation. Veuillez réessayer."
+    },
+    "giveaway": {
+      "badge": "Tirage au sort",
+      "title": "Tirage au sort",
+      "participate": "Participer",
+      "alreadyParticipating": "Participant",
+      "drawEnded": "Tirage terminé",
+      "drawPending": "Tirage en attente",
+      "drawDate": "Tirage : {{date}}",
+      "prizeCount": "{{count}} prix",
+      "prizeCountPlural": "{{count}} prix",
+      "participantsCount": "{{count}} participant",
+      "participantsCountPlural": "{{count}} participants",
+      "joinSuccess": "Vous participez au tirage !",
+      "joinError": "Impossible de participer au tirage. Veuillez réessayer.",
+      "loginToParticipate": "Se connecter",
+      "youWon": "🎉 Vous avez gagné !",
+      "transparency": {
+        "winningTickets": "Billets gagnants",
+        "yourTicketNumber": "Votre numéro de billet : #{{number}}"
+      }
     }
   },
   "common": {

@@ -62,6 +62,27 @@
       "participationRegistered": "Deine Teilnahme wurde registriert.",
       "registrationError": "Deine Teilnahme konnte nicht registriert werden. Bitte versuche es erneut.",
       "cancellationError": "Deine Teilnahme konnte nicht abgesagt werden. Bitte versuche es erneut."
+    },
+    "giveaway": {
+      "badge": "Verlosung",
+      "title": "Verlosung",
+      "participate": "Teilnehmen",
+      "alreadyParticipating": "Teilnehmend",
+      "drawEnded": "Verlosung beendet",
+      "drawPending": "Verlosung ausstehend",
+      "drawDate": "Verlosung: {{date}}",
+      "prizeCount": "{{count}} Preis",
+      "prizeCountPlural": "{{count}} Preise",
+      "participantsCount": "{{count}} Teilnehmer",
+      "participantsCountPlural": "{{count}} Teilnehmer",
+      "joinSuccess": "Du bist bei der Verlosung dabei!",
+      "joinError": "Teilnahme an der Verlosung fehlgeschlagen. Bitte versuche es erneut.",
+      "loginToParticipate": "Anmelden",
+      "youWon": "🎉 Du hast gewonnen!",
+      "transparency": {
+        "winningTickets": "Gewinnlose",
+        "yourTicketNumber": "Deine Losnummer: #{{number}}"
+      }
     }
   },
   "common": {

@@ -62,6 +62,27 @@
       "participationRegistered": "La tua partecipazione è stata registrata.",
       "registrationError": "Impossibile registrare la tua partecipazione. Riprova.",
       "cancellationError": "Impossibile annullare la tua partecipazione. Riprova."
+    },
+    "giveaway": {
+      "badge": "Sorteggio",
+      "title": "Sorteggio",
+      "participate": "Partecipa",
+      "alreadyParticipating": "Stai partecipando",
+      "drawEnded": "Sorteggio terminato",
+      "drawPending": "Sorteggio in attesa",
+      "drawDate": "Sorteggio: {{date}}",
+      "prizeCount": "{{count}} premio",
+      "prizeCountPlural": "{{count}} premi",
+      "participantsCount": "{{count}} partecipante",
+      "participantsCountPlural": "{{count}} partecipanti",
+      "joinSuccess": "Partecipi al sorteggio!",
+      "joinError": "Impossibile partecipare al sorteggio. Riprova.",
+      "loginToParticipate": "Accedi",
+      "youWon": "🎉 Hai vinto!",
+      "transparency": {
+        "winningTickets": "Biglietti vincenti",
+        "yourTicketNumber": "Il tuo numero di biglietto: #{{number}}"
+      }
     }
   },
   "common": {

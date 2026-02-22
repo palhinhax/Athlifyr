@@ -29,6 +29,7 @@ import { EventVariantsList } from "@/src/components/EventVariantsList";
 import { EventLocationMap } from "@/src/components/EventLocationMap";
 import { EventFAQ } from "@/src/components/EventFAQ";
 import { EventRegistration } from "@/src/components/EventRegistration";
+import { GiveawayCard } from "@/src/components/GiveawayCard";
 import type { Event } from "@/src/types";
 
 export default function EventDetailScreen() {
@@ -209,6 +210,9 @@ export default function EventDetailScreen() {
               </View>
             </View>
           )}
+
+          {/* Giveaway */}
+          {!event.cancelled && <GiveawayCard eventId={event.id} />}
 
           {/* Meta Info (Date, Location, Friends) */}
           <EventMetaInfo

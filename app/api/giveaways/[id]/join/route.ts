@@ -32,9 +32,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
+    // Block participation after drawAt (deadline has passed)
     if (giveaway.drawAt && giveaway.drawAt <= new Date()) {
       return NextResponse.json(
-        { error: "Giveaway draw time has already passed" },
+        { error: "Giveaway participation deadline has passed" },
         { status: 400 }
       );
     }

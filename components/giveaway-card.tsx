@@ -117,11 +117,13 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
 
   if (!isScheduled && !isDrawn) return null;
 
-  const canJoin =
-    isScheduled && (!giveaway.drawAt || new Date(giveaway.drawAt) > new Date());
-
   const isPendingDraw =
     isScheduled && giveaway.drawAt && new Date(giveaway.drawAt) <= new Date();
+
+  const canJoin =
+    isScheduled &&
+    !isPendingDraw &&
+    (!giveaway.drawAt || new Date(giveaway.drawAt) > new Date());
 
   const drawDate = giveaway.drawAt
     ? new Intl.DateTimeFormat(locale, {

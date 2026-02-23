@@ -49,12 +49,13 @@ export function useGoogleAuth() {
   //     This is the reverse-DNS scheme required by Android OAuth Client IDs.
   //     Google validates it automatically via package name + SHA-1 fingerprint.
   //     Custom URI schemes (athlifyr://...) are rejected by Android-type clients.
+  //
+  // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
+  //    but Android OAuth clients require "scheme:/path" (one slash).
+  //    Use the literal string to avoid the Error 400: invalid_request from Google.
   const redirectUri = isExpoGo
     ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
-    : AuthSession.makeRedirectUri({
-        scheme: "com.athlifyr.app",
-        path: "oauth2redirect",
-      });
+    : "com.athlifyr.app:/oauth2redirect";
 
   // Both environments use PKCE authorization code flow.
   // Expo Go  → Web Client ID   (web-type credential in Google Cloud Console)

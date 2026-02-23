@@ -11,7 +11,7 @@
       "run": "Running",
       "trail": "Trail",
       "strength": "Strength",
-      "hyrox": "HYROX"
+      "hyrox": "Hybrid"
     },
     "confidence": {
       "low": "Low confidence",
@@ -43,7 +43,7 @@
       "deleteError": "Failed to delete entry",
       "editRun": "Edit Run",
       "editStrength": "Edit Set",
-      "editHyrox": "Edit HYROX",
+      "editHyrox": "Edit Hybrid",
       "editedSuccess": "Entry updated successfully",
       "editFailed": "Failed to update entry",
       "save": "Save"
@@ -103,22 +103,22 @@
       "exercisesTracked": "Exercises Tracked"
     },
     "hyrox": {
-      "addTitle": "Add HYROX Race",
-      "editTitle": "Edit HYROX Race",
+      "addTitle": "Add Hybrid Race",
+      "editTitle": "Edit Hybrid Race",
       "category": "Category",
       "selectCategory": "Select category",
       "time": "Finish Time",
       "date": "Race Date",
       "eventName": "Event Name",
-      "eventNamePlaceholder": "e.g., HYROX Berlin 2024",
+      "eventNamePlaceholder": "e.g., Hybrid Berlin 2024",
       "location": "Location",
       "locationPlaceholder": "e.g., Berlin, Germany",
       "timeFormat": "Format: hh:mm:ss",
       "invalidTime": "Please enter a valid time (hh:mm:ss)",
-      "savedSuccess": "HYROX race saved successfully!",
-      "saveFailed": "Failed to save HYROX race. Please try again.",
-      "noData": "No HYROX data yet",
-      "noDataDesc": "Add your first HYROX race to start tracking your times!",
+      "savedSuccess": "Hybrid race saved successfully!",
+      "saveFailed": "Failed to save Hybrid race. Please try again.",
+      "noData": "No Hybrid data yet",
+      "noDataDesc": "Add your first Hybrid race to start tracking your times!",
       "personalBest": "Personal Best",
       "basedOn": "Based on {count} entries",
       "totalRaces": "Total Races",

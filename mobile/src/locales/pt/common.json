@@ -13,7 +13,7 @@
     "RUNNING": "Corrida",
     "TRAIL": "Trail",
     "WALKING": "Caminhada",
-    "HYROX": "HYROX",
+    "Hybrid": "HYBRID",
     "CROSSFIT": "Cross Training",
     "OCR": "OCR",
     "BTT": "BTT",
@@ -80,8 +80,21 @@
       "loginToParticipate": "Iniciar sessão",
       "youWon": "🎉 Ganhaste!",
       "transparency": {
-        "winningTickets": "Bilhetes vencedores",
-        "yourTicketNumber": "O teu número de bilhete: #{{number}}"
+        "transparency": "Transparência e Imparcialidade",
+        "howItWorks": "Sorteio comprovadamente justo",
+        "step1": "1️⃣ Antes do sorteio, publicamos um hash de compromisso — uma impressão digital criptográfica de um segredo.",
+        "step2": "2️⃣ No momento do sorteio, usamos o segredo + a posição de cada vencedor para calcular os números de bilhete vencedores.",
+        "step3": "3️⃣ Após o sorteio, revelamos o segredo para que qualquer pessoa possa verificar os resultados de forma independente.",
+        "formulaTitle": "Fórmula de seleção do vencedor",
+        "formulaExplanation": "Onde \"secret\" é o segredo revelado, \"rank\" é a posição do vencedor (1.º, 2.º...), N é o número total de participantes, e \"winner\" é o número do bilhete resultante.",
+        "verifyTitle": "Verifica cada vencedor:",
+        "winningTickets": "🎉 Bilhetes vencedores",
+        "yourTicketNumber": "O teu número de bilhete: #{{number}}",
+        "secretHash": "Hash de compromisso (publicado antes do sorteio)",
+        "secretHashExplanation": "Este hash foi publicado antes do sorteio para provar que o segredo foi fixado antecipadamente. Após o sorteio, podes verificar: SHA-256(segredo revelado) = este hash.",
+        "secretRevealed": "Segredo revelado (publicado após o sorteio)",
+        "finalParticipantsCount": "Total de participantes no sorteio: {{count}}",
+        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|0\") % {{total}} + 1 = #{{winning}}"
       }
     }
   },
@@ -637,19 +650,19 @@
       "totalSets": "Total de Séries",
       "exercisesTracked": "Exercícios Registados"
     },
-    "hyrox": {
+    "Hybrid": {
       "addTitle": "Adicionar Prova HYROX",
       "category": "Categoria",
       "selectCategory": "Seleciona a categoria",
       "time": "Tempo Final",
       "date": "Data da Prova",
       "eventName": "Nome do Evento",
-      "eventNamePlaceholder": "ex: HYROX Lisboa 2024",
+      "eventNamePlaceholder": "ex: Hybrid Lisboa 2024",
       "location": "Local",
       "locationPlaceholder": "ex: Lisboa, Portugal",
       "timeFormat": "Formato: hh:mm:ss",
       "invalidTime": "Introduz um tempo válido",
-      "savedSuccess": "Prova HYROX guardada!",
+      "savedSuccess": "Prova Hybrid guardada!",
       "saveFailed": "Falha ao guardar prova HYROX",
       "noData": "Ainda sem dados HYROX",
       "noDataDesc": "Adiciona a tua primeira prova para começar!",

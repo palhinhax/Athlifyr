@@ -227,11 +227,11 @@ export default function InstagramGeneratorPage() {
   const [t12Prize, setT12Prize] = useState("1 Inscrição");
   const [t12DrawDate, setT12DrawDate] = useState("");
   const [t12HowToEnter, setT12HowToEnter] = useState<string[]>([
-    "Cria conta na Athlifyr",
     "Visita a página do evento",
     "Clica em Participar",
   ]);
   const [t12Cta, setT12Cta] = useState("Participa Já");
+  const [t12VerificationHash, setT12VerificationHash] = useState("");
 
   // T13: App Download Promo
   const [t13Headline, setT13Headline] = useState("Descarrega a App");
@@ -636,6 +636,7 @@ export default function InstagramGeneratorPage() {
           drawDate: t12DrawDate || undefined,
           howToEnter: t12HowToEnter.filter((s) => s.trim()),
           cta: t12Cta || undefined,
+          verificationHash: t12VerificationHash || undefined,
           background,
         } as GiveawayPromoPayload;
 
@@ -1073,12 +1074,14 @@ export default function InstagramGeneratorPage() {
                 drawDate={t12DrawDate}
                 howToEnter={t12HowToEnter}
                 cta={t12Cta}
+                verificationHash={t12VerificationHash}
                 onEventNameChange={setT12EventName}
                 onGiveawayTitleChange={setT12GiveawayTitle}
                 onPrizeChange={setT12Prize}
                 onDrawDateChange={setT12DrawDate}
                 onHowToEnterChange={setT12HowToEnter}
                 onCtaChange={setT12Cta}
+                onVerificationHashChange={setT12VerificationHash}
               />
             )}
 

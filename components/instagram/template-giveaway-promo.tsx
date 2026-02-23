@@ -30,6 +30,7 @@ export function TemplateGiveawayPromo({
     drawDate,
     howToEnter,
     cta,
+    verificationHash,
     background,
   } = payload;
 
@@ -144,6 +145,16 @@ export function TemplateGiveawayPromo({
           </div>
         )}
       </div>
+
+      {/* Verification Hash - tiny, at the very bottom */}
+      {verificationHash && (
+        <p
+          className="absolute bottom-2 left-0 right-0 z-20 text-center font-mono text-white/30"
+          style={{ fontSize: "10px", letterSpacing: "0.5px" }}
+        >
+          #{verificationHash}
+        </p>
+      )}
     </BrandFrame>
   );
 }

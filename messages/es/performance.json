@@ -11,7 +11,7 @@
       "run": "Carrera",
       "trail": "Trail",
       "strength": "Fuerza",
-      "hyrox": "HYROX"
+      "hyrox": "Hybrid"
     },
     "confidence": {
       "low": "Confianza baja",
@@ -43,7 +43,7 @@
       "deleteError": "Error al eliminar registro",
       "editRun": "Editar Carrera",
       "editStrength": "Editar Serie",
-      "editHyrox": "Editar HYROX",
+      "editHyrox": "Editar Hybrid",
       "editedSuccess": "Registro actualizado con éxito",
       "editFailed": "Error al actualizar registro",
       "save": "Guardar"
@@ -103,22 +103,22 @@
       "exercisesTracked": "Ejercicios Registrados"
     },
     "hyrox": {
-      "addTitle": "Añadir Carrera HYROX",
-      "editTitle": "Editar Carrera HYROX",
+      "addTitle": "Añadir Carrera Hybrid",
+      "editTitle": "Editar Carrera Hybrid",
       "category": "Categoría",
       "selectCategory": "Selecciona la categoría",
       "time": "Tiempo Final",
       "date": "Fecha de la Carrera",
       "eventName": "Nombre del Evento",
-      "eventNamePlaceholder": "ej: HYROX Madrid 2024",
+      "eventNamePlaceholder": "ej: Hybrid Madrid 2024",
       "location": "Ubicación",
       "locationPlaceholder": "ej: Madrid, España",
       "timeFormat": "Formato: hh:mm:ss",
       "invalidTime": "Introduce un tiempo válido (hh:mm:ss)",
-      "savedSuccess": "¡Carrera HYROX guardada con éxito!",
-      "saveFailed": "Error al guardar carrera HYROX. Inténtalo de nuevo.",
-      "noData": "Aún no hay datos HYROX",
-      "noDataDesc": "¡Añade tu primera carrera HYROX para empezar a seguir tus tiempos!",
+      "savedSuccess": "¡Carrera Hybrid guardada con éxito!",
+      "saveFailed": "Error al guardar carrera Hybrid. Inténtalo de nuevo.",
+      "noData": "Aún no hay datos Hybrid",
+      "noDataDesc": "¡Añade tu primera carrera Hybrid para empezar a seguir tus tiempos!",
       "personalBest": "Récord Personal",
       "basedOn": "Basado en {count} registros",
       "totalRaces": "Total de Carreras",

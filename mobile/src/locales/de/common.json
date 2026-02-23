@@ -13,7 +13,7 @@
     "RUNNING": "Laufen",
     "TRAIL": "Trail",
     "WALKING": "Gehen",
-    "HYROX": "HYROX",
+    "Hybrid": "HYBRID",
     "CROSSFIT": "Cross Training",
     "OCR": "OCR",
     "BTT": "MTB",
@@ -80,8 +80,21 @@
       "loginToParticipate": "Anmelden",
       "youWon": "🎉 Du hast gewonnen!",
       "transparency": {
-        "winningTickets": "Gewinnlose",
-        "yourTicketNumber": "Deine Losnummer: #{{number}}"
+        "transparency": "Transparenz und Fairness",
+        "howItWorks": "Nachweislich faire Ziehung",
+        "step1": "1️⃣ Vor der Ziehung veröffentlichen wir einen Commitment-Hash — einen kryptographischen Fingerabdruck eines Geheimnisses.",
+        "step2": "2️⃣ Zum Zeitpunkt der Ziehung verwenden wir das Geheimnis + den Rang jedes Gewinners, um die Gewinn-Ticketnummern zu berechnen.",
+        "step3": "3️⃣ Nach der Ziehung enthüllen wir das Geheimnis, damit jeder die Ergebnisse unabhängig überprüfen kann.",
+        "formulaTitle": "Formel zur Gewinnerauswahl",
+        "formulaExplanation": "Wobei 'secret' das enthüllte Geheimnis ist, 'rank' die Gewinnerposition (1., 2. ...), N die Gesamtzahl der Teilnehmer und 'winner' die resultierende Ticketnummer ist.",
+        "verifyTitle": "Überprüfe jeden Gewinner:",
+        "winningTickets": "🎉 Gewinnlose",
+        "yourTicketNumber": "Deine Losnummer: #{{number}}",
+        "secretHash": "Commitment-Hash (vor der Ziehung veröffentlicht)",
+        "secretHashExplanation": "Dieser Hash wurde vor der Ziehung veröffentlicht, um zu beweisen, dass das Geheimnis im Voraus festgelegt wurde. Nach der Ziehung kannst du überprüfen: SHA-256(enthülltes Geheimnis) = dieser Hash.",
+        "secretRevealed": "Enthülltes Geheimnis (nach der Ziehung veröffentlicht)",
+        "finalParticipantsCount": "Gesamte Teilnehmer bei der Ziehung: {{count}}",
+        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|0\") % {{total}} + 1 = #{{winning}}"
       }
     }
   },
@@ -637,14 +650,14 @@
       "totalSets": "Gesamtsätze",
       "exercisesTracked": "Verfolgte Übungen"
     },
-    "hyrox": {
+    "Hybrid": {
       "addTitle": "HYROX-Rennen hinzufügen",
       "category": "Kategorie",
       "selectCategory": "Kategorie wählen",
       "time": "Endzeit",
       "date": "Renndatum",
       "eventName": "Eventname",
-      "eventNamePlaceholder": "z.B. HYROX Berlin 2024",
+      "eventNamePlaceholder": "z.B. Hybrid Berlin 2024",
       "location": "Ort",
       "locationPlaceholder": "z.B. Berlin, Deutschland",
       "timeFormat": "Format: hh:mm:ss",

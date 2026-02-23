@@ -152,7 +152,7 @@ export function AdminExercisesClient({
         setIsLoading(false);
       }
     },
-    [debouncedSearch, selectedCategory, locale]
+    [debouncedSearch, selectedCategory, locale, toast]
   );
 
   useEffect(() => {

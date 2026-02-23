@@ -163,6 +163,7 @@ export interface GiveawayPromoPayload {
   drawDate?: string; // optional, max 30 chars - e.g., "15 Mar 2026"
   howToEnter: string[]; // 2-4 steps, each max 40 chars
   cta?: string; // optional, max 30 chars
+  verificationHash?: string; // optional, max 64 chars - SHA-256 hash for draw transparency
   background: Background;
 }
 

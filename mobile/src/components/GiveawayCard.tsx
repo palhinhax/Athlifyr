@@ -7,7 +7,14 @@ import {
   ActivityIndicator,
   Alert,
 } from "react-native";
-import { Gift, Trophy, Users, Ticket } from "lucide-react-native";
+import {
+  Gift,
+  Trophy,
+  Users,
+  Ticket,
+  ShieldCheck,
+  ChevronDown,
+} from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { api } from "@/src/lib/api";
@@ -49,6 +56,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
   const [giveaway, setGiveaway] = useState<GiveawayData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
+  const [isTransparencyOpen, setIsTransparencyOpen] = useState(false);
 
   const fetchGiveaway = useCallback(async () => {
     try {
@@ -122,6 +130,9 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
 
   const isWinner = isDrawn && giveaway.isWinner;
 
+  const shouldShowTransparencySection =
+    !!giveaway.secretHash || !!giveaway.secretRevealed;
+
   return (
     <View
       style={[
@@ -144,7 +155,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
         {/* Top: icon + info */}
         <View style={styles.topSection}>
           <View style={styles.iconCircle}>
-            <Gift size={18} color={theme.colors.primary} />
+            <Gift size={18} color="#ffffff" />
           </View>
           <View style={styles.infoSection}>
             <View style={styles.titleRow}>
@@ -159,8 +170,8 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                 </View>
               )}
               {isPendingDraw && (
-                <View style={styles.statusBadge}>
-                  <Text style={styles.statusBadgeText}>
+                <View style={styles.statusBadgePending}>
+                  <Text style={styles.statusBadgePendingText}>
                     {t("events.giveaway.drawPending")}
                   </Text>
                 </View>
@@ -234,7 +245,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
               activeOpacity={0.7}
             >
               {isJoining ? (
-                <ActivityIndicator size="small" color={theme.colors.white} />
+                <ActivityIndicator size="small" color="#ffffff" />
               ) : (
                 <Text style={styles.joinButtonText}>
                   {t("events.giveaway.participate")}
@@ -252,52 +263,206 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
         </View>
       </View>
 
-      {/* Winning tickets section (drawn state) */}
-      {isDrawn && giveaway.winningTicketNumbers.length > 0 && (
-        <View style={styles.winnersSection}>
-          <Text style={styles.winnersSectionTitle}>
-            {t("events.giveaway.transparency.winningTickets")}
-          </Text>
-          <Text style={styles.winnersSectionText}>
-            {giveaway.winningTicketNumbers.map((n) => `#${n}`).join(", ")}
-          </Text>
+      {/* Transparency section (collapsible) */}
+      {shouldShowTransparencySection && (
+        <View>
+          <TouchableOpacity
+            style={styles.transparencyTrigger}
+            onPress={() => setIsTransparencyOpen(!isTransparencyOpen)}
+            activeOpacity={0.7}
+          >
+            <ShieldCheck size={14} color="#0d9488" />
+            <Text style={styles.transparencyTriggerText}>
+              {t("events.giveaway.transparency.transparency")}
+            </Text>
+            <View style={styles.transparencyChevron}>
+              <ChevronDown
+                size={14}
+                color={theme.colors.mutedForeground}
+                style={
+                  isTransparencyOpen
+                    ? { transform: [{ rotate: "180deg" }] }
+                    : undefined
+                }
+              />
+            </View>
+          </TouchableOpacity>
+
+          {isTransparencyOpen && (
+            <View style={styles.transparencyContent}>
+              {/* Step-by-step explanation */}
+              <View style={styles.stepsBox}>
+                <View style={styles.stepsHeader}>
+                  <ShieldCheck size={14} color="#0d9488" />
+                  <Text style={styles.stepsTitle}>
+                    {t("events.giveaway.transparency.howItWorks")}
+                  </Text>
+                </View>
+                <View style={styles.stepsBody}>
+                  <Text style={styles.stepText}>
+                    {t("events.giveaway.transparency.step1")}
+                  </Text>
+                  <Text style={styles.stepText}>
+                    {t("events.giveaway.transparency.step2")}
+                  </Text>
+                  <Text style={styles.stepText}>
+                    {t("events.giveaway.transparency.step3")}
+                  </Text>
+                </View>
+              </View>
+
+              {/* Formula explanation */}
+              <View style={styles.formulaBox}>
+                <Text style={styles.formulaTitle}>
+                  {t("events.giveaway.transparency.formulaTitle")}
+                </Text>
+                <View style={styles.formulaCode}>
+                  <Text style={styles.formulaCodeText}>
+                    SHA-256(&quot;secret | rank | 0&quot;) % N + 1 = winner
+                  </Text>
+                </View>
+                <Text style={styles.formulaExplanation}>
+                  {t("events.giveaway.transparency.formulaExplanation")}
+                </Text>
+              </View>
+
+              {/* Commit hash */}
+              {giveaway.secretHash && (
+                <View style={styles.hashBox}>
+                  <Text style={styles.hashTitle}>
+                    {t("events.giveaway.transparency.secretHash")}
+                  </Text>
+                  <Text style={styles.hashExplanation}>
+                    {t("events.giveaway.transparency.secretHashExplanation")}
+                  </Text>
+                  <View style={styles.codeBlock}>
+                    <Text style={styles.codeBlockText} selectable>
+                      {giveaway.secretHash}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {/* Post-draw: final count */}
+              {isDrawn && giveaway.finalParticipantsCount !== null && (
+                <Text style={styles.finalCount}>
+                  {t("events.giveaway.transparency.finalParticipantsCount", {
+                    count: giveaway.finalParticipantsCount,
+                  })}
+                </Text>
+              )}
+
+              {/* Post-draw: winning tickets */}
+              {isDrawn && giveaway.winningTicketNumbers.length > 0 && (
+                <View style={styles.winningTicketsBox}>
+                  <Text style={styles.winningTicketsTitle}>
+                    {t("events.giveaway.transparency.winningTickets")}
+                  </Text>
+                  <Text style={styles.winningTicketsNumbers}>
+                    {giveaway.winningTicketNumbers
+                      .map((n) => `#${n}`)
+                      .join(", ")}
+                  </Text>
+                </View>
+              )}
+
+              {/* Post-draw: revealed secret + verification */}
+              {isDrawn && giveaway.secretRevealed && (
+                <View style={styles.hashBox}>
+                  <Text style={styles.hashTitle}>
+                    {t("events.giveaway.transparency.secretRevealed")}
+                  </Text>
+                  <View style={styles.codeBlock}>
+                    <Text style={styles.codeBlockText} selectable>
+                      {giveaway.secretRevealed}
+                    </Text>
+                  </View>
+                  {giveaway.finalParticipantsCount !== null &&
+                    giveaway.winningTicketNumbers.length > 0 && (
+                      <View style={styles.verifyBox}>
+                        <Text style={styles.verifyTitle}>
+                          {t("events.giveaway.transparency.verifyTitle")}
+                        </Text>
+                        {giveaway.winningTicketNumbers.map((ticket, i) => (
+                          <Text
+                            key={ticket}
+                            style={styles.verifyFormula}
+                            selectable
+                          >
+                            {t("events.giveaway.transparency.verifyFormula", {
+                              secret: giveaway.secretRevealed!,
+                              rank: i + 1,
+                              total: giveaway.finalParticipantsCount!,
+                              winning: ticket,
+                            })}
+                          </Text>
+                        ))}
+                      </View>
+                    )}
+                </View>
+              )}
+            </View>
+          )}
         </View>
       )}
+
+      {/* Winning tickets section (drawn state, outside transparency) */}
+      {isDrawn &&
+        giveaway.winningTicketNumbers.length > 0 &&
+        !shouldShowTransparencySection && (
+          <View style={styles.winnersSection}>
+            <Text style={styles.winnersSectionTitle}>
+              {t("events.giveaway.transparency.winningTickets")}
+            </Text>
+            <Text style={styles.winnersSectionText}>
+              {giveaway.winningTicketNumbers.map((n) => `#${n}`).join(", ")}
+            </Text>
+          </View>
+        )}
     </View>
   );
 }
 
+const TEAL_500 = "#14b8a6";
+const TEAL_600 = "#0d9488";
+const EMERALD_50 = "#ecfdf5";
+const EMERALD_100 = "#d1fae5";
+const EMERALD_300 = "#6ee7b7";
+const EMERALD_700 = "#047857";
+const EMERALD_800 = "#065f46";
+
 const styles = StyleSheet.create({
   container: {
-    borderRadius: theme.borderRadius.lg,
+    borderRadius: theme.borderRadius.xl,
     borderWidth: 1,
     overflow: "hidden",
     marginBottom: theme.spacing.md,
+    ...theme.shadows.sm,
   },
   containerDefault: {
-    borderColor: theme.colors.primary + "30",
-    backgroundColor: theme.colors.primary + "08",
+    borderColor: theme.colors.border,
+    backgroundColor: theme.colors.card,
   },
   containerWinner: {
-    borderColor: "#6ee7b7",
-    backgroundColor: "#ecfdf5",
+    borderColor: EMERALD_300,
+    backgroundColor: EMERALD_50,
   },
   winnerBanner: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#d1fae5",
+    backgroundColor: EMERALD_100,
     paddingHorizontal: 16,
     paddingVertical: 8,
   },
   winnerBannerText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#065f46",
+    color: EMERALD_800,
   },
   mainContent: {
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 14,
     gap: 12,
   },
   topSection: {
@@ -306,12 +471,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   iconCircle: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: theme.colors.primary + "15",
+    width: 40,
+    height: 40,
+    borderRadius: 12,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: TEAL_500,
+    ...theme.shadows.sm,
   },
   infoSection: {
     flex: 1,
@@ -338,6 +504,17 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "500",
     color: theme.colors.mutedForeground,
+  },
+  statusBadgePending: {
+    backgroundColor: "#fef3c7",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: theme.borderRadius.full,
+  },
+  statusBadgePendingText: {
+    fontSize: 11,
+    fontWeight: "500",
+    color: "#b45309",
   },
   metaRow: {
     flexDirection: "row",
@@ -367,14 +544,14 @@ const styles = StyleSheet.create({
     gap: 4,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: theme.borderRadius.full,
   },
   ticketBadgeWinner: {
-    borderColor: "#6ee7b7",
-    backgroundColor: "#d1fae5",
+    borderColor: EMERALD_300,
+    backgroundColor: EMERALD_100,
   },
   ticketBadgeText: {
     fontSize: 12,
@@ -382,20 +559,21 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
   ticketBadgeTextWinner: {
-    color: "#065f46",
+    color: EMERALD_800,
   },
   joinButton: {
-    backgroundColor: theme.colors.primary,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: theme.borderRadius.full,
     alignItems: "center",
     flex: 1,
+    backgroundColor: TEAL_600,
+    ...theme.shadows.sm,
   },
   joinButtonText: {
     fontSize: 14,
     fontWeight: "600",
-    color: theme.colors.white,
+    color: "#ffffff",
   },
   joinedBadge: {
     borderWidth: 1,
@@ -411,6 +589,172 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: theme.colors.mutedForeground,
   },
+
+  // Transparency section
+  transparencyTrigger: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border + "80",
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  transparencyTriggerText: {
+    fontSize: 12,
+    color: theme.colors.mutedForeground,
+    flex: 1,
+  },
+  transparencyChevron: {
+    marginLeft: "auto",
+  },
+  transparencyContent: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border + "80",
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    gap: 12,
+  },
+
+  // Steps box
+  stepsBox: {
+    backgroundColor: theme.colors.backgroundSecondary + "60",
+    borderRadius: theme.borderRadius.lg,
+    padding: 12,
+  },
+  stepsHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    marginBottom: 8,
+  },
+  stepsTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.text,
+  },
+  stepsBody: {
+    gap: 6,
+  },
+  stepText: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: theme.colors.mutedForeground,
+  },
+
+  // Formula box
+  formulaBox: {
+    borderWidth: 1,
+    borderColor: theme.colors.border + "80",
+    borderStyle: "dashed",
+    borderRadius: theme.borderRadius.lg,
+    padding: 12,
+    backgroundColor: theme.colors.background + "80",
+  },
+  formulaTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.text,
+  },
+  formulaCode: {
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 6,
+  },
+  formulaCodeText: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: theme.colors.text,
+    lineHeight: 18,
+  },
+  formulaExplanation: {
+    fontSize: 11,
+    color: theme.colors.mutedForeground,
+    marginTop: 6,
+    lineHeight: 16,
+  },
+
+  // Hash / secret box
+  hashBox: {
+    borderWidth: 1,
+    borderColor: theme.colors.border + "60",
+    borderRadius: theme.borderRadius.lg,
+    padding: 12,
+  },
+  hashTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.text,
+  },
+  hashExplanation: {
+    fontSize: 11,
+    color: theme.colors.mutedForeground,
+    marginTop: 2,
+    lineHeight: 16,
+  },
+  codeBlock: {
+    backgroundColor: theme.colors.backgroundSecondary,
+    borderRadius: theme.borderRadius.md,
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    marginTop: 6,
+  },
+  codeBlockText: {
+    fontSize: 11,
+    fontFamily: "monospace",
+    color: theme.colors.text,
+  },
+
+  // Final count
+  finalCount: {
+    fontSize: 12,
+    color: theme.colors.mutedForeground,
+  },
+
+  // Winning tickets box
+  winningTicketsBox: {
+    backgroundColor: EMERALD_50 + "80",
+    borderWidth: 1,
+    borderColor: EMERALD_300 + "60",
+    borderRadius: theme.borderRadius.lg,
+    padding: 12,
+  },
+  winningTicketsTitle: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: EMERALD_800,
+  },
+  winningTicketsNumbers: {
+    fontSize: 14,
+    fontWeight: "700",
+    fontFamily: "monospace",
+    color: EMERALD_700,
+    marginTop: 4,
+  },
+
+  // Verify box
+  verifyBox: {
+    backgroundColor: theme.colors.backgroundSecondary + "80",
+    borderRadius: theme.borderRadius.md,
+    padding: 10,
+    marginTop: 10,
+  },
+  verifyTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.text,
+    marginBottom: 6,
+  },
+  verifyFormula: {
+    fontSize: 10,
+    fontFamily: "monospace",
+    color: theme.colors.mutedForeground,
+    lineHeight: 16,
+  },
+
+  // Fallback winners section (when no transparency)
   winnersSection: {
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,

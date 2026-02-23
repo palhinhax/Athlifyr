@@ -11,7 +11,7 @@
       "run": "Laufen",
       "trail": "Trail",
       "strength": "Kraft",
-      "hyrox": "HYROX"
+      "hyrox": "Hybrid"
     },
     "confidence": {
       "low": "Niedrige Zuverlässigkeit",
@@ -43,7 +43,7 @@
       "deleteError": "Löschen fehlgeschlagen",
       "editRun": "Lauf bearbeiten",
       "editStrength": "Satz bearbeiten",
-      "editHyrox": "HYROX bearbeiten",
+      "editHyrox": "Hybrid bearbeiten",
       "editedSuccess": "Eintrag erfolgreich aktualisiert",
       "editFailed": "Aktualisierung fehlgeschlagen",
       "save": "Speichern"
@@ -103,22 +103,22 @@
       "exercisesTracked": "Übungen verfolgt"
     },
     "hyrox": {
-      "addTitle": "HYROX-Rennen hinzufügen",
-      "editTitle": "HYROX-Rennen bearbeiten",
+      "addTitle": "Hybrid-Rennen hinzufügen",
+      "editTitle": "Hybrid-Rennen bearbeiten",
       "category": "Kategorie",
       "selectCategory": "Kategorie auswählen",
       "time": "Endzeit",
       "date": "Wettkampfdatum",
       "eventName": "Veranstaltungsname",
-      "eventNamePlaceholder": "z.B. HYROX Berlin 2024",
+      "eventNamePlaceholder": "z.B. Hybrid Berlin 2024",
       "location": "Ort",
       "locationPlaceholder": "z.B. Berlin, Deutschland",
       "timeFormat": "Format: hh:mm:ss",
       "invalidTime": "Bitte gib eine gültige Zeit ein (hh:mm:ss)",
-      "savedSuccess": "HYROX-Rennen erfolgreich gespeichert!",
+      "savedSuccess": "Hybrid-Rennen erfolgreich gespeichert!",
       "saveFailed": "Speichern fehlgeschlagen. Bitte versuche es erneut.",
-      "noData": "Noch keine HYROX-Daten",
-      "noDataDesc": "Füge dein erstes HYROX-Rennen hinzu, um deine Zeiten zu verfolgen!",
+      "noData": "Noch keine Hybrid-Daten",
+      "noDataDesc": "Füge dein erstes Hybrid-Rennen hinzu, um deine Zeiten zu verfolgen!",
       "personalBest": "Persönliche Bestzeit",
       "basedOn": "Basierend auf {count} Einträgen",
       "totalRaces": "Gesamte Rennen",

@@ -17,6 +17,7 @@ import {
   Bug,
   Smartphone,
   Gift,
+  MessageCircle,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -34,6 +35,7 @@ const AdminAppStoreAssetsContent = lazy(
   () => import("./app-store-assets/page")
 );
 const AdminGiveawaysContent = lazy(() => import("./giveaways/page"));
+const AdminPostsContent = lazy(() => import("./posts/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -86,52 +88,92 @@ function AdminContent() {
         onValueChange={handleTabChange}
         className="w-full"
       >
-        <div className="mb-6 overflow-x-auto">
-          <TabsList className="h-auto w-full">
-            <TabsTrigger value="events" className="flex-1 gap-2">
-              <Calendar className="h-4 w-4" />
+        <div className="mb-6">
+          <TabsList className="flex h-auto flex-wrap gap-1 p-1">
+            <TabsTrigger
+              value="events"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Calendar className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.events")}</span>
             </TabsTrigger>
-            <TabsTrigger value="venues" className="flex-1 gap-2">
-              <Building2 className="h-4 w-4" />
+            <TabsTrigger
+              value="venues"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Building2 className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.venues")}</span>
             </TabsTrigger>
-            <TabsTrigger value="users" className="flex-1 gap-2">
-              <Users className="h-4 w-4" />
+            <TabsTrigger
+              value="users"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Users className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.users")}</span>
             </TabsTrigger>
-            <TabsTrigger value="contacts" className="flex-1 gap-2">
-              <Mail className="h-4 w-4" />
+            <TabsTrigger
+              value="posts"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <MessageCircle className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.posts")}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="contacts"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Mail className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.contacts")}</span>
             </TabsTrigger>
-            <TabsTrigger value="media" className="flex-1 gap-2">
-              <Database className="h-4 w-4" />
+            <TabsTrigger
+              value="media"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Database className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.media")}</span>
             </TabsTrigger>
-            <TabsTrigger value="instagram" className="flex-1 gap-2">
-              <Instagram className="h-4 w-4" />
+            <TabsTrigger
+              value="instagram"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Instagram className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.instagram")}</span>
             </TabsTrigger>
-            <TabsTrigger value="exercises" className="flex-1 gap-2">
-              <Dumbbell className="h-4 w-4" />
+            <TabsTrigger
+              value="exercises"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Dumbbell className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.exercises")}</span>
             </TabsTrigger>
-            <TabsTrigger value="reports" className="flex-1 gap-2">
-              <Flag className="h-4 w-4" />
+            <TabsTrigger
+              value="reports"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Flag className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.reports")}</span>
             </TabsTrigger>
-            <TabsTrigger value="app-store-assets" className="flex-1 gap-2">
-              <Smartphone className="h-4 w-4" />
+            <TabsTrigger
+              value="app-store-assets"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Smartphone className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">
                 {t("tabs.appStoreAssets")}
               </span>
             </TabsTrigger>
-            <TabsTrigger value="debug" className="flex-1 gap-2">
-              <Bug className="h-4 w-4" />
+            <TabsTrigger
+              value="debug"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Bug className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">Debug</span>
             </TabsTrigger>
-            <TabsTrigger value="giveaways" className="flex-1 gap-2">
-              <Gift className="h-4 w-4" />
+            <TabsTrigger
+              value="giveaways"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Gift className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.giveaways")}</span>
             </TabsTrigger>
           </TabsList>
@@ -170,6 +212,18 @@ function AdminContent() {
             }
           >
             <AdminUsersContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="posts">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminPostsContent />
           </Suspense>
         </TabsContent>
 

@@ -79,7 +79,10 @@ export function CookieConsent() {
     >
       <Card className="mx-auto max-w-3xl border-2 bg-background p-6 shadow-2xl">
         <div className="flex items-start gap-4">
-          <Cookie className="h-8 w-8 shrink-0 text-primary" />
+          <Cookie
+            className="h-8 w-8 shrink-0 text-primary"
+            aria-hidden="true"
+          />
           <div className="flex-1">
             <h3 className="mb-2 text-lg font-semibold">{t("title")}</h3>
             <p className="mb-4 text-sm text-muted-foreground">
@@ -104,10 +107,11 @@ export function CookieConsent() {
           <Button
             variant="ghost"
             size="icon"
+            aria-label={t("close")}
             className="shrink-0"
             onClick={handleAcceptEssential}
           >
-            <X className="h-4 w-4" />
+            <X className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </Card>

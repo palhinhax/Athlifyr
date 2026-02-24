@@ -32,6 +32,8 @@ import { VerticalChallengeForm } from "@/components/instagram/vertical-challenge
 import { HookCtaForm } from "@/components/instagram/hook-cta-form";
 import { VenuePromoForm } from "@/components/instagram/venue-promo-form";
 import { GiveawayPromoForm } from "@/components/instagram/giveaway-promo-form";
+import { AppDownloadForm } from "@/components/instagram/app-download-form";
+import { AthliChatPromoForm } from "@/components/instagram/athli-chat-promo-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -48,6 +50,8 @@ import {
   type HookCtaPayload,
   type VenuePromoPayload,
   type GiveawayPromoPayload,
+  type AppDownloadPayload,
+  type AthliChatPromoPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -225,11 +229,40 @@ export default function InstagramGeneratorPage() {
   const [t12Prize, setT12Prize] = useState("1 Inscrição");
   const [t12DrawDate, setT12DrawDate] = useState("");
   const [t12HowToEnter, setT12HowToEnter] = useState<string[]>([
-    "Cria conta na Athlifyr",
     "Visita a página do evento",
     "Clica em Participar",
   ]);
   const [t12Cta, setT12Cta] = useState("Participa Já");
+  const [t12VerificationHash, setT12VerificationHash] = useState("");
+
+  // T13: App Download Promo
+  const [t13Headline, setT13Headline] = useState("Descarrega a App");
+  const [t13Subheadline, setT13Subheadline] = useState(
+    "Todos os eventos desportivos num só lugar"
+  );
+  const [t13Features, setT13Features] = useState<string[]>([
+    "Descobre eventos perto de ti",
+    "Inscreve-te diretamente",
+    "Acompanha os resultados",
+  ]);
+  const [t13BadgeUrl, setT13BadgeUrl] = useState(
+    "/images/badges/google-play-pt.png"
+  );
+  const [t13LegalText, setT13LegalText] = useState("");
+  const [t13Cta, setT13Cta] = useState("Disponível no Google Play");
+
+  // T14: Athli Chat Promo
+  const [t14Headline, setT14Headline] = useState("Conhece o Athli");
+  const [t14Subheadline, setT14Subheadline] = useState(
+    "O teu assistente desportivo com IA"
+  );
+  const [t14ChatSuggestions, setT14ChatSuggestions] = useState<string[]>([
+    "Próximos eventos",
+    "Ginásios perto",
+    "Plano de treino",
+    "Treino rápido",
+  ]);
+  const [t14Cta, setT14Cta] = useState("Experimenta agora");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -618,11 +651,32 @@ export default function InstagramGeneratorPage() {
           drawDate: t12DrawDate || undefined,
           howToEnter: t12HowToEnter.filter((s) => s.trim()),
           cta: t12Cta || undefined,
+          verificationHash: t12VerificationHash || undefined,
           background,
         } as GiveawayPromoPayload;
 
+      case "T13":
+        return {
+          headline: t13Headline,
+          subheadline: t13Subheadline,
+          features: t13Features.filter((s) => s.trim()),
+          badgeUrl: t13BadgeUrl,
+          legalText: t13LegalText || undefined,
+          cta: t13Cta || undefined,
+          background,
+        } as AppDownloadPayload;
+
+      case "T14":
+        return {
+          headline: t14Headline,
+          subheadline: t14Subheadline,
+          chatSuggestions: t14ChatSuggestions,
+          cta: t14Cta || undefined,
+          background,
+        } as AthliChatPromoPayload;
+
       default:
-        throw new Error(`Unknown template: ${templateKey}. Expected T1-T12.`);
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T14.`);
     }
   };
 
@@ -1044,12 +1098,44 @@ export default function InstagramGeneratorPage() {
                 drawDate={t12DrawDate}
                 howToEnter={t12HowToEnter}
                 cta={t12Cta}
+                verificationHash={t12VerificationHash}
                 onEventNameChange={setT12EventName}
                 onGiveawayTitleChange={setT12GiveawayTitle}
                 onPrizeChange={setT12Prize}
                 onDrawDateChange={setT12DrawDate}
                 onHowToEnterChange={setT12HowToEnter}
                 onCtaChange={setT12Cta}
+                onVerificationHashChange={setT12VerificationHash}
+              />
+            )}
+
+            {templateKey === "T13" && (
+              <AppDownloadForm
+                headline={t13Headline}
+                subheadline={t13Subheadline}
+                features={t13Features}
+                badgeUrl={t13BadgeUrl}
+                legalText={t13LegalText}
+                cta={t13Cta}
+                onHeadlineChange={setT13Headline}
+                onSubheadlineChange={setT13Subheadline}
+                onFeaturesChange={setT13Features}
+                onBadgeUrlChange={setT13BadgeUrl}
+                onLegalTextChange={setT13LegalText}
+                onCtaChange={setT13Cta}
+              />
+            )}
+
+            {templateKey === "T14" && (
+              <AthliChatPromoForm
+                headline={t14Headline}
+                subheadline={t14Subheadline}
+                chatSuggestions={t14ChatSuggestions}
+                cta={t14Cta}
+                onHeadlineChange={setT14Headline}
+                onSubheadlineChange={setT14Subheadline}
+                onChatSuggestionsChange={setT14ChatSuggestions}
+                onCtaChange={setT14Cta}
               />
             )}
           </Card>

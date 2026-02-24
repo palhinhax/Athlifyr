@@ -13,7 +13,8 @@
         "exercises": "Ejercicios",
         "reports": "Denuncias",
         "appStoreAssets": "Imágenes Tienda",
-        "giveaways": "Sorteos"
+        "giveaways": "Sorteos",
+        "posts": "Posts"
       }
     },
     "contacts": {
@@ -186,6 +187,50 @@
         "postPublishedDesc": "Tu publicación ha sido compartida con éxito.",
         "publishError": "Error al publicar",
         "publishErrorDesc": "No se pudo crear la publicación."
+      }
+    },
+    "postsManagement": {
+      "title": "Publicaciones",
+      "description": "Gestionar todas las publicaciones y comentarios",
+      "stats": {
+        "total": "Total de Publicaciones"
+      },
+      "searchPlaceholder": "Buscar por contenido, nombre o email...",
+      "searchButton": "Buscar",
+      "noPosts": "Sin publicaciones",
+      "noPostsDescription": "No hay publicaciones para mostrar",
+      "unknownUser": "Usuario desconocido",
+      "public": "Público",
+      "private": "Privado",
+      "deletePost": "Eliminar publicación",
+      "deleteComment": "Eliminar comentario",
+      "videoAttached": "Vídeo adjunto",
+      "comments": "{count, plural, =1 {1 comentario} other {# comentarios}}",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Siguiente",
+        "pageOf": "Página {page} de {total}"
+      },
+      "deletePostDialog": {
+        "title": "Eliminar Publicación",
+        "description": "¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer. Todos los comentarios y likes también serán eliminados."
+      },
+      "deleteCommentDialog": {
+        "title": "Eliminar Comentario",
+        "description": "¿Estás seguro de que quieres eliminar este comentario? Esta acción no se puede deshacer."
+      },
+      "cancel": "Cancelar",
+      "confirmDelete": "Eliminar",
+      "deleting": "Eliminando...",
+      "toast": {
+        "error": "Error",
+        "fetchErrorDesc": "No se pudieron cargar las publicaciones.",
+        "postDeleted": "Publicación eliminada",
+        "postDeletedDesc": "La publicación fue eliminada con éxito.",
+        "deleteErrorDesc": "No se pudo eliminar la publicación.",
+        "commentDeleted": "Comentario eliminado",
+        "commentDeletedDesc": "El comentario fue eliminado con éxito.",
+        "deleteCommentErrorDesc": "No se pudo eliminar el comentario."
       }
     },
     "reports": {

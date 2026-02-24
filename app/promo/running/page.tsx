@@ -142,7 +142,7 @@ export default function RunningPromoPage() {
 
               {/* Subtitle */}
               <motion.p
-                className="text-lg font-light tracking-[0.2em] text-white/90 md:text-xl"
+                className="text-lg font-light tracking-[0.2em] text-white md:text-xl"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.8, duration: 1 }}

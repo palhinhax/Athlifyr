@@ -129,7 +129,10 @@ export function AdminExercisesClient({
         const response = await fetch(`/api/exercises?${params.toString()}`);
 
         if (!response.ok) {
-          throw new Error("Failed to fetch exercises");
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(
+            errorData.error || `Failed to fetch exercises (${response.status})`
+          );
         }
 
         const data = await response.json();
@@ -137,11 +140,19 @@ export function AdminExercisesClient({
         setPagination(data.pagination);
       } catch (error) {
         console.error("Error fetching exercises:", error);
+        toast({
+          variant: "destructive",
+          title: "Erro ao carregar exercícios",
+          description:
+            error instanceof Error
+              ? error.message
+              : "Não foi possível carregar os exercícios.",
+        });
       } finally {
         setIsLoading(false);
       }
     },
-    [debouncedSearch, selectedCategory, locale]
+    [debouncedSearch, selectedCategory, locale, toast]
   );
 
   useEffect(() => {

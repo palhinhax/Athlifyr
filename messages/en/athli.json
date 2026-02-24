@@ -1,0 +1,30 @@
+{
+  "athli": {
+    "welcome": "Hey! I'm Athli",
+    "welcomeDescription": "Your AI sports assistant. I can help you find events, discover venues, check your booked classes, create workouts and training plans.",
+    "subtitle": "Your AI assistant",
+    "open": "Chat with Athli",
+    "close": "Close Athli",
+    "history": "Conversation history",
+    "conversations": "History",
+    "newConversation": "New conversation",
+    "noConversations": "No conversations yet. Start chatting!",
+    "inputPlaceholder": "Ask me anything about sports, events, training...",
+    "savePlan": "Save to my plans",
+    "planSaved": "Plan saved successfully!",
+    "saveWorkout": "Save to my workouts",
+    "workoutSaved": "Workout saved successfully!",
+    "suggestions": {
+      "events": "Find events near me",
+      "eventsMessage": "What sporting events are coming up near me?",
+      "venues": "Discover venues",
+      "venuesMessage": "What gyms and training venues are available?",
+      "training": "Create a training plan",
+      "trainingMessage": "I want a weekly training plan. Can you help me create one?",
+      "workout": "Create a workout",
+      "workoutMessage": "I want a workout for today. Can you create one for me?",
+      "bookings": "My classes",
+      "bookingsMessage": "What classes do I have booked for today and this week?"
+    }
+  }
+}

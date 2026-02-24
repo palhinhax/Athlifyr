@@ -38,6 +38,7 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
     const videoAnalysis = (
       await import(`@/messages/${locale}/video-analysis.json`)
     ).default;
+    const athli = (await import(`@/messages/${locale}/athli.json`)).default;
 
     // Merge all messages
     Object.assign(
@@ -59,7 +60,8 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       timer,
       schedule,
       presentation,
-      videoAnalysis
+      videoAnalysis,
+      athli
     );
   } catch (error) {
     console.error(`Failed to load messages for locale "${locale}":`, error);

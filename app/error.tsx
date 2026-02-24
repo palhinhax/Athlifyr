@@ -196,7 +196,7 @@ export default function GlobalError({
           {/* Content */}
           <div className="relative z-10 mx-auto max-w-2xl text-center">
             <AlertTriangle
-              className="mx-auto mb-6 h-20 w-20 text-white/90"
+              className="mx-auto mb-6 h-20 w-20 text-white"
               style={{ display: "inline-block" }}
             />
             <h1 className="mb-4 text-4xl font-bold text-white sm:text-5xl">
@@ -205,7 +205,7 @@ export default function GlobalError({
             <h2 className="mb-6 text-xl font-semibold text-white/80">
               {t.subtitle}
             </h2>
-            <p className="mb-8 text-lg text-white/90">{t.description}</p>
+            <p className="mb-8 text-lg text-white">{t.description}</p>
 
             <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
               <button

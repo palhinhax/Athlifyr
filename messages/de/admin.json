@@ -13,7 +13,8 @@
         "exercises": "Übungen",
         "reports": "Meldungen",
         "appStoreAssets": "Store-Bilder",
-        "giveaways": "Gewinnspiele"
+        "giveaways": "Gewinnspiele",
+        "posts": "Beiträge"
       }
     },
     "contacts": {
@@ -186,6 +187,50 @@
         "postPublishedDesc": "Ihr Beitrag wurde erfolgreich geteilt.",
         "publishError": "Veröffentlichungsfehler",
         "publishErrorDesc": "Der Beitrag konnte nicht erstellt werden."
+      }
+    },
+    "postsManagement": {
+      "title": "Beiträge",
+      "description": "Alle Beiträge und Kommentare verwalten",
+      "stats": {
+        "total": "Gesamtanzahl Beiträge"
+      },
+      "searchPlaceholder": "Nach Inhalt, Name oder E-Mail suchen...",
+      "searchButton": "Suchen",
+      "noPosts": "Keine Beiträge",
+      "noPostsDescription": "Es gibt keine Beiträge zum Anzeigen",
+      "unknownUser": "Unbekannter Benutzer",
+      "public": "Öffentlich",
+      "private": "Privat",
+      "deletePost": "Beitrag löschen",
+      "deleteComment": "Kommentar löschen",
+      "videoAttached": "Video angehängt",
+      "comments": "{count, plural, =1 {1 Kommentar} other {# Kommentare}}",
+      "pagination": {
+        "previous": "Zurück",
+        "next": "Weiter",
+        "pageOf": "Seite {page} von {total}"
+      },
+      "deletePostDialog": {
+        "title": "Beitrag Löschen",
+        "description": "Sind Sie sicher, dass Sie diesen Beitrag löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden. Alle Kommentare und Likes werden ebenfalls gelöscht."
+      },
+      "deleteCommentDialog": {
+        "title": "Kommentar Löschen",
+        "description": "Sind Sie sicher, dass Sie diesen Kommentar löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden."
+      },
+      "cancel": "Abbrechen",
+      "confirmDelete": "Löschen",
+      "deleting": "Wird gelöscht...",
+      "toast": {
+        "error": "Fehler",
+        "fetchErrorDesc": "Beiträge konnten nicht geladen werden.",
+        "postDeleted": "Beitrag gelöscht",
+        "postDeletedDesc": "Der Beitrag wurde erfolgreich gelöscht.",
+        "deleteErrorDesc": "Der Beitrag konnte nicht gelöscht werden.",
+        "commentDeleted": "Kommentar gelöscht",
+        "commentDeletedDesc": "Der Kommentar wurde erfolgreich gelöscht.",
+        "deleteCommentErrorDesc": "Der Kommentar konnte nicht gelöscht werden."
       }
     },
     "reports": {

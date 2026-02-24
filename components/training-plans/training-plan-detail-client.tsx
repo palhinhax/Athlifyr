@@ -46,10 +46,12 @@ import type { TrainingPlanWithDetails } from "@/types/training-plan";
 
 interface TrainingPlanDetailClientProps {
   userId: string;
+  isStaff: boolean;
 }
 
 export function TrainingPlanDetailClient({
   userId,
+  isStaff,
 }: TrainingPlanDetailClientProps) {
   const t = useTranslations("workouts.plans");
   const { toast } = useToast();
@@ -317,6 +319,9 @@ export function TrainingPlanDetailClient({
   // Check if user is the owner of the plan (can edit)
   const isOwner = plan.createdById === userId;
 
+  // Only venue professionals (staff) who own the plan can assign to others
+  const canAssign = isOwner && isStaff;
+
   const getDifficultyColor = (difficulty: number) => {
     switch (difficulty) {
       case 1:
@@ -358,59 +363,71 @@ export function TrainingPlanDetailClient({
           </div>
 
           {/* Action buttons - Responsive */}
-          {isOwner && (
+          {(isOwner || canAssign) && (
             <div className="flex shrink-0 gap-2">
               {/* Mobile: Icon buttons only */}
-              <Button
-                variant="default"
-                size="icon"
-                onClick={() => setIsAssignDialogOpen(true)}
-                className="sm:hidden"
-              >
-                <UsersIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={() => setIsEditing(true)}
-                className="sm:hidden"
-              >
-                <PencilIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => setIsDeleting(true)}
-                className="sm:hidden"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
+              {canAssign && (
+                <Button
+                  variant="default"
+                  size="icon"
+                  onClick={() => setIsAssignDialogOpen(true)}
+                  className="sm:hidden"
+                >
+                  <UsersIcon className="h-4 w-4" />
+                </Button>
+              )}
+              {isOwner && (
+                <>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setIsEditing(true)}
+                    className="sm:hidden"
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => setIsDeleting(true)}
+                    className="sm:hidden"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
 
               {/* Desktop: Full buttons with text */}
-              <Button
-                variant="default"
-                onClick={() => setIsAssignDialogOpen(true)}
-                className="hidden sm:flex"
-              >
-                <UsersIcon className="mr-2 h-4 w-4" />
-                {t("assignPlan")}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsEditing(true)}
-                className="hidden sm:flex"
-              >
-                <PencilIcon className="mr-2 h-4 w-4" />
-                {t("editPlan")}
-              </Button>
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={() => setIsDeleting(true)}
-                className="hidden sm:flex"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
+              {canAssign && (
+                <Button
+                  variant="default"
+                  onClick={() => setIsAssignDialogOpen(true)}
+                  className="hidden sm:flex"
+                >
+                  <UsersIcon className="mr-2 h-4 w-4" />
+                  {t("assignPlan")}
+                </Button>
+              )}
+              {isOwner && (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditing(true)}
+                    className="hidden sm:flex"
+                  >
+                    <PencilIcon className="mr-2 h-4 w-4" />
+                    {t("editPlan")}
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => setIsDeleting(true)}
+                    className="hidden sm:flex"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                </>
+              )}
             </div>
           )}
         </div>
@@ -453,7 +470,7 @@ export function TrainingPlanDetailClient({
               {t("stats.totalWorkouts", { count: totalWorkouts })}
             </span>
           </div>
-          {isOwner && plan._count?.assignedToUsers > 0 && (
+          {canAssign && plan._count?.assignedToUsers > 0 && (
             <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
               <UsersIcon className="h-4 w-4 shrink-0" />
               <span className="whitespace-nowrap">

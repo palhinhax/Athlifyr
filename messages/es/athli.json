@@ -1,0 +1,30 @@
+{
+  "athli": {
+    "welcome": "¡Hola! Soy Athli",
+    "welcomeDescription": "Tu asistente deportivo con IA. Puedo ayudarte a encontrar eventos, descubrir espacios, ver tus clases reservadas, crear entrenamientos y planes de entrenamiento.",
+    "subtitle": "Tu asistente IA",
+    "open": "Hablar con Athli",
+    "close": "Cerrar Athli",
+    "history": "Historial de conversaciones",
+    "conversations": "Historial",
+    "newConversation": "Nueva conversación",
+    "noConversations": "Aún no tienes conversaciones. ¡Empieza a hablar!",
+    "inputPlaceholder": "Pregúntame sobre deporte, eventos, entrenamientos...",
+    "savePlan": "Guardar en mis planes",
+    "planSaved": "¡Plan guardado con éxito!",
+    "saveWorkout": "Guardar en mis entrenamientos",
+    "workoutSaved": "¡Entrenamiento guardado con éxito!",
+    "suggestions": {
+      "events": "Encontrar eventos cerca de mí",
+      "eventsMessage": "¿Qué eventos deportivos hay próximamente cerca de mí?",
+      "venues": "Descubrir espacios",
+      "venuesMessage": "¿Qué gimnasios y espacios de entrenamiento hay disponibles?",
+      "training": "Crear un plan de entrenamiento",
+      "trainingMessage": "Quiero un plan de entrenamiento semanal. ¿Puedes ayudarme a crear uno?",
+      "workout": "Crear un entrenamiento",
+      "workoutMessage": "Quiero un entrenamiento para hoy. ¿Puedes crearme uno?",
+      "bookings": "Mis clases",
+      "bookingsMessage": "¿Qué clases tengo reservadas para hoy y esta semana?"
+    }
+  }
+}

@@ -33,6 +33,7 @@ export interface Event {
   faqs?: EventFAQ[];
   _count?: {
     comments: number;
+    giveaways?: number;
   };
   createdAt: string;
   updatedAt: string;

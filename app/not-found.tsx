@@ -224,9 +224,7 @@ export default function NotFound() {
             </div>
 
             {/* Description */}
-            <p className="mt-6 text-lg leading-8 text-white/90">
-              {t.description}
-            </p>
+            <p className="mt-6 text-lg leading-8 text-white">{t.description}</p>
             <p className="mt-2 text-base text-white/80">{t.suggestion}</p>
 
             {/* Action Buttons */}

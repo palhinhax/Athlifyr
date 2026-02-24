@@ -10,7 +10,9 @@ export type TemplateKey =
   | "T9"
   | "T10"
   | "T11"
-  | "T12";
+  | "T12"
+  | "T13"
+  | "T14";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -162,6 +164,27 @@ export interface GiveawayPromoPayload {
   drawDate?: string; // optional, max 30 chars - e.g., "15 Mar 2026"
   howToEnter: string[]; // 2-4 steps, each max 40 chars
   cta?: string; // optional, max 30 chars
+  verificationHash?: string; // optional, max 64 chars - SHA-256 hash for draw transparency
+  background: Background;
+}
+
+// Template T13: App Download Promo (Google Play / App Store promotion)
+export interface AppDownloadPayload {
+  headline: string; // required, max 50 chars - main headline
+  subheadline: string; // required, max 60 chars - supporting text
+  features: string[]; // 2-4 feature highlights, each max 40 chars
+  badgeUrl: string; // Google Play badge image path (default: /images/badges/google-play-pt.png)
+  legalText?: string; // optional, trademark attribution
+  cta?: string; // optional, max 30 chars
+  background: Background;
+}
+
+// Template T14: Athli Chat Promo (AI assistant announcement)
+export interface AthliChatPromoPayload {
+  headline: string; // required, max 50 chars - main headline
+  subheadline: string; // required, max 60 chars - supporting text
+  chatSuggestions: string[]; // 4 suggestion labels shown in mock chat window
+  cta?: string; // optional, max 30 chars
   background: Background;
 }
 
@@ -177,7 +200,9 @@ export type TemplatePayload =
   | VerticalChallengePayload
   | HookCtaPayload
   | VenuePromoPayload
-  | GiveawayPromoPayload;
+  | GiveawayPromoPayload
+  | AppDownloadPayload
+  | AthliChatPromoPayload;
 
 export interface InstagramDraft {
   id: string;

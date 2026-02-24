@@ -8,7 +8,9 @@
  * {
  *   allowed: boolean,
  *   nextAvailableAt?: string (ISO),
- *   remainingMs?: number
+ *   remainingMs?: number,
+ *   usedCount: number,
+ *   dailyLimit: number
  * }
  *
  * Response 401: { error: "Unauthorized" }
@@ -16,7 +18,7 @@
 
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { checkAiRateLimit } from "@/lib/ai-rate-limit";
+import { checkAiRateLimit, AI_DAILY_LIMIT } from "@/lib/ai-rate-limit";
 
 export const dynamic = "force-dynamic";
 
@@ -33,5 +35,7 @@ export async function GET() {
     allowed: result.allowed,
     nextAvailableAt: result.nextAvailableAt?.toISOString() ?? null,
     remainingMs: result.remainingMs ?? null,
+    usedCount: result.usedCount ?? 0,
+    dailyLimit: AI_DAILY_LIMIT,
   });
 }

@@ -10,12 +10,14 @@ interface GiveawayPromoFormProps {
   drawDate: string;
   howToEnter: string[];
   cta: string;
+  verificationHash: string;
   onEventNameChange: (value: string) => void;
   onGiveawayTitleChange: (value: string) => void;
   onPrizeChange: (value: string) => void;
   onDrawDateChange: (value: string) => void;
   onHowToEnterChange: (value: string[]) => void;
   onCtaChange: (value: string) => void;
+  onVerificationHashChange: (value: string) => void;
 }
 
 export function GiveawayPromoForm({
@@ -25,12 +27,14 @@ export function GiveawayPromoForm({
   drawDate,
   howToEnter,
   cta,
+  verificationHash,
   onEventNameChange,
   onGiveawayTitleChange,
   onPrizeChange,
   onDrawDateChange,
   onHowToEnterChange,
   onCtaChange,
+  onVerificationHashChange,
 }: GiveawayPromoFormProps) {
   const addStep = () => {
     if (howToEnter.length < 4) {
@@ -161,6 +165,24 @@ export function GiveawayPromoForm({
           autoComplete="off"
         />
         <p className="mt-1 text-xs text-muted-foreground">{cta.length}/30</p>
+      </div>
+
+      <div>
+        <Label className="text-xs text-muted-foreground">
+          Hash de Verificação (SHA-256)
+        </Label>
+        <Input
+          value={verificationHash}
+          onChange={(e) => onVerificationHashChange(e.target.value)}
+          maxLength={64}
+          placeholder="a1b2c3d4e5f6..."
+          autoComplete="off"
+          className="font-mono text-xs"
+        />
+        <p className="mt-1 text-xs text-muted-foreground">
+          Comprovativo de transparência do sorteio. Aparece discretamente no
+          fundo do post.
+        </p>
       </div>
     </div>
   );

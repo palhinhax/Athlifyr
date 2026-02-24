@@ -39,8 +39,8 @@ export default function AdminExercisesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const t = useTranslations("exercises");
-  const [exercises, setExercises] = useState<Exercise[]>([]);
-  const [pagination, setPagination] = useState<PaginationData>({
+  const [exercises] = useState<Exercise[]>([]);
+  const [pagination] = useState<PaginationData>({
     page: 1,
     limit: 20,
     totalCount: 0,
@@ -61,25 +61,7 @@ export default function AdminExercisesPage() {
       return;
     }
 
-    // Fetch initial exercises
-    fetch("/api/exercises")
-      .then((res) => res.json())
-      .then((data) => {
-        setExercises(data.exercises || []);
-        setPagination(
-          data.pagination || {
-            page: 1,
-            limit: 20,
-            totalCount: data.exercises?.length || 0,
-            totalPages: 1,
-          }
-        );
-        setLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching exercises:", error);
-        setLoading(false);
-      });
+    setLoading(false);
   }, [session, status, router]);
 
   if (status === "loading" || loading) {

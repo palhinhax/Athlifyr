@@ -13,7 +13,8 @@
         "exercises": "Exercises",
         "reports": "Reports",
         "appStoreAssets": "Store Assets",
-        "giveaways": "Giveaways"
+        "giveaways": "Giveaways",
+        "posts": "Posts"
       }
     },
     "contacts": {
@@ -186,6 +187,50 @@
         "postPublishedDesc": "Your post was published successfully",
         "publishError": "Error publishing",
         "publishErrorDesc": "Could not publish the post"
+      }
+    },
+    "postsManagement": {
+      "title": "Posts",
+      "description": "Manage all posts and comments",
+      "stats": {
+        "total": "Total Posts"
+      },
+      "searchPlaceholder": "Search by content, name or email...",
+      "searchButton": "Search",
+      "noPosts": "No posts",
+      "noPostsDescription": "There are no posts to display",
+      "unknownUser": "Unknown user",
+      "public": "Public",
+      "private": "Private",
+      "deletePost": "Delete post",
+      "deleteComment": "Delete comment",
+      "videoAttached": "Video attached",
+      "comments": "{count, plural, =1 {1 comment} other {# comments}}",
+      "pagination": {
+        "previous": "Previous",
+        "next": "Next",
+        "pageOf": "Page {page} of {total}"
+      },
+      "deletePostDialog": {
+        "title": "Delete Post",
+        "description": "Are you sure you want to delete this post? This action cannot be undone. All comments and likes will also be deleted."
+      },
+      "deleteCommentDialog": {
+        "title": "Delete Comment",
+        "description": "Are you sure you want to delete this comment? This action cannot be undone."
+      },
+      "cancel": "Cancel",
+      "confirmDelete": "Delete",
+      "deleting": "Deleting...",
+      "toast": {
+        "error": "Error",
+        "fetchErrorDesc": "Could not load posts.",
+        "postDeleted": "Post deleted",
+        "postDeletedDesc": "The post was successfully deleted.",
+        "deleteErrorDesc": "Could not delete the post.",
+        "commentDeleted": "Comment deleted",
+        "commentDeletedDesc": "The comment was successfully deleted.",
+        "deleteCommentErrorDesc": "Could not delete the comment."
       }
     },
     "reports": {

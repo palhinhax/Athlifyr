@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { getTranslations } from "next-intl/server";
 import { TrainingPlanDetailClient } from "@/components/training-plans";
 import { redirect } from "@/i18n/routing";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 export async function generateMetadata({
   params,
@@ -32,5 +33,9 @@ export default async function TrainingPlanDetailPage({
     return null;
   }
 
-  return <TrainingPlanDetailClient userId={session.user.id} />;
+  const isStaff = await isVenueStaff(session.user.id);
+
+  return (
+    <TrainingPlanDetailClient userId={session.user.id} isStaff={isStaff} />
+  );
 }

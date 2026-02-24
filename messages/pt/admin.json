@@ -13,7 +13,8 @@
         "exercises": "Exercícios",
         "reports": "Denúncias",
         "appStoreAssets": "Imagens Loja",
-        "giveaways": "Sorteios"
+        "giveaways": "Sorteios",
+        "posts": "Posts"
       }
     },
     "contacts": {
@@ -186,6 +187,50 @@
         "postPublishedDesc": "O teu post foi publicado com sucesso",
         "publishError": "Erro ao publicar",
         "publishErrorDesc": "Não foi possível publicar o post"
+      }
+    },
+    "postsManagement": {
+      "title": "Posts",
+      "description": "Gerir todos os posts e comentários",
+      "stats": {
+        "total": "Total de Posts"
+      },
+      "searchPlaceholder": "Pesquisar por conteúdo, nome ou email...",
+      "searchButton": "Pesquisar",
+      "noPosts": "Sem posts",
+      "noPostsDescription": "Não existem posts para mostrar",
+      "unknownUser": "Utilizador desconhecido",
+      "public": "Público",
+      "private": "Privado",
+      "deletePost": "Eliminar post",
+      "deleteComment": "Eliminar comentário",
+      "videoAttached": "Vídeo anexado",
+      "comments": "{count, plural, =1 {1 comentário} other {# comentários}}",
+      "pagination": {
+        "previous": "Anterior",
+        "next": "Seguinte",
+        "pageOf": "Página {page} de {total}"
+      },
+      "deletePostDialog": {
+        "title": "Eliminar Post",
+        "description": "Tens a certeza que queres eliminar este post? Esta ação não pode ser revertida. Todos os comentários e gostos também serão eliminados."
+      },
+      "deleteCommentDialog": {
+        "title": "Eliminar Comentário",
+        "description": "Tens a certeza que queres eliminar este comentário? Esta ação não pode ser revertida."
+      },
+      "cancel": "Cancelar",
+      "confirmDelete": "Eliminar",
+      "deleting": "A eliminar...",
+      "toast": {
+        "error": "Erro",
+        "fetchErrorDesc": "Não foi possível carregar os posts.",
+        "postDeleted": "Post eliminado",
+        "postDeletedDesc": "O post foi eliminado com sucesso.",
+        "deleteErrorDesc": "Não foi possível eliminar o post.",
+        "commentDeleted": "Comentário eliminado",
+        "commentDeletedDesc": "O comentário foi eliminado com sucesso.",
+        "deleteCommentErrorDesc": "Não foi possível eliminar o comentário."
       }
     },
     "reports": {

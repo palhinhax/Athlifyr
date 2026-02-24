@@ -3,6 +3,74 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
+// Content Security Policy - carefully configured for Next.js compatibility
+const ContentSecurityPolicy = `
+  default-src 'self';
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+  img-src 'self' blob: data: https: http:;
+  font-src 'self' data: https://fonts.gstatic.com;
+  connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live;
+  media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
+  object-src 'none';
+  base-uri 'self';
+  form-action 'self';
+  frame-ancestors 'none';
+  frame-src 'self' https://vercel.live;
+  worker-src 'self' blob:;
+  manifest-src 'self';
+  upgrade-insecure-requests;
+`.replace(/\s{2,}/g, ' ').trim();
+
+// Security headers for all routes
+const securityHeaders = [
+  // Content Security Policy - prevents XSS attacks
+  {
+    key: 'Content-Security-Policy',
+    value: ContentSecurityPolicy,
+  },
+  // Strict Transport Security - forces HTTPS
+  {
+    key: 'Strict-Transport-Security',
+    value: 'max-age=63072000; includeSubDomains; preload',
+  },
+  // Cross-Origin-Opener-Policy - isolates window from other documents
+  {
+    key: 'Cross-Origin-Opener-Policy',
+    value: 'same-origin',
+  },
+  // Cross-Origin-Embedder-Policy - controls cross-origin requests
+  {
+    key: 'Cross-Origin-Embedder-Policy',
+    value: 'credentialless',
+  },
+  // X-Frame-Options - prevents clickjacking (legacy, CSP frame-ancestors is preferred)
+  {
+    key: 'X-Frame-Options',
+    value: 'DENY',
+  },
+  // X-Content-Type-Options - prevents MIME type sniffing
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff',
+  },
+  // Referrer-Policy - controls what information is sent with requests
+  {
+    key: 'Referrer-Policy',
+    value: 'strict-origin-when-cross-origin',
+  },
+  // X-DNS-Prefetch-Control - controls DNS prefetching
+  {
+    key: 'X-DNS-Prefetch-Control',
+    value: 'on',
+  },
+  // Permissions-Policy - controls browser features
+  {
+    key: 'Permissions-Policy',
+    value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+  },
+];
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // SEO: Disable trailing slashes for consistent URL structure
@@ -72,6 +140,16 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_B2_BUCKET_URL: process.env.NEXT_PUBLIC_B2_BUCKET_URL,
     NEXT_PUBLIC_GA_MEASUREMENT_ID: process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID,
+  },
+  // Security headers for all routes
+  async headers() {
+    return [
+      {
+        // Apply security headers to all routes
+        source: '/:path*',
+        headers: securityHeaders,
+      },
+    ];
   },
 };
 

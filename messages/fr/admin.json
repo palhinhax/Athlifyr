@@ -13,7 +13,8 @@
         "exercises": "Exercices",
         "reports": "Signalements",
         "appStoreAssets": "Images Boutique",
-        "giveaways": "Tirages"
+        "giveaways": "Tirages",
+        "posts": "Publications"
       }
     },
     "contacts": {
@@ -186,6 +187,50 @@
         "postPublishedDesc": "Votre publication a été partagée avec succès.",
         "publishError": "Erreur de publication",
         "publishErrorDesc": "Impossible de créer la publication."
+      }
+    },
+    "postsManagement": {
+      "title": "Publications",
+      "description": "Gérer toutes les publications et commentaires",
+      "stats": {
+        "total": "Total des Publications"
+      },
+      "searchPlaceholder": "Rechercher par contenu, nom ou email...",
+      "searchButton": "Rechercher",
+      "noPosts": "Aucune publication",
+      "noPostsDescription": "Il n'y a aucune publication à afficher",
+      "unknownUser": "Utilisateur inconnu",
+      "public": "Public",
+      "private": "Privé",
+      "deletePost": "Supprimer la publication",
+      "deleteComment": "Supprimer le commentaire",
+      "videoAttached": "Vidéo jointe",
+      "comments": "{count, plural, =1 {1 commentaire} other {# commentaires}}",
+      "pagination": {
+        "previous": "Précédent",
+        "next": "Suivant",
+        "pageOf": "Page {page} sur {total}"
+      },
+      "deletePostDialog": {
+        "title": "Supprimer la Publication",
+        "description": "Êtes-vous sûr de vouloir supprimer cette publication ? Cette action est irréversible. Tous les commentaires et likes seront également supprimés."
+      },
+      "deleteCommentDialog": {
+        "title": "Supprimer le Commentaire",
+        "description": "Êtes-vous sûr de vouloir supprimer ce commentaire ? Cette action est irréversible."
+      },
+      "cancel": "Annuler",
+      "confirmDelete": "Supprimer",
+      "deleting": "Suppression...",
+      "toast": {
+        "error": "Erreur",
+        "fetchErrorDesc": "Impossible de charger les publications.",
+        "postDeleted": "Publication supprimée",
+        "postDeletedDesc": "La publication a été supprimée avec succès.",
+        "deleteErrorDesc": "Impossible de supprimer la publication.",
+        "commentDeleted": "Commentaire supprimé",
+        "commentDeletedDesc": "Le commentaire a été supprimé avec succès.",
+        "deleteCommentErrorDesc": "Impossible de supprimer le commentaire."
       }
     },
     "reports": {

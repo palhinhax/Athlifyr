@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "Athlifyr",
+    "skipToMainContent": "Saltar al contenido principal",
     "loading": "Cargando...",
     "error": "Error",
     "success": "Éxito",
@@ -114,7 +115,7 @@
     "RUNNING": "Running",
     "TRAIL": "Trail",
     "WALKING": "Caminata",
-    "HYROX": "HYROX",
+    "HYROX": "Hybrid",
     "CROSSFIT": "Cross Training",
     "OCR": "OCR",
     "BTT": "Mountain Bike",

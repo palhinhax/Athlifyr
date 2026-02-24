@@ -11,7 +11,7 @@
       "run": "Corsa",
       "trail": "Trail",
       "strength": "Forza",
-      "hyrox": "HYROX"
+      "hyrox": "Hybrid"
     },
     "confidence": {
       "low": "Affidabilità bassa",
@@ -43,7 +43,7 @@
       "deleteError": "Eliminazione fallita",
       "editRun": "Modifica Corsa",
       "editStrength": "Modifica Serie",
-      "editHyrox": "Modifica HYROX",
+      "editHyrox": "Modifica Hybrid",
       "editedSuccess": "Voce aggiornata con successo",
       "editFailed": "Aggiornamento fallito",
       "save": "Salva"
@@ -103,22 +103,22 @@
       "exercisesTracked": "Esercizi Tracciati"
     },
     "hyrox": {
-      "addTitle": "Aggiungi Gara HYROX",
-      "editTitle": "Modifica Gara HYROX",
+      "addTitle": "Aggiungi Gara Hybrid",
+      "editTitle": "Modifica Gara Hybrid",
       "category": "Categoria",
       "selectCategory": "Seleziona la categoria",
       "time": "Tempo Finale",
       "date": "Data della Gara",
       "eventName": "Nome dell'Evento",
-      "eventNamePlaceholder": "es: HYROX Milano 2024",
+      "eventNamePlaceholder": "es: Hybrid Milano 2024",
       "location": "Luogo",
       "locationPlaceholder": "es: Milano, Italia",
       "timeFormat": "Formato: hh:mm:ss",
       "invalidTime": "Inserisci un tempo valido (hh:mm:ss)",
-      "savedSuccess": "Gara HYROX salvata con successo!",
+      "savedSuccess": "Gara Hybrid salvata con successo!",
       "saveFailed": "Salvataggio fallito. Riprova.",
-      "noData": "Nessun dato HYROX",
-      "noDataDesc": "Aggiungi la tua prima gara HYROX per iniziare a tracciare i tuoi tempi!",
+      "noData": "Nessun dato Hybrid",
+      "noDataDesc": "Aggiungi la tua prima gara Hybrid per iniziare a tracciare i tuoi tempi!",
       "personalBest": "Record Personale",
       "basedOn": "Basato su {count} registrazioni",
       "totalRaces": "Gare Totali",

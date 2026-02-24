@@ -6,6 +6,7 @@ import {
   Route,
   CheckCircle,
   MessageCircle,
+  Gift,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
@@ -21,7 +22,7 @@ interface EventCardProps {
 
 export function EventCard({ event, isParticipating = false }: EventCardProps) {
   const router = useRouter();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   const handlePress = () => {
     router.push(`/events/${event.slug}` as const);
@@ -61,6 +62,16 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           <View style={styles.participatingBadge}>
             <CheckCircle size={16} color={theme.colors.white} />
             <Text style={styles.participatingText}>Vou</Text>
+          </View>
+        )}
+
+        {/* Giveaway Badge */}
+        {event._count && (event._count.giveaways ?? 0) > 0 && (
+          <View style={styles.giveawayBadge}>
+            <Gift size={12} color={theme.colors.white} />
+            <Text style={styles.giveawayBadgeText}>
+              {t("events.giveaway.badge")}
+            </Text>
           </View>
         )}
       </View>
@@ -184,6 +195,23 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: 14,
     fontWeight: "500",
+  },
+  giveawayBadge: {
+    position: "absolute",
+    bottom: theme.spacing.sm,
+    right: theme.spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  giveawayBadgeText: {
+    color: theme.colors.white,
+    fontSize: 11,
+    fontWeight: "700",
   },
   content: {
     padding: theme.spacing.md,

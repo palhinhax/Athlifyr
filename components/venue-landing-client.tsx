@@ -528,7 +528,7 @@ export function VenueLandingClient({
             <h2 className="mb-4 text-3xl font-bold md:text-4xl lg:text-5xl">
               {t("finalCta.title")}
             </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-lg opacity-90">
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-primary-foreground">
               {t("finalCta.subtitle")}
             </p>
             <Button
@@ -545,20 +545,20 @@ export function VenueLandingClient({
 
             {/* Contact Info */}
             <div className="mt-10 flex flex-col items-center gap-4 border-t border-white/20 pt-8 sm:flex-row sm:justify-center sm:gap-8">
-              <p className="text-sm opacity-80">{t("finalCta.questions")}</p>
+              <p className="text-sm text-primary-foreground">{t("finalCta.questions")}</p>
               <div className="flex items-center gap-6">
                 <a
                   href="https://instagram.com/athlifyr"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:text-primary-foreground/80"
                 >
                   <Instagram className="h-5 w-5" />
                   @athlifyr
                 </a>
                 <a
                   href="mailto:hello@athlifyr.com"
-                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:opacity-80"
+                  className="flex items-center gap-2 text-sm font-medium transition-opacity hover:text-primary-foreground/80"
                 >
                   <Mail className="h-5 w-5" />
                   hello@athlifyr.com

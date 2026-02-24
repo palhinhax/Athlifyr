@@ -29,6 +29,7 @@ import { UserNav } from "@/components/user-nav";
 import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
+import { SkipLink } from "@/components/skip-link";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -181,6 +182,8 @@ export default async function RootLayout({
         <ThemeProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>
             <SessionProvider>
+              {/* Skip to main content link for accessibility (WCAG 2.4.1) */}
+              <SkipLink />
               <div className="flex min-h-screen">
                 {/* Sidebar - Desktop only */}
                 <AppSidebar />
@@ -214,7 +217,9 @@ export default async function RootLayout({
                   {/* Active Venues Quick Access Bar */}
                   <ActiveVenuesBar />
 
-                  <main className="flex-1">{children}</main>
+                  <main id="main-content" className="flex-1" tabIndex={-1}>
+                    {children}
+                  </main>
                   <footer className="border-t border-border/60 bg-muted/30 py-6">
                     <div className="container mx-auto px-4">
                       <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">

@@ -27,6 +27,8 @@
     "notifications": "Notificaciones",
     "openMenu": "Abrir menú",
     "closeMenu": "Cerrar menú",
+    "collapseSidebar": "Contraer barra lateral",
+    "expandSidebar": "Expandir barra lateral",
     "all": "Todos",
     "new": "Nuevo",
     "videoAnalysis": "Análisis de Vídeo",

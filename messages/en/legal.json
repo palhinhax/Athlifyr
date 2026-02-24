@@ -7,7 +7,8 @@
       "acceptAll": "Accept All",
       "acceptEssential": "Essential Only",
       "customize": "Customize",
-      "learnMore": "Learn More"
+      "learnMore": "Learn More",
+      "close": "Close cookie banner"
     },
     "privacy": {
       "title": "Privacy Policy",

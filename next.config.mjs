@@ -38,10 +38,10 @@ const securityHeaders = [
     key: 'Cross-Origin-Opener-Policy',
     value: 'same-origin',
   },
-  // Cross-Origin-Embedder-Policy - controls cross-origin requests
+  // Cross-Origin-Embedder-Policy - requires CORP headers for cross-origin resources
   {
     key: 'Cross-Origin-Embedder-Policy',
-    value: 'credentialless',
+    value: 'require-corp',
   },
   // X-Frame-Options - prevents clickjacking (legacy, CSP frame-ancestors is preferred)
   {

@@ -10,7 +10,7 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https: http:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live;
+  connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.ingest.sentry.io;
   media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
   object-src 'none';
   base-uri 'self';

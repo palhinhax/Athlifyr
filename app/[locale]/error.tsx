@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
@@ -99,6 +100,7 @@ export default function Error({
   const [currentLocale, setCurrentLocale] = useState<string>("en");
 
   useEffect(() => {
+    Sentry.captureException(error);
     console.error(error);
     setCurrentLocale(getLocale());
   }, [error]);

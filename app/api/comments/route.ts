@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
+import { logCommentCreated } from "@/lib/sentry-logger";
 
 const commentSchema = z.object({
   eventId: z.string(),
@@ -67,6 +68,13 @@ export async function POST(request: Request) {
           },
         },
       },
+    });
+
+    logCommentCreated({
+      userId: user.id,
+      eventId: validatedData.eventId,
+      commentId: comment.id,
+      isReply: !!validatedData.parentId,
     });
 
     return NextResponse.json({

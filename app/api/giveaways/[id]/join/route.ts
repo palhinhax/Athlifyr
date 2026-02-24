@@ -2,6 +2,7 @@ import { NextResponse, NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { GiveawayStatus } from "@prisma/client";
+import { logGiveawayJoined } from "@/lib/sentry-logger";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -83,6 +84,13 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       },
       { isolationLevel: "Serializable" }
     );
+
+    logGiveawayJoined({
+      userId: user.id,
+      giveawayId: id,
+      ticketNumber: participation.created.ticketNumber,
+      participantsCount: participation.currentParticipantsCount,
+    });
 
     return NextResponse.json({
       success: true,

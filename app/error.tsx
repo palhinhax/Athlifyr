@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import { useEffect, useState } from "react";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
@@ -96,6 +97,7 @@ export default function GlobalError({
   const [locale, setLocale] = useState<SupportedLocale>("en");
 
   useEffect(() => {
+    Sentry.captureException(error);
     console.error("Global Error:", error);
     setLocale(getLocale());
     const randomIndex = Math.floor(Math.random() * backgroundVideos.length);

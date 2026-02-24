@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
+import { logEventParticipation } from "@/lib/sentry-logger";
 
 // Schema for creating/updating participation
 const participationSchema = z.object({
@@ -88,6 +89,13 @@ export async function POST(request: NextRequest) {
         user.email
       );
     }
+
+    logEventParticipation({
+      userId: user.id,
+      eventId: validatedData.eventId,
+      status: validatedData.status,
+      variantId: validatedData.variantId,
+    });
 
     return NextResponse.json(participation, { status: 200 });
   } catch (error) {

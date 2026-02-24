@@ -14,4 +14,7 @@ Sentry.init({
 
   // Do not send events in development unless explicitly wanted
   enabled: process.env.NODE_ENV !== "development",
+
+  // ── Sentry Logs ──────────────────────────────────────────────────────
+  _experiments: { enableLogs: true },
 });

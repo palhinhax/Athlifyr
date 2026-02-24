@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { GiveawayStatus } from "@prisma/client";
 import { randomBytes, createHash } from "crypto";
 import { notifyGiveawayWinners } from "@/lib/notifications";
+import {
+  logGiveawayDrawCompleted,
+  logGiveawayDrawFailed,
+} from "@/lib/sentry-logger";
 
 const GIVEAWAY_DRAW_SECRET = process.env.GIVEAWAY_DRAW_SECRET;
 
@@ -181,6 +185,13 @@ export async function POST(request: Request) {
           `✅ Giveaway ${giveaway.id}: ${drawResult.participantsCount} participants, ${drawResult.winnersCount} winners, winning tickets: ${drawResult.winningTicketNumbers.map((t) => `#${t}`).join(", ")}`
         );
 
+        logGiveawayDrawCompleted({
+          giveawayId: giveaway.id,
+          participantsCount: drawResult.participantsCount,
+          winnersCount: drawResult.winnersCount,
+          winningTickets: drawResult.winningTicketNumbers,
+        });
+
         // Send notifications to winners (fire and forget)
         if (drawResult.winnerDetails.length > 0) {
           notifyGiveawayWinners({
@@ -206,6 +217,11 @@ export async function POST(request: Request) {
       } catch (err) {
         const errMsg = err instanceof Error ? err.message : String(err);
         console.error(`❌ Failed to draw giveaway ${giveaway.id}:`, errMsg);
+
+        logGiveawayDrawFailed({
+          giveawayId: giveaway.id,
+          error: errMsg,
+        });
         results.push({
           giveawayId: giveaway.id,
           participantsCount: 0,

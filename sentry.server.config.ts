@@ -15,6 +15,13 @@ Sentry.init({
   // Do not send events in development unless explicitly wanted
   enabled: process.env.NODE_ENV !== "development",
 
+  // ── Sentry Logs ──────────────────────────────────────────────────────
+  // Forward console.warn / error to Sentry Logs for real-time querying
+  integrations: [
+    Sentry.consoleLoggingIntegration({ levels: ["warn", "error"] }),
+  ],
+  _experiments: { enableLogs: true },
+
   // Privacy: scrub sensitive data before sending
   beforeSend(event) {
     // Strip Authorization headers and cookies from request context

@@ -2,6 +2,32 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
 
+/** Generates a cryptographically random nonce for Content Security Policy */
+function generateNonce(): string {
+  return Buffer.from(crypto.randomUUID()).toString("base64");
+}
+
+/** Builds a Content-Security-Policy header value with the given nonce for style-src */
+function buildCSP(nonce: string): string {
+  return [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com",
+    `style-src 'self' 'nonce-${nonce}' https://fonts.googleapis.com`,
+    "img-src 'self' blob: data: https: http:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live",
+    "media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "frame-src 'self' https://vercel.live",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
 const intlMiddleware = createMiddleware(routing);
 
 // Common bot user agents that should NOT receive locale redirects
@@ -113,7 +139,9 @@ export default function middleware(request: NextRequest) {
 
   // Skip intl middleware for maintenance and promo pages
   if (isMaintenancePage || isPromoPage) {
-    return NextResponse.next();
+    const response = NextResponse.next();
+    response.headers.set("Content-Security-Policy", buildCSP(generateNonce()));
+    return response;
   }
 
   // ============================================================
@@ -169,14 +197,32 @@ export default function middleware(request: NextRequest) {
     return NextResponse.redirect(url, 301);
   }
 
+  // Generate a per-request nonce for CSP and forward it to server components
+  // via a request header so the locale layout can read it with headers()
+  const nonce = generateNonce();
+  const cspHeader = buildCSP(nonce);
+
+  // Augment request headers with the nonce so next-intl middleware forwards
+  // it to server components (readable via headers() from next/headers)
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+  const augmentedRequest = new NextRequest(request.url, {
+    method: request.method,
+    headers: requestHeaders,
+  });
+
   // For bots with valid locale in URL, serve content directly without additional redirects
   if (isBotRequest && hasLocalePrefix) {
     // Let next-intl handle it but the URL is already correct
-    return intlMiddleware(request);
+    const response = intlMiddleware(augmentedRequest);
+    response.headers.set("Content-Security-Policy", cspHeader);
+    return response;
   }
 
   // Continue with internationalization middleware for regular users
-  return intlMiddleware(request);
+  const response = intlMiddleware(augmentedRequest);
+  response.headers.set("Content-Security-Policy", cspHeader);
+  return response;
 }
 
 export const config = {

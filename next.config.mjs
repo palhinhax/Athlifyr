@@ -2,32 +2,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
-// Content Security Policy - carefully configured for Next.js compatibility
-const ContentSecurityPolicy = `
-  default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
-  img-src 'self' blob: data: https: http:;
-  font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live;
-  media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
-  object-src 'none';
-  base-uri 'self';
-  form-action 'self';
-  frame-ancestors 'none';
-  frame-src 'self' https://vercel.live;
-  worker-src 'self' blob:;
-  manifest-src 'self';
-  upgrade-insecure-requests;
-`.replace(/\s{2,}/g, ' ').trim();
-
-// Security headers for all routes
+// Security headers for all routes (static headers; CSP is set dynamically in middleware)
 const securityHeaders = [
-  // Content Security Policy - prevents XSS attacks
-  {
-    key: 'Content-Security-Policy',
-    value: ContentSecurityPolicy,
-  },
   // Strict Transport Security - forces HTTPS
   {
     key: 'Strict-Transport-Security',

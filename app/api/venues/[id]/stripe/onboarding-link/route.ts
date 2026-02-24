@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  apiVersion: "2025-12-15.clover",
+  apiVersion: "2026-01-28.clover",
 });
 
 // POST - Generate Stripe Connect onboarding link

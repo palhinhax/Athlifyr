@@ -110,8 +110,8 @@ export default function AdminUsersContent() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data.users || []);
-        setTotalPages(data.totalPages || 1);
-        setTotalCount(data.totalCount || 0);
+        setTotalPages(data.pagination?.totalPages || 1);
+        setTotalCount(data.pagination?.totalCount || 0);
       }
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -673,10 +673,11 @@ export default function AdminUsersContent() {
       </div>
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {totalCount > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Página {currentPage} de {totalPages}
+            Página {currentPage} de {totalPages} &mdash; {totalCount}{" "}
+            {totalCount === 1 ? "utilizador" : "utilizadores"}
           </p>
           <div className="flex gap-2">
             <Button

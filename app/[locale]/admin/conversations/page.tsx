@@ -447,7 +447,7 @@ export default function AdminConversationsPage() {
       )}
 
       {/* Pagination */}
-      {pagination.totalPages > 1 && (
+      {pagination.totalCount > 0 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
             {t("page", {

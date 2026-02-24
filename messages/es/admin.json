@@ -14,7 +14,8 @@
         "reports": "Denuncias",
         "appStoreAssets": "Imágenes Tienda",
         "giveaways": "Sorteos",
-        "posts": "Posts"
+        "posts": "Posts",
+        "notes": "Solicitudes"
       }
     },
     "contacts": {
@@ -423,6 +424,44 @@
         "updateError": "Error al actualizar el sorteo.",
         "drawError": "Error al realizar el sorteo.",
         "deleteError": "Error al eliminar el sorteo."
+      }
+    },
+    "notes": {
+      "title": "Solicitudes de Usuarios",
+      "description": "Solicitudes enviadas a través del chat Athli (añadir eventos, locales, etc.)",
+      "stats": {
+        "total": "Total",
+        "pending": "Pendientes",
+        "inProgress": "En Progreso",
+        "resolved": "Resueltas",
+        "dismissed": "Descartadas"
+      },
+      "noNotes": "Sin solicitudes",
+      "noNotesDescription": "Cuando los usuarios envíen solicitudes a través del chat Athli, aparecerán aquí.",
+      "types": {
+        "event": "Evento",
+        "venue": "Local",
+        "other": "Otro"
+      },
+      "statusLabels": {
+        "pending": "Pendiente",
+        "in_progress": "En Progreso",
+        "resolved": "Resuelta",
+        "dismissed": "Descartada"
+      },
+      "changeStatus": "Estado",
+      "externalLink": "Enlace externo",
+      "internalNotes": "Notas internas",
+      "editNotes": "Editar",
+      "addNotes": "Añadir notas",
+      "notesPlaceholder": "Añade notas internas sobre esta solicitud...",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "noInternalNotes": "Sin notas internas.",
+      "deleteDialog": {
+        "title": "Eliminar solicitud",
+        "description": "¿Estás seguro de que quieres eliminar esta solicitud? Esta acción no se puede deshacer.",
+        "confirm": "Eliminar"
       }
     }
   }

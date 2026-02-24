@@ -87,6 +87,7 @@ You have access to tools to:
 13. **Save Workouts** - Save a single workout session to the user's account (only after they confirm)
 14. **Get My PRs** - Get the user's personal records (PRs) for strength exercises
 15. **Get My Analyses** - Get the user's saved video analyses (motion/pose and lift/bar path) with AI form assessment
+16. **Submit Admin Note** - Submit a request for the Athlifyr team to review (e.g., add an event, add a venue, report issues)
 
 ## IMPORTANT DISTINCTIONS
 
@@ -181,6 +182,16 @@ When users ask about "my workouts", "quantos treinos fiz", "how many workouts di
 - The response includes summary stats (total count, total time, average feeling, average RPE) and individual workout logs with exercise details
 - Present the data clearly: show total count, highlight consistency 📊, mention feeling trends, celebrate high volumes 💪
 - For large time ranges (year/all), the tool returns stats + only the most recent logs to keep data manageable
+
+### Submitting Requests to the Team (Admin Notes)
+When a user asks you to ADD a new event, ADD a new venue, or requests something you CANNOT do directly:
+- You CANNOT create events or venues yourself. Only the Athlifyr team can do that.
+- Use submit_admin_note to save the user's request for the team to review.
+- Collect as much information as possible from the user before submitting: name, location, date (for events), sport type, external URL, etc.
+- Set the correct type: EVENT for event requests, VENUE for venue requests, OTHER for anything else.
+- After submitting, confirm to the user that their request has been saved and the team will review it.
+- Be encouraging — let them know the team appreciates their contributions to the platform!
+- If the user mentions wanting to see an event or venue that doesn't exist on Athlifyr, proactively offer to submit a request.
 
 ## Important Rules
 - ONLY suggest events and venues that exist in Athlifyr's database (use the tools)
@@ -2607,6 +2618,56 @@ export async function saveWorkout(
 }
 
 // ============================================================================
+// Submit Admin Note (event/venue submission requests from chat)
+// ============================================================================
+
+export interface SubmitAdminNoteParams {
+  type: "EVENT" | "VENUE" | "OTHER";
+  title: string;
+  message: string;
+  location?: string;
+  date?: string;
+  sportType?: string;
+  url?: string;
+}
+
+export async function submitAdminNote(
+  params: SubmitAdminNoteParams,
+  userId: string
+): Promise<string> {
+  try {
+    const note = await prisma.adminNote.create({
+      data: {
+        userId,
+        type: params.type,
+        title: params.title,
+        message: params.message,
+        location: params.location || null,
+        date: params.date || null,
+        sportType: params.sportType || null,
+        url: params.url || null,
+        status: "pending",
+      },
+    });
+
+    return JSON.stringify({
+      success: true,
+      noteId: note.id,
+      type: note.type,
+      title: note.title,
+      message:
+        "Request submitted successfully. The Athlifyr team will review it.",
+    });
+  } catch (error) {
+    console.error("Error submitting admin note:", error);
+    return JSON.stringify({
+      success: false,
+      error: "Failed to submit request. Please try again later.",
+    });
+  }
+}
+
+// ============================================================================
 // Tool Definitions for OpenAI
 // ============================================================================
 
@@ -3294,6 +3355,54 @@ export const athliTools = [
             "Maximum number of log entries to return (default 20, max 10 for year/all)",
         },
       },
+    },
+  },
+  {
+    type: "function" as const,
+    name: "submit_admin_note",
+    description:
+      "Submit a request for the Athlifyr team to review. Use this when the user wants to ADD a new event, ADD a new venue, or make a request that you cannot fulfil directly. Collect as much information as possible (name, location, date, sport type, URL) before calling this tool. Set type to EVENT for event requests, VENUE for venue requests, or OTHER for anything else.",
+    parameters: {
+      type: "object",
+      properties: {
+        type: {
+          type: "string",
+          enum: ["EVENT", "VENUE", "OTHER"],
+          description:
+            "Type of request: EVENT to add an event, VENUE to add a venue, OTHER for other requests.",
+        },
+        title: {
+          type: "string",
+          description:
+            "Event/venue name or short summary of the request (e.g. 'Trail Manuelino 2026', 'CrossFit Box Amadora').",
+        },
+        message: {
+          type: "string",
+          description:
+            "Full description of what the user wants. Include all details they provided: dates, location, distances, prices, sport types, etc.",
+        },
+        location: {
+          type: "string",
+          description:
+            "City/region if provided (e.g. 'Pombal', 'Lisboa', 'Porto').",
+        },
+        date: {
+          type: "string",
+          description:
+            "Event date if provided (e.g. '2026-03-15', 'março 2026').",
+        },
+        sportType: {
+          type: "string",
+          description:
+            "Sport type if relevant (e.g. 'TRAIL', 'CROSSFIT', 'RUNNING').",
+        },
+        url: {
+          type: "string",
+          description:
+            "External URL if the user provided one (event website, venue website, etc.).",
+        },
+      },
+      required: ["type", "title", "message"],
     },
   },
 ];

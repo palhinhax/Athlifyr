@@ -28,6 +28,7 @@ import {
   saveTrainingPlan,
   saveWorkout,
   listAvailableExercises,
+  submitAdminNote,
 } from "@/lib/athli-ai";
 import type {
   EventSearchParams,
@@ -38,6 +39,7 @@ import type {
   WorkoutHistoryParams,
   SaveTrainingPlanParams,
   SaveWorkoutParams,
+  SubmitAdminNoteParams,
 } from "@/lib/athli-ai";
 
 // Lazy getter — avoids module-level instantiation at build time
@@ -308,6 +310,12 @@ export async function POST(request: Request) {
             break;
           case "save_workout":
             toolResult = await saveWorkout(args as SaveWorkoutParams, user.id);
+            break;
+          case "submit_admin_note":
+            toolResult = await submitAdminNote(
+              args as SubmitAdminNoteParams,
+              user.id
+            );
             break;
           default:
             toolResult = "Unknown tool";

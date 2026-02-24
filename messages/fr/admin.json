@@ -14,7 +14,8 @@
         "reports": "Signalements",
         "appStoreAssets": "Images Boutique",
         "giveaways": "Tirages",
-        "posts": "Publications"
+        "posts": "Publications",
+        "notes": "Demandes"
       }
     },
     "contacts": {
@@ -423,6 +424,44 @@
         "updateError": "Échec de la mise à jour du tirage.",
         "drawError": "Échec du tirage.",
         "deleteError": "Échec de la suppression du tirage."
+      }
+    },
+    "notes": {
+      "title": "Demandes des Utilisateurs",
+      "description": "Demandes soumises via le chat Athli (ajouter des événements, des lieux, etc.)",
+      "stats": {
+        "total": "Total",
+        "pending": "En attente",
+        "inProgress": "En cours",
+        "resolved": "Résolues",
+        "dismissed": "Rejetées"
+      },
+      "noNotes": "Aucune demande",
+      "noNotesDescription": "Lorsque les utilisateurs soumettent des demandes via le chat Athli, elles apparaîtront ici.",
+      "types": {
+        "event": "Événement",
+        "venue": "Lieu",
+        "other": "Autre"
+      },
+      "statusLabels": {
+        "pending": "En attente",
+        "in_progress": "En cours",
+        "resolved": "Résolue",
+        "dismissed": "Rejetée"
+      },
+      "changeStatus": "Statut",
+      "externalLink": "Lien externe",
+      "internalNotes": "Notes internes",
+      "editNotes": "Modifier",
+      "addNotes": "Ajouter des notes",
+      "notesPlaceholder": "Ajoutez des notes internes sur cette demande...",
+      "save": "Enregistrer",
+      "cancel": "Annuler",
+      "noInternalNotes": "Pas de notes internes.",
+      "deleteDialog": {
+        "title": "Supprimer la demande",
+        "description": "Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.",
+        "confirm": "Supprimer"
       }
     }
   }

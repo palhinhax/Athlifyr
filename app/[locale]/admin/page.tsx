@@ -18,6 +18,7 @@ import {
   Smartphone,
   Gift,
   MessageCircle,
+  StickyNote,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -36,6 +37,7 @@ const AdminAppStoreAssetsContent = lazy(
 );
 const AdminGiveawaysContent = lazy(() => import("./giveaways/page"));
 const AdminPostsContent = lazy(() => import("./posts/page"));
+const AdminNotesContent = lazy(() => import("./notes/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -176,6 +178,13 @@ function AdminContent() {
               <Gift className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.giveaways")}</span>
             </TabsTrigger>
+            <TabsTrigger
+              value="notes"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <StickyNote className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.notes")}</span>
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -314,6 +323,18 @@ function AdminContent() {
             }
           >
             <AdminGiveawaysContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="notes">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminNotesContent />
           </Suspense>
         </TabsContent>
       </Tabs>

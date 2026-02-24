@@ -14,7 +14,8 @@
         "reports": "Meldungen",
         "appStoreAssets": "Store-Bilder",
         "giveaways": "Gewinnspiele",
-        "posts": "Beiträge"
+        "posts": "Beiträge",
+        "notes": "Anfragen"
       }
     },
     "contacts": {
@@ -423,6 +424,44 @@
         "updateError": "Fehler beim Aktualisieren des Gewinnspiels.",
         "drawError": "Fehler bei der Ziehung.",
         "deleteError": "Fehler beim Löschen des Gewinnspiels."
+      }
+    },
+    "notes": {
+      "title": "Benutzeranfragen",
+      "description": "Anfragen über den Athli-Chat (Veranstaltungen, Orte hinzufügen usw.)",
+      "stats": {
+        "total": "Gesamt",
+        "pending": "Ausstehend",
+        "inProgress": "In Bearbeitung",
+        "resolved": "Erledigt",
+        "dismissed": "Abgelehnt"
+      },
+      "noNotes": "Keine Anfragen",
+      "noNotesDescription": "Wenn Benutzer Anfragen über den Athli-Chat senden, erscheinen sie hier.",
+      "types": {
+        "event": "Veranstaltung",
+        "venue": "Ort",
+        "other": "Sonstiges"
+      },
+      "statusLabels": {
+        "pending": "Ausstehend",
+        "in_progress": "In Bearbeitung",
+        "resolved": "Erledigt",
+        "dismissed": "Abgelehnt"
+      },
+      "changeStatus": "Status",
+      "externalLink": "Externer Link",
+      "internalNotes": "Interne Notizen",
+      "editNotes": "Bearbeiten",
+      "addNotes": "Notizen hinzufügen",
+      "notesPlaceholder": "Interne Notizen zu dieser Anfrage hinzufügen...",
+      "save": "Speichern",
+      "cancel": "Abbrechen",
+      "noInternalNotes": "Noch keine internen Notizen.",
+      "deleteDialog": {
+        "title": "Anfrage löschen",
+        "description": "Bist du sicher, dass du diese Anfrage löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
+        "confirm": "Löschen"
       }
     }
   }

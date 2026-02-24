@@ -14,7 +14,8 @@
         "reports": "Reports",
         "appStoreAssets": "Store Assets",
         "giveaways": "Giveaways",
-        "posts": "Posts"
+        "posts": "Posts",
+        "notes": "Requests"
       }
     },
     "contacts": {
@@ -423,6 +424,44 @@
         "updateError": "Failed to update giveaway.",
         "drawError": "Failed to perform draw.",
         "deleteError": "Failed to delete giveaway."
+      }
+    },
+    "notes": {
+      "title": "User Requests",
+      "description": "Requests submitted via Athli chat (add events, venues, etc.)",
+      "stats": {
+        "total": "Total",
+        "pending": "Pending",
+        "inProgress": "In Progress",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "noNotes": "No requests",
+      "noNotesDescription": "When users submit requests via Athli chat, they will appear here.",
+      "types": {
+        "event": "Event",
+        "venue": "Venue",
+        "other": "Other"
+      },
+      "statusLabels": {
+        "pending": "Pending",
+        "in_progress": "In Progress",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      },
+      "changeStatus": "Status",
+      "externalLink": "External link",
+      "internalNotes": "Internal notes",
+      "editNotes": "Edit",
+      "addNotes": "Add notes",
+      "notesPlaceholder": "Add internal notes about this request...",
+      "save": "Save",
+      "cancel": "Cancel",
+      "noInternalNotes": "No internal notes yet.",
+      "deleteDialog": {
+        "title": "Delete request",
+        "description": "Are you sure you want to delete this request? This action cannot be undone.",
+        "confirm": "Delete"
       }
     }
   }

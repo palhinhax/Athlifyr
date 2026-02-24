@@ -14,7 +14,8 @@
         "reports": "Denúncias",
         "appStoreAssets": "Imagens Loja",
         "giveaways": "Sorteios",
-        "posts": "Posts"
+        "posts": "Posts",
+        "notes": "Pedidos"
       }
     },
     "contacts": {
@@ -423,6 +424,44 @@
         "updateError": "Falha ao atualizar sorteio.",
         "drawError": "Falha ao realizar sorteio.",
         "deleteError": "Falha ao apagar sorteio."
+      }
+    },
+    "notes": {
+      "title": "Pedidos de Utilizadores",
+      "description": "Pedidos submetidos via chat Athli (adicionar eventos, locais, etc.)",
+      "stats": {
+        "total": "Total",
+        "pending": "Pendentes",
+        "inProgress": "Em Progresso",
+        "resolved": "Resolvidos",
+        "dismissed": "Ignorados"
+      },
+      "noNotes": "Sem pedidos",
+      "noNotesDescription": "Quando os utilizadores submeterem pedidos via chat Athli, aparecerão aqui.",
+      "types": {
+        "event": "Evento",
+        "venue": "Local",
+        "other": "Outro"
+      },
+      "statusLabels": {
+        "pending": "Pendente",
+        "in_progress": "Em Progresso",
+        "resolved": "Resolvido",
+        "dismissed": "Ignorado"
+      },
+      "changeStatus": "Estado",
+      "externalLink": "Link externo",
+      "internalNotes": "Notas internas",
+      "editNotes": "Editar",
+      "addNotes": "Adicionar notas",
+      "notesPlaceholder": "Adiciona notas internas sobre este pedido...",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "noInternalNotes": "Sem notas internas.",
+      "deleteDialog": {
+        "title": "Apagar pedido",
+        "description": "Tens a certeza que queres apagar este pedido? Esta ação não pode ser revertida.",
+        "confirm": "Apagar"
       }
     }
   }

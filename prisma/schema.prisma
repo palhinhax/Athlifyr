@@ -88,6 +88,9 @@ model User {
   // Athli AI assistant
   athliConversations     AthliConversation[]
 
+  // Admin notes (event/venue submission requests from chat)
+  adminNotes             AdminNote[]
+
   @@index([email])
   @@index([name])
 }
@@ -493,6 +496,36 @@ model Contact {
   @@index([status])
   @@index([createdAt])
   @@index([email])
+}
+
+// Admin notes submitted via Athli chat (event/venue submission requests)
+model AdminNote {
+  id        String        @id @default(cuid())
+  userId    String
+  type      AdminNoteType
+  title     String        // Event/venue name or short summary
+  message   String        @db.Text // Full description from user
+  location  String?       // City/region if provided
+  date      String?       // Event date if provided
+  sportType String?       // Sport type if provided
+  url       String?       // External URL if provided
+  status    String        @default("pending") // pending, in_progress, resolved, dismissed
+  adminNotes String?      @db.Text // Internal notes from admin
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+enum AdminNoteType {
+  EVENT
+  VENUE
+  OTHER
 }
 
 model MapPreferences {

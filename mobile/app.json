@@ -7,7 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": "athlifyr",
+    "scheme": ["athlifyr", "com.athlifyr.app"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -41,8 +41,7 @@
           "autoVerify": false,
           "data": [
             {
-              "scheme": "com.athlifyr.app",
-              "host": "oauth2redirect"
+              "scheme": "com.athlifyr.app"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]

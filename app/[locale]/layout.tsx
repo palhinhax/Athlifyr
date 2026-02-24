@@ -30,6 +30,7 @@ import { MobileNav } from "@/components/mobile-nav";
 import { NotificationBell } from "@/components/notification-bell";
 import { AnalysisButton } from "@/components/analysis-button";
 import { SkipLink } from "@/components/skip-link";
+import { headers } from "next/headers";
 
 const geistSans = localFont({
   src: "../fonts/GeistVF.woff",
@@ -164,6 +165,9 @@ export default async function RootLayout({
 
   const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
 
+  // Read the per-request CSP nonce injected by middleware (x-nonce header)
+  const nonce = (await headers()).get("x-nonce") ?? undefined;
+
   // Generate structured data schemas for the site
   const organizationSchema = generateOrganizationSchema();
   const websiteSchema = generateWebSiteSchema();
@@ -177,7 +181,7 @@ export default async function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}
       >
-        {gaId && <GoogleAnalytics gaId={gaId} />}
+        {gaId && <GoogleAnalytics gaId={gaId} nonce={nonce} />}
         <NavigationProgress />
         <ThemeProvider>
           <NextIntlClientProvider messages={messages} locale={locale}>

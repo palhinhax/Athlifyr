@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 interface GoogleAnalyticsProps {
   gaId: string;
+  nonce?: string;
 }
 
 // List of emails to exclude from analytics tracking
@@ -17,7 +18,7 @@ function isValidGAId(gaId: string): boolean {
   return /^G-[A-Z0-9]{10}$/.test(gaId);
 }
 
-export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
+export function GoogleAnalytics({ gaId, nonce }: GoogleAnalyticsProps) {
   const [isExcluded, setIsExcluded] = useState(false);
 
   useEffect(() => {
@@ -52,10 +53,12 @@ export function GoogleAnalytics({ gaId }: GoogleAnalyticsProps) {
       <Script
         strategy="afterInteractive"
         src={`https://www.googletagmanager.com/gtag/js?id=${gaId}`}
+        nonce={nonce}
       />
       <Script
         id="google-analytics"
         strategy="afterInteractive"
+        nonce={nonce}
         dangerouslySetInnerHTML={{
           __html: `
             window.dataLayer = window.dataLayer || [];

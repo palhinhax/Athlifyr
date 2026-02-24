@@ -2,6 +2,31 @@ import createMiddleware from "next-intl/middleware";
 import { routing } from "./i18n/routing";
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * Builds a nonce-based Content Security Policy header value.
+ * Using 'strict-dynamic' with a nonce removes the need for 'unsafe-inline'
+ * while still allowing legitimate inline scripts that carry the nonce.
+ */
+function buildCspHeader(nonce: string): string {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com`,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "img-src 'self' blob: data: https: http:",
+    "font-src 'self' data: https://fonts.gstatic.com",
+    "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live",
+    "media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "frame-src 'self' https://vercel.live",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    "upgrade-insecure-requests",
+  ].join("; ");
+}
+
 const intlMiddleware = createMiddleware(routing);
 
 // Common bot user agents that should NOT receive locale redirects
@@ -39,9 +64,24 @@ function isBot(userAgent: string | null): boolean {
 }
 
 export default function middleware(request: NextRequest) {
-  const pathname = request.nextUrl.pathname;
-  const hostname = request.headers.get("host") || "";
-  const userAgent = request.headers.get("user-agent");
+  // Generate a cryptographically-random nonce for this request.
+  // btoa(randomUUID) gives a base64 string safe for use in CSP nonce values.
+  const nonce = btoa(crypto.randomUUID());
+  const cspHeader = buildCspHeader(nonce);
+
+  // Clone the incoming request headers and attach the nonce so that:
+  // 1. Next.js reads 'x-nonce' to stamp its own hydration scripts.
+  // 2. Server-component layouts can read it via headers().get('x-nonce').
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-nonce", nonce);
+
+  // Create a new NextRequest with the modified headers so that any
+  // downstream middleware (e.g. next-intl) forwards the nonce to the page.
+  const requestWithNonce = new NextRequest(request, { headers: requestHeaders });
+
+  const pathname = requestWithNonce.nextUrl.pathname;
+  const hostname = requestWithNonce.headers.get("host") || "";
+  const userAgent = requestWithNonce.headers.get("user-agent");
 
   // CRITICAL: Skip middleware for ALL /api/auth/* routes to prevent OAuth breaks
   // OAuth flow must happen on the SAME host without redirects
@@ -65,7 +105,7 @@ export default function middleware(request: NextRequest) {
     // If locale prefix is present, rewrite to strip it
     const localeVideoMatch = pathname.match(/^\/[a-z]{2}(\/videos\/.+)$/i);
     if (localeVideoMatch) {
-      const url = request.nextUrl.clone();
+      const url = requestWithNonce.nextUrl.clone();
       url.pathname = localeVideoMatch[1];
       return NextResponse.rewrite(url);
     }
@@ -85,13 +125,13 @@ export default function middleware(request: NextRequest) {
   const isMaintenanceMode = process.env.MAINTENANCE_MODE === "true";
 
   // Allow access to maintenance page, promo page, and static assets even in maintenance mode
-  const isMaintenancePage = request.nextUrl.pathname === "/maintenance";
-  const isPromoPage = request.nextUrl.pathname.startsWith("/promo");
+  const isMaintenancePage = requestWithNonce.nextUrl.pathname === "/maintenance";
+  const isPromoPage = requestWithNonce.nextUrl.pathname.startsWith("/promo");
   const isStaticAsset =
-    request.nextUrl.pathname.startsWith("/_next") ||
-    request.nextUrl.pathname.startsWith("/static") ||
-    request.nextUrl.pathname.startsWith("/videos") ||
-    request.nextUrl.pathname.match(
+    requestWithNonce.nextUrl.pathname.startsWith("/_next") ||
+    requestWithNonce.nextUrl.pathname.startsWith("/static") ||
+    requestWithNonce.nextUrl.pathname.startsWith("/videos") ||
+    requestWithNonce.nextUrl.pathname.match(
       /\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|mp4|webm)$/i
     );
 
@@ -103,17 +143,21 @@ export default function middleware(request: NextRequest) {
     !isStaticAsset
   ) {
     // Use 302 temporary redirect for maintenance (NOT 301/308)
-    return NextResponse.redirect(new URL("/maintenance", request.url), 302);
+    return NextResponse.redirect(new URL("/maintenance", requestWithNonce.url), 302);
   }
 
   // If not in maintenance mode and trying to access maintenance page, redirect to home
   if (!isMaintenanceMode && isMaintenancePage) {
-    return NextResponse.redirect(new URL("/pt", request.url), 302);
+    return NextResponse.redirect(new URL("/pt", requestWithNonce.url), 302);
   }
 
   // Skip intl middleware for maintenance and promo pages
   if (isMaintenancePage || isPromoPage) {
-    return NextResponse.next();
+    const response = NextResponse.next({
+      request: { headers: requestHeaders },
+    });
+    response.headers.set("Content-Security-Policy", cspHeader);
+    return response;
   }
 
   // ============================================================
@@ -143,7 +187,7 @@ export default function middleware(request: NextRequest) {
 
   // If we need to fix hostname OR locale, do it in ONE 301 redirect
   if (needsWww || needsLocale) {
-    const url = request.nextUrl.clone();
+    const url = requestWithNonce.nextUrl.clone();
 
     // Fix hostname first (www subdomain)
     if (needsWww) {
@@ -172,11 +216,15 @@ export default function middleware(request: NextRequest) {
   // For bots with valid locale in URL, serve content directly without additional redirects
   if (isBotRequest && hasLocalePrefix) {
     // Let next-intl handle it but the URL is already correct
-    return intlMiddleware(request);
+    const response = intlMiddleware(requestWithNonce);
+    response.headers.set("Content-Security-Policy", cspHeader);
+    return response;
   }
 
   // Continue with internationalization middleware for regular users
-  return intlMiddleware(request);
+  const response = intlMiddleware(requestWithNonce);
+  response.headers.set("Content-Security-Policy", cspHeader);
+  return response;
 }
 
 export const config = {

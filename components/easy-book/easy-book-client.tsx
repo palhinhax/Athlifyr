@@ -480,9 +480,9 @@ function EasyBookContent({ venue, locale, user }: EasyBookClientProps) {
               </div>
             )}
             <div>
-              <h1 className="text-xl font-bold drop-shadow-md sm:text-2xl">
+              <p className="text-xl font-bold drop-shadow-md sm:text-2xl">
                 {venue.name}
-              </h1>
+              </p>
               {venue.city && (
                 <p className="flex items-center gap-1 text-sm text-white/80">
                   <MapPin className="h-3.5 w-3.5" />

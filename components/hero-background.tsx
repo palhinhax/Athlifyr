@@ -84,7 +84,7 @@ export function HeroBackground({
               </h1>
             )}
             {description && (
-              <p className="text-white/90 drop-shadow-md">{description}</p>
+              <p className="text-white drop-shadow-md">{description}</p>
             )}
             {children}
           </div>

@@ -1,6 +1,7 @@
 {
   "common": {
     "appName": "Athlifyr",
+    "skipToMainContent": "Aller au contenu principal",
     "loading": "Chargement...",
     "error": "Erreur",
     "success": "Succès",

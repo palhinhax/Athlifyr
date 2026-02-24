@@ -28,7 +28,7 @@
      *  p-info     → informational, links, social
      * =============================================
      */
-    --p-brand: 26 78% 53%;
+    --p-brand: 26 78% 42%;
     --p-golden: 41 89% 65%;
     --p-highlight: 51 100% 78%;
     --p-info: 194 66% 80%;
@@ -61,7 +61,7 @@
   }
 
   .dark {
-    --p-brand: 26 78% 56%;
+    --p-brand: 26 78% 45%;
     --p-golden: 41 89% 68%;
     --p-highlight: 51 100% 80%;
     --p-info: 194 66% 75%;

@@ -27,6 +27,8 @@
     "notifications": "Benachrichtigungen",
     "openMenu": "Menü öffnen",
     "closeMenu": "Menü schließen",
+    "collapseSidebar": "Seitenleiste einklappen",
+    "expandSidebar": "Seitenleiste ausklappen",
     "all": "Alle",
     "new": "Neu",
     "videoAnalysis": "Videoanalyse",

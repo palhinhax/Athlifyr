@@ -142,12 +142,13 @@ export function AppSidebar() {
           variant="ghost"
           size="icon"
           onClick={() => setIsCollapsed(!isCollapsed)}
+          aria-label={isCollapsed ? t("expandSidebar") : t("collapseSidebar")}
           className="hidden md:flex"
         >
           {isCollapsed ? (
-            <ChevronRightIcon className="h-5 w-5" />
+            <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
           ) : (
-            <ChevronLeftIcon className="h-5 w-5" />
+            <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
           )}
         </Button>
       </div>
@@ -169,6 +170,7 @@ export function AppSidebar() {
                       <TooltipTrigger asChild>
                         <Link
                           href={item.href}
+                          aria-label={item.label}
                           className={cn(
                             "relative flex h-12 w-12 items-center justify-center rounded-lg transition-colors",
                             "mx-auto",
@@ -177,7 +179,7 @@ export function AppSidebar() {
                               : "hover:bg-muted"
                           )}
                         >
-                          <Icon className="h-5 w-5" />
+                          <Icon className="h-5 w-5" aria-hidden="true" />
                           {item.badge !== undefined && item.badge > 0 && (
                             <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-destructive-foreground">
                               {item.badge > 9 ? "9+" : item.badge}

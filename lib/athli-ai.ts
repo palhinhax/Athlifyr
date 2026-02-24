@@ -2602,7 +2602,7 @@ export async function saveWorkout(
     estimatedTime: workout.estimatedTime,
     difficulty: workout.difficulty,
     totalBlocks: params.blocks.length,
-    url: `/workouts/${workout.id}`,
+    url: `/workouts/${workout.id}/run`,
   });
 }
 

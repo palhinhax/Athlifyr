@@ -545,7 +545,9 @@ export function VenueLandingClient({
 
             {/* Contact Info */}
             <div className="mt-10 flex flex-col items-center gap-4 border-t border-white/20 pt-8 sm:flex-row sm:justify-center sm:gap-8">
-              <p className="text-sm text-primary-foreground">{t("finalCta.questions")}</p>
+              <p className="text-sm text-primary-foreground">
+                {t("finalCta.questions")}
+              </p>
               <div className="flex items-center gap-6">
                 <a
                   href="https://instagram.com/athlifyr"

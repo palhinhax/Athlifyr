@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
+import { isVenueStaff } from "@/lib/venues/authorization";
 
 // POST /api/training-plans/[id]/assign - Assign plan to user
 export async function POST(
@@ -45,12 +46,28 @@ export async function POST(
     const targetUserId = userId || user.id;
     const isSelfAssign = targetUserId === user.id;
 
-    // If assigning to someone else, check if current user is the plan owner
-    if (!isSelfAssign && plan.createdById !== user.id) {
-      return NextResponse.json(
-        { error: "Only the plan owner can assign to other users" },
-        { status: 403 }
-      );
+    // If assigning to someone else, check permissions
+    if (!isSelfAssign) {
+      // Must be the plan owner
+      if (plan.createdById !== user.id) {
+        return NextResponse.json(
+          { error: "Only the plan owner can assign to other users" },
+          { status: 403 }
+        );
+      }
+
+      // Must be a venue professional (OWNER, ADMIN, or COACH) to assign plans to others
+      const isProfessional = await isVenueStaff(user.id);
+
+      if (!isProfessional) {
+        return NextResponse.json(
+          {
+            error:
+              "Only venue professionals (owners, admins, or coaches) can assign plans to other users",
+          },
+          { status: 403 }
+        );
+      }
     }
 
     // If self-assigning, check if plan is public or user is the owner

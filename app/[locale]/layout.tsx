@@ -8,7 +8,7 @@ import { GoogleAnalytics } from "@/components/google-analytics";
 import { CookieConsent } from "@/components/cookie-consent";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { ActiveVenuesBar } from "@/components/active-venues-bar";
-import { FloatingChatButton } from "@/components/floating-chat-button";
+import { AthliFloatingChat } from "@/components/athli/athli-floating-chat";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Instagram } from "lucide-react";
 import {
@@ -273,7 +273,7 @@ export default async function RootLayout({
               </div>
               <Toaster />
               <CookieConsent />
-              <FloatingChatButton />
+              <AthliFloatingChat />
             </SessionProvider>
           </NextIntlClientProvider>
         </ThemeProvider>

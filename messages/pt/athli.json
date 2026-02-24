@@ -1,0 +1,30 @@
+{
+  "athli": {
+    "welcome": "Olá! Eu sou o Athli",
+    "welcomeDescription": "O teu assistente desportivo com IA. Posso ajudar-te a encontrar eventos, descobrir espaços, criar treinos e planos de treino.",
+    "subtitle": "O teu assistente IA",
+    "open": "Falar com o Athli",
+    "close": "Fechar o Athli",
+    "history": "Histórico de conversas",
+    "conversations": "Histórico",
+    "newConversation": "Nova conversa",
+    "noConversations": "Ainda não tens conversas. Começa a falar!",
+    "inputPlaceholder": "Pergunta-me sobre desporto, eventos, treinos...",
+    "savePlan": "Guardar nos meus planos",
+    "planSaved": "Plano guardado com sucesso!",
+    "saveWorkout": "Guardar nos meus treinos",
+    "workoutSaved": "Treino guardado com sucesso!",
+    "suggestions": {
+      "events": "Encontrar eventos perto de mim",
+      "eventsMessage": "Que eventos desportivos estão a chegar perto de mim?",
+      "venues": "Descobrir espaços",
+      "venuesMessage": "Que ginásios e espaços de treino estão disponíveis?",
+      "training": "Criar um plano de treino",
+      "trainingMessage": "Quero um plano de treino semanal. Podes ajudar-me a criar um?",
+      "workout": "Criar um treino",
+      "workoutMessage": "Quero um treino para hoje. Podes criar-me um?",
+      "bookings": "As minhas aulas",
+      "bookingsMessage": "Que aulas tenho marcadas para hoje e esta semana?"
+    }
+  }
+}

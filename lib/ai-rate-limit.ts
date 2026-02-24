@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
-const AI_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+export const AI_DAILY_LIMIT = 10; // Max AI analyses per 24-hour rolling window
+const AI_WINDOW_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 interface AiRateLimitResult {
   allowed: boolean;
@@ -8,11 +9,13 @@ interface AiRateLimitResult {
   nextAvailableAt?: Date;
   /** Remaining milliseconds until next AI analysis (only set when blocked) */
   remainingMs?: number;
+  /** How many AI analyses the user has used in the current window */
+  usedCount?: number;
 }
 
 /**
  * Check whether a user is allowed to use AI analysis.
- * Each user gets 1 AI-powered analysis per 24-hour rolling window.
+ * Each user gets up to AI_DAILY_LIMIT AI-powered analyses per 24-hour rolling window.
  *
  * @param userId - The authenticated user's ID
  * @returns Whether the user can use AI, and if not, when they can next use it
@@ -20,30 +23,37 @@ interface AiRateLimitResult {
 export async function checkAiRateLimit(
   userId: string
 ): Promise<AiRateLimitResult> {
-  const since = new Date(Date.now() - AI_COOLDOWN_MS);
+  const since = new Date(Date.now() - AI_WINDOW_MS);
 
-  const lastUsage = await prisma.aiAnalysisUsage.findFirst({
+  const usages = await prisma.aiAnalysisUsage.findMany({
     where: {
       userId,
       createdAt: { gte: since },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: { createdAt: "asc" },
   });
 
-  if (!lastUsage) {
-    return { allowed: true };
+  if (usages.length < AI_DAILY_LIMIT) {
+    return { allowed: true, usedCount: usages.length };
   }
 
+  // User has hit the limit — find when the oldest usage in the window expires
+  const oldestUsage = usages[0];
   const nextAvailableAt = new Date(
-    lastUsage.createdAt.getTime() + AI_COOLDOWN_MS
+    oldestUsage.createdAt.getTime() + AI_WINDOW_MS
   );
   const remainingMs = nextAvailableAt.getTime() - Date.now();
 
   if (remainingMs <= 0) {
-    return { allowed: true };
+    return { allowed: true, usedCount: usages.length - 1 };
   }
 
-  return { allowed: false, nextAvailableAt, remainingMs };
+  return {
+    allowed: false,
+    nextAvailableAt,
+    remainingMs,
+    usedCount: usages.length,
+  };
 }
 
 /**

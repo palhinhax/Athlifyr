@@ -1,0 +1,30 @@
+{
+  "athli": {
+    "welcome": "Hallo! Ich bin Athli",
+    "welcomeDescription": "Dein KI-Sportassistent. Ich kann dir helfen, Veranstaltungen zu finden, Trainingsorte zu entdecken, deine gebuchten Kurse einzusehen, Workouts und Trainingspläne zu erstellen.",
+    "subtitle": "Dein KI-Assistent",
+    "open": "Mit Athli chatten",
+    "close": "Athli schließen",
+    "history": "Gesprächsverlauf",
+    "conversations": "Verlauf",
+    "newConversation": "Neues Gespräch",
+    "noConversations": "Noch keine Gespräche. Fang an zu chatten!",
+    "inputPlaceholder": "Frag mich über Sport, Events, Training...",
+    "savePlan": "In meinen Plänen speichern",
+    "planSaved": "Plan erfolgreich gespeichert!",
+    "saveWorkout": "In meinen Workouts speichern",
+    "workoutSaved": "Workout erfolgreich gespeichert!",
+    "suggestions": {
+      "events": "Events in meiner Nähe finden",
+      "eventsMessage": "Welche Sportevents stehen in meiner Nähe an?",
+      "venues": "Trainingsorte entdecken",
+      "venuesMessage": "Welche Fitnessstudios und Trainingsorte gibt es?",
+      "training": "Trainingsplan erstellen",
+      "trainingMessage": "Ich möchte einen wöchentlichen Trainingsplan. Kannst du mir helfen, einen zu erstellen?",
+      "workout": "Workout erstellen",
+      "workoutMessage": "Ich möchte ein Workout für heute. Kannst du mir eins erstellen?",
+      "bookings": "Meine Kurse",
+      "bookingsMessage": "Welche Kurse habe ich für heute und diese Woche gebucht?"
+    }
+  }
+}

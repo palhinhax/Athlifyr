@@ -33,6 +33,7 @@ import { HookCtaForm } from "@/components/instagram/hook-cta-form";
 import { VenuePromoForm } from "@/components/instagram/venue-promo-form";
 import { GiveawayPromoForm } from "@/components/instagram/giveaway-promo-form";
 import { AppDownloadForm } from "@/components/instagram/app-download-form";
+import { AthliChatPromoForm } from "@/components/instagram/athli-chat-promo-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -50,6 +51,7 @@ import {
   type VenuePromoPayload,
   type GiveawayPromoPayload,
   type AppDownloadPayload,
+  type AthliChatPromoPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -248,6 +250,19 @@ export default function InstagramGeneratorPage() {
   );
   const [t13LegalText, setT13LegalText] = useState("");
   const [t13Cta, setT13Cta] = useState("Disponível no Google Play");
+
+  // T14: Athli Chat Promo
+  const [t14Headline, setT14Headline] = useState("Conhece o Athli");
+  const [t14Subheadline, setT14Subheadline] = useState(
+    "O teu assistente desportivo com IA"
+  );
+  const [t14ChatSuggestions, setT14ChatSuggestions] = useState<string[]>([
+    "Próximos eventos",
+    "Ginásios perto",
+    "Plano de treino",
+    "Treino rápido",
+  ]);
+  const [t14Cta, setT14Cta] = useState("Experimenta agora");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -651,8 +666,17 @@ export default function InstagramGeneratorPage() {
           background,
         } as AppDownloadPayload;
 
+      case "T14":
+        return {
+          headline: t14Headline,
+          subheadline: t14Subheadline,
+          chatSuggestions: t14ChatSuggestions,
+          cta: t14Cta || undefined,
+          background,
+        } as AthliChatPromoPayload;
+
       default:
-        throw new Error(`Unknown template: ${templateKey}. Expected T1-T13.`);
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T14.`);
     }
   };
 
@@ -1099,6 +1123,19 @@ export default function InstagramGeneratorPage() {
                 onBadgeUrlChange={setT13BadgeUrl}
                 onLegalTextChange={setT13LegalText}
                 onCtaChange={setT13Cta}
+              />
+            )}
+
+            {templateKey === "T14" && (
+              <AthliChatPromoForm
+                headline={t14Headline}
+                subheadline={t14Subheadline}
+                chatSuggestions={t14ChatSuggestions}
+                cta={t14Cta}
+                onHeadlineChange={setT14Headline}
+                onSubheadlineChange={setT14Subheadline}
+                onChatSuggestionsChange={setT14ChatSuggestions}
+                onCtaChange={setT14Cta}
               />
             )}
           </Card>

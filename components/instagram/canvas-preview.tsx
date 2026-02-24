@@ -17,6 +17,7 @@ import { TemplateHookCta } from "./template-hook-cta";
 import { TemplateVenuePromo } from "./template-venue-promo";
 import { TemplateGiveawayPromo } from "./template-giveaway-promo";
 import { TemplateAppDownload } from "./template-app-download";
+import { TemplateAthliChatPromo } from "./template-athli-chat-promo";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -190,10 +191,23 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T14":
+          return (
+            <TemplateAthliChatPromo
+              payload={
+                payload as Parameters<
+                  typeof TemplateAthliChatPromo
+                >[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1-T13.
+              Unknown template: {templateKey}. Expected T1-T14.
             </div>
           );
       }

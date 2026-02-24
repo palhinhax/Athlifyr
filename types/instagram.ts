@@ -11,7 +11,8 @@ export type TemplateKey =
   | "T10"
   | "T11"
   | "T12"
-  | "T13";
+  | "T13"
+  | "T14";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -178,6 +179,15 @@ export interface AppDownloadPayload {
   background: Background;
 }
 
+// Template T14: Athli Chat Promo (AI assistant announcement)
+export interface AthliChatPromoPayload {
+  headline: string; // required, max 50 chars - main headline
+  subheadline: string; // required, max 60 chars - supporting text
+  chatSuggestions: string[]; // 4 suggestion labels shown in mock chat window
+  cta?: string; // optional, max 30 chars
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
@@ -191,7 +201,8 @@ export type TemplatePayload =
   | HookCtaPayload
   | VenuePromoPayload
   | GiveawayPromoPayload
-  | AppDownloadPayload;
+  | AppDownloadPayload
+  | AthliChatPromoPayload;
 
 export interface InstagramDraft {
   id: string;

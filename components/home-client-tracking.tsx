@@ -50,7 +50,7 @@ export function HomeCtaSection({
         <h2 className="mb-4 text-3xl font-bold text-white md:text-4xl">
           {ctaTitle}
         </h2>
-        <p className="mx-auto mb-8 max-w-2xl text-lg text-white/90">
+        <p className="mx-auto mb-8 max-w-2xl text-lg text-white">
           {ctaDescription}
         </p>
         <Link href="/events" onClick={handleExploreClick}>

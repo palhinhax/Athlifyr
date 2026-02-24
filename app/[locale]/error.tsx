@@ -140,7 +140,7 @@ export default function Error({
         <h2 className="mb-6 text-xl font-semibold text-white/80">
           {t.subtitle}
         </h2>
-        <p className="mb-8 text-lg text-white/90">{t.description}</p>
+        <p className="mb-8 text-lg text-white">{t.description}</p>
 
         <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
           <Button

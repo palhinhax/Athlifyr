@@ -76,7 +76,7 @@ export function VenueLandingClient({
             </h1>
 
             {/* Subtitle */}
-            <p className="mx-auto mb-8 max-w-2xl text-lg text-white/90 sm:text-xl md:text-2xl">
+            <p className="mx-auto mb-8 max-w-2xl text-lg text-white sm:text-xl md:text-2xl">
               {t("hero.subtitle")}
             </p>
 

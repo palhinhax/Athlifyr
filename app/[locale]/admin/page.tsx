@@ -6,6 +6,7 @@ import { useEffect, Suspense, lazy } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Loader2,
+  Bot,
   Calendar,
   Mail,
   Instagram,
@@ -38,6 +39,7 @@ const AdminAppStoreAssetsContent = lazy(
 const AdminGiveawaysContent = lazy(() => import("./giveaways/page"));
 const AdminPostsContent = lazy(() => import("./posts/page"));
 const AdminNotesContent = lazy(() => import("./notes/page"));
+const AdminConversationsContent = lazy(() => import("./conversations/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -184,6 +186,15 @@ function AdminContent() {
             >
               <StickyNote className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{t("tabs.notes")}</span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="conversations"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Bot className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">
+                {t("tabs.conversations")}
+              </span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -335,6 +346,18 @@ function AdminContent() {
             }
           >
             <AdminNotesContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="conversations">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminConversationsContent />
           </Suspense>
         </TabsContent>
       </Tabs>

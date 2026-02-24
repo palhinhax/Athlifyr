@@ -15,7 +15,8 @@
         "appStoreAssets": "Images Boutique",
         "giveaways": "Tirages",
         "posts": "Publications",
-        "notes": "Demandes"
+        "notes": "Demandes",
+        "conversations": "Conversations IA"
       }
     },
     "contacts": {
@@ -463,6 +464,33 @@
         "description": "Êtes-vous sûr de vouloir supprimer cette demande ? Cette action est irréversible.",
         "confirm": "Supprimer"
       }
+    },
+    "conversations": {
+      "title": "Conversations IA",
+      "description": "Voir toutes les conversations des utilisateurs avec Athli AI pour améliorer le chatbot",
+      "stats": {
+        "totalConversations": "Total des Conversations",
+        "totalMessages": "Total des Messages",
+        "uniqueUsers": "Utilisateurs Uniques",
+        "today": "Aujourd'hui",
+        "thisWeek": "Cette Semaine"
+      },
+      "searchPlaceholder": "Rechercher par utilisateur, titre ou contenu...",
+      "noConversations": "Aucune conversation",
+      "noConversationsDescription": "Lorsque les utilisateurs discuteront avec Athli AI, les conversations apparaîtront ici.",
+      "messagesCount": "messages",
+      "untitled": "Conversation sans titre",
+      "showing": "Affichage de {from} à {to} sur {total} conversations",
+      "page": "Page {current} sur {total}",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "clearSearch": "Effacer",
+      "roles": {
+        "user": "Utilisateur",
+        "assistant": "Assistant",
+        "system": "Système"
+      },
+      "metadata": "Métadonnées"
     }
   }
 }

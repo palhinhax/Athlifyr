@@ -15,7 +15,8 @@
         "appStoreAssets": "Store Assets",
         "giveaways": "Giveaways",
         "posts": "Posts",
-        "notes": "Requests"
+        "notes": "Requests",
+        "conversations": "AI Conversations"
       }
     },
     "contacts": {
@@ -463,6 +464,33 @@
         "description": "Are you sure you want to delete this request? This action cannot be undone.",
         "confirm": "Delete"
       }
+    },
+    "conversations": {
+      "title": "AI Conversations",
+      "description": "View all user conversations with Athli AI to improve the chatbot",
+      "stats": {
+        "totalConversations": "Total Conversations",
+        "totalMessages": "Total Messages",
+        "uniqueUsers": "Unique Users",
+        "today": "Today",
+        "thisWeek": "This Week"
+      },
+      "searchPlaceholder": "Search by user, title or message content...",
+      "noConversations": "No conversations",
+      "noConversationsDescription": "When users chat with Athli AI, their conversations will appear here.",
+      "messagesCount": "messages",
+      "untitled": "Untitled conversation",
+      "showing": "Showing {from} to {to} of {total} conversations",
+      "page": "Page {current} of {total}",
+      "previous": "Previous",
+      "next": "Next",
+      "clearSearch": "Clear",
+      "roles": {
+        "user": "User",
+        "assistant": "Assistant",
+        "system": "System"
+      },
+      "metadata": "Metadata"
     }
   }
 }

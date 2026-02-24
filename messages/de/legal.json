@@ -25,7 +25,7 @@
         },
         "dataSharing": {
           "title": "3. Datenweitergabe",
-          "content": "Wir verkaufen Ihre Daten nicht. Wir teilen Informationen nur mit: Google (Authentifizierung und Analytics), Backblaze B2 (Bildspeicherung) und wenn gesetzlich vorgeschrieben."
+          "content": "Wir verkaufen Ihre Daten nicht. Wir teilen Informationen nur mit: Google (Authentifizierung und Analytics), Backblaze B2 (Bildspeicherung), Sentry (Fehler- und Leistungsüberwachung), und wenn gesetzlich vorgeschrieben."
         },
         "dataRetention": {
           "title": "4. Datenspeicherung",
@@ -47,13 +47,27 @@
           "title": "8. Minderjährige",
           "content": "Unsere Dienste richten sich nicht an Minderjährige unter 16 Jahren. Wenn wir feststellen, dass wir Daten eines Minderjährigen gesammelt haben, werden wir diese sofort löschen."
         },
+        "internationalTransfers": {
+          "title": "9. Internationale Übermittlungen",
+          "content": "Ihre Daten können auf Servern außerhalb der Europäischen Union übertragen und gespeichert werden. In diesem Fall stellen wir sicher, dass angemessene Schutzmaßnahmen vorhanden sind."
+        },
         "changes": {
-          "title": "9. Änderungen der Richtlinie",
+          "title": "10. Änderungen der Richtlinie",
           "content": "Wir können diese Richtlinie gelegentlich aktualisieren. Wir werden Sie über wesentliche Änderungen informieren."
         },
         "contact": {
-          "title": "10. Kontakt",
+          "title": "11. Kontakt",
           "content": "Bei Fragen zum Datenschutz kontaktieren Sie uns über die Kontaktseite."
+        }
+      },
+      "summary": {
+        "title": "Zusammenfassung",
+        "items": {
+          "necessary": "Wir sammeln nur notwendige Daten",
+          "noSell": "Wir verkaufen Ihre Daten nicht",
+          "rights": "Sie können Ihre Daten einsehen, korrigieren und löschen",
+          "cookies": "Wir verwenden Cookies (verwaltbar in den Einstellungen)",
+          "protected": "Ihre Daten sind geschützt"
         }
       }
     },
@@ -141,11 +155,14 @@
         },
         "thirdParty": {
           "title": "Cookies von Drittanbietern",
-          "content": "Wir verwenden Google Analytics, das Cookies auf Ihrem Gerät platziert. Weitere Informationen finden Sie in der Datenschutzerklärung von Google."
+          "googleContent": "Wir verwenden Google Analytics, das Cookies auf Ihrem Gerät platziert. Weitere Informationen finden Sie in der Datenschutzerklärung von Google.",
+          "sentryContent": "Wir verwenden auch Sentry zur Fehler- und Leistungsüberwachung. Sentry kann lokalen Speicher verwenden, um Sitzungswiedergaben bei Fehlern aufzuzeichnen. Weitere Informationen finden Sie in der Datenschutzerklärung von Sentry."
         },
         "manage": {
           "title": "Cookies Verwalten",
-          "content": "Sie können nicht wesentliche Cookies über unser Cookie-Banner akzeptieren oder ablehnen. Sie können auch Ihren Browser so konfigurieren, dass er Cookies blockiert, dies kann jedoch die Funktionalität der Website beeinträchtigen."
+          "banner": "Sie können nicht wesentliche Cookies über unser Cookie-Banner akzeptieren oder ablehnen.",
+          "browser": "Konfigurieren Sie Ihren Browser, um Cookies zu blockieren (kann die Funktionalität beeinträchtigen).",
+          "gaOptout": "Verwenden Sie das Google Analytics Opt-out Browser Add-on."
         },
         "duration": {
           "title": "Cookie-Dauer",
@@ -155,6 +172,67 @@
         "updates": {
           "title": "Aktualisierungen",
           "content": "Wir können diese Richtlinie regelmäßig aktualisieren. Überprüfen Sie diese Seite regelmäßig, um informiert zu bleiben."
+        },
+        "table": {
+          "title": "Detaillierte Cookie-Liste",
+          "headers": {
+            "name": "Name",
+            "type": "Typ",
+            "purpose": "Zweck",
+            "duration": "Dauer"
+          },
+          "rows": {
+            "sessionToken": {
+              "type": "Wesentlich",
+              "purpose": "Benutzerauthentifizierung",
+              "duration": "30 Tage"
+            },
+            "locale": {
+              "type": "Wesentlich",
+              "purpose": "Spracheinstellung",
+              "duration": "1 Jahr"
+            },
+            "cookieConsent": {
+              "type": "Wesentlich",
+              "purpose": "Speichert Cookie-Auswahl",
+              "duration": "1 Jahr"
+            },
+            "ga": {
+              "type": "Analytisch",
+              "purpose": "Google Analytics - Identifizierung",
+              "duration": "2 Jahre"
+            },
+            "gid": {
+              "type": "Analytisch",
+              "purpose": "Google Analytics - Statistiken",
+              "duration": "24 Stunden"
+            },
+            "sentryReplay": {
+              "type": "Funktional",
+              "purpose": "Sentry - Sitzungswiedergabe bei Fehler",
+              "duration": "Sitzung"
+            },
+            "sentrySc": {
+              "type": "Funktional",
+              "purpose": "Sentry - Sitzungskontext für Fehlerüberwachung",
+              "duration": "Sitzung"
+            }
+          }
+        },
+        "questions": {
+          "title": "Fragen?",
+          "content": "Bei Fragen zu Cookies kontaktieren Sie uns über die Kontaktseite."
+        }
+      },
+      "summary": {
+        "title": "Kurzzusammenfassung",
+        "items": {
+          "essential": "Wir verwenden wesentliche Cookies (erforderlich)",
+          "analytics": "Google Analytics (optional - Sie können ablehnen)",
+          "sentry": "Sentry - Fehler- und Leistungsüberwachung",
+          "functional": "Funktionale Cookies (optional - Sie können ablehnen)",
+          "manage": "Sie können Ihre Einstellungen jederzeit verwalten",
+          "noSell": "Wir verkaufen keine Cookie-Daten"
         }
       }
     }

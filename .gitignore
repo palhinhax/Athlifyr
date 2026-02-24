@@ -50,3 +50,6 @@ components/workouts-page-client.tsx
 _.env.demo
 _.env.dev
 mobile/athlifyr-mobile-firebase-adminsdk-fbsvc-db3558b416.json
+
+# Sentry Config File
+.env.sentry-build-plugin

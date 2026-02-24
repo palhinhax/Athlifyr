@@ -25,7 +25,7 @@
         },
         "dataSharing": {
           "title": "3. Data Sharing",
-          "content": "We do not sell your data. We share information only with: Google (authentication and analytics), Backblaze B2 (image storage), and when required by law."
+          "content": "We do not sell your data. We share information only with: Google (authentication and analytics), Backblaze B2 (image storage), Sentry (error and performance monitoring), and when required by law."
         },
         "dataRetention": {
           "title": "4. Data Retention",
@@ -47,13 +47,27 @@
           "title": "8. Minors",
           "content": "Our services are not intended for individuals under 16 years old. If we discover we have collected data from a minor, we will delete it immediately."
         },
+        "internationalTransfers": {
+          "title": "9. International Transfers",
+          "content": "Your data may be transferred and stored on servers located outside the European Union. When this happens, we ensure that adequate safeguards are in place."
+        },
         "changes": {
-          "title": "9. Policy Changes",
+          "title": "10. Policy Changes",
           "content": "We may update this policy occasionally. We will notify you of significant changes."
         },
         "contact": {
-          "title": "10. Contact",
+          "title": "11. Contact",
           "content": "For privacy questions, contact us through the contact page."
+        }
+      },
+      "summary": {
+        "title": "Summary",
+        "items": {
+          "necessary": "We collect only necessary data",
+          "noSell": "We do not sell your data",
+          "rights": "You can access, correct and delete your data",
+          "cookies": "We use cookies (you can manage in settings)",
+          "protected": "Your data is protected"
         }
       }
     },
@@ -141,11 +155,14 @@
         },
         "thirdParty": {
           "title": "Third-Party Cookies",
-          "content": "We use Google Analytics, which places cookies on your device. Learn more in Google's privacy policy."
+          "googleContent": "We use Google Analytics, which places cookies on your device. Learn more in Google's privacy policy.",
+          "sentryContent": "We also use Sentry for error and performance monitoring. Sentry may use local storage to record session replays when an error occurs. Learn more in Sentry's privacy policy."
         },
         "manage": {
           "title": "How to Manage Cookies",
-          "content": "You can accept or reject non-essential cookies through our cookie banner. You can also configure your browser to block cookies, but this may affect site functionality."
+          "banner": "You can accept or reject non-essential cookies through our cookie banner.",
+          "browser": "Configure your browser to block cookies (may affect functionality).",
+          "gaOptout": "Use the Google Analytics Opt-out Browser Add-on."
         },
         "duration": {
           "title": "Cookie Duration",
@@ -155,6 +172,67 @@
         "updates": {
           "title": "Updates",
           "content": "We may update this policy periodically. Check this page regularly to stay informed."
+        },
+        "table": {
+          "title": "Detailed Cookie List",
+          "headers": {
+            "name": "Name",
+            "type": "Type",
+            "purpose": "Purpose",
+            "duration": "Duration"
+          },
+          "rows": {
+            "sessionToken": {
+              "type": "Essential",
+              "purpose": "User authentication",
+              "duration": "30 days"
+            },
+            "locale": {
+              "type": "Essential",
+              "purpose": "Language preference",
+              "duration": "1 year"
+            },
+            "cookieConsent": {
+              "type": "Essential",
+              "purpose": "Stores cookie choice",
+              "duration": "1 year"
+            },
+            "ga": {
+              "type": "Analytics",
+              "purpose": "Google Analytics - identification",
+              "duration": "2 years"
+            },
+            "gid": {
+              "type": "Analytics",
+              "purpose": "Google Analytics - statistics",
+              "duration": "24 hours"
+            },
+            "sentryReplay": {
+              "type": "Functional",
+              "purpose": "Sentry - session replay on error",
+              "duration": "Session"
+            },
+            "sentrySc": {
+              "type": "Functional",
+              "purpose": "Sentry - session context for error monitoring",
+              "duration": "Session"
+            }
+          }
+        },
+        "questions": {
+          "title": "Questions?",
+          "content": "If you have questions about cookies, contact us through the contact page."
+        }
+      },
+      "summary": {
+        "title": "Quick Summary",
+        "items": {
+          "essential": "We use essential cookies (required)",
+          "analytics": "Google Analytics (optional - you can decline)",
+          "sentry": "Sentry - error and performance monitoring",
+          "functional": "Functional cookies (optional - you can decline)",
+          "manage": "You can manage your preferences at any time",
+          "noSell": "We do not sell cookie data"
         }
       }
     }

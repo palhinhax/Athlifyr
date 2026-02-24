@@ -25,7 +25,7 @@
         },
         "dataSharing": {
           "title": "3. Partilha de Dados",
-          "content": "Não vendemos os teus dados. Partilhamos informações apenas com: Google (autenticação e analytics), Backblaze B2 (armazenamento de imagens), e quando exigido por lei."
+          "content": "Não vendemos os teus dados. Partilhamos informações apenas com: Google (autenticação e analytics), Backblaze B2 (armazenamento de imagens), Sentry (monitorização de erros e performance), e quando exigido por lei."
         },
         "dataRetention": {
           "title": "4. Retenção de Dados",
@@ -47,13 +47,27 @@
           "title": "8. Menores de Idade",
           "content": "Os nossos serviços não se destinam a menores de 16 anos. Se descobrirmos que recolhemos dados de um menor, eliminaremos imediatamente."
         },
+        "internationalTransfers": {
+          "title": "9. Transferências Internacionais",
+          "content": "Os teus dados podem ser transferidos e armazenados em servidores fora da União Europeia. Quando isso acontece, garantimos que existem salvaguardas adequadas."
+        },
         "changes": {
-          "title": "9. Alterações à Política",
+          "title": "10. Alterações à Política",
           "content": "Podemos atualizar esta política ocasionalmente. Notificar-te-emos de alterações significativas."
         },
         "contact": {
-          "title": "10. Contacto",
+          "title": "11. Contacto",
           "content": "Para questões sobre privacidade, contacta-nos através da página de contacto."
+        }
+      },
+      "summary": {
+        "title": "Resumo",
+        "items": {
+          "necessary": "Recolhemos apenas dados necessários",
+          "noSell": "Não vendemos os teus dados",
+          "rights": "Podes aceder, corrigir e eliminar os teus dados",
+          "cookies": "Usamos cookies (podes gerir nas definições)",
+          "protected": "Os teus dados estão protegidos"
         }
       }
     },
@@ -141,20 +155,84 @@
         },
         "thirdParty": {
           "title": "Cookies de Terceiros",
-          "content": "Usamos Google Analytics, que coloca cookies no teu dispositivo. Podes saber mais na política de privacidade do Google."
+          "googleContent": "Usamos Google Analytics, que coloca cookies no teu dispositivo. Podes saber mais na política de privacidade do Google.",
+          "sentryContent": "Usamos também o Sentry para monitorização de erros e performance. O Sentry pode utilizar armazenamento local para gravar reproduções de sessões quando ocorre um erro. Podes saber mais na política de privacidade do Sentry."
         },
         "manage": {
           "title": "Como Gerir Cookies",
-          "content": "Podes aceitar ou rejeitar cookies não essenciais através do nosso banner de cookies. Também podes configurar o teu navegador para bloquear cookies, mas isso pode afetar a funcionalidade do site."
+          "banner": "Podes aceitar ou rejeitar cookies não essenciais através do nosso banner de cookies.",
+          "browser": "Configura o teu navegador para bloquear cookies (pode afetar funcionalidade).",
+          "gaOptout": "Usa o Google Analytics Opt-out Browser Add-on."
         },
         "duration": {
           "title": "Duração dos Cookies",
           "session": "Cookies de Sessão: expiram quando fechas o navegador",
           "persistent": "Cookies Persistentes: permanecem no teu dispositivo por um período definido (até 365 dias)"
         },
+        "table": {
+          "title": "Lista Detalhada de Cookies",
+          "headers": {
+            "name": "Nome",
+            "type": "Tipo",
+            "purpose": "Finalidade",
+            "duration": "Duração"
+          },
+          "rows": {
+            "sessionToken": {
+              "type": "Essencial",
+              "purpose": "Autenticação de utilizador",
+              "duration": "30 dias"
+            },
+            "locale": {
+              "type": "Essencial",
+              "purpose": "Preferência de idioma",
+              "duration": "1 ano"
+            },
+            "cookieConsent": {
+              "type": "Essencial",
+              "purpose": "Guarda escolha de cookies",
+              "duration": "1 ano"
+            },
+            "ga": {
+              "type": "Analítico",
+              "purpose": "Google Analytics - identificação",
+              "duration": "2 anos"
+            },
+            "gid": {
+              "type": "Analítico",
+              "purpose": "Google Analytics - estatísticas",
+              "duration": "24 horas"
+            },
+            "sentryReplay": {
+              "type": "Funcional",
+              "purpose": "Sentry - reprodução de sessão em caso de erro",
+              "duration": "Sessão"
+            },
+            "sentrySc": {
+              "type": "Funcional",
+              "purpose": "Sentry - contexto de sessão para monitorização de erros",
+              "duration": "Sessão"
+            }
+          }
+        },
         "updates": {
           "title": "Atualizações",
           "content": "Podemos atualizar esta política periodicamente. Verifica esta página regularmente para te manteres informado."
+        },
+        "questions": {
+          "title": "Perguntas?",
+          "content": "Se tiveres questões sobre cookies, contacta-nos através da página de contacto."
+        }
+      },
+      "summary": {
+        "title": "Resumo Rápido",
+        "items": {
+          "essential": "Usamos cookies essenciais (obrigatórios)",
+          "analytics": "Google Analytics (opcional - podes recusar)",
+          "sentry": "Sentry - monitorização de erros e performance",
+          "functional": "Cookies funcionais (opcional - podes recusar)",
+          "manage": "Podes gerir as tuas preferências a qualquer momento",
+          "noSell": "Não vendemos dados de cookies"
         }
       }
     }

@@ -15,7 +15,8 @@
         "appStoreAssets": "Store-Bilder",
         "giveaways": "Gewinnspiele",
         "posts": "Beiträge",
-        "notes": "Anfragen"
+        "notes": "Anfragen",
+        "conversations": "KI-Gespräche"
       }
     },
     "contacts": {
@@ -463,6 +464,33 @@
         "description": "Bist du sicher, dass du diese Anfrage löschen möchtest? Diese Aktion kann nicht rückgängig gemacht werden.",
         "confirm": "Löschen"
       }
+    },
+    "conversations": {
+      "title": "KI-Gespräche",
+      "description": "Alle Gespräche der Benutzer mit Athli AI ansehen, um den Chatbot zu verbessern",
+      "stats": {
+        "totalConversations": "Gespräche Gesamt",
+        "totalMessages": "Nachrichten Gesamt",
+        "uniqueUsers": "Einzigartige Benutzer",
+        "today": "Heute",
+        "thisWeek": "Diese Woche"
+      },
+      "searchPlaceholder": "Nach Benutzer, Titel oder Inhalt suchen...",
+      "noConversations": "Keine Gespräche",
+      "noConversationsDescription": "Wenn Benutzer mit Athli AI chatten, erscheinen die Gespräche hier.",
+      "messagesCount": "Nachrichten",
+      "untitled": "Gespräch ohne Titel",
+      "showing": "Zeige {from} bis {to} von {total} Gesprächen",
+      "page": "Seite {current} von {total}",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "clearSearch": "Löschen",
+      "roles": {
+        "user": "Benutzer",
+        "assistant": "Assistent",
+        "system": "System"
+      },
+      "metadata": "Metadaten"
     }
   }
 }

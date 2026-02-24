@@ -180,8 +180,8 @@ export default function middleware(request: NextRequest) {
 }
 
 export const config = {
-  // Match all pathnames except static files and API routes
+  // Match all pathnames except static files, API routes, and Sentry tunnel
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|site\\.webmanifest|videos|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|mp4|webm)).*)",
+    "/((?!api|monitoring|_next/static|_next/image|favicon.ico|site\\.webmanifest|videos|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|mp4|webm)).*)",
   ],
 };

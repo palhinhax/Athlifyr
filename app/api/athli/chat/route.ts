@@ -40,9 +40,14 @@ import type {
   SaveWorkoutParams,
 } from "@/lib/athli-ai";
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Lazy getter — avoids module-level instantiation at build time
+function getOpenAI(): OpenAI {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error("OPENAI_API_KEY environment variable is not set");
+  }
+  return new OpenAI({ apiKey });
+}
 
 // GET /api/athli/chat - List conversations
 export async function GET(request: Request) {
@@ -78,6 +83,7 @@ export async function GET(request: Request) {
 // POST /api/athli/chat - Send message and get AI response
 export async function POST(request: Request) {
   try {
+    const openai = getOpenAI();
     const user = await getAuthUser(request);
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

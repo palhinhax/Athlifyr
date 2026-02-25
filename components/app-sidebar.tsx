@@ -25,8 +25,10 @@ import {
   DumbbellIcon,
   CalendarClockIcon,
 } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { useIsVenueStaff } from "@/hooks/use-is-venue-staff";
+import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -134,6 +136,17 @@ export function AppSidebar() {
     return pathWithoutLocale.startsWith(href);
   };
 
+  const trackNavClick = (item: NavItem) => {
+    const label = item.href.replace(/^\//, "") || "home";
+    analyticsEvent(ANALYTICS_EVENTS.NAVIGATION_CLICK, {
+      item: label,
+      source: "sidebar",
+    });
+    Sentry.metrics.count("navigation_click", 1, {
+      attributes: { item: label, source: "sidebar" },
+    });
+  };
+
   const SidebarContent = () => (
     <div className="flex h-full flex-col">
       {/* Header with collapse toggle */}
@@ -171,6 +184,7 @@ export function AppSidebar() {
                         <Link
                           href={item.href}
                           aria-label={item.label}
+                          onClick={() => trackNavClick(item)}
                           className={cn(
                             "relative flex h-12 w-12 items-center justify-center rounded-lg transition-colors",
                             "mx-auto",
@@ -194,6 +208,7 @@ export function AppSidebar() {
                   ) : (
                     <Link
                       href={item.href}
+                      onClick={() => trackNavClick(item)}
                       className={cn(
                         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                         active

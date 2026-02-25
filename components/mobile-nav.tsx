@@ -21,10 +21,12 @@ import {
   Dumbbell,
   Bell,
 } from "lucide-react";
+import * as Sentry from "@sentry/nextjs";
 import { GlobalSearch } from "./global-search";
 // import { WallClock } from "./wall-clock"; // TODO: Temporarily hidden
 import { useChatNotifications } from "@/hooks/chat/use-chat-notifications";
 import { useNotifications } from "@/hooks/use-notifications";
+import { analyticsEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { AnalysisMobileMenuItem } from "@/components/analysis-button";
 
 export function MobileNav() {
@@ -40,6 +42,22 @@ export function MobileNav() {
   const totalBadgeCount = unreadCount + notificationsPendingCount;
 
   const closeMenu = () => setIsOpen(false);
+
+  const trackNavClick = (href: string) => {
+    const label = href.replace(/^\//, "") || "home";
+    analyticsEvent(ANALYTICS_EVENTS.NAVIGATION_CLICK, {
+      item: label,
+      source: "mobile",
+    });
+    Sentry.metrics.count("navigation_click", 1, {
+      attributes: { item: label, source: "mobile" },
+    });
+  };
+
+  const handleNavClick = (href: string) => {
+    trackNavClick(href);
+    closeMenu();
+  };
 
   if (status === "loading") {
     return (
@@ -85,7 +103,7 @@ export function MobileNav() {
                 <>
                   <Link
                     href="/feed"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/feed")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <NewspaperIcon className="h-4 w-4" />
@@ -94,7 +112,7 @@ export function MobileNav() {
 
                   <Link
                     href="/chat"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/chat")}
                     className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <div className="flex items-center gap-3">
@@ -110,7 +128,7 @@ export function MobileNav() {
 
                   <Link
                     href="/notifications"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/notifications")}
                     className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <div className="flex items-center gap-3">
@@ -128,7 +146,7 @@ export function MobileNav() {
 
                   <Link
                     href="/workouts"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/workouts")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <Dumbbell className="h-4 w-4" />
@@ -137,7 +155,7 @@ export function MobileNav() {
 
                   <Link
                     href="/my-schedule"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/my-schedule")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <CalendarClockIcon className="h-4 w-4" />
@@ -148,7 +166,7 @@ export function MobileNav() {
                 <>
                   <Link
                     href="/"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <HomeIcon className="h-4 w-4" />
@@ -156,7 +174,7 @@ export function MobileNav() {
                   </Link>
                   <Link
                     href="/feed"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/feed")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <NewspaperIcon className="h-4 w-4" />
@@ -167,7 +185,7 @@ export function MobileNav() {
 
               <Link
                 href="/events"
-                onClick={closeMenu}
+                onClick={() => handleNavClick("/events")}
                 className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
               >
                 <CalendarIcon className="h-4 w-4" />
@@ -176,7 +194,7 @@ export function MobileNav() {
 
               <Link
                 href="/venues"
-                onClick={closeMenu}
+                onClick={() => handleNavClick("/venues")}
                 className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
               >
                 <Building2Icon className="h-4 w-4" />
@@ -188,7 +206,7 @@ export function MobileNav() {
               {session?.user?.role === "ADMIN" && (
                 <Link
                   href="/admin"
-                  onClick={closeMenu}
+                  onClick={() => handleNavClick("/admin")}
                   className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                 >
                   <Shield className="h-4 w-4" />
@@ -221,7 +239,7 @@ export function MobileNav() {
 
                   <Link
                     href="/profile"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/profile")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <User className="h-4 w-4" />
@@ -230,7 +248,7 @@ export function MobileNav() {
 
                   <Link
                     href="/settings"
-                    onClick={closeMenu}
+                    onClick={() => handleNavClick("/settings")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
                     <Settings className="h-4 w-4" />
@@ -250,7 +268,10 @@ export function MobileNav() {
                 </>
               ) : (
                 <div className="px-3">
-                  <Link href="/auth/signin" onClick={closeMenu}>
+                  <Link
+                    href="/auth/signin"
+                    onClick={() => handleNavClick("/auth/signin")}
+                  >
                     <Button variant="default" className="w-full">
                       {t("signIn")}
                     </Button>

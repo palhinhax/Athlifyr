@@ -188,6 +188,7 @@
     "backHome": "Volver al inicio"
   },
   "notifications": {
+    "notifications": "Notificaciones",
     "pending": "pendientes",
     "noNotifications": "Sin notificaciones",
     "trialRequests": "Solicitudes de Clase de Prueba",

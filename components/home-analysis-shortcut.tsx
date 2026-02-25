@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 import { analyticsEvent } from "@/lib/analytics";
+import * as Sentry from "@sentry/nextjs";
 
 type AnalysisType = "motion" | "lift";
 
@@ -43,12 +44,18 @@ export function HomeAnalysisShortcut({
     analyticsEvent("Homepage_Analysis_Shortcut_Click", {
       location: "hero_section",
     });
+    Sentry.metrics.count("analysis_camera_click", 1, {
+      attributes: { source: "homepage" },
+    });
   };
 
   const handleSelectType = (type: AnalysisType) => {
     setAnalysisType(type);
     analyticsEvent("Homepage_Analysis_Type_Selected", {
       type,
+    });
+    Sentry.metrics.count("analysis_type_selected", 1, {
+      attributes: { type, source: "homepage" },
     });
   };
 
@@ -144,6 +151,9 @@ export function HomeAnalysisShortcut({
           onSuccess={() => {
             analyticsEvent("Homepage_Analysis_Success", {
               type: analysisType,
+            });
+            Sentry.metrics.count("analysis_completed", 1, {
+              attributes: { type: analysisType, source: "homepage" },
             });
           }}
         />

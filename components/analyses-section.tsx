@@ -71,6 +71,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import * as Sentry from "@sentry/nextjs";
+import { analyticsEvent } from "@/lib/analytics";
 import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -2003,6 +2005,14 @@ export function AnalysesSection() {
   const [openLift, setOpenLift] = useState<AnalysisRecord | null>(null);
   const [uploadType, setUploadType] = useState<"lift" | "motion" | null>(null);
 
+  const handleSetUploadType = (type: "lift" | "motion") => {
+    setUploadType(type);
+    analyticsEvent("Profile_Analysis_New_Click", { type, source: "profile" });
+    Sentry.metrics.count("analysis_camera_click", 1, {
+      attributes: { type, source: "profile" },
+    });
+  };
+
   const fetchAnalyses = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -2047,7 +2057,19 @@ export function AnalysesSection() {
           type={uploadType ?? "motion"}
           open={uploadType !== null}
           onOpenChange={(open) => !open && setUploadType(null)}
-          onSuccess={fetchAnalyses}
+          onSuccess={() => {
+            analyticsEvent("Profile_Analysis_Success", {
+              type: uploadType ?? "motion",
+              source: "profile",
+            });
+            Sentry.metrics.count("analysis_completed", 1, {
+              attributes: {
+                type: uploadType ?? "motion",
+                source: "profile",
+              },
+            });
+            void fetchAnalyses();
+          }}
         />
 
         <div className="mt-12">
@@ -2060,7 +2082,7 @@ export function AnalysesSection() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setUploadType("motion")}
+                onClick={() => handleSetUploadType("motion")}
               >
                 <Plus className="mr-1.5 h-4 w-4" />
                 Nova Análise Movimento
@@ -2068,7 +2090,7 @@ export function AnalysesSection() {
               <Button
                 size="sm"
                 variant="outline"
-                onClick={() => setUploadType("lift")}
+                onClick={() => handleSetUploadType("lift")}
               >
                 <Plus className="mr-1.5 h-4 w-4" />
                 Nova Análise Levantamento
@@ -2085,11 +2107,14 @@ export function AnalysesSection() {
               {t("analyses.noAnalysesDesc")}
             </p>
             <div className="mt-6 flex justify-center gap-3">
-              <Button onClick={() => setUploadType("motion")}>
+              <Button onClick={() => handleSetUploadType("motion")}>
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Análise Movimento
               </Button>
-              <Button variant="outline" onClick={() => setUploadType("lift")}>
+              <Button
+                variant="outline"
+                onClick={() => handleSetUploadType("lift")}
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Criar Análise Levantamento
               </Button>
@@ -2106,7 +2131,19 @@ export function AnalysesSection() {
         type={uploadType ?? "motion"}
         open={uploadType !== null}
         onOpenChange={(open) => !open && setUploadType(null)}
-        onSuccess={fetchAnalyses}
+        onSuccess={() => {
+          analyticsEvent("Profile_Analysis_Success", {
+            type: uploadType ?? "motion",
+            source: "profile",
+          });
+          Sentry.metrics.count("analysis_completed", 1, {
+            attributes: {
+              type: uploadType ?? "motion",
+              source: "profile",
+            },
+          });
+          void fetchAnalyses();
+        }}
       />
       <MotionVideoModal
         record={openMotion}
@@ -2129,7 +2166,7 @@ export function AnalysesSection() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setUploadType("motion")}
+              onClick={() => handleSetUploadType("motion")}
               className="flex-1 sm:flex-initial"
             >
               <Activity className="mr-1.5 h-4 w-4 sm:mr-1.5" />
@@ -2139,7 +2176,7 @@ export function AnalysesSection() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => setUploadType("lift")}
+              onClick={() => handleSetUploadType("lift")}
               className="flex-1 sm:flex-initial"
             >
               <Dumbbell className="mr-1.5 h-4 w-4 sm:mr-1.5" />

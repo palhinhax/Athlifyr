@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 import { analyticsEvent } from "@/lib/analytics";
+import * as Sentry from "@sentry/nextjs";
 
 type AnalysisType = "motion" | "lift";
 
@@ -29,6 +30,9 @@ export function VideoAnalysisPageClient() {
   const handleSelectType = (type: AnalysisType) => {
     setAnalysisType(type);
     analyticsEvent("VideoAnalysisPage_Type_Selected", { type });
+    Sentry.metrics.count("analysis_type_selected", 1, {
+      attributes: { type, source: "page" },
+    });
   };
 
   const faqItems = [
@@ -338,6 +342,9 @@ export function VideoAnalysisPageClient() {
           onSuccess={() => {
             analyticsEvent("VideoAnalysisPage_Success", {
               type: analysisType,
+            });
+            Sentry.metrics.count("analysis_completed", 1, {
+              attributes: { type: analysisType, source: "page" },
             });
           }}
         />

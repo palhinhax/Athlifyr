@@ -17,6 +17,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import * as Sentry from "@sentry/nextjs";
 import { VideoAnalysisUpload } from "@/components/video-analysis-upload";
 import { analyticsEvent } from "@/lib/analytics";
 import { useTranslations } from "next-intl";
@@ -33,11 +34,17 @@ export function AnalysisButton() {
     analyticsEvent("Topbar_Analysis_Click", {
       location: "topbar",
     });
+    Sentry.metrics.count("analysis_camera_click", 1, {
+      attributes: { source: "topbar" },
+    });
   };
 
   const handleSelectType = (type: AnalysisType) => {
     setAnalysisType(type);
     analyticsEvent("Topbar_Analysis_Type_Selected", { type });
+    Sentry.metrics.count("analysis_type_selected", 1, {
+      attributes: { type, source: "topbar" },
+    });
   };
 
   const handleCloseUpload = () => {
@@ -143,6 +150,9 @@ export function AnalysisButton() {
             analyticsEvent("Topbar_Analysis_Success", {
               type: analysisType,
             });
+            Sentry.metrics.count("analysis_completed", 1, {
+              attributes: { type: analysisType, source: "topbar" },
+            });
           }}
         />
       )}
@@ -168,11 +178,17 @@ export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
     analyticsEvent("MobileNav_Analysis_Click", {
       location: "mobile_nav",
     });
+    Sentry.metrics.count("analysis_camera_click", 1, {
+      attributes: { source: "mobile" },
+    });
   };
 
   const handleSelectType = (type: AnalysisType) => {
     setAnalysisType(type);
     analyticsEvent("MobileNav_Analysis_Type_Selected", { type });
+    Sentry.metrics.count("analysis_type_selected", 1, {
+      attributes: { type, source: "mobile" },
+    });
   };
 
   const handleCloseUpload = () => {
@@ -269,6 +285,9 @@ export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
           onSuccess={() => {
             analyticsEvent("MobileNav_Analysis_Success", {
               type: analysisType,
+            });
+            Sentry.metrics.count("analysis_completed", 1, {
+              attributes: { type: analysisType, source: "mobile" },
             });
           }}
         />

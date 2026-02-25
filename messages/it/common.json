@@ -182,6 +182,11 @@
       "description": "Grazie per averci contattato! Ti risponderemo via email il prima possibile."
     }
   },
+  "notFound": {
+    "heading": "Pagina non trovata",
+    "description": "Spiacenti, la pagina che stai cercando non esiste o è stata rimossa.",
+    "backHome": "Torna alla home"
+  },
   "notifications": {
     "notifications": "Notifiche",
     "pending": "in sospeso",

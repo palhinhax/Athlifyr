@@ -182,6 +182,11 @@
       "description": "Danke für deine Nachricht! Wir antworten dir so schnell wie möglich per E-Mail."
     }
   },
+  "notFound": {
+    "heading": "Seite nicht gefunden",
+    "description": "Entschuldigung, die gesuchte Seite existiert nicht oder wurde entfernt.",
+    "backHome": "Zurück zur Startseite"
+  },
   "notifications": {
     "notifications": "Benachrichtigungen",
     "pending": "ausstehend",

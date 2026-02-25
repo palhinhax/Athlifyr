@@ -46,18 +46,30 @@ Uma competição de **endurance e fitness funcional** que combina corrida com es
 ## 👥 Categorias (10 Provas)
 
 ### Full Race
-- Individual Homem — **50 €**
-- Individual Mulher — **50 €**
-- Dupla Homens — **90 €**
-- Dupla Mulheres — **90 €**
-- Dupla Mista — **90 €**
+- Individual Masculino
+- Individual Feminino
+- Duplas Masculinas
+- Duplas Femininas
+- Duplas Mistas
 
 ### Sprint
-- Individual Homem — **50 €**
-- Individual Mulher — **50 €**
-- Dupla Homens — **90 €**
-- Dupla Mulheres — **90 €**
-- Dupla Mista — **90 €**
+- Individual Masculino
+- Individual Feminino
+- Duplas Masculinas
+- Duplas Femininas
+- Duplas Mistas
+
+---
+
+## 💳 Inscrições
+
+### 🔥 Fase Promocional (até 26 de fevereiro, inclusive)
+- Individual: **50 €**
+- Duplas: **90 €** (por equipa)
+
+### ⏳ Preço Regular (a partir de 27 de fevereiro)
+- Individual: **55 €**
+- Duplas: **100 €** (por equipa)
 
 ---
 
@@ -111,8 +123,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       country: "Portugal",
       latitude: 39.0912,
       longitude: -9.2584,
-      googleMapsUrl:
-        "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
+      googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
       externalUrl: "",
       imageUrl: "",
       isFeatured: false,
@@ -129,8 +140,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       country: "Portugal",
       latitude: 39.0912,
       longitude: -9.2584,
-      googleMapsUrl:
-        "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
+      googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
       externalUrl: "",
       imageUrl: "",
       isFeatured: false,
@@ -149,7 +159,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Abril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 em Torres Vedras, 18 e 19 de abril. Endurance e fitness funcional: RACE (8km) e SPRINT (4km). Individual (50€) ou duplas (90€). 10 provas.",
+        "West Fitness Race 2026 em Torres Vedras, 18 e 19 de abril. Endurance e fitness funcional: RACE (8km) e SPRINT (4km). Individual 50€ (promo até 26 fev) / 55€ regular. Duplas 90€ / 100€. 10 provas.",
     },
     [Language.en]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -176,18 +186,30 @@ An **endurance and functional fitness** competition that combines running with e
 ## 👥 Categories (10 Races)
 
 ### Full Race
-- Individual Men — **€50**
-- Individual Women — **€50**
-- Doubles Men — **€90**
-- Doubles Women — **€90**
-- Doubles Mixed — **€90**
+- Individual Men
+- Individual Women
+- Men's Doubles
+- Women's Doubles
+- Mixed Doubles
 
 ### Sprint
-- Individual Men — **€50**
-- Individual Women — **€50**
-- Doubles Men — **€90**
-- Doubles Women — **€90**
-- Doubles Mixed — **€90**
+- Individual Men
+- Individual Women
+- Men's Doubles
+- Women's Doubles
+- Mixed Doubles
+
+---
+
+## 💳 Registration
+
+### 🔥 Promotional Phase (until February 26, inclusive)
+- Individual: **€50**
+- Doubles: **€90** (per team)
+
+### ⏳ Regular Price (from February 27)
+- Individual: **€55**
+- Doubles: **€100** (per team)
 
 ---
 
@@ -229,7 +251,7 @@ The West Fitness Race is a competition focused on **endurance and strength**, wh
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | April 18-19 | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 in Torres Vedras, April 18-19. Endurance and functional fitness: RACE (8km) and SPRINT (4km). Individual (€50) or doubles (€90). 10 races.",
+        "West Fitness Race 2026 in Torres Vedras, April 18-19. Endurance and functional fitness: RACE (8km) and SPRINT (4km). Individual €50 (promo until Feb 26) / €55 regular. Doubles €90 / €100. 10 races.",
     },
     [Language.es]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -256,18 +278,30 @@ Una competición de **endurance y fitness funcional** que combina carrera con es
 ## 👥 Categorías (10 Pruebas)
 
 ### Full Race
-- Individual Hombres — **50 €**
-- Individual Mujeres — **50 €**
-- Dupla Hombres — **90 €**
-- Dupla Mujeres — **90 €**
-- Dupla Mixta — **90 €**
+- Individual Masculino
+- Individual Femenino
+- Duplas Masculinas
+- Duplas Femeninas
+- Duplas Mixtas
 
 ### Sprint
-- Individual Hombres — **50 €**
-- Individual Mujeres — **50 €**
-- Dupla Hombres — **90 €**
-- Dupla Mujeres — **90 €**
-- Dupla Mixta — **90 €**
+- Individual Masculino
+- Individual Femenino
+- Duplas Masculinas
+- Duplas Femeninas
+- Duplas Mixtas
+
+---
+
+## 💳 Inscripciones
+
+### 🔥 Fase Promocional (hasta el 26 de febrero, inclusive)
+- Individual: **50 €**
+- Duplas: **90 €** (por equipo)
+
+### ⏳ Precio Regular (a partir del 27 de febrero)
+- Individual: **55 €**
+- Duplas: **100 €** (por equipo)
 
 ---
 
@@ -309,7 +343,7 @@ La West Fitness Race es una competición enfocada en **resistencia y fuerza**, d
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Abril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 en Torres Vedras, 18 y 19 de abril. Endurance y fitness funcional: RACE (8km) y SPRINT (4km). Individual (50€) o duplas (90€). 10 pruebas.",
+        "West Fitness Race 2026 en Torres Vedras, 18 y 19 de abril. Endurance y fitness funcional: RACE (8km) y SPRINT (4km). Individual 50€ (promo hasta 26 feb) / 55€ regular. Duplas 90€ / 100€. 10 pruebas.",
     },
     [Language.fr]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -336,18 +370,30 @@ Une compétition d'**endurance et de fitness fonctionnel** qui combine course et
 ## 👥 Catégories (10 Épreuves)
 
 ### Full Race
-- Individuel Hommes — **50 €**
-- Individuel Femmes — **50 €**
-- Duo Hommes — **90 €**
-- Duo Femmes — **90 €**
-- Duo Mixte — **90 €**
+- Individuel Hommes
+- Individuel Femmes
+- Duo Hommes
+- Duo Femmes
+- Duo Mixte
 
 ### Sprint
-- Individuel Hommes — **50 €**
-- Individuel Femmes — **50 €**
-- Duo Hommes — **90 €**
-- Duo Femmes — **90 €**
-- Duo Mixte — **90 €**
+- Individuel Hommes
+- Individuel Femmes
+- Duo Hommes
+- Duo Femmes
+- Duo Mixte
+
+---
+
+## 💳 Inscriptions
+
+### 🔥 Phase Promotionnelle (jusqu'au 26 février, inclus)
+- Individuel : **50 €**
+- Duo : **90 €** (par équipe)
+
+### ⏳ Prix Régulier (à partir du 27 février)
+- Individuel : **55 €**
+- Duo : **100 €** (par équipe)
 
 ---
 
@@ -389,7 +435,7 @@ La West Fitness Race est une compétition axée sur l'**endurance et la force**,
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Avril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 à Torres Vedras, 18 et 19 avril. Endurance et fitness fonctionnel : RACE (8km) et SPRINT (4km). Individuel (50€) ou duo (90€). 10 épreuves.",
+        "West Fitness Race 2026 à Torres Vedras, 18 et 19 avril. Endurance et fitness fonctionnel : RACE (8km) et SPRINT (4km). Individuel 50€ (promo jusqu'au 26 fév) / 55€ régulier. Duo 90€ / 100€. 10 épreuves.",
     },
     [Language.de]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -416,18 +462,30 @@ Ein **Ausdauer- und Functional-Fitness-Wettbewerb**, der Laufen mit Übungsstati
 ## 👥 Kategorien (10 Rennen)
 
 ### Full Race
-- Einzel Männer — **50 €**
-- Einzel Frauen — **50 €**
-- Doppel Männer — **90 €**
-- Doppel Frauen — **90 €**
-- Doppel Mixed — **90 €**
+- Einzel Männer
+- Einzel Frauen
+- Doppel Männer
+- Doppel Frauen
+- Doppel Mixed
 
 ### Sprint
-- Einzel Männer — **50 €**
-- Einzel Frauen — **50 €**
-- Doppel Männer — **90 €**
-- Doppel Frauen — **90 €**
-- Doppel Mixed — **90 €**
+- Einzel Männer
+- Einzel Frauen
+- Doppel Männer
+- Doppel Frauen
+- Doppel Mixed
+
+---
+
+## 💳 Anmeldung
+
+### 🔥 Aktionsphase (bis 26. Februar, einschließlich)
+- Einzel: **50 €**
+- Doppel: **90 €** (pro Team)
+
+### ⏳ Regulärer Preis (ab 27. Februar)
+- Einzel: **55 €**
+- Doppel: **100 €** (pro Team)
 
 ---
 
@@ -469,7 +527,7 @@ Die West Fitness Race ist ein Wettbewerb mit Fokus auf **Ausdauer und Kraft**, b
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18.-19. April | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 in Torres Vedras, 18.-19. April. Ausdauer- und Functional-Fitness: RACE (8km) und SPRINT (4km). Einzel (50€) oder Doppel (90€). 10 Rennen.",
+        "West Fitness Race 2026 in Torres Vedras, 18.-19. April. Ausdauer- und Functional-Fitness: RACE (8km) und SPRINT (4km). Einzel 50€ (Aktionspreis bis 26. Feb) / 55€ regulär. Doppel 90€ / 100€. 10 Rennen.",
     },
     [Language.it]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -496,18 +554,30 @@ Una competizione di **endurance e fitness funzionale** che combina corsa con sta
 ## 👥 Categorie (10 Gare)
 
 ### Full Race
-- Individuale Uomini — **50 €**
-- Individuale Donne — **50 €**
-- Coppia Uomini — **90 €**
-- Coppia Donne — **90 €**
-- Coppia Mista — **90 €**
+- Individuale Uomini
+- Individuale Donne
+- Coppia Uomini
+- Coppia Donne
+- Coppia Mista
 
 ### Sprint
-- Individuale Uomini — **50 €**
-- Individuale Donne — **50 €**
-- Coppia Uomini — **90 €**
-- Coppia Donne — **90 €**
-- Coppia Mista — **90 €**
+- Individuale Uomini
+- Individuale Donne
+- Coppia Uomini
+- Coppia Donne
+- Coppia Mista
+
+---
+
+## 💳 Iscrizioni
+
+### 🔥 Fase Promozionale (fino al 26 febbraio, incluso)
+- Individuale: **50 €**
+- Coppia: **90 €** (per squadra)
+
+### ⏳ Prezzo Regolare (dal 27 febbraio)
+- Individuale: **55 €**
+- Coppia: **100 €** (per squadra)
 
 ---
 
@@ -549,7 +619,7 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Aprile | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 a Torres Vedras, 18 e 19 aprile. Endurance e fitness funzionale: RACE (8km) e SPRINT (4km). Individuale (50€) o coppie (90€). 10 gare.",
+        "West Fitness Race 2026 a Torres Vedras, 18 e 19 aprile. Endurance e fitness funzionale: RACE (8km) e SPRINT (4km). Individuale 50€ (promo fino al 26 feb) / 55€ regolare. Coppia 90€ / 100€. 10 gare.",
     },
   };
 
@@ -701,9 +771,7 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     currency: Currency.EUR,
   });
 
-  console.log(
-    "🏋️ All 10 variants upserted (5 Full Race + 5 Sprint)"
-  );
+  console.log("🏋️ All 10 variants upserted (5 Full Race + 5 Sprint)");
 
   // Step 4: Upsert pricing phases using helper function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -728,28 +796,51 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     }
   };
 
-  // Individual pricing
-  await findOrCreatePricingPhase("Individual (Race / Sprint)", {
-    startDate: new Date("2026-01-01T00:00:00Z"),
+  // Individual pricing — Fase Promocional (até 26 fev)
+  await findOrCreatePricingPhase(
+    "Individual (Race / Sprint) - Fase Promocional",
+    {
+      startDate: new Date("2026-01-01T00:00:00Z"),
+      endDate: new Date("2026-02-26T23:59:59Z"),
+      price: 50.0,
+      currency: Currency.EUR,
+      discountPercent: null,
+      note: "Preço promocional para todas as provas individuais (Full Race e Sprint) — até 26 de fevereiro",
+    }
+  );
+
+  // Individual pricing — Preço Regular (a partir de 27 fev)
+  await findOrCreatePricingPhase("Individual (Race / Sprint) - Preço Regular", {
+    startDate: new Date("2026-02-27T00:00:00Z"),
     endDate: new Date("2026-04-17T23:59:59Z"),
-    price: 50.0,
+    price: 55.0,
     currency: Currency.EUR,
     discountPercent: null,
-    note: "Preço para todas as provas individuais (Full Race e Sprint)",
+    note: "Preço regular para todas as provas individuais (Full Race e Sprint) — a partir de 27 de fevereiro",
   });
 
-  // Duplas pricing
-  await findOrCreatePricingPhase("Duplas (Race / Sprint)", {
+  // Duplas pricing — Fase Promocional (até 26 fev)
+  await findOrCreatePricingPhase("Duplas (Race / Sprint) - Fase Promocional", {
     startDate: new Date("2026-01-01T00:00:00Z"),
-    endDate: new Date("2026-04-17T23:59:59Z"),
+    endDate: new Date("2026-02-26T23:59:59Z"),
     price: 90.0,
     currency: Currency.EUR,
     discountPercent: null,
-    note: "Preço para todas as provas de duplas (Full Race e Sprint) — por equipa",
+    note: "Preço promocional para todas as provas de duplas (Full Race e Sprint) — até 26 de fevereiro — por equipa",
+  });
+
+  // Duplas pricing — Preço Regular (a partir de 27 fev)
+  await findOrCreatePricingPhase("Duplas (Race / Sprint) - Preço Regular", {
+    startDate: new Date("2026-02-27T00:00:00Z"),
+    endDate: new Date("2026-04-17T23:59:59Z"),
+    price: 100.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Preço regular para todas as provas de duplas (Full Race e Sprint) — a partir de 27 de fevereiro — por equipa",
   });
 
   console.log(
-    "💰 Pricing phases upserted (Individual €50 / Duplas €90)"
+    "💰 Pricing phases upserted (Individual €50→€55 / Duplas €90→€100)"
   );
 
   // Step 5: FAQs
@@ -827,39 +918,39 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     event.id,
     1,
     "Quais são as categorias e os preços?",
-    "São 10 provas: 5 Full Race e 5 Sprint. Individual (masculino ou feminino) custa 50€. Duplas (masculinas, femininas ou mistas) custam 90€ por equipa."
+    "São 10 provas: 5 Full Race e 5 Sprint. Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas. Preço promocional até 26 de fevereiro: Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€."
   );
 
   const faq2Translations = {
     [Language.pt]: {
       question: "Quais são as categorias e os preços?",
       answer:
-        "São 10 provas: 5 Full Race e 5 Sprint. Individual (masculino ou feminino) custa 50€. Duplas (masculinas, femininas ou mistas) custam 90€ por equipa.",
+        "São 10 provas: 5 Full Race e 5 Sprint. Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas. Preço promocional até 26 de fevereiro: Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€.",
     },
     [Language.en]: {
       question: "What are the categories and prices?",
       answer:
-        "There are 10 races: 5 Full Race and 5 Sprint. Individual (men or women) costs €50. Doubles (men, women, or mixed) cost €90 per team.",
+        "There are 10 races: 5 Full Race and 5 Sprint. Individual Men, Individual Women, Men's Doubles, Women's Doubles and Mixed Doubles. Promotional price until February 26: Individual €50 / Doubles €90. From February 27: Individual €55 / Doubles €100.",
     },
     [Language.es]: {
       question: "¿Cuáles son las categorías y los precios?",
       answer:
-        "Hay 10 pruebas: 5 Full Race y 5 Sprint. Individual (masculino o femenino) cuesta 50€. Duplas (masculinas, femeninas o mixtas) cuestan 90€ por equipo.",
+        "Hay 10 pruebas: 5 Full Race y 5 Sprint. Individual Masculino, Individual Femenino, Duplas Masculinas, Duplas Femeninas y Duplas Mixtas. Precio promocional hasta el 26 de febrero: Individual 50€ / Duplas 90€. A partir del 27 de febrero: Individual 55€ / Duplas 100€.",
     },
     [Language.fr]: {
       question: "Quelles sont les catégories et les prix ?",
       answer:
-        "Il y a 10 épreuves : 5 Full Race et 5 Sprint. Individuel (hommes ou femmes) coûte 50€. Duo (hommes, femmes ou mixte) coûte 90€ par équipe.",
+        "Il y a 10 épreuves : 5 Full Race et 5 Sprint. Individuel Hommes, Individuel Femmes, Duo Hommes, Duo Femmes et Duo Mixte. Prix promotionnel jusqu'au 26 février : Individuel 50€ / Duo 90€. À partir du 27 février : Individuel 55€ / Duo 100€.",
     },
     [Language.de]: {
       question: "Welche Kategorien und Preise gibt es?",
       answer:
-        "Es gibt 10 Rennen: 5 Full Race und 5 Sprint. Einzel (Männer oder Frauen) kostet 50€. Doppel (Männer, Frauen oder gemischt) kostet 90€ pro Team.",
+        "Es gibt 10 Rennen: 5 Full Race und 5 Sprint. Einzel Männer, Einzel Frauen, Doppel Männer, Doppel Frauen und Doppel Mixed. Aktionspreis bis 26. Februar: Einzel 50€ / Doppel 90€. Ab 27. Februar: Einzel 55€ / Doppel 100€.",
     },
     [Language.it]: {
       question: "Quali sono le categorie e i prezzi?",
       answer:
-        "Ci sono 10 gare: 5 Full Race e 5 Sprint. Individuale (uomini o donne) costa 50€. Coppie (uomini, donne o miste) costano 90€ a squadra.",
+        "Ci sono 10 gare: 5 Full Race e 5 Sprint. Individuale Uomini, Individuale Donne, Coppia Uomini, Coppia Donne e Coppia Mista. Prezzo promozionale fino al 26 febbraio: Individuale 50€ / Coppia 90€. Dal 27 febbraio: Individuale 55€ / Coppia 100€.",
     },
   };
 

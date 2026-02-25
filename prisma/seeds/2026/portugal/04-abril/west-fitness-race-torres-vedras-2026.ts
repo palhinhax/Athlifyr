@@ -159,7 +159,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Abril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 em Torres Vedras, 18 e 19 de abril. Endurance e fitness funcional: RACE (8km) e SPRINT (4km). Individual 50€ (promo até 26 fev) / 55€ regular. Duplas 90€ / 100€. 10 provas.",
+        "West Fitness Race 2026 em Torres Vedras, 18 e 19 de abril. Endurance e fitness funcional. Individual (50-55€) ou duplas (90-100€). 5 categorias.",
     },
     [Language.en]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -251,7 +251,7 @@ The West Fitness Race is a competition focused on **endurance and strength**, wh
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | April 18-19 | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 in Torres Vedras, April 18-19. Endurance and functional fitness: RACE (8km) and SPRINT (4km). Individual €50 (promo until Feb 26) / €55 regular. Doubles €90 / €100. 10 races.",
+        "West Fitness Race 2026 in Torres Vedras, April 18-19. Endurance and functional fitness. Individual (€50-55) or doubles (€90-100). 5 categories.",
     },
     [Language.es]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -343,7 +343,7 @@ La West Fitness Race es una competición enfocada en **resistencia y fuerza**, d
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Abril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 en Torres Vedras, 18 y 19 de abril. Endurance y fitness funcional: RACE (8km) y SPRINT (4km). Individual 50€ (promo hasta 26 feb) / 55€ regular. Duplas 90€ / 100€. 10 pruebas.",
+        "West Fitness Race 2026 en Torres Vedras, 18 y 19 de abril. Endurance y fitness funcional. Individual (50-55€) o duplas (90-100€). 5 categorías.",
     },
     [Language.fr]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -435,7 +435,7 @@ La West Fitness Race est une compétition axée sur l'**endurance et la force**,
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Avril | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 à Torres Vedras, 18 et 19 avril. Endurance et fitness fonctionnel : RACE (8km) et SPRINT (4km). Individuel 50€ (promo jusqu'au 26 fév) / 55€ régulier. Duo 90€ / 100€. 10 épreuves.",
+        "West Fitness Race 2026 à Torres Vedras, 18 et 19 avril. Endurance et fitness fonctionnel. Individuel (50-55€) ou duo (90-100€). 5 catégories.",
     },
     [Language.de]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -527,7 +527,7 @@ Die West Fitness Race ist ein Wettbewerb mit Fokus auf **Ausdauer und Kraft**, b
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18.-19. April | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 in Torres Vedras, 18.-19. April. Ausdauer- und Functional-Fitness: RACE (8km) und SPRINT (4km). Einzel 50€ (Aktionspreis bis 26. Feb) / 55€ regulär. Doppel 90€ / 100€. 10 Rennen.",
+        "West Fitness Race 2026 in Torres Vedras, 18.-19. April. Ausdauer- und Functional-Fitness. Einzel (50-55€) oder Doppel (90-100€). 5 Kategorien.",
     },
     [Language.it]: {
       title: "West Fitness Race – Torres Vedras 2026",
@@ -619,7 +619,7 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
       metaTitle:
         "West Fitness Race – Torres Vedras 2026 | 18-19 Aprile | Athlifyr",
       metaDescription:
-        "West Fitness Race 2026 a Torres Vedras, 18 e 19 aprile. Endurance e fitness funzionale: RACE (8km) e SPRINT (4km). Individuale 50€ (promo fino al 26 feb) / 55€ regolare. Coppia 90€ / 100€. 10 gare.",
+        "West Fitness Race 2026 a Torres Vedras, 18 e 19 aprile. Endurance e fitness funzionale. Individuale (50-55€) o coppie (90-100€). 5 categorie.",
     },
   };
 
@@ -654,7 +654,11 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     "📝 Translations upserted for 6 languages (pt, en, es, fr, de, it)"
   );
 
-  // Step 3: Upsert 10 variants using helper function
+  // Step 3: Delete old variants and create 5 correct categories
+  await prisma.eventVariant.deleteMany({
+    where: { eventId: event.id },
+  });
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const findOrCreateVariant = async (name: string, data: any) => {
     const existing = await prisma.eventVariant.findFirst({
@@ -677,101 +681,49 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     }
   };
 
-  // ── Full Race variants (8km, 19 April) ──
+  // ── 5 Categories ──
 
-  await findOrCreateVariant("Race Individual Homem", {
-    description: "Full Race — 8 km + 8 estações — Individual Masculino",
-    distanceKm: 8,
+  await findOrCreateVariant("Individual Masculino", {
+    description: "Individual Masculino",
     startDate: new Date("2026-04-19T09:00:00Z"),
     maxParticipants: null,
-    price: 50.0,
+    price: 55.0,
     currency: Currency.EUR,
   });
 
-  await findOrCreateVariant("Full Race Individual Mulher", {
-    description: "Full Race — 8 km + 8 estações — Individual Feminino",
-    distanceKm: 8,
+  await findOrCreateVariant("Individual Feminino", {
+    description: "Individual Feminino",
     startDate: new Date("2026-04-19T09:00:00Z"),
     maxParticipants: null,
-    price: 50.0,
+    price: 55.0,
     currency: Currency.EUR,
   });
 
-  await findOrCreateVariant("Full Race Dupla Homens", {
-    description: "Full Race — 8 km + 8 estações — Dupla Masculina",
-    distanceKm: 8,
+  await findOrCreateVariant("Duplas Masculinas", {
+    description: "Duplas Masculinas",
     startDate: new Date("2026-04-19T09:00:00Z"),
     maxParticipants: null,
-    price: 90.0,
+    price: 100.0,
     currency: Currency.EUR,
   });
 
-  await findOrCreateVariant("Full Race Dupla Mulheres", {
-    description: "Full Race — 8 km + 8 estações — Dupla Feminina",
-    distanceKm: 8,
+  await findOrCreateVariant("Duplas Femininas", {
+    description: "Duplas Femininas",
     startDate: new Date("2026-04-19T09:00:00Z"),
     maxParticipants: null,
-    price: 90.0,
+    price: 100.0,
     currency: Currency.EUR,
   });
 
-  await findOrCreateVariant("Full Race Dupla Mista", {
-    description: "Full Race — 8 km + 8 estações — Dupla Mista",
-    distanceKm: 8,
+  await findOrCreateVariant("Duplas Mistas", {
+    description: "Duplas Mistas",
     startDate: new Date("2026-04-19T09:00:00Z"),
     maxParticipants: null,
-    price: 90.0,
+    price: 100.0,
     currency: Currency.EUR,
   });
 
-  // ── Sprint variants (4km, 19 April) ──
-
-  await findOrCreateVariant("Sprint Individual Homem", {
-    description: "Sprint — 4 km + 8 estações — Individual Masculino",
-    distanceKm: 4,
-    startDate: new Date("2026-04-19T09:00:00Z"),
-    maxParticipants: null,
-    price: 50.0,
-    currency: Currency.EUR,
-  });
-
-  await findOrCreateVariant("Sprint Individual Mulher", {
-    description: "Sprint — 4 km + 8 estações — Individual Feminino",
-    distanceKm: 4,
-    startDate: new Date("2026-04-19T09:00:00Z"),
-    maxParticipants: null,
-    price: 50.0,
-    currency: Currency.EUR,
-  });
-
-  await findOrCreateVariant("Sprint Dupla Homens", {
-    description: "Sprint — 4 km + 8 estações — Dupla Masculina",
-    distanceKm: 4,
-    startDate: new Date("2026-04-19T09:00:00Z"),
-    maxParticipants: null,
-    price: 90.0,
-    currency: Currency.EUR,
-  });
-
-  await findOrCreateVariant("Sprint Dupla Mulheres", {
-    description: "Sprint — 4 km + 8 estações — Dupla Feminina",
-    distanceKm: 4,
-    startDate: new Date("2026-04-19T09:00:00Z"),
-    maxParticipants: null,
-    price: 90.0,
-    currency: Currency.EUR,
-  });
-
-  await findOrCreateVariant("Sprint Dupla Mista", {
-    description: "Sprint — 4 km + 8 estações — Dupla Mista",
-    distanceKm: 4,
-    startDate: new Date("2026-04-19T09:00:00Z"),
-    maxParticipants: null,
-    price: 90.0,
-    currency: Currency.EUR,
-  });
-
-  console.log("🏋️ All 10 variants upserted (5 Full Race + 5 Sprint)");
+  console.log("🏋️ All 5 variants upserted");
 
   // Step 4: Upsert pricing phases using helper function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -796,47 +748,49 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     }
   };
 
+  // Delete old pricing phases before creating new ones
+  await prisma.pricingPhase.deleteMany({
+    where: { eventId: event.id },
+  });
+
   // Individual pricing — Fase Promocional (até 26 fev)
-  await findOrCreatePricingPhase(
-    "Individual (Race / Sprint) - Fase Promocional",
-    {
-      startDate: new Date("2026-01-01T00:00:00Z"),
-      endDate: new Date("2026-02-26T23:59:59Z"),
-      price: 50.0,
-      currency: Currency.EUR,
-      discountPercent: null,
-      note: "Preço promocional para todas as provas individuais (Full Race e Sprint) — até 26 de fevereiro",
-    }
-  );
+  await findOrCreatePricingPhase("Individual - Preço Promocional", {
+    startDate: new Date("2026-01-01T00:00:00Z"),
+    endDate: new Date("2026-02-26T23:59:59Z"),
+    price: 50.0,
+    currency: Currency.EUR,
+    discountPercent: null,
+    note: "Preço promocional para provas individuais — até 26 de fevereiro",
+  });
 
   // Individual pricing — Preço Regular (a partir de 27 fev)
-  await findOrCreatePricingPhase("Individual (Race / Sprint) - Preço Regular", {
+  await findOrCreatePricingPhase("Individual - Preço Regular", {
     startDate: new Date("2026-02-27T00:00:00Z"),
     endDate: new Date("2026-04-17T23:59:59Z"),
     price: 55.0,
     currency: Currency.EUR,
     discountPercent: null,
-    note: "Preço regular para todas as provas individuais (Full Race e Sprint) — a partir de 27 de fevereiro",
+    note: "Preço regular para provas individuais — a partir de 27 de fevereiro",
   });
 
   // Duplas pricing — Fase Promocional (até 26 fev)
-  await findOrCreatePricingPhase("Duplas (Race / Sprint) - Fase Promocional", {
+  await findOrCreatePricingPhase("Duplas - Preço Promocional", {
     startDate: new Date("2026-01-01T00:00:00Z"),
     endDate: new Date("2026-02-26T23:59:59Z"),
     price: 90.0,
     currency: Currency.EUR,
     discountPercent: null,
-    note: "Preço promocional para todas as provas de duplas (Full Race e Sprint) — até 26 de fevereiro — por equipa",
+    note: "Preço promocional para provas de duplas — até 26 de fevereiro — por equipa",
   });
 
   // Duplas pricing — Preço Regular (a partir de 27 fev)
-  await findOrCreatePricingPhase("Duplas (Race / Sprint) - Preço Regular", {
+  await findOrCreatePricingPhase("Duplas - Preço Regular", {
     startDate: new Date("2026-02-27T00:00:00Z"),
     endDate: new Date("2026-04-17T23:59:59Z"),
     price: 100.0,
     currency: Currency.EUR,
     discountPercent: null,
-    note: "Preço regular para todas as provas de duplas (Full Race e Sprint) — a partir de 27 de fevereiro — por equipa",
+    note: "Preço regular para provas de duplas — a partir de 27 de fevereiro — por equipa",
   });
 
   console.log(
@@ -864,44 +818,44 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     });
   };
 
-  // FAQ 1 - Formats
+  // FAQ 1 - Categories
   const faq1 = await findOrCreateFAQ(
     event.id,
     0,
-    "Quais são os formatos disponíveis na West Fitness Race?",
-    "Existem dois formatos: RACE (Full) com 8 km de corrida e 8 estações de exercícios, e SPRINT com 4 km de corrida e 8 estações de exercícios."
+    "Quais são as categorias disponíveis na West Fitness Race?",
+    "Existem 5 categorias: Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas."
   );
 
   const faq1Translations = {
     [Language.pt]: {
-      question: "Quais são os formatos disponíveis na West Fitness Race?",
+      question: "Quais são as categorias disponíveis na West Fitness Race?",
       answer:
-        "Existem dois formatos: RACE (Full) com 8 km de corrida e 8 estações de exercícios, e SPRINT com 4 km de corrida e 8 estações de exercícios.",
+        "Existem 5 categorias: Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas.",
     },
     [Language.en]: {
-      question: "What formats are available at the West Fitness Race?",
+      question: "What categories are available at the West Fitness Race?",
       answer:
-        "There are two formats: RACE (Full) with 8 km of running and 8 exercise stations, and SPRINT with 4 km of running and 8 exercise stations.",
+        "There are 5 categories: Individual Men, Individual Women, Men's Doubles, Women's Doubles and Mixed Doubles.",
     },
     [Language.es]: {
-      question: "¿Qué formatos están disponibles en la West Fitness Race?",
+      question: "¿Qué categorías están disponibles en la West Fitness Race?",
       answer:
-        "Hay dos formatos: RACE (Completa) con 8 km de carrera y 8 estaciones de ejercicios, y SPRINT con 4 km de carrera y 8 estaciones de ejercicios.",
+        "Hay 5 categorías: Individual Masculino, Individual Femenino, Duplas Masculinas, Duplas Femeninas y Duplas Mixtas.",
     },
     [Language.fr]: {
-      question: "Quels formats sont disponibles à la West Fitness Race ?",
+      question: "Quelles catégories sont disponibles à la West Fitness Race ?",
       answer:
-        "Il existe deux formats : RACE (Complète) avec 8 km de course et 8 stations d'exercices, et SPRINT avec 4 km de course et 8 stations d'exercices.",
+        "Il existe 5 catégories : Individuel Hommes, Individuel Femmes, Duo Hommes, Duo Femmes et Duo Mixte.",
     },
     [Language.de]: {
-      question: "Welche Formate sind beim West Fitness Race verfügbar?",
+      question: "Welche Kategorien sind beim West Fitness Race verfügbar?",
       answer:
-        "Es gibt zwei Formate: RACE (Voll) mit 8 km Laufen und 8 Übungsstationen und SPRINT mit 4 km Laufen und 8 Übungsstationen.",
+        "Es gibt 5 Kategorien: Einzel Männer, Einzel Frauen, Doppel Männer, Doppel Frauen und Doppel Mixed.",
     },
     [Language.it]: {
-      question: "Quali formati sono disponibili alla West Fitness Race?",
+      question: "Quali categorie sono disponibili alla West Fitness Race?",
       answer:
-        "Ci sono due formati: RACE (Completa) con 8 km di corsa e 8 stazioni di esercizi, e SPRINT con 4 km di corsa e 8 stazioni di esercizi.",
+        "Ci sono 5 categorie: Individuale Uomini, Individuale Donne, Coppia Uomini, Coppia Donne e Coppia Mista.",
     },
   };
 
@@ -913,44 +867,44 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     });
   }
 
-  // FAQ 2 - Categories & Prices
+  // FAQ 2 - Prices
   const faq2 = await findOrCreateFAQ(
     event.id,
     1,
-    "Quais são as categorias e os preços?",
-    "São 10 provas: 5 Full Race e 5 Sprint. Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas. Preço promocional até 26 de fevereiro: Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€."
+    "Quais são os preços de inscrição?",
+    "Até 26 de fevereiro (inclusive): Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€."
   );
 
   const faq2Translations = {
     [Language.pt]: {
-      question: "Quais são as categorias e os preços?",
+      question: "Quais são os preços de inscrição?",
       answer:
-        "São 10 provas: 5 Full Race e 5 Sprint. Individual Masculino, Individual Feminino, Duplas Masculinas, Duplas Femininas e Duplas Mistas. Preço promocional até 26 de fevereiro: Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€.",
+        "Até 26 de fevereiro (inclusive): Individual 50€ / Duplas 90€. A partir de 27 de fevereiro: Individual 55€ / Duplas 100€.",
     },
     [Language.en]: {
-      question: "What are the categories and prices?",
+      question: "What are the registration prices?",
       answer:
-        "There are 10 races: 5 Full Race and 5 Sprint. Individual Men, Individual Women, Men's Doubles, Women's Doubles and Mixed Doubles. Promotional price until February 26: Individual €50 / Doubles €90. From February 27: Individual €55 / Doubles €100.",
+        "Until February 26 (inclusive): Individual €50 / Doubles €90. From February 27: Individual €55 / Doubles €100.",
     },
     [Language.es]: {
-      question: "¿Cuáles son las categorías y los precios?",
+      question: "¿Cuáles son los precios de inscripción?",
       answer:
-        "Hay 10 pruebas: 5 Full Race y 5 Sprint. Individual Masculino, Individual Femenino, Duplas Masculinas, Duplas Femeninas y Duplas Mixtas. Precio promocional hasta el 26 de febrero: Individual 50€ / Duplas 90€. A partir del 27 de febrero: Individual 55€ / Duplas 100€.",
+        "Hasta el 26 de febrero (inclusive): Individual 50€ / Duplas 90€. A partir del 27 de febrero: Individual 55€ / Duplas 100€.",
     },
     [Language.fr]: {
-      question: "Quelles sont les catégories et les prix ?",
+      question: "Quels sont les prix d'inscription ?",
       answer:
-        "Il y a 10 épreuves : 5 Full Race et 5 Sprint. Individuel Hommes, Individuel Femmes, Duo Hommes, Duo Femmes et Duo Mixte. Prix promotionnel jusqu'au 26 février : Individuel 50€ / Duo 90€. À partir du 27 février : Individuel 55€ / Duo 100€.",
+        "Jusqu'au 26 février (inclus) : Individuel 50€ / Duo 90€. À partir du 27 février : Individuel 55€ / Duo 100€.",
     },
     [Language.de]: {
-      question: "Welche Kategorien und Preise gibt es?",
+      question: "Wie hoch sind die Anmeldepreise?",
       answer:
-        "Es gibt 10 Rennen: 5 Full Race und 5 Sprint. Einzel Männer, Einzel Frauen, Doppel Männer, Doppel Frauen und Doppel Mixed. Aktionspreis bis 26. Februar: Einzel 50€ / Doppel 90€. Ab 27. Februar: Einzel 55€ / Doppel 100€.",
+        "Bis 26. Februar (inklusive): Einzel 50€ / Doppel 90€. Ab 27. Februar: Einzel 55€ / Doppel 100€.",
     },
     [Language.it]: {
-      question: "Quali sono le categorie e i prezzi?",
+      question: "Quali sono i prezzi di iscrizione?",
       answer:
-        "Ci sono 10 gare: 5 Full Race e 5 Sprint. Individuale Uomini, Individuale Donne, Coppia Uomini, Coppia Donne e Coppia Mista. Prezzo promozionale fino al 26 febbraio: Individuale 50€ / Coppia 90€. Dal 27 febbraio: Individuale 55€ / Coppia 100€.",
+        "Fino al 26 febbraio (incluso): Individuale 50€ / Coppia 90€. Dal 27 febbraio: Individuale 55€ / Coppia 100€.",
     },
   };
 
@@ -1116,10 +1070,8 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
   );
   console.log("📅 Event dates: Saturday-Sunday, April 18-19, 2026");
   console.log("📍 Location: Pavilhão Multiusos de Torres Vedras, Portugal");
-  console.log(
-    "🏋️ 10 variants: 5 Full Race + 5 Sprint (Individual €50 / Duplas €90)"
-  );
-  console.log("💰 2 pricing phases (Individual €50 / Duplas €90)");
+  console.log("🏋️ 5 variants (Individual Masc/Fem + Duplas Masc/Fem/Mistas)");
+  console.log("💰 4 pricing phases (Promo + Regular × Individual + Duplas)");
   console.log("❓ 5 FAQs in 6 languages");
 }
 

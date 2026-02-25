@@ -1,5 +1,6 @@
 import { getRequestConfig } from "next-intl/server";
 import { IntlErrorCode } from "next-intl";
+import * as Sentry from "@sentry/nextjs";
 import { routing } from "./routing";
 
 /**
@@ -93,7 +94,6 @@ export default getRequestConfig(async ({ requestLocale }) => {
     messages,
     // Error handling to prevent infinite re-render loops when a translation key is missing
     onError(error) {
-      // In development, log errors to console (but only once per error)
       if (process.env.NODE_ENV === "development") {
         // Only log MISSING_MESSAGE errors once to avoid spam
         if (error.code === IntlErrorCode.MISSING_MESSAGE) {
@@ -101,8 +101,24 @@ export default getRequestConfig(async ({ requestLocale }) => {
         } else {
           console.error("[next-intl] Error:", error);
         }
+      } else {
+        // In production: report to Sentry
+        if (error.code === IntlErrorCode.MISSING_MESSAGE) {
+          // Warning-level: missing key — likely a dev oversight, not a crash
+          Sentry.captureMessage(
+            `[i18n] Missing translation: ${error.message}`,
+            {
+              level: "warning",
+              tags: { feature: "i18n", errorCode: error.code },
+            }
+          );
+        } else {
+          // Error-level: unexpected intl error (formatting failure, etc.)
+          Sentry.captureException(error, {
+            tags: { feature: "i18n", errorCode: error.code },
+          });
+        }
       }
-      // In production, silently handle errors (could send to Sentry if needed)
     },
     // Return the key as fallback when a translation is missing
     getMessageFallback({ namespace, key }) {

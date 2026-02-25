@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
+import * as Sentry from "@sentry/nextjs";
 import {
   Upload,
   Loader2,
@@ -698,6 +699,9 @@ export function VideoAnalysisUpload({
       if (error instanceof DOMException && error.name === "AbortError") return;
 
       console.error(`[VideoUpload] Submit error:`, error);
+      Sentry.captureException(error, {
+        tags: { feature: "video_analysis", type },
+      });
       setUploadStateSynced({
         status: "error",
         message:

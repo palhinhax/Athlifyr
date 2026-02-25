@@ -147,7 +147,14 @@ const nextConfig = {
       {
         // Apply security headers to all routes
         source: '/:path*',
-        headers: securityHeaders,
+        headers: [
+          ...securityHeaders,
+          // Enable browser JS profiling for Sentry
+          {
+            key: 'Document-Policy',
+            value: 'js-profiling',
+          },
+        ],
       },
     ];
   },

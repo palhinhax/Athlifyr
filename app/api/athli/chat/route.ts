@@ -29,6 +29,8 @@ import {
   saveWorkout,
   listAvailableExercises,
   submitAdminNote,
+  getPlatformInfo,
+  logPerformanceEntry,
 } from "@/lib/athli-ai";
 import type {
   EventSearchParams,
@@ -40,6 +42,8 @@ import type {
   SaveTrainingPlanParams,
   SaveWorkoutParams,
   SubmitAdminNoteParams,
+  PlatformInfoParams,
+  LogPerformanceParams,
 } from "@/lib/athli-ai";
 
 // Lazy getter — avoids module-level instantiation at build time
@@ -279,6 +283,12 @@ export async function POST(request: Request) {
           case "get_my_prs":
             toolResult = await getUserPRs(user.id, args as UserPRsParams);
             break;
+          case "log_performance_entry":
+            toolResult = await logPerformanceEntry(
+              user.id,
+              args as LogPerformanceParams
+            );
+            break;
           case "get_my_analyses":
             toolResult = await getUserAnalyses(
               user.id,
@@ -315,6 +325,12 @@ export async function POST(request: Request) {
             toolResult = await submitAdminNote(
               args as SubmitAdminNoteParams,
               user.id
+            );
+            break;
+          case "get_platform_info":
+            toolResult = await getPlatformInfo(
+              args as PlatformInfoParams,
+              userLocale
             );
             break;
           default:

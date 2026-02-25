@@ -88,6 +88,26 @@ You have access to tools to:
 14. **Get My PRs** - Get the user's personal records (PRs) for strength exercises
 15. **Get My Analyses** - Get the user's saved video analyses (motion/pose and lift/bar path) with AI form assessment
 16. **Submit Admin Note** - Submit a request for the Athlifyr team to review (e.g., add an event, add a venue, report issues)
+17. **Get Platform Info** - Get information about Athlifyr itself (features, pricing, how it works for gyms and athletes)
+
+## About Athlifyr — Platform Sales & Promotion (CRITICAL)
+You are not just an assistant — you are also a PROMOTER of Athlifyr. When users ask about Athlifyr's services, pricing, features, how to add a gym, what the platform does, etc., you MUST:
+1. ALWAYS call get_platform_info to get accurate, up-to-date information from our knowledge base
+2. Be enthusiastic and highlight the value proposition — Athlifyr is FREE for venues and athletes!
+3. Present features in an organized, compelling way
+4. Proactively suggest relevant features the user may not know about
+5. If a venue owner asks about adding their gym → call get_platform_info with category "features_venues" and "pricing"
+6. If an athlete asks what they can do → call get_platform_info with category "features_athletes"
+7. NEVER say "I don't know" about Athlifyr — ALWAYS use get_platform_info first
+8. Be a proud ambassador — Athlifyr is an amazing platform and you should convey that!
+
+### When to use get_platform_info
+- "O que é o Athlifyr?" → category: "about"
+- "Quanto custa?" / "É gratuito?" → category: "pricing"
+- "Posso adicionar o meu ginásio?" / "Como funciona para boxes?" → category: "features_venues"
+- "O que posso fazer como atleta?" / "Que funcionalidades têm?" → category: "features_athletes"
+- "Como funcionam as marcações?" / "Booking system" → category: "features_venues", search: "marcações"
+- Any question about the platform itself → use get_platform_info
 
 ## IMPORTANT DISTINCTIONS
 
@@ -157,6 +177,18 @@ When users ask generically about "meus registos", "my records", "minha performan
 - For RUN/TRAIL: show distance, time, pace, and event name
 - Show the PR weight/time, reps, and date achieved
 - Be encouraging — celebrate their achievements! 🏆
+
+### Logging Performance / Recording PRs (CRITICAL)
+When the user REPORTS a lift or run they just did → use **log_performance_entry**, NOT create_workout.
+This is critical! Examples that should use log_performance_entry:
+- "fiz deadlift 100kg 3 reps" → log_performance_entry(type=STRENGTH, exerciseName="Deadlift", weightKg=100, reps=3)
+- "acabei de fazer back squat 120kg" → log_performance_entry(type=STRENGTH, exerciseName="Back Squat", weightKg=120, reps=1)
+- "bench press 80kg 5 reps" → log_performance_entry(type=STRENGTH, exerciseName="Bench Press", weightKg=80, reps=5)
+- "corri 10km em 45 minutos" → log_performance_entry(type=RUN, distanceKm=10, timeSeconds=2700)
+- "fiz um trail de 25km com 1200m de desnível em 3h30" → log_performance_entry(type=TRAIL, distanceKm=25, timeSeconds=12600, elevationGainM=1200)
+- "consegues gravar isso?" after telling you a lift → log_performance_entry
+- NEVER create a workout when the user just wants to record a performance. The create_workout tool is for creating FUTURE workout plans/templates with multiple exercises and blocks.
+- When you successfully log a performance, celebrate! Show the weight, reps, and whether it's a new PR 🏆
 
 ### Video Analyses (Motion & Lift)
 When users ask about "my analyses", "my videos", "análise de movimento", "análise de levantamento", "como está a minha técnica", "form check", "meus vídeos de treino", "my squat form" → use get_my_analyses.
@@ -237,6 +269,75 @@ When a user asks you to create a SINGLE WORKOUT (treino), you MUST follow this e
 
 NEVER call save_workout without the user explicitly confirming they want to save the workout.
 The [WORKOUT_PROPOSAL] marker is parsed by the frontend to show a "Save to my workouts" button. It will be hidden from the user.`;
+}
+
+// ============================================================================
+// Platform Knowledge Base
+// ============================================================================
+
+export interface PlatformInfoParams {
+  category?: string;
+  search?: string;
+}
+
+export async function getPlatformInfo(
+  params: PlatformInfoParams,
+  locale: string
+): Promise<string> {
+  const lang = (locale || "pt") as Language;
+
+  const where: Record<string, unknown> = {
+    isActive: true,
+  };
+
+  if (params.category) {
+    where.category = params.category;
+  }
+
+  // Try to find content in the user's language first, fallback to Portuguese
+  const articles = await prisma.platformKnowledge.findMany({
+    where: {
+      ...where,
+      language: lang,
+    },
+    orderBy: [{ priority: "desc" }, { category: "asc" }],
+  });
+
+  // If no results in user's language, fall back to Portuguese
+  const results =
+    articles.length > 0
+      ? articles
+      : await prisma.platformKnowledge.findMany({
+          where: {
+            ...where,
+            language: "pt",
+          },
+          orderBy: [{ priority: "desc" }, { category: "asc" }],
+        });
+
+  if (results.length === 0) {
+    return "No platform information found for this query.";
+  }
+
+  // If search term provided, filter by content/title match
+  let filtered = results;
+  if (params.search) {
+    const searchLower = params.search.toLowerCase();
+    filtered = results.filter(
+      (r) =>
+        r.title.toLowerCase().includes(searchLower) ||
+        r.content.toLowerCase().includes(searchLower) ||
+        r.category.toLowerCase().includes(searchLower)
+    );
+    if (filtered.length === 0) {
+      // If no search match, return all results for the category
+      filtered = results;
+    }
+  }
+
+  return filtered
+    .map((article) => `## ${article.title}\n\n${article.content}`)
+    .join("\n\n---\n\n");
 }
 
 // ============================================================================
@@ -1779,6 +1880,190 @@ export async function getUserPRs(
 }
 
 // ============================================================================
+// Log Performance Entry (PR / Record)
+// ============================================================================
+
+export interface LogPerformanceParams {
+  type: "STRENGTH" | "RUN" | "TRAIL";
+  // STRENGTH fields
+  exerciseName?: string;
+  weightKg?: number;
+  reps?: number;
+  // RUN/TRAIL fields
+  distanceKm?: number;
+  timeSeconds?: number;
+  elevationGainM?: number;
+  // Shared
+  eventName?: string;
+  location?: string;
+  date?: string; // ISO date string, defaults to now
+}
+
+/**
+ * Log a performance entry (strength PR, run time, trail time) directly.
+ * This allows users to say "I just did 100kg deadlift for 3 reps" and have it
+ * recorded in their Performance history — without creating a full workout.
+ */
+export async function logPerformanceEntry(
+  userId: string,
+  params: LogPerformanceParams
+): Promise<string> {
+  const { type } = params;
+
+  const performedAt = params.date ? new Date(params.date) : new Date();
+
+  // ── STRENGTH ──────────────────────────────────────────────────────────
+  if (type === "STRENGTH") {
+    if (!params.exerciseName) {
+      return JSON.stringify({
+        error: true,
+        message:
+          "Exercise name is required for STRENGTH entries. Please specify the exercise (e.g. 'Deadlift', 'Back Squat', 'Bench Press').",
+      });
+    }
+    if (!params.weightKg || params.weightKg <= 0) {
+      return JSON.stringify({
+        error: true,
+        message:
+          "Weight in kg is required for STRENGTH entries. Please specify the weight (e.g. 100).",
+      });
+    }
+
+    // Find the exercise by name (case-insensitive, also check aliases)
+    const exercise = await prisma.exercise.findFirst({
+      where: {
+        OR: [
+          { name: { equals: params.exerciseName, mode: "insensitive" } },
+          { aliases: { has: params.exerciseName } },
+          {
+            aliases: {
+              has: params.exerciseName.toLowerCase(),
+            },
+          },
+        ],
+      },
+    });
+
+    if (!exercise) {
+      return JSON.stringify({
+        error: true,
+        message: `Exercise "${params.exerciseName}" not found. Try common names like "Deadlift", "Back Squat", "Bench Press", "Overhead Press", "Clean", "Snatch", etc.`,
+      });
+    }
+
+    // Check if this beats the current PR
+    const bestEntry = await prisma.userPerformanceEntry.findFirst({
+      where: {
+        userId,
+        type: "STRENGTH",
+        exerciseId: exercise.id,
+        weightKg: { not: null },
+      },
+      orderBy: { weightKg: "desc" },
+    });
+
+    const currentBestE1rm = bestEntry
+      ? (bestEntry.weightKg ?? 0) * (1 + (bestEntry.reps ?? 1) / 30)
+      : 0;
+    const newE1rm = params.weightKg * (1 + (params.reps ?? 1) / 30);
+    const isNewPR = newE1rm > currentBestE1rm;
+
+    // Create the entry
+    const entry = await prisma.userPerformanceEntry.create({
+      data: {
+        userId,
+        type: "STRENGTH",
+        exerciseId: exercise.id,
+        weightKg: params.weightKg,
+        reps: params.reps ?? 1,
+        performedAt,
+        qualityScore: 0.5,
+        predictionWeight: 0.5,
+      },
+    });
+
+    return JSON.stringify({
+      success: true,
+      entryId: entry.id,
+      exercise: exercise.name,
+      weightKg: params.weightKg,
+      reps: params.reps ?? 1,
+      isNewPR,
+      previousBest: bestEntry
+        ? {
+            weightKg: bestEntry.weightKg,
+            reps: bestEntry.reps,
+            date: bestEntry.performedAt.toISOString().split("T")[0],
+          }
+        : null,
+      date: performedAt.toISOString().split("T")[0],
+      message: isNewPR
+        ? `🏆 NEW PR! ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps!`
+        : `✅ Recorded ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps.`,
+    });
+  }
+
+  // ── RUN / TRAIL ───────────────────────────────────────────────────────
+  if (type === "RUN" || type === "TRAIL") {
+    if (!params.distanceKm || params.distanceKm <= 0) {
+      return JSON.stringify({
+        error: true,
+        message:
+          "Distance in km is required for RUN/TRAIL entries. Please specify the distance.",
+      });
+    }
+
+    const entry = await prisma.userPerformanceEntry.create({
+      data: {
+        userId,
+        type,
+        distanceKm: params.distanceKm,
+        timeSeconds: params.timeSeconds ?? null,
+        elevationGainM:
+          type === "TRAIL" ? (params.elevationGainM ?? null) : null,
+        eventName: params.eventName ?? null,
+        location: params.location ?? null,
+        performedAt,
+        qualityScore: 0.5,
+        predictionWeight: 0.5,
+      },
+    });
+
+    // Format time nicely
+    let timeStr = "";
+    if (params.timeSeconds) {
+      const h = Math.floor(params.timeSeconds / 3600);
+      const m = Math.floor((params.timeSeconds % 3600) / 60);
+      const s = params.timeSeconds % 60;
+      timeStr =
+        h > 0
+          ? `${h}h${m.toString().padStart(2, "0")}m${s.toString().padStart(2, "0")}s`
+          : `${m}m${s.toString().padStart(2, "0")}s`;
+    }
+
+    return JSON.stringify({
+      success: true,
+      entryId: entry.id,
+      type,
+      distanceKm: params.distanceKm,
+      timeSeconds: params.timeSeconds ?? null,
+      timeFormatted: timeStr || null,
+      elevationGainM:
+        type === "TRAIL" ? (params.elevationGainM ?? null) : undefined,
+      eventName: params.eventName ?? null,
+      location: params.location ?? null,
+      date: performedAt.toISOString().split("T")[0],
+      message: `✅ Recorded ${type === "RUN" ? "run" : "trail"}: ${params.distanceKm}km${timeStr ? ` in ${timeStr}` : ""}${params.eventName ? ` (${params.eventName})` : ""}.`,
+    });
+  }
+
+  return JSON.stringify({
+    error: true,
+    message: "Invalid type. Use STRENGTH, RUN, or TRAIL.",
+  });
+}
+
+// ============================================================================
 // Giveaways
 // ============================================================================
 
@@ -2948,6 +3233,66 @@ export const athliTools = [
   },
   {
     type: "function" as const,
+    name: "log_performance_entry",
+    description:
+      "Log/record a performance entry directly — a strength PR, a run time, or a trail time. Use this when the user says they just did a lift (e.g. 'fiz deadlift 100kg 3 reps', 'acabei de fazer back squat 120kg', 'I just ran 10k in 45 minutes', 'fiz 5km em 22 minutos', 'corri um trail de 30km'). This saves the entry to their Performance/PR history. Do NOT create a workout — this is for quick logging directly into the user's personal records. IMPORTANT: When the user reports a lift they just did, ALWAYS use this tool, never create_workout.",
+    parameters: {
+      type: "object",
+      properties: {
+        type: {
+          type: "string",
+          enum: ["STRENGTH", "RUN", "TRAIL"],
+          description:
+            "Type: STRENGTH for gym lifts (deadlift, squat, bench), RUN for road running, TRAIL for trail running.",
+        },
+        exerciseName: {
+          type: "string",
+          description:
+            "Required for STRENGTH: exercise name (e.g. 'Deadlift', 'Back Squat', 'Bench Press', 'Clean', 'Snatch').",
+        },
+        weightKg: {
+          type: "number",
+          description: "Required for STRENGTH: weight in kg (e.g. 100).",
+        },
+        reps: {
+          type: "number",
+          description:
+            "For STRENGTH: number of reps (default 1 if not specified).",
+        },
+        distanceKm: {
+          type: "number",
+          description:
+            "Required for RUN/TRAIL: distance in km (e.g. 10, 5, 42.195).",
+        },
+        timeSeconds: {
+          type: "number",
+          description:
+            "For RUN/TRAIL: total time in seconds (e.g. 2700 for 45min). Convert from the user's input: '45 minutes' = 2700, '1h30' = 5400.",
+        },
+        elevationGainM: {
+          type: "number",
+          description: "For TRAIL only: elevation gain in meters.",
+        },
+        eventName: {
+          type: "string",
+          description:
+            "Optional: event/race name if this was done at a specific event.",
+        },
+        location: {
+          type: "string",
+          description: "Optional: location where it was done.",
+        },
+        date: {
+          type: "string",
+          description:
+            "Optional: ISO date string (YYYY-MM-DD). Defaults to today if not provided.",
+        },
+      },
+      required: ["type"],
+    },
+  },
+  {
+    type: "function" as const,
     name: "get_event_details",
     description:
       "Get detailed information about a specific event including variants, pricing phases, registration link, and FAQs. ALWAYS use this after search_events when the user wants details about a specific event (prices, distances, registration, etc.). Requires the event ID from search_events results.",
@@ -3403,6 +3748,34 @@ export const athliTools = [
         },
       },
       required: ["type", "title", "message"],
+    },
+  },
+  {
+    type: "function" as const,
+    name: "get_platform_info",
+    description:
+      "Get information about the Athlifyr platform itself — features, pricing, plans for venues/gyms, athlete features, how the platform works, etc. Use this when the user asks about Athlifyr's services, pricing, what Athlifyr offers, how to add their gym/box, venue management features, athlete tools, or any question about the platform itself. Categories: 'about' (what is Athlifyr), 'pricing' (plans and costs), 'features_venues' (features for gyms/boxes/studios), 'features_athletes' (features for athletes), 'faq' (common questions).",
+    parameters: {
+      type: "object",
+      properties: {
+        category: {
+          type: "string",
+          enum: [
+            "about",
+            "pricing",
+            "features_venues",
+            "features_athletes",
+            "faq",
+          ],
+          description:
+            "Filter by category: 'about' for general platform info, 'pricing' for plans and costs, 'features_venues' for gym/box/studio features, 'features_athletes' for athlete tools, 'faq' for common questions. Omit to get all platform info.",
+        },
+        search: {
+          type: "string",
+          description:
+            "Optional search term to find specific info (e.g. 'preço', 'ginásio', 'marcações', 'booking').",
+        },
+      },
     },
   },
 ];

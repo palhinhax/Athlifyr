@@ -2213,3 +2213,24 @@ enum AthliMessageRole {
   assistant
   system
 }
+
+// ============================================================================
+// PLATFORM KNOWLEDGE BASE (for Athli AI to answer questions about Athlifyr)
+// ============================================================================
+
+model PlatformKnowledge {
+  id        String   @id @default(cuid())
+  category  String   // e.g. "pricing", "features_venues", "features_athletes", "about", "faq"
+  slug      String   @unique // unique identifier e.g. "venue-pricing", "athlete-features"
+  title     String   // human-readable title
+  content   String   @db.Text // markdown content with detailed info
+  language  Language @default(pt) // language of the content
+  priority  Int      @default(0) // higher = more important, shown first
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([language])
+  @@index([isActive])
+}

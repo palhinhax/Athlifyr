@@ -108,6 +108,7 @@ interface ScheduleEvent {
   variantName: string | null;
   variantDistance: number | null;
   participationStatus: string;
+  cancelled: boolean;
 }
 
 const localeMap: Record<string, Locale> = {
@@ -623,66 +624,86 @@ function ScheduleEventCard({ event, locale }: ScheduleEventCardProps) {
 
   const eventDate = parseISO(event.startsAt);
   const dateLocale = localeMap[locale] || enUS;
+  const isCancelled = event.cancelled;
 
   return (
     <Link
       href={`/events/${event.eventSlug}`}
-      className="block cursor-pointer rounded-lg border bg-gradient-to-r from-accent/5 to-primary/5 p-4 transition-colors hover:from-accent/10 hover:to-primary/10"
+      className={cn(
+        "block cursor-pointer rounded-lg border p-4 transition-colors",
+        isCancelled
+          ? "border-destructive/30 bg-destructive/5 opacity-75 hover:bg-destructive/10"
+          : "bg-gradient-to-r from-accent/5 to-primary/5 hover:from-accent/10 hover:to-primary/10"
+      )}
     >
       <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          {/* Time */}
+        <div className="min-w-0 flex-1 space-y-1.5">
+          {/* Title */}
           <div className="flex items-center gap-2">
-            <CalendarIcon className="h-5 w-5 text-accent" />
-            <span className="text-lg font-bold text-accent">
-              {format(eventDate, "PPP", { locale: dateLocale })}
-            </span>
-            {event.startTime && (
-              <>
-                <span className="text-sm text-muted-foreground">•</span>
-                <span className="text-sm font-medium text-muted-foreground">
-                  {event.startTime}
-                </span>
-              </>
+            <h4
+              className={cn(
+                "text-base font-semibold leading-tight",
+                isCancelled && "text-muted-foreground line-through"
+              )}
+            >
+              {event.title}
+            </h4>
+            {isCancelled && (
+              <Badge
+                variant="destructive"
+                className="h-5 shrink-0 px-2 text-xs"
+              >
+                {tEvents("cancelled")}
+              </Badge>
             )}
           </div>
 
-          {/* Title */}
-          <h4 className="mt-2 text-lg font-semibold">{event.title}</h4>
+          {/* Date + time + registered badge in one line */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div
+              className={cn(
+                "flex items-center gap-1.5 text-sm font-medium",
+                isCancelled ? "text-muted-foreground" : "text-accent"
+              )}
+            >
+              <CalendarIcon className="h-3.5 w-3.5 shrink-0" />
+              <span>{format(eventDate, "PPP", { locale: dateLocale })}</span>
+            </div>
+            {event.startTime && (
+              <span className="text-xs text-muted-foreground">
+                {event.startTime}
+              </span>
+            )}
+            {!isCancelled && (
+              <Badge
+                variant="default"
+                className="h-5 bg-accent px-2 text-xs text-accent-foreground"
+              >
+                {tEvents("registered")}
+              </Badge>
+            )}
+          </div>
 
           {/* Variant */}
           {event.variantName && (
-            <div className="mt-1 flex items-center gap-2">
-              <Badge variant="secondary" className="text-xs">
-                {event.variantName}
-                {event.variantDistance && ` - ${event.variantDistance} km`}
+            <Badge variant="secondary" className="text-xs">
+              {event.variantName}
+              {event.variantDistance && ` - ${event.variantDistance} km`}
+            </Badge>
+          )}
+
+          {/* Location + sport types */}
+          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="h-3.5 w-3.5 shrink-0" />
+              {event.city}, {event.country}
+            </div>
+            {event.sportTypes.map((sport) => (
+              <Badge key={sport} variant="outline" className="h-5 px-2 text-xs">
+                {sport}
               </Badge>
-            </div>
-          )}
-
-          {/* Location */}
-          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            <MapPin className="h-4 w-4" />
-            {event.city}, {event.country}
+            ))}
           </div>
-
-          {/* Sport types */}
-          {event.sportTypes.length > 0 && (
-            <div className="mt-2 flex flex-wrap gap-1">
-              {event.sportTypes.map((sport) => (
-                <Badge key={sport} variant="outline" className="text-xs">
-                  {sport}
-                </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Status badge */}
-        <div className="shrink-0">
-          <Badge variant="default" className="bg-accent text-accent-foreground">
-            {tEvents("registered")}
-          </Badge>
         </div>
       </div>
     </Link>

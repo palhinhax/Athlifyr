@@ -1,5 +1,6 @@
 "use client";
 
+import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Search } from "lucide-react";
@@ -111,6 +112,12 @@ export default function NotFound() {
     // Select random video on mount
     const randomIndex = Math.floor(Math.random() * backgroundVideos.length);
     setVideoSrc(backgroundVideos[randomIndex]);
+
+    // Report 404 to Sentry so broken links and missing routes are visible
+    Sentry.captureMessage(`404 Not Found: ${window.location.pathname}`, {
+      level: "warning",
+      tags: { feature: "not-found" },
+    });
   }, []);
 
   const t = translations[locale];

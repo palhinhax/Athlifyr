@@ -1,7 +1,13 @@
+import * as Sentry from "@sentry/nextjs";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 
 export default function NotFound() {
+  Sentry.captureMessage("404 Not Found (locale route)", {
+    level: "warning",
+    tags: { feature: "not-found" },
+  });
+
   return (
     <div className="flex min-h-[60vh] flex-col items-center justify-center px-4">
       <h1 className="mb-4 text-6xl font-bold">404</h1>

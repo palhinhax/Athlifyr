@@ -182,8 +182,12 @@
       "description": "¡Gracias por contactarnos! Te responderemos por email lo antes posible."
     }
   },
+  "notFound": {
+    "heading": "Página no encontrada",
+    "description": "Lo sentimos, la página que buscas no existe o ha sido eliminada.",
+    "backHome": "Volver al inicio"
+  },
   "notifications": {
-    "notifications": "Notificaciones",
     "pending": "pendientes",
     "noNotifications": "Sin notificaciones",
     "trialRequests": "Solicitudes de Clase de Prueba",

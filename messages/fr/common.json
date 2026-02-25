@@ -182,6 +182,11 @@
       "description": "Merci de nous avoir contacté ! Nous vous répondrons par email dès que possible."
     }
   },
+  "notFound": {
+    "heading": "Page introuvable",
+    "description": "Désolé, la page que vous recherchez n'existe pas ou a été supprimée.",
+    "backHome": "Retour à l'accueil"
+  },
   "notifications": {
     "notifications": "Notifications",
     "pending": "en attente",

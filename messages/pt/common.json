@@ -182,6 +182,11 @@
       "description": "Obrigado pelo teu contacto! Vamos responder-te por email o mais rápido possível."
     }
   },
+  "notFound": {
+    "heading": "Página não encontrada",
+    "description": "Desculpe, a página que procura não existe ou foi removida.",
+    "backHome": "Voltar à Home"
+  },
   "notifications": {
     "notifications": "Notificações",
     "pending": "pendentes",

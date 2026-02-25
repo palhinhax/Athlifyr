@@ -33,7 +33,11 @@
     "test:e2e:member": "playwright test -g \"Atleta|Member\"",
     "test:e2e:free": "playwright test -g \"Free\"",
     "test:e2e:security": "playwright test -g \"Security\"",
-    "test:e2e:i18n": "playwright test -g \"Internationalization\""
+    "test:e2e:i18n": "playwright test -g \"Internationalization\"",
+    "live:dev": "cd live && pnpm dev",
+    "live:build": "cd live && pnpm build",
+    "live:start": "cd live && pnpm start",
+    "live:typecheck": "cd live && pnpm typecheck"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": [

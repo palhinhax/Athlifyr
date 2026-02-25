@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback } from "react";
 
 export interface Message {
   id: string;
@@ -48,47 +48,21 @@ async function fetchConversations(): Promise<Conversation[]> {
   return data.conversations || [];
 }
 
-// Fetch messages for a conversation
+// Fetch messages for a conversation (initial load only)
 async function fetchMessages(conversationId: string): Promise<Message[]> {
-  console.log(`[Chat] Fetching messages for conversation: ${conversationId}`);
-
   const response = await fetch(
     `/api/chat/conversations/${conversationId}/messages`
   );
 
-  console.log(`[Chat] Fetch messages response status: ${response.status}`);
-
   if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[Chat] Failed to fetch messages:`, errorText);
     throw new Error("Failed to fetch messages");
   }
 
   const data = await response.json();
-  console.log(`[Chat] Received ${data.messages?.length || 0} messages`);
-
   return data.messages || [];
 }
 
-// Poll for new messages after a given message ID
-async function pollMessages(
-  conversationId: string,
-  afterMessageId: string | null
-): Promise<Message[]> {
-  const params = new URLSearchParams();
-  if (afterMessageId) {
-    params.set("after", afterMessageId);
-  }
-
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages/poll?${params.toString()}`
-  );
-  if (!response.ok) throw new Error("Failed to poll messages");
-  const data = await response.json();
-  return data.messages || [];
-}
-
-// Send a message
+// Send a message via REST API (fallback when Socket.io is unavailable)
 async function sendMessageApi(
   conversationId: string,
   content: string
@@ -129,92 +103,31 @@ export function useConversations(enabled = true) {
   });
 }
 
-// Hook for chat messages with polling
+/**
+ * Hook for chat messages — initial fetch via REST, real-time updates via Socket.io.
+ *
+ * New messages are pushed into the query cache by useSocketChat (from socket-provider).
+ * No polling is used — the live server broadcasts events in real-time.
+ */
 export function useChatMessages(
   conversationId: string | null,
   options?: {
-    pollingInterval?: number;
     enabled?: boolean;
   }
 ) {
-  const { pollingInterval = 2000, enabled = true } = options || {};
+  const { enabled = true } = options || {};
   const queryClient = useQueryClient();
-  const lastMessageIdRef = useRef<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
 
-  // Initial messages fetch
+  // Initial messages fetch (one-time load)
   const messagesQuery = useQuery({
     queryKey: ["messages", conversationId],
-    queryFn: async () => {
-      console.log(`[Chat] Query starting for conversation: ${conversationId}`);
-      const result = await fetchMessages(conversationId!);
-      console.log(`[Chat] Query completed, got ${result.length} messages`);
-      return result;
-    },
+    queryFn: () => fetchMessages(conversationId!),
     enabled: enabled && !!conversationId,
-    staleTime: 0, // Always consider stale to enable refetch
-    retry: 1, // Only retry once
+    staleTime: Infinity, // Don't re-fetch — Socket.io handles updates
+    retry: 1,
   });
 
-  // Update lastMessageIdRef when messages load
-  useEffect(() => {
-    if (messagesQuery.data && messagesQuery.data.length > 0) {
-      lastMessageIdRef.current =
-        messagesQuery.data[messagesQuery.data.length - 1].id;
-    }
-  }, [messagesQuery.data]);
-
-  // Polling for new messages
-  useQuery({
-    queryKey: ["messages-poll", conversationId, lastMessageIdRef.current],
-    queryFn: async () => {
-      if (!conversationId) return [];
-      setIsPolling(true);
-      try {
-        const newMessages = await pollMessages(
-          conversationId,
-          lastMessageIdRef.current
-        );
-
-        if (newMessages.length > 0) {
-          // Update the main messages cache
-          queryClient.setQueryData<Message[]>(
-            ["messages", conversationId],
-            (old) => {
-              if (!old) return newMessages;
-
-              // Merge, avoiding duplicates
-              const existingIds = new Set(old.map((m) => m.id));
-              const uniqueNew = newMessages.filter(
-                (m) => !existingIds.has(m.id)
-              );
-
-              if (uniqueNew.length > 0) {
-                // Update lastMessageIdRef
-                lastMessageIdRef.current = uniqueNew[uniqueNew.length - 1].id;
-                return [...old, ...uniqueNew];
-              }
-              return old;
-            }
-          );
-        }
-
-        return newMessages;
-      } finally {
-        setIsPolling(false);
-      }
-    },
-    // Only enable polling when:
-    // 1. Chat is enabled
-    // 2. We have a conversation ID
-    // 3. Initial messages have successfully loaded
-    enabled: enabled && !!conversationId && messagesQuery.isSuccess,
-    refetchInterval: pollingInterval,
-    refetchIntervalInBackground: false,
-    staleTime: 0,
-  });
-
-  // Send message mutation
+  // Send message mutation (REST fallback — Socket.io is primary via useSocketChat)
   const sendMessageMutation = useMutation({
     mutationFn: ({ content }: { content: string }) => {
       if (!conversationId) throw new Error("No conversation selected");
@@ -227,7 +140,7 @@ export function useChatMessages(
         (old) => {
           if (!old) return [newMessage];
 
-          // Check if already exists (avoid duplicate)
+          // Check if already exists (avoid duplicate from Socket.io)
           const exists = old.some(
             (m) =>
               m.id === newMessage.id ||
@@ -251,10 +164,7 @@ export function useChatMessages(
         }
       );
 
-      // Update lastMessageIdRef
-      lastMessageIdRef.current = newMessage.id;
-
-      // Also invalidate conversations to update last message preview
+      // Update conversations list
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
@@ -290,8 +200,7 @@ export function useChatMessages(
   return {
     messages: messagesQuery.data || [],
     isLoading: messagesQuery.isLoading,
-    isConnected:
-      !messagesQuery.isError && (messagesQuery.isSuccess || isPolling),
+    isConnected: !messagesQuery.isError && messagesQuery.isSuccess,
     error: messagesQuery.error?.message || null,
     sendMessage: sendMessageMutation.mutateAsync,
     isSending: sendMessageMutation.isPending,

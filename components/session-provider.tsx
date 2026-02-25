@@ -4,6 +4,7 @@ import { SessionProvider as NextAuthSessionProvider } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SocketProvider } from "@/providers/socket-provider";
 
 function SessionSync() {
   const { data: session } = useSession();
@@ -37,7 +38,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <NextAuthSessionProvider>
         <SessionSync />
-        {children}
+        <SocketProvider>{children}</SocketProvider>
       </NextAuthSessionProvider>
     </QueryClientProvider>
   );

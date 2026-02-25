@@ -111,8 +111,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       country: "Portugal",
       latitude: 39.0912,
       longitude: -9.2584,
-      googleMapsUrl:
-        "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
+      googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
       externalUrl: "",
       imageUrl: "",
       isFeatured: false,
@@ -129,8 +128,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       country: "Portugal",
       latitude: 39.0912,
       longitude: -9.2584,
-      googleMapsUrl:
-        "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
+      googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
       externalUrl: "",
       imageUrl: "",
       isFeatured: false,
@@ -701,9 +699,7 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     currency: Currency.EUR,
   });
 
-  console.log(
-    "🏋️ All 10 variants upserted (5 Full Race + 5 Sprint)"
-  );
+  console.log("🏋️ All 10 variants upserted (5 Full Race + 5 Sprint)");
 
   // Step 4: Upsert pricing phases using helper function
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -748,9 +744,7 @@ La West Fitness Race è una competizione incentrata su **resistenza e forza**, d
     note: "Preço para todas as provas de duplas (Full Race e Sprint) — por equipa",
   });
 
-  console.log(
-    "💰 Pricing phases upserted (Individual €50 / Duplas €90)"
-  );
+  console.log("💰 Pricing phases upserted (Individual €50 / Duplas €90)");
 
   // Step 5: FAQs
   const findOrCreateFAQ = async (

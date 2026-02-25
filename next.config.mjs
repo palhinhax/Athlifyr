@@ -1,4 +1,4 @@
-import { withSentryConfig } from '@sentry/nextjs';
+import { withSentryConfig } from "@sentry/nextjs";
 import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
@@ -20,54 +20,56 @@ const ContentSecurityPolicy = `
   worker-src 'self' blob:;
   manifest-src 'self';
   ${process.env.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}
-`.replace(/\s{2,}/g, ' ').trim();
+`
+  .replace(/\s{2,}/g, " ")
+  .trim();
 
 // Security headers for all routes
 const securityHeaders = [
   // Content Security Policy - prevents XSS attacks
   {
-    key: 'Content-Security-Policy',
+    key: "Content-Security-Policy",
     value: ContentSecurityPolicy,
   },
   // Strict Transport Security - forces HTTPS
   {
-    key: 'Strict-Transport-Security',
-    value: 'max-age=63072000; includeSubDomains; preload',
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains; preload",
   },
   // Cross-Origin-Opener-Policy - isolates window from other documents
   {
-    key: 'Cross-Origin-Opener-Policy',
-    value: 'same-origin',
+    key: "Cross-Origin-Opener-Policy",
+    value: "same-origin",
   },
   // Cross-Origin-Embedder-Policy - controls cross-origin requests
   {
-    key: 'Cross-Origin-Embedder-Policy',
-    value: 'credentialless',
+    key: "Cross-Origin-Embedder-Policy",
+    value: "credentialless",
   },
   // X-Frame-Options - prevents clickjacking (legacy, CSP frame-ancestors is preferred)
   {
-    key: 'X-Frame-Options',
-    value: 'DENY',
+    key: "X-Frame-Options",
+    value: "DENY",
   },
   // X-Content-Type-Options - prevents MIME type sniffing
   {
-    key: 'X-Content-Type-Options',
-    value: 'nosniff',
+    key: "X-Content-Type-Options",
+    value: "nosniff",
   },
   // Referrer-Policy - controls what information is sent with requests
   {
-    key: 'Referrer-Policy',
-    value: 'strict-origin-when-cross-origin',
+    key: "Referrer-Policy",
+    value: "strict-origin-when-cross-origin",
   },
   // X-DNS-Prefetch-Control - controls DNS prefetching
   {
-    key: 'X-DNS-Prefetch-Control',
-    value: 'on',
+    key: "X-DNS-Prefetch-Control",
+    value: "on",
   },
   // Permissions-Policy - controls browser features
   {
-    key: 'Permissions-Policy',
-    value: 'camera=(), microphone=(), geolocation=(self), interest-cohort=()',
+    key: "Permissions-Policy",
+    value: "camera=(), microphone=(), geolocation=(self), interest-cohort=()",
   },
 ];
 
@@ -146,13 +148,13 @@ const nextConfig = {
     return [
       {
         // Apply security headers to all routes
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           ...securityHeaders,
           // Enable browser JS profiling for Sentry
           {
-            key: 'Document-Policy',
-            value: 'js-profiling',
+            key: "Document-Policy",
+            value: "js-profiling",
           },
         ],
       },

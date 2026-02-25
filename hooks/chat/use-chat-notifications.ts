@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
+import { useSocket } from "@/providers/socket-provider";
 
 interface ChatNotification {
   id: string;
@@ -19,11 +20,10 @@ interface NotificationsResponse {
   unreadCount: number;
 }
 
-// Fetch notifications from API
+// Fetch notifications from API (initial load)
 async function fetchNotifications(): Promise<NotificationsResponse> {
   const response = await fetch("/api/chat/notifications");
   if (!response.ok) {
-    // Return empty if not found or error
     return { notifications: [], unreadCount: 0 };
   }
   return response.json();
@@ -56,21 +56,44 @@ interface UseChatNotificationsOptions {
   enabled?: boolean;
 }
 
+/**
+ * Chat notifications hook — initial fetch via REST, real-time updates via Socket.io.
+ *
+ * The useSocketChat hook invalidates the "chat-notifications" query key when
+ * a new message arrives for a conversation that isn't currently active,
+ * so this hook stays up-to-date without polling.
+ */
 export function useChatNotifications(
   options: UseChatNotificationsOptions = {}
 ) {
   const { enabled = true } = options;
   const queryClient = useQueryClient();
+  const { socket, isConnected } = useSocket();
 
-  // Query for notifications with polling
+  // Query for notifications — NO polling, Socket.io handles updates
   const { data, isLoading, error } = useQuery({
     queryKey: ["chat-notifications"],
     queryFn: fetchNotifications,
     enabled,
-    refetchInterval: 10000, // Poll every 10 seconds for notifications
-    refetchIntervalInBackground: true,
-    staleTime: 5000,
+    staleTime: 30 * 1000, // 30 seconds
+    refetchOnWindowFocus: true,
   });
+
+  // Listen for incoming messages on any conversation (for notification badge)
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleMessage = () => {
+      // Invalidate notifications to re-fetch unread count
+      queryClient.invalidateQueries({ queryKey: ["chat-notifications"] });
+    };
+
+    socket.on("chat:message", handleMessage);
+
+    return () => {
+      socket.off("chat:message", handleMessage);
+    };
+  }, [socket, isConnected, queryClient]);
 
   // Mark as read mutation
   const markAsReadMutation = useMutation({

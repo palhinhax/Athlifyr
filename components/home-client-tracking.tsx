@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { analyticsEvent } from "@/lib/analytics";
@@ -35,14 +36,18 @@ export function HomeCtaSection({
     });
   };
 
-  // Select hero image based on the current day to avoid hydration mismatch
-  // This ensures the same image is shown on both server and client
-  const today = new Date();
-  const dayOfYear = Math.floor(
-    (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
-      (1000 * 60 * 60 * 24)
-  );
-  const heroImage = CTA_HERO_IMAGES[dayOfYear % CTA_HERO_IMAGES.length];
+  // Select hero image client-side only to avoid hydration mismatch
+  // (server UTC timezone vs client local timezone can produce different days)
+  const [heroImage, setHeroImage] = useState<string>(CTA_HERO_IMAGES[0]);
+
+  useEffect(() => {
+    const today = new Date();
+    const dayOfYear = Math.floor(
+      (today.getTime() - new Date(today.getFullYear(), 0, 0).getTime()) /
+        (1000 * 60 * 60 * 24)
+    );
+    setHeroImage(CTA_HERO_IMAGES[dayOfYear % CTA_HERO_IMAGES.length]);
+  }, []);
 
   return (
     <HeroBackground image={heroImage} className="mt-12" overlayOpacity="dark">

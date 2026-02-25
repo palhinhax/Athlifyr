@@ -250,7 +250,7 @@
     },
     "services": {
       "CROSSFIT": "CrossFit",
-      "Hybrid": "HYBRID",
+      "HYROX": "HYROX",
       "WEIGHTLIFTING": "Levantamiento de Pesas",
       "POWERLIFTING": "Powerlifting",
       "OLYMPIC_LIFTING": "Halterofilia",

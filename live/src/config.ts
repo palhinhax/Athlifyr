@@ -44,3 +44,11 @@ export const config = {
 } as const;
 
 export type Config = typeof config;
+
+// Warn if JWT secret is missing (common cause of 401 errors)
+if (!config.jwtSecret) {
+  console.warn(
+    "⚠️  WARNING: jwtSecret is empty — JWT authentication will fail!",
+    "\n   Ensure NEXTAUTH_SECRET or JWT_SECRET is set in your .env or environment."
+  );
+}

@@ -9,11 +9,15 @@ export interface Message {
   senderId: string;
   content: string;
   createdAt: Date;
-  sender: {
+  // Nested sender object (from Next.js API / GET messages)
+  sender?: {
     id: string;
     name: string | null;
     image: string | null;
   };
+  // Flat sender fields (from live server ChatMessageEvent / POST message)
+  senderName?: string | null;
+  senderImage?: string | null;
 }
 
 interface Conversation {
@@ -75,7 +79,10 @@ async function liveFetch<T>(
   }
 
   try {
-    const response = await fetch(`${LIVE_CHAT_BASE}${path}`, {
+    const url = `${LIVE_CHAT_BASE}${path}`;
+    console.log(`[LiveChat] ${options.method ?? "GET"} ${url}`);
+
+    const response = await fetch(url, {
       method: options.method ?? "GET",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -85,11 +92,19 @@ async function liveFetch<T>(
     });
 
     if (!response.ok) {
-      throw new Error("Live chat request failed");
+      const errorBody = await response.text().catch(() => "");
+      console.error(
+        `[LiveChat] Request failed: ${response.status} ${response.statusText}`,
+        errorBody
+      );
+      throw new Error(
+        `Live chat request failed: ${response.status} ${response.statusText}`
+      );
     }
     return (await response.json()) as T;
-  } catch {
-    throw new Error("Live chat request failed");
+  } catch (err) {
+    console.error("[LiveChat] Fetch error:", err);
+    throw err instanceof Error ? err : new Error("Live chat request failed");
   }
 }
 

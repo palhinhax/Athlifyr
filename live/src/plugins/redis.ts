@@ -8,6 +8,13 @@ import { config } from "../config.js";
 let redisInstance: Redis | null = null;
 let redisPubInstance: Redis | null = null;
 let redisSubInstance: Redis | null = null;
+let redisAvailable = false;
+let redisErrorLogged = false;
+
+/** Whether Redis is currently available */
+export function isRedisAvailable(): boolean {
+  return redisAvailable;
+}
 
 /** Main Redis client (commands) */
 export function getRedis(): Redis {
@@ -16,18 +23,35 @@ export function getRedis(): Redis {
       keyPrefix: config.redis.keyPrefix,
       maxRetriesPerRequest: 3,
       retryStrategy(times) {
+        // Stop retrying after 5 attempts in development without Redis
+        if (times > 5) {
+          if (!redisErrorLogged) {
+            console.warn("[Redis] Max retries reached — running without Redis");
+            redisErrorLogged = true;
+          }
+          return null; // Stop retrying
+        }
         const delay = Math.min(times * 200, 5000);
         return delay;
       },
       lazyConnect: true,
     });
 
-    redisInstance.on("error", (err) => {
-      console.error("[Redis] Connection error:", err.message);
+    redisInstance.on("error", () => {
+      // Only log once to avoid spamming console
+      if (!redisErrorLogged) {
+        console.error(
+          "[Redis] Connection failed — features requiring Redis will be disabled"
+        );
+        redisErrorLogged = true;
+      }
+      redisAvailable = false;
     });
 
     redisInstance.on("connect", () => {
       console.log("[Redis] Connected");
+      redisAvailable = true;
+      redisErrorLogged = false;
     });
   }
   return redisInstance;
@@ -78,6 +102,7 @@ const ONLINE_KEY = "users:online";
 const ONLINE_TTL = 300; // 5 minutes
 
 export async function setUserOnline(userId: string): Promise<void> {
+  if (!redisAvailable) return;
   const redis = getRedis();
   await redis.sadd(ONLINE_KEY, userId);
   // Also set a per-user key with TTL for heartbeat expiry
@@ -85,18 +110,21 @@ export async function setUserOnline(userId: string): Promise<void> {
 }
 
 export async function setUserOffline(userId: string): Promise<void> {
+  if (!redisAvailable) return;
   const redis = getRedis();
   await redis.srem(ONLINE_KEY, userId);
   await redis.del(`user:${userId}:online`);
 }
 
 export async function isUserOnline(userId: string): Promise<boolean> {
+  if (!redisAvailable) return false;
   const redis = getRedis();
   const result = await redis.exists(`user:${userId}:online`);
   return result === 1;
 }
 
 export async function getOnlineUsers(): Promise<string[]> {
+  if (!redisAvailable) return [];
   const redis = getRedis();
   return redis.smembers(ONLINE_KEY);
 }
@@ -108,6 +136,7 @@ export async function setTyping(
   userId: string,
   isTyping: boolean
 ): Promise<void> {
+  if (!redisAvailable) return;
   const redis = getRedis();
   const key = `typing:${conversationId}`;
   if (isTyping) {

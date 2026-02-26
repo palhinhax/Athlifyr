@@ -8,6 +8,9 @@
 // This server is a real-time layer only (WebSockets + Redis).
 // ============================================================================
 
+// ⚠️ MUST be first import — loads .env before any module reads process.env
+import "./env.js";
+
 import { buildServer } from "./server.js";
 import { createSocketServer } from "./plugins/socket.js";
 import { getRedis, disconnectRedis } from "./plugins/redis.js";

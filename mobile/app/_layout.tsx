@@ -11,6 +11,7 @@ import { I18nextProvider } from "react-i18next";
 import i18n from "@/src/lib/i18n";
 import { initIntegrity } from "@/src/lib/integrity";
 import { useAuthStore } from "@/src/lib/auth-store";
+import { SocketProvider } from "@/src/hooks/useSocket";
 
 // ── React Query + React Native AppState integration ────────────────────
 // By default, refetchOnWindowFocus only works in browsers.
@@ -41,43 +42,54 @@ export default function RootLayout() {
   return (
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
-        <Stack
-          screenOptions={{
-            headerShown: true,
-            animation: "slide_from_right",
-          }}
-        >
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="login"
-            options={{ headerShown: false, presentation: "modal" }}
-          />
-          <Stack.Screen
-            name="register"
-            options={{ headerShown: false, presentation: "modal" }}
-          />
-          <Stack.Screen
-            name="forgot-password"
-            options={{ headerShown: false, presentation: "modal" }}
-          />
-          <Stack.Screen name="notifications" options={{ headerShown: false }} />
-          <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
-          <Stack.Screen name="workout/[id]" options={{ headerShown: false }} />
-          <Stack.Screen name="record-lift" options={{ headerShown: false }} />
-          <Stack.Screen name="lift-analysis" options={{ headerShown: false }} />
-          <Stack.Screen
-            name="motion-analysis"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="motion-analyses"
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="motion-analysis-view"
-            options={{ headerShown: false }}
-          />
-        </Stack>
+        <SocketProvider>
+          <Stack
+            screenOptions={{
+              headerShown: true,
+              animation: "slide_from_right",
+            }}
+          >
+            <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="login"
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="register"
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="forgot-password"
+              options={{ headerShown: false, presentation: "modal" }}
+            />
+            <Stack.Screen
+              name="notifications"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="my-schedule" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="workout/[id]"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen name="record-lift" options={{ headerShown: false }} />
+            <Stack.Screen
+              name="lift-analysis"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="motion-analysis"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="motion-analyses"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="motion-analysis-view"
+              options={{ headerShown: false }}
+            />
+          </Stack>
+        </SocketProvider>
       </I18nextProvider>
     </QueryClientProvider>
   );

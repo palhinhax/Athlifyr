@@ -4,6 +4,7 @@ import { format } from "date-fns";
 import { theme } from "@/src/constants/theme";
 import { CachedAvatar } from "@/src/components/CachedImage";
 import type { Message } from "@/src/api/chat";
+import { getMessageSender } from "@/src/api/chat";
 
 interface ChatMessageProps {
   message: Message;
@@ -11,6 +12,8 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message, isOwnMessage }: ChatMessageProps) {
+  const sender = getMessageSender(message);
+
   const getInitials = (name: string | null) => {
     if (!name) return "?";
     return name
@@ -37,18 +40,16 @@ export function ChatMessage({ message, isOwnMessage }: ChatMessageProps) {
       {/* Avatar - only show for other user's messages */}
       {!isOwnMessage && (
         <View style={styles.avatarContainer}>
-          {message.sender.image ? (
+          {sender.image ? (
             <CachedAvatar
-              uri={message.sender.image}
+              uri={sender.image}
               style={styles.avatar}
-              alt={message.sender.name || "User"}
+              alt={sender.name || "User"}
               size={32}
             />
           ) : (
             <View style={[styles.avatar, styles.avatarPlaceholder]}>
-              <Text style={styles.avatarText}>
-                {getInitials(message.sender.name)}
-              </Text>
+              <Text style={styles.avatarText}>{getInitials(sender.name)}</Text>
             </View>
           )}
         </View>

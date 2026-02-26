@@ -37,6 +37,11 @@
       "h": "h",
       "m": "m",
       "s": "s"
+    },
+    "notFound": {
+      "heading": "Seite nicht gefunden",
+      "description": "Entschuldigung, die gesuchte Seite existiert nicht oder wurde entfernt.",
+      "backHome": "Zurück zur Startseite"
     }
   },
   "upload": {
@@ -181,11 +186,6 @@
       "title": "Nachricht Gesendet! 🎉",
       "description": "Danke für deine Nachricht! Wir antworten dir so schnell wie möglich per E-Mail."
     }
-  },
-  "notFound": {
-    "heading": "Seite nicht gefunden",
-    "description": "Entschuldigung, die gesuchte Seite existiert nicht oder wurde entfernt.",
-    "backHome": "Zurück zur Startseite"
   },
   "notifications": {
     "notifications": "Benachrichtigungen",

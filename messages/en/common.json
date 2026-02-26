@@ -37,6 +37,11 @@
       "h": "h",
       "m": "m",
       "s": "s"
+    },
+    "notFound": {
+      "heading": "Page not found",
+      "description": "Sorry, the page you are looking for does not exist or has been removed.",
+      "backHome": "Back to Home"
     }
   },
   "upload": {
@@ -181,11 +186,6 @@
       "title": "Message Sent! 🎉",
       "description": "Thanks for reaching out! We'll reply to your email as soon as possible."
     }
-  },
-  "notFound": {
-    "heading": "Page not found",
-    "description": "Sorry, the page you are looking for does not exist or has been removed.",
-    "backHome": "Back to Home"
   },
   "notifications": {
     "notifications": "Notifications",

@@ -16,10 +16,22 @@ interface Message {
   senderId: string;
   content: string;
   createdAt: Date;
-  sender: {
+  // Nested sender object (from Next.js API / GET messages)
+  sender?: {
     id: string;
     name: string | null;
     image: string | null;
+  };
+  // Flat sender fields (from live server ChatMessageEvent / POST message)
+  senderName?: string | null;
+  senderImage?: string | null;
+}
+
+/** Safely extract sender info from a message (handles both nested and flat formats) */
+function getSender(message: Message) {
+  return {
+    name: message.sender?.name ?? message.senderName ?? null,
+    image: message.sender?.image ?? message.senderImage ?? null,
   };
 }
 
@@ -148,6 +160,7 @@ export function ChatWindow({
           <div className="space-y-3 sm:space-y-4">
             {messages.map((message) => {
               const isOwnMessage = message.senderId === currentUserId;
+              const sender = getSender(message);
               return (
                 <div
                   key={message.id}
@@ -164,11 +177,11 @@ export function ChatWindow({
                     )}
                   >
                     <AvatarImage
-                      src={message.sender.image || undefined}
-                      alt={message.sender.name || "User"}
+                      src={sender.image || undefined}
+                      alt={sender.name || "User"}
                     />
                     <AvatarFallback className="text-xs">
-                      {getInitials(message.sender.name)}
+                      {getInitials(sender.name)}
                     </AvatarFallback>
                   </Avatar>
                   <div

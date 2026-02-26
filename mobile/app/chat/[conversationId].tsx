@@ -47,8 +47,11 @@ export default function ChatScreen() {
     isSending,
     addOptimisticMessage,
     removeOptimisticMessage,
+    typingUsers,
+    markSeen,
   } = useChatMessages(conversationId || null, {
     enabled: !!conversationId && !!user,
+    currentUserId: user?.id,
   });
 
   // Auto-scroll to bottom when new messages arrive
@@ -59,6 +62,13 @@ export default function ChatScreen() {
       }, SCROLL_DELAY_MS);
     }
   }, [messages.length]);
+
+  // Mark conversation as seen when entering and when new messages arrive
+  useEffect(() => {
+    if (conversationId && user && messages.length > 0) {
+      markSeen();
+    }
+  }, [conversationId, user, messages.length, markSeen]);
 
   // Group messages with date separators
   const messageItems = useMemo<MessageItem[]>(() => {
@@ -246,6 +256,18 @@ export default function ChatScreen() {
         />
       )}
 
+      {/* Typing indicator */}
+      {typingUsers.length > 0 && (
+        <View style={styles.typingContainer}>
+          <Text style={styles.typingText}>
+            {typingUsers
+              .map((u) => u.userName || t("chat.unknownUser"))
+              .join(", ")}{" "}
+            {t("chat.typing")}
+          </Text>
+        </View>
+      )}
+
       {/* Input */}
       <ChatInput
         onSend={handleSendMessage}
@@ -285,6 +307,15 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: "500",
+  },
+  typingContainer: {
+    paddingHorizontal: 16,
+    paddingVertical: 6,
+  },
+  typingText: {
+    fontSize: theme.typography.fontSize.xs,
+    color: theme.colors.textSecondary,
+    fontStyle: "italic",
   },
   messagesList: {
     paddingVertical: 16,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useCallback, useRef, useState, useEffect } from "react";
+import { useCallback } from "react";
 
 export interface Message {
   id: string;
@@ -9,11 +9,15 @@ export interface Message {
   senderId: string;
   content: string;
   createdAt: Date;
-  sender: {
+  // Nested sender object (from Next.js API / GET messages)
+  sender?: {
     id: string;
     name: string | null;
     image: string | null;
   };
+  // Flat sender fields (from live server ChatMessageEvent / POST message)
+  senderName?: string | null;
+  senderImage?: string | null;
 }
 
 interface Conversation {
@@ -40,83 +44,110 @@ interface Conversation {
   updatedAt: Date;
 }
 
+const LIVE_SERVER_URL = process.env.NEXT_PUBLIC_LIVE_URL;
+const LIVE_CHAT_BASE = LIVE_SERVER_URL
+  ? `${LIVE_SERVER_URL.replace(/\/$/, "")}/api/chat`
+  : null;
+
+interface LiveFetchOptions {
+  method?: "GET" | "POST";
+  body?: Record<string, unknown>;
+}
+
+async function fetchLiveToken(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/auth/live-token");
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token?: string };
+    return data.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function liveFetch<T>(
+  path: string,
+  options: LiveFetchOptions = {}
+): Promise<T> {
+  if (!LIVE_CHAT_BASE) {
+    throw new Error("Live server URL not configured");
+  }
+
+  const token = await fetchLiveToken();
+  if (!token) {
+    throw new Error("Failed to obtain live token");
+  }
+
+  try {
+    const url = `${LIVE_CHAT_BASE}${path}`;
+    console.log(`[LiveChat] ${options.method ?? "GET"} ${url}`);
+
+    const response = await fetch(url, {
+      method: options.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      const errorBody = await response.text().catch(() => "");
+      console.error(
+        `[LiveChat] Request failed: ${response.status} ${response.statusText}`,
+        errorBody
+      );
+      throw new Error(
+        `Live chat request failed: ${response.status} ${response.statusText}`
+      );
+    }
+    return (await response.json()) as T;
+  } catch (err) {
+    console.error("[LiveChat] Fetch error:", err);
+    throw err instanceof Error ? err : new Error("Live chat request failed");
+  }
+}
+
 // Fetch conversations list
 async function fetchConversations(): Promise<Conversation[]> {
-  const response = await fetch("/api/chat/conversations");
-  if (!response.ok) throw new Error("Failed to fetch conversations");
-  const data = await response.json();
-  return data.conversations || [];
+  const liveData = await liveFetch<{ conversations: Conversation[] }>(
+    "/conversations"
+  );
+  return liveData.conversations || [];
 }
 
-// Fetch messages for a conversation
+// Fetch messages for a conversation (initial load only)
 async function fetchMessages(conversationId: string): Promise<Message[]> {
-  console.log(`[Chat] Fetching messages for conversation: ${conversationId}`);
-
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages`
+  const liveData = await liveFetch<{ messages: Message[] }>(
+    `/conversations/${conversationId}/messages`
   );
-
-  console.log(`[Chat] Fetch messages response status: ${response.status}`);
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error(`[Chat] Failed to fetch messages:`, errorText);
-    throw new Error("Failed to fetch messages");
-  }
-
-  const data = await response.json();
-  console.log(`[Chat] Received ${data.messages?.length || 0} messages`);
-
-  return data.messages || [];
+  return liveData.messages || [];
 }
 
-// Poll for new messages after a given message ID
-async function pollMessages(
-  conversationId: string,
-  afterMessageId: string | null
-): Promise<Message[]> {
-  const params = new URLSearchParams();
-  if (afterMessageId) {
-    params.set("after", afterMessageId);
-  }
-
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages/poll?${params.toString()}`
-  );
-  if (!response.ok) throw new Error("Failed to poll messages");
-  const data = await response.json();
-  return data.messages || [];
-}
-
-// Send a message
+// Send a message via REST API (fallback when Socket.io is unavailable)
 async function sendMessageApi(
   conversationId: string,
   content: string
 ): Promise<Message> {
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages`,
+  const liveData = await liveFetch<{ message: Message }>(
+    `/conversations/${conversationId}/messages`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: { content },
     }
   );
-  if (!response.ok) throw new Error("Failed to send message");
-  const data = await response.json();
-  return data.message;
+
+  return liveData.message;
 }
 
 // Create or get conversation
 async function createConversation(
   otherUserId: string
 ): Promise<{ conversation: Conversation }> {
-  const response = await fetch("/api/chat/conversations", {
+  return liveFetch<{ conversation: Conversation }>("/conversations", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ otherUserId }),
+    body: { otherUserId },
   });
-  if (!response.ok) throw new Error("Failed to create conversation");
-  return response.json();
 }
 
 // Hook for conversations list
@@ -129,92 +160,31 @@ export function useConversations(enabled = true) {
   });
 }
 
-// Hook for chat messages with polling
+/**
+ * Hook for chat messages — initial fetch via REST, real-time updates via Socket.io.
+ *
+ * New messages are pushed into the query cache by useSocketChat (from socket-provider).
+ * No polling is used — the live server broadcasts events in real-time.
+ */
 export function useChatMessages(
   conversationId: string | null,
   options?: {
-    pollingInterval?: number;
     enabled?: boolean;
   }
 ) {
-  const { pollingInterval = 2000, enabled = true } = options || {};
+  const { enabled = true } = options || {};
   const queryClient = useQueryClient();
-  const lastMessageIdRef = useRef<string | null>(null);
-  const [isPolling, setIsPolling] = useState(false);
 
-  // Initial messages fetch
+  // Initial messages fetch (one-time load)
   const messagesQuery = useQuery({
     queryKey: ["messages", conversationId],
-    queryFn: async () => {
-      console.log(`[Chat] Query starting for conversation: ${conversationId}`);
-      const result = await fetchMessages(conversationId!);
-      console.log(`[Chat] Query completed, got ${result.length} messages`);
-      return result;
-    },
+    queryFn: () => fetchMessages(conversationId!),
     enabled: enabled && !!conversationId,
-    staleTime: 0, // Always consider stale to enable refetch
-    retry: 1, // Only retry once
+    staleTime: Infinity, // Don't re-fetch — Socket.io handles updates
+    retry: 1,
   });
 
-  // Update lastMessageIdRef when messages load
-  useEffect(() => {
-    if (messagesQuery.data && messagesQuery.data.length > 0) {
-      lastMessageIdRef.current =
-        messagesQuery.data[messagesQuery.data.length - 1].id;
-    }
-  }, [messagesQuery.data]);
-
-  // Polling for new messages
-  useQuery({
-    queryKey: ["messages-poll", conversationId, lastMessageIdRef.current],
-    queryFn: async () => {
-      if (!conversationId) return [];
-      setIsPolling(true);
-      try {
-        const newMessages = await pollMessages(
-          conversationId,
-          lastMessageIdRef.current
-        );
-
-        if (newMessages.length > 0) {
-          // Update the main messages cache
-          queryClient.setQueryData<Message[]>(
-            ["messages", conversationId],
-            (old) => {
-              if (!old) return newMessages;
-
-              // Merge, avoiding duplicates
-              const existingIds = new Set(old.map((m) => m.id));
-              const uniqueNew = newMessages.filter(
-                (m) => !existingIds.has(m.id)
-              );
-
-              if (uniqueNew.length > 0) {
-                // Update lastMessageIdRef
-                lastMessageIdRef.current = uniqueNew[uniqueNew.length - 1].id;
-                return [...old, ...uniqueNew];
-              }
-              return old;
-            }
-          );
-        }
-
-        return newMessages;
-      } finally {
-        setIsPolling(false);
-      }
-    },
-    // Only enable polling when:
-    // 1. Chat is enabled
-    // 2. We have a conversation ID
-    // 3. Initial messages have successfully loaded
-    enabled: enabled && !!conversationId && messagesQuery.isSuccess,
-    refetchInterval: pollingInterval,
-    refetchIntervalInBackground: false,
-    staleTime: 0,
-  });
-
-  // Send message mutation
+  // Send message mutation (REST fallback — Socket.io is primary via useSocketChat)
   const sendMessageMutation = useMutation({
     mutationFn: ({ content }: { content: string }) => {
       if (!conversationId) throw new Error("No conversation selected");
@@ -227,7 +197,7 @@ export function useChatMessages(
         (old) => {
           if (!old) return [newMessage];
 
-          // Check if already exists (avoid duplicate)
+          // Check if already exists (avoid duplicate from Socket.io)
           const exists = old.some(
             (m) =>
               m.id === newMessage.id ||
@@ -251,10 +221,7 @@ export function useChatMessages(
         }
       );
 
-      // Update lastMessageIdRef
-      lastMessageIdRef.current = newMessage.id;
-
-      // Also invalidate conversations to update last message preview
+      // Update conversations list
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
     },
   });
@@ -290,8 +257,7 @@ export function useChatMessages(
   return {
     messages: messagesQuery.data || [],
     isLoading: messagesQuery.isLoading,
-    isConnected:
-      !messagesQuery.isError && (messagesQuery.isSuccess || isPolling),
+    isConnected: !messagesQuery.isError && messagesQuery.isSuccess,
     error: messagesQuery.error?.message || null,
     sendMessage: sendMessageMutation.mutateAsync,
     isSending: sendMessageMutation.isPending,

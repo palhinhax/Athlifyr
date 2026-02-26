@@ -58,6 +58,7 @@ interface Conversation {
     id: string;
     content: string;
     createdAt: Date;
+    senderId?: string;
     sender: {
       id: string;
       name: string | null;
@@ -156,14 +157,17 @@ export function ChatSidebar({
       const response = await fetch("/api/friends");
       if (response.ok) {
         const data = await response.json();
+        // API returns an array directly, not { friends: [...] }
+        const friendsList: Friend[] = Array.isArray(data)
+          ? data
+          : (data.friends ?? []);
         // Filter out friends we already have conversations with
         const existingUserIds = new Set(
           conversations.flatMap((c) => c.participants.map((p) => p.user.id))
         );
-        const availableFriends =
-          data.friends?.filter(
-            (f: Friend) => !existingUserIds.has(f.id) && f.id !== currentUserId
-          ) || [];
+        const availableFriends = friendsList.filter(
+          (f: Friend) => !existingUserIds.has(f.id) && f.id !== currentUserId
+        );
         setFriends(availableFriends);
       }
     } catch (error) {
@@ -476,7 +480,8 @@ export function ChatSidebar({
                       </div>
                       {lastMessage && (
                         <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
-                          {lastMessage.sender.id === currentUserId
+                          {(lastMessage.sender?.id ?? lastMessage.senderId) ===
+                          currentUserId
                             ? "You: "
                             : ""}
                           {lastMessage.content}

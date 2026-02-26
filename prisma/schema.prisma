@@ -58,38 +58,41 @@ model User {
   exercises                Exercise[]
 
   // Workout Builder relations
-  createdWorkouts  Workout[]     @relation("CreatedWorkouts")
-  assignedWorkouts UserWorkout[] @relation("AssignedWorkouts")
-  workoutsAssigned UserWorkout[] @relation("WorkoutAssigner")
+  createdWorkouts  Workout[]      @relation("CreatedWorkouts")
+  assignedWorkouts UserWorkout[]  @relation("AssignedWorkouts")
+  workoutsAssigned UserWorkout[]  @relation("WorkoutAssigner")
   workoutLogs      WorkoutLog[]
   savedWorkouts    SavedWorkout[]
 
   // Training Plans relations
-  createdPlans          TrainingPlan[]          @relation("CreatedPlans")
-  assignedPlans         UserTrainingPlan[]      @relation("AssignedPlans")
-  plansAssigned         UserTrainingPlan[]      @relation("PlanAssigner")
-  savedTrainingPlans    SavedTrainingPlan[]
+  createdPlans       TrainingPlan[]      @relation("CreatedPlans")
+  assignedPlans      UserTrainingPlan[]  @relation("AssignedPlans")
+  plansAssigned      UserTrainingPlan[]  @relation("PlanAssigner")
+  savedTrainingPlans SavedTrainingPlan[]
 
   // Push notification tokens
-  pushTokens            PushToken[]
+  pushTokens PushToken[]
 
   // Notifications
-  notifications         Notification[]
+  notifications Notification[]
 
   // Analysis records (motion & lift)
-  motionAnalyses        MotionAnalysisRecord[]
-  liftAnalyses          LiftAnalysisRecord[]
-  aiAnalysisUsages      AiAnalysisUsage[]
+  motionAnalyses   MotionAnalysisRecord[]
+  liftAnalyses     LiftAnalysisRecord[]
+  aiAnalysisUsages AiAnalysisUsage[]
 
   // Giveaway relations
   giveawayParticipations GiveawayParticipation[]
   giveawayWins           GiveawayWinner[]
 
   // Athli AI assistant
-  athliConversations     AthliConversation[]
+  athliConversations AthliConversation[]
 
   // Admin notes (event/venue submission requests from chat)
-  adminNotes             AdminNote[]
+  adminNotes AdminNote[]
+
+  // LiveRace - Event registrations
+  registrations Registration[]
 
   @@index([email])
   @@index([name])
@@ -178,6 +181,7 @@ model Event {
   pricingPhases        PricingPhase[]
   results              Result[]
   giveaways            Giveaway[]
+  registrations        Registration[]
 
   @@index([sportTypes])
   @@index([startDate])
@@ -261,6 +265,7 @@ model EventVariant {
   pricingPhases     PricingPhase[]
   results           Result[]
   triathlonSegments TriathlonSegment[]
+  registrations     Registration[]
 
   @@index([eventId])
   @@index([startDate])
@@ -335,6 +340,40 @@ model Participation {
   @@index([eventId])
 }
 
+model Registration {
+  id          String             @id @default(cuid())
+  userId      String
+  eventId     String
+  variantId   String
+  status      RegistrationStatus @default(PENDING)
+  bibNumber   String? // Dorsal (opcional, atribuído pelo organizador)
+  checkedInAt DateTime? // Timestamp do check-in
+
+  // Stripe
+  paymentProvider         String   @default("STRIPE")
+  stripeCheckoutSessionId String?
+  stripePaymentIntentId   String?
+  amountCents             Int // Valor pago (cêntimos)
+  feeCents                Int? // Taxa de serviço (opcional)
+  netCents                Int? // Valor líquido (opcional)
+  currency                Currency @default(EUR)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  user    User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event   Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  variant EventVariant @relation(fields: [variantId], references: [id])
+
+  @@unique([userId, eventId, variantId])
+  @@index([userId])
+  @@index([eventId])
+  @@index([variantId])
+  @@index([status])
+  @@index([stripeCheckoutSessionId])
+}
+
 model Result {
   id               String   @id @default(cuid())
   userId           String
@@ -392,8 +431,8 @@ model Post {
   venueId    String?
   isPublic   Boolean       @default(false)
   // WOD Post fields
-  workoutId  String?       // Reference to workout for WOD posts
-  sessionId  String?       // Reference to venue session (optional context)
+  workoutId  String? // Reference to workout for WOD posts
+  sessionId  String? // Reference to venue session (optional context)
   postType   PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
   event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -500,19 +539,19 @@ model Contact {
 
 // Admin notes submitted via Athli chat (event/venue submission requests)
 model AdminNote {
-  id        String        @id @default(cuid())
-  userId    String
-  type      AdminNoteType
-  title     String        // Event/venue name or short summary
-  message   String        @db.Text // Full description from user
-  location  String?       // City/region if provided
-  date      String?       // Event date if provided
-  sportType String?       // Sport type if provided
-  url       String?       // External URL if provided
-  status    String        @default("pending") // pending, in_progress, resolved, dismissed
-  adminNotes String?      @db.Text // Internal notes from admin
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id         String        @id @default(cuid())
+  userId     String
+  type       AdminNoteType
+  title      String // Event/venue name or short summary
+  message    String        @db.Text // Full description from user
+  location   String? // City/region if provided
+  date       String? // Event date if provided
+  sportType  String? // Sport type if provided
+  url        String? // External URL if provided
+  status     String        @default("pending") // pending, in_progress, resolved, dismissed
+  adminNotes String?       @db.Text // Internal notes from admin
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -796,22 +835,22 @@ model VenuePlanVenue {
 }
 
 model VenueSubscription {
-  id                 String        @id @default(cuid())
+  id                 String         @id @default(cuid())
   venueId            String
   userId             String
   planId             String
-  status             String        @default("PENDING")
-  paymentStatus      PaymentStatus @default(PENDING_PAYMENT)
+  status             String         @default("PENDING")
+  paymentStatus      PaymentStatus  @default(PENDING_PAYMENT)
   activatedByUserId  String?
   activatedAt        DateTime?
   paymentMethod      String?
   paymentAmount      Float?
   paymentNote        String?
   paymentConfirmedAt DateTime?
-  startsAt           DateTime      @default(now())
+  startsAt           DateTime       @default(now())
   endsAt             DateTime?
-  createdAt          DateTime      @default(now())
-  updatedAt          DateTime      @updatedAt
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
   plan               VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
   user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue              Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
@@ -1064,9 +1103,9 @@ model PushToken {
   id         String   @id @default(cuid())
   userId     String
   token      String   @unique
-  platform   String   // "android" or "ios"
+  platform   String // "android" or "ios"
   deviceId   String?
-  deviceName String?  // e.g. "Pixel 8", "iPhone 15 Pro"
+  deviceName String? // e.g. "Pixel 8", "iPhone 15 Pro"
   isActive   Boolean  @default(true)
   lastSeenAt DateTime @default(now())
   createdAt  DateTime @default(now())
@@ -1084,7 +1123,7 @@ model Notification {
   type      NotificationType
   title     String
   body      String
-  data      Json?            // Additional data (eventId, venueId, senderId, etc.)
+  data      Json? // Additional data (eventId, venueId, senderId, etc.)
   read      Boolean          @default(false)
   createdAt DateTime         @default(now())
   updatedAt DateTime         @updatedAt
@@ -1147,6 +1186,13 @@ enum Currency {
   GBP
   USD
   CHF
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  REFUNDED
 }
 
 enum TriathlonSegmentType {
@@ -1424,7 +1470,7 @@ model Exercise {
   updatedAt   DateTime         @updatedAt
 
   // Measurement fields - which metrics make sense for this exercise
-  hasReps     Boolean @default(true)  // repetitions (e.g., squats, push-ups)
+  hasReps     Boolean @default(true) // repetitions (e.g., squats, push-ups)
   hasWeight   Boolean @default(false) // weight used (e.g., deadlifts, bench press)
   hasDistance Boolean @default(false) // distance covered (e.g., running, rowing)
   hasTime     Boolean @default(false) // time taken/held (e.g., planks, running)
@@ -1543,7 +1589,7 @@ model Workout {
   logs            WorkoutLog[]
   planWorkouts    TrainingPlanWorkout[]
   savedBy         SavedWorkout[]
-  posts           Post[]                // Posts that feature this workout (WOD posts)
+  posts           Post[] // Posts that feature this workout (WOD posts)
 
   @@index([createdById])
   @@index([venueId])
@@ -1817,13 +1863,13 @@ model TrainingPlan {
   createdById String
   venueId     String? // Se criado por um venue específico (null = criador independente)
 
-  duration     Int? // Duração total em semanas
-  difficulty   Int? // 1-5 (dificuldade)
-  tags         String[] @default([])
-  isTemplate   Boolean  @default(false) // Plano reutilizável
-  isPublic     Boolean  @default(false) // Visível para todos
-  isPremium    Boolean  @default(false) // Requer conta PRO para aceder
-  category     String? // "Strength", "CrossFit", "Running", "Hybrid", etc.
+  duration       Int? // Duração total em semanas
+  difficulty     Int? // 1-5 (dificuldade)
+  tags           String[] @default([])
+  isTemplate     Boolean  @default(false) // Plano reutilizável
+  isPublic       Boolean  @default(false) // Visível para todos
+  isPremium      Boolean  @default(false) // Requer conta PRO para aceder
+  category       String? // "Strength", "CrossFit", "Running", "Hybrid", etc.
   targetAudience String? // "Iniciantes", "Intermédio", "Avançado"
 
   // Metadata de marketing
@@ -1850,13 +1896,13 @@ model TrainingPlan {
 
 // Traduções para planos de treino
 model TrainingPlanTranslation {
-  id          String   @id @default(cuid())
-  planId      String
-  language    Language // en, pt, es, fr, de, it
-  name        String   // "CrossFit Beginners - 8 Weeks"
-  description String?  @db.Text // Descrição completa do plano
-  metaTitle   String?  // SEO meta title
-  metaDescription String? @db.Text // SEO meta description
+  id              String   @id @default(cuid())
+  planId          String
+  language        Language // en, pt, es, fr, de, it
+  name            String // "CrossFit Beginners - 8 Weeks"
+  description     String?  @db.Text // Descrição completa do plano
+  metaTitle       String? // SEO meta title
+  metaDescription String?  @db.Text // SEO meta description
 
   plan TrainingPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
 
@@ -1867,14 +1913,14 @@ model TrainingPlanTranslation {
 // Semana dentro de um plano de treino
 // Exemplo: "Semana 1 - Fundamentos", "Semana 2 - Volume", etc.
 model TrainingPlanWeek {
-  id        String @id @default(cuid())
-  planId    String
-  weekNumber Int // 1, 2, 3, 4...
-  name      String? // "Fundamentos", "Teste de Volume", "Deload Week"
+  id          String  @id @default(cuid())
+  planId      String
+  weekNumber  Int // 1, 2, 3, 4...
+  name        String? // "Fundamentos", "Teste de Volume", "Deload Week"
   description String? // Foco da semana
-  orderIndex Int // Para reordenar semanas se necessário
+  orderIndex  Int // Para reordenar semanas se necessário
 
-  plan     TrainingPlan           @relation(fields: [planId], references: [id], onDelete: Cascade)
+  plan     TrainingPlan          @relation(fields: [planId], references: [id], onDelete: Cascade)
   workouts TrainingPlanWorkout[]
 
   @@unique([planId, weekNumber])
@@ -1884,12 +1930,12 @@ model TrainingPlanWeek {
 // Workout dentro de uma semana do plano
 // Define qual workout fazer em que dia da semana
 model TrainingPlanWorkout {
-  id        String @id @default(cuid())
-  weekId    String
-  workoutId String
-  dayOfWeek Int // 0=Domingo, 1=Segunda, 2=Terça, ..., 6=Sábado
+  id         String  @id @default(cuid())
+  weekId     String
+  workoutId  String
+  dayOfWeek  Int // 0=Domingo, 1=Segunda, 2=Terça, ..., 6=Sábado
   orderIndex Int // Ordem dentro do mesmo dia (se houver múltiplos workouts por dia)
-  notes     String? // Notas específicas para este workout nesta semana
+  notes      String? // Notas específicas para este workout nesta semana
 
   week    TrainingPlanWeek @relation(fields: [weekId], references: [id], onDelete: Cascade)
   workout Workout          @relation(fields: [workoutId], references: [id], onDelete: Cascade)
@@ -1901,13 +1947,13 @@ model TrainingPlanWorkout {
 // Atribuição de plano de treino a um utilizador
 // Tracking de progressão do utilizador através do plano
 model UserTrainingPlan {
-  id           String    @id @default(cuid())
+  id           String             @id @default(cuid())
   userId       String
   planId       String
   assignedById String? // Coach que atribuiu (null se auto-atribuído)
   startDate    DateTime // Data de início do plano
   endDate      DateTime? // Data prevista de fim (calculada pela duração)
-  currentWeek  Int       @default(1) // Semana atual do utilizador no plano
+  currentWeek  Int                @default(1) // Semana atual do utilizador no plano
   status       TrainingPlanStatus @default(ACTIVE)
   notes        String? // Notas do coach ou do utilizador
 
@@ -2025,26 +2071,26 @@ enum DistanceUnit {
 
 /// Saved motion (pose) analysis — video in B2, JSON data in DB
 model MotionAnalysisRecord {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// Local UUID generated on the device (for deduplication / idempotency)
-  localId     String   @unique
+  localId String @unique
 
-  label       String?
+  label String?
 
   /// Public B2 URL of the original video clip
-  videoUrl    String
+  videoUrl String
 
   /// B2 internal file name (for deletion)
-  videoB2Key  String
+  videoB2Key String
 
   /// JSON blob: segment, sampleFps, poseFrames[], metrics, videoMeta
   analysisJson Json
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([localId])
@@ -2052,26 +2098,26 @@ model MotionAnalysisRecord {
 
 /// Saved lift (bar path) analysis — video in B2, JSON data in DB
 model LiftAnalysisRecord {
-  id          String   @id @default(cuid())
-  userId      String
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// Local UUID generated on the device (for deduplication / idempotency)
-  localId     String   @unique
+  localId String @unique
 
-  label       String?
+  label String?
 
   /// Public B2 URL of the original video clip
-  videoUrl    String
+  videoUrl String
 
   /// B2 internal file name (for deletion)
-  videoB2Key  String
+  videoB2Key String
 
   /// JSON blob: durationMs, fpsSample, seedPoint, barPath[], metrics
   analysisJson Json
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([localId])
@@ -2079,12 +2125,12 @@ model LiftAnalysisRecord {
 
 /// Tracks AI analysis usage per user — max 10 per 24 hours
 model AiAnalysisUsage {
-  id        String   @id @default(cuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   /// "motion" or "lift"
-  type      String
+  type String
 
   createdAt DateTime @default(now())
 
@@ -2096,22 +2142,22 @@ model AiAnalysisUsage {
 // ============================================================================
 
 model Giveaway {
-  id                   String          @id @default(cuid())
-  eventId              String
-  status               GiveawayStatus  @default(DRAFT)
-  drawAt               DateTime?
-  drawnAt              DateTime?
-  prizeCount           Int             @default(1)
-  maxWinnersPerUser    Int             @default(1)
-  secret               String?         // Private: random secret used in draw algorithm (stored until draw)
-  secretHash           String?         // Public: SHA-256 hash of secret (published before draw for transparency)
-  secretRevealed       String?         // Public: revealed secret after draw (proves fairness)
+  id                     String         @id @default(cuid())
+  eventId                String
+  status                 GiveawayStatus @default(DRAFT)
+  drawAt                 DateTime?
+  drawnAt                DateTime?
+  prizeCount             Int            @default(1)
+  maxWinnersPerUser      Int            @default(1)
+  secret                 String? // Private: random secret used in draw algorithm (stored until draw)
+  secretHash             String? // Public: SHA-256 hash of secret (published before draw for transparency)
+  secretRevealed         String? // Public: revealed secret after draw (proves fairness)
   finalParticipantsCount Int?
-  winningTicketNumbers Int[]           // All winning ticket numbers (one per prize)
-  createdAt            DateTime        @default(now())
-  updatedAt            DateTime        @updatedAt
+  winningTicketNumbers   Int[] // All winning ticket numbers (one per prize)
+  createdAt              DateTime       @default(now())
+  updatedAt              DateTime       @updatedAt
 
-  event          Event                  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event          Event                   @relation(fields: [eventId], references: [id], onDelete: Cascade)
   translations   GiveawayTranslation[]
   participations GiveawayParticipation[]
   winners        GiveawayWinner[]
@@ -2183,11 +2229,11 @@ enum GiveawayStatus {
 model AthliConversation {
   id        String   @id @default(cuid())
   userId    String
-  title     String?  // Auto-generated from first message
+  title     String? // Auto-generated from first message
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user     User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   messages AthliMessage[]
 
   @@index([userId])
@@ -2195,12 +2241,12 @@ model AthliConversation {
 }
 
 model AthliMessage {
-  id             String   @id @default(cuid())
+  id             String           @id @default(cuid())
   conversationId String
   role           AthliMessageRole // user, assistant, system
-  content        String   @db.Text
-  metadata       Json?    // Store tool calls, actions taken (e.g., plan created)
-  createdAt      DateTime @default(now())
+  content        String           @db.Text
+  metadata       Json? // Store tool calls, actions taken (e.g., plan created)
+  createdAt      DateTime         @default(now())
 
   conversation AthliConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
@@ -2220,9 +2266,9 @@ enum AthliMessageRole {
 
 model PlatformKnowledge {
   id        String   @id @default(cuid())
-  category  String   // e.g. "pricing", "features_venues", "features_athletes", "about", "faq"
+  category  String // e.g. "pricing", "features_venues", "features_athletes", "about", "faq"
   slug      String   @unique // unique identifier e.g. "venue-pricing", "athlete-features"
-  title     String   // human-readable title
+  title     String // human-readable title
   content   String   @db.Text // markdown content with detailed info
   language  Language @default(pt) // language of the content
   priority  Int      @default(0) // higher = more important, shown first

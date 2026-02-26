@@ -1,4 +1,11 @@
-import { api } from "../lib/api";
+// ============================================================================
+// Athlifyr Mobile — Chat API
+//
+// All chat REST operations go through the live server (Fastify).
+// Real-time events are handled by Socket.io (see useSocketChat).
+// ============================================================================
+
+import { liveFetch } from "../lib/live";
 
 export interface Message {
   id: string;
@@ -6,11 +13,15 @@ export interface Message {
   senderId: string;
   content: string;
   createdAt: Date | string;
-  sender: {
+  /** Nested sender object (from initial fetch) */
+  sender?: {
     id: string;
     name: string | null;
     image: string | null;
   };
+  /** Flat sender fields (from Socket.io events) */
+  senderName?: string | null;
+  senderImage?: string | null;
 }
 
 export interface Conversation {
@@ -28,7 +39,7 @@ export interface Conversation {
     content: string;
     createdAt: Date | string;
     senderId: string;
-    sender: {
+    sender?: {
       id: string;
       name: string | null;
       image: string | null;
@@ -41,76 +52,89 @@ export interface CreateConversationResponse {
   conversation: Conversation;
 }
 
-/**
- * Fetch all conversations for the current user
- */
-export async function fetchConversations(): Promise<Conversation[]> {
-  const response = await api.get<{ conversations: Conversation[] }>(
-    "/chat/conversations"
-  );
-  return response.data.conversations || [];
+/** Helper to extract sender info from a Message regardless of format */
+export function getMessageSender(message: Message): {
+  id: string;
+  name: string | null;
+  image: string | null;
+} {
+  if (message.sender) return message.sender;
+  return {
+    id: message.senderId,
+    name: message.senderName ?? null,
+    image: message.senderImage ?? null,
+  };
 }
 
 /**
- * Fetch messages for a specific conversation
+ * Fetch all conversations for the current user (via live server)
+ */
+export async function fetchConversations(): Promise<Conversation[]> {
+  const data = await liveFetch<{ conversations: Conversation[] }>(
+    "/conversations"
+  );
+  return data.conversations || [];
+}
+
+/**
+ * Fetch messages for a specific conversation (via live server)
  */
 export async function fetchMessages(
   conversationId: string
 ): Promise<Message[]> {
-  const response = await api.get<{ messages: Message[] }>(
-    `/chat/conversations/${conversationId}/messages`
+  const data = await liveFetch<{ messages: Message[] }>(
+    `/conversations/${conversationId}/messages`
   );
-  return response.data.messages || [];
+  return data.messages || [];
 }
 
 /**
- * Poll for new messages after a given message ID
- */
-export async function pollMessages(
-  conversationId: string,
-  afterMessageId: string | null
-): Promise<Message[]> {
-  const params = new URLSearchParams();
-  if (afterMessageId) {
-    params.set("after", afterMessageId);
-  }
-
-  const response = await api.get<{ messages: Message[] }>(
-    `/chat/conversations/${conversationId}/messages/poll?${params.toString()}`
-  );
-  return response.data.messages || [];
-}
-
-/**
- * Send a message to a conversation
+ * Send a message to a conversation (via live server REST)
+ * NOTE: Prefer socket.emit("chat:message") for real-time delivery.
+ * This is used as a fallback when the socket is not connected.
  */
 export async function sendMessage(
   conversationId: string,
   content: string
 ): Promise<Message> {
-  const response = await api.post<{ message: Message }>(
-    `/chat/conversations/${conversationId}/messages`,
-    { content }
+  const data = await liveFetch<{ message: Message }>(
+    `/conversations/${conversationId}/messages`,
+    {
+      method: "POST",
+      body: { content },
+    }
   );
-  return response.data.message;
+  return data.message;
 }
 
 /**
- * Create or get a conversation with another user
+ * Create or get a conversation with another user (via live server)
  */
 export async function createConversation(
   otherUserId: string
 ): Promise<CreateConversationResponse> {
-  const response = await api.post<CreateConversationResponse>(
-    "/chat/conversations",
-    { otherUserId }
-  );
-  return response.data;
+  return liveFetch<CreateConversationResponse>("/conversations", {
+    method: "POST",
+    body: { otherUserId },
+  });
 }
 
 /**
- * Hide a conversation
+ * Hide a conversation (via live server)
  */
 export async function hideConversation(conversationId: string): Promise<void> {
-  await api.post(`/chat/conversations/${conversationId}/hide`);
+  await liveFetch(`/conversations/${conversationId}/hide`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Mark conversation as seen (via live server)
+ */
+export async function markConversationSeen(
+  conversationId: string
+): Promise<void> {
+  await liveFetch(`/conversations/${conversationId}/seen`, {
+    method: "POST",
+  });
 }

@@ -68,7 +68,6 @@ export function ChatWidget({
     addOptimisticMessage,
     removeOptimisticMessage,
   } = useChatMessages(conversationId, {
-    pollingInterval: 2000,
     enabled: status === "authenticated" && !isMinimized && !!conversationId,
   });
 

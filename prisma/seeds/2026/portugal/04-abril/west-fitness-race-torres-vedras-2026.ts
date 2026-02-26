@@ -124,6 +124,7 @@ Prepara-te para testar os teus limites e viver uma experiência intensa de fitne
       latitude: 39.0912,
       longitude: -9.2584,
       googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
+      googleMapsUrl: "https://maps.app.goo.gl/PavilhaoMultiusosTorresVedras",
       externalUrl: "",
       imageUrl: "",
       isFeatured: false,

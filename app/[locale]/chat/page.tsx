@@ -39,7 +39,6 @@ export default function ChatPage() {
     addOptimisticMessage,
     removeOptimisticMessage,
   } = useChatMessages(selectedConversationId, {
-    pollingInterval: 2000,
     enabled: status === "authenticated",
   });
 

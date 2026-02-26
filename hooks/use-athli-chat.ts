@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useLocale } from "next-intl";
+import { usePathname } from "next/navigation";
 
 export interface TrainingPlanProposal {
   name: string;
@@ -39,6 +40,11 @@ interface AthliConversationSummary {
   messages: { content: string }[];
 }
 
+export interface PageContext {
+  type: "event" | "venue" | null;
+  slug: string | null;
+}
+
 interface UseAthliChatReturn {
   messages: AthliMessage[];
   conversations: AthliConversationSummary[];
@@ -54,8 +60,28 @@ interface UseAthliChatReturn {
   saveProposedWorkout: (messageId: string) => Promise<void>;
 }
 
+/**
+ * Detect page context from the current pathname.
+ * Matches patterns like /pt/events/[slug] or /en/venues/[slug]
+ */
+function detectPageContext(pathname: string): PageContext {
+  // Match /[locale]/events/[slug] or /[locale]/venues/[slug]
+  const eventMatch = pathname.match(/^\/[a-z]{2}\/events\/([^/?#]+)$/);
+  if (eventMatch) {
+    return { type: "event", slug: eventMatch[1] };
+  }
+
+  const venueMatch = pathname.match(/^\/[a-z]{2}\/venues\/([^/?#]+)$/);
+  if (venueMatch) {
+    return { type: "venue", slug: venueMatch[1] };
+  }
+
+  return { type: null, slug: null };
+}
+
 export function useAthliChat(): UseAthliChatReturn {
   const locale = useLocale();
+  const pathname = usePathname();
   const [messages, setMessages] = useState<AthliMessage[]>([]);
   const [conversations, setConversations] = useState<
     AthliConversationSummary[]
@@ -222,6 +248,7 @@ export function useAthliChat(): UseAthliChatReturn {
       setIsLoading(true);
 
       try {
+        const pageContext = detectPageContext(pathname);
         const res = await fetch("/api/athli/chat", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -229,6 +256,12 @@ export function useAthliChat(): UseAthliChatReturn {
             message: message.trim(),
             conversationId,
             locale,
+            ...(pageContext.type && {
+              pageContext: {
+                type: pageContext.type,
+                slug: pageContext.slug,
+              },
+            }),
           }),
         });
 
@@ -273,6 +306,7 @@ export function useAthliChat(): UseAthliChatReturn {
       conversationId,
       isLoading,
       locale,
+      pathname,
       generateTempId,
       loadConversations,
       parseProposalFromContent,

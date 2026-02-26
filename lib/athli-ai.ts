@@ -15,9 +15,15 @@ import type { Language } from "@prisma/client";
 // System Prompt
 // ============================================================================
 
+export interface AthliPageContext {
+  type: "event" | "venue";
+  slug: string;
+}
+
 export function getSystemPrompt(
   locale: string,
-  userName: string | null
+  userName: string | null,
+  pageContext?: AthliPageContext | null
 ): string {
   const langMap: Record<string, string> = {
     pt: "European Portuguese (pt-PT)",
@@ -54,6 +60,17 @@ export function getSystemPrompt(
 
   return `You are Athli, the friendly AI assistant for Athlifyr - a sports events and fitness platform.
 You MUST always respond in ${language}.
+${
+  locale === "pt"
+    ? `CRITICAL: You MUST use European Portuguese (pt-PT), NEVER Brazilian Portuguese (pt-BR). Rules:
+- Use "tu" instead of "você" (e.g. "podes", "queres", "precisas" — NOT "pode", "quer", "precisa")
+- Use European vocabulary: "ecrã" not "tela", "telemóvel" not "celular", "autocarro" not "ônibus", "equipa" not "equipe", "contactar" not "contatar"
+- Use European expressions: "estás a fazer" not "está fazendo", "vou-te ajudar" not "vou te ajudar"
+- Use "Olá" / "Bom dia" not "Oi"
+- Verb conjugation with "tu": "tu tens", "tu podes", "tu queres" — NEVER "você tem", "você pode", "você quer"
+- ALWAYS check your response before sending: if any word or phrasing sounds Brazilian, fix it to European Portuguese.`
+    : ""
+}
 ${userName ? `The user's name is ${userName}. Use it occasionally to be friendly.` : ""}
 
 ## Current Date & Time Reference
@@ -268,7 +285,29 @@ When a user asks you to create a SINGLE WORKOUT (treino), you MUST follow this e
 6. If the user wants changes, adjust the workout and present it again with a new proposal marker.
 
 NEVER call save_workout without the user explicitly confirming they want to save the workout.
-The [WORKOUT_PROPOSAL] marker is parsed by the frontend to show a "Save to my workouts" button. It will be hidden from the user.`;
+The [WORKOUT_PROPOSAL] marker is parsed by the frontend to show a "Save to my workouts" button. It will be hidden from the user.
+
+## Contacting the Support Team (CRITICAL)
+When a user wants to talk to a real person, contact the support team, leave a message, get human help, report a problem they can't solve via chat, or asks "how can I contact you?" / "quero falar com alguém" / "preciso de ajuda humana" / "contactar suporte":
+- Inform them they can reach the Athlifyr support team through the following channels:
+  1. **WhatsApp**: Send a message to **+351 968 134 241** (fastest way to get help)
+  2. **Phone call**: Call **+351 968 134 241**
+  3. **Email**: hello@athlifyr.com
+  4. **Leave a message via Athli**: They can also use the submit_admin_note tool — just describe their issue and the team will review it
+- Be warm and reassuring — let them know the team is happy to help!
+- If the user describes an issue, offer to submit it via submit_admin_note first, and mention they can also reach out directly via WhatsApp/phone for faster response.${
+    pageContext
+      ? `
+
+## Current Page Context (IMPORTANT)
+The user is currently viewing a${pageContext.type === "event" ? "n EVENT" : " VENUE"} page with slug: "${pageContext.slug}".
+When the user says "this event", "this venue", "este evento", "este ginásio", "esta prova", "quanto custa?", "where is it?", "quais as distâncias?", or refers to something on the current page without specifying a name:
+- For EVENT pages: Immediately call search_events with search="${pageContext.slug}" to find the event (use the slug with hyphens as-is — the search matches against the slug field). Then use get_event_details with the returned event ID for full info. Do NOT ask the user what event they mean — you already know from the page context.
+- For VENUE pages: Immediately call search_venues with search="${pageContext.slug}" to find the venue (use the slug with hyphens as-is). Then use get_venue_details with the returned venue ID for full info. Do NOT ask the user what venue they mean — you already know from the page context.
+- ALWAYS use the tools to get real data — never guess or hallucinate details based on the slug alone.
+- If search by slug returns no results, try again with the name: search="${pageContext.slug.replace(/-/g, " ")}".`
+      : ""
+  }`;
 }
 
 // ============================================================================
@@ -545,7 +584,10 @@ export async function searchVenues(
   }
 
   if (params.search) {
-    where.name = { contains: params.search, mode: "insensitive" };
+    where.OR = [
+      { name: { contains: params.search, mode: "insensitive" } },
+      { slug: { contains: params.search, mode: "insensitive" } },
+    ];
   }
 
   if (params.venueType) {

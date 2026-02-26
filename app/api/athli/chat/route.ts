@@ -107,7 +107,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const { message, conversationId, locale } = await request.json();
+    const { message, conversationId, locale, pageContext } =
+      await request.json();
 
     if (
       !message ||
@@ -163,7 +164,21 @@ export async function POST(request: Request) {
     });
 
     // Build message history for OpenAI
-    const systemPrompt = getSystemPrompt(userLocale, user.name);
+    const validatedPageContext =
+      pageContext &&
+      typeof pageContext === "object" &&
+      (pageContext.type === "event" || pageContext.type === "venue") &&
+      typeof pageContext.slug === "string"
+        ? {
+            type: pageContext.type as "event" | "venue",
+            slug: pageContext.slug as string,
+          }
+        : null;
+    const systemPrompt = getSystemPrompt(
+      userLocale,
+      user.name,
+      validatedPageContext
+    );
     const chatMessages: OpenAI.ChatCompletionMessageParam[] = [
       { role: "system", content: systemPrompt },
     ];

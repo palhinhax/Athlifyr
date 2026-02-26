@@ -27,6 +27,21 @@ describe("structured-data", () => {
       cancellationReason: null,
       createdAt: new Date("2026-01-01T00:00:00Z"),
       updatedAt: new Date("2026-01-01T00:00:00Z"),
+      // LiveRace Fase 0 fields
+      hasRegistrations: false,
+      hasLiveRace: false,
+      stripeAccountId: null,
+      stripeChargesEnabled: false,
+      stripeDetailsSubmitted: false,
+      stripePayoutsEnabled: false,
+      stripeLastWebhookAt: null,
+      stripeOnboardingStatus: "NOT_STARTED" as const,
+      commissionPercent: 5.0,
+      commissionFixed: 0,
+      refundDeadline: null,
+      checkInOpensAt: null,
+      checkInClosesAt: null,
+      liveStatus: "SCHEDULED" as const,
     };
 
     const baseVariant = {

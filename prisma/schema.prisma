@@ -94,6 +94,13 @@ model User {
   // LiveRace - Event registrations
   registrations Registration[]
 
+  // LiveRace - Event Organizer / Staff / Invites
+  eventOrganizer          EventOrganizer[]     @relation("EventOrganizerUser")
+  eventOrganizerAdded     EventOrganizer[]     @relation("EventOrganizerAddedBy")
+  eventStaffMember        EventStaffMember[]   @relation("EventStaffMemberUser")
+  eventStaffMemberAdded   EventStaffMember[]   @relation("EventStaffMemberAddedBy")
+  eventInvitesSent        EventInvite[]        @relation("EventInvitedBy")
+
   @@index([email])
   @@index([name])
 }
@@ -182,6 +189,33 @@ model Event {
   results              Result[]
   giveaways            Giveaway[]
   registrations        Registration[]
+  organizers           EventOrganizer[]
+  staffMembers         EventStaffMember[]
+  invites              EventInvite[]
+
+  // ── Feature flags ──────────────────────────────────────────────────────────
+  // hasRegistrations is derived: automatically true when stripeOnboardingStatus = COMPLETE
+  hasRegistrations     Boolean                     @default(false)
+  // hasLiveRace can only be activated by a Platform Admin
+  hasLiveRace          Boolean                     @default(false)
+
+  // ── Stripe Connect (per-event, destination charges) ────────────────────────
+  stripeAccountId          String?
+  stripeChargesEnabled     Boolean                     @default(false)
+  stripeDetailsSubmitted   Boolean                     @default(false)
+  stripePayoutsEnabled     Boolean                     @default(false)
+  stripeLastWebhookAt      DateTime?
+  stripeOnboardingStatus   EventStripeOnboardingStatus @default(NOT_STARTED)
+  commissionPercent        Float                       @default(5.0)
+  commissionFixed          Int                         @default(0) // cêntimos
+
+  // ── Registration settings ──────────────────────────────────────────────────
+  refundDeadline       DateTime?
+  checkInOpensAt       DateTime?
+  checkInClosesAt      DateTime?
+
+  // ── LiveRace settings ──────────────────────────────────────────────────────
+  liveStatus           EventLiveStatus             @default(SCHEDULED)
 
   @@index([sportTypes])
   @@index([startDate])
@@ -189,6 +223,8 @@ model Event {
   @@index([isFeatured])
   @@index([slug])
   @@index([featuredVenueId])
+  @@index([hasRegistrations])
+  @@index([hasLiveRace])
 }
 
 model EventTranslation {
@@ -372,6 +408,71 @@ model Registration {
   @@index([variantId])
   @@index([status])
   @@index([stripeCheckoutSessionId])
+}
+
+// ============================================================================
+// EVENT ORGANIZER / STAFF / INVITE MODELS
+// ============================================================================
+
+model EventOrganizer {
+  id        String             @id @default(cuid())
+  eventId   String
+  userId    String
+  role      EventOrganizerRole @default(ADMIN)
+  addedById String // Platform Admin or OWNER who added this person
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User  @relation("EventOrganizerUser", fields: [userId], references: [id], onDelete: Cascade)
+  addedBy User  @relation("EventOrganizerAddedBy", fields: [addedById], references: [id])
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+  @@index([role])
+}
+
+model EventStaffMember {
+  id        String         @id @default(cuid())
+  eventId   String
+  userId    String
+  role      EventStaffRole @default(STAFF)
+  addedById String // Organizer (OWNER/ADMIN) who added this person
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  event   Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User  @relation("EventStaffMemberUser", fields: [userId], references: [id], onDelete: Cascade)
+  addedBy User  @relation("EventStaffMemberAddedBy", fields: [addedById], references: [id])
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+model EventInvite {
+  id          String            @id @default(cuid())
+  eventId     String
+  invitedById String
+  email       String // Invited by email (user may not exist yet)
+  role        String // EventOrganizerRole or EventStaffRole value
+  type        EventInviteType
+  status      EventInviteStatus @default(PENDING)
+  token       String            @unique @default(cuid())
+  expiresAt   DateTime
+  acceptedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  event     Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  invitedBy User  @relation("EventInvitedBy", fields: [invitedById], references: [id])
+
+  @@index([eventId])
+  @@index([email])
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
 }
 
 model Result {
@@ -1193,6 +1294,50 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
   REFUNDED
+}
+
+// ============================================================================
+// EVENT ORGANIZER / STAFF / LIVERACE ENUMS
+// ============================================================================
+
+enum EventStripeOnboardingStatus {
+  NOT_STARTED
+  PENDING
+  COMPLETE
+  RESTRICTED
+}
+
+enum EventLiveStatus {
+  SCHEDULED
+  LIVE
+  PAUSED
+  FINISHED
+  CANCELLED
+}
+
+enum EventOrganizerRole {
+  OWNER   // Full control — edits event, manages team, configures Stripe
+  ADMIN   // Edit event, manage staff — cannot touch Stripe
+  FINANCE // View financial reports only
+}
+
+enum EventStaffRole {
+  STAFF        // General day-of operations access
+  CHECKIN_ONLY // Can only use check-in scanner
+  STREAM_ONLY  // Can only control live stream
+}
+
+enum EventInviteType {
+  ORGANIZER
+  STAFF
+}
+
+enum EventInviteStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  EXPIRED
+  CANCELLED
 }
 
 enum TriathlonSegmentType {

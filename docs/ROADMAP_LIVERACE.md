@@ -15,12 +15,77 @@ O **LiveRace** é a funcionalidade que transforma o Athlifyr numa plataforma com
 - **Privacidade por design** — tracking público apenas com opt-in do atleta ou conforme os termos do evento.
 - **Mobile-first** — a experiência de corrida (tracking, check-in) é pensada para a app; a web serve para inscrições, gestão e visualização.
 - **Evento digital ao vivo** — membros do staff podem transmitir vídeo em direto (multi-câmara) a partir da app mobile, transformando cada prova num "evento TV-like" acessível ao público. Isto aumenta o engagement, gera partilhas e acrescenta valor para patrocinadores.
+- **Features opcionais por evento** — inscrições e live race são funcionalidades opt-in. A maioria dos eventos no Athlifyr são informativos (listagem de eventos de terceiros); apenas os que aderiram ao LiveRace têm inscrições e/ou tracking ativo.
+
+---
+
+### 1.1 Modelo de Features por Evento (Opt-in)
+
+> **Ponto crítico de arquitetura**: Os eventos no Athlifyr existem em três níveis de funcionalidade. Um evento pode evoluir de nível ao longo do tempo.
+
+#### Níveis de funcionalidade
+
+| Nível | Nome               | Descrição                                                                                              | Flags no `Event`                                   |
+| ----- | ------------------ | ------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| 0     | **Informativo**    | Evento de terceiros listado na plataforma (maioria dos eventos). Sem inscrições, sem tracking.         | `hasRegistrations = false` · `hasLiveRace = false` |
+| 1     | **Com Inscrições** | Evento com inscrições geridas pelo Athlifyr (pagamento via Stripe). Sem tracking em tempo real.        | `hasRegistrations = true` · `hasLiveRace = false`  |
+| 2     | **LiveRace**       | Evento completo: inscrições + check-in + tracking em tempo real + leaderboard + live streams de staff. | `hasRegistrations = true` · `hasLiveRace = true`   |
+
+> ⚠️ Um evento com `hasLiveRace = true` implica sempre `hasRegistrations = true` (não faz sentido tracking sem inscrição confirmada).
+
+#### Consequências por nível
+
+| Feature                         | Nível 0 — Informativo  | Nível 1 — Inscrições | Nível 2 — LiveRace |
+| ------------------------------- | :--------------------: | :------------------: | :----------------: |
+| Página pública do evento        |           ✅           |          ✅          |         ✅         |
+| Botão "Inscrever-me"            | ❌ (link externo opt)  |          ✅          |         ✅         |
+| Checkout Stripe                 |           ❌           |          ✅          |         ✅         |
+| "Minhas Inscrições"             |           ❌           |          ✅          |         ✅         |
+| Check-in (QR / código)          |           ❌           |          ✅          |         ✅         |
+| Tracking GPS em tempo real      |           ❌           |          ❌          |         ✅         |
+| Leaderboard ao vivo             |           ❌           |          ❌          |         ✅         |
+| Live Streams de staff           |           ❌           |          ❌          |         ✅         |
+| Resultados finais na plataforma | ❌ (import manual opt) |          ✅          |         ✅         |
+| Exportar lista de inscritos     |           ❌           |          ✅          |         ✅         |
+
+#### Validação de gating (exemplo)
+
+```typescript
+// hasRegistrations é derivado do estado Stripe — não é um toggle manual
+// É true quando stripeOnboardingStatus === 'COMPLETE'
+
+// Antes de abrir checkout — verificar se o evento tem inscrições ativadas
+if (!event.hasRegistrations) {
+  // O organizador ainda não configurou o Stripe Connect
+  throw new Error("Este evento não tem inscrições no Athlifyr.");
+}
+
+// Antes de iniciar tracking — verificar se o evento tem LiveRace ativado (só Admin ativa)
+if (!event.hasLiveRace) {
+  throw new Error("Este evento não tem LiveRace ativo.");
+}
+```
+
+#### UI — o que muda por nível
+
+- **Nível 0 (Informativo)**: página do evento mostra detalhes. Se `externalUrl` preenchido → botão "Inscrever no site oficial". Sem secção de inscrições, sem preços.
+- **Nível 1 (Com Inscrições)**: sidebar mostra variantes, preços e botão "Inscrever-me". Sem separador "Ao Vivo".
+- **Nível 2 (LiveRace)**: tudo do Nível 1 + separador "Ao Vivo" com tracking, leaderboard e live streams.
+
+> **Como evoluir de nível**:
+>
+> - Nível 0 → 1: Organizador (`OWNER`) completa onboarding Stripe Connect → `hasRegistrations` ativa automaticamente
+> - Nível 1 → 2: Admin da plataforma ativa `hasLiveRace` manualmente
 
 ---
 
 ## 2. Personas e Fluxos (User Journeys)
 
+> **Nota**: Os fluxos abaixo aplicam-se apenas a eventos com as respetivas features ativas. Ver secção 1.1 para o modelo de opt-in.
+
 ### 2.1 Atleta (Web ou App)
+
+> Requer `event.hasRegistrations = true` (passos 2–7) e `event.hasLiveRace = true` (passos 8–9).
 
 | Passo | Ação                                                              | Estado                                 |
 | ----- | ----------------------------------------------------------------- | -------------------------------------- |
@@ -43,6 +108,8 @@ O **LiveRace** é a funcionalidade que transforma o Athlifyr numa plataforma com
 
 ### 2.2 Staff (App — modo staff)
 
+> Requer `event.hasLiveRace = true`.
+
 | Passo | Ação                                                         | Detalhe                                                |
 | ----- | ------------------------------------------------------------ | ------------------------------------------------------ |
 | 1     | Login + seleção de evento                                    | Autenticado como `STAFF` ou superior                   |
@@ -61,16 +128,18 @@ O **LiveRace** é a funcionalidade que transforma o Athlifyr numa plataforma com
 
 ### 2.3 Organizador (Web)
 
-| Passo | Ação                                             | Detalhe                                        |
-| ----- | ------------------------------------------------ | ---------------------------------------------- |
-| 1     | Criar evento + variantes (distâncias/categorias) | Admin UI                                       |
-| 2     | Definir preços, limites, datas de cutoff         | `PricingPhase`, `EventVariant.maxParticipants` |
-| 3     | Abrir inscrições                                 | Publicar evento                                |
-| 4     | Acompanhar inscritos/pagamentos                  | Dashboard com filtros                          |
-| 5     | Exportar lista de inscritos (CSV) para staff     | Export por variante                            |
-| 6     | No dia: check-in + validações                    | Scan QR / check-in manual                      |
-| 7     | Fechar inscrições / fechar prova                 | Alterar estado do evento                       |
-| 8     | Exportar resultados                              | CSV / API                                      |
+> Passos 1–0 disponíveis para qualquer evento. Passos 2–8 requerem `event.hasRegistrations = true`; passos 6–8 marcados com ⚡ requerem adicionalmente `event.hasLiveRace = true`.
+
+| Passo | Ação                                         | Detalhe                                               |
+| ----- | -------------------------------------------- | ----------------------------------------------------- |
+| 1     | Criar evento + ativar features (flags)       | Admin UI — definir `hasRegistrations` / `hasLiveRace` |
+| 2     | Definir variantes + preços, limites, cutoff  | `PricingPhase`, `EventVariant.maxParticipants`        |
+| 3     | Abrir inscrições                             | Publicar evento                                       |
+| 4     | Acompanhar inscritos/pagamentos              | Dashboard com filtros                                 |
+| 5     | Exportar lista de inscritos (CSV) para staff | Export por variante                                   |
+| 6 ⚡  | No dia: check-in + validações                | Scan QR / check-in manual                             |
+| 7 ⚡  | Fechar inscrições / fechar prova             | Alterar estado do evento                              |
+| 8 ⚡  | Exportar resultados                          | CSV / API                                             |
 
 ---
 
@@ -86,7 +155,15 @@ O **LiveRace** é a funcionalidade que transforma o Athlifyr numa plataforma com
 model Event {
   // ... campos existentes ...
 
-  // LiveRace — novos campos
+  // ── Feature flags (opt-in) ──────────────────────────────────────────────
+  // A maioria dos eventos é informativa (nível 0): ambas as flags = false.
+  // Nível 1 (inscrições): hasRegistrations = true, hasLiveRace = false.
+  // Nível 2 (LiveRace completo): ambas = true.
+  // ⚠️ hasLiveRace = true implica hasRegistrations = true.
+  hasRegistrations  Boolean     @default(false)  // Inscrições geridas no Athlifyr
+  hasLiveRace       Boolean     @default(false)  // Tracking, leaderboard, live streams
+
+  // ── LiveRace — campos operacionais ─────────────────────────────────────
   checkInOpensAt    DateTime?   // Início da janela de check-in
   checkInClosesAt   DateTime?   // Fim da janela de check-in
   liveStatus        EventLiveStatus @default(SCHEDULED)
@@ -239,9 +316,137 @@ enum EventLiveStatus {
 }
 ```
 
-### 3.3 Novos modelos — Staff & Live Streams
+### 3.3 Novos modelos — Organizadores, Staff & Live Streams
 
-#### `EventStaffMember`
+> **Modelo de acesso — como funciona**:
+>
+> 1. O **Admin da plataforma Athlifyr** cria o evento (no painel de admin existente).
+> 2. O Admin atribui um ou mais utilizadores como **Organizadores** do evento (`EventOrganizer`).
+> 3. Os **Organizadores** acedem ao painel do evento (`/events/[slug]/manage`) onde podem:
+>    - Editar os dados do evento
+>    - Configurar o Stripe Connect (= ativar inscrições no Athlifyr)
+>    - Gerir variantes, preços, fases de preço
+>    - Ver e gerir inscrições e pagamentos
+>    - Adicionar/remover outros organizadores e staff
+> 4. O **Staff operacional** (`EventStaffMember`) é adicionado pelo organizador e só atua no dia (check-in, live streams).
+>
+> **Configurar Stripe = ativar inscrições**: quando o organizador completa o onboarding Stripe Connect, as inscrições ficam automaticamente disponíveis no site (`hasRegistrations` é gerido pela plataforma com base no `stripeOnboardingStatus`).
+
+---
+
+#### `EventOrganizer` — acesso de gestão ao evento
+
+```prisma
+model EventOrganizer {
+  id        String              @id @default(cuid())
+  eventId   String
+  userId    String
+  role      EventOrganizerRole
+  // OWNER   — atribuído pelo Admin da plataforma; pode gerir outros organizadores,
+  //           configurar Stripe, editar evento, transferir ownership
+  // ADMIN   — atribuído pelo OWNER ou Admin da plataforma; pode editar evento,
+  //           gerir inscrições e staff; NÃO pode tocar em Stripe nem outros organizadores
+  // FINANCE — acesso apenas a dados financeiros e exportações; sem edição de evento
+  isActive  Boolean             @default(true)
+  assignedBy String             // userId do Admin da plataforma (ou OWNER que convidou)
+  createdAt DateTime            @default(now())
+  updatedAt DateTime            @updatedAt
+
+  event     Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user      User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([eventId])
+  @@index([userId])
+}
+
+enum EventOrganizerRole {
+  OWNER    // Responsável principal — atribuído pelo Admin da plataforma
+  ADMIN    // Co-organizador — atribuído pelo OWNER ou Admin
+  FINANCE  // Acesso financeiro apenas
+}
+```
+
+> **Regras de ownership**:
+>
+> - **Eventos são criados pelo Admin da plataforma** — o Admin é sempre quem inicia o evento.
+> - O Admin atribui um utilizador como `OWNER`. Pode ser o próprio organizador do evento real ou uma pessoa de confiança.
+> - Um evento pode não ter `OWNER` (evento informativo sem organizador na plataforma).
+> - O `OWNER` pode convidar `ADMIN` e `FINANCE` adicionais.
+> - O `OWNER` é o único que pode configurar Stripe Connect — ao fazê-lo, está a dizer "aceito receber inscrições no Athlifyr".
+> - O Admin da plataforma sobrepõe-se a tudo e pode gerir qualquer evento diretamente.
+
+---
+
+#### Stripe Connect — ativar inscrições no Athlifyr
+
+**Configurar Stripe = decisão de aceitar inscrições no site.**
+
+O organizador (`OWNER`) não ativa `hasRegistrations` manualmente — isso acontece automaticamente quando completa o onboarding Stripe:
+
+```
+hasRegistrations = (stripeOnboardingStatus === 'COMPLETE')
+```
+
+Ou seja:
+
+- Enquanto não há Stripe configurado → evento é **Informativo** (nível 0), só mostra link externo
+- Quando Stripe completo → evento passa a **Com Inscrições** (nível 1) automaticamente
+- Para ativar **LiveRace** (nível 2) → o Admin da plataforma ativa `hasLiveRace` manualmente
+
+Estes campos ficam no modelo `Event`:
+
+```prisma
+model Event {
+  // ... campos existentes + hasLiveRace + liveStatus ...
+
+  // ── Inscrições — gerido automaticamente via Stripe ──────────────────────
+  // hasRegistrations = true quando stripeOnboardingStatus = COMPLETE
+  // NÃO é um campo editável pelo organizador — é derivado do estado Stripe
+  hasRegistrations         Boolean   @default(false)
+
+  // ── LiveRace — ativado pelo Admin da plataforma ──────────────────────────
+  hasLiveRace              Boolean   @default(false)
+
+  // ── Stripe Connect (configurado pelo OWNER do evento) ───────────────────
+  stripeAccountId          String?   // ID da conta Stripe Connect do organizador
+  stripeChargesEnabled     Boolean   @default(false)
+  stripeDetailsSubmitted   Boolean   @default(false)
+  stripeOnboardingStatus   EventStripeOnboardingStatus @default(NOT_STARTED)
+  // NOT_STARTED | IN_PROGRESS | COMPLETE | RESTRICTED
+
+  // Comissão da plataforma sobre inscrições (configurável pelo Admin)
+  commissionPercent        Float     @default(5.0)
+  commissionFixed          Int       @default(0)   // cêntimos por inscrição
+
+  // Prazo para reembolsos automáticos
+  refundDeadline           DateTime?
+}
+
+enum EventStripeOnboardingStatus {
+  NOT_STARTED  // Organizador ainda não iniciou
+  IN_PROGRESS  // Onboarding iniciado mas não concluído
+  COMPLETE     // Stripe ativo — inscrições abertas automaticamente
+  RESTRICTED   // Conta com restrições — inscrições suspensas
+}
+```
+
+> **Fluxo de pagamento** (Stripe Connect destination charges):
+>
+> ```
+> Atleta paga €20
+>        │
+>        ▼  Stripe Checkout Session
+>        │    stripe_account: event.stripeAccountId
+>        │    application_fee_amount: 100 (€1 = 5% de €20)
+>        │
+>        ├── €19 → conta Stripe do organizador
+>        └──  €1 → conta Stripe da plataforma Athlifyr
+> ```
+
+---
+
+#### `EventStaffMember` — staff operacional (check-in, live streams)
 
 ```prisma
 model EventStaffMember {
@@ -249,15 +454,17 @@ model EventStaffMember {
   eventId     String
   userId      String
   role        EventStaffRole   @default(STAFF)
-  // ORGANIZER_OWNER | ORGANIZER_ADMIN | STAFF
+  // STAFF         — check-in de atletas + live streams
+  // STREAM_ONLY   — apenas live streams (ex: equipa de vídeo)
+  // CHECKIN_ONLY  — apenas check-in (ex: voluntários)
   isActive    Boolean          @default(true)
+  addedBy     String           // userId do organizador que adicionou
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
-  // Relações
   event       Event            @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  liveStreams LiveStream[]
+  liveStreams  LiveStream[]
 
   @@unique([eventId, userId])
   @@index([eventId])
@@ -265,48 +472,77 @@ model EventStaffMember {
 }
 
 enum EventStaffRole {
-  ORGANIZER_OWNER
-  ORGANIZER_ADMIN
+  STAFF          // Check-in + live streams
+  STREAM_ONLY    // Apenas live streams
+  CHECKIN_ONLY   // Apenas check-in
+}
+```
+
+> - Adicionado por `OWNER` ou `ADMIN` no painel do evento.
+> - Staff não tem acesso ao painel de gestão — só à app no dia da prova.
+> - Staff não vê dados financeiros, não edita o evento.
+
+---
+
+#### `EventInvite` — convites por email para organizadores e staff
+
+```prisma
+model EventInvite {
+  id              String              @id @default(cuid())
+  eventId         String
+  invitedEmail    String              // Email do convidado (pode não ter conta ainda)
+  invitedUserId   String?             // Preenchido quando o convite é aceite
+  invitedBy       String              // userId de quem convidou (Admin ou OWNER)
+  type            EventInviteType     // ORGANIZER ou STAFF
+  organizerRole   EventOrganizerRole? // Preenchido se type = ORGANIZER
+  staffRole       EventStaffRole?     // Preenchido se type = STAFF
+  token           String              @unique
+  status          InviteStatus        @default(PENDING)
+  expiresAt       DateTime
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  event           Event               @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId])
+  @@index([invitedEmail])
+  @@index([token])
+  @@index([status])
+}
+
+enum EventInviteType {
+  ORGANIZER
   STAFF
 }
 ```
+
+---
 
 #### `LiveStream`
 
 ```prisma
 model LiveStream {
-  id              String            @id @default(cuid())
+  id              String             @id @default(cuid())
   eventId         String
   staffMemberId   String
-  title           String            // Ex: "Pódio", "Abastecimento km 8"
+  title           String
   category        LiveStreamCategory @default(OTHER)
-  // PODIUM | AID_STATION | RIVER | INTERVIEW | START_LINE | FINISH_LINE | OTHER
-  status          LiveStreamStatus  @default(CREATED)
-  // CREATED | LIVE | ENDED | ERROR
-  isPublic        Boolean           @default(true)
-
-  // Timestamps
+  status          LiveStreamStatus   @default(CREATED)
+  isPublic        Boolean            @default(true)
   startedAt       DateTime?
   endedAt         DateTime?
-
-  // Provider
-  provider        StreamProvider    @default(MUX)
-  // MUX | LIVEKIT | AGORA | CLOUDFLARE | AWS_IVS
-  providerStreamId String?          // ID externo no provider
-  playbackUrl     String?           // HLS URL (público)
-  ingestUrl       String?           // RTMP/WebRTC ingest (NUNCA expor publicamente)
-  streamKey       String?           // Chave de stream (NUNCA expor publicamente)
-
-  // Localização opcional (para mostrar no mapa)
+  provider        StreamProvider     @default(MUX)
+  providerStreamId String?
+  playbackUrl     String?            // HLS URL (público)
+  ingestUrl       String?            // RTMP ingest (NUNCA expor publicamente)
+  streamKey       String?            // (NUNCA expor publicamente)
   latitude        Float?
   longitude       Float?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
-
-  // Relações
-  event           Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  staffMember     EventStaffMember  @relation(fields: [staffMemberId], references: [id], onDelete: Cascade)
+  event           Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  staffMember     EventStaffMember   @relation(fields: [staffMemberId], references: [id], onDelete: Cascade)
 
   @@index([eventId])
   @@index([staffMemberId])
@@ -343,69 +579,148 @@ enum StreamProvider {
 ### 3.4 Diagrama de relações
 
 ```
-User ──< Registration >── EventVariant
-              │                  │
-              │                  └── Event ──< LiveStream
-              │                       │
-              └── RaceSession (1:1)    └──< EventStaffMember
-                       │                        │
-                       └──< TrackingPoint      └──< LiveStream
+Admin da plataforma
+       │
+       ├── cria ──────────────────────────────────► Event
+       │                                              │
+       └── atribui OWNER ──► EventOrganizer ──────────┤
+                                   │                  │
+                         OWNER convida                │
+                         ADMIN/FINANCE/Staff           │
+                                   │                  │
+                                   ▼                  ▼
+                            EventInvite        EventStaffMember ──► LiveStream
                                                       │
-                                                User ─┘
+                                               (check-in, streams)
+
+OWNER configura Stripe Connect
+       │
+       ▼
+Event.stripeOnboardingStatus = COMPLETE
+       │
+       ▼ (automático)
+Event.hasRegistrations = true
+       │
+       ▼
+Atleta pode inscrever-se ──► Registration ──► RaceSession ──► TrackingPoint
 ```
 
 ---
 
 ## 4. Regras de Acesso (Gating)
 
-### 4.1 Roles do evento
+### 4.1 Quem é quem — visão completa
 
-| Role              | Descrição          | Permissões principais                                       |
-| ----------------- | ------------------ | ----------------------------------------------------------- |
-| `ORGANIZER_OWNER` | Dono do evento     | Tudo (gerir evento, staff, streams, inscrições, resultados) |
-| `ORGANIZER_ADMIN` | Admin do evento    | Gerir staff, streams, inscrições, leaderboard               |
-| `STAFF`           | Membro credenciado | Iniciar/parar live streams, check-in de atletas             |
-| `ATHLETE`         | Atleta inscrito    | Inscrever-se, check-in, corrida, tracking                   |
-| `PUBLIC_VIEWER`   | Público            | Ver evento, leaderboard, streams públicos                   |
-
-> Nota: `ATHLETE` e `PUBLIC_VIEWER` não são guardados em `EventStaffMember`. São roles implícitos baseados em `Registration` e sessão autenticada.
+| Role           | Modelo              | Quem atribui              | Descrição                                                   |
+| -------------- | ------------------- | ------------------------- | ----------------------------------------------------------- |
+| `OWNER`        | `EventOrganizer`    | Admin da plataforma       | Organizador principal — Stripe, editar evento, gerir equipa |
+| `ADMIN`        | `EventOrganizer`    | Admin plataforma ou OWNER | Co-organizador — gerir evento e inscrições, adicionar staff |
+| `FINANCE`      | `EventOrganizer`    | Admin plataforma ou OWNER | Acesso só a dados financeiros e exportações                 |
+| `STAFF`        | `EventStaffMember`  | OWNER ou ADMIN            | Check-in + live streams no dia                              |
+| `STREAM_ONLY`  | `EventStaffMember`  | OWNER ou ADMIN            | Só live streams                                             |
+| `CHECKIN_ONLY` | `EventStaffMember`  | OWNER ou ADMIN            | Só check-in                                                 |
+| `ATHLETE`      | _(implícito)_       | —                         | Utilizador com `Registration.status = CONFIRMED`            |
+| `PUBLIC`       | _(implícito)_       | —                         | Qualquer visitante                                          |
+| Platform Admin | `User.role = ADMIN` | —                         | Sobrepõe-se a tudo em qualquer evento                       |
 
 ### 4.2 Quem pode fazer o quê
 
-| Ação                               | Requisito                                                                                                                |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | --- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
-| Ver evento / variantes             | Público (qualquer utilizador)                                                                                            |
-| Inscrever-se (checkout)            | Autenticado + variante ativa + capacidade disponível                                                                     |
-| Check-in                           | `Registration.status = CONFIRMED` + dentro da janela (`checkInOpensAt` → `checkInClosesAt`)                              |
-| Iniciar corrida (tracking)         | `Registration.status = CONFIRMED` + `checkedInAt != null` + evento/variante em estado `LIVE` + permissões de localização |
-| Aparecer no leaderboard oficial    | `Registration.status = CONFIRMED` + `RaceSession.status = RUNNING` ou `FINISHED`                                         |
-| Ver tracking de outro atleta       | `RaceSession.privacyMode = PUBLIC` **ou** relação de amizade (se `FRIENDS`) **ou** organizador (se `ORGANIZER_ONLY`)     |     | **Iniciar / parar live stream** | **`EventStaffMember.role ∈ {STAFF, ORGANIZER_ADMIN, ORGANIZER_OWNER}` + `isActive = true` + evento não `FINISHED`/`CANCELLED`** |
-| **Definir título/local do stream** | **Mesmo que acima**                                                                                                      |
-| **Definir visibilidade do stream** | **`ORGANIZER_ADMIN` ou `ORGANIZER_OWNER` (staff pode sugerir, admin aprova)**                                            |
-| **Ver streams públicos**           | **Público (qualquer utilizador)**                                                                                        |
-| **Ver streams "Só organizador"**   | **`ORGANIZER_ADMIN` ou `ORGANIZER_OWNER`**                                                                               |
-| **Credenciar staff**               | **`ORGANIZER_OWNER` ou `ORGANIZER_ADMIN`**                                                                               |
+#### Painel de admin da plataforma (só Athlifyr Admin)
+
+| Ação                                      | Athlifyr Admin |
+| ----------------------------------------- | :------------: |
+| Criar evento                              |       ✅       |
+| Atribuir/remover `OWNER` a um evento      |       ✅       |
+| Ativar `hasLiveRace` (LiveRace completo)  |       ✅       |
+| Definir comissão da plataforma por evento |       ✅       |
+| Gerir qualquer evento (override total)    |       ✅       |
+| Eliminar evento                           |       ✅       |
+
+#### Painel do evento `/events/[slug]/manage` (organizadores)
+
+| Ação                                           | OWNER | ADMIN | FINANCE |
+| ---------------------------------------------- | :---: | :---: | :-----: |
+| Ver painel do evento                           |  ✅   |  ✅   |   ✅    |
+| Editar dados do evento (título, datas, etc.)   |  ✅   |  ✅   |   ❌    |
+| Gerir variantes e preços                       |  ✅   |  ✅   |   ❌    |
+| Configurar Stripe Connect (= abrir inscrições) |  ✅   |  ❌   |   ❌    |
+| Ver inscrições + pagamentos                    |  ✅   |  ✅   |   ✅    |
+| Exportar inscritos (CSV)                       |  ✅   |  ✅   |   ✅    |
+| Cancelar / reembolsar inscrição                |  ✅   |  ✅   |   ❌    |
+| Atribuir dorsais                               |  ✅   |  ✅   |   ❌    |
+| Convidar / remover `ADMIN` ou `FINANCE`        |  ✅   |  ❌   |   ❌    |
+| Convidar / remover staff operacional           |  ✅   |  ✅   |   ❌    |
+| Abrir / fechar janela de check-in              |  ✅   |  ✅   |   ❌    |
+| Marcar evento como `LIVE` / `FINISHED`         |  ✅   |  ✅   |   ❌    |
+| Ver live streams + kill switch                 |  ✅   |  ✅   |   ❌    |
+| Transferir ownership a outro utilizador        |  ✅   |  ❌   |   ❌    |
+
+> ℹ️ **`hasRegistrations` não é configurável pelo organizador** — é ativado automaticamente quando o Stripe Connect fica completo (`stripeOnboardingStatus = COMPLETE`). O organizador decide ao configurar o Stripe, não ao clicar num toggle.
+
+#### App no dia da prova (staff operacional)
+
+| Ação                        | STAFF | STREAM_ONLY | CHECKIN_ONLY |
+| --------------------------- | :---: | :---------: | :----------: |
+| Fazer check-in de atletas   |  ✅   |     ❌      |      ✅      |
+| Iniciar / parar live stream |  ✅   |     ✅      |      ❌      |
+| Ver lista de inscritos      |  ❌   |     ❌      |      ❌      |
+| Ver dados financeiros       |  ❌   |     ❌      |      ❌      |
+| Aceder ao painel `/manage`  |  ❌   |     ❌      |      ❌      |
+
+#### Público e atletas
+
+| Ação                         | Requisito                                                                                   |
+| ---------------------------- | ------------------------------------------------------------------------------------------- |
+| Ver evento / variantes       | Público                                                                                     |
+| Inscrever-se                 | Autenticado + `event.hasRegistrations = true` + variante ativa + capacidade disponível      |
+| Check-in                     | `Registration.status = CONFIRMED` + dentro da janela de check-in                            |
+| Iniciar corrida              | `Registration.status = CONFIRMED` + check-in feito + `liveStatus = LIVE` + GPS concedido    |
+| Ver tracking de outro atleta | `privacyMode = PUBLIC` **ou** amigo (se `FRIENDS`) **ou** organizador (se `ORGANIZER_ONLY`) |
+| Ver leaderboard              | Público (respeita `privacyMode` por atleta)                                                 |
+| Ver streams públicos         | Público                                                                                     |
 
 ### 4.3 Estados bloqueantes
 
-| Estado                            | Bloqueio                                                    |
-| --------------------------------- | ----------------------------------------------------------- |
-| `Registration.status = PENDING`   | Sem acesso ao modo corrida. Pagamento ainda não confirmado. |
-| `Registration.status = CANCELLED` | Inscrição cancelada. Sem acesso.                            |
-| `Registration.status = REFUNDED`  | Reembolso processado. Sem acesso.                           |
-| `checkedInAt = null`              | Não fez check-in. Não pode iniciar corrida.                 |
-| Evento não está `LIVE`            | Corrida ainda não começou ou já terminou.                   |
-| Localização não concedida         | App bloqueia início da corrida.                             |
+| Estado                                       | Bloqueio                                                                |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| `hasRegistrations = false`                   | Sem botão de inscrição; mostra link externo se `externalUrl` preenchido |
+| `stripeOnboardingStatus != COMPLETE`         | Organizador ainda não configurou Stripe — inscrições não disponíveis    |
+| `hasLiveRace = false`                        | Sem tracking, sem leaderboard, sem live streams                         |
+| `Registration.status = PENDING`              | Pagamento não confirmado — sem acesso ao modo corrida                   |
+| `Registration.status = CANCELLED / REFUNDED` | Inscrição inválida — sem acesso                                         |
+| `checkedInAt = null`                         | Check-in não feito — não pode iniciar corrida                           |
+| `liveStatus != LIVE`                         | Evento não está em corrida — botão "Começar" desativado                 |
+| GPS não concedido                            | App bloqueia início da corrida                                          |
 
 ### 4.4 Nota sobre privacidade
 
-- **LiveRace público** (leaderboard/tracking) pode mostrar atletas **apenas se** o atleta aceitar (opt-in via `privacyMode`) ou se os termos do evento o definirem.
-- **Participar na prova** (tracking/resultado) requer sempre inscrição confirmada (`CONFIRMED`).
 - O campo `RaceSession.privacyMode` é controlado pelo atleta e pode ser alterado a qualquer momento durante a corrida.
+- Leaderboard e tracking públicos só mostram atletas com `privacyMode = PUBLIC`.
 
----
+### 5.0 Modelo de pagamento
 
-## 5. Pagamentos — Stripe
+O dinheiro das inscrições vai **diretamente para a conta Stripe do organizador** via **Stripe Connect** (destination charges). A plataforma Athlifyr retém uma comissão configurável por evento.
+
+```
+Atleta paga €20
+       │
+       ▼ Stripe Checkout Session (payment_intent_data.transfer_data.destination = event.stripeAccountId)
+       │
+       ├── €19.00 → Conta Stripe do organizador  (ex: 5% comissão → 100% - 5% = 95%)
+       └──  €1.00 → Conta Stripe da plataforma Athlifyr
+```
+
+**Pré-condições para abrir inscrições**:
+
+- `event.stripeOnboardingStatus = COMPLETE` (`stripeChargesEnabled = true`)
+- `event.hasRegistrations = true`
+
+**Onboarding do organizador** (tal como já existe para Venues):
+
+1. OWNER vai a "Configurações → Pagamentos" no painel do evento
+2. Clica "Configurar pagamentos" → redirect para Stripe Connect onboarding
+3. Stripe redireciona de volta → webhook `account.updated` confirma `charges_enabled`
+4. `stripeOnboardingStatus` atualizado para `COMPLETE`
 
 ### 5.1 Checkout
 
@@ -415,31 +730,28 @@ Atleta seleciona variante
        ▼
 POST /api/events/[eventId]/register
        │
+       ├── Validar: event.hasRegistrations = true
+       ├── Validar: event.stripeOnboardingStatus = COMPLETE
        ├── Validar: variante ativa, capacidade, deadline
-       ├── Criar Registration (status=PENDING)
+       ├── Criar Registration (status = PENDING)
        ├── Criar Stripe Checkout Session
+       │     stripe_account: event.stripeAccountId  (Connect)
+       │     payment_intent_data.application_fee_amount: feeCents  (comissão Athlifyr)
        │     metadata: { eventId, variantId, userId, registrationId }
-       │     line_items: [{ price_data: { unit_amount: amountCents, currency } }]
        │     success_url: /events/[slug]/registration/success
        │     cancel_url: /events/[slug]
        │
        └── Redirect para Stripe Checkout
 ```
 
-**Campos opcionais v1:**
-
-- Cupões/descontos via Stripe Coupons
-- Campos personalizados no checkout (ex: tamanho t-shirt, clube)
-
 ### 5.2 Webhooks
 
 | Evento Stripe                        | Ação no Athlifyr                                                          |
 | ------------------------------------ | ------------------------------------------------------------------------- |
 | `checkout.session.completed`         | Marcar `Registration.status = CONFIRMED`, guardar `stripePaymentIntentId` |
-| `payment_intent.payment_failed`      | Manter `Registration.status = PENDING`, enviar notificação ao utilizador  |
+| `payment_intent.payment_failed`      | Manter `Registration.status = PENDING`, notificar utilizador              |
 | `charge.refunded` / `refund.updated` | Marcar `Registration.status = REFUNDED`                                   |
-
-**Implementação:**
+| `account.updated`                    | Atualizar `stripeChargesEnabled`, `stripeOnboardingStatus` do evento      |
 
 ```typescript
 // app/api/webhooks/stripe/route.ts
@@ -890,43 +1202,83 @@ Para uma fase posterior, considerar:
 
 ## 11. Fases de Implementação
 
+### Fase 0 — Organizadores e Stripe Connect (PRÉ-REQUISITO de tudo)
+
+> ⚠️ **Esta fase desbloqueia todas as outras.** Sem organizador atribuído e sem Stripe Connect, não é possível abrir inscrições.
+
+**Schema (migrations)**:
+
+- `EventOrganizer` + `EventInvite` + enums (`EventOrganizerRole`, `EventInviteType`, `EventStaffRole`)
+- Novos campos no `Event`: Stripe Connect fields (`stripeAccountId`, `stripeOnboardingStatus`, etc.), `hasRegistrations`, `hasLiveRace`, `commissionPercent`, `refundDeadline`
+- `EventStaffMember` com roles novos (`STAFF`, `STREAM_ONLY`, `CHECKIN_ONLY`)
+
+**Painel de admin da plataforma** (extensão do admin existente):
+
+- Ao criar/editar evento → campo "Atribuir organizador (OWNER)" — pesquisa de utilizador por nome/email
+- Lista de eventos com coluna "Organizador" e estado do Stripe
+
+**Painel do evento** `/events/[slug]/manage` (novo — para organizadores):
+
+- Tab **"Visão Geral"** — estado do evento, métricas rápidas (inscrições, receita)
+- Tab **"Evento"** — editar dados, variantes, preços (OWNER e ADMIN)
+- Tab **"Equipa"** — lista de organizadores + staff; botão "Convidar" por email; gestão de roles
+- Tab **"Pagamentos"** — onboarding Stripe Connect; estado da conta; histórico de pagamentos (só OWNER)
+
+**APIs**:
+
+- `GET/POST/DELETE /api/events/[eventId]/organizers` — gerir organizadores
+- `GET/POST/DELETE /api/events/[eventId]/staff` — gerir staff operacional
+- `GET/POST /api/events/[eventId]/invites` — enviar e aceitar convites por email
+- `POST /api/events/[eventId]/stripe/onboarding` — iniciar Stripe Connect (gera link de onboarding)
+- Webhook `account.updated` → atualiza `stripeChargesEnabled`, `stripeOnboardingStatus`, `hasRegistrations`
+
+**Lógica automática**:
+
+```typescript
+// Quando Stripe onboarding completo:
+// event.stripeOnboardingStatus = COMPLETE → event.hasRegistrations = true (automático)
+// Organizador não tem toggle manual — configurar Stripe É a decisão de aceitar inscrições
+```
+
 ### Fase 1 — Inscrições e Pagamentos (MVP)
 
-- Novos campos em `Event` e `EventVariant`
-- Modelo `Registration` + enums
-- Stripe Checkout + webhooks
-- Página de inscrição (web)
-- "Minhas Inscrições" (web + app)
-- Dashboard do organizador (lista de inscritos + export)
+- Novos campos em `EventVariant` (`isActive`, `startsAt`, `endsAt`)
+- Stripe Checkout com Stripe Connect (`transfer_data.destination`, `application_fee_amount`)
+- API `POST /api/events/[eventId]/register` com gating completo
+- Webhook `checkout.session.completed` → `Registration.status = CONFIRMED`
+- Página de inscrição na página do evento (condicionada a `hasRegistrations`)
+- "Minhas Inscrições" — `/me/registrations` (web + app)
+- Dashboard do organizador: Tab "Inscrições" (lista, filtros, export CSV)
+- Cancelamentos e reembolsos via Stripe Refund API
 
 ### Fase 2 — Check-in e Controlo de Acesso
 
 - Janela de check-in (`checkInOpensAt` / `checkInClosesAt`)
-- QR Code por inscrição
-- Scan de QR na app (staff)
-- Check-in manual (fallback)
-- Gating completo (só CONFIRMED + check-in para corrida)
+- QR Code único por inscrição (gerado no `Registration`)
+- App: scan de QR pelo staff (`STAFF` ou `CHECKIN_ONLY`)
+- Check-in manual (fallback — busca por nome/dorsal)
+- Gating completo: só `CONFIRMED` + check-in feito pode entrar no modo corrida
 
 ### Fase 3 — LiveRace (Tracking + Leaderboard)
 
-- Modelo `RaceSession` + `TrackingPoint`
-- Tracking em background na app (expo-location)
-- Envio de pontos em batch
-- Leaderboard em tempo real (Socket.io)
-- Privacy mode (PUBLIC / FRIENDS / ORGANIZER_ONLY)
+- Schema: `RaceSession` + `TrackingPoint`
+- App: tracking GPS em background (`expo-location`)
+- Envio de pontos em batch para API
+- Leaderboard em tempo real via Socket.io
+- `liveStatus` no evento (`SCHEDULED → CHECK_IN_OPEN → LIVE → FINISHED`)
+- Privacy mode por atleta (`PUBLIC / FRIENDS / ORGANIZER_ONLY`)
 
 ### Fase 4 — Resultados e Pós-corrida
 
-- Cálculo automático de resultados
-- Posições por variante e categoria
+- Cálculo automático de resultado (tempo total, posição por variante)
 - Integração com modelo `Result` existente
-- Perfil do atleta com histórico
+- Perfil do atleta com histórico de corridas
 - Partilha social de resultados
 
-### Fase 5 — Melhorias Pós-MVP (Tracking)
+### Fase 5 — Melhorias Pós-MVP
 
 - Cupões/descontos Stripe
-- Campos personalizados no checkout (tamanho t-shirt, clube, etc.)
+- Campos personalizados no checkout (t-shirt, clube, etc.)
 - Checkpoints intermédios (split times)
 - Integração com wearables (heart rate)
 - Notificações push (confirmação, lembrete, resultado)
@@ -935,17 +1287,16 @@ Para uma fase posterior, considerar:
 
 ### Fase 6 — Staff Live Streams (MVP Streams)
 
-> Pode ser implementada como piloto separado ou integrada na Fase 3/4, dependendo do risco e prioridade.
+> Pode ser piloto separado ou integrada com Fase 3/4.
 
-- Modelo `EventStaffMember` + `LiveStream` + enums
-- Roles e permissões de staff (`ORGANIZER_OWNER`, `ORGANIZER_ADMIN`, `STAFF`)
-- Credenciamento de staff no painel do organizador
-- Integração com **provider de streaming** (Mux Live recomendado para MVP)
-- App mobile: modo staff com ecrã de streaming (criar, iniciar, monitorizar, terminar)
-- Reconexão automática de stream na app
-- Página pública: secção "Live" com grid de streams, filtros por categoria, player HLS
-- Endpoints de API para staff streams + webhooks do provider
-- Dashboard do organizador: gestão de streams + kill switch
+- Schema: `LiveStream` + enums
+- Credenciamento de staff no painel de organizador (Tab "Equipa")
+- Integração com **Mux Live** (RTMP ingest + HLS playback)
+- App mobile: modo staff — criar, iniciar, monitorizar, terminar stream
+- Reconexão automática de stream
+- Página pública: secção "Live" com grid de streams, player HLS
+- API streams + webhooks do provider (Mux)
+- Dashboard organizador: gestão de streams + kill switch
 - Testes: rede fraca, multi-stream, permissões, load do player
 
 ### Fase 7 — Live Streams Avançados (V2)
@@ -1079,14 +1430,16 @@ Para uma fase posterior, considerar:
 
 ## 16. Milestones
 
-| Milestone                               | Scope                                                                          | Dependências                                       |
-| --------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------- |
-| **Milestone 1** — MVP LiveRace Tracking | Inscrições, pagamentos, check-in, tracking, leaderboard (Fases 1-4)            | Stripe, Socket.io, expo-location                   |
-| **Milestone 2** — MVP Live Streams      | Staff credenciamento, streaming multi-câmara, página pública, runbook (Fase 6) | Provider de streaming (Mux), app mobile staff mode |
-| **Milestone 3** — Live Streams V2       | DVR, viewers, featured stream, self-hosted, highlights (Fase 7)                | Milestone 2 concluída                              |
+| Milestone                                | Scope                                                                              | Dependências                                           |
+| ---------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------ |
+| **Milestone 0** — Organizadores + Stripe | Painel de organizador, ownership, convites, Stripe Connect por evento (Fase 0)     | Schema migration, Stripe Connect                       |
+| **Milestone 1** — MVP Inscrições         | Inscrições, pagamentos com Stripe Connect, "Minhas Inscrições", dashboard (Fase 1) | Milestone 0 concluído                                  |
+| **Milestone 2** — Check-in + LiveRace    | Check-in QR, tracking GPS, leaderboard ao vivo, resultados (Fases 2-4)             | Milestone 1 concluído, Socket.io, expo-location        |
+| **Milestone 3** — MVP Live Streams       | Staff credenciamento, streaming multi-câmara, página pública (Fase 6)              | Milestone 0 concluído, Mux Live, app mobile staff mode |
+| **Milestone 4** — Live Streams V2        | DVR, viewers, featured stream, highlights (Fase 7)                                 | Milestone 3 concluído                                  |
 
-> **Nota**: Milestone 2 pode ser executada como piloto separado (1 evento teste) antes do rollout geral, para validar a integração com o provider e o fluxo de staff.
+> **Nota**: Milestone 3 (Live Streams) pode ser desenvolvido em paralelo com Milestone 2 (LiveRace), pois ambos dependem apenas de Milestone 0.
 
 ---
 
-**Status**: 📋 **Roadmap definido — pronto para implementação por fases**
+**Status**: 📋 **Roadmap definido — próximo passo: Milestone 0 (Fase 0 — Organizadores + Stripe Connect)**

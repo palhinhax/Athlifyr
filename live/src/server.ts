@@ -10,14 +10,26 @@ import { config } from "./config.js";
 import { chatRoutes } from "./modules/chat/chat.routes.js";
 
 export async function buildServer() {
+  // Build logger options — only use pino-pretty in development if available
+  const loggerOptions: Record<string, unknown> = {
+    level: config.env === "production" ? "info" : "debug",
+  };
+
+  if (config.env === "development") {
+    try {
+      // Only add transport if pino-pretty is available
+      await import("pino-pretty");
+      loggerOptions.transport = {
+        target: "pino-pretty",
+        options: { colorize: true },
+      };
+    } catch {
+      // pino-pretty not installed — use default JSON logger
+    }
+  }
+
   const app = Fastify({
-    logger: {
-      level: config.env === "production" ? "info" : "debug",
-      transport:
-        config.env === "development"
-          ? { target: "pino-pretty", options: { colorize: true } }
-          : undefined,
-    },
+    logger: loggerOptions,
     trustProxy: true,
   });
 

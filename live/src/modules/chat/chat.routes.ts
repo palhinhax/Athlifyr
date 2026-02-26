@@ -13,7 +13,9 @@ import {
   getMessages,
   sendMessage,
   markConversationSeen,
-  getUnreadCounts,
+  getChatNotifications,
+  markChatNotificationRead,
+  markAllChatNotificationsRead,
   hideConversation,
   ApiError,
 } from "./chat.service.js";
@@ -185,15 +187,53 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
     }
   );
 
-  // ─── GET /chat/unread ──────────────────────────────────────────────────
+  // ─── GET /chat/notifications ──────────────────────────────────────────
 
-  app.get("/unread", async (request: FastifyRequest, reply: FastifyReply) => {
-    try {
-      const token = getToken(request);
-      const result = await getUnreadCounts(token);
-      return reply.send(result);
-    } catch (err) {
-      return handleApiError(err, reply);
+  app.get(
+    "/notifications",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const token = getToken(request);
+        const result = await getChatNotifications(token);
+        return reply.send(result);
+      } catch (err) {
+        return handleApiError(err, reply);
+      }
     }
-  });
+  );
+
+  // ─── POST /chat/notifications/:id/read ────────────────────────────────
+
+  app.post(
+    "/notifications/:id/read",
+    async (
+      request: FastifyRequest<{ Params: { id: string } }>,
+      reply: FastifyReply
+    ) => {
+      try {
+        const token = getToken(request);
+        const { id: notificationId } = request.params;
+
+        await markChatNotificationRead(token, notificationId);
+        return reply.send({ success: true });
+      } catch (err) {
+        return handleApiError(err, reply);
+      }
+    }
+  );
+
+  // ─── POST /chat/notifications/read-all ────────────────────────────────
+
+  app.post(
+    "/notifications/read-all",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const token = getToken(request);
+        await markAllChatNotificationsRead(token);
+        return reply.send({ success: true });
+      } catch (err) {
+        return handleApiError(err, reply);
+      }
+    }
+  );
 }

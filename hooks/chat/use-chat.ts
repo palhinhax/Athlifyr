@@ -40,26 +40,73 @@ interface Conversation {
   updatedAt: Date;
 }
 
+const LIVE_SERVER_URL = process.env.NEXT_PUBLIC_LIVE_URL;
+const LIVE_CHAT_BASE = LIVE_SERVER_URL
+  ? `${LIVE_SERVER_URL.replace(/\/$/, "")}/api/chat`
+  : null;
+
+interface LiveFetchOptions {
+  method?: "GET" | "POST";
+  body?: Record<string, unknown>;
+}
+
+async function fetchLiveToken(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/auth/live-token");
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token?: string };
+    return data.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function liveFetch<T>(
+  path: string,
+  options: LiveFetchOptions = {}
+): Promise<T> {
+  if (!LIVE_CHAT_BASE) {
+    throw new Error("Live server URL not configured");
+  }
+
+  const token = await fetchLiveToken();
+  if (!token) {
+    throw new Error("Failed to obtain live token");
+  }
+
+  try {
+    const response = await fetch(`${LIVE_CHAT_BASE}${path}`, {
+      method: options.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error("Live chat request failed");
+    }
+    return (await response.json()) as T;
+  } catch {
+    throw new Error("Live chat request failed");
+  }
+}
+
 // Fetch conversations list
 async function fetchConversations(): Promise<Conversation[]> {
-  const response = await fetch("/api/chat/conversations");
-  if (!response.ok) throw new Error("Failed to fetch conversations");
-  const data = await response.json();
-  return data.conversations || [];
+  const liveData = await liveFetch<{ conversations: Conversation[] }>(
+    "/conversations"
+  );
+  return liveData.conversations || [];
 }
 
 // Fetch messages for a conversation (initial load only)
 async function fetchMessages(conversationId: string): Promise<Message[]> {
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages`
+  const liveData = await liveFetch<{ messages: Message[] }>(
+    `/conversations/${conversationId}/messages`
   );
-
-  if (!response.ok) {
-    throw new Error("Failed to fetch messages");
-  }
-
-  const data = await response.json();
-  return data.messages || [];
+  return liveData.messages || [];
 }
 
 // Send a message via REST API (fallback when Socket.io is unavailable)
@@ -67,30 +114,25 @@ async function sendMessageApi(
   conversationId: string,
   content: string
 ): Promise<Message> {
-  const response = await fetch(
-    `/api/chat/conversations/${conversationId}/messages`,
+  const liveData = await liveFetch<{ message: Message }>(
+    `/conversations/${conversationId}/messages`,
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
+      body: { content },
     }
   );
-  if (!response.ok) throw new Error("Failed to send message");
-  const data = await response.json();
-  return data.message;
+
+  return liveData.message;
 }
 
 // Create or get conversation
 async function createConversation(
   otherUserId: string
 ): Promise<{ conversation: Conversation }> {
-  const response = await fetch("/api/chat/conversations", {
+  return liveFetch<{ conversation: Conversation }>("/conversations", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ otherUserId }),
+    body: { otherUserId },
   });
-  if (!response.ok) throw new Error("Failed to create conversation");
-  return response.json();
 }
 
 // Hook for conversations list

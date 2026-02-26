@@ -13,6 +13,8 @@ import {
   apiMarkSeen,
   apiHideConversation,
   apiGetChatNotifications,
+  apiMarkChatNotificationRead,
+  apiMarkAllChatNotificationsRead,
   apiVerifyParticipant,
   ApiError,
 } from "../../plugins/api-client.js";
@@ -80,9 +82,24 @@ export async function markConversationSeen(
   return lastSeenAt;
 }
 
-/** Get unread counts (via Next.js API) */
-export async function getUnreadCounts(token: string) {
+/** Get chat notifications (via Next.js API) */
+export async function getChatNotifications(token: string) {
   return apiGetChatNotifications(token);
+}
+
+/** Mark a chat notification as read (via Next.js API) */
+export async function markChatNotificationRead(
+  token: string,
+  notificationId: string
+): Promise<void> {
+  await apiMarkChatNotificationRead(token, notificationId);
+}
+
+/** Mark all chat notifications as read (via Next.js API) */
+export async function markAllChatNotificationsRead(
+  token: string
+): Promise<void> {
+  await apiMarkAllChatNotificationsRead(token);
 }
 
 // ─── Participant verification ─────────────────────────────────────────────

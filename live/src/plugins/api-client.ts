@@ -97,6 +97,17 @@ export interface ConversationInfo {
   messages: MessageInfo[];
 }
 
+export interface ChatNotificationInfo {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName: string | null;
+  senderImage: string | null;
+  content: string;
+  createdAt: string;
+  read: boolean;
+}
+
 // ─── Chat API Methods ──────────────────────────────────────────────────────
 
 /** List conversations for authenticated user */
@@ -171,9 +182,31 @@ export async function apiHideConversation(
 
 /** Get chat notifications (unread count) */
 export async function apiGetChatNotifications(token: string): Promise<{
-  notifications: Array<{ conversationId: string; unreadCount: number }>;
+  notifications: ChatNotificationInfo[];
+  unreadCount: number;
 }> {
   return apiRequest("/api/chat/notifications", { token });
+}
+
+/** Mark a chat notification as read */
+export async function apiMarkChatNotificationRead(
+  token: string,
+  notificationId: string
+): Promise<{ success: boolean }> {
+  return apiRequest(`/api/chat/notifications/${notificationId}/read`, {
+    method: "POST",
+    token,
+  });
+}
+
+/** Mark all chat notifications as read */
+export async function apiMarkAllChatNotificationsRead(
+  token: string
+): Promise<{ success: boolean }> {
+  return apiRequest("/api/chat/notifications/read-all", {
+    method: "POST",
+    token,
+  });
 }
 
 /** Verify user is a participant of a conversation (used for room join) */

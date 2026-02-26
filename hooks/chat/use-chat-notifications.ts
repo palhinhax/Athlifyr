@@ -20,34 +20,82 @@ interface NotificationsResponse {
   unreadCount: number;
 }
 
+const LIVE_SERVER_URL = process.env.NEXT_PUBLIC_LIVE_URL;
+const LIVE_CHAT_BASE = LIVE_SERVER_URL
+  ? `${LIVE_SERVER_URL.replace(/\/$/, "")}/api/chat`
+  : null;
+
+interface LiveFetchOptions {
+  method?: "GET" | "POST";
+  body?: Record<string, unknown>;
+}
+
+async function fetchLiveToken(): Promise<string | null> {
+  try {
+    const res = await fetch("/api/auth/live-token");
+    if (!res.ok) return null;
+    const data = (await res.json()) as { token?: string };
+    return data.token ?? null;
+  } catch {
+    return null;
+  }
+}
+
+async function liveFetch<T>(
+  path: string,
+  options: LiveFetchOptions = {}
+): Promise<T> {
+  if (!LIVE_CHAT_BASE) {
+    throw new Error("Live server URL not configured");
+  }
+
+  const token = await fetchLiveToken();
+  if (!token) {
+    throw new Error("Failed to obtain live token");
+  }
+
+  try {
+    const response = await fetch(`${LIVE_CHAT_BASE}${path}`, {
+      method: options.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      throw new Error("Live chat request failed");
+    }
+    return (await response.json()) as T;
+  } catch {
+    throw new Error("Live chat request failed");
+  }
+}
+
 // Fetch notifications from API (initial load)
 async function fetchNotifications(): Promise<NotificationsResponse> {
-  const response = await fetch("/api/chat/notifications");
-  if (!response.ok) {
-    return { notifications: [], unreadCount: 0 };
-  }
-  return response.json();
+  return liveFetch<NotificationsResponse>("/notifications");
 }
 
 // Mark notification as read
 async function markNotificationAsRead(notificationId: string): Promise<void> {
-  const response = await fetch(
-    `/api/chat/notifications/${notificationId}/read`,
-    {
-      method: "POST",
-    }
+  const liveResponse = await liveFetch<{ success: boolean }>(
+    `/notifications/${notificationId}/read`,
+    { method: "POST" }
   );
-  if (!response.ok) {
+  if (!liveResponse.success) {
     throw new Error("Failed to mark notification as read");
   }
 }
 
 // Mark all notifications as read
 async function markAllNotificationsAsRead(): Promise<void> {
-  const response = await fetch("/api/chat/notifications/read-all", {
-    method: "POST",
-  });
-  if (!response.ok) {
+  const liveResponse = await liveFetch<{ success: boolean }>(
+    "/notifications/read-all",
+    { method: "POST" }
+  );
+  if (!liveResponse.success) {
     throw new Error("Failed to mark all notifications as read");
   }
 }

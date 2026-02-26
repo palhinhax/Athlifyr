@@ -1,0 +1,18 @@
+# Git
+.git
+.gitignore
+
+# Dependencies (reinstalled in Docker)
+node_modules
+
+# Build output (rebuilt inside Docker)
+dist
+
+# Environment files (injected via Railway env vars)
+.env
+.env.*
+
+# Dev/editor files
+.DS_Store
+*.tsbuildinfo
+README.md

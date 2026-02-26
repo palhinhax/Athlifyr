@@ -50,15 +50,15 @@ export function WorkoutsPageClient({
   const [publicWorkouts, setPublicWorkouts] = useState<WorkoutApiResponse[]>(
     []
   );
-  const [assignedPlans, setAssignedPlans] = useState<UserTrainingPlanWithDetails[]>([]);
+  const [assignedPlans, setAssignedPlans] = useState<
+    UserTrainingPlanWithDetails[]
+  >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingAssigned, setIsLoadingAssigned] = useState(true);
   const [showBuilder, setShowBuilder] = useState(false);
   const [editingWorkout, setEditingWorkout] =
     useState<WorkoutWithBlocks | null>(null);
-  const [activeTab, setActiveTab] = useState(
-    isStaff ? "my-workouts" : "saved"
-  );
+  const [activeTab, setActiveTab] = useState(isStaff ? "my-workouts" : "saved");
 
   const fetchWorkouts = useCallback(async () => {
     try {
@@ -87,14 +87,10 @@ export function WorkoutsPageClient({
       setMyWorkouts(allWorkouts.filter((w) => w.createdById === userId));
 
       // Saved workouts: not created by me but saved
-      setSavedWorkouts(
-        allWorkouts.filter((w) => w.isSaved)
-      );
+      setSavedWorkouts(allWorkouts.filter((w) => w.isSaved));
 
       // Public workouts: all public workouts not yet saved (for discovery)
-      setPublicWorkouts(
-        allWorkouts.filter((w) => w.isPublic && !w.isSaved)
-      );
+      setPublicWorkouts(allWorkouts.filter((w) => w.isPublic && !w.isSaved));
     } catch (error) {
       console.error("Failed to fetch workouts:", error);
       toast({
@@ -109,7 +105,7 @@ export function WorkoutsPageClient({
   // Fetch assigned training plans (for normal users)
   const fetchAssignedPlans = useCallback(async () => {
     if (isStaff) return; // Pro users don't need this
-    
+
     try {
       setIsLoadingAssigned(true);
       const response = await fetch("/api/training-plans?assignedToMe=true");
@@ -456,8 +452,10 @@ function SavedContentTab({
   const t = useTranslations("workouts");
   const tPlans = useTranslations("workouts.plans");
   const { toast } = useToast();
-  
-  const [contentType, setContentType] = useState<"workouts" | "plans">("workouts");
+
+  const [contentType, setContentType] = useState<"workouts" | "plans">(
+    "workouts"
+  );
   const [savedPlans, setSavedPlans] = useState<
     Array<{
       id: string;
@@ -501,7 +499,7 @@ function SavedContentTab({
   const handleUnsavePlan = async (e: React.MouseEvent, planId: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setSavingPlanId(planId);
     try {
       const response = await fetch(`/api/training-plans/${planId}/save`, {
@@ -532,9 +530,10 @@ function SavedContentTab({
   };
 
   const isLoading = contentType === "workouts" ? workoutsLoading : plansLoading;
-  const hasContent = contentType === "workouts" 
-    ? savedWorkouts.length > 0 
-    : savedPlans.length > 0;
+  const hasContent =
+    contentType === "workouts"
+      ? savedWorkouts.length > 0
+      : savedPlans.length > 0;
 
   return (
     <div className="space-y-6">
@@ -574,8 +573,8 @@ function SavedContentTab({
       ) : !hasContent ? (
         <div className="rounded-lg border border-dashed p-12 text-center">
           <p className="text-lg font-medium">
-            {contentType === "workouts" 
-              ? t("noSavedWorkouts") 
+            {contentType === "workouts"
+              ? t("noSavedWorkouts")
               : tPlans("noSavedPlans")}
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -599,7 +598,10 @@ function SavedContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {savedPlans.map((plan) => (
-            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md">
+            <div
+              key={plan.id}
+              className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+            >
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -616,7 +618,10 @@ function SavedContentTab({
                   }`}
                 />
               </button>
-              <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
+              <Link
+                href={`/workouts/plans/${plan.id}`}
+                className="flex flex-1 cursor-pointer flex-col"
+              >
                 <div className="flex-1 pr-8">
                   <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
                     {plan.name}
@@ -680,8 +685,10 @@ function PublicContentTab({
   const t = useTranslations("workouts");
   const tPlans = useTranslations("workouts.plans");
   const { toast } = useToast();
-  
-  const [contentType, setContentType] = useState<"workouts" | "plans">("workouts");
+
+  const [contentType, setContentType] = useState<"workouts" | "plans">(
+    "workouts"
+  );
   const [searchQuery, setSearchQuery] = useState("");
   const [plans, setPlans] = useState<
     Array<{
@@ -705,10 +712,7 @@ function PublicContentTab({
         const data = await response.json();
         // Show all public plans
         const publicPlans = (data.plans || []).filter(
-          (p: {
-            isPublic: boolean;
-            createdById: string;
-          }) => p.isPublic
+          (p: { isPublic: boolean; createdById: string }) => p.isPublic
         );
         setPlans(publicPlans);
       }
@@ -726,10 +730,14 @@ function PublicContentTab({
     fetchPlans();
   }, [fetchPlans]);
 
-  const handleSavePlan = async (e: React.MouseEvent, planId: string, isSaved: boolean) => {
+  const handleSavePlan = async (
+    e: React.MouseEvent,
+    planId: string,
+    isSaved: boolean
+  ) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     setSavingPlanId(planId);
     try {
       const response = await fetch(`/api/training-plans/${planId}/save`, {
@@ -742,9 +750,7 @@ function PublicContentTab({
         });
         // Update local state
         setPlans((prev) =>
-          prev.map((p) =>
-            p.id === planId ? { ...p, isSaved: !isSaved } : p
-          )
+          prev.map((p) => (p.id === planId ? { ...p, isSaved: !isSaved } : p))
         );
         onSaveToggle();
       } else {
@@ -784,7 +790,10 @@ function PublicContentTab({
   });
 
   const isLoading = contentType === "workouts" ? workoutsLoading : plansLoading;
-  const hasContent = contentType === "workouts" ? filteredWorkouts.length > 0 : filteredPlans.length > 0;
+  const hasContent =
+    contentType === "workouts"
+      ? filteredWorkouts.length > 0
+      : filteredPlans.length > 0;
 
   return (
     <div className="space-y-6">
@@ -808,7 +817,7 @@ function PublicContentTab({
             {tPlans("title")}
           </Button>
         </div>
-        
+
         <div className="relative flex-1 sm:max-w-sm">
           <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -863,7 +872,10 @@ function PublicContentTab({
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filteredPlans.map((plan) => (
-            <div key={plan.id} className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md">
+            <div
+              key={plan.id}
+              className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+            >
               <button
                 onClick={(e) => {
                   e.preventDefault();
@@ -882,7 +894,10 @@ function PublicContentTab({
                   } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
                 />
               </button>
-              <Link href={`/workouts/plans/${plan.id}`} className="flex flex-1 flex-col cursor-pointer">
+              <Link
+                href={`/workouts/plans/${plan.id}`}
+                className="flex flex-1 cursor-pointer flex-col"
+              >
                 <div className="flex-1 pr-8">
                   <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
                     {plan.name}

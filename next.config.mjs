@@ -4,7 +4,8 @@ import createNextIntlPlugin from "next-intl/plugin";
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 // Live server URL for CSP connect-src (HTTP + WebSocket)
-const liveServerUrl = process.env.NEXT_PUBLIC_LIVE_URL || "http://localhost:4000";
+const liveServerUrl =
+  process.env.NEXT_PUBLIC_LIVE_URL || "http://localhost:4000";
 const liveServerWs = liveServerUrl.replace(/^http/, "ws");
 
 // Content Security Policy - carefully configured for Next.js compatibility

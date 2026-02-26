@@ -37,6 +37,11 @@
       "h": "h",
       "m": "m",
       "s": "s"
+    },
+    "notFound": {
+      "heading": "Página não encontrada",
+      "description": "Desculpa, a página que procuras não existe ou foi removida.",
+      "backHome": "Voltar à Home"
     }
   },
   "upload": {
@@ -181,11 +186,6 @@
       "title": "Mensagem Enviada! 🎉",
       "description": "Obrigado pelo teu contacto! Vamos responder-te por email o mais rápido possível."
     }
-  },
-  "notFound": {
-    "heading": "Página não encontrada",
-    "description": "Desculpa, a página que procuras não existe ou foi removida.",
-    "backHome": "Voltar à Home"
   },
   "notifications": {
     "notifications": "Notificações",

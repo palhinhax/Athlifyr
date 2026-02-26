@@ -37,6 +37,11 @@
       "h": "h",
       "m": "m",
       "s": "s"
+    },
+    "notFound": {
+      "heading": "Página no encontrada",
+      "description": "Lo sentimos, la página que buscas no existe o ha sido eliminada.",
+      "backHome": "Volver al inicio"
     }
   },
   "upload": {
@@ -181,11 +186,6 @@
       "title": "¡Mensaje Enviado! 🎉",
       "description": "¡Gracias por contactarnos! Te responderemos por email lo antes posible."
     }
-  },
-  "notFound": {
-    "heading": "Página no encontrada",
-    "description": "Lo sentimos, la página que buscas no existe o ha sido eliminada.",
-    "backHome": "Volver al inicio"
   },
   "notifications": {
     "notifications": "Notificaciones",

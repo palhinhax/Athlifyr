@@ -241,9 +241,11 @@ export default async function FeedPage({
     })),
   ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
-  // Random hero image
-  const heroImage =
-    FEED_HERO_IMAGES[Math.floor(Math.random() * FEED_HERO_IMAGES.length)];
+  // Deterministic hero image based on day of year (stable per day for better caching)
+  const dayOfYear = Math.floor(
+    (Date.now() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 86400000
+  );
+  const heroImage = FEED_HERO_IMAGES[dayOfYear % FEED_HERO_IMAGES.length];
 
   return (
     <div className="min-h-screen">
@@ -251,6 +253,7 @@ export default async function FeedPage({
         image={heroImage}
         title={t("title")}
         description={t("description")}
+        isLCP
       />
 
       <div className="container mx-auto px-4 py-8">

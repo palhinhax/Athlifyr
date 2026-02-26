@@ -14,6 +14,8 @@ interface HeroBackgroundProps {
   onImageClick?: () => void;
   imageQuality?: number;
   overlayOpacity?: "light" | "medium" | "dark";
+  /** Mark image as the Largest Contentful Paint element for faster loading */
+  isLCP?: boolean;
 }
 
 export function HeroBackground({
@@ -26,8 +28,9 @@ export function HeroBackground({
   customHeight,
   clickable = false,
   onImageClick,
-  imageQuality = 90,
+  imageQuality = 75,
   overlayOpacity = "medium",
+  isLCP = false,
 }: HeroBackgroundProps) {
   const heightClasses = {
     default: "py-24",
@@ -60,10 +63,12 @@ export function HeroBackground({
               src={image}
               alt={title || "Hero background"}
               fill
-              className="object-cover object-center transition-transform duration-300 hover:scale-105"
-              priority
+              className={`object-cover object-center ${isLCP ? "" : "transition-transform duration-300 hover:scale-105"}`}
+              priority={isLCP}
+              loading={isLCP ? "eager" : "lazy"}
               quality={imageQuality}
               sizes="100vw"
+              fetchPriority={isLCP ? "high" : "auto"}
             />
             <div
               className={`absolute inset-0 ${overlayClasses[overlayOpacity]}`}

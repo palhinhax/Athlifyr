@@ -35,6 +35,7 @@ interface VariantInput {
   distanceKm?: number;
   elevationGainM?: number;
   price?: number;
+  maxParticipants?: number | null;
   startDate?: string;
   startTime?: string;
   translations?: VariantTranslationInput[];
@@ -109,14 +110,12 @@ export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Try to find by ID first (UUID format), then by slug
-    const isUUID =
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-        id
-      );
+    // Try to find by ID first (cuid format: starts with 'c' and ~25 chars),
+    // then fall back to slug lookup
+    const isCuid = /^c[a-z0-9]{20,30}$/i.test(id);
 
     const event = await prisma.event.findFirst({
-      where: isUUID ? { id } : { slug: id },
+      where: isCuid ? { id } : { slug: id },
       include: {
         variants: {
           include: {
@@ -148,7 +147,7 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
-// PATCH - Update event (admin only)
+// PATCH - Update event (admin or organizer)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthenticatedUser(request);
@@ -157,11 +156,19 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    if (user?.role !== "ADMIN") {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const isAdmin = user.role === "ADMIN";
 
     const { id } = await params;
+
+    // Organizers can also edit basic event fields
+    if (!isAdmin) {
+      const organizer = await prisma.eventOrganizer.findFirst({
+        where: { eventId: id, userId: user.id },
+      });
+      if (!organizer) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
     const body = await request.json();
     const {
       title,
@@ -182,6 +189,13 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       translations,
       cancelled,
       cancellationReason,
+      hasRegistrations,
+      // LiveRace Fase 0 fields
+      hasLiveRace,
+      commissionPercent,
+      refundDeadline,
+      checkInOpensAt,
+      checkInClosesAt,
     } = body;
 
     // Check if event exists
@@ -218,7 +232,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     // Check if event is being cancelled and send notifications
-    const isBeingCancelled = cancelled === true && !existingEvent.cancelled;
+    const isBeingCancelled =
+      isAdmin && cancelled === true && !existingEvent.cancelled;
 
     // Update event
     const updatedEvent = await prisma.event.update({
@@ -247,9 +262,24 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         ...(featuredVenueId !== undefined && {
           featuredVenueId: featuredVenueId || null,
         }),
-        ...(cancelled !== undefined && { cancelled }),
-        ...(cancelled === true && { cancelledAt: new Date() }),
-        ...(cancellationReason !== undefined && { cancellationReason }),
+        ...(hasRegistrations !== undefined && { hasRegistrations }),
+        ...(cancelled !== undefined && isAdmin && { cancelled }),
+        ...(cancelled === true && isAdmin && { cancelledAt: new Date() }),
+        ...(cancellationReason !== undefined &&
+          isAdmin && { cancellationReason }),
+        // LiveRace Fase 0 fields — admin only
+        ...(hasLiveRace !== undefined && isAdmin && { hasLiveRace }),
+        ...(commissionPercent !== undefined &&
+          isAdmin && { commissionPercent }),
+        ...(refundDeadline !== undefined && {
+          refundDeadline: refundDeadline ? new Date(refundDeadline) : null,
+        }),
+        ...(checkInOpensAt !== undefined && {
+          checkInOpensAt: checkInOpensAt ? new Date(checkInOpensAt) : null,
+        }),
+        ...(checkInClosesAt !== undefined && {
+          checkInClosesAt: checkInClosesAt ? new Date(checkInClosesAt) : null,
+        }),
       },
       include: {
         variants: true,
@@ -339,6 +369,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                 existingVariant.distanceKm !== (v.distanceKm || null) ||
                 existingVariant.elevationGainM !== (v.elevationGainM || null) ||
                 existingVariant.price !== (v.price || null) ||
+                existingVariant.maxParticipants !==
+                  (v.maxParticipants ?? null) ||
                 (v.startDate &&
                   existingVariant.startDate?.getTime() !==
                     new Date(v.startDate).getTime()) ||
@@ -353,6 +385,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                     distanceKm: v.distanceKm || null,
                     elevationGainM: v.elevationGainM || null,
                     price: v.price || null,
+                    maxParticipants: v.maxParticipants ?? null,
                     startDate: v.startDate ? new Date(v.startDate) : null,
                     startTime: v.startTime || null,
                   },
@@ -374,6 +407,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                 distanceKm: v.distanceKm || null,
                 elevationGainM: v.elevationGainM || null,
                 price: v.price || null,
+                maxParticipants: v.maxParticipants ?? null,
                 startDate: v.startDate ? new Date(v.startDate) : null,
                 startTime: v.startTime || null,
               },

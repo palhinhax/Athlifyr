@@ -1139,7 +1139,8 @@ Gli atleti non devono essere presenti nel recinto alle 09:00; devono presentarsi
     // Create single pricing phase per variant (single price, no phases)
     await prisma.pricingPhase.create({
       data: {
-        eventId: event.id,
+        eventId: event.id, // ✅ linked to eventId (event-level display)
+        variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
         name: variantData.name,
         startDate: new Date("2025-12-01T00:00:00Z"),
         endDate: new Date("2026-03-12T23:59:59Z"),

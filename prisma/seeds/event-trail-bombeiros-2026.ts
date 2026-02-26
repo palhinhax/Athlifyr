@@ -1314,7 +1314,8 @@ Questo trail fa parte del **Circuito Trail di Beira Alta 2026 - VI(r)VER BEIRA A
     for (const phase of pricingPhases) {
       await prisma.pricingPhase.create({
         data: {
-          eventId: event.id,
+          eventId: event.id, // ✅ linked to eventId (event-level display)
+          variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
           name: `${variant.name} - ${phase.name}`,
           startDate: phase.startDate,
           endDate: phase.endDate,

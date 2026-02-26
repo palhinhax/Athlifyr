@@ -128,6 +128,8 @@
       "authRequiredDesc": "Melden Sie sich an, um Ihre Teilnahme zu markieren",
       "selectVariantRequired": "Variante auswählen",
       "selectVariantRequiredDesc": "Wählen Sie die Distanz, an der Sie teilnehmen werden",
+      "currentPrice": "Aktueller Preis:",
+      "noActivePrice": "Derzeit keine aktive Preisphase. Überprüfen Sie die Preisphasen für zukünftige Verfügbarkeit.",
       "markedAsParticipant": "✅ Als Teilnehmer markiert!",
       "willParticipateIn": "Sie werden teilnehmen an",
       "participationRegistered": "Teilnahme registriert",

@@ -92,6 +92,8 @@
       "authRequiredDesc": "Faz login para marcar participação",
       "selectVariantRequired": "Seleciona uma variante",
       "selectVariantRequiredDesc": "Escolhe a distância em que vais participar",
+      "currentPrice": "Preço atual:",
+      "noActivePrice": "Nenhuma fase de preço ativa neste momento. Consulta as fases de preço para disponibilidade futura.",
       "markedAsParticipant": "✅ Marcado como participante!",
       "willParticipateIn": "Vais participar em",
       "participationRegistered": "Participação registada",

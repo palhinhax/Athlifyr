@@ -228,6 +228,16 @@ export default async function EventPage({ params }: PageProps) {
   const event = await getEvent(slug, session?.user?.id, locale);
   const isAdmin = session?.user?.role === "ADMIN";
 
+  // Check if the current user is an organizer of this event
+  const isOrganizer =
+    !isAdmin &&
+    !!session?.user?.id &&
+    !!event &&
+    (await prisma.eventOrganizer.findFirst({
+      where: { eventId: event.id, userId: session.user.id },
+      select: { id: true },
+    })) !== null;
+
   if (!event) {
     notFound();
   }
@@ -361,6 +371,7 @@ export default async function EventPage({ params }: PageProps) {
         imageUrl={event.imageUrl}
         sportTypes={event.sportTypes}
         isAdmin={isAdmin}
+        isOrganizer={isOrganizer}
         event={eventForHeader}
         shareDescription={shareDescription}
         locale={locale}
@@ -421,6 +432,10 @@ export default async function EventPage({ params }: PageProps) {
             <EventMainContent
               description={event.description}
               pricingPhases={event.pricingPhases}
+              variants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+              }))}
               externalUrl={event.externalUrl}
               stravaRouteEmbed={event.stravaRouteEmbed}
               cancelled={event.cancelled}
@@ -455,6 +470,8 @@ export default async function EventPage({ params }: PageProps) {
                       id: v.id,
                       name: v.name,
                       distanceKm: v.distanceKm,
+                      startDate: v.startDate,
+                      startTime: v.startTime,
                     }))}
                   />
                 )}

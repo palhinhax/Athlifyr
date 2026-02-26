@@ -26,6 +26,7 @@ import {
   Calendar,
   MapPin,
   Search,
+  Settings2,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType } from "@prisma/client";
@@ -917,77 +918,98 @@ export default function AdminEventsPage() {
           <>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {events.map((event) => (
-                <Link key={event.id} href={`/events/${event.slug}`}>
-                  <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-                    <div className="relative h-40 w-full">
-                      <Image
-                        src={event.imageUrl || "/placeholder-event.jpg"}
-                        alt={event.title}
-                        fill
-                        className="object-cover"
-                      />
-                      <div className="absolute right-2 top-2 flex flex-wrap gap-1">
-                        {event.sportTypes.map((sport) => (
-                          <SportBadge key={sport} sportType={sport} size="md" />
-                        ))}
-                      </div>
-                    </div>
-                    <CardContent className="p-4">
-                      <h3 className="mb-2 line-clamp-1 font-semibold">
-                        {event.title}
-                      </h3>
-                      <div className="space-y-1 text-sm text-muted-foreground">
-                        <div className="flex items-center gap-2">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            {formatDateShort(new Date(event.startDate))}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <MapPin className="h-3 w-3" />
-                          <span>
-                            {event.city}, {event.country}
-                          </span>
+                <div key={event.id} className="group relative">
+                  <Link href={`/events/${event.slug}`}>
+                    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                      <div className="relative h-40 w-full">
+                        <Image
+                          src={event.imageUrl || "/placeholder-event.jpg"}
+                          alt={event.title}
+                          fill
+                          className="object-cover"
+                        />
+                        <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+                          {event.sportTypes.map((sport) => (
+                            <SportBadge
+                              key={sport}
+                              sportType={sport}
+                              size="md"
+                            />
+                          ))}
                         </div>
                       </div>
-                      <div className="mt-3">
-                        {(() => {
-                          const missingFields = getMissingFields(event);
-                          if (missingFields.length > 0) {
-                            return (
-                              <div className="space-y-1">
-                                <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
-                                  <span className="text-amber-600 dark:text-amber-400">
-                                    ⚠️
-                                  </span>
-                                  <span>Campos em falta</span>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                  {missingFields.map((field) => (
-                                    <span
-                                      key={field}
-                                      className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                                    >
-                                      {field}
+                      <CardContent className="p-4">
+                        <h3 className="mb-2 line-clamp-1 font-semibold">
+                          {event.title}
+                        </h3>
+                        <div className="space-y-1 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-2">
+                            <Calendar className="h-3 w-3" />
+                            <span>
+                              {formatDateShort(new Date(event.startDate))}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3 w-3" />
+                            <span>
+                              {event.city}, {event.country}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="mt-3">
+                          {(() => {
+                            const missingFields = getMissingFields(event);
+                            if (missingFields.length > 0) {
+                              return (
+                                <div className="space-y-1">
+                                  <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
+                                    <span className="text-amber-600 dark:text-amber-400">
+                                      ⚠️
                                     </span>
-                                  ))}
+                                    <span>Campos em falta</span>
+                                  </div>
+                                  <div className="flex flex-wrap gap-1">
+                                    {missingFields.map((field) => (
+                                      <span
+                                        key={field}
+                                        className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                      >
+                                        {field}
+                                      </span>
+                                    ))}
+                                  </div>
                                 </div>
+                              );
+                            }
+                            return (
+                              <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
+                                <span className="text-green-600 dark:text-green-400">
+                                  ✓
+                                </span>
+                                <span>Completo</span>
                               </div>
                             );
-                          }
-                          return (
-                            <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
-                              <span className="text-green-600 dark:text-green-400">
-                                ✓
-                              </span>
-                              <span>Completo</span>
-                            </div>
-                          );
-                        })()}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
+                          })()}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                  {/* Admin settings button */}
+                  <Link
+                    href={`/admin/events/${event.id}`}
+                    className="absolute bottom-2 right-2 z-10"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      className="h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                      title="Configurações admin"
+                    >
+                      <Settings2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                </div>
               ))}
             </div>
 

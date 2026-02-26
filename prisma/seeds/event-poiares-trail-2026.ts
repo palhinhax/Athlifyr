@@ -1966,11 +1966,12 @@ In collaborazione con il Comune di Vila Nova de Poiares
 
     console.log(`✅ Created variant: ${variant.name}`);
 
-    // Create pricing phases linked to eventId (NOT variantId)
+    // Create pricing phases for this variant
     for (const phase of pricingPhases) {
       await prisma.pricingPhase.create({
         data: {
-          eventId: event.id, // ✅ CORRECT: linked to eventId
+          eventId: event.id, // ✅ linked to eventId (event-level display)
+          variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
           name: `${variant.name} - ${phase.name}`,
           startDate: phase.startDate,
           endDate: phase.endDate,

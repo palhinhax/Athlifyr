@@ -4,7 +4,6 @@ import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Ban } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
-import { EventAdminActions } from "@/components/event-admin-actions";
 import { useTranslations } from "next-intl";
 import { SportType } from "@prisma/client";
 
@@ -52,7 +51,7 @@ interface EventPageHeaderProps {
 }
 
 export function EventPageHeader({
-  isAdmin,
+  isAdmin: _isAdmin,
   event,
   shareDescription,
   locale,
@@ -95,7 +94,6 @@ export function EventPageHeader({
           </Button>
         </Link>
         <div className="flex flex-wrap items-center gap-2">
-          {isAdmin && <EventAdminActions event={event} />}
           <ShareButton
             title={event.title}
             description={shareDescription}

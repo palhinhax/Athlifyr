@@ -128,6 +128,8 @@
       "authRequiredDesc": "Accedi per segnare la tua partecipazione",
       "selectVariantRequired": "Seleziona una variante",
       "selectVariantRequiredDesc": "Scegli la distanza a cui parteciperai",
+      "currentPrice": "Prezzo attuale:",
+      "noActivePrice": "Nessuna fase di prezzo attiva al momento. Controlla le fasi di prezzo per la disponibilità futura.",
       "markedAsParticipant": "✅ Segnato come partecipante!",
       "willParticipateIn": "Parteciperai a",
       "participationRegistered": "Partecipazione registrata",

@@ -315,6 +315,82 @@ The PR body can contain additional context, which will become the commit body.
 
 ---
 
+## Branch Strategy
+
+This repository uses **3 main branch patterns**. Always follow this strategy when developing features or fixes.
+
+---
+
+### 1. `main`
+
+Production branch — always stable and deployable.
+
+**Rules:**
+- Require pull request before merging
+- Require conversation resolution before merging
+- Require linear history
+- Block force pushes
+- Block deletions
+- Require status checks to pass (when available)
+- Require branches to be up to date before merging (when available)
+
+> ⚠️ **Direct pushes to `main` are NOT allowed.** All changes must go through a pull request.
+
+---
+
+### 2. `feature/*`
+
+Used for all new feature development.
+
+**Naming examples:**
+- `feature/live-race-leaderboard`
+- `feature/profile-ticket-button`
+
+**Rules:**
+- Require linear history
+- Block force pushes
+- Block deletions (recommended)
+
+**Workflow:**
+- No PR required within the feature branch itself
+- PR must target `main` when the feature is ready
+
+---
+
+### 3. `hotfix/*`
+
+Used for urgent production fixes that cannot wait for a normal feature cycle.
+
+**Naming examples:**
+- `hotfix/stripe-webhook-bug`
+- `hotfix/payment-confirmation-fix`
+
+**Rules:**
+- Require pull request before merging
+- Require conversation resolution before merging
+- Require linear history
+- Block force pushes
+- Block deletions
+- Require status checks to pass (when available)
+
+**Workflow:**
+- Hotfix branches must be merged into `main` via a pull request
+
+---
+
+### When to Use `feature/*` vs `hotfix/*`
+
+| Situation                                         | Branch Type  | Example                                  |
+| ------------------------------------------------- | ------------ | ---------------------------------------- |
+| New functionality or enhancement                  | `feature/*`  | `feature/live-race-leaderboard`          |
+| Planned bug fix as part of normal development     | `feature/*`  | `feature/fix-registration-validation`   |
+| Urgent production bug requiring immediate fix     | `hotfix/*`   | `hotfix/stripe-webhook-bug`              |
+| Critical security patch for live environment      | `hotfix/*`   | `hotfix/auth-token-exposure`             |
+
+**Summary**: Use `feature/*` for all planned work. Use `hotfix/*` only when production is broken and the fix cannot wait for the normal development cycle.
+
+---
+
 ## Integration with semantic-release
 
 This repository uses `semantic-release` for automated versioning:

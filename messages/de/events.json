@@ -192,7 +192,16 @@
         "back": "Zurück",
         "step2Title": "Zusätzliche Optionen",
         "step2Description": "Der Veranstalter bietet die folgenden Optionen an. Bitte triff deine Auswahl, bevor du fortfährst.",
-        "customFieldRequired": "Das Feld \"{field}\" ist erforderlich."
+        "customFieldRequired": "Das Feld \"{field}\" ist erforderlich.",
+        "teamMemberTitle": "Teammitglied {number}",
+        "teamMemberDescription": "Gib die Daten von Teammitglied {number} von {total} ein.",
+        "teamMemberName": "Vollständiger Name",
+        "teamMemberNamePlaceholder": "Vollständigen Namen eingeben",
+        "teamMemberEmail": "E-Mail",
+        "teamMemberEmailPlaceholder": "E-Mail-Adresse eingeben",
+        "teamMemberPhone": "Telefon",
+        "teamMemberPhonePlaceholder": "Telefonnummer eingeben",
+        "teamMemberNameRequired": "Der Name des Teammitglieds ist erforderlich."
       },
       "customFields": {
         "title": "Zusätzliche Optionen",

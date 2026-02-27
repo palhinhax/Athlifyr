@@ -46,6 +46,7 @@ export function TabPercursos({
   const [newStartDate, setNewStartDate] = useState("");
   const [newStartTime, setNewStartTime] = useState("");
   const [newMaxParticipants, setNewMaxParticipants] = useState("");
+  const [newTeamSize, setNewTeamSize] = useState("1");
 
   const handleUpdateVariant = (
     index: number,
@@ -59,10 +60,13 @@ export function TabPercursos({
           field === "distanceKm" ||
           field === "elevationGainM" ||
           field === "price" ||
-          field === "maxParticipants"
+          field === "maxParticipants" ||
+          field === "teamSize"
             ? value === ""
-              ? null
-              : field === "maxParticipants"
+              ? field === "teamSize"
+                ? 1
+                : null
+              : field === "maxParticipants" || field === "teamSize"
                 ? parseInt(value, 10)
                 : parseFloat(value)
             : value || null;
@@ -124,6 +128,7 @@ export function TabPercursos({
         maxParticipants: newMaxParticipants
           ? parseInt(newMaxParticipants, 10)
           : undefined,
+        teamSize: parseInt(newTeamSize, 10) || 1,
       };
       await onSave({ variants: [...variants, newVariant] });
       setNewName("");
@@ -132,6 +137,7 @@ export function TabPercursos({
       setNewStartDate("");
       setNewStartTime("");
       setNewMaxParticipants("");
+      setNewTeamSize("1");
       toast({ title: t("variantAdded") });
     } catch (e) {
       toast({
@@ -261,6 +267,24 @@ export function TabPercursos({
                       placeholder={t("maxParticipantsPlaceholder")}
                     />
                   </div>
+                  <div className="grid gap-2">
+                    <Label>{t("teamSize")}</Label>
+                    <select
+                      value={v.teamSize?.toString() ?? "1"}
+                      onChange={(e) =>
+                        handleUpdateVariant(i, "teamSize", e.target.value)
+                      }
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    >
+                      <option value="1">{t("teamSizeIndividual")}</option>
+                      <option value="2">{t("teamSizeDuo")}</option>
+                      <option value="3">{t("teamSizeTrio")}</option>
+                      <option value="4">{t("teamSizeQuad")}</option>
+                    </select>
+                    <p className="text-xs text-muted-foreground">
+                      {t("teamSizeHelp")}
+                    </p>
+                  </div>
                 </div>
               </div>
             ))}
@@ -348,6 +372,23 @@ export function TabPercursos({
                 onChange={(e) => setNewMaxParticipants(e.target.value)}
                 placeholder={t("maxParticipantsPlaceholder")}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="newVariantTeamSize">{t("teamSize")}</Label>
+              <select
+                id="newVariantTeamSize"
+                value={newTeamSize}
+                onChange={(e) => setNewTeamSize(e.target.value)}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              >
+                <option value="1">{t("teamSizeIndividual")}</option>
+                <option value="2">{t("teamSizeDuo")}</option>
+                <option value="3">{t("teamSizeTrio")}</option>
+                <option value="4">{t("teamSizeQuad")}</option>
+              </select>
+              <p className="text-xs text-muted-foreground">
+                {t("teamSizeHelp")}
+              </p>
             </div>
           </div>
           <Button

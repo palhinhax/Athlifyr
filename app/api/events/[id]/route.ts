@@ -36,6 +36,7 @@ interface VariantInput {
   elevationGainM?: number;
   price?: number;
   maxParticipants?: number | null;
+  teamSize?: number;
   startDate?: string;
   startTime?: string;
   translations?: VariantTranslationInput[];
@@ -376,6 +377,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                 existingVariant.price !== (v.price || null) ||
                 existingVariant.maxParticipants !==
                   (v.maxParticipants ?? null) ||
+                existingVariant.teamSize !== (v.teamSize ?? 1) ||
                 (v.startDate &&
                   existingVariant.startDate?.getTime() !==
                     new Date(v.startDate).getTime()) ||
@@ -391,6 +393,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                     elevationGainM: v.elevationGainM || null,
                     price: v.price || null,
                     maxParticipants: v.maxParticipants ?? null,
+                    teamSize: v.teamSize ?? 1,
                     startDate: v.startDate ? new Date(v.startDate) : null,
                     startTime: v.startTime || null,
                   },
@@ -413,6 +416,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
                 elevationGainM: v.elevationGainM || null,
                 price: v.price || null,
                 maxParticipants: v.maxParticipants ?? null,
+                teamSize: v.teamSize ?? 1,
                 startDate: v.startDate ? new Date(v.startDate) : null,
                 startTime: v.startTime || null,
               },

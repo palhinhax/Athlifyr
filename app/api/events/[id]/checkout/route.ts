@@ -22,8 +22,15 @@ export async function POST(
     const body = (await request.json()) as {
       variantId?: string;
       customFieldAnswers?: { customFieldId: string; value: string }[];
+      teamMembers?: {
+        name: string;
+        email?: string;
+        dateOfBirth?: string;
+        citizenId?: string;
+        phone?: string;
+      }[];
     };
-    const { variantId, customFieldAnswers } = body;
+    const { variantId, customFieldAnswers, teamMembers } = body;
 
     // Load event with Stripe data and pricing
     const event = await prisma.event.findUnique({
@@ -313,6 +320,25 @@ export async function POST(
         },
       });
       registrationId = reg.id;
+
+      // Save team members if this is a team variant
+      if (teamMembers && teamMembers.length > 0 && registrationId) {
+        // Delete any existing team members (in case of retry)
+        await prisma.registrationTeamMember.deleteMany({
+          where: { registrationId },
+        });
+        // Create new team members
+        await prisma.registrationTeamMember.createMany({
+          data: teamMembers.map((m) => ({
+            registrationId: registrationId as string,
+            name: m.name,
+            email: m.email || null,
+            dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth) : null,
+            citizenId: m.citizenId || null,
+            phone: m.phone || null,
+          })),
+        });
+      }
     }
 
     return NextResponse.json({

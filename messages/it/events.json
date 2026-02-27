@@ -192,7 +192,16 @@
         "back": "Indietro",
         "step2Title": "Opzioni aggiuntive",
         "step2Description": "L'organizzatore offre le seguenti opzioni. Fai la tua scelta prima di continuare.",
-        "customFieldRequired": "Il campo \"{field}\" è obbligatorio."
+        "customFieldRequired": "Il campo \"{field}\" è obbligatorio.",
+        "teamMemberTitle": "Membro della squadra {number}",
+        "teamMemberDescription": "Inserisci i dettagli del membro {number} di {total}.",
+        "teamMemberName": "Nome completo",
+        "teamMemberNamePlaceholder": "Inserisci il nome completo",
+        "teamMemberEmail": "Email",
+        "teamMemberEmailPlaceholder": "Inserisci l'indirizzo email",
+        "teamMemberPhone": "Telefono",
+        "teamMemberPhonePlaceholder": "Inserisci il numero di telefono",
+        "teamMemberNameRequired": "Il nome del membro della squadra è obbligatorio."
       },
       "customFields": {
         "title": "Opzioni aggiuntive",

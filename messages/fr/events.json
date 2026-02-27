@@ -160,7 +160,16 @@
         "back": "Retour",
         "step2Title": "Options supplémentaires",
         "step2Description": "L'organisateur propose les options suivantes. Faites votre choix avant de continuer.",
-        "customFieldRequired": "Le champ \"{field}\" est obligatoire."
+        "customFieldRequired": "Le champ \"{field}\" est obligatoire.",
+        "teamMemberTitle": "Membre de l'équipe {number}",
+        "teamMemberDescription": "Saisissez les informations du membre {number} sur {total}.",
+        "teamMemberName": "Nom complet",
+        "teamMemberNamePlaceholder": "Saisissez le nom complet",
+        "teamMemberEmail": "E-mail",
+        "teamMemberEmailPlaceholder": "Saisissez l'adresse e-mail",
+        "teamMemberPhone": "Téléphone",
+        "teamMemberPhonePlaceholder": "Saisissez le numéro de téléphone",
+        "teamMemberNameRequired": "Le nom du membre de l'équipe est obligatoire."
       },
       "customFields": {
         "title": "Options supplémentaires",

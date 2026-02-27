@@ -160,7 +160,16 @@
         "back": "Volver",
         "step2Title": "Opciones adicionales",
         "step2Description": "El organizador ofrece las siguientes opciones. Haz tu selección antes de continuar.",
-        "customFieldRequired": "El campo \"{field}\" es obligatorio."
+        "customFieldRequired": "El campo \"{field}\" es obligatorio.",
+        "teamMemberTitle": "Miembro del equipo {number}",
+        "teamMemberDescription": "Introduce los datos del miembro {number} de {total}.",
+        "teamMemberName": "Nombre completo",
+        "teamMemberNamePlaceholder": "Introduce el nombre completo",
+        "teamMemberEmail": "Correo electrónico",
+        "teamMemberEmailPlaceholder": "Introduce el correo electrónico",
+        "teamMemberPhone": "Teléfono",
+        "teamMemberPhonePlaceholder": "Introduce el número de teléfono",
+        "teamMemberNameRequired": "El nombre del miembro del equipo es obligatorio."
       },
       "customFields": {
         "title": "Opciones adicionales",

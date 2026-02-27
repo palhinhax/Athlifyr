@@ -42,6 +42,7 @@ export interface EventVariant {
   startTime: string | null;
   price: number | null;
   maxParticipants: number | null;
+  teamSize: number;
 }
 
 export interface PricingPhase {

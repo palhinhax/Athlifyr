@@ -8,6 +8,7 @@ import {
   ChevronRight,
   ChevronLeft,
   ListChecks,
+  Users,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { useTranslations } from "next-intl";
 import type { CustomField, CustomFieldAnswer } from "@/types/custom-fields";
+import type { TeamMemberData } from "@/components/event-registration";
 
 interface UserProfileData {
   dateOfBirth: string | null;
@@ -44,6 +46,12 @@ interface RegistrationConsentDialogProps {
   customFields?: CustomField[];
   /** The current answers — used to validate required fields */
   customFieldAnswers?: CustomFieldAnswer[];
+  /** Total number of people in team (1 = individual, 2-4 = team) */
+  teamSize?: number;
+  /** Extra team member data (length = teamSize - 1) */
+  teamMembers?: TeamMemberData[];
+  /** Callback to update team members */
+  onTeamMembersChange?: (members: TeamMemberData[]) => void;
 }
 
 export function RegistrationConsentDialog({
@@ -57,10 +65,14 @@ export function RegistrationConsentDialog({
   hasCustomFields = false,
   customFields = [],
   customFieldAnswers = [],
+  teamSize = 1,
+  teamMembers = [],
+  onTeamMembersChange,
 }: RegistrationConsentDialogProps) {
   const t = useTranslations("events.registration.consent");
 
-  const [step, setStep] = useState<1 | 2>(1);
+  // Step is a number: 1 = consent, 2 = custom fields, 3+ = team members
+  const [step, setStep] = useState(1);
   const [dateOfBirth, setDateOfBirth] = useState("");
   const [citizenId, setCitizenId] = useState("");
   const [emergencyName, setEmergencyName] = useState("");
@@ -120,11 +132,38 @@ export function RegistrationConsentDialog({
     return false;
   });
 
-  // Determine total steps — if no consent fields (only custom fields), start at step 2
-  const totalSteps = hasConsentFields && hasCustomFields ? 2 : 1;
-  const effectiveStep = !hasConsentFields && hasCustomFields ? 2 : step;
+  // ── Step flow computation ────────────────────────────────────────────────
+  // Build an ordered list of step identifiers
+  const extraTeamCount = teamSize > 1 ? teamSize - 1 : 0;
+  const steps: string[] = [];
+  if (hasConsentFields) steps.push("consent");
+  if (hasCustomFields) steps.push("custom");
+  for (let i = 0; i < extraTeamCount; i++) {
+    steps.push(`team-${i}`);
+  }
+  // If no steps at all but teamSize is 1, still need at least consent
+  if (steps.length === 0) steps.push("consent");
 
-  const validateStep1 = (): boolean => {
+  const totalSteps = steps.length;
+  // Map step number (1-based human) to step identifier
+  const currentStepId = steps[step - 1] ?? steps[0];
+  const isFirstStep = step === 1;
+  const isLastStep = step === totalSteps;
+
+  // ── Team member helper ───────────────────────────────────────────────────
+  const updateTeamMember = (
+    index: number,
+    field: keyof TeamMemberData,
+    value: string
+  ) => {
+    if (!onTeamMembersChange) return;
+    const updated = [...teamMembers];
+    updated[index] = { ...updated[index], [field]: value };
+    onTeamMembersChange(updated);
+  };
+
+  // ── Validation ───────────────────────────────────────────────────────────
+  const validateConsentStep = (): boolean => {
     setError(null);
     if (needsDateOfBirth && dateOfBirthRequired && !dateOfBirth) {
       setError(t("dateOfBirthRequired"));
@@ -140,6 +179,35 @@ export function RegistrationConsentDialog({
       (!emergencyName.trim() || !emergencyPhone.trim())
     ) {
       setError(t("emergencyContactRequired"));
+      return false;
+    }
+    return true;
+  };
+
+  const validateCustomFieldsStep = (): boolean => {
+    const missingRequired = customFields.filter((field) => {
+      if (!field.required) return false;
+      const answer = customFieldAnswers.find(
+        (a) => a.customFieldId === field.id
+      );
+      if (!answer || !answer.value.trim()) return true;
+      if (field.type === "SELECT" && !answer.value.trim()) return true;
+      return false;
+    });
+
+    if (missingRequired.length > 0) {
+      setError(t("customFieldRequired", { field: missingRequired[0].label }));
+      return false;
+    }
+    return true;
+  };
+
+  const validateTeamMemberStep = (memberIndex: number): boolean => {
+    setError(null);
+    const member = teamMembers[memberIndex];
+    if (!member) return false;
+    if (!member.name.trim()) {
+      setError(t("teamMemberNameRequired"));
       return false;
     }
     return true;
@@ -184,71 +252,61 @@ export function RegistrationConsentDialog({
     }
   };
 
-  const handleNext = async () => {
-    if (!validateStep1()) return;
-    const saved = await saveProfileFields();
-    if (!saved) return;
+  // ── Navigation ───────────────────────────────────────────────────────────
+  const handleNextStep = async () => {
+    setError(null);
 
-    if (hasCustomFields) {
-      setError(null);
-      setStep(2);
-    } else {
+    // Validate current step
+    if (currentStepId === "consent") {
+      if (!validateConsentStep()) return;
+      const saved = await saveProfileFields();
+      if (!saved) return;
+    } else if (currentStepId === "custom") {
+      if (!validateCustomFieldsStep()) return;
+    } else if (currentStepId.startsWith("team-")) {
+      const memberIndex = parseInt(currentStepId.split("-")[1], 10);
+      if (!validateTeamMemberStep(memberIndex)) return;
+    }
+
+    if (isLastStep) {
       onConfirm();
+    } else {
+      setStep((prev) => prev + 1);
     }
   };
 
-  const handleBack = () => {
+  const handlePrevStep = () => {
     setError(null);
-    setStep(1);
-  };
-
-  const handleFinish = () => {
-    // Validate required custom fields
-    const missingRequired = customFields.filter((field) => {
-      if (!field.required) return false;
-      const answer = customFieldAnswers.find(
-        (a) => a.customFieldId === field.id
-      );
-      if (!answer || !answer.value.trim()) return true;
-      // For SELECT fields, an empty string means nothing was selected
-      if (field.type === "SELECT" && !answer.value.trim()) return true;
-      return false;
-    });
-
-    if (missingRequired.length > 0) {
-      setError(t("customFieldRequired", { field: missingRequired[0].label }));
-      return;
+    if (!isFirstStep) {
+      setStep((prev) => prev - 1);
     }
-
-    setError(null);
-    onConfirm();
   };
 
   // ── Step indicators ──────────────────────────────────────────────────────
 
   const stepIndicator =
-    totalSteps === 2 ? (
+    totalSteps > 1 ? (
       <div className="flex items-center justify-center gap-2 pb-2">
-        <div
-          className={`h-2 w-2 rounded-full transition-colors ${
-            effectiveStep === 1 ? "bg-p-brand" : "bg-muted-foreground/30"
-          }`}
-        />
-        <div
-          className={`h-2 w-2 rounded-full transition-colors ${
-            effectiveStep === 2 ? "bg-p-brand" : "bg-muted-foreground/30"
-          }`}
-        />
+        {steps.map((_, i) => (
+          <div
+            key={i}
+            className={`h-2 w-2 rounded-full transition-colors ${
+              step === i + 1 ? "bg-p-brand" : "bg-muted-foreground/30"
+            }`}
+          />
+        ))}
       </div>
     ) : null;
+
+  const hasMoreSteps = !isLastStep;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-md">
         {stepIndicator}
 
-        {/* ═══ STEP 1: Consent & Profile Fields ═══ */}
-        {effectiveStep === 1 && (
+        {/* ═══ CONSENT STEP: Consent & Profile Fields ═══ */}
+        {currentStepId === "consent" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -420,12 +478,12 @@ export function RegistrationConsentDialog({
                 {t("cancel")}
               </Button>
               <Button
-                onClick={() => void handleNext()}
+                onClick={() => void handleNextStep()}
                 disabled={isSaving}
                 className="gap-2"
               >
                 {isSaving && <Loader2 className="h-4 w-4 animate-spin" />}
-                {hasCustomFields ? (
+                {hasMoreSteps ? (
                   <>
                     {t("next")}
                     <ChevronRight className="h-4 w-4" />
@@ -438,8 +496,8 @@ export function RegistrationConsentDialog({
           </>
         )}
 
-        {/* ═══ STEP 2: Custom Fields ═══ */}
-        {effectiveStep === 2 && (
+        {/* ═══ CUSTOM FIELDS STEP ═══ */}
+        {currentStepId === "custom" && (
           <>
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
@@ -461,8 +519,12 @@ export function RegistrationConsentDialog({
             </div>
 
             <DialogFooter className="flex-row gap-2 sm:justify-between">
-              {hasConsentFields ? (
-                <Button variant="ghost" onClick={handleBack} className="gap-2">
+              {!isFirstStep ? (
+                <Button
+                  variant="ghost"
+                  onClick={handlePrevStep}
+                  className="gap-2"
+                >
                   <ChevronLeft className="h-4 w-4" />
                   {t("back")}
                 </Button>
@@ -471,12 +533,163 @@ export function RegistrationConsentDialog({
                   {t("cancel")}
                 </Button>
               )}
-              <Button onClick={handleFinish} className="gap-2">
-                {t("confirm")}
+              <Button onClick={() => void handleNextStep()} className="gap-2">
+                {hasMoreSteps ? (
+                  <>
+                    {t("next")}
+                    <ChevronRight className="h-4 w-4" />
+                  </>
+                ) : (
+                  t("confirm")
+                )}
               </Button>
             </DialogFooter>
           </>
         )}
+
+        {/* ═══ TEAM MEMBER STEPS ═══ */}
+        {currentStepId.startsWith("team-") &&
+          (() => {
+            const memberIndex = parseInt(currentStepId.split("-")[1], 10);
+            const member = teamMembers[memberIndex];
+            if (!member) return null;
+
+            return (
+              <>
+                <DialogHeader>
+                  <DialogTitle className="flex items-center gap-2">
+                    <Users className="h-5 w-5 text-p-brand" />
+                    {t("teamMemberTitle", { number: memberIndex + 2 })}
+                  </DialogTitle>
+                  <DialogDescription>
+                    {t("teamMemberDescription", {
+                      number: memberIndex + 2,
+                      total: teamSize,
+                    })}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-2">
+                  <div className="grid gap-2">
+                    <Label htmlFor={`team-name-${memberIndex}`}>
+                      {t("teamMemberName")} *
+                    </Label>
+                    <Input
+                      id={`team-name-${memberIndex}`}
+                      type="text"
+                      value={member.name}
+                      onChange={(e) =>
+                        updateTeamMember(memberIndex, "name", e.target.value)
+                      }
+                      placeholder={t("teamMemberNamePlaceholder")}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor={`team-email-${memberIndex}`}>
+                      {t("teamMemberEmail")}
+                    </Label>
+                    <Input
+                      id={`team-email-${memberIndex}`}
+                      type="email"
+                      value={member.email}
+                      onChange={(e) =>
+                        updateTeamMember(memberIndex, "email", e.target.value)
+                      }
+                      placeholder={t("teamMemberEmailPlaceholder")}
+                    />
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label htmlFor={`team-phone-${memberIndex}`}>
+                      {t("teamMemberPhone")}
+                    </Label>
+                    <Input
+                      id={`team-phone-${memberIndex}`}
+                      type="tel"
+                      value={member.phone}
+                      onChange={(e) =>
+                        updateTeamMember(memberIndex, "phone", e.target.value)
+                      }
+                      placeholder={t("teamMemberPhonePlaceholder")}
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="grid gap-2">
+                      <Label htmlFor={`team-dob-${memberIndex}`}>
+                        {t("fieldDateOfBirth")}
+                      </Label>
+                      <Input
+                        id={`team-dob-${memberIndex}`}
+                        type="date"
+                        value={member.dateOfBirth}
+                        onChange={(e) =>
+                          updateTeamMember(
+                            memberIndex,
+                            "dateOfBirth",
+                            e.target.value
+                          )
+                        }
+                        max={new Date().toISOString().split("T")[0]}
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor={`team-cc-${memberIndex}`}>
+                        {t("fieldCitizenId")}
+                      </Label>
+                      <Input
+                        id={`team-cc-${memberIndex}`}
+                        type="text"
+                        value={member.citizenId}
+                        onChange={(e) =>
+                          updateTeamMember(
+                            memberIndex,
+                            "citizenId",
+                            e.target.value
+                          )
+                        }
+                        placeholder={t("citizenIdPlaceholder")}
+                        maxLength={30}
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <p className="text-sm text-destructive">
+                      <AlertCircle className="mr-1 inline-block h-4 w-4" />
+                      {error}
+                    </p>
+                  )}
+                </div>
+
+                <DialogFooter className="flex-row gap-2 sm:justify-between">
+                  <Button
+                    variant="ghost"
+                    onClick={handlePrevStep}
+                    className="gap-2"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    {t("back")}
+                  </Button>
+                  <Button
+                    onClick={() => void handleNextStep()}
+                    className="gap-2"
+                  >
+                    {hasMoreSteps ? (
+                      <>
+                        {t("next")}
+                        <ChevronRight className="h-4 w-4" />
+                      </>
+                    ) : (
+                      t("confirm")
+                    )}
+                  </Button>
+                </DialogFooter>
+              </>
+            );
+          })()}
       </DialogContent>
     </Dialog>
   );

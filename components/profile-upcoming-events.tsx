@@ -64,8 +64,7 @@ export function ProfileUpcomingEvents({
                   </div>
                   <div className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    {participation.event.city},{" "}
-                    {participation.event.country}
+                    {participation.event.city}, {participation.event.country}
                   </div>
                   {participation.variant && (
                     <div className="flex flex-col gap-0.5">

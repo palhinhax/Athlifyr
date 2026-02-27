@@ -293,6 +293,7 @@ model EventVariant {
   price             Float?
   maxParticipants   Int?
   description       String?
+  teamSize          Int                       @default(1) // 1 = individual, 2-4 = team (total people including the registrant)
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
   distanceKm        Float?
@@ -414,6 +415,7 @@ model Registration {
   variant EventVariant @relation(fields: [variantId], references: [id])
 
   customFieldResponses CustomFieldResponse[]
+  teamMembers          RegistrationTeamMember[]
 
   @@unique([userId, eventId, variantId])
   @@index([userId])
@@ -421,6 +423,23 @@ model Registration {
   @@index([variantId])
   @@index([status])
   @@index([stripeCheckoutSessionId])
+}
+
+/// Extra team members for registrations in team variants (teamSize > 1).
+/// The registering user is NOT stored here — only the additional members.
+model RegistrationTeamMember {
+  id              String       @id @default(cuid())
+  registrationId  String
+  name            String
+  email           String?
+  dateOfBirth     DateTime?
+  citizenId       String?
+  phone           String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  registration    Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+
+  @@index([registrationId])
 }
 
 // ============================================================================

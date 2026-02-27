@@ -500,6 +500,7 @@ export default async function EventPage({ params }: PageProps) {
                       startDate: v.startDate,
                       startTime: v.startTime,
                       maxParticipants: v.maxParticipants,
+                      teamSize: v.teamSize,
                       registrationCount:
                         v._count.registrations + v._count.participations,
                       pricingPhases: v.pricingPhases.map((p) => ({

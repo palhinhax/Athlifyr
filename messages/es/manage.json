@@ -62,7 +62,13 @@
       "saveChanges": "Guardar cambios",
       "variantsSaved": "Variantes guardadas.",
       "variantAdded": "Variante añadida.",
-      "variantDeleted": "Variante eliminada."
+      "variantDeleted": "Variante eliminada.",
+      "teamSize": "Tamaño del equipo",
+      "teamSizeIndividual": "Individual (1 persona)",
+      "teamSizeDuo": "Dúo (2 personas)",
+      "teamSizeTrio": "Trío (3 personas)",
+      "teamSizeQuad": "Equipo de 4",
+      "teamSizeHelp": "Número de personas por inscripción. Los datos de los miembros adicionales se recogerán durante la inscripción."
     },
     "pricing": {
       "existingPhases": "Fases de precio existentes",

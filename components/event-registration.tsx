@@ -32,6 +32,14 @@ import { RegistrationConsentDialog } from "@/components/registration-consent-dia
 import { CustomFieldsForm } from "@/components/custom-fields-form";
 import type { CustomField, CustomFieldAnswer } from "@/types/custom-fields";
 
+export interface TeamMemberData {
+  name: string;
+  email: string;
+  dateOfBirth: string;
+  citizenId: string;
+  phone: string;
+}
+
 interface PricingPhase {
   id: string;
   name: string | null;
@@ -50,6 +58,7 @@ interface EventVariant {
   maxParticipants?: number | null;
   registrationCount?: number;
   pricingPhases?: PricingPhase[];
+  teamSize?: number;
 }
 
 interface Participation {
@@ -133,6 +142,9 @@ export function EventRegistration({
     CustomFieldAnswer[]
   >([]);
 
+  // Team members state (for team variants with teamSize > 1)
+  const [teamMembers, setTeamMembers] = useState<TeamMemberData[]>([]);
+
   // Derive required + optional field lists from registrationFieldSettings
   const requiredRegistrationFields = Object.entries(registrationFieldSettings)
     .filter(([, v]) => v === "required")
@@ -146,6 +158,40 @@ export function EventRegistration({
   ];
   const hasConfiguredFields =
     allConfiguredFields.length > 0 || customFields.length > 0;
+
+  // Compute selected variant's teamSize
+  const selectedVariantTeamSize = (() => {
+    const variant = variants.find((v) => v.id === selectedVariantId);
+    return variant?.teamSize ?? 1;
+  })();
+
+  // For team variants, the consent dialog should ALWAYS show (to collect team member data)
+  const needsConsentOrTeam = hasConfiguredFields || selectedVariantTeamSize > 1;
+
+  // Initialize team members when variant changes
+  useEffect(() => {
+    const extraCount = selectedVariantTeamSize - 1;
+    if (extraCount <= 0) {
+      setTeamMembers([]);
+      return;
+    }
+    setTeamMembers((prev) => {
+      if (prev.length === extraCount) return prev;
+      const members: TeamMemberData[] = [];
+      for (let i = 0; i < extraCount; i++) {
+        members.push(
+          prev[i] ?? {
+            name: "",
+            email: "",
+            dateOfBirth: "",
+            citizenId: "",
+            phone: "",
+          }
+        );
+      }
+      return members;
+    });
+  }, [selectedVariantTeamSize]);
 
   // Fetch custom fields for this event
   useEffect(() => {
@@ -418,8 +464,8 @@ export function EventRegistration({
       return;
     }
 
-    // Show consent dialog if event has configured fields (required or optional)
-    if (hasConfiguredFields) {
+    // Show consent dialog if event has configured fields or team variant
+    if (needsConsentOrTeam) {
       consentFlowRef.current = "checkout";
       setShowConsentDialog(true);
       return;
@@ -439,6 +485,7 @@ export function EventRegistration({
           variantId: selectedVariantId || undefined,
           customFieldAnswers:
             customFieldAnswers.length > 0 ? customFieldAnswers : undefined,
+          teamMembers: teamMembers.length > 0 ? teamMembers : undefined,
         }),
       });
 
@@ -639,8 +686,8 @@ export function EventRegistration({
       return;
     }
 
-    // Show consent dialog if event has configured fields (required or optional)
-    if (hasConfiguredFields) {
+    // Show consent dialog if event has configured fields or team variant
+    if (needsConsentOrTeam) {
       consentFlowRef.current = "free";
       setShowConsentDialog(true);
       return;
@@ -1044,6 +1091,8 @@ export function EventRegistration({
                       >
                         {variant.name}
                         {variant.distanceKm && ` - ${variant.distanceKm}km`}
+                        {(variant.teamSize ?? 1) > 1 &&
+                          ` 👥 ${variant.teamSize}p`}
                         {variantDate && ` (${variantDate})`}
                         {variant.startTime && ` ${variant.startTime}`}
                         {soldOut && ` — ${t("soldOut")}`}
@@ -1285,7 +1334,7 @@ export function EventRegistration({
       )}
 
       {/* Registration Consent Dialog */}
-      {hasConfiguredFields && (
+      {needsConsentOrTeam && (
         <RegistrationConsentDialog
           open={showConsentDialog}
           onOpenChange={setShowConsentDialog}
@@ -1305,6 +1354,9 @@ export function EventRegistration({
               />
             ) : undefined
           }
+          teamSize={selectedVariantTeamSize}
+          teamMembers={teamMembers}
+          onTeamMembersChange={setTeamMembers}
         />
       )}
 

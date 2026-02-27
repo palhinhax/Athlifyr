@@ -54,6 +54,7 @@ describe("structured-data", () => {
       price: 25.0,
       currency: Currency.EUR,
       maxParticipants: 100,
+      teamSize: 1,
       startDate: new Date("2026-06-15T09:00:00Z"),
       startTime: "09:00",
       elevationGainM: null,

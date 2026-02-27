@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Stripe from "stripe";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  apiVersion: "2025-12-15.clover",
+  apiVersion: "2026-01-28.clover",
 });
 
 // POST /api/events/[id]/checkout — create Stripe Checkout Session for event registration
@@ -60,6 +60,20 @@ export async function POST(
       );
     }
 
+    if (event.cancelled) {
+      return NextResponse.json(
+        { error: "This event has been cancelled" },
+        { status: 409 }
+      );
+    }
+
+    if (event.registrationDeadline && new Date() > event.registrationDeadline) {
+      return NextResponse.json(
+        { error: "Registration deadline has passed" },
+        { status: 409 }
+      );
+    }
+
     // Validate required registration fields from registrationFieldSettings (Json)
     const fieldSettings =
       (event.registrationFieldSettings as Record<string, string> | null) ?? {};
@@ -105,13 +119,6 @@ export async function POST(
           { status: 422 }
         );
       }
-    }
-
-    if (!event.stripeAccountId || event.stripeOnboardingStatus !== "COMPLETE") {
-      return NextResponse.json(
-        { error: "Event Stripe account is not fully configured" },
-        { status: 400 }
-      );
     }
 
     // Determine the variant
@@ -172,9 +179,51 @@ export async function POST(
         (!p.startDate || p.startDate <= now) && (!p.endDate || p.endDate >= now)
     );
 
-    if (!activePhase || activePhase.price <= 0) {
+    if (!activePhase) {
       return NextResponse.json(
         { error: "No active pricing phase found for this event" },
+        { status: 400 }
+      );
+    }
+
+    // Handle free registrations directly (no Stripe required)
+    if (activePhase.price === 0) {
+      if (!selectedVariant) {
+        return NextResponse.json(
+          { error: "Please select a variant" },
+          { status: 400 }
+        );
+      }
+      const freeReg = await prisma.registration.upsert({
+        where: {
+          userId_eventId_variantId: {
+            userId: user.id,
+            eventId: event.id,
+            variantId: selectedVariant.id,
+          },
+        },
+        create: {
+          userId: user.id,
+          eventId: event.id,
+          variantId: selectedVariant.id,
+          status: "CONFIRMED",
+          amountCents: 0,
+          currency: activePhase.currency as "EUR" | "USD" | "GBP",
+          paymentProvider: "NONE",
+        },
+        update: {
+          status: "CONFIRMED",
+        },
+      });
+      return NextResponse.json(
+        { registrationId: freeReg.id, status: "CONFIRMED" },
+        { status: 201 }
+      );
+    }
+
+    if (!event.stripeAccountId || event.stripeOnboardingStatus !== "COMPLETE") {
+      return NextResponse.json(
+        { error: "Event Stripe account is not fully configured" },
         { status: 400 }
       );
     }

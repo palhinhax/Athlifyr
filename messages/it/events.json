@@ -145,7 +145,17 @@
       "shareSkip": "No, grazie",
       "shareSuccess": "Post condiviso!",
       "shareSuccessDesc": "La tua partecipazione è stata condivisa con la community",
-      "shareError": "Impossibile condividere il post"
+      "shareError": "Impossibile condividere il post",
+      "viewTicket": "Visualizza Biglietto",
+      "ticketTitle": "Il Tuo Biglietto",
+      "ticketConfirmed": "Confermato",
+      "ticketParticipant": "Partecipante",
+      "ticketDate": "Data",
+      "ticketLocation": "Luogo",
+      "ticketVariant": "Categoria",
+      "ticketBib": "Pettorale",
+      "ticketId": "Riferimento",
+      "ticketClose": "Chiudi"
     },
     "pastParticipation": {
       "didYouParticipate": "Hai partecipato a questo evento?",

@@ -109,7 +109,17 @@
       "shareSkip": "Skip",
       "shareSuccess": "Post shared!",
       "shareSuccessDesc": "Your participation has been shared with the community",
-      "shareError": "Could not share the post"
+      "shareError": "Could not share the post",
+      "viewTicket": "View Ticket",
+      "ticketTitle": "Your Ticket",
+      "ticketConfirmed": "Confirmed",
+      "ticketParticipant": "Participant",
+      "ticketDate": "Date",
+      "ticketLocation": "Location",
+      "ticketVariant": "Category",
+      "ticketBib": "Bib Number",
+      "ticketId": "Reference",
+      "ticketClose": "Close"
     },
     "pastParticipation": {
       "didYouParticipate": "Did you participate in this event?",

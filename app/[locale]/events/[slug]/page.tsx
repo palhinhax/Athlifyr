@@ -451,6 +451,8 @@ export default async function EventPage({ params }: PageProps) {
                   <EventRegistration
                     eventId={event.id}
                     eventTitle={event.title}
+                    eventDate={event.startDate}
+                    eventCity={event.city}
                     variants={event.variants.map((v) => ({
                       id: v.id,
                       name: v.name,

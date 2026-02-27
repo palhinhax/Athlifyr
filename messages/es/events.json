@@ -109,7 +109,17 @@
       "shareSkip": "No, gracias",
       "shareSuccess": "¡Publicación compartida!",
       "shareSuccessDesc": "Tu participación ha sido compartida con la comunidad",
-      "shareError": "No se pudo compartir la publicación"
+      "shareError": "No se pudo compartir la publicación",
+      "viewTicket": "Ver Entrada",
+      "ticketTitle": "Tu Entrada",
+      "ticketConfirmed": "Confirmado",
+      "ticketParticipant": "Participante",
+      "ticketDate": "Fecha",
+      "ticketLocation": "Lugar",
+      "ticketVariant": "Modalidad",
+      "ticketBib": "Dorsal",
+      "ticketId": "Referencia",
+      "ticketClose": "Cerrar"
     },
     "pastParticipation": {
       "didYouParticipate": "¿Participaste en este evento?",

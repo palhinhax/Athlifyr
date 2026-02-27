@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Check, X, Users, Share2, Send, Target } from "lucide-react";
+import { Check, X, Users, Share2, Send, Target, Ticket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/components/ui/use-toast";
@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { TicketDialog } from "@/components/ticket-dialog";
 
 interface EventVariant {
   id: string;
@@ -37,15 +38,27 @@ interface Participation {
   } | null;
 }
 
+interface UserRegistration {
+  id: string;
+  bibNumber: string | null;
+  status: string;
+  variant: { name: string; distanceKm: number | null } | null;
+  user: { name: string } | null;
+}
+
 interface EventRegistrationProps {
   eventId: string;
   eventTitle: string;
+  eventDate?: Date | string;
+  eventCity?: string;
   variants?: EventVariant[];
 }
 
 export function EventRegistration({
   eventId,
   eventTitle,
+  eventDate,
+  eventCity,
   variants = [],
 }: EventRegistrationProps) {
   const { data: session, status } = useSession();
@@ -60,6 +73,9 @@ export function EventRegistration({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareContent, setShareContent] = useState("");
   const [isSharing, setIsSharing] = useState(false);
+  const [userRegistration, setUserRegistration] =
+    useState<UserRegistration | null>(null);
+  const [showTicketDialog, setShowTicketDialog] = useState(false);
 
   // Fetch user's current participation
   useEffect(() => {
@@ -85,6 +101,25 @@ export function EventRegistration({
     };
 
     fetchParticipation();
+  }, [eventId, session?.user?.id, status]);
+
+  // Fetch user's confirmed registration (purchased ticket)
+  useEffect(() => {
+    const fetchRegistration = async () => {
+      if (status !== "authenticated" || !session?.user?.id) return;
+
+      try {
+        const response = await fetch(`/api/events/${eventId}/registration`);
+        if (response.ok) {
+          const data = await response.json();
+          setUserRegistration(data.registration);
+        }
+      } catch (error) {
+        console.error("Error fetching registration:", error);
+      }
+    };
+
+    fetchRegistration();
   }, [eventId, session?.user?.id, status]);
 
   // Fetch total participants count
@@ -417,6 +452,19 @@ export function EventRegistration({
             </div>
           )}
 
+          {/* View Ticket Button - shown when user has a confirmed registration */}
+          {userRegistration && eventDate && eventCity && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full gap-2 border-primary/50 text-primary hover:bg-primary/10"
+              onClick={() => setShowTicketDialog(true)}
+            >
+              <Ticket className="h-4 w-4" />
+              {t("viewTicket")}
+            </Button>
+          )}
+
           {/* Action Buttons */}
           <div className="flex gap-3">
             {!userParticipation ? (
@@ -477,6 +525,21 @@ export function EventRegistration({
             )}
           </div>
         </div>
+      )}
+
+      {/* Ticket Dialog */}
+      {userRegistration && eventDate && eventCity && (
+        <TicketDialog
+          open={showTicketDialog}
+          onOpenChange={setShowTicketDialog}
+          eventTitle={eventTitle}
+          eventDate={eventDate}
+          eventCity={eventCity}
+          variantName={userRegistration.variant?.name}
+          bibNumber={userRegistration.bibNumber}
+          registrationId={userRegistration.id}
+          participantName={userRegistration.user?.name}
+        />
       )}
 
       {/* Share Post Dialog */}

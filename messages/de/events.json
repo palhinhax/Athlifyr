@@ -145,7 +145,17 @@
       "shareSkip": "Nein, danke",
       "shareSuccess": "Beitrag geteilt!",
       "shareSuccessDesc": "Deine Teilnahme wurde mit der Community geteilt",
-      "shareError": "Der Beitrag konnte nicht geteilt werden"
+      "shareError": "Der Beitrag konnte nicht geteilt werden",
+      "viewTicket": "Ticket anzeigen",
+      "ticketTitle": "Dein Ticket",
+      "ticketConfirmed": "Bestätigt",
+      "ticketParticipant": "Teilnehmer",
+      "ticketDate": "Datum",
+      "ticketLocation": "Ort",
+      "ticketVariant": "Kategorie",
+      "ticketBib": "Startnummer",
+      "ticketId": "Referenz",
+      "ticketClose": "Schließen"
     },
     "pastParticipation": {
       "didYouParticipate": "Haben Sie an dieser Veranstaltung teilgenommen?",

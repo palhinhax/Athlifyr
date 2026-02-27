@@ -109,7 +109,17 @@
       "shareSkip": "Non, merci",
       "shareSuccess": "Publication partagée !",
       "shareSuccessDesc": "Votre participation a été partagée avec la communauté",
-      "shareError": "Impossible de partager la publication"
+      "shareError": "Impossible de partager la publication",
+      "viewTicket": "Voir le Billet",
+      "ticketTitle": "Ton Billet",
+      "ticketConfirmed": "Confirmé",
+      "ticketParticipant": "Participant",
+      "ticketDate": "Date",
+      "ticketLocation": "Lieu",
+      "ticketVariant": "Épreuve",
+      "ticketBib": "Dossard",
+      "ticketId": "Référence",
+      "ticketClose": "Fermer"
     },
     "pastParticipation": {
       "didYouParticipate": "Avez-vous participé à cet événement?",

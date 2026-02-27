@@ -202,7 +202,21 @@
       "exportSuccess": "Export abgeschlossen",
       "exportSuccessDesc": "Die CSV-Datei wurde heruntergeladen.",
       "exportError": "Export fehlgeschlagen",
-      "exportErrorDesc": "Beim Exportieren der Anmeldungen ist ein Fehler aufgetreten."
+      "exportErrorDesc": "Beim Exportieren der Anmeldungen ist ein Fehler aufgetreten.",
+      "checkedIn": "Eingecheckt",
+      "columnCheckIn": "Check-in",
+      "allCheckIn": "Alle Check-ins",
+      "checkedInOnly": "Eingecheckt",
+      "notCheckedInOnly": "Nicht eingecheckt",
+      "doCheckIn": "Einchecken",
+      "undoCheckIn": "Check-in rückgängig machen",
+      "checkInSuccess": "Eingecheckt",
+      "checkInSuccessDesc": "{name} wurde eingecheckt.",
+      "checkInUndone": "Check-in rückgängig gemacht",
+      "checkInUndoneDesc": "Check-in für {name} entfernt.",
+      "checkInError": "Check-in fehlgeschlagen",
+      "checkInErrorDesc": "Beim Check-in ist ein Fehler aufgetreten.",
+      "paginationInfo": "Seite {page} von {totalPages}"
     },
     "config": {
       "checkIn": "Check-in",

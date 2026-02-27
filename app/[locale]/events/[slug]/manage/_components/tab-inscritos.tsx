@@ -346,10 +346,12 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
         description: t("exportSuccessDesc"),
       });
     } catch (error) {
+      if (error instanceof Error) {
+        console.error("CSV export error:", error.message);
+      }
       toast({
         title: t("exportError"),
-        description:
-          error instanceof Error ? error.message : t("exportErrorDesc"),
+        description: t("exportErrorDesc"),
         variant: "destructive",
       });
     } finally {

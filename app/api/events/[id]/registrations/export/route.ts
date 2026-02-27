@@ -236,6 +236,18 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     ])
   );
 
+  // ── Determine filename ───────────────────────────────────────────────────
+  let variantSlug: string | null = null;
+  if (variantFilter) {
+    const v = await prisma.eventVariant.findUnique({
+      where: { id: variantFilter },
+      select: { name: true },
+    });
+    variantSlug = v?.name ?? null;
+  }
+
+  const filename = buildExportFilename(event.slug, variantSlug);
+
   // ── Stream response ────────────────────────────────────────────────────────
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
@@ -247,18 +259,6 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       controller.close();
     },
   });
-
-  // Determine variant slug for filename if filtered
-  let variantSlug: string | null = null;
-  if (variantFilter) {
-    const v = await prisma.eventVariant.findUnique({
-      where: { id: variantFilter },
-      select: { name: true },
-    });
-    variantSlug = v?.name ?? null;
-  }
-
-  const filename = buildExportFilename(event.slug, variantSlug);
 
   // ── Audit log ──────────────────────────────────────────────────────────────
   console.log(

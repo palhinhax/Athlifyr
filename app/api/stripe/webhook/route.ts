@@ -152,13 +152,25 @@ async function handleCheckoutCompleted(
 ) {
   console.log(`Processing checkout.session.completed: ${session.id}`);
 
-  // Find payment intent by checkout session ID
+  // Always try to confirm any event Registration linked to this checkout session
+  const updatedRegistrations = await prisma.registration.updateMany({
+    where: { stripeCheckoutSessionId: session.id },
+    data: { status: "CONFIRMED" },
+  });
+
+  if (updatedRegistrations.count > 0) {
+    console.log(
+      `Confirmed ${updatedRegistrations.count} registration(s) for checkout session ${session.id}`
+    );
+  }
+
+  // Find payment intent by checkout session ID (venue subscription flow)
   const paymentIntent = await prisma.paymentIntent.findFirst({
     where: { stripePaymentIntentId: session.payment_intent as string },
   });
 
   if (!paymentIntent) {
-    console.error(`No payment intent found for session ${session.id}`);
+    // Not a venue subscription payment – nothing else to do
     return;
   }
 
@@ -171,7 +183,6 @@ async function handleCheckoutCompleted(
     },
   });
 
-  // TODO: Update subscription or booking status as paid
   console.log(`Payment confirmed for intent ${paymentIntent.id}`);
 }
 

@@ -456,6 +456,7 @@ export default async function EventPage({ params }: PageProps) {
                       name: v.name,
                       distanceKm: v.distanceKm,
                     }))}
+                    hasRegistrations={event.hasRegistrations}
                   />
                 )}
               </div>

@@ -145,7 +145,12 @@
       "shareSkip": "Nein, danke",
       "shareSuccess": "Beitrag geteilt!",
       "shareSuccessDesc": "Deine Teilnahme wurde mit der Community geteilt",
-      "shareError": "Der Beitrag konnte nicht geteilt werden"
+      "shareError": "Der Beitrag konnte nicht geteilt werden",
+      "registerAndPay": "Anmelden und Bezahlen",
+      "redirectingToCheckout": "Weiterleitung zum Checkout...",
+      "registrationConfirmed": "✅ Anmeldung bestätigt!",
+      "registrationPending": "⏳ Zahlung ausstehend",
+      "registrationPendingDesc": "Deine Anmeldung wartet auf die Zahlungsbestätigung"
     },
     "pastParticipation": {
       "didYouParticipate": "Haben Sie an dieser Veranstaltung teilgenommen?",

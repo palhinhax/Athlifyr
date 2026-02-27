@@ -109,7 +109,12 @@
       "shareSkip": "No, gracias",
       "shareSuccess": "¡Publicación compartida!",
       "shareSuccessDesc": "Tu participación ha sido compartida con la comunidad",
-      "shareError": "No se pudo compartir la publicación"
+      "shareError": "No se pudo compartir la publicación",
+      "registerAndPay": "Inscribirse y Pagar",
+      "redirectingToCheckout": "Redirigiendo al checkout...",
+      "registrationConfirmed": "✅ ¡Inscripción confirmada!",
+      "registrationPending": "⏳ Pago pendiente",
+      "registrationPendingDesc": "Tu inscripción está pendiente de confirmación de pago"
     },
     "pastParticipation": {
       "didYouParticipate": "¿Participaste en este evento?",

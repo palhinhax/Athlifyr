@@ -1,8 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import { Check, X, Users, Share2, Send, Target } from "lucide-react";
+import {
+  Check,
+  X,
+  Users,
+  Share2,
+  Send,
+  Target,
+  CreditCard,
+  Loader2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
 import { useToast } from "@/components/ui/use-toast";
@@ -37,16 +46,28 @@ interface Participation {
   } | null;
 }
 
+interface PaidRegistration {
+  id: string;
+  status: "PENDING" | "CONFIRMED" | "CANCELLED" | "REFUNDED";
+  variantId: string;
+  amountCents: number;
+  currency: string;
+  variant?: { id: string; name: string; distanceKm?: number | null } | null;
+}
+
 interface EventRegistrationProps {
   eventId: string;
   eventTitle: string;
   variants?: EventVariant[];
+  /** When true the event uses paid registrations via Stripe Checkout */
+  hasRegistrations?: boolean;
 }
 
 export function EventRegistration({
   eventId,
   eventTitle,
   variants = [],
+  hasRegistrations = false,
 }: EventRegistrationProps) {
   const { data: session, status } = useSession();
   const { toast } = useToast();
@@ -60,6 +81,33 @@ export function EventRegistration({
   const [showShareDialog, setShowShareDialog] = useState(false);
   const [shareContent, setShareContent] = useState("");
   const [isSharing, setIsSharing] = useState(false);
+
+  // Paid registration state (when hasRegistrations=true)
+  const [paidRegistration, setPaidRegistration] =
+    useState<PaidRegistration | null>(null);
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  // Fetch paid registration status
+  const fetchPaidRegistration = useCallback(async () => {
+    if (!hasRegistrations || status !== "authenticated" || !session?.user?.id)
+      return;
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/registrations`);
+      if (response.ok) {
+        const data = (await response.json()) as {
+          registration: PaidRegistration | null;
+        };
+        setPaidRegistration(data.registration);
+      }
+    } catch (error) {
+      console.error("Error fetching paid registration:", error);
+    }
+  }, [hasRegistrations, eventId, session?.user?.id, status]);
+
+  useEffect(() => {
+    fetchPaidRegistration();
+  }, [fetchPaidRegistration]);
 
   // Fetch user's current participation
   useEffect(() => {
@@ -104,6 +152,57 @@ export function EventRegistration({
 
     fetchCounts();
   }, [eventId]);
+
+  const handleCheckout = async () => {
+    if (!session?.user) {
+      toast({
+        title: t("authRequired"),
+        description: t("authRequiredDesc"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (variants.length > 0 && !selectedVariantId) {
+      toast({
+        title: t("selectVariantRequired"),
+        description: t("selectVariantRequiredDesc"),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCheckingOut(true);
+
+    try {
+      const response = await fetch(`/api/events/${eventId}/checkout`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ variantId: selectedVariantId }),
+      });
+
+      if (!response.ok) {
+        const errorData = (await response.json()) as { error?: string };
+        throw new Error(errorData.error ?? "Failed to create checkout session");
+      }
+
+      const data = (await response.json()) as {
+        checkoutUrl: string;
+        registrationId: string;
+      };
+
+      window.location.href = data.checkoutUrl;
+    } catch (error) {
+      console.error("Error starting checkout:", error);
+      toast({
+        title: t("error"),
+        description:
+          error instanceof Error ? error.message : t("registrationError"),
+        variant: "destructive",
+      });
+      setIsCheckingOut(false);
+    }
+  };
 
   const handleRegister = async () => {
     if (!session?.user) {
@@ -343,139 +442,231 @@ export function EventRegistration({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* Variant Selection */}
-          {variants.length > 0 && !userParticipation && (
-            <div>
-              <label className="mb-2 block text-sm font-medium">
-                {t("chooseVariant")}
-              </label>
-              <select
-                value={selectedVariantId}
-                onChange={(e) => setSelectedVariantId(e.target.value)}
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                disabled={isLoading}
-              >
-                <option value="">{t("selectVariantPlaceholder")}</option>
-                {variants.map((variant) => {
-                  const variantDate = variant.startDate
-                    ? new Date(variant.startDate).toLocaleDateString("pt-PT", {
-                        day: "numeric",
-                        month: "short",
-                      })
-                    : null;
-                  return (
-                    <option key={variant.id} value={variant.id}>
-                      {variant.name}
-                      {variant.distanceKm && ` - ${variant.distanceKm}km`}
-                      {variantDate && ` (${variantDate})`}
-                      {variant.startTime && ` ${variant.startTime}`}
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          )}
-
-          {/* Current Participation Status */}
-          {userParticipation && userParticipation.status === "going" && (
-            <div className="rounded-md bg-p-brand/10 p-3 text-sm">
-              <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
-                <Check className="h-4 w-4" />
-                {t("registered")}
-              </div>
-              {userParticipation.variant && (
-                <p className="text-muted-foreground">
-                  {t("variant")}: {userParticipation.variant.name}
-                  {userParticipation.variant.distanceKm &&
-                    ` - ${userParticipation.variant.distanceKm}km`}
-                  {userParticipation.variant.startDate && (
-                    <span className="ml-1">
-                      (
-                      {new Date(
-                        userParticipation.variant.startDate
-                      ).toLocaleDateString("pt-PT", {
-                        day: "numeric",
-                        month: "short",
-                      })}
-                      {userParticipation.variant.startTime &&
-                        ` ${userParticipation.variant.startTime}`}
-                      )
-                    </span>
-                  )}
-                </p>
+          {/* ── Paid Registration (hasRegistrations=true) ── */}
+          {hasRegistrations ? (
+            <>
+              {/* Variant Selection for paid checkout */}
+              {variants.length > 0 && !paidRegistration && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    {t("chooseVariant")}
+                  </label>
+                  <select
+                    value={selectedVariantId}
+                    onChange={(e) => setSelectedVariantId(e.target.value)}
+                    data-testid="variant-select"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    disabled={isCheckingOut}
+                  >
+                    <option value="">{t("selectVariantPlaceholder")}</option>
+                    {variants.map((variant) => (
+                      <option key={variant.id} value={variant.id}>
+                        {variant.name}
+                        {variant.distanceKm && ` - ${variant.distanceKm}km`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               )}
-            </div>
-          )}
 
-          {userParticipation && userParticipation.status === "interested" && (
-            <div className="rounded-md bg-amber-500/10 p-3 text-sm">
-              <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
-                <Target className="h-4 w-4" />
-                {t("markedAsInterested")}
+              {/* Confirmed paid registration */}
+              {paidRegistration?.status === "CONFIRMED" && (
+                <div
+                  className="rounded-md bg-p-brand/10 p-3 text-sm"
+                  data-testid="registration-confirmed"
+                >
+                  <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
+                    <Check className="h-4 w-4" />
+                    {t("registrationConfirmed")}
+                  </div>
+                  {paidRegistration.variant && (
+                    <p className="text-muted-foreground">
+                      {t("variant")}: {paidRegistration.variant.name}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Pending paid registration */}
+              {paidRegistration?.status === "PENDING" && (
+                <div
+                  className="rounded-md bg-amber-500/10 p-3 text-sm"
+                  data-testid="registration-pending"
+                >
+                  <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    {t("registrationPending")}
+                  </div>
+                  <p className="text-muted-foreground">
+                    {t("registrationPendingDesc")}
+                  </p>
+                </div>
+              )}
+
+              {/* Checkout button */}
+              {!paidRegistration && (
+                <Button
+                  onClick={handleCheckout}
+                  disabled={isCheckingOut}
+                  className="w-full"
+                  size="sm"
+                  data-testid="checkout-button"
+                >
+                  {isCheckingOut ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : (
+                    <CreditCard className="mr-2 h-4 w-4" />
+                  )}
+                  {isCheckingOut
+                    ? t("redirectingToCheckout")
+                    : t("registerAndPay")}
+                </Button>
+              )}
+            </>
+          ) : (
+            <>
+              {/* ── Free Participation (hasRegistrations=false) ── */}
+              {/* Variant Selection */}
+              {variants.length > 0 && !userParticipation && (
+                <div>
+                  <label className="mb-2 block text-sm font-medium">
+                    {t("chooseVariant")}
+                  </label>
+                  <select
+                    value={selectedVariantId}
+                    onChange={(e) => setSelectedVariantId(e.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    disabled={isLoading}
+                  >
+                    <option value="">{t("selectVariantPlaceholder")}</option>
+                    {variants.map((variant) => {
+                      const variantDate = variant.startDate
+                        ? new Date(variant.startDate).toLocaleDateString(
+                            "pt-PT",
+                            {
+                              day: "numeric",
+                              month: "short",
+                            }
+                          )
+                        : null;
+                      return (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.name}
+                          {variant.distanceKm && ` - ${variant.distanceKm}km`}
+                          {variantDate && ` (${variantDate})`}
+                          {variant.startTime && ` ${variant.startTime}`}
+                        </option>
+                      );
+                    })}
+                  </select>
+                </div>
+              )}
+
+              {/* Current Participation Status */}
+              {userParticipation && userParticipation.status === "going" && (
+                <div className="rounded-md bg-p-brand/10 p-3 text-sm">
+                  <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
+                    <Check className="h-4 w-4" />
+                    {t("registered")}
+                  </div>
+                  {userParticipation.variant && (
+                    <p className="text-muted-foreground">
+                      {t("variant")}: {userParticipation.variant.name}
+                      {userParticipation.variant.distanceKm &&
+                        ` - ${userParticipation.variant.distanceKm}km`}
+                      {userParticipation.variant.startDate && (
+                        <span className="ml-1">
+                          (
+                          {new Date(
+                            userParticipation.variant.startDate
+                          ).toLocaleDateString("pt-PT", {
+                            day: "numeric",
+                            month: "short",
+                          })}
+                          {userParticipation.variant.startTime &&
+                            ` ${userParticipation.variant.startTime}`}
+                          )
+                        </span>
+                      )}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {userParticipation &&
+                userParticipation.status === "interested" && (
+                  <div className="rounded-md bg-amber-500/10 p-3 text-sm">
+                    <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
+                      <Target className="h-4 w-4" />
+                      {t("markedAsInterested")}
+                    </div>
+                    <p className="text-muted-foreground">
+                      {t("interestedDesc")}
+                    </p>
+                  </div>
+                )}
+
+              {/* Action Buttons */}
+              <div className="flex gap-3">
+                {!userParticipation ? (
+                  <>
+                    <Button
+                      onClick={handleRegister}
+                      disabled={isLoading}
+                      className="flex-1"
+                      size="sm"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      {t("markAsGoing")}
+                    </Button>
+                    <Button
+                      onClick={handleMarkInterested}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1"
+                      size="sm"
+                    >
+                      <Target className="mr-2 h-4 w-4" />
+                      {t("markAsInterested")}
+                    </Button>
+                  </>
+                ) : userParticipation.status === "interested" ? (
+                  <>
+                    <Button
+                      onClick={handleRegister}
+                      disabled={isLoading}
+                      className="flex-1"
+                      size="sm"
+                    >
+                      <Check className="mr-2 h-4 w-4" />
+                      {t("markAsGoing")}
+                    </Button>
+                    <Button
+                      onClick={handleUnregister}
+                      disabled={isLoading}
+                      variant="outline"
+                      className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
+                      size="sm"
+                    >
+                      <X className="mr-2 h-4 w-4" />
+                      {t("removeInterest")}
+                    </Button>
+                  </>
+                ) : (
+                  <Button
+                    onClick={handleUnregister}
+                    disabled={isLoading}
+                    variant="outline"
+                    className="flex-1"
+                    size="sm"
+                  >
+                    <X className="mr-2 h-4 w-4" />
+                    {t("cancelParticipation")}
+                  </Button>
+                )}
               </div>
-              <p className="text-muted-foreground">{t("interestedDesc")}</p>
-            </div>
+            </>
           )}
-
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            {!userParticipation ? (
-              <>
-                <Button
-                  onClick={handleRegister}
-                  disabled={isLoading}
-                  className="flex-1"
-                  size="sm"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  {t("markAsGoing")}
-                </Button>
-                <Button
-                  onClick={handleMarkInterested}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="flex-1"
-                  size="sm"
-                >
-                  <Target className="mr-2 h-4 w-4" />
-                  {t("markAsInterested")}
-                </Button>
-              </>
-            ) : userParticipation.status === "interested" ? (
-              <>
-                <Button
-                  onClick={handleRegister}
-                  disabled={isLoading}
-                  className="flex-1"
-                  size="sm"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  {t("markAsGoing")}
-                </Button>
-                <Button
-                  onClick={handleUnregister}
-                  disabled={isLoading}
-                  variant="outline"
-                  className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
-                  size="sm"
-                >
-                  <X className="mr-2 h-4 w-4" />
-                  {t("removeInterest")}
-                </Button>
-              </>
-            ) : (
-              <Button
-                onClick={handleUnregister}
-                disabled={isLoading}
-                variant="outline"
-                className="flex-1"
-                size="sm"
-              >
-                <X className="mr-2 h-4 w-4" />
-                {t("cancelParticipation")}
-              </Button>
-            )}
-          </div>
         </div>
       )}
 

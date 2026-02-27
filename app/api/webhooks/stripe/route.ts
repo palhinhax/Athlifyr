@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
+import type { Stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import Stripe from "stripe";
 import {
   calculatePlanEndDate,
   type VenuePlanPolicy,

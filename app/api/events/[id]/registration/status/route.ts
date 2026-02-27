@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  apiVersion: "2025-12-15.clover",
-});
+import { stripe } from "@/lib/stripe";
 
 // GET /api/events/[id]/registration/status — check user's registration status
 // If registration is PENDING, automatically verify with Stripe and confirm if paid.

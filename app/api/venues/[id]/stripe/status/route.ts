@@ -1,12 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
 import type { StripeOnboardingStatus } from "@prisma/client";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  apiVersion: "2025-12-15.clover",
-});
 
 // GET - Get current Stripe account status
 export async function GET(

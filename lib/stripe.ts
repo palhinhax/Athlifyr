@@ -1,9 +1,19 @@
 import Stripe from "stripe";
 
+// Re-export the Stripe namespace so route files can use Stripe.* types
+// without a separate import (e.g. Stripe.Event, Stripe.Checkout.Session)
+export type { Stripe };
+
 let stripeInstance: Stripe | null = null;
 
-// Lazy initialization of Stripe client
-export function getStripe(): Stripe {
+/**
+ * Server-side Stripe client — single shared instance (lazy-initialised).
+ *
+ * Usage:
+ *   import { stripe } from "@/lib/stripe";          // instance
+ *   import type { Stripe } from "@/lib/stripe";      // types
+ */
+function getStripe(): Stripe {
   if (!stripeInstance) {
     const secretKey = process.env.STRIPE_SECRET_KEY;
     if (!secretKey) {
@@ -12,16 +22,16 @@ export function getStripe(): Stripe {
       );
     }
     stripeInstance = new Stripe(secretKey, {
+      apiVersion: "2025-12-15.clover",
       typescript: true,
     });
   }
   return stripeInstance;
 }
 
-// Deprecated: Use getStripe() instead
-// Kept for backward compatibility during migration
+// Lazy proxy so the module-level export works without top-level await
 export const stripe = new Proxy({} as Stripe, {
-  get(target, prop) {
+  get(_target, prop) {
     return getStripe()[prop as keyof Stripe];
   },
 });

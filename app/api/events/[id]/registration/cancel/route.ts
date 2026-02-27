@@ -1,11 +1,7 @@
 import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import Stripe from "stripe";
-
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_dummy", {
-  apiVersion: "2025-12-15.clover",
-});
+import { stripe } from "@/lib/stripe";
 
 // POST /api/events/[id]/registration/cancel
 // Delete a stale PENDING registration when the user cancels Stripe checkout.

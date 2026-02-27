@@ -202,7 +202,21 @@
       "exportSuccess": "Exportation terminée",
       "exportSuccessDesc": "Le fichier CSV a été téléchargé.",
       "exportError": "Échec de l'exportation",
-      "exportErrorDesc": "Une erreur s'est produite lors de l'exportation des inscriptions."
+      "exportErrorDesc": "Une erreur s'est produite lors de l'exportation des inscriptions.",
+      "checkedIn": "Avec check-in",
+      "columnCheckIn": "Check-in",
+      "allCheckIn": "Tous les check-ins",
+      "checkedInOnly": "Avec check-in",
+      "notCheckedInOnly": "Sans check-in",
+      "doCheckIn": "Faire le check-in",
+      "undoCheckIn": "Annuler le check-in",
+      "checkInSuccess": "Check-in effectué",
+      "checkInSuccessDesc": "{name} a effectué son check-in.",
+      "checkInUndone": "Check-in annulé",
+      "checkInUndoneDesc": "Check-in supprimé pour {name}.",
+      "checkInError": "Échec du check-in",
+      "checkInErrorDesc": "Une erreur s'est produite lors du check-in.",
+      "paginationInfo": "Page {page} sur {totalPages}"
     },
     "config": {
       "checkIn": "Check-in",

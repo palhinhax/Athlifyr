@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import type { Prisma } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
-// GET /api/events/[id]/registrations — list all registrations + free participations
+const PAGE_SIZE_DEFAULT = 25;
+const PAGE_SIZE_MAX = 100;
+
+const VALID_REG_STATUSES = [
+  "PENDING",
+  "CONFIRMED",
+  "CANCELLED",
+  "REFUNDED",
+] as const;
+type RegStatus = (typeof VALID_REG_STATUSES)[number];
+
+// GET /api/events/[id]/registrations — list registrations + free participations (paginated)
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const { id: eventId } = await params;
 
@@ -20,73 +32,131 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
   }
 
-  // Only admin or organizers can view registrations
+  // Only admin or organizers/staff can view registrations
   const isAdmin = user.role === "ADMIN";
-  const isOrganizer = await prisma.eventOrganizer.findUnique({
-    where: { eventId_userId: { eventId, userId: user.id } },
-  });
+  const [organizer, staff] = await Promise.all([
+    prisma.eventOrganizer.findUnique({
+      where: { eventId_userId: { eventId, userId: user.id } },
+    }),
+    prisma.eventStaffMember.findFirst({ where: { eventId, userId: user.id } }),
+  ]);
 
-  if (!isAdmin && !isOrganizer) {
+  if (!isAdmin && !organizer && !staff) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const { searchParams } = new URL(req.url);
   const variantFilter = searchParams.get("variant");
   const statusFilter = searchParams.get("status");
+  const checkedInFilter = searchParams.get("checkedIn"); // "true" | "false" | null
+  const searchQuery = searchParams.get("search")?.trim().toLowerCase() ?? null;
+  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
+  const pageSize = Math.min(
+    PAGE_SIZE_MAX,
+    Math.max(
+      1,
+      parseInt(searchParams.get("pageSize") ?? String(PAGE_SIZE_DEFAULT), 10)
+    )
+  );
+  const skip = (page - 1) * pageSize;
 
-  // Fetch paid registrations
-  const registrations = await prisma.registration.findMany({
-    where: {
-      eventId,
-      ...(variantFilter ? { variantId: variantFilter } : {}),
-      ...(statusFilter
-        ? {
-            status: statusFilter as
-              | "PENDING"
-              | "CONFIRMED"
-              | "CANCELLED"
-              | "REFUNDED",
-          }
-        : {}),
-    },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true, image: true },
-      },
-      variant: {
-        select: { id: true, name: true, distanceKm: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  // ── Build WHERE clauses ────────────────────────────────────────────────────
 
-  // Fetch free participations (only if event doesn't have paid registrations,
-  // or to show complementary data)
-  const participations = await prisma.participation.findMany({
-    where: {
-      eventId,
-      ...(variantFilter ? { variantId: variantFilter } : {}),
-      ...(statusFilter === "going" || statusFilter === "interested"
-        ? { status: statusFilter }
-        : {}),
-    },
-    include: {
-      user: {
-        select: { id: true, name: true, email: true, image: true },
-      },
-      variant: {
-        select: { id: true, name: true, distanceKm: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+  const regWhere: Prisma.RegistrationWhereInput = { eventId };
+  if (variantFilter) regWhere.variantId = variantFilter;
+  if (
+    statusFilter &&
+    (VALID_REG_STATUSES as readonly string[]).includes(statusFilter)
+  ) {
+    regWhere.status = statusFilter as RegStatus;
+  }
+  if (checkedInFilter === "true") {
+    regWhere.checkedInAt = { not: null };
+  } else if (checkedInFilter === "false") {
+    regWhere.checkedInAt = null;
+  }
+  if (searchQuery) {
+    regWhere.OR = [
+      { user: { name: { contains: searchQuery, mode: "insensitive" } } },
+      { user: { email: { contains: searchQuery, mode: "insensitive" } } },
+      { bibNumber: { contains: searchQuery, mode: "insensitive" } },
+    ];
+  }
 
-  // Fetch variants for filter dropdown
-  const variants = await prisma.eventVariant.findMany({
-    where: { eventId },
-    select: { id: true, name: true, distanceKm: true },
-    orderBy: { name: "asc" },
-  });
+  const parWhere: Prisma.ParticipationWhereInput = { eventId };
+  if (variantFilter) parWhere.variantId = variantFilter;
+  if (statusFilter === "going" || statusFilter === "interested") {
+    parWhere.status = statusFilter;
+  }
+  if (searchQuery) {
+    parWhere.OR = [
+      { user: { name: { contains: searchQuery, mode: "insensitive" } } },
+      { user: { email: { contains: searchQuery, mode: "insensitive" } } },
+    ];
+  }
+
+  // ── Summary counts (unfiltered by page, but filtered by variant/status/search) ──
+  const [
+    totalRegistrations,
+    confirmedRegistrations,
+    pendingRegistrations,
+    cancelledRegistrations,
+    checkedInRegistrations,
+    totalParticipations,
+    goingParticipations,
+    interestedParticipations,
+  ] = await Promise.all([
+    prisma.registration.count({ where: regWhere }),
+    prisma.registration.count({ where: { ...regWhere, status: "CONFIRMED" } }),
+    prisma.registration.count({ where: { ...regWhere, status: "PENDING" } }),
+    prisma.registration.count({
+      where: {
+        ...regWhere,
+        status: { in: ["CANCELLED", "REFUNDED"] },
+      },
+    }),
+    prisma.registration.count({
+      where: { ...regWhere, checkedInAt: { not: null } },
+    }),
+    prisma.participation.count({ where: parWhere }),
+    prisma.participation.count({ where: { ...parWhere, status: "going" } }),
+    prisma.participation.count({
+      where: { ...parWhere, status: "interested" },
+    }),
+  ]);
+
+  // ── Paginated data fetch ───────────────────────────────────────────────────
+
+  const [registrations, participations, variants] = await Promise.all([
+    prisma.registration.findMany({
+      where: regWhere,
+      include: {
+        user: { select: { id: true, name: true, email: true, image: true } },
+        variant: { select: { id: true, name: true, distanceKm: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+      skip,
+      take: pageSize,
+    }),
+    prisma.participation.findMany({
+      where: parWhere,
+      include: {
+        user: { select: { id: true, name: true, email: true, image: true } },
+        variant: { select: { id: true, name: true, distanceKm: true } },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+      skip,
+      take: pageSize,
+    }),
+    prisma.eventVariant.findMany({
+      where: { eventId },
+      select: { id: true, name: true, distanceKm: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const totalItems = totalRegistrations + totalParticipations;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
 
   return NextResponse.json({
     registrations: registrations.map((r) => ({
@@ -125,21 +195,20 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     })),
     variants,
     counts: {
-      totalRegistrations: registrations.length,
-      confirmedRegistrations: registrations.filter(
-        (r) => r.status === "CONFIRMED"
-      ).length,
-      pendingRegistrations: registrations.filter((r) => r.status === "PENDING")
-        .length,
-      cancelledRegistrations: registrations.filter(
-        (r) => r.status === "CANCELLED" || r.status === "REFUNDED"
-      ).length,
-      totalParticipations: participations.length,
-      goingParticipations: participations.filter((p) => p.status === "going")
-        .length,
-      interestedParticipations: participations.filter(
-        (p) => p.status === "interested"
-      ).length,
+      totalRegistrations,
+      confirmedRegistrations,
+      pendingRegistrations,
+      cancelledRegistrations,
+      checkedInRegistrations,
+      totalParticipations,
+      goingParticipations,
+      interestedParticipations,
+    },
+    pagination: {
+      page,
+      pageSize,
+      total: totalItems,
+      totalPages,
     },
   });
 }

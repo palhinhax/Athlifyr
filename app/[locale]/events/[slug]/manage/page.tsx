@@ -17,6 +17,7 @@ import {
   MapPin,
   Layers,
   Settings,
+  ClipboardList,
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -35,6 +36,7 @@ import { TabPrecos } from "./_components/tab-precos";
 import { TabEquipa } from "./_components/tab-equipa";
 import { TabPagamentos } from "./_components/tab-pagamentos";
 import { TabConfig } from "./_components/tab-config";
+import { TabInscritos } from "./_components/tab-inscritos";
 
 export default function EventManagePage() {
   const { data: session, status } = useSession();
@@ -251,6 +253,10 @@ export default function EventManagePage() {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="inscritos" className="gap-2">
+              <ClipboardList className="h-4 w-4" />
+              {t("tabs.registrations")}
+            </TabsTrigger>
             <TabsTrigger value="team" className="gap-2">
               <Users className="h-4 w-4" />
               {t("tabs.team")}
@@ -288,6 +294,7 @@ export default function EventManagePage() {
             isLoadingPhases={isLoadingPhases}
             loadPricingPhases={loadPricingPhases}
           />
+          <TabInscritos event={event} isAdmin={isAdmin} />
           <TabEquipa
             event={event}
             organizers={organizers}

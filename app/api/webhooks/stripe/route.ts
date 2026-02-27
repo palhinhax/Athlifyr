@@ -47,6 +47,15 @@ export async function POST(request: Request) {
 
     // Processar eventos do Stripe
     switch (event.type) {
+      case "checkout.session.completed": {
+        const session = event.data.object as Stripe.Checkout.Session;
+        // Only handle event registration checkouts (have eventId in metadata)
+        if (session.metadata?.eventId && session.metadata?.userId) {
+          await handleEventCheckoutCompleted(session);
+        }
+        break;
+      }
+
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object as Stripe.PaymentIntent;
         await handlePaymentIntentSucceeded(paymentIntent);
@@ -76,6 +85,83 @@ export async function POST(request: Request) {
       { error: "Webhook processing failed" },
       { status: 500 }
     );
+  }
+}
+
+// Handler for event registration checkout completed
+async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
+  try {
+    const { eventId, variantId, userId, pricingPhaseId } = session.metadata as {
+      eventId: string;
+      variantId: string;
+      userId: string;
+      pricingPhaseId: string;
+    };
+
+    console.log("Event checkout completed:", session.id, {
+      eventId,
+      variantId,
+      userId,
+    });
+
+    if (!eventId || !variantId || !userId) {
+      console.error(
+        "Missing required metadata in checkout session:",
+        session.id
+      );
+      return;
+    }
+
+    // Idempotency: skip if registration already confirmed
+    const existing = await prisma.registration.findUnique({
+      where: { userId_eventId_variantId: { userId, eventId, variantId } },
+    });
+    if (existing && existing.status === "CONFIRMED") {
+      console.log("Registration already confirmed, skipping:", existing.id);
+      return;
+    }
+
+    const amountCents = session.amount_total ?? 0;
+    const paymentIntent =
+      typeof session.payment_intent === "string"
+        ? session.payment_intent
+        : (session.payment_intent?.id ?? null);
+
+    const pricingPhase = pricingPhaseId
+      ? await prisma.pricingPhase.findUnique({ where: { id: pricingPhaseId } })
+      : null;
+
+    if (existing) {
+      // Update PENDING → CONFIRMED
+      await prisma.registration.update({
+        where: { id: existing.id },
+        data: {
+          status: "CONFIRMED",
+          stripeCheckoutSessionId: session.id,
+          stripePaymentIntentId: paymentIntent,
+          amountCents,
+          currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
+        },
+      });
+    } else {
+      await prisma.registration.create({
+        data: {
+          userId,
+          eventId,
+          variantId,
+          status: "CONFIRMED",
+          stripeCheckoutSessionId: session.id,
+          stripePaymentIntentId: paymentIntent,
+          amountCents,
+          currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
+        },
+      });
+    }
+
+    console.log("Registration created/confirmed for user:", userId);
+  } catch (error) {
+    console.error("Error handling checkout.session.completed:", error);
+    throw error;
   }
 }
 

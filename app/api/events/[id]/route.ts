@@ -196,6 +196,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       refundDeadline,
       checkInOpensAt,
       checkInClosesAt,
+      // Registration field settings (JSON)
+      registrationFieldSettings,
     } = body;
 
     // Check if event exists
@@ -279,6 +281,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         }),
         ...(checkInClosesAt !== undefined && {
           checkInClosesAt: checkInClosesAt ? new Date(checkInClosesAt) : null,
+        }),
+        ...(registrationFieldSettings !== undefined && {
+          registrationFieldSettings,
         }),
       },
       include: {

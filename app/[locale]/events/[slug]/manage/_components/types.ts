@@ -1,4 +1,5 @@
 ﻿import { EventOrganizerRole, EventStaffRole } from "@prisma/client";
+import type { RegistrationFieldSettings } from "@/types/registration-fields";
 
 export interface EventDetails {
   id: string;
@@ -28,6 +29,7 @@ export interface EventDetails {
   checkInClosesAt: string | null;
   cancelled: boolean;
   cancellationReason: string | null;
+  registrationFieldSettings: RegistrationFieldSettings;
   variants: EventVariant[];
 }
 

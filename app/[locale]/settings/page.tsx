@@ -30,6 +30,11 @@ export default async function SettingsPage({
       favoriteSports: true,
       emailVerified: true,
       emailNotifications: true,
+      dateOfBirth: true,
+      citizenId: true,
+      nationality: true,
+      emergencyContactName: true,
+      emergencyContactPhone: true,
     },
   });
 

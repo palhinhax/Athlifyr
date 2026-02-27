@@ -1,14 +1,27 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, Settings2, AlertTriangle, Trash2, Ban } from "lucide-react";
+import {
+  Loader2,
+  Settings2,
+  AlertTriangle,
+  Trash2,
+  Ban,
+  ClipboardList,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-import { Switch } from "@/components/ui/switch";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -28,11 +41,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { EventDetails } from "./types";
 import { toDatetimeLocal } from "./types";
+import {
+  REGISTRATION_FIELD_KEYS,
+  type FieldRequirement,
+  type RegistrationFieldSettings,
+} from "@/types/registration-fields";
+import { CustomFieldsManager } from "@/components/custom-fields-manager";
 
 interface TabConfigProps {
   event: EventDetails;
@@ -58,6 +78,12 @@ export function TabConfig({ event, isAdmin, onSave }: TabConfigProps) {
   );
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
+  // Registration field settings (required / optional / none)
+  const [fieldSettings, setFieldSettings] = useState<RegistrationFieldSettings>(
+    (event.registrationFieldSettings ?? {}) as RegistrationFieldSettings
+  );
+  const [isSavingFields, setIsSavingFields] = useState(false);
+
   // Danger zone
   const [isCancelOpen, setIsCancelOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -81,6 +107,34 @@ export function TabConfig({ event, isAdmin, onSave }: TabConfigProps) {
       });
     } finally {
       setIsSavingConfig(false);
+    }
+  };
+
+  const handleFieldSettingChange = (field: string, value: string) => {
+    setFieldSettings((prev) => {
+      const next = { ...prev };
+      if (value === "none") {
+        delete next[field];
+      } else {
+        next[field] = value as FieldRequirement;
+      }
+      return next;
+    });
+  };
+
+  const handleSaveFieldSettings = async () => {
+    setIsSavingFields(true);
+    try {
+      await onSave({ registrationFieldSettings: fieldSettings });
+      toast({ title: t("requiredFieldsSaved") });
+    } catch (e) {
+      toast({
+        title: tErr("saveError"),
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsSavingFields(false);
     }
   };
 
@@ -187,6 +241,83 @@ export function TabConfig({ event, isAdmin, onSave }: TabConfigProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Registration Field Settings */}
+      {event.hasRegistrations && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <ClipboardList className="h-4 w-4" />
+              {t("requiredFields")}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {t("requiredFieldsHelp")}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {REGISTRATION_FIELD_KEYS.map((field) => (
+              <div
+                key={field}
+                className="flex items-center justify-between rounded-lg border p-3"
+              >
+                <div className="flex-1 pr-4">
+                  <p className="text-sm font-medium">
+                    {t(
+                      `field_${field}` as
+                        | "field_dateOfBirth"
+                        | "field_citizenId"
+                        | "field_emergencyContact"
+                    )}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {t(
+                      `field_${field}_help` as
+                        | "field_dateOfBirth_help"
+                        | "field_citizenId_help"
+                        | "field_emergencyContact_help"
+                    )}
+                  </p>
+                </div>
+                <Select
+                  value={fieldSettings[field] ?? "none"}
+                  onValueChange={(value) =>
+                    handleFieldSettingChange(field, value)
+                  }
+                >
+                  <SelectTrigger className="w-[140px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      {t("fieldOption_none")}
+                    </SelectItem>
+                    <SelectItem value="optional">
+                      {t("fieldOption_optional")}
+                    </SelectItem>
+                    <SelectItem value="required">
+                      {t("fieldOption_required")}
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={() => void handleSaveFieldSettings()}
+                disabled={isSavingFields}
+                size="sm"
+                className="gap-2"
+              >
+                {isSavingFields && <Loader2 className="h-4 w-4 animate-spin" />}
+                {t("saveRequiredFields")}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Custom registration fields (organizer-defined) */}
+      {event.hasRegistrations && <CustomFieldsManager eventId={event.id} />}
 
       {/* Admin-only: LiveRace */}
       {isAdmin && (

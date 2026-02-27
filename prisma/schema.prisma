@@ -25,6 +25,11 @@ model User {
   emailNotifications       Boolean                   @default(false)
   pushNotificationsEnabled Boolean                   @default(true)
   isProAccount             Boolean                   @default(false)
+  dateOfBirth              DateTime?
+  citizenId                String?
+  nationality              String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
   accounts                 Account[]
   comments                 Comment[]
   eventsPreferences        EventsPreferences?
@@ -100,6 +105,9 @@ model User {
   eventStaffMember        EventStaffMember[]   @relation("EventStaffMemberUser")
   eventStaffMemberAdded   EventStaffMember[]   @relation("EventStaffMemberAddedBy")
   eventInvitesSent        EventInvite[]        @relation("EventInvitedBy")
+
+  // Custom field responses (event registration extras)
+  customFieldResponses    CustomFieldResponse[]
 
   @@index([email])
   @@index([name])
@@ -192,6 +200,7 @@ model Event {
   organizers           EventOrganizer[]
   staffMembers         EventStaffMember[]
   invites              EventInvite[]
+  customFields         EventCustomField[]
 
   // ── Feature flags ──────────────────────────────────────────────────────────
   // hasRegistrations is derived: automatically true when stripeOnboardingStatus = COMPLETE
@@ -210,9 +219,10 @@ model Event {
   commissionFixed          Int                         @default(0) // cêntimos
 
   // ── Registration settings ──────────────────────────────────────────────────
-  refundDeadline       DateTime?
-  checkInOpensAt       DateTime?
-  checkInClosesAt      DateTime?
+  refundDeadline              DateTime?
+  checkInOpensAt              DateTime?
+  checkInClosesAt             DateTime?
+  registrationFieldSettings   Json       @default("{}")  // e.g. { "dateOfBirth": "required", "citizenId": "optional" }
 
   // ── LiveRace settings ──────────────────────────────────────────────────────
   liveStatus           EventLiveStatus             @default(SCHEDULED)
@@ -370,6 +380,7 @@ model Participation {
   event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   variant        EventVariant? @relation(fields: [variantId], references: [id])
+  customFieldResponses CustomFieldResponse[]
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -402,12 +413,69 @@ model Registration {
   event   Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   variant EventVariant @relation(fields: [variantId], references: [id])
 
+  customFieldResponses CustomFieldResponse[]
+
   @@unique([userId, eventId, variantId])
   @@index([userId])
   @@index([eventId])
   @@index([variantId])
   @@index([status])
   @@index([stripeCheckoutSessionId])
+}
+
+// ============================================================================
+// CUSTOM FIELDS (organizer-defined per event)
+// ============================================================================
+
+/// A custom field defined by the organizer for an event.
+/// Examples: "T-shirt size", "Lunch", "Engraved medal"
+model EventCustomField {
+  id          String              @id @default(cuid())
+  eventId     String
+  label       String              // e.g. "T-shirt size"
+  type        CustomFieldType     @default(SELECT) // SELECT = pick one, BOOLEAN = yes/no
+  options     String[]            // e.g. ["S", "M", "L", "XL"]  (only for SELECT type)
+  required    Boolean             @default(false)
+  priceCents  Int                 @default(0)      // additional cost in cents (0 = free)
+  currency    Currency            @default(EUR)
+  order       Int                 @default(0)       // display order
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  event     Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+
+  @@index([eventId])
+  @@index([order])
+}
+
+/// A participant's response to one custom field.
+model CustomFieldResponse {
+  id             String           @id @default(cuid())
+  customFieldId  String
+  registrationId String?
+  participationId String?
+  userId         String
+  value          String           // e.g. "M", "true", "false"
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+
+  customField    EventCustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+  registration   Registration?    @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  participation  Participation?   @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([customFieldId, registrationId])
+  @@unique([customFieldId, participationId])
+  @@index([customFieldId])
+  @@index([registrationId])
+  @@index([participationId])
+  @@index([userId])
+}
+
+enum CustomFieldType {
+  SELECT   // Pick from options list (e.g. S/M/L)
+  BOOLEAN  // Yes / No
 }
 
 // ============================================================================

@@ -84,6 +84,20 @@ async function getEvent(
               startDate: "asc",
             },
           },
+          _count: {
+            select: {
+              registrations: {
+                where: {
+                  status: "CONFIRMED",
+                },
+              },
+              participations: {
+                where: {
+                  status: "going",
+                },
+              },
+            },
+          },
         },
         orderBy: {
           startDate: "asc",
@@ -356,6 +370,8 @@ export default async function EventPage({ params }: PageProps) {
     time: t("variants.time"),
     prices: t("variants.prices"),
     currentPhase: t("variants.currentPhase"),
+    soldOut: t("registration.soldOut"),
+    spotsLeft: t("variants.spotsLeft"),
   };
 
   return (
@@ -401,7 +417,11 @@ export default async function EventPage({ params }: PageProps) {
 
             {/* Variants List with Distances */}
             <EventVariantsList
-              variants={event.variants}
+              variants={event.variants.map((v) => ({
+                ...v,
+                registrationCount:
+                  v._count.registrations + v._count.participations,
+              }))}
               labels={variantLabels}
             />
 
@@ -466,12 +486,30 @@ export default async function EventPage({ params }: PageProps) {
                   <EventRegistration
                     eventId={event.id}
                     eventTitle={event.title}
+                    hasRegistrations={event.hasRegistrations}
+                    registrationFieldSettings={
+                      (event.registrationFieldSettings as Record<
+                        string,
+                        string
+                      >) ?? {}
+                    }
                     variants={event.variants.map((v) => ({
                       id: v.id,
                       name: v.name,
                       distanceKm: v.distanceKm,
                       startDate: v.startDate,
                       startTime: v.startTime,
+                      maxParticipants: v.maxParticipants,
+                      registrationCount:
+                        v._count.registrations + v._count.participations,
+                      pricingPhases: v.pricingPhases.map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        currency: p.currency,
+                        startDate: p.startDate,
+                        endDate: p.endDate,
+                      })),
                     }))}
                   />
                 )}

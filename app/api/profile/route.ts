@@ -7,6 +7,11 @@ import { requireIntegrity } from "@/lib/verify-integrity";
 const updateProfileSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   image: z.string().url().nullable().optional(),
+  dateOfBirth: z.string().datetime().nullable().optional(),
+  citizenId: z.string().min(1).max(30).nullable().optional(),
+  nationality: z.string().min(1).max(100).nullable().optional(),
+  emergencyContactName: z.string().min(1).max(100).nullable().optional(),
+  emergencyContactPhone: z.string().min(1).max(30).nullable().optional(),
 });
 
 // PATCH /api/profile - Update user profile
@@ -31,12 +36,34 @@ export async function PATCH(request: NextRequest) {
         ...(validatedData.image !== undefined && {
           image: validatedData.image,
         }),
+        ...(validatedData.dateOfBirth !== undefined && {
+          dateOfBirth: validatedData.dateOfBirth
+            ? new Date(validatedData.dateOfBirth)
+            : null,
+        }),
+        ...(validatedData.citizenId !== undefined && {
+          citizenId: validatedData.citizenId,
+        }),
+        ...(validatedData.nationality !== undefined && {
+          nationality: validatedData.nationality,
+        }),
+        ...(validatedData.emergencyContactName !== undefined && {
+          emergencyContactName: validatedData.emergencyContactName,
+        }),
+        ...(validatedData.emergencyContactPhone !== undefined && {
+          emergencyContactPhone: validatedData.emergencyContactPhone,
+        }),
       },
       select: {
         id: true,
         name: true,
         email: true,
         image: true,
+        dateOfBirth: true,
+        citizenId: true,
+        nationality: true,
+        emergencyContactName: true,
+        emergencyContactPhone: true,
       },
     });
 
@@ -75,6 +102,11 @@ export async function GET(request: NextRequest) {
         image: true,
         role: true,
         createdAt: true,
+        dateOfBirth: true,
+        citizenId: true,
+        nationality: true,
+        emergencyContactName: true,
+        emergencyContactPhone: true,
       },
     });
 

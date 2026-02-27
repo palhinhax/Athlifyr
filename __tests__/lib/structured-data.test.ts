@@ -41,6 +41,7 @@ describe("structured-data", () => {
       refundDeadline: null,
       checkInOpensAt: null,
       checkInClosesAt: null,
+      registrationFieldSettings: {},
       liveStatus: "SCHEDULED" as const,
     };
 

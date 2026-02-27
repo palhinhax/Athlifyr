@@ -48,6 +48,25 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         );
       }
+
+      // Check variant capacity for "going" registrations
+      if (variant.maxParticipants && validatedData.status === "going") {
+        const currentCount = await prisma.participation.count({
+          where: {
+            variantId: variant.id,
+            status: "going",
+            // Exclude the user's own participation so switching from interested → going works
+            NOT: { userId: user.id },
+          },
+        });
+
+        if (currentCount >= variant.maxParticipants) {
+          return NextResponse.json(
+            { error: "This variant is sold out" },
+            { status: 409 }
+          );
+        }
+      }
     }
 
     // Upsert participation (create or update)
@@ -148,12 +167,27 @@ export async function GET(request: NextRequest) {
     });
 
     // Count participants by status
-    const counts = {
+    const counts: {
+      going: number;
+      interested: number;
+      total: number;
+      confirmedRegistrations?: number;
+    } = {
       going: participations.filter((p) => p.status === "going").length,
       interested: participations.filter((p) => p.status === "interested")
         .length,
       total: participations.length,
     };
+
+    // Also count confirmed paid registrations for this event
+    if (eventId) {
+      counts.confirmedRegistrations = await prisma.registration.count({
+        where: {
+          eventId,
+          status: "CONFIRMED",
+        },
+      });
+    }
 
     return NextResponse.json(
       {

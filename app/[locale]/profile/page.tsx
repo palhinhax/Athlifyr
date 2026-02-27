@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { Calendar, Trophy, Users } from "lucide-react";
+import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";
 import { FriendsSection } from "@/components/friends-section";
 import { ProfileHeaderClient } from "@/components/profile-header-client";

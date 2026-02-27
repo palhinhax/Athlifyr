@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { Calendar, MapPin, Trophy, Users } from "lucide-react";
+import { Calendar, Trophy, Users } from "lucide-react";
 import { formatDate } from "@/lib/event-utils";
 import { Link } from "@/i18n/routing";
 import { FriendsSection } from "@/components/friends-section";
@@ -12,6 +12,7 @@ import { ProfilePastSessions } from "@/components/profile-past-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { AnalysesSection } from "@/components/analyses-section";
+import { ProfileUpcomingEvents } from "@/components/profile-upcoming-events";
 import { getTranslations } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
@@ -188,6 +189,20 @@ export default async function ProfilePage({ params }: PageProps) {
   const friendsCount =
     user.sentFriendships.length + user.receivedFriendships.length;
 
+  // Fetch confirmed ticket event IDs for upcoming events
+  const upcomingEventIds = upcomingEvents.map((p) => p.event.id);
+  const confirmedRegistrations = upcomingEventIds.length
+    ? await prisma.registration.findMany({
+        where: {
+          userId: session.user.id,
+          eventId: { in: upcomingEventIds },
+          status: "CONFIRMED",
+        },
+        select: { eventId: true },
+      })
+    : [];
+  const confirmedTicketEventIds = confirmedRegistrations.map((r) => r.eventId);
+
   return (
     <div className="container mx-auto px-4 py-12">
       <div className="mx-auto max-w-6xl">
@@ -248,57 +263,29 @@ export default async function ProfilePage({ params }: PageProps) {
               <Calendar className="h-6 w-6 text-primary" />
               {t("upcomingEventsCount", { count: upcomingEvents.length })}
             </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {upcomingEvents.map((participation) => (
-                <Link
-                  key={participation.id}
-                  href={`/events/${participation.event.slug}`}
-                >
-                  <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
-                    <h3 className="mb-2 font-semibold">
-                      {participation.event.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate, locale)}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {participation.event.city},{" "}
-                        {participation.event.country}
-                      </div>
-                      {participation.variant && (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-2">
-                            <Trophy className="h-4 w-4 shrink-0" />
-                            <span>
-                              {participation.variant.name}
-                              {participation.variant.distanceKm &&
-                                ` - ${participation.variant.distanceKm} km`}
-                            </span>
-                          </div>
-                          {participation.variant.startDate &&
-                            participation.variant.startDate !==
-                              participation.event.startDate && (
-                              <span className="pl-6 text-xs">
-                                (
-                                {formatDate(
-                                  participation.variant.startDate,
-                                  locale
-                                )}
-                                {participation.variant.startTime &&
-                                  ` ${t("at")} ${participation.variant.startTime}`}
-                                )
-                              </span>
-                            )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
+            <ProfileUpcomingEvents
+              events={upcomingEvents.map((p) => ({
+                id: p.id,
+                event: {
+                  id: p.event.id,
+                  title: p.event.title,
+                  slug: p.event.slug,
+                  startDate: p.event.startDate,
+                  city: p.event.city,
+                  country: p.event.country,
+                },
+                variant: p.variant
+                  ? {
+                      name: p.variant.name,
+                      distanceKm: p.variant.distanceKm,
+                      startDate: p.variant.startDate,
+                      startTime: p.variant.startTime,
+                    }
+                  : null,
+              }))}
+              confirmedTicketEventIds={confirmedTicketEventIds}
+              locale={locale}
+            />
           </div>
         )}
 

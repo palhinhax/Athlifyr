@@ -192,7 +192,11 @@
       "deleteSuccess": "Inscripción eliminada",
       "deleteSuccessDesc": "La inscripción de {name} ha sido eliminada.",
       "deleteError": "Error",
-      "deleteErrorDesc": "Se produjo un error al eliminar la inscripción."
+      "deleteErrorDesc": "Se produjo un error al eliminar la inscripción.",
+      "exportSuccess": "Exportación completada",
+      "exportSuccessDesc": "El archivo CSV se ha descargado.",
+      "exportError": "Error en la exportación",
+      "exportErrorDesc": "Se produjo un error al exportar las inscripciones."
     },
     "config": {
       "checkIn": "Check-in",

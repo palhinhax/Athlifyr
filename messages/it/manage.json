@@ -192,7 +192,11 @@
       "deleteSuccess": "Iscrizione eliminata",
       "deleteSuccessDesc": "L'iscrizione di {name} è stata eliminata.",
       "deleteError": "Errore",
-      "deleteErrorDesc": "Si è verificato un errore durante l'eliminazione dell'iscrizione."
+      "deleteErrorDesc": "Si è verificato un errore durante l'eliminazione dell'iscrizione.",
+      "exportSuccess": "Esportazione completata",
+      "exportSuccessDesc": "Il file CSV è stato scaricato.",
+      "exportError": "Esportazione fallita",
+      "exportErrorDesc": "Si è verificato un errore durante l'esportazione delle iscrizioni."
     },
     "config": {
       "checkIn": "Check-in",

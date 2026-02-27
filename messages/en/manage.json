@@ -192,7 +192,11 @@
       "deleteSuccess": "Registration deleted",
       "deleteSuccessDesc": "The registration of {name} has been deleted.",
       "deleteError": "Error",
-      "deleteErrorDesc": "An error occurred while deleting the registration."
+      "deleteErrorDesc": "An error occurred while deleting the registration.",
+      "exportSuccess": "Export complete",
+      "exportSuccessDesc": "The CSV file has been downloaded.",
+      "exportError": "Export failed",
+      "exportErrorDesc": "An error occurred while exporting registrations."
     },
     "config": {
       "checkIn": "Check-in",

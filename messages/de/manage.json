@@ -192,7 +192,11 @@
       "deleteSuccess": "Anmeldung gelöscht",
       "deleteSuccessDesc": "Die Anmeldung von {name} wurde gelöscht.",
       "deleteError": "Fehler",
-      "deleteErrorDesc": "Beim Löschen der Anmeldung ist ein Fehler aufgetreten."
+      "deleteErrorDesc": "Beim Löschen der Anmeldung ist ein Fehler aufgetreten.",
+      "exportSuccess": "Export abgeschlossen",
+      "exportSuccessDesc": "Die CSV-Datei wurde heruntergeladen.",
+      "exportError": "Export fehlgeschlagen",
+      "exportErrorDesc": "Beim Exportieren der Anmeldungen ist ein Fehler aufgetreten."
     },
     "config": {
       "checkIn": "Check-in",

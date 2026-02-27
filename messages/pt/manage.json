@@ -192,7 +192,11 @@
       "deleteSuccess": "Inscrição apagada",
       "deleteSuccessDesc": "A inscrição de {name} foi apagada.",
       "deleteError": "Erro",
-      "deleteErrorDesc": "Ocorreu um erro ao apagar a inscrição."
+      "deleteErrorDesc": "Ocorreu um erro ao apagar a inscrição.",
+      "exportSuccess": "Exportação concluída",
+      "exportSuccessDesc": "O ficheiro CSV foi descarregado.",
+      "exportError": "Falha na exportação",
+      "exportErrorDesc": "Ocorreu um erro ao exportar as inscrições."
     },
     "config": {
       "checkIn": "Check-in",

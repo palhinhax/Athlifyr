@@ -180,65 +180,7 @@ function StatusBadge({
   );
 }
 
-// ─── CSV Export ──────────────────────────────────────────────────────────────
-
-function exportToCSV(
-  entries: RegistrationEntry[],
-  eventTitle: string,
-  t: ReturnType<typeof useTranslations>,
-  customFieldDefs: CustomFieldDef[] = [],
-  responseMap: Map<string, Map<string, string>> = new Map()
-) {
-  const headers = [
-    t("csvName"),
-    t("csvEmail"),
-    t("csvVariant"),
-    t("csvStatus"),
-    t("csvType"),
-    t("csvBib"),
-    t("csvAmount"),
-    t("csvDate"),
-    ...customFieldDefs.map((f) => f.label),
-  ];
-
-  const rows = entries.map((entry) => {
-    const entryKey =
-      entry.type === "paid" ? `reg:${entry.id}` : `par:${entry.id}`;
-    const entryResponses = responseMap.get(entryKey);
-
-    return [
-      entry.userName ?? "",
-      entry.userEmail,
-      entry.variantName ?? "",
-      entry.status,
-      entry.type === "paid" ? t("typePaid") : t("typeFree"),
-      entry.bibNumber ?? "",
-      entry.amountCents && entry.currency
-        ? formatAmount(entry.amountCents, entry.currency)
-        : "",
-      new Date(entry.createdAt).toLocaleDateString(),
-      ...customFieldDefs.map((f) => entryResponses?.get(f.id) ?? ""),
-    ];
-  });
-
-  const csvContent = [
-    headers.join(","),
-    ...rows.map((row) =>
-      row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")
-    ),
-  ].join("\n");
-
-  const BOM = "\uFEFF";
-  const blob = new Blob([BOM + csvContent], {
-    type: "text/csv;charset=utf-8;",
-  });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `${eventTitle.replace(/[^a-z0-9]/gi, "_")}_registrations.csv`;
-  link.click();
-  URL.revokeObjectURL(url);
-}
+// ─── CSV Export (server-side) ────────────────────────────────────────────────
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
@@ -365,16 +307,56 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
     return true;
   });
 
-  // ─── Export handler ────────────────────────────────────────────────────────
+  // ─── Export state ────────────────────────────────────────────────────────
+  const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportCSV = () => {
-    exportToCSV(
-      filteredEntries,
-      event.title,
-      t,
-      customFieldDefs,
-      cfResponseMap
-    );
+  // ─── Export handler (server-side CSV) ──────────────────────────────────────
+
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const params = new URLSearchParams();
+      if (variantFilter !== "all") params.set("variant", variantFilter);
+      if (statusFilter !== "all") params.set("status", statusFilter);
+      if (searchQuery) params.set("search", searchQuery);
+
+      const res = await fetch(
+        `/api/events/${event.id}/registrations/export?${params.toString()}`
+      );
+
+      if (!res.ok) {
+        const data = (await res.json()) as { error: string };
+        throw new Error(data.error || "Export failed");
+      }
+
+      const blob = await res.blob();
+      const disposition = res.headers.get("Content-Disposition");
+      const filenameMatch = disposition?.match(/filename="(.+)"/);
+      const filename = filenameMatch?.[1] ?? "registrations.csv";
+
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: t("exportSuccess"),
+        description: t("exportSuccessDesc"),
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("CSV export error:", error.message);
+      }
+      toast({
+        title: t("exportError"),
+        description: t("exportErrorDesc"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   // ─── Delete handler (admin only) ──────────────────────────────────────────
@@ -535,10 +517,14 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
               variant="outline"
               size="sm"
               onClick={handleExportCSV}
-              disabled={filteredEntries.length === 0}
+              disabled={filteredEntries.length === 0 || isExporting}
               className="gap-2"
             >
-              <Download className="h-4 w-4" />
+              {isExporting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Download className="h-4 w-4" />
+              )}
               {t("exportCSV")}
             </Button>
           </div>

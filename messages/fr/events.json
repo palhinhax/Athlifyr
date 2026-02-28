@@ -132,6 +132,8 @@
       "allSoldOut": "Inscriptions complètes",
       "allSoldOutDesc": "Toutes les variantes de cet événement sont complètes.",
       "variantSoldOutDesc": "Cette variante n'a plus de places disponibles.",
+      "registrationClosed": "Inscriptions fermées",
+      "registrationClosedDesc": "Il n'y a pas de période d'inscription active pour cette variante pour le moment.",
       "consent": {
         "title": "Consentement au Partage de Données",
         "description": "Cet événement nécessite des informations personnelles pour l'inscription. Ces données seront partagées avec l'organisateur de l'événement.",
@@ -161,6 +163,8 @@
         "step2Title": "Options supplémentaires",
         "step2Description": "L'organisateur propose les options suivantes. Faites votre choix avant de continuer.",
         "customFieldRequired": "Le champ \"{field}\" est obligatoire.",
+        "participantYou": "Vous (Participant 1)",
+        "customFieldsForParticipant": "Sélectionnez les options pour {participant}.",
         "teamMemberTitle": "Membre de l'équipe {number}",
         "teamMemberDescription": "Saisissez les informations du membre {number} sur {total}.",
         "teamMemberName": "Nom complet",
@@ -169,7 +173,25 @@
         "teamMemberEmailPlaceholder": "Saisissez l'adresse e-mail",
         "teamMemberPhone": "Téléphone",
         "teamMemberPhonePlaceholder": "Saisissez le numéro de téléphone",
-        "teamMemberNameRequired": "Le nom du membre de l'équipe est obligatoire."
+        "teamMemberNameRequired": "Le nom du membre de l'équipe est obligatoire.",
+        "teamMemberDateOfBirthRequired": "La date de naissance du membre de l'équipe est obligatoire.",
+        "teamMemberCitizenIdRequired": "Le numéro de carte d'identité du membre de l'équipe est obligatoire.",
+        "teamMemberEmergencyContactRequired": "Le contact d'urgence (nom et téléphone) du membre de l'équipe est obligatoire."
+      },
+      "flow": {
+        "backToEvent": "Retour à l'événement",
+        "step": "Étape",
+        "reviewTitle": "Vérifier et Confirmer",
+        "reviewDescription": "Vérifiez les détails de votre inscription avant de continuer.",
+        "yourOptions": "Vos options",
+        "options": "Options",
+        "free": "Gratuit",
+        "people": "personnes",
+        "teamSummary": "Votre équipe",
+        "priceBreakdown": "Détail du prix",
+        "total": "Total",
+        "confirmRegistration": "Confirmer l'inscription",
+        "payNow": "Payer maintenant"
       },
       "customFields": {
         "title": "Options supplémentaires",

@@ -132,6 +132,8 @@
       "allSoldOut": "Registrations sold out",
       "allSoldOutDesc": "All variants for this event are sold out.",
       "variantSoldOutDesc": "This variant has no spots available.",
+      "registrationClosed": "Registration closed",
+      "registrationClosedDesc": "There is no active registration period for this variant at the moment.",
       "consent": {
         "title": "Data Sharing Consent",
         "description": "This event requires some personal information for registration. This data will be shared with the event organizer.",
@@ -161,6 +163,8 @@
         "step2Title": "Additional Options",
         "step2Description": "The organizer offers the following options. Please make your selection before continuing.",
         "customFieldRequired": "The field \"{field}\" is required.",
+        "participantYou": "You (Participant 1)",
+        "customFieldsForParticipant": "Select options for {participant}.",
         "teamMemberTitle": "Team member {number}",
         "teamMemberDescription": "Enter the details for team member {number} of {total}.",
         "teamMemberName": "Full name",
@@ -169,7 +173,25 @@
         "teamMemberEmailPlaceholder": "Enter email address",
         "teamMemberPhone": "Phone",
         "teamMemberPhonePlaceholder": "Enter phone number",
-        "teamMemberNameRequired": "Team member name is required."
+        "teamMemberNameRequired": "Team member name is required.",
+        "teamMemberDateOfBirthRequired": "Team member date of birth is required.",
+        "teamMemberCitizenIdRequired": "Team member citizen card number is required.",
+        "teamMemberEmergencyContactRequired": "Team member emergency contact (name and phone) is required."
+      },
+      "flow": {
+        "backToEvent": "Back to event",
+        "step": "Step",
+        "reviewTitle": "Review & Confirm",
+        "reviewDescription": "Review your registration details before proceeding.",
+        "yourOptions": "Your options",
+        "options": "Options",
+        "free": "Free",
+        "people": "people",
+        "teamSummary": "Your team",
+        "priceBreakdown": "Price breakdown",
+        "total": "Total",
+        "confirmRegistration": "Confirm Registration",
+        "payNow": "Pay now"
       },
       "customFields": {
         "title": "Additional Options",

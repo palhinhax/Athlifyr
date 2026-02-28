@@ -9,6 +9,7 @@ interface RouteParams {
 interface CustomFieldAnswer {
   customFieldId: string;
   value: string;
+  participantIndex?: number; // 0 = main, 1+ = team members
 }
 
 // POST /api/events/[id]/custom-field-responses
@@ -32,7 +33,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Validate that all custom fields belong to this event
-    const fieldIds = body.answers.map((a) => a.customFieldId);
+    const fieldIds = [...new Set(body.answers.map((a) => a.customFieldId))];
     const fields = await prisma.eventCustomField.findMany({
       where: { id: { in: fieldIds }, eventId },
     });
@@ -44,34 +45,52 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Validate required fields have values
+    // Group answers by participantIndex for validation
+    const answersByParticipant = new Map<number, CustomFieldAnswer[]>();
+    for (const answer of body.answers) {
+      const idx = answer.participantIndex ?? 0;
+      const existing = answersByParticipant.get(idx) ?? [];
+      existing.push(answer);
+      answersByParticipant.set(idx, existing);
+    }
+
+    // Validate required fields have values for each participant
     const requiredFields = fields.filter((f) => f.required);
-    for (const rf of requiredFields) {
-      const answer = body.answers.find((a) => a.customFieldId === rf.id);
-      if (!answer || !answer.value.trim()) {
-        return NextResponse.json(
-          { error: `Required field "${rf.label}" is missing` },
-          { status: 400 }
+    for (const [participantIdx, participantAnswers] of answersByParticipant) {
+      for (const rf of requiredFields) {
+        const answer = participantAnswers.find(
+          (a) => a.customFieldId === rf.id
         );
+        if (!answer || !answer.value.trim()) {
+          return NextResponse.json(
+            {
+              error: `Required field "${rf.label}" is missing for participant ${participantIdx + 1}`,
+            },
+            { status: 400 }
+          );
+        }
       }
     }
 
     // Upsert responses
     for (const answer of body.answers) {
       if (!answer.value.trim()) continue; // skip empty optional answers
+      const participantIndex = answer.participantIndex ?? 0;
 
       if (body.registrationId) {
         await prisma.customFieldResponse.upsert({
           where: {
-            customFieldId_registrationId: {
+            customFieldId_registrationId_participantIndex: {
               customFieldId: answer.customFieldId,
               registrationId: body.registrationId,
+              participantIndex,
             },
           },
           create: {
             customFieldId: answer.customFieldId,
             registrationId: body.registrationId,
             userId: user.id,
+            participantIndex,
             value: answer.value,
           },
           update: {
@@ -81,15 +100,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       } else if (body.participationId) {
         await prisma.customFieldResponse.upsert({
           where: {
-            customFieldId_participationId: {
+            customFieldId_participationId_participantIndex: {
               customFieldId: answer.customFieldId,
               participationId: body.participationId,
+              participantIndex,
             },
           },
           create: {
             customFieldId: answer.customFieldId,
             participationId: body.participationId,
             userId: user.id,
+            participantIndex,
             value: answer.value,
           },
           update: {

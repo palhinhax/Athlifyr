@@ -406,6 +406,24 @@ model Registration {
   netCents                Int? // Valor líquido (opcional)
   currency                Currency @default(EUR)
 
+  // ── Team registration ──────────────────────────────────────────────────────
+  // All members of a team share the same teamGroupId.
+  // The person who paid has teamRole = LEADER; others are MEMBER.
+  // For individual registrations both fields are null.
+  teamGroupId      String?
+  teamRole         TeamRole?
+  teamMemberIndex  Int       @default(0) // 0 = leader/individual, 1+ = team members
+
+  // Guest data — populated for team members that are NOT registered users.
+  // When the team leader registers, they provide this data for each member.
+  guestName                  String?
+  guestEmail                 String?
+  guestPhone                 String?
+  guestDateOfBirth           DateTime?
+  guestCitizenId             String?
+  guestEmergencyContactName  String?
+  guestEmergencyContactPhone String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -415,31 +433,14 @@ model Registration {
   variant EventVariant @relation(fields: [variantId], references: [id])
 
   customFieldResponses CustomFieldResponse[]
-  teamMembers          RegistrationTeamMember[]
 
-  @@unique([userId, eventId, variantId])
+  @@unique([userId, eventId, variantId, teamMemberIndex])
   @@index([userId])
   @@index([eventId])
   @@index([variantId])
   @@index([status])
   @@index([stripeCheckoutSessionId])
-}
-
-/// Extra team members for registrations in team variants (teamSize > 1).
-/// The registering user is NOT stored here — only the additional members.
-model RegistrationTeamMember {
-  id              String       @id @default(cuid())
-  registrationId  String
-  name            String
-  email           String?
-  dateOfBirth     DateTime?
-  citizenId       String?
-  phone           String?
-  createdAt       DateTime     @default(now())
-  updatedAt       DateTime     @updatedAt
-  registration    Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
-
-  @@index([registrationId])
+  @@index([teamGroupId])
 }
 
 // ============================================================================
@@ -469,23 +470,25 @@ model EventCustomField {
 }
 
 /// A participant's response to one custom field.
+/// participantIndex 0 = main registrant, 1 = team member #2, 2 = team member #3, etc.
 model CustomFieldResponse {
-  id             String           @id @default(cuid())
-  customFieldId  String
-  registrationId String?
-  participationId String?
-  userId         String
-  value          String           // e.g. "M", "true", "false"
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
+  id               String           @id @default(cuid())
+  customFieldId    String
+  registrationId   String?
+  participationId  String?
+  userId           String
+  participantIndex Int              @default(0) // 0 = main, 1+ = team members
+  value            String           // e.g. "M", "true", "false"
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
 
   customField    EventCustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
   registration   Registration?    @relation(fields: [registrationId], references: [id], onDelete: Cascade)
   participation  Participation?   @relation(fields: [participationId], references: [id], onDelete: Cascade)
   user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([customFieldId, registrationId])
-  @@unique([customFieldId, participationId])
+  @@unique([customFieldId, registrationId, participantIndex])
+  @@unique([customFieldId, participationId, participantIndex])
   @@index([customFieldId])
   @@index([registrationId])
   @@index([participationId])
@@ -1381,6 +1384,11 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
   REFUNDED
+}
+
+enum TeamRole {
+  LEADER // The person who paid / registered the team
+  MEMBER // Additional team member (may be a guest)
 }
 
 // ============================================================================

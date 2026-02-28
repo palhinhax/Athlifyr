@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { SettingsTabs } from "@/components/settings-tabs";
 import { getTranslations } from "next-intl/server";
+import { PageContainer } from "@/components/page-container";
 
 export const dynamic = "force-dynamic";
 
@@ -46,11 +47,9 @@ export default async function SettingsPage({
   const t = await getTranslations({ locale, namespace: "settings" });
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-4xl">
-        <h1 className="mb-8 text-4xl font-bold">{t("title")}</h1>
-        <SettingsTabs user={user} locale={locale} />
-      </div>
-    </div>
+    <PageContainer size="lg" maxWidth="max-w-4xl">
+      <h1 className="mb-8 text-4xl font-bold">{t("title")}</h1>
+      <SettingsTabs user={user} locale={locale} />
+    </PageContainer>
   );
 }

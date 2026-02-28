@@ -132,6 +132,8 @@
       "allSoldOut": "Inscripciones agotadas",
       "allSoldOutDesc": "Todas las variantes de este evento están agotadas.",
       "variantSoldOutDesc": "Esta variante no tiene plazas disponibles.",
+      "registrationClosed": "Inscripciones cerradas",
+      "registrationClosedDesc": "No existe un periodo de inscripción activo para esta variante en este momento.",
       "consent": {
         "title": "Consentimiento de Compartición de Datos",
         "description": "Este evento requiere información personal para la inscripción. Estos datos serán compartidos con el organizador del evento.",
@@ -161,6 +163,8 @@
         "step2Title": "Opciones adicionales",
         "step2Description": "El organizador ofrece las siguientes opciones. Haz tu selección antes de continuar.",
         "customFieldRequired": "El campo \"{field}\" es obligatorio.",
+        "participantYou": "Tú (Participante 1)",
+        "customFieldsForParticipant": "Selecciona las opciones para {participant}.",
         "teamMemberTitle": "Miembro del equipo {number}",
         "teamMemberDescription": "Introduce los datos del miembro {number} de {total}.",
         "teamMemberName": "Nombre completo",
@@ -169,7 +173,25 @@
         "teamMemberEmailPlaceholder": "Introduce el correo electrónico",
         "teamMemberPhone": "Teléfono",
         "teamMemberPhonePlaceholder": "Introduce el número de teléfono",
-        "teamMemberNameRequired": "El nombre del miembro del equipo es obligatorio."
+        "teamMemberNameRequired": "El nombre del miembro del equipo es obligatorio.",
+        "teamMemberDateOfBirthRequired": "La fecha de nacimiento del miembro del equipo es obligatoria.",
+        "teamMemberCitizenIdRequired": "El número del documento de identidad del miembro del equipo es obligatorio.",
+        "teamMemberEmergencyContactRequired": "El contacto de emergencia (nombre y teléfono) del miembro del equipo es obligatorio."
+      },
+      "flow": {
+        "backToEvent": "Volver al evento",
+        "step": "Paso",
+        "reviewTitle": "Revisar y Confirmar",
+        "reviewDescription": "Revisa los datos de tu inscripción antes de continuar.",
+        "yourOptions": "Tus opciones",
+        "options": "Opciones",
+        "free": "Gratis",
+        "people": "personas",
+        "teamSummary": "Tu equipo",
+        "priceBreakdown": "Desglose del precio",
+        "total": "Total",
+        "confirmRegistration": "Confirmar Inscripción",
+        "payNow": "Pagar ahora"
       },
       "customFields": {
         "title": "Opciones adicionales",

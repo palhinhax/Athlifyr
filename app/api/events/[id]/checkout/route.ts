@@ -25,6 +25,8 @@ export async function POST(
         dateOfBirth?: string;
         citizenId?: string;
         phone?: string;
+        emergencyContactName?: string;
+        emergencyContactPhone?: string;
       }[];
     };
     const { variantId, customFieldAnswers, teamMembers } = body;
@@ -130,14 +132,15 @@ export async function POST(
       );
     }
 
-    // Check if already registered
+    // Check if already registered (leader / individual — teamMemberIndex 0)
     if (selectedVariant) {
       const existing = await prisma.registration.findUnique({
         where: {
-          userId_eventId_variantId: {
+          userId_eventId_variantId_teamMemberIndex: {
             userId: user.id,
             eventId: event.id,
             variantId: selectedVariant.id,
+            teamMemberIndex: 0,
           },
         },
       });
@@ -191,12 +194,16 @@ export async function POST(
           { status: 400 }
         );
       }
+      const isTeamFree = teamMembers && teamMembers.length > 0;
+      const teamGroupIdFree = isTeamFree ? crypto.randomUUID() : undefined;
+
       const freeReg = await prisma.registration.upsert({
         where: {
-          userId_eventId_variantId: {
+          userId_eventId_variantId_teamMemberIndex: {
             userId: user.id,
             eventId: event.id,
             variantId: selectedVariant.id,
+            teamMemberIndex: 0,
           },
         },
         create: {
@@ -207,11 +214,54 @@ export async function POST(
           amountCents: 0,
           currency: activePhase.currency as "EUR" | "USD" | "GBP",
           paymentProvider: "NONE",
+          teamGroupId: teamGroupIdFree ?? null,
+          teamRole: isTeamFree ? "LEADER" : null,
         },
         update: {
           status: "CONFIRMED",
+          teamGroupId: teamGroupIdFree ?? null,
+          teamRole: isTeamFree ? "LEADER" : null,
         },
       });
+
+      // Create child registrations for team members (free event)
+      if (isTeamFree && teamMembers) {
+        // Clean up any previous attempt
+        await prisma.registration.deleteMany({
+          where: {
+            eventId: event.id,
+            variantId: selectedVariant.id,
+            teamGroupId: teamGroupIdFree,
+            teamRole: "MEMBER",
+          },
+        });
+
+        for (let i = 0; i < teamMembers.length; i++) {
+          const m = teamMembers[i];
+          await prisma.registration.create({
+            data: {
+              userId: user.id,
+              eventId: event.id,
+              variantId: selectedVariant.id,
+              status: "CONFIRMED",
+              amountCents: 0,
+              currency: activePhase.currency as "EUR" | "USD" | "GBP",
+              paymentProvider: "NONE",
+              teamGroupId: teamGroupIdFree!,
+              teamRole: "MEMBER",
+              teamMemberIndex: i + 1,
+              guestName: m.name,
+              guestEmail: m.email || null,
+              guestPhone: m.phone || null,
+              guestDateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth) : null,
+              guestCitizenId: m.citizenId || null,
+              guestEmergencyContactName: m.emergencyContactName || null,
+              guestEmergencyContactPhone: m.emergencyContactPhone || null,
+            },
+          });
+        }
+      }
+
       return NextResponse.json(
         { registrationId: freeReg.id, status: "CONFIRMED" },
         { status: 201 }
@@ -225,15 +275,20 @@ export async function POST(
       );
     }
 
-    const amountCents = Math.round(activePhase.price * 100);
+    const amountCentsPerPerson = Math.round(activePhase.price * 100);
+    const teamSize = selectedVariant?.teamSize ?? 1;
+    const amountCents = amountCentsPerPerson * teamSize;
 
     // ── Custom field extras ─────────────────────────────────────────────────
     // Look up custom fields that have a price and the user selected "true" / a value
+    // Each answer may have a participantIndex — we charge per answer, not per unique field
     let customFieldExtraCents = 0;
     const extraLineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [];
 
     if (customFieldAnswers && customFieldAnswers.length > 0) {
-      const fieldIds = customFieldAnswers.map((a) => a.customFieldId);
+      const fieldIds = [
+        ...new Set(customFieldAnswers.map((a) => a.customFieldId)),
+      ];
       const customFields = await prisma.eventCustomField.findMany({
         where: {
           id: { in: fieldIds },
@@ -242,11 +297,11 @@ export async function POST(
         },
       });
 
-      for (const field of customFields) {
-        const answer = customFieldAnswers.find(
-          (a) => a.customFieldId === field.id
-        );
-        if (!answer) continue;
+      const fieldMap = new Map(customFields.map((f) => [f.id, f]));
+
+      for (const answer of customFieldAnswers) {
+        const field = fieldMap.get(answer.customFieldId);
+        if (!field) continue;
 
         // For BOOLEAN fields, only charge if the user said "true"
         // For SELECT fields, any non-empty selection means the extra applies
@@ -293,10 +348,10 @@ export async function POST(
         payment_method_types: ["card"],
         line_items: [
           {
-            quantity: 1,
+            quantity: teamSize,
             price_data: {
               currency: activePhase.currency.toLowerCase(),
-              unit_amount: amountCents,
+              unit_amount: amountCentsPerPerson,
               product_data: {
                 name: selectedVariant
                   ? `${event.title} — ${selectedVariant.name}`
@@ -341,12 +396,17 @@ export async function POST(
     // the status endpoint can auto-confirm by checking Stripe directly
     let registrationId: string | undefined;
     if (selectedVariant) {
+      // For team variants, generate a shared teamGroupId
+      const isTeam = teamMembers && teamMembers.length > 0;
+      const teamGroupId = isTeam ? crypto.randomUUID() : undefined;
+
       const reg = await prisma.registration.upsert({
         where: {
-          userId_eventId_variantId: {
+          userId_eventId_variantId_teamMemberIndex: {
             userId: user.id,
             eventId: event.id,
             variantId: selectedVariant.id,
+            teamMemberIndex: 0,
           },
         },
         create: {
@@ -357,33 +417,58 @@ export async function POST(
           amountCents: totalCents,
           currency: activePhase.currency as "EUR" | "USD" | "GBP",
           stripeCheckoutSessionId: session.id,
+          teamGroupId: teamGroupId ?? null,
+          teamRole: isTeam ? "LEADER" : null,
         },
         update: {
           status: "PENDING",
           amountCents: totalCents,
           currency: activePhase.currency as "EUR" | "USD" | "GBP",
           stripeCheckoutSessionId: session.id,
+          teamGroupId: teamGroupId ?? null,
+          teamRole: isTeam ? "LEADER" : null,
         },
       });
       registrationId = reg.id;
 
-      // Save team members if this is a team variant
-      if (teamMembers && teamMembers.length > 0 && registrationId) {
-        // Delete any existing team members (in case of retry)
-        await prisma.registrationTeamMember.deleteMany({
-          where: { registrationId },
+      // Create child Registration records for each team member
+      if (isTeam && teamMembers && registrationId) {
+        // Delete any existing PENDING team member registrations from a previous attempt
+        await prisma.registration.deleteMany({
+          where: {
+            eventId: event.id,
+            variantId: selectedVariant.id,
+            teamGroupId: teamGroupId,
+            teamRole: "MEMBER",
+            status: "PENDING",
+          },
         });
-        // Create new team members
-        await prisma.registrationTeamMember.createMany({
-          data: teamMembers.map((m) => ({
-            registrationId: registrationId as string,
-            name: m.name,
-            email: m.email || null,
-            dateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth) : null,
-            citizenId: m.citizenId || null,
-            phone: m.phone || null,
-          })),
-        });
+
+        for (let i = 0; i < teamMembers.length; i++) {
+          const m = teamMembers[i];
+          await prisma.registration.create({
+            data: {
+              userId: user.id, // Leader's userId — team members share the payer
+              eventId: event.id,
+              variantId: selectedVariant.id,
+              status: "PENDING",
+              amountCents: 0, // Only the leader registration holds the total amount
+              currency: activePhase.currency as "EUR" | "USD" | "GBP",
+              paymentProvider: "NONE",
+              stripeCheckoutSessionId: session.id,
+              teamGroupId: teamGroupId!,
+              teamRole: "MEMBER",
+              teamMemberIndex: i + 1,
+              guestName: m.name,
+              guestEmail: m.email || null,
+              guestPhone: m.phone || null,
+              guestDateOfBirth: m.dateOfBirth ? new Date(m.dateOfBirth) : null,
+              guestCitizenId: m.citizenId || null,
+              guestEmergencyContactName: m.emergencyContactName || null,
+              guestEmergencyContactPhone: m.emergencyContactPhone || null,
+            },
+          });
+        }
       }
     }
 

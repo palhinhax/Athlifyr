@@ -14,6 +14,7 @@ import { ProfileProfessionalSection } from "@/components/profile-professional-se
 import { AnalysesSection } from "@/components/analyses-section";
 import { ProfileUpcomingEvents } from "@/components/profile-upcoming-events";
 import { getTranslations } from "next-intl/server";
+import { PageContainer } from "@/components/page-container";
 
 export const dynamic = "force-dynamic";
 
@@ -204,184 +205,182 @@ export default async function ProfilePage({ params }: PageProps) {
   const confirmedTicketEventIds = confirmedRegistrations.map((r) => r.eventId);
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-6xl">
-        {/* Profile Header */}
-        <ProfileHeaderClient
-          user={{
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          }}
-          stats={{
-            upcomingEvents: upcomingEvents.length,
-            pastEvents: pastEvents.length,
-            friendsCount,
-          }}
-          participations={user.participations.map((p) => ({
-            id: p.id,
-            status: p.status,
-            event: {
-              id: p.event.id,
-              title: p.event.title,
-              slug: p.event.slug,
-              startDate: p.event.startDate,
-              city: p.event.city,
-              country: p.event.country,
-              sportTypes: p.event.sportTypes,
+    <PageContainer size="lg" maxWidth="max-w-6xl">
+      {/* Profile Header */}
+      <ProfileHeaderClient
+        user={{
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        }}
+        stats={{
+          upcomingEvents: upcomingEvents.length,
+          pastEvents: pastEvents.length,
+          friendsCount,
+        }}
+        participations={user.participations.map((p) => ({
+          id: p.id,
+          status: p.status,
+          event: {
+            id: p.event.id,
+            title: p.event.title,
+            slug: p.event.slug,
+            startDate: p.event.startDate,
+            city: p.event.city,
+            country: p.event.country,
+            sportTypes: p.event.sportTypes,
+          },
+          variant: p.variant
+            ? {
+                name: p.variant.name,
+                distanceKm: p.variant.distanceKm,
+                startDate: p.variant.startDate,
+                startTime: p.variant.startTime,
+              }
+            : null,
+        }))}
+        sessionBookings={upcomingBookings.map((b) => ({
+          id: b.id,
+          session: {
+            id: b.session.id,
+            title: b.session.title,
+            startsAt: b.session.startsAt,
+            endsAt: b.session.endsAt,
+            venue: {
+              id: b.session.venue.id,
+              name: b.session.venue.name,
+              slug: b.session.venue.slug,
+              city: b.session.venue.city,
             },
-            variant: p.variant
-              ? {
-                  name: p.variant.name,
-                  distanceKm: p.variant.distanceKm,
-                  startDate: p.variant.startDate,
-                  startTime: p.variant.startTime,
-                }
-              : null,
-          }))}
-          sessionBookings={upcomingBookings.map((b) => ({
-            id: b.id,
-            session: {
-              id: b.session.id,
-              title: b.session.title,
-              startsAt: b.session.startsAt,
-              endsAt: b.session.endsAt,
-              venue: {
-                id: b.session.venue.id,
-                name: b.session.venue.name,
-                slug: b.session.venue.slug,
-                city: b.session.venue.city,
+          },
+        }))}
+      />
+
+      {/* Upcoming Events */}
+      {upcomingEvents.length > 0 && (
+        <div className="mt-12">
+          <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
+            <Calendar className="h-6 w-6 text-primary" />
+            {t("upcomingEventsCount", { count: upcomingEvents.length })}
+          </h2>
+          <ProfileUpcomingEvents
+            events={upcomingEvents.map((p) => ({
+              id: p.id,
+              event: {
+                id: p.event.id,
+                title: p.event.title,
+                slug: p.event.slug,
+                startDate: p.event.startDate,
+                city: p.event.city,
+                country: p.event.country,
               },
-            },
-          }))}
-        />
+              variant: p.variant
+                ? {
+                    name: p.variant.name,
+                    distanceKm: p.variant.distanceKm,
+                    startDate: p.variant.startDate,
+                    startTime: p.variant.startTime,
+                  }
+                : null,
+            }))}
+            confirmedTicketEventIds={confirmedTicketEventIds}
+            locale={locale}
+          />
+        </div>
+      )}
 
-        {/* Upcoming Events */}
-        {upcomingEvents.length > 0 && (
-          <div className="mt-12">
-            <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-              <Calendar className="h-6 w-6 text-primary" />
-              {t("upcomingEventsCount", { count: upcomingEvents.length })}
-            </h2>
-            <ProfileUpcomingEvents
-              events={upcomingEvents.map((p) => ({
-                id: p.id,
-                event: {
-                  id: p.event.id,
-                  title: p.event.title,
-                  slug: p.event.slug,
-                  startDate: p.event.startDate,
-                  city: p.event.city,
-                  country: p.event.country,
-                },
-                variant: p.variant
-                  ? {
-                      name: p.variant.name,
-                      distanceKm: p.variant.distanceKm,
-                      startDate: p.variant.startDate,
-                      startTime: p.variant.startTime,
-                    }
-                  : null,
-              }))}
-              confirmedTicketEventIds={confirmedTicketEventIds}
-              locale={locale}
-            />
-          </div>
-        )}
+      {/* Upcoming Session Bookings */}
+      <ProfileUpcomingSessions bookings={upcomingBookings} locale={locale} />
 
-        {/* Upcoming Session Bookings */}
-        <ProfileUpcomingSessions bookings={upcomingBookings} locale={locale} />
+      {/* Past Session Bookings with Workouts */}
+      <ProfilePastSessions bookings={pastBookings} locale={locale} />
 
-        {/* Past Session Bookings with Workouts */}
-        <ProfilePastSessions bookings={pastBookings} locale={locale} />
-
-        {/* Past Events */}
-        {pastEvents.length > 0 && (
-          <div className="mt-12">
-            <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-              <Trophy className="h-6 w-6 text-primary" />
-              {t("pastEventsCount", { count: pastEvents.length })}
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {pastEvents.slice(0, 6).map((participation) => (
-                <Link
-                  key={participation.id}
-                  href={`/events/${participation.event.slug}`}
-                >
-                  <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
-                    <h3 className="mb-2 font-semibold">
-                      {participation.event.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate, locale)}
-                      </div>
-                      {participation.variant && (
-                        <div className="flex flex-col gap-0.5">
-                          <div className="flex items-center gap-2">
-                            <Trophy className="h-4 w-4 shrink-0" />
-                            <span>
-                              {participation.variant.name}
-                              {participation.variant.distanceKm &&
-                                ` - ${participation.variant.distanceKm} km`}
-                            </span>
-                          </div>
-                          {participation.variant.startDate &&
-                            participation.variant.startDate !==
-                              participation.event.startDate && (
-                              <span className="pl-6 text-xs">
-                                (
-                                {formatDate(
-                                  participation.variant.startDate,
-                                  locale
-                                )}
-                                {participation.variant.startTime &&
-                                  ` ${t("at")} ${participation.variant.startTime}`}
-                                )
-                              </span>
-                            )}
-                        </div>
-                      )}
+      {/* Past Events */}
+      {pastEvents.length > 0 && (
+        <div className="mt-12">
+          <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
+            <Trophy className="h-6 w-6 text-primary" />
+            {t("pastEventsCount", { count: pastEvents.length })}
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {pastEvents.slice(0, 6).map((participation) => (
+              <Link
+                key={participation.id}
+                href={`/events/${participation.event.slug}`}
+              >
+                <div className="rounded-lg border p-4 transition-colors hover:bg-accent">
+                  <h3 className="mb-2 font-semibold">
+                    {participation.event.title}
+                  </h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(participation.event.startDate, locale)}
                     </div>
+                    {participation.variant && (
+                      <div className="flex flex-col gap-0.5">
+                        <div className="flex items-center gap-2">
+                          <Trophy className="h-4 w-4 shrink-0" />
+                          <span>
+                            {participation.variant.name}
+                            {participation.variant.distanceKm &&
+                              ` - ${participation.variant.distanceKm} km`}
+                          </span>
+                        </div>
+                        {participation.variant.startDate &&
+                          participation.variant.startDate !==
+                            participation.event.startDate && (
+                            <span className="pl-6 text-xs">
+                              (
+                              {formatDate(
+                                participation.variant.startDate,
+                                locale
+                              )}
+                              {participation.variant.startTime &&
+                                ` ${t("at")} ${participation.variant.startTime}`}
+                              )
+                            </span>
+                          )}
+                      </div>
+                    )}
                   </div>
-                </Link>
-              ))}
-            </div>
+                </div>
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Empty State for Events */}
-        {upcomingEvents.length === 0 && pastEvents.length === 0 && (
-          <div className="mt-12 rounded-lg border p-12 text-center">
-            <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-xl font-semibold">{t("noEventsTitle")}</h3>
-            <p className="mb-6 text-muted-foreground">
-              {t("noEventsDescription")}
-            </p>
-            <Link href="/events">
-              <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
-                {t("exploreEvents")}
-              </button>
-            </Link>
-          </div>
-        )}
+      {/* Empty State for Events */}
+      {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+        <div className="mt-12 rounded-lg border p-12 text-center">
+          <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 text-xl font-semibold">{t("noEventsTitle")}</h3>
+          <p className="mb-6 text-muted-foreground">
+            {t("noEventsDescription")}
+          </p>
+          <Link href="/events">
+            <button className="rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+              {t("exploreEvents")}
+            </button>
+          </Link>
+        </div>
+      )}
 
-        {/* Performance Section */}
-        <PerformanceSection />
+      {/* Performance Section */}
+      <PerformanceSection />
 
-        {/* Analyses Section */}
-        <AnalysesSection />
+      {/* Analyses Section */}
+      <AnalysesSection />
 
-        {/* Professional Section - Only shows if user has venue invites or memberships */}
-        <ProfileProfessionalSection userId={session.user.id} />
+      {/* Professional Section - Only shows if user has venue invites or memberships */}
+      <ProfileProfessionalSection userId={session.user.id} />
 
-        {/* Photo Gallery */}
-        <PhotoGallery />
+      {/* Photo Gallery */}
+      <PhotoGallery />
 
-        {/* Friends Section */}
-        <FriendsSection />
-      </div>
-    </div>
+      {/* Friends Section */}
+      <FriendsSection />
+    </PageContainer>
   );
 }

@@ -133,6 +133,8 @@
       "allSoldOut": "Inscrições esgotadas",
       "allSoldOutDesc": "Todas as variantes deste evento estão esgotadas.",
       "variantSoldOutDesc": "Esta variante não tem vagas disponíveis.",
+      "registrationClosed": "Inscrições encerradas",
+      "registrationClosedDesc": "Não existe um período de inscrição ativo para esta variante de momento.",
       "consent": {
         "title": "Consentimento de Partilha de Dados",
         "description": "Este evento requer algumas informações pessoais para a inscrição. Estes dados serão partilhados com o organizador do evento.",
@@ -162,6 +164,8 @@
         "step2Title": "Opções adicionais",
         "step2Description": "O organizador disponibiliza as seguintes opções. Faz a tua seleção antes de continuar.",
         "customFieldRequired": "O campo \"{field}\" é obrigatório.",
+        "participantYou": "Tu (Participante 1)",
+        "customFieldsForParticipant": "Seleciona as opções para {participant}.",
         "teamMemberTitle": "Membro da equipa {number}",
         "teamMemberDescription": "Introduz os dados do membro {number} de {total}.",
         "teamMemberName": "Nome completo",
@@ -170,7 +174,25 @@
         "teamMemberEmailPlaceholder": "Introduz o endereço de email",
         "teamMemberPhone": "Telefone",
         "teamMemberPhonePlaceholder": "Introduz o número de telefone",
-        "teamMemberNameRequired": "O nome do membro da equipa é obrigatório."
+        "teamMemberNameRequired": "O nome do membro da equipa é obrigatório.",
+        "teamMemberDateOfBirthRequired": "A data de nascimento do membro da equipa é obrigatória.",
+        "teamMemberCitizenIdRequired": "O número do cartão de cidadão do membro da equipa é obrigatório.",
+        "teamMemberEmergencyContactRequired": "O contacto de emergência (nome e telefone) do membro da equipa é obrigatório."
+      },
+      "flow": {
+        "backToEvent": "Voltar ao evento",
+        "step": "Passo",
+        "reviewTitle": "Rever e Confirmar",
+        "reviewDescription": "Revê os dados da tua inscrição antes de prosseguir.",
+        "yourOptions": "As tuas opções",
+        "options": "Opções",
+        "free": "Grátis",
+        "people": "pessoas",
+        "teamSummary": "A tua equipa",
+        "priceBreakdown": "Detalhes do preço",
+        "total": "Total",
+        "confirmRegistration": "Confirmar Inscrição",
+        "payNow": "Pagar agora"
       },
       "customFields": {
         "title": "Opções adicionais",

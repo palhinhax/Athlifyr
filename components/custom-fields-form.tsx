@@ -19,6 +19,8 @@ interface CustomFieldsFormProps {
   answers: CustomFieldAnswer[];
   onAnswersChange: (answers: CustomFieldAnswer[]) => void;
   locale?: string;
+  /** Optional label shown above the fields, e.g. "Participant 2" */
+  participantLabel?: string;
 }
 
 /**
@@ -30,6 +32,7 @@ export function CustomFieldsForm({
   answers,
   onAnswersChange,
   locale = "en",
+  participantLabel,
 }: CustomFieldsFormProps) {
   const t = useTranslations("events.registration.customFields");
 
@@ -53,6 +56,11 @@ export function CustomFieldsForm({
   return (
     <div className="space-y-4">
       <div>
+        {participantLabel && (
+          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-p-brand">
+            {participantLabel}
+          </p>
+        )}
         <h4 className="text-sm font-medium">{t("title")}</h4>
         <p className="text-xs text-muted-foreground">{t("description")}</p>
       </div>

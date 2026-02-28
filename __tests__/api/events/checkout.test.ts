@@ -27,10 +27,8 @@ jest.mock("@/lib/prisma", () => ({
       findUnique: jest.fn(),
       count: jest.fn(),
       upsert: jest.fn(),
-    },
-    registrationTeamMember: {
+      create: jest.fn(),
       deleteMany: jest.fn(),
-      createMany: jest.fn(),
     },
     eventCustomField: { findMany: jest.fn() },
     pricingPhase: { findUnique: jest.fn() },

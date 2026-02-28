@@ -281,11 +281,11 @@ export function TabPercursos({
                       <option value="3">{t("teamSizeTrio")}</option>
                       <option value="4">{t("teamSizeQuad")}</option>
                     </select>
-                    <p className="text-xs text-muted-foreground">
-                      {t("teamSizeHelp")}
-                    </p>
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  {t("teamSizeHelp")}
+                </p>
               </div>
             ))}
             <div className="flex justify-end border-t pt-4">
@@ -386,11 +386,9 @@ export function TabPercursos({
                 <option value="3">{t("teamSizeTrio")}</option>
                 <option value="4">{t("teamSizeQuad")}</option>
               </select>
-              <p className="text-xs text-muted-foreground">
-                {t("teamSizeHelp")}
-              </p>
             </div>
           </div>
+          <p className="text-xs text-muted-foreground">{t("teamSizeHelp")}</p>
           <Button
             onClick={() => void handleAddVariant()}
             disabled={isSaving || !newName.trim()}

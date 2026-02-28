@@ -394,7 +394,7 @@ export default async function EventPage({ params }: PageProps) {
       />
 
       {/* Event Details */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
           {/* Main Content - Left Column */}
           <div className="min-w-0 overflow-hidden">
@@ -485,6 +485,7 @@ export default async function EventPage({ params }: PageProps) {
                 ) : (
                   <EventRegistration
                     eventId={event.id}
+                    eventSlug={event.slug}
                     eventTitle={event.title}
                     hasRegistrations={event.hasRegistrations}
                     registrationFieldSettings={

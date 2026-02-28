@@ -84,7 +84,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       user: { select: { name: true, email: true } },
       variant: { select: { name: true } },
       customFieldResponses: {
-        select: { customFieldId: true, value: true },
+        select: { customFieldId: true, value: true, participantIndex: true },
       },
     },
     orderBy: { createdAt: "asc" },
@@ -103,7 +103,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       user: { select: { name: true, email: true } },
       variant: { select: { name: true } },
       customFieldResponses: {
-        select: { customFieldId: true, value: true },
+        select: { customFieldId: true, value: true, participantIndex: true },
       },
     },
     orderBy: { createdAt: "asc" },
@@ -127,6 +127,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     currency: string;
     paymentProvider: string;
     stripePaymentIntentId: string;
+    teamGroupId: string;
+    teamRole: string;
+    teamMemberIndex: number;
     customFieldValues: Map<string, string>;
   }
 
@@ -137,6 +140,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     for (const resp of r.customFieldResponses) {
       cfMap.set(resp.customFieldId, resp.value);
     }
+
+    // For MEMBER team registrations, use guest data
+    const isMember = r.teamRole === "MEMBER";
+    const fullName = isMember ? (r.guestName ?? "") : (r.user.name ?? "");
+    const email = isMember ? (r.guestEmail ?? "") : r.user.email;
+
     rows.push({
       registrationId: r.id,
       type: "paid",
@@ -144,8 +153,8 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       status: r.status,
       variantName: r.variant.name,
       bibNumber: r.bibNumber ?? "",
-      athleteFullName: r.user.name ?? "",
-      athleteEmail: r.user.email,
+      athleteFullName: fullName,
+      athleteEmail: email,
       checkedInAt: r.checkedInAt,
       amountCents: r.amountCents,
       feeCents: r.feeCents,
@@ -153,6 +162,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       currency: r.currency,
       paymentProvider: r.paymentProvider,
       stripePaymentIntentId: r.stripePaymentIntentId ?? "",
+      teamGroupId: r.teamGroupId ?? "",
+      teamRole: r.teamRole ?? "",
+      teamMemberIndex: r.teamMemberIndex,
       customFieldValues: cfMap,
     });
   }
@@ -178,6 +190,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       currency: "",
       paymentProvider: "",
       stripePaymentIntentId: "",
+      teamGroupId: "",
+      teamRole: "",
+      teamMemberIndex: 0,
       customFieldValues: cfMap,
     });
   }
@@ -193,6 +208,14 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     : rows;
 
   // ── Build CSV ──────────────────────────────────────────────────────────────
+
+  // Build custom field column keys (one column per field — no participantIndex
+  // expansion since each team member now has their own Registration row)
+  const cfColumnKeys: { key: string; label: string }[] = [];
+  for (const f of customFields) {
+    cfColumnKeys.push({ key: f.id, label: f.label });
+  }
+
   const headers = [
     "registrationId",
     "createdAt",
@@ -202,6 +225,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     "bibNumber",
     "athleteFullName",
     "athleteEmail",
+    "teamGroupId",
+    "teamRole",
+    "teamMemberIndex",
     "checkedInAt",
     "amountCents",
     "feeCents",
@@ -209,7 +235,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     "currency",
     "paymentProvider",
     "stripePaymentIntentId",
-    ...customFields.map((f) => f.label),
+    ...cfColumnKeys.map((c) => c.label),
   ];
 
   const BOM = "\uFEFF";
@@ -225,6 +251,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       r.bibNumber,
       r.athleteFullName,
       r.athleteEmail,
+      r.teamGroupId,
+      r.teamRole,
+      String(r.teamMemberIndex),
       formatDateISO(r.checkedInAt),
       r.amountCents != null ? formatCentsDecimal(r.amountCents) : "",
       r.feeCents != null ? formatCentsDecimal(r.feeCents) : "",
@@ -232,7 +261,7 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       r.currency,
       r.paymentProvider,
       r.stripePaymentIntentId,
-      ...customFields.map((f) => r.customFieldValues.get(f.id) ?? ""),
+      ...cfColumnKeys.map((c) => r.customFieldValues.get(c.key) ?? ""),
     ])
   );
 

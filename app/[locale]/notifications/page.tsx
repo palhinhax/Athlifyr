@@ -25,6 +25,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { formatDistanceToNow, format } from "date-fns";
 import { pt, enUS, es, fr, de, it } from "date-fns/locale";
+import { PageContainer } from "@/components/page-container";
 
 const localeMap: Record<string, typeof enUS> = {
   pt,
@@ -343,15 +344,15 @@ export default function NotificationsPage() {
 
   if (status === "loading" || isLoading) {
     return (
-      <div className="container mx-auto flex min-h-[50vh] items-center justify-center px-4">
+      <PageContainer className="flex min-h-[50vh] items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
+      </PageContainer>
     );
   }
 
   if (!session) {
     return (
-      <div className="container mx-auto flex min-h-[50vh] flex-col items-center justify-center gap-4 px-4">
+      <PageContainer className="flex min-h-[50vh] flex-col items-center justify-center gap-4">
         <Bell className="h-12 w-12 text-muted-foreground" />
         <p className="text-muted-foreground">
           {tNotifications("noNotifications")}
@@ -359,12 +360,12 @@ export default function NotificationsPage() {
         <Link href="/auth/signin">
           <Button>{tNotifications("notifications")}</Button>
         </Link>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto max-w-2xl px-4 py-6">
+    <PageContainer size="sm" maxWidth="max-w-2xl">
       {/* Header */}
       <div className="mb-6 flex items-center gap-3">
         <Link href="/feed">
@@ -452,6 +453,6 @@ export default function NotificationsPage() {
           })
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }

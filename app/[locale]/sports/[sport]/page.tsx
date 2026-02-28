@@ -144,7 +144,7 @@ export default async function SportPage({ params }: PageProps) {
 
       {/* Hero Section */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-background">
-        <div className="container mx-auto px-4 py-12">
+        <div className="container py-12">
           {/* Back button */}
           <Link
             href="/events"
@@ -184,7 +184,7 @@ export default async function SportPage({ params }: PageProps) {
       </div>
 
       {/* Events Grid */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container py-12">
         {events.length > 0 ? (
           <>
             <h2 className="mb-8 text-2xl font-semibold">

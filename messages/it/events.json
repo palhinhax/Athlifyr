@@ -164,6 +164,8 @@
       "allSoldOut": "Iscrizioni esaurite",
       "allSoldOutDesc": "Tutte le varianti di questo evento sono esaurite.",
       "variantSoldOutDesc": "Questa variante non ha posti disponibili.",
+      "registrationClosed": "Iscrizioni chiuse",
+      "registrationClosedDesc": "Non esiste un periodo di iscrizione attivo per questa variante al momento.",
       "consent": {
         "title": "Consenso alla Condivisione dei Dati",
         "description": "Questo evento richiede informazioni personali per l'iscrizione. Questi dati saranno condivisi con l'organizzatore dell'evento.",
@@ -193,6 +195,8 @@
         "step2Title": "Opzioni aggiuntive",
         "step2Description": "L'organizzatore offre le seguenti opzioni. Fai la tua scelta prima di continuare.",
         "customFieldRequired": "Il campo \"{field}\" è obbligatorio.",
+        "participantYou": "Tu (Partecipante 1)",
+        "customFieldsForParticipant": "Seleziona le opzioni per {participant}.",
         "teamMemberTitle": "Membro della squadra {number}",
         "teamMemberDescription": "Inserisci i dettagli del membro {number} di {total}.",
         "teamMemberName": "Nome completo",
@@ -201,7 +205,25 @@
         "teamMemberEmailPlaceholder": "Inserisci l'indirizzo email",
         "teamMemberPhone": "Telefono",
         "teamMemberPhonePlaceholder": "Inserisci il numero di telefono",
-        "teamMemberNameRequired": "Il nome del membro della squadra è obbligatorio."
+        "teamMemberNameRequired": "Il nome del membro della squadra è obbligatorio.",
+        "teamMemberDateOfBirthRequired": "La data di nascita del membro della squadra è obbligatoria.",
+        "teamMemberCitizenIdRequired": "Il numero del documento d'identità del membro della squadra è obbligatorio.",
+        "teamMemberEmergencyContactRequired": "Il contatto di emergenza (nome e telefono) del membro della squadra è obbligatorio."
+      },
+      "flow": {
+        "backToEvent": "Torna all'evento",
+        "step": "Passaggio",
+        "reviewTitle": "Verifica e Conferma",
+        "reviewDescription": "Verifica i dettagli della tua iscrizione prima di procedere.",
+        "yourOptions": "Le tue opzioni",
+        "options": "Opzioni",
+        "free": "Gratuito",
+        "people": "persone",
+        "teamSummary": "La tua squadra",
+        "priceBreakdown": "Dettaglio del prezzo",
+        "total": "Totale",
+        "confirmRegistration": "Conferma Iscrizione",
+        "payNow": "Paga ora"
       },
       "customFields": {
         "title": "Opzioni aggiuntive",

@@ -164,6 +164,8 @@
       "allSoldOut": "Anmeldungen ausverkauft",
       "allSoldOutDesc": "Alle Varianten dieser Veranstaltung sind ausverkauft.",
       "variantSoldOutDesc": "Diese Variante hat keine freien Plätze mehr.",
+      "registrationClosed": "Anmeldung geschlossen",
+      "registrationClosedDesc": "Für diese Variante gibt es derzeit keinen aktiven Anmeldezeitraum.",
       "consent": {
         "title": "Einwilligung zur Datenfreigabe",
         "description": "Diese Veranstaltung erfordert persönliche Informationen für die Anmeldung. Diese Daten werden an den Veranstalter weitergegeben.",
@@ -193,6 +195,8 @@
         "step2Title": "Zusätzliche Optionen",
         "step2Description": "Der Veranstalter bietet die folgenden Optionen an. Bitte triff deine Auswahl, bevor du fortfährst.",
         "customFieldRequired": "Das Feld \"{field}\" ist erforderlich.",
+        "participantYou": "Du (Teilnehmer 1)",
+        "customFieldsForParticipant": "Wähle die Optionen für {participant}.",
         "teamMemberTitle": "Teammitglied {number}",
         "teamMemberDescription": "Gib die Daten von Teammitglied {number} von {total} ein.",
         "teamMemberName": "Vollständiger Name",
@@ -201,7 +205,25 @@
         "teamMemberEmailPlaceholder": "E-Mail-Adresse eingeben",
         "teamMemberPhone": "Telefon",
         "teamMemberPhonePlaceholder": "Telefonnummer eingeben",
-        "teamMemberNameRequired": "Der Name des Teammitglieds ist erforderlich."
+        "teamMemberNameRequired": "Der Name des Teammitglieds ist erforderlich.",
+        "teamMemberDateOfBirthRequired": "Das Geburtsdatum des Teammitglieds ist erforderlich.",
+        "teamMemberCitizenIdRequired": "Die Personalausweisnummer des Teammitglieds ist erforderlich.",
+        "teamMemberEmergencyContactRequired": "Der Notfallkontakt (Name und Telefon) des Teammitglieds ist erforderlich."
+      },
+      "flow": {
+        "backToEvent": "Zurück zur Veranstaltung",
+        "step": "Schritt",
+        "reviewTitle": "Überprüfen und Bestätigen",
+        "reviewDescription": "Überprüfe die Anmeldedaten, bevor du fortfährst.",
+        "yourOptions": "Deine Optionen",
+        "options": "Optionen",
+        "free": "Kostenlos",
+        "people": "Personen",
+        "teamSummary": "Dein Team",
+        "priceBreakdown": "Preisübersicht",
+        "total": "Gesamt",
+        "confirmRegistration": "Anmeldung bestätigen",
+        "payNow": "Jetzt bezahlen"
       },
       "customFields": {
         "title": "Zusätzliche Optionen",

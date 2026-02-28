@@ -35,6 +35,7 @@ export interface CustomFieldPayload {
 export interface CustomFieldAnswer {
   customFieldId: string;
   value: string; // "M", "true", "false", etc.
+  participantIndex?: number; // 0 = main registrant, 1+ = team members
 }
 
 /**

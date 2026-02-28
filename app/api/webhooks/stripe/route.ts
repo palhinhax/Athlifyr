@@ -114,7 +114,14 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     // Idempotency: skip if registration already confirmed
     const existing = await prisma.registration.findUnique({
-      where: { userId_eventId_variantId: { userId, eventId, variantId } },
+      where: {
+        userId_eventId_variantId_teamMemberIndex: {
+          userId,
+          eventId,
+          variantId,
+          teamMemberIndex: 0,
+        },
+      },
     });
     if (existing && existing.status === "CONFIRMED") {
       console.log("Registration already confirmed, skipping:", existing.id);
@@ -143,6 +150,24 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
           currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
         },
       });
+
+      // Also confirm all team member registrations in the same group
+      if (existing.teamGroupId) {
+        await prisma.registration.updateMany({
+          where: {
+            teamGroupId: existing.teamGroupId,
+            teamRole: "MEMBER",
+            status: "PENDING",
+          },
+          data: {
+            status: "CONFIRMED",
+          },
+        });
+        console.log(
+          "Team member registrations confirmed for group:",
+          existing.teamGroupId
+        );
+      }
     } else {
       await prisma.registration.create({
         data: {

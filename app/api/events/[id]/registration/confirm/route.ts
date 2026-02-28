@@ -82,10 +82,11 @@ export async function POST(
     // Upsert registration to CONFIRMED (idempotent)
     const registration = await prisma.registration.upsert({
       where: {
-        userId_eventId_variantId: {
+        userId_eventId_variantId_teamMemberIndex: {
           userId: user.id,
           eventId,
           variantId,
+          teamMemberIndex: 0,
         },
       },
       create: {
@@ -117,6 +118,20 @@ export async function POST(
         },
       },
     });
+
+    // Also confirm all team member registrations in the same group
+    if (registration.teamGroupId) {
+      await prisma.registration.updateMany({
+        where: {
+          teamGroupId: registration.teamGroupId,
+          teamRole: "MEMBER",
+          status: "PENDING",
+        },
+        data: {
+          status: "CONFIRMED",
+        },
+      });
+    }
 
     return NextResponse.json({
       registration: {

@@ -37,6 +37,7 @@ import { TabEquipa } from "./_components/tab-equipa";
 import { TabPagamentos } from "./_components/tab-pagamentos";
 import { TabConfig } from "./_components/tab-config";
 import { TabInscritos } from "./_components/tab-inscritos";
+import { PageContainer } from "@/components/page-container";
 
 export default function EventManagePage() {
   const { data: session, status } = useSession();
@@ -187,31 +188,33 @@ export default function EventManagePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="container mx-auto max-w-4xl px-4 py-8">
+      <PageContainer maxWidth="max-w-6xl">
         {/* Header */}
-        <div className="mb-6 flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
-            <Link href={`/events/${event.slug}`}>
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-          </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold">{event.title}</h1>
-            <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-              <span>
-                {event.city}, {event.country}
-              </span>
-              <span>·</span>
-              <Link
-                href={`/events/${event.slug}`}
-                className="flex items-center gap-1 hover:text-foreground"
-              >
-                {t("viewEvent")} <ExternalLink className="h-3 w-3" />
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={`/events/${event.slug}`}>
+                <ArrowLeft className="h-5 w-5" />
               </Link>
+            </Button>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold">{event.title}</h1>
+              <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  {event.city}, {event.country}
+                </span>
+                <span>·</span>
+                <Link
+                  href={`/events/${event.slug}`}
+                  className="flex items-center gap-1 hover:text-foreground"
+                >
+                  {t("viewEvent")} <ExternalLink className="h-3 w-3" />
+                </Link>
+              </div>
             </div>
           </div>
           {event.hasRegistrations && (
-            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+            <Badge className="w-fit self-end bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 sm:ml-auto sm:self-auto">
               <CheckCircle className="mr-1 h-3 w-3" />
               {t("registrationsOpen")}
             </Badge>
@@ -223,59 +226,37 @@ export default function EventManagePage() {
           <TabsList className="mb-6 flex h-auto w-full flex-wrap gap-1">
             <TabsTrigger value="evento" className="gap-2">
               <FileEdit className="h-4 w-4" />
-              {t("tabs.event")}
+              <span className="hidden sm:inline">{t("tabs.event")}</span>
             </TabsTrigger>
             <TabsTrigger value="localizacao" className="gap-2">
               <MapPin className="h-4 w-4" />
-              {t("tabs.location")}
+              <span className="hidden sm:inline">{t("tabs.location")}</span>
             </TabsTrigger>
             <TabsTrigger value="percursos" className="gap-2">
               <Layers className="h-4 w-4" />
-              {t("tabs.variants")}
-              {variants.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
-                >
-                  {variants.length}
-                </Badge>
-              )}
+              <span className="hidden sm:inline">{t("tabs.variants")}</span>
             </TabsTrigger>
             <TabsTrigger value="precos" className="gap-2">
               <CreditCard className="h-4 w-4" />
-              {t("tabs.pricing")}
-              {pricingPhases.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
-                >
-                  {pricingPhases.length}
-                </Badge>
-              )}
+              <span className="hidden sm:inline">{t("tabs.pricing")}</span>
             </TabsTrigger>
             <TabsTrigger value="inscritos" className="gap-2">
               <ClipboardList className="h-4 w-4" />
-              {t("tabs.registrations")}
+              <span className="hidden sm:inline">
+                {t("tabs.registrations")}
+              </span>
             </TabsTrigger>
             <TabsTrigger value="team" className="gap-2">
               <Users className="h-4 w-4" />
-              {t("tabs.team")}
-              {organizers.length + staff.length > 0 && (
-                <Badge
-                  variant="secondary"
-                  className="ml-1 h-5 min-w-5 rounded-full px-1.5 text-xs"
-                >
-                  {organizers.length + staff.length}
-                </Badge>
-              )}
+              <span className="hidden sm:inline">{t("tabs.team")}</span>
             </TabsTrigger>
             <TabsTrigger value="payments" className="gap-2">
               <CreditCard className="h-4 w-4" />
-              {t("tabs.payments")}
+              <span className="hidden sm:inline">{t("tabs.payments")}</span>
             </TabsTrigger>
             <TabsTrigger value="config" className="gap-2">
               <Settings className="h-4 w-4" />
-              {t("tabs.settings")}
+              <span className="hidden sm:inline">{t("tabs.settings")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -321,7 +302,7 @@ export default function EventManagePage() {
             </Button>
           </div>
         )}
-      </div>
+      </PageContainer>
     </div>
   );
 }

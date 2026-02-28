@@ -116,126 +116,219 @@ export function EventTicketModal({
     if (!ticketRef.current || !ticket) return;
 
     try {
-      // Use html2canvas-like approach with canvas
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
       const width = 400;
+      const hasBib = !!ticket.bibNumber;
       const height = 620;
       const dpr = 2;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
 
-      // Background
+      // ── Background: white body ──────────────────────────────────────────
       ctx.fillStyle = "#FFFFFF";
       ctx.roundRect(0, 0, width, height, 16);
       ctx.fill();
 
-      // Brand header
-      ctx.fillStyle = "#7C3AED";
-      ctx.roundRect(0, 0, width, 80, [16, 16, 0, 0]);
+      // ── Athlifyr logo — full-card watermark (cover, centred) ───────────
+      // Fetch as text → Blob URL so canvas can draw it without cross-origin issues.
+      // The SVG already has the brand orange/gold colours — no tinting needed.
+      await new Promise<void>((resolve) => {
+        fetch("/logo.svg")
+          .then((r) => r.text())
+          .then((svgText) => {
+            // Remove the first path that has fill="none" and acts as an invisible
+            // background mask, hiding the actual logo shapes beneath it
+            const cleaned = svgText.replace(/<path fill="none"[^/]*\/>/i, "");
+            const blob = new Blob([cleaned], { type: "image/svg+xml" });
+            const url = URL.createObjectURL(blob);
+            const logoImg = new Image();
+            logoImg.onload = () => {
+              const naturalW = 766;
+              const naturalH = 754;
+              const scale = Math.max(width / naturalW, height / naturalH);
+              const drawW = naturalW * scale;
+              const drawH = naturalH * scale;
+              const drawX = (width - drawW) / 2;
+              const drawY = (height - drawH) / 2;
+              ctx.save();
+              ctx.roundRect(0, 0, width, height, 16);
+              ctx.clip();
+              ctx.globalAlpha = 0.85;
+              ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
+              ctx.restore();
+              URL.revokeObjectURL(url);
+              resolve();
+            };
+            logoImg.onerror = () => {
+              URL.revokeObjectURL(url);
+              resolve();
+            };
+            logoImg.src = url;
+          })
+          .catch(() => resolve());
+      });
+
+      // ── Golden header block (mirrors the modal header) ──────────────────
+      const headerH = hasBib ? 130 : 110;
+      const headerGrad = ctx.createLinearGradient(0, 0, width, 0);
+      headerGrad.addColorStop(0, "#F5A623");
+      headerGrad.addColorStop(1, "rgba(245,166,35,0.75)");
+      ctx.fillStyle = headerGrad;
+      ctx.roundRect(0, 0, width, headerH, [16, 16, 0, 0]);
       ctx.fill();
 
-      // Event title
-      ctx.fillStyle = "#FFFFFF";
+      // ── "ATHLIFYR" wordmark top-right (in golden header — dark text) ────
+      ctx.fillStyle = "rgba(26,14,0,0.5)";
+      ctx.font = "bold 10px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "right";
+      ctx.fillText("ATHLIFYR", width - 20, 22);
+
+      // ── Event title (in golden header — dark text) ───────────────────────
+      ctx.fillStyle = "#1a0e00";
       ctx.font = "bold 18px system-ui, -apple-system, sans-serif";
       ctx.textAlign = "center";
       const title = ticket.event.title;
       ctx.fillText(
-        title.length > 30 ? title.substring(0, 30) + "..." : title,
+        title.length > 34 ? title.substring(0, 34) + "…" : title,
         width / 2,
-        38
+        48
       );
 
-      // Location
-      ctx.font = "14px system-ui, -apple-system, sans-serif";
+      // ── Location (in golden header — muted dark) ─────────────────────────
+      ctx.fillStyle = "rgba(26,14,0,0.6)";
+      ctx.font = "12px system-ui, -apple-system, sans-serif";
       ctx.fillText(
         `${ticket.event.city}, ${ticket.event.country}`,
         width / 2,
-        60
+        66
       );
 
-      // Dashed divider
-      ctx.setLineDash([6, 4]);
-      ctx.strokeStyle = "#E5E7EB";
+      // ── Thin dark divider (in golden header) ─────────────────────────────
+      ctx.strokeStyle = "rgba(26,14,0,0.2)";
+      ctx.lineWidth = 1;
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(24, 80);
+      ctx.lineTo(width - 24, 80);
+      ctx.stroke();
+
+      // ── Participant name + bib row (in golden header) ─────────────────────
+      const participantName = ticket.user.name ?? ticket.user.email;
+      const maxNameWidth = hasBib ? width - 140 : width - 48;
+
+      // Left: label + name
+      ctx.fillStyle = "rgba(26,14,0,0.6)";
+      ctx.font = "9px system-ui, -apple-system, sans-serif";
+      ctx.textAlign = "left";
+      ctx.fillText("PARTICIPANTE", 24, 98);
+
+      ctx.fillStyle = "#1a0e00";
+      ctx.font = "bold 15px system-ui, -apple-system, sans-serif";
+      const nameMeasured = ctx.measureText(participantName).width;
+      const nameTruncated =
+        nameMeasured > maxNameWidth
+          ? participantName.substring(
+              0,
+              Math.floor((maxNameWidth / nameMeasured) * participantName.length)
+            ) + "…"
+          : participantName;
+      ctx.fillText(nameTruncated, 24, 116);
+
+      // Right: dorsal label + number (when present)
+      if (hasBib) {
+        ctx.fillStyle = "rgba(26,14,0,0.6)";
+        ctx.font = "9px system-ui, -apple-system, sans-serif";
+        ctx.textAlign = "right";
+        ctx.fillText("DORSAL", width - 24, 98);
+
+        ctx.fillStyle = "#1a0e00";
+        ctx.font = "bold 28px system-ui, -apple-system, sans-serif";
+        ctx.fillText(`#${ticket.bibNumber}`, width - 24, 122);
+      }
+
+      ctx.textAlign = "center";
+
+      // ── Variant strip (white body area, muted dark text) ─────────────────
+      let variantText = ticket.variant.name;
+      if (ticket.variant.distanceKm)
+        variantText += ` · ${ticket.variant.distanceKm}km`;
+      ctx.fillStyle = "rgba(26,14,0,0.55)";
+      ctx.font = "12px system-ui, -apple-system, sans-serif";
+      ctx.fillText(variantText, width / 2, hasBib ? 148 : 138);
+
+      // ── Dashed separator ──────────────────────────────────────────────────
+      const sepY = hasBib ? 162 : 152;
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = "rgba(26,14,0,0.15)";
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(20, 92);
-      ctx.lineTo(width - 20, 92);
+      ctx.moveTo(20, sepY);
+      ctx.lineTo(width - 20, sepY);
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Participant name
-      ctx.fillStyle = "#1F2937";
-      ctx.font = "bold 20px system-ui, -apple-system, sans-serif";
-      ctx.fillText(ticket.user.name ?? ticket.user.email, width / 2, 125);
-
-      // Variant
-      ctx.fillStyle = "#6B7280";
-      ctx.font = "14px system-ui, -apple-system, sans-serif";
-      let variantText = ticket.variant.name;
-      if (ticket.variant.distanceKm) {
-        variantText += ` — ${ticket.variant.distanceKm}km`;
-      }
-      ctx.fillText(variantText, width / 2, 150);
-
-      // Bib number
-      if (ticket.bibNumber) {
-        ctx.fillStyle = "#7C3AED";
-        ctx.font = "bold 28px system-ui, -apple-system, sans-serif";
-        ctx.fillText(`#${ticket.bibNumber}`, width / 2, 185);
-      }
-
-      // QR Code
+      // ── QR Code (white bg so it stays scannable) ─────────────────────────
+      const qrTopY = sepY + 20;
       if (qrDataUrl) {
         const qrImg = new Image();
         qrImg.crossOrigin = "anonymous";
         await new Promise<void>((resolve) => {
           qrImg.onload = () => {
-            const qrSize = 200;
+            const qrSize = 180;
+            const qrPad = 10;
             const qrX = (width - qrSize) / 2;
-            const qrY = ticket.bibNumber ? 200 : 170;
-            ctx.drawImage(qrImg, qrX, qrY, qrSize, qrSize);
+            ctx.fillStyle = "#FFFFFF";
+            ctx.roundRect(
+              qrX - qrPad,
+              qrTopY - qrPad,
+              qrSize + qrPad * 2,
+              qrSize + qrPad * 2,
+              10
+            );
+            ctx.fill();
+            ctx.drawImage(qrImg, qrX, qrTopY, qrSize, qrSize);
             resolve();
           };
           qrImg.src = qrDataUrl;
         });
       }
 
-      // Date info at bottom
-      const dateY = ticket.bibNumber ? 430 : 400;
-      ctx.fillStyle = "#6B7280";
-      ctx.font = "12px system-ui, -apple-system, sans-serif";
+      // ── Footer details (white body — dark muted text) ─────────────────────
+      const footerY = qrTopY + 230;
+
       if (ticket.variant.startDate) {
         const dateStr = new Date(ticket.variant.startDate).toLocaleDateString(
           undefined,
           { day: "numeric", month: "long", year: "numeric" }
         );
-        ctx.fillText(dateStr, width / 2, dateY);
+        ctx.fillStyle = "rgba(26,14,0,0.55)";
+        ctx.font = "11px system-ui, -apple-system, sans-serif";
+        ctx.fillText(dateStr, width / 2, footerY);
       }
 
-      // Amount
-      const amountY = dateY + 20;
       const amount = (ticket.amountCents / 100).toLocaleString(undefined, {
         style: "currency",
         currency: ticket.currency,
       });
-      ctx.fillText(amount, width / 2, amountY);
+      ctx.fillStyle = "rgba(26,14,0,0.55)";
+      ctx.font = "11px system-ui, -apple-system, sans-serif";
+      ctx.fillText(amount, width / 2, footerY + 18);
 
-      // Verified badge
-      const badgeY = amountY + 30;
-      ctx.fillStyle = "#059669";
-      ctx.font = "bold 11px system-ui, -apple-system, sans-serif";
-      ctx.fillText("✓ Verified by Athlifyr", width / 2, badgeY);
+      // Verified
+      ctx.fillStyle = "#1a0e00";
+      ctx.font = "bold 10px system-ui, -apple-system, sans-serif";
+      ctx.fillText("✓ Verified by Athlifyr", width / 2, footerY + 40);
 
-      // Footer
-      ctx.fillStyle = "#D1D5DB";
-      ctx.font = "10px system-ui, -apple-system, sans-serif";
-      ctx.fillText("athlifyr.com", width / 2, height - 16);
+      // Footer wordmark
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = "bold 14px system-ui, -apple-system, sans-serif";
+      ctx.fillText("athlifyr.com", width / 2, height - 14);
 
-      // Trigger download
+      // ── Trigger download ──────────────────────────────────────────────────
       const dataUrl = canvas.toDataURL("image/png");
       const link = document.createElement("a");
       link.download = `ticket-${ticket.event.slug}-${ticket.registrationId.slice(-6)}.png`;
@@ -266,18 +359,18 @@ export function EventTicketModal({
         ) : (
           <div ref={ticketRef} className="flex flex-col">
             {/* Header with event info */}
-            <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5 text-white">
+            <div className="bg-gradient-to-r from-[#F5A623] to-[#F5A623]/75 px-6 py-5 text-[#1a0e00]">
               <h2 className="text-lg font-bold leading-tight">
                 {ticket.event.title}
               </h2>
-              <div className="mt-1 flex items-center gap-2 text-sm text-white/80">
+              <div className="mt-1 flex items-center gap-2 text-sm text-[#1a0e00]/70">
                 <MapPin className="h-3.5 w-3.5" />
                 <span>
                   {ticket.event.city}, {ticket.event.country}
                 </span>
               </div>
               {ticket.variant.startDate && (
-                <div className="mt-1 flex items-center gap-2 text-sm text-white/80">
+                <div className="mt-1 flex items-center gap-2 text-sm text-[#1a0e00]/70">
                   <Calendar className="h-3.5 w-3.5" />
                   <span>
                     {new Date(ticket.variant.startDate).toLocaleDateString(
@@ -295,6 +388,28 @@ export function EventTicketModal({
                   </span>
                 </div>
               )}
+
+              {/* Participant name + bib in header */}
+              <div className="mt-3 flex items-center justify-between border-t border-[#1a0e00]/20 pt-3">
+                <div>
+                  <p className="text-xs text-[#1a0e00]/60">
+                    {t("participant")}
+                  </p>
+                  <p className="font-semibold leading-tight">
+                    {ticket.user.name ?? ticket.user.email}
+                  </p>
+                </div>
+                {ticket.bibNumber && (
+                  <div className="text-right">
+                    <p className="text-xs text-[#1a0e00]/60">
+                      {t("bibNumber")}
+                    </p>
+                    <p className="text-2xl font-black leading-tight tracking-tight">
+                      #{ticket.bibNumber}
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Dashed separator */}
@@ -306,7 +421,7 @@ export function EventTicketModal({
 
             {/* Ticket body */}
             <div className="px-6 py-5">
-              {/* Participant */}
+              {/* Participant + variant */}
               <div className="mb-4 text-center">
                 <p className="text-lg font-bold">
                   {ticket.user.name ?? ticket.user.email}
@@ -320,18 +435,6 @@ export function EventTicketModal({
                   </span>
                 </div>
               </div>
-
-              {/* Bib Number */}
-              {ticket.bibNumber && (
-                <div className="mb-4 text-center">
-                  <span className="text-xs uppercase tracking-wider text-muted-foreground">
-                    {t("bibNumber")}
-                  </span>
-                  <p className="text-3xl font-black text-purple-600">
-                    #{ticket.bibNumber}
-                  </p>
-                </div>
-              )}
 
               {/* QR Code */}
               <div className="flex flex-col items-center">

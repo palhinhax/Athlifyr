@@ -81,7 +81,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         : {}),
     },
     include: {
-      user: { select: { name: true, email: true } },
+      user: {
+        select: {
+          name: true,
+          email: true,
+          dateOfBirth: true,
+          citizenId: true,
+          nationality: true,
+          emergencyContactName: true,
+          emergencyContactPhone: true,
+        },
+      },
       variant: { select: { name: true } },
       customFieldResponses: {
         select: { customFieldId: true, value: true, participantIndex: true },
@@ -100,7 +110,17 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
         : {}),
     },
     include: {
-      user: { select: { name: true, email: true } },
+      user: {
+        select: {
+          name: true,
+          email: true,
+          dateOfBirth: true,
+          citizenId: true,
+          nationality: true,
+          emergencyContactName: true,
+          emergencyContactPhone: true,
+        },
+      },
       variant: { select: { name: true } },
       customFieldResponses: {
         select: { customFieldId: true, value: true, participantIndex: true },
@@ -120,6 +140,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     bibNumber: string;
     athleteFullName: string;
     athleteEmail: string;
+    dateOfBirth: string;
+    citizenId: string;
+    nationality: string;
+    emergencyContactName: string;
+    emergencyContactPhone: string;
     checkedInAt: Date | null;
     amountCents: number | null;
     feeCents: number | null;
@@ -146,6 +171,25 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     const fullName = isMember ? (r.guestName ?? "") : (r.user.name ?? "");
     const email = isMember ? (r.guestEmail ?? "") : r.user.email;
 
+    // Profile fields: for team members use guest* fields, for leader/solo use user profile
+    const dateOfBirth = isMember
+      ? r.guestDateOfBirth
+        ? formatDateISO(r.guestDateOfBirth).slice(0, 10)
+        : ""
+      : r.user.dateOfBirth
+        ? formatDateISO(r.user.dateOfBirth).slice(0, 10)
+        : "";
+    const citizenId = isMember
+      ? (r.guestCitizenId ?? "")
+      : (r.user.citizenId ?? "");
+    const nationality = r.user.nationality ?? "";
+    const emergencyContactName = isMember
+      ? (r.guestEmergencyContactName ?? "")
+      : (r.user.emergencyContactName ?? "");
+    const emergencyContactPhone = isMember
+      ? (r.guestEmergencyContactPhone ?? "")
+      : (r.user.emergencyContactPhone ?? "");
+
     rows.push({
       registrationId: r.id,
       type: "paid",
@@ -155,6 +199,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       bibNumber: r.bibNumber ?? "",
       athleteFullName: fullName,
       athleteEmail: email,
+      dateOfBirth,
+      citizenId,
+      nationality,
+      emergencyContactName,
+      emergencyContactPhone,
       checkedInAt: r.checkedInAt,
       amountCents: r.amountCents,
       feeCents: r.feeCents,
@@ -183,6 +232,13 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       bibNumber: "",
       athleteFullName: p.user.name ?? "",
       athleteEmail: p.user.email,
+      dateOfBirth: p.user.dateOfBirth
+        ? formatDateISO(p.user.dateOfBirth).slice(0, 10)
+        : "",
+      citizenId: p.user.citizenId ?? "",
+      nationality: p.user.nationality ?? "",
+      emergencyContactName: p.user.emergencyContactName ?? "",
+      emergencyContactPhone: p.user.emergencyContactPhone ?? "",
       checkedInAt: null,
       amountCents: null,
       feeCents: null,
@@ -225,6 +281,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     "bibNumber",
     "athleteFullName",
     "athleteEmail",
+    "dateOfBirth",
+    "citizenId",
+    "nationality",
+    "emergencyContactName",
+    "emergencyContactPhone",
     "teamGroupId",
     "teamRole",
     "teamMemberIndex",
@@ -251,6 +312,11 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       r.bibNumber,
       r.athleteFullName,
       r.athleteEmail,
+      r.dateOfBirth,
+      r.citizenId,
+      r.nationality,
+      r.emergencyContactName,
+      r.emergencyContactPhone,
       r.teamGroupId,
       r.teamRole,
       String(r.teamMemberIndex),

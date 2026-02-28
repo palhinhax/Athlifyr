@@ -86,7 +86,7 @@
         "step2": "2️⃣ No momento do sorteio, usamos o segredo + a posição de cada vencedor para calcular os números de bilhete vencedores.",
         "step3": "3️⃣ Após o sorteio, revelamos o segredo para que qualquer pessoa possa verificar os resultados de forma independente.",
         "formulaTitle": "Fórmula de seleção do vencedor",
-        "formulaExplanation": "Onde \"secret\" é o segredo revelado, \"rank\" é a posição do vencedor (1.º, 2.º...), N é o número total de participantes, e \"winner\" é o número do bilhete resultante.",
+        "formulaExplanation": "Onde \"secret\" é o segredo revelado, \"rank\" é a posição do vencedor (1.º, 2.º...), \"attempt\" começa em 0 e incrementa se houver colisão (bilhete duplicado), N é o número total de participantes, e \"winner\" é o número do bilhete resultante.",
         "verifyTitle": "Verifica cada vencedor:",
         "winningTickets": "🎉 Bilhetes vencedores",
         "yourTicketNumber": "O teu número de bilhete: #{{number}}",
@@ -94,7 +94,7 @@
         "secretHashExplanation": "Este hash foi publicado antes do sorteio para provar que o segredo foi fixado antecipadamente. Após o sorteio, podes verificar: SHA-256(segredo revelado) = este hash.",
         "secretRevealed": "Segredo revelado (publicado após o sorteio)",
         "finalParticipantsCount": "Total de participantes no sorteio: {{count}}",
-        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|0\") % {{total}} + 1 = #{{winning}}"
+        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
     }
   },

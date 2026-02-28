@@ -131,7 +131,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     prisma.registration.findMany({
       where: regWhere,
       include: {
-        user: { select: { id: true, name: true, email: true, image: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            dateOfBirth: true,
+            citizenId: true,
+            nationality: true,
+            emergencyContactName: true,
+            emergencyContactPhone: true,
+          },
+        },
         variant: { select: { id: true, name: true, distanceKm: true } },
       },
       orderBy: [{ createdAt: "desc" }, { id: "asc" }],
@@ -141,7 +153,19 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     prisma.participation.findMany({
       where: parWhere,
       include: {
-        user: { select: { id: true, name: true, email: true, image: true } },
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            image: true,
+            dateOfBirth: true,
+            citizenId: true,
+            nationality: true,
+            emergencyContactName: true,
+            emergencyContactPhone: true,
+          },
+        },
         variant: { select: { id: true, name: true, distanceKm: true } },
       },
       orderBy: [{ createdAt: "desc" }, { id: "asc" }],
@@ -181,6 +205,26 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       guestName: r.guestName,
       guestEmail: r.guestEmail,
       guestPhone: r.guestPhone,
+      // Profile fields (use guest data for team members, user data for leader/solo)
+      dateOfBirth:
+        r.teamRole === "MEMBER"
+          ? (r.guestDateOfBirth?.toISOString() ?? null)
+          : (r.user.dateOfBirth?.toISOString() ?? null),
+      citizenId:
+        r.teamRole === "MEMBER"
+          ? (r.guestCitizenId ?? null)
+          : (r.user.citizenId ?? null),
+      nationality:
+        r.teamRole === "MEMBER" ? null : (r.user.nationality ?? null),
+      emergencyContactName:
+        r.teamRole === "MEMBER"
+          ? (r.guestEmergencyContactName ?? null)
+          : (r.user.emergencyContactName ?? null),
+      emergencyContactPhone:
+        r.teamRole === "MEMBER"
+          ? (r.guestEmergencyContactPhone ?? null)
+          : (r.user.emergencyContactPhone ?? null),
+      phone: r.teamRole === "MEMBER" ? (r.guestPhone ?? null) : null,
     })),
     participations: participations.map((p) => ({
       id: p.id,
@@ -198,6 +242,12 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       amountCents: null,
       currency: null,
       createdAt: p.createdAt.toISOString(),
+      dateOfBirth: p.user.dateOfBirth?.toISOString() ?? null,
+      citizenId: p.user.citizenId ?? null,
+      nationality: p.user.nationality ?? null,
+      emergencyContactName: p.user.emergencyContactName ?? null,
+      emergencyContactPhone: p.user.emergencyContactPhone ?? null,
+      phone: null,
     })),
     variants,
     counts: {

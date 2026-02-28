@@ -86,7 +86,7 @@
         "step2": "2️⃣ Zum Zeitpunkt der Ziehung verwenden wir das Geheimnis + den Rang jedes Gewinners, um die Gewinn-Ticketnummern zu berechnen.",
         "step3": "3️⃣ Nach der Ziehung enthüllen wir das Geheimnis, damit jeder die Ergebnisse unabhängig überprüfen kann.",
         "formulaTitle": "Formel zur Gewinnerauswahl",
-        "formulaExplanation": "Wobei 'secret' das enthüllte Geheimnis ist, 'rank' die Gewinnerposition (1., 2. ...), N die Gesamtzahl der Teilnehmer und 'winner' die resultierende Ticketnummer ist.",
+        "formulaExplanation": "Wobei 'secret' das enthüllte Geheimnis ist, 'rank' die Gewinnerposition (1., 2. ...), 'attempt' bei 0 beginnt und bei Kollision (doppeltes Ticket) erhöht wird, N die Gesamtzahl der Teilnehmer und 'winner' die resultierende Ticketnummer ist.",
         "verifyTitle": "Überprüfe jeden Gewinner:",
         "winningTickets": "🎉 Gewinnlose",
         "yourTicketNumber": "Deine Losnummer: #{{number}}",
@@ -94,7 +94,7 @@
         "secretHashExplanation": "Dieser Hash wurde vor der Ziehung veröffentlicht, um zu beweisen, dass das Geheimnis im Voraus festgelegt wurde. Nach der Ziehung kannst du überprüfen: SHA-256(enthülltes Geheimnis) = dieser Hash.",
         "secretRevealed": "Enthülltes Geheimnis (nach der Ziehung veröffentlicht)",
         "finalParticipantsCount": "Gesamte Teilnehmer bei der Ziehung: {{count}}",
-        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|0\") % {{total}} + 1 = #{{winning}}"
+        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
     }
   },

@@ -77,7 +77,7 @@ export default function AdminEventSettingsPage() {
 
   const [settings, setSettings] = useState({
     hasLiveRace: false,
-    commissionPercent: 5.0,
+    commissionPercent: 0.0,
     refundDeadline: "",
     checkInOpensAt: "",
     checkInClosesAt: "",

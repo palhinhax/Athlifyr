@@ -25,7 +25,8 @@ export function EventRegistrationHeader({
         <div className="flex items-center gap-2">
           <Users className="h-4 w-4" />
           <span>
-            {participantsCount} {t("participants")}
+            {participantsCount}{" "}
+            {t("participants", { count: participantsCount })}
           </span>
         </div>
         {interestedCount > 0 && (

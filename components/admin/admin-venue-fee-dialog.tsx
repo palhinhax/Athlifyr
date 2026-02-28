@@ -146,7 +146,7 @@ export function AdminVenueFeeDialog({
                 })
               }
               placeholder={
-                feeFormData.commissionType === "PERCENT" ? "10.00" : "1000"
+                feeFormData.commissionType === "PERCENT" ? "0.00" : "0"
               }
               required
             />

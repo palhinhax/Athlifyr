@@ -41,6 +41,7 @@ interface GiveawayData {
   secretRevealed: string | null;
   finalParticipantsCount: number | null;
   winningTicketNumbers: number[];
+  winningTicketAttempts: number[];
   isWinner: boolean;
   translation: GiveawayTranslation | null;
   hasJoined: boolean;
@@ -283,7 +284,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                 {t("transparency.formulaTitle")}
               </p>
               <code className="mt-1.5 block rounded-md bg-muted px-3 py-2 font-mono text-[11px] leading-relaxed text-foreground">
-                SHA-256(&quot;secret | rank | 0&quot;) % N + 1 = winner
+                SHA-256(&quot;secret | rank | attempt&quot;) % N + 1 = winner
               </code>
               <p className="mt-1.5 text-[11px] text-muted-foreground">
                 {t("transparency.formulaExplanation")}
@@ -342,19 +343,24 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                       <p className="mb-1.5 text-[11px] font-medium text-foreground">
                         {t("transparency.verifyTitle")}
                       </p>
-                      {giveaway.winningTicketNumbers.map((ticket, i) => (
-                        <p
-                          key={ticket}
-                          className="break-all font-mono text-[11px] leading-relaxed text-muted-foreground"
-                        >
-                          {t("transparency.verifyFormula", {
-                            secret: giveaway.secretRevealed!,
-                            rank: i + 1,
-                            total: giveaway.finalParticipantsCount!,
-                            winning: ticket,
-                          })}
-                        </p>
-                      ))}
+                      {giveaway.winningTicketNumbers.map((ticket, i) => {
+                        const attempt =
+                          giveaway.winningTicketAttempts?.[i] ?? 0;
+                        return (
+                          <p
+                            key={ticket}
+                            className="break-all font-mono text-[11px] leading-relaxed text-muted-foreground"
+                          >
+                            {t("transparency.verifyFormula", {
+                              secret: giveaway.secretRevealed!,
+                              rank: i + 1,
+                              attempt,
+                              total: giveaway.finalParticipantsCount!,
+                              winning: ticket,
+                            })}
+                          </p>
+                        );
+                      })}
                     </div>
                   )}
               </div>

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { generateNextBibNumber, assignBibNumbers } from "@/lib/bib-number";
 
 /**
  * POST /api/events/[id]/registration/confirm
@@ -80,6 +81,7 @@ export async function POST(
     const currency = (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP";
 
     // Upsert registration to CONFIRMED (idempotent)
+    const leaderBib = await generateNextBibNumber(eventId);
     const registration = await prisma.registration.upsert({
       where: {
         userId_eventId_variantId_teamMemberIndex: {
@@ -94,6 +96,7 @@ export async function POST(
         eventId,
         variantId,
         status: "CONFIRMED",
+        bibNumber: leaderBib,
         stripeCheckoutSessionId: sessionId,
         stripePaymentIntentId: paymentIntentId,
         amountCents,
@@ -101,6 +104,7 @@ export async function POST(
       },
       update: {
         status: "CONFIRMED",
+        bibNumber: leaderBib,
         stripeCheckoutSessionId: sessionId,
         stripePaymentIntentId: paymentIntentId,
         amountCents,
@@ -121,6 +125,22 @@ export async function POST(
 
     // Also confirm all team member registrations in the same group
     if (registration.teamGroupId) {
+      const teamMembers = await prisma.registration.findMany({
+        where: {
+          teamGroupId: registration.teamGroupId,
+          teamRole: "MEMBER",
+          status: "PENDING",
+        },
+        select: { id: true },
+        orderBy: { teamMemberIndex: "asc" },
+      });
+
+      // Assign bib numbers to each team member individually
+      await assignBibNumbers(
+        eventId,
+        teamMembers.map((m) => m.id)
+      );
+
       await prisma.registration.updateMany({
         where: {
           teamGroupId: registration.teamGroupId,

@@ -84,7 +84,6 @@ export default async function Home({
           </p>
           <div className="mt-6 flex justify-center md:mt-8">
             <HomeAnalysisShortcut
-              newLabel={t("analysisNew")}
               title={t("analysisShortcut")}
               description={t("analysisDescription")}
               motionTitle={t("analysisMotionTitle")}

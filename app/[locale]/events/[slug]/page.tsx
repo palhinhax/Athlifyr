@@ -459,6 +459,7 @@ export default async function EventPage({ params }: PageProps) {
               externalUrl={event.externalUrl}
               stravaRouteEmbed={event.stravaRouteEmbed}
               cancelled={event.cancelled}
+              hasRegistrations={event.hasRegistrations}
               translations={{
                 aboutEvent: t("aboutEvent"),
                 readyToParticipate: t("readyToParticipate"),

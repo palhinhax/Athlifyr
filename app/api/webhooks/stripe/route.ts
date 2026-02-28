@@ -3,6 +3,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import type { Stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { generateNextBibNumber, assignBibNumbers } from "@/lib/bib-number";
 import {
   calculatePlanEndDate,
   type VenuePlanPolicy,
@@ -140,10 +141,12 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
 
     if (existing) {
       // Update PENDING → CONFIRMED
+      const leaderBib = await generateNextBibNumber(eventId);
       await prisma.registration.update({
         where: { id: existing.id },
         data: {
           status: "CONFIRMED",
+          bibNumber: leaderBib,
           stripeCheckoutSessionId: session.id,
           stripePaymentIntentId: paymentIntent,
           amountCents,
@@ -153,6 +156,22 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
 
       // Also confirm all team member registrations in the same group
       if (existing.teamGroupId) {
+        const teamMembers = await prisma.registration.findMany({
+          where: {
+            teamGroupId: existing.teamGroupId,
+            teamRole: "MEMBER",
+            status: "PENDING",
+          },
+          select: { id: true },
+          orderBy: { teamMemberIndex: "asc" },
+        });
+
+        // Assign bib numbers to each team member individually
+        await assignBibNumbers(
+          eventId,
+          teamMembers.map((m) => m.id)
+        );
+
         await prisma.registration.updateMany({
           where: {
             teamGroupId: existing.teamGroupId,
@@ -169,12 +188,14 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
         );
       }
     } else {
+      const bibNumber = await generateNextBibNumber(eventId);
       await prisma.registration.create({
         data: {
           userId,
           eventId,
           variantId,
           status: "CONFIRMED",
+          bibNumber,
           stripeCheckoutSessionId: session.id,
           stripePaymentIntentId: paymentIntent,
           amountCents,

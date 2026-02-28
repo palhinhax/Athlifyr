@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -35,6 +36,22 @@ export function CustomFieldsForm({
   participantLabel,
 }: CustomFieldsFormProps) {
   const t = useTranslations("events.registration.customFields");
+
+  // Initialize BOOLEAN fields with "false" so they always have a value
+  // in the answers array. This prevents the required-field validation from
+  // rejecting a switch that was never toggled (its default state is "No").
+  useEffect(() => {
+    const booleanFields = fields.filter((f) => f.type === "BOOLEAN");
+    const missing = booleanFields.filter(
+      (f) => !answers.some((a) => a.customFieldId === f.id)
+    );
+    if (missing.length > 0) {
+      onAnswersChange([
+        ...answers,
+        ...missing.map((f) => ({ customFieldId: f.id, value: "false" })),
+      ]);
+    }
+  }, [fields]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const getAnswer = (fieldId: string): string => {
     return answers.find((a) => a.customFieldId === fieldId)?.value ?? "";

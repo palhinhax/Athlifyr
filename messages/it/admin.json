@@ -362,7 +362,6 @@
     "giveaways": {
       "title": "Sorteggi",
       "description": "Gestisci sorteggi e lotterie per gli eventi",
-      "new": "Nuovo Sorteggio",
       "edit": "Modifica Sorteggio",
       "noGiveaways": "Nessun sorteggio",
       "noGiveawaysDescription": "Crea un sorteggio collegato a un evento per iniziare",

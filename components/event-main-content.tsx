@@ -12,6 +12,7 @@ interface EventMainContentProps {
   externalUrl: string | null;
   stravaRouteEmbed?: string | null;
   cancelled?: boolean;
+  hasRegistrations?: boolean;
   translations: {
     aboutEvent: string;
     readyToParticipate: string;
@@ -27,6 +28,7 @@ export function EventMainContent({
   externalUrl,
   stravaRouteEmbed,
   cancelled,
+  hasRegistrations = false,
   translations: t,
 }: EventMainContentProps) {
   return (
@@ -52,7 +54,7 @@ export function EventMainContent({
       )}
 
       {/* CTA */}
-      {externalUrl && !cancelled && (
+      {externalUrl && !cancelled && !hasRegistrations && (
         <div className="border-t pt-8">
           <h3 className="mb-4 text-xl font-bold">{t.readyToParticipate}</h3>
           <p className="mb-6 text-muted-foreground">{t.moreInfoDescription}</p>

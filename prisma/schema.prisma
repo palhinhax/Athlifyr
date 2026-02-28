@@ -215,7 +215,7 @@ model Event {
   stripePayoutsEnabled     Boolean                     @default(false)
   stripeLastWebhookAt      DateTime?
   stripeOnboardingStatus   EventStripeOnboardingStatus @default(NOT_STARTED)
-  commissionPercent        Float                       @default(5.0)
+  commissionPercent        Float                       @default(0.0)
   commissionFixed          Int                         @default(0) // cêntimos
 
   // ── Registration settings ──────────────────────────────────────────────────
@@ -858,7 +858,7 @@ model Venue {
   defaultCancellationDeadlineMinutes Int                     @default(30)
   defaultSessionCapacity             Int?
   commissionType                     CommissionType          @default(PERCENT)
-  commissionValue                    Int                     @default(1000)
+  commissionValue                    Int                     @default(0)
   paymentsProvider                   PaymentsProvider        @default(NONE)
   stripeAccountId                    String?                 @unique
   stripeChargesEnabled               Boolean                 @default(false)
@@ -2394,6 +2394,7 @@ model Giveaway {
   secretRevealed         String? // Public: revealed secret after draw (proves fairness)
   finalParticipantsCount Int?
   winningTicketNumbers   Int[] // All winning ticket numbers (one per prize)
+  winningTicketAttempts  Int[] // Attempt index used per winner (for collision-free verification)
   createdAt              DateTime       @default(now())
   updatedAt              DateTime       @updatedAt
 

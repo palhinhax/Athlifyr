@@ -3,6 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import type { Stripe } from "@/lib/stripe";
+import { generateNextBibNumber } from "@/lib/bib-number";
 
 // POST /api/events/[id]/checkout — create Stripe Checkout Session for event registration
 export async function POST(
@@ -197,6 +198,7 @@ export async function POST(
       const isTeamFree = teamMembers && teamMembers.length > 0;
       const teamGroupIdFree = isTeamFree ? crypto.randomUUID() : undefined;
 
+      const leaderBib = await generateNextBibNumber(event.id);
       const freeReg = await prisma.registration.upsert({
         where: {
           userId_eventId_variantId_teamMemberIndex: {
@@ -211,6 +213,7 @@ export async function POST(
           eventId: event.id,
           variantId: selectedVariant.id,
           status: "CONFIRMED",
+          bibNumber: leaderBib,
           amountCents: 0,
           currency: activePhase.currency as "EUR" | "USD" | "GBP",
           paymentProvider: "NONE",
@@ -219,6 +222,7 @@ export async function POST(
         },
         update: {
           status: "CONFIRMED",
+          bibNumber: leaderBib,
           teamGroupId: teamGroupIdFree ?? null,
           teamRole: isTeamFree ? "LEADER" : null,
         },
@@ -238,12 +242,14 @@ export async function POST(
 
         for (let i = 0; i < teamMembers.length; i++) {
           const m = teamMembers[i];
+          const memberBib = await generateNextBibNumber(event.id);
           await prisma.registration.create({
             data: {
               userId: user.id,
               eventId: event.id,
               variantId: selectedVariant.id,
               status: "CONFIRMED",
+              bibNumber: memberBib,
               amountCents: 0,
               currency: activePhase.currency as "EUR" | "USD" | "GBP",
               paymentProvider: "NONE",

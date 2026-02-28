@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import {
   Loader2,
   Download,
@@ -14,6 +14,8 @@ import {
   ScanLine,
   ChevronLeft,
   ChevronRight,
+  Settings2,
+  FileText,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,6 +48,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 import type { EventDetails } from "./types";
@@ -68,6 +78,13 @@ interface RegistrationEntry {
   amountCents: number | null;
   currency: string | null;
   createdAt: string;
+  // Profile fields
+  dateOfBirth: string | null;
+  citizenId: string | null;
+  nationality: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+  phone: string | null;
 }
 
 interface VariantOption {
@@ -191,8 +208,6 @@ function StatusBadge({
   );
 }
 
-// ─── CSV Export (server-side) ────────────────────────────────────────────────
-
 // ─── Main Component ─────────────────────────────────────────────────────────
 
 export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
@@ -228,6 +243,67 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
   const [cfResponseMap, setCfResponseMap] = useState<
     Map<string, Map<string, string>>
   >(new Map());
+
+  // ─── Column visibility ─────────────────────────────────────────────────────
+  const [visibleColumns, setVisibleColumns] = useState<Record<string, boolean>>(
+    {
+      name: true,
+      bibNumber: true,
+      email: true,
+      variant: true,
+      status: true,
+      checkIn: true,
+      amount: true,
+      date: true,
+      phone: false,
+      citizenId: false,
+      dateOfBirth: false,
+      nationality: false,
+      emergencyContactName: false,
+      emergencyContactPhone: false,
+    }
+  );
+
+  const toggleColumn = (col: string) => {
+    setVisibleColumns((prev) => ({ ...prev, [col]: !prev[col] }));
+  };
+
+  // ─── Custom field filter ───────────────────────────────────────────────────
+  const [cfFilterFieldId, setCfFilterFieldId] = useState("all");
+  const [cfFilterValue, setCfFilterValue] = useState("all");
+
+  // Reset cf filter value when field changes
+  useEffect(() => {
+    setCfFilterValue("all");
+  }, [cfFilterFieldId]);
+
+  // Get options for the currently selected custom field filter
+  const activeCfField = useMemo(
+    () => customFieldDefs.find((cf) => cf.id === cfFilterFieldId),
+    [customFieldDefs, cfFilterFieldId]
+  );
+
+  // Get unique values for a SELECT field from responses
+  const cfFilterOptions = useMemo(() => {
+    if (!activeCfField) return [];
+    if (activeCfField.type === "SELECT") return activeCfField.options;
+    if (activeCfField.type === "BOOLEAN") return ["true", "false"];
+    return [];
+  }, [activeCfField]);
+
+  // Filter entries by custom field value (client-side)
+  const filterByCf = useCallback(
+    (entries: RegistrationEntry[]): RegistrationEntry[] => {
+      if (cfFilterFieldId === "all" || cfFilterValue === "all") return entries;
+      return entries.filter((entry) => {
+        const entryKey =
+          entry.type === "paid" ? `reg:${entry.id}` : `par:${entry.id}`;
+        const val = cfResponseMap.get(entryKey)?.get(cfFilterFieldId);
+        return val === cfFilterValue;
+      });
+    },
+    [cfFilterFieldId, cfFilterValue, cfResponseMap]
+  );
 
   // ─── Debounce search input ─────────────────────────────────────────────────
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -338,34 +414,172 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
 
   // ─── Combined entries (already server-filtered + paginated) ───────────────
 
-  const allEntries = [...registrations, ...participations];
+  const allEntries = filterByCf([...registrations, ...participations]);
 
   // ─── Export state ────────────────────────────────────────────────────────
   const [isExporting, setIsExporting] = useState(false);
 
-  // ─── Export handler (server-side CSV) ──────────────────────────────────────
+  // ─── CSV helpers ───────────────────────────────────────────────────────────
+
+  const escapeCSV = (value: string): string => `"${value.replace(/"/g, '""')}"`;
+
+  const buildCSVRow = (cells: string[]): string =>
+    cells.map(escapeCSV).join(",") + "\r\n";
+
+  // ─── Export handler (client-side CSV — matches visible table exactly) ──────
+
+  // ─── Shared export data builder ─────────────────────────────────────────────
+
+  const fetchExportData = async (): Promise<{
+    headers: string[];
+    rows: string[][];
+    entries: RegistrationEntry[];
+  } | null> => {
+    const params = new URLSearchParams();
+    if (variantFilter !== "all") params.set("variant", variantFilter);
+    if (statusFilter !== "all") params.set("status", statusFilter);
+    if (checkedInFilter !== "all") params.set("checkedIn", checkedInFilter);
+    if (debouncedSearch) params.set("search", debouncedSearch);
+    params.set("page", "1");
+    params.set("pageSize", "10000");
+
+    const res = await fetch(
+      `/api/events/${event.id}/registrations?${params.toString()}`
+    );
+    if (!res.ok) throw new Error("Failed to fetch data for export");
+
+    const data = (await res.json()) as {
+      registrations: RegistrationEntry[];
+      participations: RegistrationEntry[];
+    };
+
+    const exportEntries = filterByCf([
+      ...data.registrations,
+      ...data.participations,
+    ]);
+
+    if (exportEntries.length === 0) {
+      toast({
+        title: t("exportError"),
+        description: t("noRegistrations"),
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    // Build headers + getters from visible columns
+    const headers: string[] = [];
+    const columnGetters: ((entry: RegistrationEntry) => string)[] = [];
+
+    if (visibleColumns.name) {
+      headers.push(t("csvName"));
+      columnGetters.push((e) => e.userName ?? "");
+    }
+    if (event.hasRegistrations && visibleColumns.bibNumber) {
+      headers.push(t("csvBib"));
+      columnGetters.push((e) => e.bibNumber ?? "");
+    }
+    if (visibleColumns.email) {
+      headers.push(t("csvEmail"));
+      columnGetters.push((e) => e.userEmail);
+    }
+    if (visibleColumns.variant) {
+      headers.push(t("csvVariant"));
+      columnGetters.push((e) => e.variantName ?? "");
+    }
+    if (visibleColumns.status) {
+      headers.push(t("csvStatus"));
+      columnGetters.push((e) => e.status);
+    }
+    if (event.hasRegistrations && visibleColumns.checkIn) {
+      headers.push(t("columnCheckIn"));
+      columnGetters.push((e) =>
+        e.checkedInAt
+          ? new Date(e.checkedInAt).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : ""
+      );
+    }
+    if (event.hasRegistrations && visibleColumns.amount) {
+      headers.push(t("csvAmount"));
+      columnGetters.push((e) =>
+        e.amountCents && e.currency
+          ? formatAmount(e.amountCents, e.currency)
+          : ""
+      );
+    }
+    if (visibleColumns.date) {
+      headers.push(t("csvDate"));
+      columnGetters.push((e) => new Date(e.createdAt).toLocaleDateString());
+    }
+    if (visibleColumns.phone) {
+      headers.push(t("columnPhone"));
+      columnGetters.push((e) => e.phone ?? "");
+    }
+    if (visibleColumns.citizenId) {
+      headers.push(t("columnCitizenId"));
+      columnGetters.push((e) => e.citizenId ?? "");
+    }
+    if (visibleColumns.dateOfBirth) {
+      headers.push(t("columnDateOfBirth"));
+      columnGetters.push((e) =>
+        e.dateOfBirth ? new Date(e.dateOfBirth).toLocaleDateString() : ""
+      );
+    }
+    if (visibleColumns.nationality) {
+      headers.push(t("columnNationality"));
+      columnGetters.push((e) => e.nationality ?? "");
+    }
+    if (visibleColumns.emergencyContactName) {
+      headers.push(t("columnEmergencyName"));
+      columnGetters.push((e) => e.emergencyContactName ?? "");
+    }
+    if (visibleColumns.emergencyContactPhone) {
+      headers.push(t("columnEmergencyPhone"));
+      columnGetters.push((e) => e.emergencyContactPhone ?? "");
+    }
+
+    // Custom field columns
+    for (const cf of customFieldDefs) {
+      if (visibleColumns[`cf:${cf.id}`] !== false) {
+        headers.push(cf.label);
+        columnGetters.push((e) => {
+          const entryKey = e.type === "paid" ? `reg:${e.id}` : `par:${e.id}`;
+          const val = cfResponseMap.get(entryKey)?.get(cf.id) ?? "";
+          return val === "true" ? "Yes" : val === "false" ? "No" : val;
+        });
+      }
+    }
+
+    const rows = exportEntries.map((entry) =>
+      columnGetters.map((getter) => getter(entry))
+    );
+
+    return { headers, rows, entries: exportEntries };
+  };
+
+  // ─── Export handler: CSV ──────────────────────────────────────────────────
 
   const handleExportCSV = async () => {
     setIsExporting(true);
     try {
-      const params = new URLSearchParams();
-      if (variantFilter !== "all") params.set("variant", variantFilter);
-      if (statusFilter !== "all") params.set("status", statusFilter);
-      if (debouncedSearch) params.set("search", debouncedSearch);
+      const exportData = await fetchExportData();
+      if (!exportData) return;
 
-      const res = await fetch(
-        `/api/events/${event.id}/registrations/export?${params.toString()}`
-      );
+      const { headers, rows } = exportData;
 
-      if (!res.ok) {
-        const data = (await res.json()) as { error: string };
-        throw new Error(data.error || "Export failed");
+      const BOM = "\uFEFF";
+      let csv = BOM + buildCSVRow(headers);
+      for (const row of rows) {
+        csv += buildCSVRow(row);
       }
 
-      const blob = await res.blob();
-      const disposition = res.headers.get("Content-Disposition");
-      const filenameMatch = disposition?.match(/filename="(.+)"/);
-      const filename = filenameMatch?.[1] ?? "registrations.csv";
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const datePart = new Date().toISOString().slice(0, 10);
+      const slug = event.slug ?? "event";
+      const filename = `athlifyr-registrations-${slug}-${datePart}.csv`;
 
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -389,6 +603,83 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
       });
     } finally {
       setIsExporting(false);
+    }
+  };
+
+  // ─── Export handler: PDF ──────────────────────────────────────────────────
+
+  const [isExportingPDF, setIsExportingPDF] = useState(false);
+
+  const handleExportPDF = async () => {
+    setIsExportingPDF(true);
+    try {
+      const exportData = await fetchExportData();
+      if (!exportData) return;
+
+      const { headers, rows, entries } = exportData;
+
+      // Load logo.svg → render onto a canvas pre-filled with the header golden
+      // colour (#FAC864) so the resulting PNG has no transparent/white corners.
+      // jsPDF receives a fully opaque PNG — no border artefacts.
+      let logoPngDataUrl: string | null = null;
+      try {
+        const svgText = await fetch("/logo.svg").then((r) => r.text());
+        const blob = new Blob([svgText], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        logoPngDataUrl = await new Promise<string>((resolve) => {
+          const img = new Image();
+          img.onload = () => {
+            const SIZE = 256;
+            const cvs = document.createElement("canvas");
+            cvs.width = SIZE;
+            cvs.height = SIZE;
+            const c = cvs.getContext("2d")!;
+            // Fill with the exact same golden colour used in the PDF header
+            // so the logo blends perfectly with no white/black corners
+            c.fillStyle = "#FAC864";
+            c.fillRect(0, 0, SIZE, SIZE);
+            c.drawImage(img, 0, 0, SIZE, SIZE);
+            URL.revokeObjectURL(url);
+            resolve(cvs.toDataURL("image/png"));
+          };
+          img.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve("");
+          };
+          img.src = url;
+        });
+        if (!logoPngDataUrl) logoPngDataUrl = null;
+      } catch {
+        // Logo is optional — PDF will render without it
+      }
+
+      // Dynamically import to avoid SSR issues
+      const { generateRegistrationsPDF } = await import("@/lib/pdf-export");
+
+      generateRegistrationsPDF({
+        title: event.title ?? event.slug ?? "Event",
+        slug: event.slug ?? "event",
+        headers,
+        rows,
+        totalCount: entries.length,
+        logoPngDataUrl,
+      });
+
+      toast({
+        title: t("exportSuccess"),
+        description: t("exportSuccessDesc"),
+      });
+    } catch (error) {
+      if (error instanceof Error) {
+        console.error("PDF export error:", error.message);
+      }
+      toast({
+        title: t("exportError"),
+        description: t("exportErrorDesc"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsExportingPDF(false);
     }
   };
 
@@ -608,20 +899,160 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
         <CardHeader>
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <CardTitle className="text-base">{t("registeredList")}</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleExportCSV}
-              disabled={pagination.total === 0 || isExporting}
-              className="gap-2"
-            >
-              {isExporting ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Download className="h-4 w-4" />
-              )}
-              {t("exportCSV")}
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* Column visibility toggle */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Settings2 className="h-4 w-4" />
+                    {t("columns")}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>{t("toggleColumns")}</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.name}
+                    onCheckedChange={() => toggleColumn("name")}
+                  >
+                    {t("columnName")}
+                  </DropdownMenuCheckboxItem>
+                  {event.hasRegistrations && (
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.bibNumber}
+                      onCheckedChange={() => toggleColumn("bibNumber")}
+                    >
+                      {t("columnBib")}
+                    </DropdownMenuCheckboxItem>
+                  )}
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.email}
+                    onCheckedChange={() => toggleColumn("email")}
+                  >
+                    {t("columnEmail")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.variant}
+                    onCheckedChange={() => toggleColumn("variant")}
+                  >
+                    {t("columnVariant")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.status}
+                    onCheckedChange={() => toggleColumn("status")}
+                  >
+                    {t("columnStatus")}
+                  </DropdownMenuCheckboxItem>
+                  {event.hasRegistrations && (
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.checkIn}
+                      onCheckedChange={() => toggleColumn("checkIn")}
+                    >
+                      {t("columnCheckIn")}
+                    </DropdownMenuCheckboxItem>
+                  )}
+                  {event.hasRegistrations && (
+                    <DropdownMenuCheckboxItem
+                      checked={visibleColumns.amount}
+                      onCheckedChange={() => toggleColumn("amount")}
+                    >
+                      {t("columnAmount")}
+                    </DropdownMenuCheckboxItem>
+                  )}
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.date}
+                    onCheckedChange={() => toggleColumn("date")}
+                  >
+                    {t("columnDate")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>{t("profileFields")}</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.phone}
+                    onCheckedChange={() => toggleColumn("phone")}
+                  >
+                    {t("columnPhone")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.citizenId}
+                    onCheckedChange={() => toggleColumn("citizenId")}
+                  >
+                    {t("columnCitizenId")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.dateOfBirth}
+                    onCheckedChange={() => toggleColumn("dateOfBirth")}
+                  >
+                    {t("columnDateOfBirth")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.nationality}
+                    onCheckedChange={() => toggleColumn("nationality")}
+                  >
+                    {t("columnNationality")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.emergencyContactName}
+                    onCheckedChange={() => toggleColumn("emergencyContactName")}
+                  >
+                    {t("columnEmergencyName")}
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={visibleColumns.emergencyContactPhone}
+                    onCheckedChange={() =>
+                      toggleColumn("emergencyContactPhone")
+                    }
+                  >
+                    {t("columnEmergencyPhone")}
+                  </DropdownMenuCheckboxItem>
+                  {customFieldDefs.length > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuLabel>{t("customFields")}</DropdownMenuLabel>
+                      {customFieldDefs.map((cf) => (
+                        <DropdownMenuCheckboxItem
+                          key={cf.id}
+                          checked={visibleColumns[`cf:${cf.id}`] !== false}
+                          onCheckedChange={() => toggleColumn(`cf:${cf.id}`)}
+                        >
+                          {cf.label}
+                        </DropdownMenuCheckboxItem>
+                      ))}
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                disabled={pagination.total === 0 || isExporting}
+                className="gap-2"
+              >
+                {isExporting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Download className="h-4 w-4" />
+                )}
+                {t("exportCSV")}
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportPDF}
+                disabled={pagination.total === 0 || isExportingPDF}
+                className="gap-2"
+              >
+                {isExportingPDF ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
+                {t("exportPDF")}
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -711,6 +1142,54 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
             )}
           </div>
 
+          {/* Custom field filter row */}
+          {customFieldDefs.filter(
+            (cf) => cf.type === "SELECT" || cf.type === "BOOLEAN"
+          ).length > 0 && (
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Select
+                value={cfFilterFieldId}
+                onValueChange={setCfFilterFieldId}
+              >
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue placeholder={t("filterByField")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("allFields")}</SelectItem>
+                  {customFieldDefs
+                    .filter(
+                      (cf) => cf.type === "SELECT" || cf.type === "BOOLEAN"
+                    )
+                    .map((cf) => (
+                      <SelectItem key={cf.id} value={cf.id}>
+                        {cf.label}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+
+              {cfFilterFieldId !== "all" && cfFilterOptions.length > 0 && (
+                <Select value={cfFilterValue} onValueChange={setCfFilterValue}>
+                  <SelectTrigger className="w-full sm:w-48">
+                    <SelectValue placeholder={t("allValues")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("allValues")}</SelectItem>
+                    {cfFilterOptions.map((opt) => (
+                      <SelectItem key={opt} value={opt}>
+                        {opt === "true"
+                          ? "✅ " + t("yes")
+                          : opt === "false"
+                            ? "— " + t("no")
+                            : opt}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+          )}
+
           {/* Loading state */}
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
@@ -733,22 +1212,56 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{t("columnName")}</TableHead>
-                      <TableHead>{t("columnEmail")}</TableHead>
-                      <TableHead>{t("columnVariant")}</TableHead>
-                      <TableHead>{t("columnStatus")}</TableHead>
-                      {event.hasRegistrations && (
+                      {visibleColumns.name && (
+                        <TableHead>{t("columnName")}</TableHead>
+                      )}
+                      {event.hasRegistrations && visibleColumns.bibNumber && (
+                        <TableHead>{t("columnBib")}</TableHead>
+                      )}
+                      {visibleColumns.email && (
+                        <TableHead>{t("columnEmail")}</TableHead>
+                      )}
+                      {visibleColumns.variant && (
+                        <TableHead>{t("columnVariant")}</TableHead>
+                      )}
+                      {visibleColumns.status && (
+                        <TableHead>{t("columnStatus")}</TableHead>
+                      )}
+                      {event.hasRegistrations && visibleColumns.checkIn && (
                         <TableHead>{t("columnCheckIn")}</TableHead>
                       )}
-                      {event.hasRegistrations && (
+                      {event.hasRegistrations && visibleColumns.amount && (
                         <TableHead>{t("columnAmount")}</TableHead>
                       )}
-                      <TableHead>{t("columnDate")}</TableHead>
-                      {customFieldDefs.map((cf) => (
-                        <TableHead key={cf.id} className="text-xs">
-                          {cf.label}
-                        </TableHead>
-                      ))}
+                      {visibleColumns.date && (
+                        <TableHead>{t("columnDate")}</TableHead>
+                      )}
+                      {visibleColumns.phone && (
+                        <TableHead>{t("columnPhone")}</TableHead>
+                      )}
+                      {visibleColumns.citizenId && (
+                        <TableHead>{t("columnCitizenId")}</TableHead>
+                      )}
+                      {visibleColumns.dateOfBirth && (
+                        <TableHead>{t("columnDateOfBirth")}</TableHead>
+                      )}
+                      {visibleColumns.nationality && (
+                        <TableHead>{t("columnNationality")}</TableHead>
+                      )}
+                      {visibleColumns.emergencyContactName && (
+                        <TableHead>{t("columnEmergencyName")}</TableHead>
+                      )}
+                      {visibleColumns.emergencyContactPhone && (
+                        <TableHead>{t("columnEmergencyPhone")}</TableHead>
+                      )}
+                      {customFieldDefs.map(
+                        (cf) =>
+                          visibleColumns[`cf:${cf.id}`] !== false && (
+                            <TableHead key={cf.id} className="text-xs">
+                              {cf.label}
+                            </TableHead>
+                          )
+                      )}
                       {isAdmin && (
                         <TableHead className="w-[70px]">
                           {t("columnActions")}
@@ -759,43 +1272,51 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
                   <TableBody>
                     {allEntries.map((entry) => (
                       <TableRow key={`${entry.type}-${entry.id}`}>
-                        <TableCell>
-                          <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage
-                                src={entry.userImage ?? undefined}
-                                alt={entry.userName ?? entry.userEmail}
-                              />
-                              <AvatarFallback className="text-xs">
-                                {getInitials(entry.userName, entry.userEmail)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {entry.userName ?? t("noName")}
-                              </p>
-                              {entry.bibNumber && (
-                                <p className="text-xs text-muted-foreground">
-                                  #{entry.bibNumber}
+                        {visibleColumns.name && (
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                <AvatarImage
+                                  src={entry.userImage ?? undefined}
+                                  alt={entry.userName ?? entry.userEmail}
+                                />
+                                <AvatarFallback className="text-xs">
+                                  {getInitials(entry.userName, entry.userEmail)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {entry.userName ?? t("noName")}
                                 </p>
-                              )}
+                              </div>
                             </div>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {entry.userEmail}
-                        </TableCell>
-                        <TableCell className="text-sm">
-                          {entry.variantName ?? "—"}
-                        </TableCell>
-                        <TableCell>
-                          <StatusBadge
-                            status={entry.status}
-                            type={entry.type}
-                            t={t}
-                          />
-                        </TableCell>
-                        {event.hasRegistrations && (
+                          </TableCell>
+                        )}
+                        {event.hasRegistrations && visibleColumns.bibNumber && (
+                          <TableCell className="font-mono text-sm">
+                            {entry.bibNumber ? `#${entry.bibNumber}` : "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.email && (
+                          <TableCell className="text-sm">
+                            {entry.userEmail}
+                          </TableCell>
+                        )}
+                        {visibleColumns.variant && (
+                          <TableCell className="text-sm">
+                            {entry.variantName ?? "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.status && (
+                          <TableCell>
+                            <StatusBadge
+                              status={entry.status}
+                              type={entry.type}
+                              t={t}
+                            />
+                          </TableCell>
+                        )}
+                        {event.hasRegistrations && visibleColumns.checkIn && (
                           <TableCell>
                             {entry.type === "paid" ? (
                               <div className="flex items-center gap-2">
@@ -844,17 +1365,53 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
                             )}
                           </TableCell>
                         )}
-                        {event.hasRegistrations && (
+                        {event.hasRegistrations && visibleColumns.amount && (
                           <TableCell className="text-sm">
                             {entry.amountCents && entry.currency
                               ? formatAmount(entry.amountCents, entry.currency)
                               : "—"}
                           </TableCell>
                         )}
-                        <TableCell className="text-sm text-muted-foreground">
-                          {new Date(entry.createdAt).toLocaleDateString()}
-                        </TableCell>
+                        {visibleColumns.date && (
+                          <TableCell className="text-sm text-muted-foreground">
+                            {new Date(entry.createdAt).toLocaleDateString()}
+                          </TableCell>
+                        )}
+                        {visibleColumns.phone && (
+                          <TableCell className="text-sm">
+                            {entry.phone || "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.citizenId && (
+                          <TableCell className="text-sm">
+                            {entry.citizenId || "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.dateOfBirth && (
+                          <TableCell className="text-sm">
+                            {entry.dateOfBirth
+                              ? new Date(entry.dateOfBirth).toLocaleDateString()
+                              : "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.nationality && (
+                          <TableCell className="text-sm">
+                            {entry.nationality || "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.emergencyContactName && (
+                          <TableCell className="text-sm">
+                            {entry.emergencyContactName || "—"}
+                          </TableCell>
+                        )}
+                        {visibleColumns.emergencyContactPhone && (
+                          <TableCell className="text-sm">
+                            {entry.emergencyContactPhone || "—"}
+                          </TableCell>
+                        )}
                         {customFieldDefs.map((cf) => {
+                          if (visibleColumns[`cf:${cf.id}`] === false)
+                            return null;
                           const entryKey =
                             entry.type === "paid"
                               ? `reg:${entry.id}`

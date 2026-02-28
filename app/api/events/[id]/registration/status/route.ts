@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { generateNextBibNumber } from "@/lib/bib-number";
 
 // GET /api/events/[id]/registration/status — check user's registration status
 // If registration is PENDING, automatically verify with Stripe and confirm if paid.
@@ -59,11 +60,17 @@ export async function GET(
               ? checkoutSession.payment_intent
               : (checkoutSession.payment_intent?.id ?? null);
 
-          // Confirm registration
+          // Assign a bib number if the leader doesn't have one yet
+          const leaderBib =
+            registration.bibNumber ??
+            (await generateNextBibNumber(registration.eventId));
+
+          // Confirm leader registration
           const updated = await prisma.registration.update({
             where: { id: registration.id },
             data: {
               status: "CONFIRMED",
+              bibNumber: leaderBib,
               stripePaymentIntentId: paymentIntentId,
               amountCents:
                 checkoutSession.amount_total ?? registration.amountCents,
@@ -80,6 +87,34 @@ export async function GET(
               },
             },
           });
+
+          // Also confirm all MEMBER registrations in the same team group (paid flow)
+          if (registration.teamGroupId) {
+            const memberRegs = await prisma.registration.findMany({
+              where: {
+                teamGroupId: registration.teamGroupId,
+                teamRole: "MEMBER",
+                status: "PENDING",
+              },
+            });
+            for (const member of memberRegs) {
+              const memberBib =
+                member.bibNumber ?? (await generateNextBibNumber(eventId));
+              await prisma.registration.update({
+                where: { id: member.id },
+                data: {
+                  status: "CONFIRMED",
+                  bibNumber: memberBib,
+                  stripePaymentIntentId: paymentIntentId,
+                },
+              });
+            }
+            if (memberRegs.length > 0) {
+              console.log(
+                `Confirmed ${memberRegs.length} MEMBER registration(s) for team group ${registration.teamGroupId}`
+              );
+            }
+          }
 
           console.log(
             `Auto-confirmed PENDING registration ${updated.id} via Stripe check`

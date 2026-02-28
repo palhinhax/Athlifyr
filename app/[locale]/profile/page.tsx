@@ -190,14 +190,95 @@ export default async function ProfilePage({ params }: PageProps) {
   const friendsCount =
     user.sentFriendships.length + user.receivedFriendships.length;
 
-  // Fetch confirmed ticket event IDs for upcoming events
-  const upcomingEventIds = upcomingEvents.map((p) => p.event.id);
+  // Fetch confirmed registrations (paid/confirmed tickets) — these should appear
+  // in the profile even if the user never marked "going" via a free Participation.
+  // Includes two cases:
+  //   1. Direct registrations (userId matches, teamRole is null or LEADER)
+  //   2. Guest registrations (another user paid; this user's email is in guestEmail)
+  const confirmedRegs = await prisma.registration.findMany({
+    where: {
+      status: "CONFIRMED",
+      OR: [
+        // Case 1: direct — individual or team leader
+        {
+          userId: session.user.id,
+          OR: [{ teamRole: null }, { teamRole: { not: "MEMBER" } }],
+        },
+        // Case 2: guest — registered by someone else using this user's email
+        {
+          guestEmail: session.user.email,
+          teamRole: "MEMBER",
+        },
+      ],
+    },
+    select: {
+      id: true,
+      eventId: true,
+      event: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          startDate: true,
+          city: true,
+          country: true,
+          sportTypes: true,
+        },
+      },
+      variant: {
+        select: {
+          name: true,
+          distanceKm: true,
+          startDate: true,
+          startTime: true,
+        },
+      },
+    },
+    orderBy: { event: { startDate: "asc" } },
+  });
+
+  // Merge confirmed registrations into the event lists, deduplicating by eventId
+  // (a user may have both a free Participation AND a paid Registration for the same event)
+  const participationEventIds = new Set(
+    user.participations.map((p) => p.event.id)
+  );
+
+  // Convert confirmed registrations to the same shape as participations
+  const confirmedRegsAsParticipations = confirmedRegs
+    .filter((r) => !participationEventIds.has(r.eventId)) // no duplicates
+    .map((r) => ({
+      id: r.id,
+      status: "going" as const,
+      event: r.event,
+      variant: r.variant,
+    }));
+
+  const allUpcomingEvents = [
+    ...upcomingEvents,
+    ...confirmedRegsAsParticipations.filter(
+      (r) => r.event.startDate > new Date()
+    ),
+  ].sort((a, b) => a.event.startDate.getTime() - b.event.startDate.getTime());
+
+  const allPastEvents = [
+    ...pastEvents,
+    ...confirmedRegsAsParticipations.filter(
+      (r) => r.event.startDate <= new Date()
+    ),
+  ].sort((a, b) => b.event.startDate.getTime() - a.event.startDate.getTime());
+
+  // Fetch confirmed ticket event IDs for upcoming events (for the ticket button).
+  // Includes both direct registrations and guest registrations (via guestEmail).
+  const upcomingEventIds = allUpcomingEvents.map((p) => p.event.id);
   const confirmedRegistrations = upcomingEventIds.length
     ? await prisma.registration.findMany({
         where: {
-          userId: session.user.id,
           eventId: { in: upcomingEventIds },
           status: "CONFIRMED",
+          OR: [
+            { userId: session.user.id },
+            { guestEmail: session.user.email, teamRole: "MEMBER" },
+          ],
         },
         select: { eventId: true },
       })
@@ -214,8 +295,8 @@ export default async function ProfilePage({ params }: PageProps) {
           image: user.image,
         }}
         stats={{
-          upcomingEvents: upcomingEvents.length,
-          pastEvents: pastEvents.length,
+          upcomingEvents: allUpcomingEvents.length,
+          pastEvents: allPastEvents.length,
           friendsCount,
         }}
         participations={user.participations.map((p) => ({
@@ -257,14 +338,14 @@ export default async function ProfilePage({ params }: PageProps) {
       />
 
       {/* Upcoming Events */}
-      {upcomingEvents.length > 0 && (
+      {allUpcomingEvents.length > 0 && (
         <div className="mt-12">
           <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
             <Calendar className="h-6 w-6 text-primary" />
-            {t("upcomingEventsCount", { count: upcomingEvents.length })}
+            {t("upcomingEventsCount", { count: allUpcomingEvents.length })}
           </h2>
           <ProfileUpcomingEvents
-            events={upcomingEvents.map((p) => ({
+            events={allUpcomingEvents.map((p) => ({
               id: p.id,
               event: {
                 id: p.event.id,
@@ -296,14 +377,14 @@ export default async function ProfilePage({ params }: PageProps) {
       <ProfilePastSessions bookings={pastBookings} locale={locale} />
 
       {/* Past Events */}
-      {pastEvents.length > 0 && (
+      {allPastEvents.length > 0 && (
         <div className="mt-12">
           <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
             <Trophy className="h-6 w-6 text-primary" />
-            {t("pastEventsCount", { count: pastEvents.length })}
+            {t("pastEventsCount", { count: allPastEvents.length })}
           </h2>
           <div className="grid gap-4 md:grid-cols-2">
-            {pastEvents.slice(0, 6).map((participation) => (
+            {allPastEvents.slice(0, 6).map((participation) => (
               <Link
                 key={participation.id}
                 href={`/events/${participation.event.slug}`}
@@ -352,7 +433,7 @@ export default async function ProfilePage({ params }: PageProps) {
       )}
 
       {/* Empty State for Events */}
-      {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+      {allUpcomingEvents.length === 0 && allPastEvents.length === 0 && (
         <div className="mt-12 rounded-lg border p-12 text-center">
           <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
           <h3 className="mb-2 text-xl font-semibold">{t("noEventsTitle")}</h3>

@@ -91,6 +91,15 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     });
   }
 
+  // Verify the nonce — if the ticket was revoked, the nonce in the DB will
+  // have been rotated and this check will fail, invalidating all old JWTs.
+  if (registration.ticketNonce !== payload.nonce) {
+    return NextResponse.json({
+      valid: false,
+      error: "Ticket has been revoked. Please request a new ticket.",
+    });
+  }
+
   // Check if already checked in
   const alreadyCheckedIn = !!registration.checkedInAt;
 

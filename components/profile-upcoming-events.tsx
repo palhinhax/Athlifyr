@@ -103,7 +103,7 @@ export function ProfileUpcomingEvents({
                 onClick={() => setTicketEventId(participation.event.id)}
               >
                 <Ticket className="h-4 w-4" />
-                {tEvents("showTicket")}
+                {tEvents("registration.showTicket")}
               </Button>
             )}
           </div>

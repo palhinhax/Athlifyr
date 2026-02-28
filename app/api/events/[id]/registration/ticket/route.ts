@@ -20,6 +20,7 @@ export interface TicketPayload {
   userId: string;
   eventId: string;
   variantId: string;
+  nonce: string; // Rotated on revocation — old tokens become invalid immediately
   type: "event_ticket";
 }
 
@@ -32,12 +33,15 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Find confirmed registration for this user+event
+  // Find confirmed registration for this user+event.
+  // Two cases:
+  //   1. Direct registration — userId matches (leader or individual)
+  //   2. Guest registration  — user registered by someone else; their email is in guestEmail
   const registration = await prisma.registration.findFirst({
     where: {
       eventId,
-      userId: user.id,
       status: "CONFIRMED",
+      OR: [{ userId: user.id }, { guestEmail: user.email, teamRole: "MEMBER" }],
     },
     include: {
       variant: {
@@ -78,19 +82,39 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
     );
   }
 
-  // Generate a signed JWT token for the QR code
+  // Generate a signed JWT token for the QR code.
   // No expiration — the ticket is valid as long as the registration exists.
   // Security is enforced at verify-time by checking the DB status in real-time.
+  // IMPORTANT: noTimestamp: true ensures the token (and QR code) is always identical
+  // for the same registration — without it, jwt.sign() adds an `iat` field with the
+  // current timestamp, producing a different QR code on every request.
   const ticketToken = jwt.sign(
     {
       registrationId: registration.id,
       userId: user.id,
       eventId,
       variantId: registration.variantId,
+      nonce: registration.ticketNonce,
       type: "event_ticket",
     } satisfies TicketPayload,
-    getTicketSecret()
+    getTicketSecret(),
+    { noTimestamp: true }
   );
+
+  // For guest registrations, use the guest's own name/email for display.
+  // For direct registrations, use the account data.
+  const isGuestRegistration =
+    registration.teamRole === "MEMBER" &&
+    registration.guestEmail === user.email;
+  const displayName = isGuestRegistration
+    ? (registration.guestName ?? user.name)
+    : registration.user.name;
+  const displayEmail = isGuestRegistration
+    ? registration.guestEmail!
+    : registration.user.email;
+  const displayImage = isGuestRegistration
+    ? user.image
+    : registration.user.image;
 
   return NextResponse.json({
     ticket: {
@@ -103,9 +127,9 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
       status: registration.status,
       createdAt: registration.createdAt.toISOString(),
       user: {
-        name: registration.user.name,
-        email: registration.user.email,
-        image: registration.user.image,
+        name: displayName,
+        email: displayEmail,
+        image: displayImage,
       },
       event: {
         title: registration.event.title,

@@ -396,6 +396,7 @@ model Registration {
   status      RegistrationStatus @default(PENDING)
   bibNumber   String? // Dorsal (opcional, atribuído pelo organizador)
   checkedInAt DateTime? // Timestamp do check-in
+  ticketNonce String    @default(cuid()) // Rotated on ticket revocation; invalidates old JWTs
 
   // Stripe
   paymentProvider         String   @default("STRIPE")

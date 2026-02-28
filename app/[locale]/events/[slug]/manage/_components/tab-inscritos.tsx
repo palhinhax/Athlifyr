@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Settings2,
   FileText,
+  ShieldOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,6 +79,10 @@ interface RegistrationEntry {
   amountCents: number | null;
   currency: string | null;
   createdAt: string;
+  // Team fields
+  teamGroupId: string | null;
+  teamRole: string | null;
+  teamMemberIndex: number | null;
   // Profile fields
   dateOfBirth: string | null;
   citizenId: string | null;
@@ -122,6 +127,7 @@ interface CustomFieldResponseEntry {
   customFieldId: string;
   registrationId: string | null;
   participationId: string | null;
+  participantIndex: number;
   userId: string;
   value: string;
   customField: CustomFieldDef;
@@ -210,6 +216,28 @@ function StatusBadge({
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 
+// Returns the cfResponseMap key for a given registration entry.
+// For team LEADER or solo: "reg:{id}:p:0"
+// For team MEMBER:         "reg:{leaderRegId}:p:{teamMemberIndex}" (falls back to "reg:{id}:p:0" if leader unknown)
+// For free participations: "par:{id}"
+function getCfKey(
+  entry: RegistrationEntry,
+  teamGroupLeaderMap: Map<string, string>
+): string {
+  if (entry.type === "free") return `par:${entry.id}`;
+  if (
+    entry.teamRole === "MEMBER" &&
+    entry.teamGroupId &&
+    entry.teamMemberIndex != null
+  ) {
+    const leaderRegId = teamGroupLeaderMap.get(entry.teamGroupId);
+    if (leaderRegId) {
+      return `reg:${leaderRegId}:p:${entry.teamMemberIndex}`;
+    }
+  }
+  return `reg:${entry.id}:p:0`;
+}
+
 export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
   const t = useTranslations("manage.registrations");
   const { toast } = useToast();
@@ -236,12 +264,17 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
   );
   const [isDeleting, setIsDeleting] = useState(false);
   const [checkingIn, setCheckingIn] = useState<string | null>(null);
+  const [revokingTicket, setRevokingTicket] = useState<string | null>(null);
 
   // Custom field data
   const [customFieldDefs, setCustomFieldDefs] = useState<CustomFieldDef[]>([]);
-  // Map: "reg:{id}" or "par:{id}" => Map<customFieldId, value>
+  // Map: "reg:{registrationId}:p:{participantIndex}" or "par:{participationId}" => Map<customFieldId, value>
   const [cfResponseMap, setCfResponseMap] = useState<
     Map<string, Map<string, string>>
+  >(new Map());
+  // Map: teamGroupId => leader registrationId (for resolving MEMBER entries)
+  const [teamGroupLeaderMap, setTeamGroupLeaderMap] = useState<
+    Map<string, string>
   >(new Map());
 
   // ─── Column visibility ─────────────────────────────────────────────────────
@@ -296,13 +329,12 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
     (entries: RegistrationEntry[]): RegistrationEntry[] => {
       if (cfFilterFieldId === "all" || cfFilterValue === "all") return entries;
       return entries.filter((entry) => {
-        const entryKey =
-          entry.type === "paid" ? `reg:${entry.id}` : `par:${entry.id}`;
+        const entryKey = getCfKey(entry, teamGroupLeaderMap);
         const val = cfResponseMap.get(entryKey)?.get(cfFilterFieldId);
         return val === cfFilterValue;
       });
     },
-    [cfFilterFieldId, cfFilterValue, cfResponseMap]
+    [cfFilterFieldId, cfFilterValue, cfResponseMap, teamGroupLeaderMap]
   );
 
   // ─── Debounce search input ─────────────────────────────────────────────────
@@ -354,6 +386,15 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
       setVariants(data.variants);
       setCounts(data.counts);
       setPagination(data.pagination);
+
+      // Build teamGroupId → leader registrationId lookup for custom field resolution
+      const leaderMap = new Map<string, string>();
+      for (const r of data.registrations) {
+        if (r.teamGroupId && (r.teamRole === "LEADER" || r.teamRole === null)) {
+          leaderMap.set(r.teamGroupId, r.id);
+        }
+      }
+      setTeamGroupLeaderMap(leaderMap);
     } catch (error) {
       console.error("Error fetching registrations:", error);
     } finally {
@@ -393,10 +434,11 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
           (await responsesRes.json()) as CustomFieldResponseEntry[];
 
         // Build a map: entryKey => Map<customFieldId, value>
+        // Key format: "reg:{registrationId}:p:{participantIndex}" or "par:{participationId}"
         const map = new Map<string, Map<string, string>>();
         for (const r of responses) {
           const key = r.registrationId
-            ? `reg:${r.registrationId}`
+            ? `reg:${r.registrationId}:p:${r.participantIndex}`
             : r.participationId
               ? `par:${r.participationId}`
               : null;
@@ -546,7 +588,7 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
       if (visibleColumns[`cf:${cf.id}`] !== false) {
         headers.push(cf.label);
         columnGetters.push((e) => {
-          const entryKey = e.type === "paid" ? `reg:${e.id}` : `par:${e.id}`;
+          const entryKey = getCfKey(e, teamGroupLeaderMap);
           const val = cfResponseMap.get(entryKey)?.get(cf.id) ?? "";
           return val === "true" ? "Yes" : val === "false" ? "No" : val;
         });
@@ -783,6 +825,38 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
       });
     } finally {
       setCheckingIn(null);
+    }
+  };
+
+  // ─── Revoke ticket handler ─────────────────────────────────────────────────
+
+  const handleRevokeTicket = async (entry: RegistrationEntry) => {
+    if (entry.type !== "paid" || entry.status !== "CONFIRMED") return;
+    setRevokingTicket(entry.id);
+    try {
+      const res = await fetch(
+        `/api/events/${event.id}/registrations/${entry.id}/revoke-ticket`,
+        { method: "PATCH" }
+      );
+      if (!res.ok) {
+        const data = (await res.json()) as { error: string };
+        throw new Error(data.error || "Revoke failed");
+      }
+      toast({
+        title: t("revokeTicketSuccess"),
+        description: t("revokeTicketSuccessDesc", {
+          name: entry.userName ?? entry.userEmail,
+        }),
+      });
+    } catch (error) {
+      toast({
+        title: t("revokeTicketError"),
+        description:
+          error instanceof Error ? error.message : t("revokeTicketErrorDesc"),
+        variant: "destructive",
+      });
+    } finally {
+      setRevokingTicket(null);
     }
   };
 
@@ -1412,10 +1486,7 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
                         {customFieldDefs.map((cf) => {
                           if (visibleColumns[`cf:${cf.id}`] === false)
                             return null;
-                          const entryKey =
-                            entry.type === "paid"
-                              ? `reg:${entry.id}`
-                              : `par:${entry.id}`;
+                          const entryKey = getCfKey(entry, teamGroupLeaderMap);
                           const val =
                             cfResponseMap.get(entryKey)?.get(cf.id) ?? "—";
                           return (
@@ -1430,14 +1501,33 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
                         })}
                         {isAdmin && (
                           <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
-                              onClick={() => setDeleteTarget(entry)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
+                            <div className="flex items-center gap-1">
+                              {entry.type === "paid" &&
+                                entry.status === "CONFIRMED" && (
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-amber-600 hover:bg-amber-100 hover:text-amber-800 dark:hover:bg-amber-900/30"
+                                    disabled={revokingTicket === entry.id}
+                                    onClick={() => handleRevokeTicket(entry)}
+                                    title={t("revokeTicket")}
+                                  >
+                                    {revokingTicket === entry.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <ShieldOff className="h-4 w-4" />
+                                    )}
+                                  </Button>
+                                )}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                                onClick={() => setDeleteTarget(entry)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </TableCell>
                         )}
                       </TableRow>

@@ -49,17 +49,19 @@ jest.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Mock Stripe — use a shared object to hold the mock so jest hoisting doesn't cause issues
+// Mock @/lib/stripe directly to avoid requiring STRIPE_SECRET_KEY env var
 const stripeMocks = { sessionCreate: jest.fn() };
-jest.mock("stripe", () =>
-  jest.fn().mockImplementation(() => ({
+jest.mock("@/lib/stripe", () => ({
+  stripe: {
     checkout: {
       sessions: {
         create: (...args: unknown[]) => stripeMocks.sessionCreate(...args),
       },
     },
-  }))
-);
+  },
+  toStripeAmount: (amount: number) => Math.round(amount * 100),
+  fromStripeAmount: (amount: number) => amount / 100,
+}));
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 

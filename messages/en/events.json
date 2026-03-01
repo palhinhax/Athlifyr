@@ -247,7 +247,7 @@
       "authRequiredDesc": "Log in to register participation",
       "selectVariantRequired": "Select a variant",
       "selectVariantRequiredDesc": "Choose the distance you participated in",
-      "markedAsCompleted": " Participation registered!",
+      "markedAsCompleted": "Participation registered!",
       "completedVariant": "You completed the variant",
       "participationRegistered": "Participation registered",
       "error": "Error",

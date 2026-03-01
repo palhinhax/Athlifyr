@@ -378,7 +378,11 @@
         "prizeCount": "Numero di premi",
         "status": "Stato",
         "participants": "Partecipanti",
-        "winners": "Vincitori"
+        "winners": "Vincitori",
+        "variant": "Variante (opzionale)",
+        "variantPlaceholder": "Seleziona una variante",
+        "variantAll": "Tutte le varianti",
+        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica."
       },
       "form": {
         "title": "Titolo",

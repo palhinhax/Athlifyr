@@ -382,7 +382,11 @@
         "prizeCount": "Number of Prizes",
         "status": "Status",
         "participants": "Participants",
-        "winners": "Winners"
+        "winners": "Winners",
+        "variant": "Variant (optional)",
+        "variantPlaceholder": "Select a variant",
+        "variantAll": "All variants",
+        "variantHelp": "Restricts giveaway participation to registrants of this specific variant."
       },
       "form": {
         "title": "Title",

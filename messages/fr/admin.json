@@ -382,7 +382,11 @@
         "prizeCount": "Nombre de prix",
         "status": "Statut",
         "participants": "Participants",
-        "winners": "Gagnants"
+        "winners": "Gagnants",
+        "variant": "Variante (optionnel)",
+        "variantPlaceholder": "Sélectionner une variante",
+        "variantAll": "Toutes les variantes",
+        "variantHelp": "Limite la participation au tirage aux inscrits de cette variante spécifique."
       },
       "form": {
         "title": "Titre",

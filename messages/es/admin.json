@@ -382,7 +382,11 @@
         "prizeCount": "Número de Premios",
         "status": "Estado",
         "participants": "Participantes",
-        "winners": "Ganadores"
+        "winners": "Ganadores",
+        "variant": "Variante (opcional)",
+        "variantPlaceholder": "Selecciona una variante",
+        "variantAll": "Todas las variantes",
+        "variantHelp": "Limita la participación en el sorteo a los inscritos en esta variante específica."
       },
       "form": {
         "title": "Título",

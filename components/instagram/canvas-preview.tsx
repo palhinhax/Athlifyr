@@ -18,6 +18,7 @@ import { TemplateVenuePromo } from "./template-venue-promo";
 import { TemplateGiveawayPromo } from "./template-giveaway-promo";
 import { TemplateAppDownload } from "./template-app-download";
 import { TemplateAthliChatPromo } from "./template-athli-chat-promo";
+import { TemplateGiveawayWinner } from "./template-giveaway-winner";
 
 interface CanvasPreviewProps {
   templateKey: TemplateKey;
@@ -204,10 +205,23 @@ export const CanvasPreview = forwardRef<HTMLDivElement, CanvasPreviewProps>(
               showLogo={showLogo}
             />
           );
+        case "T15":
+          return (
+            <TemplateGiveawayWinner
+              payload={
+                payload as Parameters<
+                  typeof TemplateGiveawayWinner
+                >[0]["payload"]
+              }
+              format={format}
+              showGuides={showGuides}
+              showLogo={showLogo}
+            />
+          );
         default:
           return (
             <div className="p-8 text-center text-red-500">
-              Unknown template: {templateKey}. Expected T1-T14.
+              Unknown template: {templateKey}. Expected T1-T15.
             </div>
           );
       }

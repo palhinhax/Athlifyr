@@ -126,52 +126,59 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   ]);
 
   // ── Paginated data fetch ───────────────────────────────────────────────────
+  // Registrations are shown first (paid), participations second (free).
+  // We calculate per-table skip/take so the combined result is always exactly
+  // `pageSize` rows (or fewer on the last page), and totalPages is correct.
+  //
+  //  Page window: [skip, skip + pageSize)
+  //  Registrations occupy positions [0, totalRegistrations)
+  //  Participations occupy positions [totalRegistrations, totalRegistrations + totalParticipations)
+  //
+  const regSkip = Math.min(skip, totalRegistrations);
+  const regTake = Math.min(pageSize, Math.max(0, totalRegistrations - regSkip));
+  const parSkip = Math.max(0, skip - totalRegistrations);
+  const parTake = Math.min(
+    pageSize - regTake,
+    Math.max(0, totalParticipations - parSkip)
+  );
+
+  const userFields = {
+    id: true,
+    name: true,
+    email: true,
+    image: true,
+    dateOfBirth: true,
+    citizenId: true,
+    nationality: true,
+    emergencyContactName: true,
+    emergencyContactPhone: true,
+  } as const;
 
   const [registrations, participations, variants] = await Promise.all([
-    prisma.registration.findMany({
-      where: regWhere,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            dateOfBirth: true,
-            citizenId: true,
-            nationality: true,
-            emergencyContactName: true,
-            emergencyContactPhone: true,
+    regTake > 0
+      ? prisma.registration.findMany({
+          where: regWhere,
+          include: {
+            user: { select: userFields },
+            variant: { select: { id: true, name: true, distanceKm: true } },
           },
-        },
-        variant: { select: { id: true, name: true, distanceKm: true } },
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-      skip,
-      take: pageSize,
-    }),
-    prisma.participation.findMany({
-      where: parWhere,
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            image: true,
-            dateOfBirth: true,
-            citizenId: true,
-            nationality: true,
-            emergencyContactName: true,
-            emergencyContactPhone: true,
+          orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+          skip: regSkip,
+          take: regTake,
+        })
+      : Promise.resolve([]),
+    parTake > 0
+      ? prisma.participation.findMany({
+          where: parWhere,
+          include: {
+            user: { select: userFields },
+            variant: { select: { id: true, name: true, distanceKm: true } },
           },
-        },
-        variant: { select: { id: true, name: true, distanceKm: true } },
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "asc" }],
-      skip,
-      take: pageSize,
-    }),
+          orderBy: [{ createdAt: "desc" }, { id: "asc" }],
+          skip: parSkip,
+          take: parTake,
+        })
+      : Promise.resolve([]),
     prisma.eventVariant.findMany({
       where: { eventId },
       select: { id: true, name: true, distanceKm: true },

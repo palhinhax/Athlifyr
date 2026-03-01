@@ -79,6 +79,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         secretRevealed: giveaway.secretRevealed,
         finalParticipantsCount: giveaway.finalParticipantsCount,
         winningTicketNumbers: giveaway.winningTicketNumbers,
+        winningTicketAttempts: giveaway.winningTicketAttempts,
         isWinner:
           Array.isArray(giveaway.winners) && giveaway.winners.length > 0,
         translation,

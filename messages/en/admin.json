@@ -185,7 +185,7 @@
         "uploadErrorDesc": "Could not upload the image",
         "emptyContent": "Empty content",
         "emptyContentDesc": "Write something before publishing",
-        "postPublished": "✅ Post published!",
+        "postPublished": " Post published!",
         "postPublishedDesc": "Your post was published successfully",
         "publishError": "Error publishing",
         "publishErrorDesc": "Could not publish the post"
@@ -394,7 +394,7 @@
         "secretHash": "Secret Hash",
         "secretHashHelp": "SHA-256 of your draw secret. Publish this before the draw to prove fairness.",
         "secretRevealed": "Revealed Secret",
-        "secretRevealedHelp": "Reveal after draw so participants can verify: SHA-256(secret+\"|1|0\") % N + 1 = winning ticket."
+        "secretRevealedHelp": "Reveal after draw so participants can verify: SHA-256(secret+\"|rank|attempt\") % N + 1 = winning ticket."
       },
       "detail": {
         "participants": "Participants",

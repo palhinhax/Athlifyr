@@ -192,7 +192,7 @@ export default async function RootLayout({
                 <div className="flex flex-1 flex-col">
                   {/* Simplified Header - Logo, Search, User */}
                   <header className="sticky top-0 z-50 border-b border-border/60 bg-background/95 backdrop-blur-md">
-                    <div className="container mx-auto flex h-16 items-center justify-between px-4">
+                    <div className="container flex h-16 items-center justify-between">
                       <LogoLink />
 
                       {/* Search - Desktop */}
@@ -221,7 +221,7 @@ export default async function RootLayout({
                     {children}
                   </main>
                   <footer className="border-t border-border/60 bg-muted/30 py-6">
-                    <div className="container mx-auto px-4">
+                    <div className="container">
                       <div className="flex flex-col items-center justify-between gap-3 text-sm text-muted-foreground md:flex-row">
                         <p className="text-center md:text-left">
                           Athlifyr - ONE PLACE. ALL SPORTS.

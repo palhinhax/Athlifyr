@@ -10,6 +10,7 @@ import { PublicPhotoGallery } from "@/components/public-photo-gallery";
 import { OfficialProfilePage } from "@/components/official-profile-page";
 import { isOfficialAthlifyrAccount } from "@/lib/constants";
 import type { Metadata } from "next";
+import { PageContainer } from "@/components/page-container";
 
 export const dynamic = "force-dynamic";
 
@@ -215,121 +216,118 @@ export default async function UserProfilePage({ params }: PageProps) {
   }
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <div className="mx-auto max-w-6xl">
-        {/* Public Profile Header */}
-        <PublicProfileHeader
-          user={{
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            image: user.image,
-          }}
-          stats={{
-            upcomingEvents: upcomingEvents.length,
-            pastEvents: pastEvents.length,
-            friendsCount,
-          }}
-          friendshipStatus={friendshipStatus}
-          friendshipId={friendshipId}
-          isLoggedIn={!!session?.user}
-        />
+    <PageContainer size="lg" maxWidth="max-w-6xl">
+      {/* Public Profile Header */}
+      <PublicProfileHeader
+        user={{
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          image: user.image,
+        }}
+        stats={{
+          upcomingEvents: upcomingEvents.length,
+          pastEvents: pastEvents.length,
+          friendsCount,
+        }}
+        friendshipStatus={friendshipStatus}
+        friendshipId={friendshipId}
+        isLoggedIn={!!session?.user}
+      />
 
-        {/* Upcoming Events */}
-        {upcomingEvents.length > 0 && (
-          <div className="mb-12">
-            <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-              <Calendar className="h-6 w-6 text-primary" />
-              Próximos Eventos ({upcomingEvents.length})
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {upcomingEvents.map((participation) => (
-                <Link
-                  key={participation.id}
-                  href={`/events/${participation.event.slug}`}
-                >
-                  <Card className="p-4 transition-colors hover:bg-accent">
-                    <h3 className="mb-2 font-semibold">
-                      {participation.event.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate)}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        {participation.event.city},{" "}
-                        {participation.event.country}
-                      </div>
-                      {participation.variant && (
-                        <div className="flex items-center gap-2">
-                          <Trophy className="h-4 w-4" />
-                          {participation.variant.name}
-                          {participation.variant.distanceKm &&
-                            ` - ${participation.variant.distanceKm} km`}
-                        </div>
-                      )}
+      {/* Upcoming Events */}
+      {upcomingEvents.length > 0 && (
+        <div className="mb-12">
+          <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
+            <Calendar className="h-6 w-6 text-primary" />
+            Próximos Eventos ({upcomingEvents.length})
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {upcomingEvents.map((participation) => (
+              <Link
+                key={participation.id}
+                href={`/events/${participation.event.slug}`}
+              >
+                <Card className="p-4 transition-colors hover:bg-accent">
+                  <h3 className="mb-2 font-semibold">
+                    {participation.event.title}
+                  </h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(participation.event.startDate)}
                     </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Past Events */}
-        {pastEvents.length > 0 && (
-          <div>
-            <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
-              <Trophy className="h-6 w-6 text-primary" />
-              Eventos Passados ({pastEvents.length})
-            </h2>
-            <div className="grid gap-4 md:grid-cols-2">
-              {pastEvents.slice(0, 6).map((participation) => (
-                <Link
-                  key={participation.id}
-                  href={`/events/${participation.event.slug}`}
-                >
-                  <Card className="p-4 transition-colors hover:bg-accent">
-                    <h3 className="mb-2 font-semibold">
-                      {participation.event.title}
-                    </h3>
-                    <div className="space-y-1 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {formatDate(participation.event.startDate)}
-                      </div>
-                      {participation.variant && (
-                        <div className="flex items-center gap-2">
-                          <Trophy className="h-4 w-4" />
-                          {participation.variant.name}
-                        </div>
-                      )}
+                    <div className="flex items-center gap-2">
+                      <MapPin className="h-4 w-4" />
+                      {participation.event.city}, {participation.event.country}
                     </div>
-                  </Card>
-                </Link>
-              ))}
-            </div>
+                    {participation.variant && (
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4" />
+                        {participation.variant.name}
+                        {participation.variant.distanceKm &&
+                          ` - ${participation.variant.distanceKm} km`}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </Link>
+            ))}
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Photo Gallery */}
-        <PublicPhotoGallery userId={id} />
+      {/* Past Events */}
+      {pastEvents.length > 0 && (
+        <div>
+          <h2 className="mb-6 flex items-center gap-2 text-2xl font-bold">
+            <Trophy className="h-6 w-6 text-primary" />
+            Eventos Passados ({pastEvents.length})
+          </h2>
+          <div className="grid gap-4 md:grid-cols-2">
+            {pastEvents.slice(0, 6).map((participation) => (
+              <Link
+                key={participation.id}
+                href={`/events/${participation.event.slug}`}
+              >
+                <Card className="p-4 transition-colors hover:bg-accent">
+                  <h3 className="mb-2 font-semibold">
+                    {participation.event.title}
+                  </h3>
+                  <div className="space-y-1 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      {formatDate(participation.event.startDate)}
+                    </div>
+                    {participation.variant && (
+                      <div className="flex items-center gap-2">
+                        <Trophy className="h-4 w-4" />
+                        {participation.variant.name}
+                      </div>
+                    )}
+                  </div>
+                </Card>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
-        {/* Empty State for Events */}
-        {upcomingEvents.length === 0 && pastEvents.length === 0 && (
-          <Card className="p-12 text-center">
-            <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-xl font-semibold">
-              Ainda não está registado em nenhum evento
-            </h3>
-            <p className="text-muted-foreground">
-              Este utilizador ainda não participa em nenhum evento.
-            </p>
-          </Card>
-        )}
-      </div>
-    </div>
+      {/* Photo Gallery */}
+      <PublicPhotoGallery userId={id} />
+
+      {/* Empty State for Events */}
+      {upcomingEvents.length === 0 && pastEvents.length === 0 && (
+        <Card className="p-12 text-center">
+          <Users className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+          <h3 className="mb-2 text-xl font-semibold">
+            Ainda não está registado em nenhum evento
+          </h3>
+          <p className="text-muted-foreground">
+            Este utilizador ainda não participa em nenhum evento.
+          </p>
+        </Card>
+      )}
+    </PageContainer>
   );
 }

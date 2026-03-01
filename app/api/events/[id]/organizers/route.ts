@@ -73,16 +73,21 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
   }
 
   const body = (await req.json()) as {
-    userId: string;
+    userId?: string;
+    email?: string;
     role: EventOrganizerRole;
   };
-  const { userId, role } = body;
+  const { userId, email, role } = body;
 
-  if (!userId || !role) {
+  if (!userId && !email) {
     return NextResponse.json(
-      { error: "userId and role are required" },
+      { error: "userId or email is required" },
       { status: 400 }
     );
+  }
+
+  if (!role) {
+    return NextResponse.json({ error: "role is required" }, { status: 400 });
   }
 
   // Validate role
@@ -98,14 +103,20 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     );
   }
 
-  const targetUser = await prisma.user.findUnique({ where: { id: userId } });
+  const targetUser = await prisma.user.findFirst({
+    where: userId
+      ? { id: userId }
+      : { email: { equals: email, mode: "insensitive" } },
+  });
   if (!targetUser) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
+  const resolvedUserId = targetUser.id;
+
   const organizer = await prisma.eventOrganizer.upsert({
-    where: { eventId_userId: { eventId, userId } },
-    create: { eventId, userId, role, addedById: user.id },
+    where: { eventId_userId: { eventId, userId: resolvedUserId } },
+    create: { eventId, userId: resolvedUserId, role, addedById: user.id },
     update: { role, addedById: user.id },
     include: {
       user: { select: { id: true, name: true, email: true, image: true } },

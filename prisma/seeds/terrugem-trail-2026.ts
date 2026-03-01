@@ -837,7 +837,8 @@ O evento valoriza e divulga o território, promovendo a região através do desp
     for (const phase of pricingPhases) {
       await prisma.pricingPhase.create({
         data: {
-          eventId: event.id, // ✅ CORRECT: linked to eventId
+          eventId: event.id, // ✅ linked to eventId (event-level display)
+          variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
           name: `${variant.name} - ${phase.name}`,
           startDate: phase.startDate,
           endDate: phase.endDate,

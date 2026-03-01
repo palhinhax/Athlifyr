@@ -7,9 +7,8 @@ import { SportBadge } from "@/components/sport-badge";
 import { HeroBackground } from "@/components/hero-background";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Ban } from "lucide-react";
+import { ArrowLeft, Ban, Settings2 } from "lucide-react";
 import { ShareButton } from "@/components/share-button";
-import { EventAdminActions } from "@/components/event-admin-actions";
 import { useTranslations } from "next-intl";
 
 interface EventHeaderProps {
@@ -17,6 +16,7 @@ interface EventHeaderProps {
   imageUrl: string | null;
   sportTypes: SportType[];
   isAdmin?: boolean;
+  isOrganizer?: boolean;
   event?: {
     id: string;
     slug: string;
@@ -63,6 +63,7 @@ export function EventHeader({
   imageUrl,
   sportTypes,
   isAdmin = false,
+  isOrganizer = false,
   event,
   shareDescription,
   locale = "en",
@@ -104,7 +105,18 @@ export function EventHeader({
               </Button>
             </Link>
             <div className="flex flex-wrap items-center gap-2">
-              {isAdmin && event && <EventAdminActions event={event} />}
+              {(isAdmin || isOrganizer) && event && (
+                <Link href={`/events/${event.slug}/manage`}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50 hover:text-white"
+                  >
+                    <Settings2 className="mr-2 h-4 w-4" />
+                    Gerir evento
+                  </Button>
+                </Link>
+              )}
               {event && (
                 <ShareButton
                   title={event.title}

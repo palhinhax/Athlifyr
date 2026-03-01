@@ -17,20 +17,28 @@ interface PricingPhase {
   currency?: Currency;
   discountPercent: number | null;
   note: string | null;
+  variantId?: string | null;
 }
 
 interface EventPricingPhasesProps {
   phases: PricingPhase[];
   variantName?: string;
+  variants?: { id: string; name: string }[];
 }
 
 export function EventPricingPhases({
   phases,
   variantName,
+  variants = [],
 }: EventPricingPhasesProps) {
   const locale = useLocale();
   const t = useTranslations("events.pricing");
   const [isOpen, setIsOpen] = useState(false);
+
+  const getVariantLabel = (phase: PricingPhase) => {
+    if (!phase.variantId) return null;
+    return variants.find((v) => v.id === phase.variantId)?.name ?? null;
+  };
 
   if (!phases || phases.length === 0) {
     return null;
@@ -88,6 +96,11 @@ export function EventPricingPhases({
               >
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{phase.name}</span>
+                  {getVariantLabel(phase) && (
+                    <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                      {getVariantLabel(phase)}
+                    </span>
+                  )}
                   <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
                     {t("current")}
                   </span>
@@ -120,6 +133,11 @@ export function EventPricingPhases({
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{phase.name}</span>
+                      {getVariantLabel(phase) && (
+                        <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                          {getVariantLabel(phase)}
+                        </span>
+                      )}
                       {phase.discountPercent && phase.discountPercent > 0 && (
                         <span className="rounded bg-green-500/10 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
                           -{phase.discountPercent}%
@@ -151,6 +169,11 @@ export function EventPricingPhases({
                   >
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{phase.name}</span>
+                      {getVariantLabel(phase) && (
+                        <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                          {getVariantLabel(phase)}
+                        </span>
+                      )}
                       {phase.discountPercent && phase.discountPercent > 0 && (
                         <span className="rounded bg-green-500/10 px-1.5 py-0.5 text-xs font-medium text-green-700 dark:text-green-400">
                           -{phase.discountPercent}%
@@ -185,6 +208,11 @@ export function EventPricingPhases({
               >
                 <div className="flex items-center gap-2">
                   <span className="font-medium">{phase.name}</span>
+                  {getVariantLabel(phase) && (
+                    <span className="rounded bg-blue-500/10 px-1.5 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400">
+                      {getVariantLabel(phase)}
+                    </span>
+                  )}
                   {isActive && (
                     <span className="rounded bg-primary px-1.5 py-0.5 text-xs font-medium text-primary-foreground">
                       {t("current")}

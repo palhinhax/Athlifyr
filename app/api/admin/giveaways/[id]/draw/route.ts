@@ -18,27 +18,38 @@ interface RouteParams {
  *
  * Otherwise fall back to cryptographically strong random selection.
  */
+interface DrawResult {
+  tickets: number[];
+  attempts: number[];
+}
+
 function pickWinningTickets(
   totalTickets: number,
   prizeCount: number,
   secretRevealed: string | null
-): number[] {
+): DrawResult {
   const count = Math.min(prizeCount, totalTickets);
-  const winners: number[] = [];
+  const tickets: number[] = [];
+  const attempts: number[] = [];
   const used = new Set<number>();
 
   for (let rank = 1; rank <= count; rank++) {
     let ticket: number;
+    let finalAttempt = 0;
     if (secretRevealed) {
-      // Deterministic: SHA-256(secret + "|" + rank) % N + 1
+      // Deterministic: SHA-256(secret + "|" + rank + "|" + attempt) % N + 1
       let attempt = 0;
       do {
         const hash = createHash("sha256")
           .update(`${secretRevealed}|${rank}|${attempt}`)
           .digest("hex");
         ticket = Number(BigInt("0x" + hash) % BigInt(totalTickets)) + 1;
+        if (!used.has(ticket)) {
+          finalAttempt = attempt;
+          break;
+        }
         attempt++;
-      } while (used.has(ticket));
+      } while (true);
     } else {
       // Random fallback
       do {
@@ -48,9 +59,10 @@ function pickWinningTickets(
       } while (used.has(ticket));
     }
     used.add(ticket);
-    winners.push(ticket);
+    tickets.push(ticket);
+    attempts.push(finalAttempt);
   }
-  return winners;
+  return { tickets, attempts };
 }
 
 // POST - Manually trigger draw for a giveaway (admin override)
@@ -125,6 +137,7 @@ export async function performDraw(giveawayId: string) {
     const drawnAt = new Date();
     let winnersCount = 0;
     let winningTicketNumbers: number[] = [];
+    let winningTicketAttempts: number[] = [];
 
     // Build ticket→userId map
     const ticketMap = new Map<number, string>(
@@ -133,24 +146,25 @@ export async function performDraw(giveawayId: string) {
 
     if (participantsCount > 0) {
       // Pick winning ticket numbers using the auto-generated secret
-      const winningTickets = pickWinningTickets(
+      const drawResult = pickWinningTickets(
         participantsCount,
         giveaway.prizeCount,
         giveaway.secret
       );
 
-      winningTicketNumbers = winningTickets;
+      winningTicketNumbers = drawResult.tickets;
+      winningTicketAttempts = drawResult.attempts;
 
       // Insert GiveawayWinner rows by ticket number rank
       await tx.giveawayWinner.createMany({
-        data: winningTickets.map((ticket, index) => ({
+        data: drawResult.tickets.map((ticket, index) => ({
           giveawayId,
           userId: ticketMap.get(ticket)!,
           rank: index + 1,
         })),
       });
 
-      winnersCount = winningTickets.length;
+      winnersCount = drawResult.tickets.length;
     }
 
     // Set status to DRAWN, snapshot proof fields, and auto-reveal the secret
@@ -161,6 +175,7 @@ export async function performDraw(giveawayId: string) {
         drawnAt,
         finalParticipantsCount: participantsCount,
         winningTicketNumbers,
+        winningTicketAttempts,
         secretRevealed: giveaway.secret,
       },
     });

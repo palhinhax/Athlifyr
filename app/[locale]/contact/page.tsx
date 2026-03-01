@@ -4,12 +4,13 @@ import { useTranslations } from "next-intl";
 import { Card } from "@/components/ui/card";
 import { ContactForm } from "@/components/contact-form";
 import { Mail, MessageSquare, AlertCircle } from "lucide-react";
+import { PageContainer } from "@/components/page-container";
 
 export default function ContactPage() {
   const t = useTranslations("contact");
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
+    <PageContainer maxWidth="max-w-3xl">
       {/* Header */}
       <div className="mb-8 text-center">
         <h1 className="mb-2 text-3xl font-bold">{t("title")}</h1>
@@ -63,6 +64,6 @@ export default function ContactPage() {
           {t("footer.responseTime")} <strong>{t("footer.hours")}</strong>
         </p>
       </div>
-    </div>
+    </PageContainer>
   );
 }

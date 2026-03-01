@@ -30,7 +30,6 @@
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
     "all": "All",
-    "new": "New",
     "videoAnalysis": "Video Analysis",
     "videoAnalysisDescription": "Choose the type of analysis you want to perform on your video.",
     "motionAnalysis": "Motion Analysis",

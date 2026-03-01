@@ -38,6 +38,7 @@ interface GiveawayData {
   secretRevealed: string | null;
   finalParticipantsCount: number | null;
   winningTicketNumbers: number[];
+  winningTicketAttempts: number[];
   isWinner: boolean;
   translation: GiveawayTranslation | null;
   hasJoined: boolean;
@@ -320,7 +321,8 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                 </Text>
                 <View style={styles.formulaCode}>
                   <Text style={styles.formulaCodeText}>
-                    SHA-256(&quot;secret | rank | 0&quot;) % N + 1 = winner
+                    SHA-256(&quot;secret | rank | attempt&quot;) % N + 1 =
+                    winner
                   </Text>
                 </View>
                 <Text style={styles.formulaExplanation}>
@@ -394,6 +396,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
                             {t("events.giveaway.transparency.verifyFormula", {
                               secret: giveaway.secretRevealed!,
                               rank: i + 1,
+                              attempt: giveaway.winningTicketAttempts?.[i] ?? 0,
                               total: giveaway.finalParticipantsCount!,
                               winning: ticket,
                             })}

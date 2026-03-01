@@ -71,12 +71,6 @@ export function AnalysisButton() {
               aria-label={t("videoAnalysis")}
             >
               <Camera className="h-5 w-5" />
-              <Badge
-                variant="default"
-                className="absolute -right-1.5 -top-1.5 h-4 min-w-0 bg-gradient-to-r from-orange-500 to-red-500 px-1 py-0 text-[8px] font-bold uppercase leading-none text-white shadow-sm"
-              >
-                {t("new")}
-              </Badge>
             </Button>
           </TooltipTrigger>
           <TooltipContent>

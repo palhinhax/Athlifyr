@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Camera, Activity, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -18,7 +17,6 @@ import * as Sentry from "@sentry/nextjs";
 type AnalysisType = "motion" | "lift";
 
 interface HomeAnalysisShortcutProps {
-  newLabel: string;
   title: string;
   description: string;
   motionTitle: string;
@@ -28,7 +26,6 @@ interface HomeAnalysisShortcutProps {
 }
 
 export function HomeAnalysisShortcut({
-  newLabel,
   title,
   description,
   motionTitle,
@@ -81,12 +78,6 @@ export function HomeAnalysisShortcut({
       >
         <Camera className="h-5 w-5 text-accent transition-transform group-hover:scale-110" />
         <span className="font-medium">{title}</span>
-        <Badge
-          variant="default"
-          className="absolute -right-2 -top-2 animate-pulse bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white shadow-lg"
-        >
-          {newLabel}
-        </Badge>
       </Button>
 
       {/* Analysis Type Selection Dialog */}

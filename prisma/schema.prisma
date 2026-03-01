@@ -25,6 +25,11 @@ model User {
   emailNotifications       Boolean                   @default(false)
   pushNotificationsEnabled Boolean                   @default(true)
   isProAccount             Boolean                   @default(false)
+  dateOfBirth              DateTime?
+  citizenId                String?
+  nationality              String?
+  emergencyContactName     String?
+  emergencyContactPhone    String?
   accounts                 Account[]
   comments                 Comment[]
   eventsPreferences        EventsPreferences?
@@ -100,6 +105,9 @@ model User {
   eventStaffMember        EventStaffMember[]   @relation("EventStaffMemberUser")
   eventStaffMemberAdded   EventStaffMember[]   @relation("EventStaffMemberAddedBy")
   eventInvitesSent        EventInvite[]        @relation("EventInvitedBy")
+
+  // Custom field responses (event registration extras)
+  customFieldResponses    CustomFieldResponse[]
 
   @@index([email])
   @@index([name])
@@ -192,6 +200,7 @@ model Event {
   organizers           EventOrganizer[]
   staffMembers         EventStaffMember[]
   invites              EventInvite[]
+  customFields         EventCustomField[]
 
   // ── Feature flags ──────────────────────────────────────────────────────────
   // hasRegistrations is derived: automatically true when stripeOnboardingStatus = COMPLETE
@@ -206,13 +215,14 @@ model Event {
   stripePayoutsEnabled     Boolean                     @default(false)
   stripeLastWebhookAt      DateTime?
   stripeOnboardingStatus   EventStripeOnboardingStatus @default(NOT_STARTED)
-  commissionPercent        Float                       @default(5.0)
+  commissionPercent        Float                       @default(0.0)
   commissionFixed          Int                         @default(0) // cêntimos
 
   // ── Registration settings ──────────────────────────────────────────────────
-  refundDeadline       DateTime?
-  checkInOpensAt       DateTime?
-  checkInClosesAt      DateTime?
+  refundDeadline              DateTime?
+  checkInOpensAt              DateTime?
+  checkInClosesAt             DateTime?
+  registrationFieldSettings   Json       @default("{}")  // e.g. { "dateOfBirth": "required", "citizenId": "optional" }
 
   // ── LiveRace settings ──────────────────────────────────────────────────────
   liveStatus           EventLiveStatus             @default(SCHEDULED)
@@ -283,6 +293,7 @@ model EventVariant {
   price             Float?
   maxParticipants   Int?
   description       String?
+  teamSize          Int                       @default(1) // 1 = individual, 2-4 = team (total people including the registrant)
   createdAt         DateTime                  @default(now())
   updatedAt         DateTime                  @updatedAt
   distanceKm        Float?
@@ -370,6 +381,7 @@ model Participation {
   event          Event         @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   variant        EventVariant? @relation(fields: [variantId], references: [id])
+  customFieldResponses CustomFieldResponse[]
 
   @@unique([userId, eventId])
   @@index([userId])
@@ -384,6 +396,7 @@ model Registration {
   status      RegistrationStatus @default(PENDING)
   bibNumber   String? // Dorsal (opcional, atribuído pelo organizador)
   checkedInAt DateTime? // Timestamp do check-in
+  ticketNonce String    @default(cuid()) // Rotated on ticket revocation; invalidates old JWTs
 
   // Stripe
   paymentProvider         String   @default("STRIPE")
@@ -394,6 +407,24 @@ model Registration {
   netCents                Int? // Valor líquido (opcional)
   currency                Currency @default(EUR)
 
+  // ── Team registration ──────────────────────────────────────────────────────
+  // All members of a team share the same teamGroupId.
+  // The person who paid has teamRole = LEADER; others are MEMBER.
+  // For individual registrations both fields are null.
+  teamGroupId      String?
+  teamRole         TeamRole?
+  teamMemberIndex  Int       @default(0) // 0 = leader/individual, 1+ = team members
+
+  // Guest data — populated for team members that are NOT registered users.
+  // When the team leader registers, they provide this data for each member.
+  guestName                  String?
+  guestEmail                 String?
+  guestPhone                 String?
+  guestDateOfBirth           DateTime?
+  guestCitizenId             String?
+  guestEmergencyContactName  String?
+  guestEmergencyContactPhone String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -402,12 +433,72 @@ model Registration {
   event   Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   variant EventVariant @relation(fields: [variantId], references: [id])
 
-  @@unique([userId, eventId, variantId])
+  customFieldResponses CustomFieldResponse[]
+
+  @@unique([userId, eventId, variantId, teamMemberIndex])
   @@index([userId])
   @@index([eventId])
   @@index([variantId])
   @@index([status])
   @@index([stripeCheckoutSessionId])
+  @@index([teamGroupId])
+}
+
+// ============================================================================
+// CUSTOM FIELDS (organizer-defined per event)
+// ============================================================================
+
+/// A custom field defined by the organizer for an event.
+/// Examples: "T-shirt size", "Lunch", "Engraved medal"
+model EventCustomField {
+  id          String              @id @default(cuid())
+  eventId     String
+  label       String              // e.g. "T-shirt size"
+  type        CustomFieldType     @default(SELECT) // SELECT = pick one, BOOLEAN = yes/no
+  options     String[]            // e.g. ["S", "M", "L", "XL"]  (only for SELECT type)
+  required    Boolean             @default(false)
+  priceCents  Int                 @default(0)      // additional cost in cents (0 = free)
+  currency    Currency            @default(EUR)
+  order       Int                 @default(0)       // display order
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  event     Event                @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  responses CustomFieldResponse[]
+
+  @@index([eventId])
+  @@index([order])
+}
+
+/// A participant's response to one custom field.
+/// participantIndex 0 = main registrant, 1 = team member #2, 2 = team member #3, etc.
+model CustomFieldResponse {
+  id               String           @id @default(cuid())
+  customFieldId    String
+  registrationId   String?
+  participationId  String?
+  userId           String
+  participantIndex Int              @default(0) // 0 = main, 1+ = team members
+  value            String           // e.g. "M", "true", "false"
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  customField    EventCustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+  registration   Registration?    @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  participation  Participation?   @relation(fields: [participationId], references: [id], onDelete: Cascade)
+  user           User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([customFieldId, registrationId, participantIndex])
+  @@unique([customFieldId, participationId, participantIndex])
+  @@index([customFieldId])
+  @@index([registrationId])
+  @@index([participationId])
+  @@index([userId])
+}
+
+enum CustomFieldType {
+  SELECT   // Pick from options list (e.g. S/M/L)
+  BOOLEAN  // Yes / No
 }
 
 // ============================================================================
@@ -768,7 +859,7 @@ model Venue {
   defaultCancellationDeadlineMinutes Int                     @default(30)
   defaultSessionCapacity             Int?
   commissionType                     CommissionType          @default(PERCENT)
-  commissionValue                    Int                     @default(1000)
+  commissionValue                    Int                     @default(0)
   paymentsProvider                   PaymentsProvider        @default(NONE)
   stripeAccountId                    String?                 @unique
   stripeChargesEnabled               Boolean                 @default(false)
@@ -1294,6 +1385,11 @@ enum RegistrationStatus {
   CONFIRMED
   CANCELLED
   REFUNDED
+}
+
+enum TeamRole {
+  LEADER // The person who paid / registered the team
+  MEMBER // Additional team member (may be a guest)
 }
 
 // ============================================================================
@@ -2299,6 +2395,7 @@ model Giveaway {
   secretRevealed         String? // Public: revealed secret after draw (proves fairness)
   finalParticipantsCount Int?
   winningTicketNumbers   Int[] // All winning ticket numbers (one per prize)
+  winningTicketAttempts  Int[] // Attempt index used per winner (for collision-free verification)
   createdAt              DateTime       @default(now())
   updatedAt              DateTime       @updatedAt
 

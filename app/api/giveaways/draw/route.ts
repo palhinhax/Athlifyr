@@ -13,17 +13,24 @@ const GIVEAWAY_DRAW_SECRET = process.env.GIVEAWAY_DRAW_SECRET;
  * tickets deterministically from SHA-256(secretRevealed + "|" + rank).
  * Otherwise fall back to cryptographically strong random selection.
  */
+interface DrawResult {
+  tickets: number[];
+  attempts: number[];
+}
+
 function pickWinningTickets(
   totalTickets: number,
   prizeCount: number,
   secretRevealed: string | null
-): number[] {
+): DrawResult {
   const count = Math.min(prizeCount, totalTickets);
-  const winners: number[] = [];
+  const tickets: number[] = [];
+  const attempts: number[] = [];
   const used = new Set<number>();
 
   for (let rank = 1; rank <= count; rank++) {
     let ticket: number;
+    let finalAttempt = 0;
     if (secretRevealed) {
       let attempt = 0;
       do {
@@ -31,8 +38,12 @@ function pickWinningTickets(
           .update(`${secretRevealed}|${rank}|${attempt}`)
           .digest("hex");
         ticket = Number(BigInt("0x" + hash) % BigInt(totalTickets)) + 1;
+        if (!used.has(ticket)) {
+          finalAttempt = attempt;
+          break;
+        }
         attempt++;
-      } while (used.has(ticket));
+      } while (true);
     } else {
       do {
         const bytes = randomBytes(4);
@@ -41,9 +52,10 @@ function pickWinningTickets(
       } while (used.has(ticket));
     }
     used.add(ticket);
-    winners.push(ticket);
+    tickets.push(ticket);
+    attempts.push(finalAttempt);
   }
-  return winners;
+  return { tickets, attempts };
 }
 
 /**
@@ -130,29 +142,31 @@ export async function POST(request: Request) {
           const drawnAt = new Date();
           let winnersCount = 0;
           let winningTicketNumbers: number[] = [];
+          let winningTicketAttempts: number[] = [];
 
           const ticketMap = new Map<number, string>(
             participations.map((p) => [p.ticketNumber, p.userId])
           );
 
           if (participantsCount > 0) {
-            const winningTickets = pickWinningTickets(
+            const drawResult = pickWinningTickets(
               participantsCount,
               giveaway.prizeCount,
               giveaway.secret
             );
 
-            winningTicketNumbers = winningTickets;
+            winningTicketNumbers = drawResult.tickets;
+            winningTicketAttempts = drawResult.attempts;
 
             await tx.giveawayWinner.createMany({
-              data: winningTickets.map((ticket, index) => ({
+              data: drawResult.tickets.map((ticket, index) => ({
                 giveawayId: giveaway.id,
                 userId: ticketMap.get(ticket)!,
                 rank: index + 1,
               })),
             });
 
-            winnersCount = winningTickets.length;
+            winnersCount = drawResult.tickets.length;
           }
 
           await tx.giveaway.update({
@@ -162,6 +176,7 @@ export async function POST(request: Request) {
               drawnAt,
               finalParticipantsCount: participantsCount,
               winningTicketNumbers,
+              winningTicketAttempts,
               secretRevealed: giveaway.secret,
             },
           });

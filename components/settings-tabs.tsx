@@ -13,6 +13,7 @@ import {
   Bell,
   Settings,
   Palette,
+  HeartPulse,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
@@ -22,6 +23,7 @@ import { AccountDataActions } from "@/components/account-data-actions";
 import { SubscriptionsHistory } from "@/components/subscriptions-history";
 import { NotificationSettings } from "@/components/notification-settings";
 import { ThemeSelector } from "@/components/theme-selector";
+import { PersonalDataForm } from "@/components/personal-data-form";
 import type { SportType } from "@prisma/client";
 
 interface SettingsTabsProps {
@@ -34,6 +36,11 @@ interface SettingsTabsProps {
     favoriteSports: SportType[];
     emailVerified: Date | null;
     emailNotifications: boolean;
+    dateOfBirth: Date | null;
+    citizenId: string | null;
+    nationality: string | null;
+    emergencyContactName: string | null;
+    emergencyContactPhone: string | null;
   };
   locale: string;
 }
@@ -154,6 +161,23 @@ export function SettingsTabs({ user, locale }: SettingsTabsProps) {
           <FavoriteSportsSelector
             initialFavorites={user.favoriteSports}
             locale={locale}
+          />
+        </Card>
+
+        {/* Personal Data */}
+        <Card className="p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+            <HeartPulse className="h-5 w-5" />
+            {t("personalData.title")}
+          </h2>
+          <PersonalDataForm
+            initialData={{
+              dateOfBirth: user.dateOfBirth,
+              citizenId: user.citizenId,
+              nationality: user.nationality,
+              emergencyContactName: user.emergencyContactName,
+              emergencyContactPhone: user.emergencyContactPhone,
+            }}
           />
         </Card>
       </TabsContent>

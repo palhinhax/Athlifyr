@@ -69,7 +69,7 @@ export default async function Home({
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="to-accent/3 absolute inset-0 bg-gradient-to-br from-accent/5 via-transparent" />
-        <div className="container relative mx-auto px-4 py-8 text-center md:py-20">
+        <div className="container relative py-8 text-center md:py-20">
           <h1 className="text-2xl font-bold tracking-tight sm:text-4xl md:text-6xl">
             {t("heroTitle")}
             <br />
@@ -84,7 +84,6 @@ export default async function Home({
           </p>
           <div className="mt-6 flex justify-center md:mt-8">
             <HomeAnalysisShortcut
-              newLabel={t("analysisNew")}
               title={t("analysisShortcut")}
               description={t("analysisDescription")}
               motionTitle={t("analysisMotionTitle")}
@@ -97,7 +96,7 @@ export default async function Home({
       </section>
 
       {/* Upcoming Events */}
-      <section className="container mx-auto px-4 py-6 md:py-12">
+      <section className="container py-6 md:py-12">
         <div className="mb-6 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
           <h2 className="text-xl font-bold sm:text-2xl md:text-3xl">
             {t("upcomingEventsTitle", { country: userCountry })}

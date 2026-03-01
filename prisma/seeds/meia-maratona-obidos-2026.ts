@@ -1125,7 +1125,8 @@ Le categorie sono definite dall'età dell'atleta il giorno della gara:
     for (const phase of pricingPhases) {
       await prisma.pricingPhase.create({
         data: {
-          eventId: event.id, // ✅ CORRECT: linked to eventId
+          eventId: event.id, // ✅ linked to eventId (event-level display)
+          variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
           name: `${variant.name} - ${phase.name}`,
           startDate: phase.startDate,
           endDate: phase.endDate,

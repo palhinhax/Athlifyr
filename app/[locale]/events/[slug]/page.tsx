@@ -84,6 +84,20 @@ async function getEvent(
               startDate: "asc",
             },
           },
+          _count: {
+            select: {
+              registrations: {
+                where: {
+                  status: "CONFIRMED",
+                },
+              },
+              participations: {
+                where: {
+                  status: "going",
+                },
+              },
+            },
+          },
         },
         orderBy: {
           startDate: "asc",
@@ -228,6 +242,16 @@ export default async function EventPage({ params }: PageProps) {
   const event = await getEvent(slug, session?.user?.id, locale);
   const isAdmin = session?.user?.role === "ADMIN";
 
+  // Check if the current user is an organizer of this event
+  const isOrganizer =
+    !isAdmin &&
+    !!session?.user?.id &&
+    !!event &&
+    (await prisma.eventOrganizer.findFirst({
+      where: { eventId: event.id, userId: session.user.id },
+      select: { id: true },
+    })) !== null;
+
   if (!event) {
     notFound();
   }
@@ -346,6 +370,8 @@ export default async function EventPage({ params }: PageProps) {
     time: t("variants.time"),
     prices: t("variants.prices"),
     currentPhase: t("variants.currentPhase"),
+    soldOut: t("registration.soldOut"),
+    spotsLeft: t("variants.spotsLeft"),
   };
 
   return (
@@ -361,13 +387,14 @@ export default async function EventPage({ params }: PageProps) {
         imageUrl={event.imageUrl}
         sportTypes={event.sportTypes}
         isAdmin={isAdmin}
+        isOrganizer={isOrganizer}
         event={eventForHeader}
         shareDescription={shareDescription}
         locale={locale}
       />
 
       {/* Event Details */}
-      <div className="container mx-auto px-4 py-12">
+      <div className="container py-12">
         <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
           {/* Main Content - Left Column */}
           <div className="min-w-0 overflow-hidden">
@@ -390,7 +417,11 @@ export default async function EventPage({ params }: PageProps) {
 
             {/* Variants List with Distances */}
             <EventVariantsList
-              variants={event.variants}
+              variants={event.variants.map((v) => ({
+                ...v,
+                registrationCount:
+                  v._count.registrations + v._count.participations,
+              }))}
               labels={variantLabels}
             />
 
@@ -421,9 +452,14 @@ export default async function EventPage({ params }: PageProps) {
             <EventMainContent
               description={event.description}
               pricingPhases={event.pricingPhases}
+              variants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+              }))}
               externalUrl={event.externalUrl}
               stravaRouteEmbed={event.stravaRouteEmbed}
               cancelled={event.cancelled}
+              hasRegistrations={event.hasRegistrations}
               translations={{
                 aboutEvent: t("aboutEvent"),
                 readyToParticipate: t("readyToParticipate"),
@@ -450,11 +486,33 @@ export default async function EventPage({ params }: PageProps) {
                 ) : (
                   <EventRegistration
                     eventId={event.id}
+                    eventSlug={event.slug}
                     eventTitle={event.title}
+                    hasRegistrations={event.hasRegistrations}
+                    registrationFieldSettings={
+                      (event.registrationFieldSettings as Record<
+                        string,
+                        string
+                      >) ?? {}
+                    }
                     variants={event.variants.map((v) => ({
                       id: v.id,
                       name: v.name,
                       distanceKm: v.distanceKm,
+                      startDate: v.startDate,
+                      startTime: v.startTime,
+                      maxParticipants: v.maxParticipants,
+                      teamSize: v.teamSize,
+                      registrationCount:
+                        v._count.registrations + v._count.participations,
+                      pricingPhases: v.pricingPhases.map((p) => ({
+                        id: p.id,
+                        name: p.name,
+                        price: p.price,
+                        currency: p.currency,
+                        startDate: p.startDate,
+                        endDate: p.endDate,
+                      })),
                     }))}
                   />
                 )}

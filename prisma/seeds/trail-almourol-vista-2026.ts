@@ -909,7 +909,8 @@ Giovani M/F (16-17 anni, fino a 15km) | Juniores M/F (18-19 anni, fino a 25km) |
     for (const phase of pricingPhases) {
       await prisma.pricingPhase.create({
         data: {
-          eventId: event.id, // ✅ CORRECT: linked to eventId
+          eventId: event.id, // ✅ linked to eventId (event-level display)
+          variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
           name: `${variant.name} - ${phase.name}`,
           startDate: phase.startDate,
           endDate: phase.endDate,

@@ -86,7 +86,7 @@
         "step2": "2️⃣ Au moment du tirage, nous utilisons le secret + le rang de chaque gagnant pour calculer les numéros de tickets gagnants.",
         "step3": "3️⃣ Après le tirage, nous révélons le secret afin que chacun puisse vérifier les résultats de manière indépendante.",
         "formulaTitle": "Formule de sélection du gagnant",
-        "formulaExplanation": "Où « secret » est le secret révélé, « rank » est la position du gagnant (1er, 2e...), N est le nombre total de participants, et « winner » est le numéro de ticket résultant.",
+        "formulaExplanation": "Où « secret » est le secret révélé, « rank » est la position du gagnant (1er, 2e...), « attempt » commence à 0 et s'incrémente en cas de collision (ticket en double), N est le nombre total de participants, et « winner » est le numéro de ticket résultant.",
         "verifyTitle": "Vérifie chaque gagnant :",
         "winningTickets": "🎉 Tickets gagnants",
         "yourTicketNumber": "Votre numéro de billet : #{{number}}",
@@ -94,7 +94,7 @@
         "secretHashExplanation": "Ce hash a été publié avant le tirage pour prouver que le secret avait été fixé à l'avance. Après le tirage, tu peux vérifier : SHA-256(secret révélé) = ce hash.",
         "secretRevealed": "Secret révélé (publié après le tirage)",
         "finalParticipantsCount": "Nombre total de participants au tirage : {{count}}",
-        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|0\") % {{total}} + 1 = #{{winning}}"
+        "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
     }
   },

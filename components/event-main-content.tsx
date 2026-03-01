@@ -8,9 +8,11 @@ import { StravaRouteEmbed } from "@/components/strava-route-embed";
 interface EventMainContentProps {
   description: string;
   pricingPhases: PricingPhase[];
+  variants?: { id: string; name: string }[];
   externalUrl: string | null;
   stravaRouteEmbed?: string | null;
   cancelled?: boolean;
+  hasRegistrations?: boolean;
   translations: {
     aboutEvent: string;
     readyToParticipate: string;
@@ -22,9 +24,11 @@ interface EventMainContentProps {
 export function EventMainContent({
   description,
   pricingPhases,
+  variants = [],
   externalUrl,
   stravaRouteEmbed,
   cancelled,
+  hasRegistrations = false,
   translations: t,
 }: EventMainContentProps) {
   return (
@@ -45,12 +49,12 @@ export function EventMainContent({
       {/* Event Pricing Phases */}
       {pricingPhases && pricingPhases.length > 0 && (
         <div className="mb-8">
-          <EventPricingPhases phases={pricingPhases} />
+          <EventPricingPhases phases={pricingPhases} variants={variants} />
         </div>
       )}
 
       {/* CTA */}
-      {externalUrl && !cancelled && (
+      {externalUrl && !cancelled && !hasRegistrations && (
         <div className="border-t pt-8">
           <h3 className="mb-4 text-xl font-bold">{t.readyToParticipate}</h3>
           <p className="mb-6 text-muted-foreground">{t.moreInfoDescription}</p>

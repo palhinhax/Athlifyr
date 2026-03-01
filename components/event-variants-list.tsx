@@ -22,6 +22,8 @@ interface EventVariant {
   atrpGrade: number | null;
   startTime: string | null;
   currency?: Currency;
+  maxParticipants?: number | null;
+  registrationCount?: number;
   triathlonSegments?: TriathlonSegment[];
   pricingPhases: Array<{
     id: string;
@@ -45,6 +47,8 @@ interface VariantLabels {
   time: string;
   prices: string;
   currentPhase: string;
+  soldOut?: string;
+  spotsLeft?: string;
   triathlon?: {
     swim: string;
     bike: string;
@@ -75,6 +79,8 @@ const defaultLabels: VariantLabels = {
   time: "Hora",
   prices: "Preços",
   currentPhase: "(Atual)",
+  soldOut: "Esgotado",
+  spotsLeft: "vagas restantes",
   triathlon: {
     swim: "Natação",
     bike: "Ciclismo",
@@ -163,121 +169,137 @@ export function EventVariantsList({
             .filter(
               (v) => !v.triathlonSegments || v.triathlonSegments.length === 0
             )
-            .map((variant) => (
-              <div
-                key={variant.id}
-                className="space-y-2 rounded-lg border p-3 sm:space-y-3 sm:p-4"
-              >
-                <h3 className="text-sm font-semibold sm:text-base">
-                  {variant.name}
-                </h3>
-                {variant.description && (
-                  <p className="text-xs text-muted-foreground sm:text-sm">
-                    {variant.description}
-                  </p>
-                )}
+            .map((variant) => {
+              const isSoldOut =
+                variant.maxParticipants != null &&
+                (variant.registrationCount ?? 0) >= variant.maxParticipants;
 
-                {/* Technical Data */}
-                <div className="space-y-1.5 text-xs sm:space-y-2 sm:text-sm">
-                  {variant.distanceKm && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {labels.distance}:
+              return (
+                <div
+                  key={variant.id}
+                  className={`space-y-2 rounded-lg border p-3 sm:space-y-3 sm:p-4 ${isSoldOut ? "opacity-60" : ""}`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold sm:text-base">
+                      {variant.name}
+                    </h3>
+                    {isSoldOut ? (
+                      <span className="shrink-0 rounded-full bg-destructive/10 px-2.5 py-0.5 text-xs font-semibold text-destructive">
+                        {labels.soldOut}
                       </span>
-                      <span className="font-medium">
-                        {variant.distanceKm} km
-                      </span>
-                    </div>
-                  )}
-                  {variant.elevationGainM && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {labels.elevationGain}:
-                      </span>
-                      <span className="font-medium">
-                        {variant.elevationGainM} m
-                      </span>
-                    </div>
-                  )}
-                  {variant.elevationLossM && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {labels.elevationLoss}:
-                      </span>
-                      <span className="font-medium">
-                        {variant.elevationLossM} m
-                      </span>
-                    </div>
-                  )}
-                  {variant.cutoffTimeHours && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {labels.cutoffTime}:
-                      </span>
-                      <span className="font-medium">
-                        {variant.cutoffTimeHours}h
-                      </span>
-                    </div>
-                  )}
-                  {variant.itraPoints && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">ITRA:</span>
-                      <span className="font-medium">{variant.itraPoints}</span>
-                    </div>
-                  )}
-                  {variant.atrpGrade && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">ATRP:</span>
-                      <span className="font-medium">{variant.atrpGrade}</span>
-                    </div>
-                  )}
-                  {variant.startTime && (
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">
-                        {labels.time}:
-                      </span>
-                      <span className="font-medium">{variant.startTime}</span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Pricing Phases */}
-                {variant.pricingPhases && variant.pricingPhases.length > 0 && (
-                  <div className="space-y-1 border-t pt-2 sm:pt-3">
-                    <div className="text-xs font-medium text-muted-foreground sm:text-sm">
-                      {labels.prices}:
-                    </div>
-                    {variant.pricingPhases.map((phase) => {
-                      const isActive =
-                        new Date() >= phase.startDate &&
-                        new Date() <= phase.endDate;
-                      const hasEnded = new Date() > phase.endDate;
-
-                      return (
-                        <div
-                          key={phase.id}
-                          className={`flex items-center justify-between gap-2 text-xs sm:text-sm ${
-                            isActive
-                              ? "font-semibold text-accent"
-                              : hasEnded
-                                ? "text-muted-foreground/50 line-through"
-                                : "text-muted-foreground"
-                          }`}
-                        >
-                          <span className="truncate">
-                            {phase.name}
-                            {isActive && ` ${labels.currentPhase}`}
-                          </span>
-                          <span className="whitespace-nowrap font-medium">
-                            {formatPrice(phase.price, phase.currency)}
-                          </span>
-                        </div>
-                      );
-                    })}
+                    ) : null}
                   </div>
-                )}
-              </div>
-            ))}
+                  {variant.description && (
+                    <p className="text-xs text-muted-foreground sm:text-sm">
+                      {variant.description}
+                    </p>
+                  )}
+
+                  {/* Technical Data */}
+                  <div className="space-y-1.5 text-xs sm:space-y-2 sm:text-sm">
+                    {variant.distanceKm && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {labels.distance}:
+                        </span>
+                        <span className="font-medium">
+                          {variant.distanceKm} km
+                        </span>
+                      </div>
+                    )}
+                    {variant.elevationGainM && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {labels.elevationGain}:
+                        </span>
+                        <span className="font-medium">
+                          {variant.elevationGainM} m
+                        </span>
+                      </div>
+                    )}
+                    {variant.elevationLossM && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {labels.elevationLoss}:
+                        </span>
+                        <span className="font-medium">
+                          {variant.elevationLossM} m
+                        </span>
+                      </div>
+                    )}
+                    {variant.cutoffTimeHours && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {labels.cutoffTime}:
+                        </span>
+                        <span className="font-medium">
+                          {variant.cutoffTimeHours}h
+                        </span>
+                      </div>
+                    )}
+                    {variant.itraPoints && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">ITRA:</span>
+                        <span className="font-medium">
+                          {variant.itraPoints}
+                        </span>
+                      </div>
+                    )}
+                    {variant.atrpGrade && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">ATRP:</span>
+                        <span className="font-medium">{variant.atrpGrade}</span>
+                      </div>
+                    )}
+                    {variant.startTime && (
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">
+                          {labels.time}:
+                        </span>
+                        <span className="font-medium">{variant.startTime}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Pricing Phases */}
+                  {variant.pricingPhases &&
+                    variant.pricingPhases.length > 0 && (
+                      <div className="space-y-1 border-t pt-2 sm:pt-3">
+                        <div className="text-xs font-medium text-muted-foreground sm:text-sm">
+                          {labels.prices}:
+                        </div>
+                        {variant.pricingPhases.map((phase) => {
+                          const isActive =
+                            new Date() >= phase.startDate &&
+                            new Date() <= phase.endDate;
+                          const hasEnded = new Date() > phase.endDate;
+
+                          return (
+                            <div
+                              key={phase.id}
+                              className={`flex items-center justify-between gap-2 text-xs sm:text-sm ${
+                                isActive
+                                  ? "font-semibold text-accent"
+                                  : hasEnded
+                                    ? "text-muted-foreground/50 line-through"
+                                    : "text-muted-foreground"
+                              }`}
+                            >
+                              <span className="truncate">
+                                {phase.name}
+                                {isActive && ` ${labels.currentPhase}`}
+                              </span>
+                              <span className="whitespace-nowrap font-medium">
+                                {formatPrice(phase.price, phase.currency)}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                </div>
+              );
+            })}
         </div>
       </div>
     </>

@@ -315,6 +315,89 @@ The PR body can contain additional context, which will become the commit body.
 
 ---
 
+## Branch Strategy
+
+This repository uses **3 main branch patterns**. Always follow this strategy when developing features or fixes.
+
+---
+
+### 1. `main`
+
+Production branch — always stable and deployable.
+
+**Rules:**
+
+- Require pull request before merging
+- Require conversation resolution before merging
+- Require linear history
+- Block force pushes
+- Block deletions
+- Require status checks to pass (when available)
+- Require branches to be up to date before merging (when available)
+
+> ⚠️ **Direct pushes to `main` are NOT allowed.** All changes must go through a pull request.
+
+---
+
+### 2. `feature/*`
+
+Used for all new feature development.
+
+**Naming examples:**
+
+- `feature/live-race-leaderboard`
+- `feature/profile-ticket-button`
+
+**Rules:**
+
+- Require linear history
+- Block force pushes
+- Block deletions (recommended)
+
+**Workflow:**
+
+- No PR required within the feature branch itself
+- PR must target `main` when the feature is ready
+
+---
+
+### 3. `hotfix/*`
+
+Used for urgent production fixes that cannot wait for a normal feature cycle.
+
+**Naming examples:**
+
+- `hotfix/stripe-webhook-bug`
+- `hotfix/payment-confirmation-fix`
+
+**Rules:**
+
+- Require pull request before merging
+- Require conversation resolution before merging
+- Require linear history
+- Block force pushes
+- Block deletions
+- Require status checks to pass (when available)
+
+**Workflow:**
+
+- Hotfix branches must be merged into `main` via a pull request
+
+---
+
+### When to Use `feature/*` vs `hotfix/*`
+
+| Situation                                     | Branch Type | Example                               |
+| --------------------------------------------- | ----------- | ------------------------------------- |
+| New functionality or enhancement              | `feature/*` | `feature/live-race-leaderboard`       |
+| Planned bug fix as part of normal development | `feature/*` | `feature/fix-registration-validation` |
+| Urgent production bug requiring immediate fix | `hotfix/*`  | `hotfix/stripe-webhook-bug`           |
+| Critical security patch for live environment  | `hotfix/*`  | `hotfix/auth-token-exposure`          |
+
+**Summary**: Use `feature/*` for all planned work. Use `hotfix/*` only when production is broken and the fix cannot wait for the normal development cycle.
+
+---
+
 ## Integration with semantic-release
 
 This repository uses `semantic-release` for automated versioning:
@@ -742,7 +825,7 @@ This agent specification contains:
 
 ## Pricing Phases Structure (CRITICAL)
 
-**MANDATORY**: Pricing phases in event seeds MUST be linked to the **eventId**, NOT the variantId.
+**MANDATORY**: Pricing phases in event seeds MUST be linked to BOTH **eventId** AND **variantId**.
 
 ### ✅ CORRECT Structure:
 
@@ -770,7 +853,8 @@ for (const variantData of variants) {
   for (const phase of pricingPhases) {
     await prisma.pricingPhase.create({
       data: {
-        eventId: event.id, // ✅ CORRECT: linked to eventId
+        eventId: event.id, // ✅ linked to eventId (event-level display)
+        variantId: variant.id, // ✅ linked to variantId (variant-level pricing)
         name: `${variant.name} - ${phase.name}`,
         startDate: phase.startDate,
         endDate: phase.endDate,
@@ -788,21 +872,25 @@ for (const variantData of variants) {
 ### ❌ WRONG Structure (DO NOT USE):
 
 ```typescript
-// ❌ WRONG: Do NOT link pricing phases to variantId
+// ❌ WRONG: Do NOT link pricing phases to only eventId without variantId
 await prisma.pricingPhase.create({
   data: {
+    eventId: event.id,
+    // ❌ MISSING: variantId: variant.id
+    name: `${variant.name} - ${phase.name}`,
     ...phase,
-    variantId: variant.id, // ❌ WRONG
   },
 });
 ```
 
 ### Why This Matters:
 
-- Pricing phases are displayed at the **event level**, not variant level
-- The frontend expects pricing phases to be linked to `eventId`
-- Linking to `variantId` will cause pricing phases to not appear in the UI
-- Follow the pattern used in `trail-capitao-2026.ts` seed
+- Pricing phases are displayed at **both** event level and variant level
+- The registration component uses `variant.pricingPhases` to show the **current price** when a user selects a variant
+- Without `variantId`, the user cannot see the price before registering
+- `eventId` is needed for the general pricing overview display
+- `variantId` is needed so the variant card shows its specific prices
+- Follow the pattern used in `trail-conimbriga-sico-2026.ts` seed
 
 ### Pricing Phase Naming Convention:
 

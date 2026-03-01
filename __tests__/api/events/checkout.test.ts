@@ -21,10 +21,10 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 // Mock Prisma
 jest.mock("@/lib/prisma", () => ({
   prisma: {
+    $queryRaw: jest.fn(),
     event: { findUnique: jest.fn() },
     user: { findUnique: jest.fn() },
     registration: {
-      findFirst: jest.fn(),
       findUnique: jest.fn(),
       count: jest.fn(),
       upsert: jest.fn(),
@@ -324,7 +324,7 @@ it("creates CONFIRMED registration directly for free events (price=0)", async ()
     stripeOnboardingStatus: "NOT_STARTED",
     variants: [mockFreeVariant],
   });
-  (prisma.registration.findFirst as jest.Mock).mockResolvedValue(null);
+  (prisma.$queryRaw as jest.Mock).mockResolvedValue([{ max_bib: null }]);
   (prisma.registration.upsert as jest.Mock).mockResolvedValue({
     id: "reg-free",
     status: "CONFIRMED",

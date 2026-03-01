@@ -10,33 +10,23 @@ import { prisma } from "@/lib/prisma";
  * @returns The next bib number as a string (e.g. "1", "2", "3").
  */
 export async function generateNextBibNumber(eventId: string): Promise<string> {
-  // Find the highest numeric bib number currently assigned in this event.
-  const maxBib = await prisma.registration.findFirst({
-    where: {
-      eventId,
-      bibNumber: { not: null },
-    },
-    orderBy: { bibNumber: "desc" },
-    select: { bibNumber: true },
-  });
+  // Use a raw SQL MAX(CAST(...AS INTEGER)) to avoid lexicographic ordering bugs
+  // ("9" > "10" as text). This is a single O(log n) query with the DB index.
+  const result = await prisma.$queryRaw<[{ max_bib: number | null }]>`
+    SELECT MAX(CAST("bibNumber" AS INTEGER)) AS max_bib
+    FROM "Registration"
+    WHERE "eventId" = ${eventId}
+      AND "bibNumber" IS NOT NULL
+      AND "bibNumber" ~ '^[0-9]+$'
+  `;
 
-  if (!maxBib?.bibNumber) {
+  const maxBib = result[0]?.max_bib;
+
+  if (maxBib === null || maxBib === undefined) {
     return "1";
   }
 
-  const parsed = parseInt(maxBib.bibNumber, 10);
-  if (isNaN(parsed)) {
-    // If existing bib numbers are non-numeric, fall back to counting
-    const count = await prisma.registration.count({
-      where: {
-        eventId,
-        bibNumber: { not: null },
-      },
-    });
-    return String(count + 1);
-  }
-
-  return String(parsed + 1);
+  return String(maxBib + 1);
 }
 
 /**

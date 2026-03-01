@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { stripe } from "@/lib/stripe";
 import type { Stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { generateNextBibNumber, assignBibNumbers } from "@/lib/bib-number";
+import { assignBibNumbers } from "@/lib/bib-number";
 import {
   calculatePlanEndDate,
   type VenuePlanPolicy,
@@ -140,21 +140,8 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
       : null;
 
     if (existing) {
-      // Update PENDING → CONFIRMED
-      const leaderBib = await generateNextBibNumber(eventId);
-      await prisma.registration.update({
-        where: { id: existing.id },
-        data: {
-          status: "CONFIRMED",
-          bibNumber: leaderBib,
-          stripeCheckoutSessionId: session.id,
-          stripePaymentIntentId: paymentIntent,
-          amountCents,
-          currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
-        },
-      });
-
-      // Also confirm all team member registrations in the same group
+      // Gather leader + any MEMBER ids so we can assign all bibs atomically
+      let memberIds: string[] = [];
       if (existing.teamGroupId) {
         const teamMembers = await prisma.registration.findMany({
           where: {
@@ -165,21 +152,40 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
           select: { id: true },
           orderBy: { teamMemberIndex: "asc" },
         });
+        memberIds = teamMembers.map((m) => m.id);
+      }
 
-        // Assign bib numbers to each team member individually
-        await assignBibNumbers(
-          eventId,
-          teamMembers.map((m) => m.id)
-        );
+      // Assign bib numbers atomically (leader first, then members, all in one
+      // serialized transaction with an advisory lock — no duplicate bibs).
+      await assignBibNumbers(eventId, [existing.id, ...memberIds]);
 
+      // Fetch the just-assigned leader bib to store on the update below
+      const leaderReg = await prisma.registration.findUnique({
+        where: { id: existing.id },
+        select: { bibNumber: true },
+      });
+
+      // Update PENDING → CONFIRMED for leader
+      await prisma.registration.update({
+        where: { id: existing.id },
+        data: {
+          status: "CONFIRMED",
+          bibNumber: leaderReg?.bibNumber ?? null,
+          stripeCheckoutSessionId: session.id,
+          stripePaymentIntentId: paymentIntent,
+          amountCents,
+          currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
+        },
+      });
+
+      // Confirm all MEMBER registrations (bibs already assigned above)
+      if (memberIds.length > 0) {
         await prisma.registration.updateMany({
-          where: {
-            teamGroupId: existing.teamGroupId,
-            teamRole: "MEMBER",
-            status: "PENDING",
-          },
+          where: { id: { in: memberIds } },
           data: {
             status: "CONFIRMED",
+            stripeCheckoutSessionId: session.id,
+            stripePaymentIntentId: paymentIntent,
           },
         });
         console.log(
@@ -188,20 +194,22 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
         );
       }
     } else {
-      const bibNumber = await generateNextBibNumber(eventId);
-      await prisma.registration.create({
+      // New registration — create row first (bibNumber null), then assign
+      // atomically so concurrent webhooks never produce duplicates.
+      const newReg = await prisma.registration.create({
         data: {
           userId,
           eventId,
           variantId,
           status: "CONFIRMED",
-          bibNumber,
+          bibNumber: null,
           stripeCheckoutSessionId: session.id,
           stripePaymentIntentId: paymentIntent,
           amountCents,
           currency: (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP",
         },
       });
+      await assignBibNumbers(eventId, [newReg.id]);
     }
 
     console.log("Registration created/confirmed for user:", userId);

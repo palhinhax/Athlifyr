@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { generateNextBibNumber } from "@/lib/bib-number";
+import { assignBibNumbers } from "@/lib/bib-number";
 
 // GET /api/events/[id]/registration/status — check user's registration status
 // If registration is PENDING, automatically verify with Stripe and confirm if paid.
@@ -60,17 +60,42 @@ export async function GET(
               ? checkoutSession.payment_intent
               : (checkoutSession.payment_intent?.id ?? null);
 
-          // Assign a bib number if the leader doesn't have one yet
-          const leaderBib =
-            registration.bibNumber ??
-            (await generateNextBibNumber(registration.eventId));
+          // Collect ids that still need a bib (leader + pending members)
+          const needsBib: string[] = [];
+          if (!registration.bibNumber) needsBib.push(registration.id);
+
+          let memberRegs: { id: string; bibNumber: string | null }[] = [];
+          if (registration.teamGroupId) {
+            memberRegs = await prisma.registration.findMany({
+              where: {
+                teamGroupId: registration.teamGroupId,
+                teamRole: "MEMBER",
+                status: "PENDING",
+              },
+              select: { id: true, bibNumber: true },
+            });
+            for (const m of memberRegs) {
+              if (!m.bibNumber) needsBib.push(m.id);
+            }
+          }
+
+          // Assign all missing bibs atomically (advisory lock — no duplicates)
+          if (needsBib.length > 0) {
+            await assignBibNumbers(registration.eventId, needsBib);
+          }
+
+          // Reload leader bib after assignment
+          const leaderUpdated = await prisma.registration.findUnique({
+            where: { id: registration.id },
+            select: { bibNumber: true },
+          });
 
           // Confirm leader registration
           const updated = await prisma.registration.update({
             where: { id: registration.id },
             data: {
               status: "CONFIRMED",
-              bibNumber: leaderBib,
+              bibNumber: leaderUpdated?.bibNumber ?? null,
               stripePaymentIntentId: paymentIntentId,
               amountCents:
                 checkoutSession.amount_total ?? registration.amountCents,
@@ -88,32 +113,18 @@ export async function GET(
             },
           });
 
-          // Also confirm all MEMBER registrations in the same team group (paid flow)
-          if (registration.teamGroupId) {
-            const memberRegs = await prisma.registration.findMany({
-              where: {
-                teamGroupId: registration.teamGroupId,
-                teamRole: "MEMBER",
-                status: "PENDING",
+          // Confirm all MEMBER registrations (bibs already assigned above)
+          if (memberRegs.length > 0) {
+            await prisma.registration.updateMany({
+              where: { id: { in: memberRegs.map((m) => m.id) } },
+              data: {
+                status: "CONFIRMED",
+                stripePaymentIntentId: paymentIntentId,
               },
             });
-            for (const member of memberRegs) {
-              const memberBib =
-                member.bibNumber ?? (await generateNextBibNumber(eventId));
-              await prisma.registration.update({
-                where: { id: member.id },
-                data: {
-                  status: "CONFIRMED",
-                  bibNumber: memberBib,
-                  stripePaymentIntentId: paymentIntentId,
-                },
-              });
-            }
-            if (memberRegs.length > 0) {
-              console.log(
-                `Confirmed ${memberRegs.length} MEMBER registration(s) for team group ${registration.teamGroupId}`
-              );
-            }
+            console.log(
+              `Confirmed ${memberRegs.length} MEMBER registration(s) for team group ${registration.teamGroupId}`
+            );
           }
 
           console.log(

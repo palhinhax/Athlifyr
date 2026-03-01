@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { generateNextBibNumber, assignBibNumbers } from "@/lib/bib-number";
+import { assignBibNumbers } from "@/lib/bib-number";
 
 /**
  * POST /api/events/[id]/registration/confirm
@@ -80,8 +80,9 @@ export async function POST(
 
     const currency = (pricingPhase?.currency ?? "EUR") as "EUR" | "USD" | "GBP";
 
-    // Upsert registration to CONFIRMED (idempotent)
-    const leaderBib = await generateNextBibNumber(eventId);
+    // Upsert leader registration first (bibNumber null), then assign all bibs
+    // atomically — prevents race conditions when multiple confirmations are
+    // triggered concurrently for the same event.
     const registration = await prisma.registration.upsert({
       where: {
         userId_eventId_variantId_teamMemberIndex: {
@@ -96,7 +97,7 @@ export async function POST(
         eventId,
         variantId,
         status: "CONFIRMED",
-        bibNumber: leaderBib,
+        bibNumber: null,
         stripeCheckoutSessionId: sessionId,
         stripePaymentIntentId: paymentIntentId,
         amountCents,
@@ -104,7 +105,7 @@ export async function POST(
       },
       update: {
         status: "CONFIRMED",
-        bibNumber: leaderBib,
+        bibNumber: null,
         stripeCheckoutSessionId: sessionId,
         stripePaymentIntentId: paymentIntentId,
         amountCents,
@@ -124,6 +125,7 @@ export async function POST(
     });
 
     // Also confirm all team member registrations in the same group
+    let memberIds: string[] = [];
     if (registration.teamGroupId) {
       const teamMembers = await prisma.registration.findMany({
         where: {
@@ -134,12 +136,7 @@ export async function POST(
         select: { id: true },
         orderBy: { teamMemberIndex: "asc" },
       });
-
-      // Assign bib numbers to each team member individually
-      await assignBibNumbers(
-        eventId,
-        teamMembers.map((m) => m.id)
-      );
+      memberIds = teamMembers.map((m) => m.id);
 
       await prisma.registration.updateMany({
         where: {
@@ -147,11 +144,12 @@ export async function POST(
           teamRole: "MEMBER",
           status: "PENDING",
         },
-        data: {
-          status: "CONFIRMED",
-        },
+        data: { status: "CONFIRMED" },
       });
     }
+
+    // Assign bibs for leader + all members in one atomic transaction
+    await assignBibNumbers(eventId, [registration.id, ...memberIds]);
 
     return NextResponse.json({
       registration: {

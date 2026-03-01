@@ -22,6 +22,19 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 jest.mock("@/lib/prisma", () => ({
   prisma: {
     $queryRaw: jest.fn(),
+    $transaction: jest
+      .fn()
+      .mockImplementation(async (fn: (tx: unknown) => Promise<unknown>) => {
+        // Simulate a transaction by passing a minimal tx object
+        const tx = {
+          $executeRaw: jest.fn().mockResolvedValue(undefined),
+          $queryRaw: jest.fn().mockResolvedValue([{ max_bib: null }]),
+          registration: {
+            update: jest.fn().mockResolvedValue({}),
+          },
+        };
+        return fn(tx);
+      }),
     event: { findUnique: jest.fn() },
     user: { findUnique: jest.fn() },
     registration: {

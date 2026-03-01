@@ -3,7 +3,7 @@ import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import type { Stripe } from "@/lib/stripe";
-import { generateNextBibNumber } from "@/lib/bib-number";
+import { assignBibNumbers } from "@/lib/bib-number";
 
 // POST /api/events/[id]/checkout — create Stripe Checkout Session for event registration
 export async function POST(
@@ -198,7 +198,7 @@ export async function POST(
       const isTeamFree = teamMembers && teamMembers.length > 0;
       const teamGroupIdFree = isTeamFree ? crypto.randomUUID() : undefined;
 
-      const leaderBib = await generateNextBibNumber(event.id);
+      // Create leader row first (bibNumber null) then assign all bibs atomically
       const freeReg = await prisma.registration.upsert({
         where: {
           userId_eventId_variantId_teamMemberIndex: {
@@ -213,7 +213,7 @@ export async function POST(
           eventId: event.id,
           variantId: selectedVariant.id,
           status: "CONFIRMED",
-          bibNumber: leaderBib,
+          bibNumber: null,
           amountCents: 0,
           currency: activePhase.currency as "EUR" | "USD" | "GBP",
           paymentProvider: "NONE",
@@ -222,13 +222,14 @@ export async function POST(
         },
         update: {
           status: "CONFIRMED",
-          bibNumber: leaderBib,
+          bibNumber: null,
           teamGroupId: teamGroupIdFree ?? null,
           teamRole: isTeamFree ? "LEADER" : null,
         },
       });
 
       // Create child registrations for team members (free event)
+      const memberIds: string[] = [];
       if (isTeamFree && teamMembers) {
         // Clean up any previous attempt
         await prisma.registration.deleteMany({
@@ -242,14 +243,13 @@ export async function POST(
 
         for (let i = 0; i < teamMembers.length; i++) {
           const m = teamMembers[i];
-          const memberBib = await generateNextBibNumber(event.id);
-          await prisma.registration.create({
+          const memberReg = await prisma.registration.create({
             data: {
               userId: user.id,
               eventId: event.id,
               variantId: selectedVariant.id,
               status: "CONFIRMED",
-              bibNumber: memberBib,
+              bibNumber: null,
               amountCents: 0,
               currency: activePhase.currency as "EUR" | "USD" | "GBP",
               paymentProvider: "NONE",
@@ -265,8 +265,12 @@ export async function POST(
               guestEmergencyContactPhone: m.emergencyContactPhone || null,
             },
           });
+          memberIds.push(memberReg.id);
         }
       }
+
+      // Assign all bib numbers atomically (advisory lock — no race conditions)
+      await assignBibNumbers(event.id, [freeReg.id, ...memberIds]);
 
       return NextResponse.json(
         { registrationId: freeReg.id, status: "CONFIRMED" },

@@ -3,16 +3,21 @@ import { prisma } from "@/lib/prisma";
 /**
  * Generate the next sequential bib number for an event.
  *
- * Bib numbers are unique per event (across all variants) and are assigned
- * as simple sequential integers starting at 1.
+ * Uses MAX(CAST(bibNumber AS INTEGER)) to avoid lexicographic ordering bugs
+ * ("9" > "10" as text).
+ *
+ * ⚠️  NOT safe for concurrent use on its own — always call this inside a
+ *    Prisma interactive transaction that holds a row-level lock (see
+ *    `assignBibNumbers`).
  *
  * @param eventId - The event ID to generate a bib number for.
- * @returns The next bib number as a string (e.g. "1", "2", "3").
+ * @param tx      - An active Prisma transaction client.
  */
-export async function generateNextBibNumber(eventId: string): Promise<string> {
-  // Use a raw SQL MAX(CAST(...AS INTEGER)) to avoid lexicographic ordering bugs
-  // ("9" > "10" as text). This is a single O(log n) query with the DB index.
-  const result = await prisma.$queryRaw<[{ max_bib: number | null }]>`
+async function generateNextBibNumberInTx(
+  eventId: string,
+  tx: Parameters<Parameters<typeof prisma.$transaction>[0]>[0]
+): Promise<string> {
+  const result = await tx.$queryRaw<[{ max_bib: number | null }]>`
     SELECT MAX(CAST("bibNumber" AS INTEGER)) AS max_bib
     FROM "Registration"
     WHERE "eventId" = ${eventId}
@@ -21,32 +26,50 @@ export async function generateNextBibNumber(eventId: string): Promise<string> {
   `;
 
   const maxBib = result[0]?.max_bib;
-
-  if (maxBib === null || maxBib === undefined) {
-    return "1";
-  }
-
+  if (maxBib === null || maxBib === undefined) return "1";
   return String(maxBib + 1);
 }
 
 /**
  * Assign bib numbers to multiple registrations in a single event.
  *
- * This is used when a team registration is confirmed — the leader and all
- * members each get their own sequential bib number.
+ * Runs inside a serializable transaction with an advisory lock keyed on the
+ * eventId so that concurrent calls (e.g. two Stripe webhooks arriving at the
+ * same time) are serialized at the DB level and never produce duplicate bibs.
  *
- * @param eventId - The event ID.
+ * @param eventId         - The event ID.
  * @param registrationIds - Array of registration IDs to assign bib numbers to.
  */
 export async function assignBibNumbers(
   eventId: string,
   registrationIds: string[]
 ): Promise<void> {
-  for (const registrationId of registrationIds) {
-    const bibNumber = await generateNextBibNumber(eventId);
-    await prisma.registration.update({
-      where: { id: registrationId },
-      data: { bibNumber },
-    });
-  }
+  if (registrationIds.length === 0) return;
+
+  await prisma.$transaction(
+    async (tx) => {
+      // Advisory lock: pg_advisory_xact_lock takes a 64-bit integer.
+      // We derive a stable integer from the eventId using hashtext() so that
+      // concurrent transactions for the *same* event queue up, while
+      // transactions for *different* events run in parallel.
+      await tx.$executeRaw`
+        SELECT pg_advisory_xact_lock(hashtext(${eventId}))
+      `;
+
+      for (const registrationId of registrationIds) {
+        const bibNumber = await generateNextBibNumberInTx(eventId, tx);
+        await tx.registration.update({
+          where: { id: registrationId },
+          data: { bibNumber },
+        });
+      }
+    },
+    {
+      // SERIALIZABLE ensures the MAX read and the UPDATE are atomic as a unit.
+      // The advisory lock above is the primary guard; SERIALIZABLE is a
+      // belt-and-suspenders defence against unexpected anomalies.
+      isolationLevel: "Serializable",
+      timeout: 10_000,
+    }
+  );
 }

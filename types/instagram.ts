@@ -12,7 +12,8 @@ export type TemplateKey =
   | "T11"
   | "T12"
   | "T13"
-  | "T14";
+  | "T14"
+  | "T15";
 
 export type InstagramFormat =
   | "SQUARE"
@@ -188,6 +189,21 @@ export interface AthliChatPromoPayload {
   background: Background;
 }
 
+// Template T15: Giveaway Winner Announcement
+export interface GiveawayWinnerPayload {
+  eventName: string; // required, max 50 chars - event name
+  giveawayTitle: string; // required, max 40 chars - e.g., "🎉 VENCEDORES"
+  prize: string; // required, max 60 chars - what was won
+  winners: Array<{
+    ticketNumber: string; // required, ticket number e.g., "#0042"
+    label?: string; // optional, e.g., "1º Lugar"
+  }>; // 1-5 winners
+  drawDate?: string; // optional, max 30 chars - when draw happened
+  verificationHash?: string; // optional, transparency hash
+  thankYouLine?: string; // optional, e.g., "Obrigado a todos os participantes!"
+  background: Background;
+}
+
 export type TemplatePayload =
   | EventHeroPayload
   | CategoryCardPayload
@@ -202,7 +218,8 @@ export type TemplatePayload =
   | VenuePromoPayload
   | GiveawayPromoPayload
   | AppDownloadPayload
-  | AthliChatPromoPayload;
+  | AthliChatPromoPayload
+  | GiveawayWinnerPayload;
 
 export interface InstagramDraft {
   id: string;

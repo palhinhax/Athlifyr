@@ -50,6 +50,7 @@ export function TemplateSelector({
             <SelectItem value="T12">T12: Giveaway Promo (Sorteio)</SelectItem>
             <SelectItem value="T13">T13: App Download (Google Play)</SelectItem>
             <SelectItem value="T14">T14: Athli Chat Promo (IA)</SelectItem>
+            <SelectItem value="T15">T15: Giveaway Winner (Vencedor)</SelectItem>
           </SelectContent>
         </Select>
       </div>

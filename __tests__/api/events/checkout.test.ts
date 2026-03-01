@@ -24,6 +24,7 @@ jest.mock("@/lib/prisma", () => ({
     event: { findUnique: jest.fn() },
     user: { findUnique: jest.fn() },
     registration: {
+      findFirst: jest.fn(),
       findUnique: jest.fn(),
       count: jest.fn(),
       upsert: jest.fn(),
@@ -323,6 +324,7 @@ it("creates CONFIRMED registration directly for free events (price=0)", async ()
     stripeOnboardingStatus: "NOT_STARTED",
     variants: [mockFreeVariant],
   });
+  (prisma.registration.findFirst as jest.Mock).mockResolvedValue(null);
   (prisma.registration.upsert as jest.Mock).mockResolvedValue({
     id: "reg-free",
     status: "CONFIRMED",

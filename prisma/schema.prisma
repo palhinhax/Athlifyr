@@ -1405,6 +1405,7 @@ enum EventStripeOnboardingStatus {
 
 enum EventLiveStatus {
   SCHEDULED
+  CHECK_IN_OPEN
   LIVE
   PAUSED
   FINISHED

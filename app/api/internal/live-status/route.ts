@@ -18,7 +18,8 @@ function isLiveServer(request: NextRequest): boolean {
 }
 
 const VALID_TRANSITIONS: Record<EventLiveStatus, EventLiveStatus[]> = {
-  SCHEDULED: ["WARMUP"],
+  SCHEDULED: ["CHECK_IN_OPEN", "WARMUP"],
+  CHECK_IN_OPEN: ["WARMUP", "CANCELLED"],
   WARMUP: ["LIVE", "CANCELLED"],
   LIVE: ["PAUSED", "FINISHED", "CANCELLED"],
   PAUSED: ["LIVE", "FINISHED", "CANCELLED"],

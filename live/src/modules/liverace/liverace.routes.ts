@@ -1,9 +1,11 @@
 // ============================================================================
 // Athlifyr Live Server — LiveRace REST Routes (Fastify)
 //
-// POST /live/start  — prepare/warm up an event room (idempotent)
-// POST /live/stop   — stop a live race (admin)
-// GET  /live/status — get room status + stats
+// POST /live/start              — prepare/warm up an event room (idempotent)
+// POST /live/stop               — stop a live race (admin)
+// GET  /live/status             — get room status + stats
+// POST /internal/status         — Next.js → live server: sync status change
+// GET  /internal/room-info/:id  — Next.js → live server: get room metrics
 // ============================================================================
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
@@ -14,8 +16,10 @@ import {
   getRoom,
   getActiveRoomIds,
   getSnapshot,
+  eventRoom,
 } from "./liverace.service.js";
 import type { JWTPayload } from "../../types/index.js";
+import type { EventLiveStatus } from "./liverace.types.js";
 
 type AuthRequest = FastifyRequest & { user: JWTPayload };
 
@@ -130,4 +134,76 @@ export async function liveRaceRoutes(app: FastifyInstance): Promise<void> {
 
     return reply.send({ rooms: summaries });
   });
+}
+
+// ─── Internal Secret Validation ─────────────────────────────────────────────
+
+function validateInternalSecret(
+  request: FastifyRequest,
+  reply: FastifyReply
+): boolean {
+  const secret = process.env.LIVE_INTERNAL_SECRET;
+  if (secret && request.headers["x-live-secret"] !== secret) {
+    reply.code(401).send({ error: "Unauthorized" });
+    return false;
+  }
+  return true;
+}
+
+// ─── Internal Routes (called by Next.js, not exposed to clients) ─────────────
+
+export async function internalRoutes(app: FastifyInstance): Promise<void> {
+  // POST /internal/status — called by Next.js live-control API after DB update
+  app.post("/status", async (request: FastifyRequest, reply: FastifyReply) => {
+    if (!validateInternalSecret(request, reply)) return;
+
+    const body = request.body as {
+      eventId?: string;
+      status?: string;
+    } | null;
+    const { eventId, status } = body ?? {};
+
+    if (!eventId || !status) {
+      return reply.code(400).send({ error: "Missing eventId or status" });
+    }
+
+    const room = getRoom(eventId);
+    if (room && ioRef) {
+      room.status = status as EventLiveStatus;
+      ioRef.to(eventRoom(eventId)).emit("liverace:status_changed", {
+        eventId,
+        status: status as EventLiveStatus,
+        ...(room.raceStartTime != null && {
+          raceStartTime: room.raceStartTime,
+        }),
+      });
+    }
+
+    return reply.send({ ok: true, eventId, status, roomFound: !!room });
+  });
+
+  // GET /internal/room-info/:eventId — called by Next.js live-status API
+  app.get(
+    "/room-info/:eventId",
+    async (request: FastifyRequest, reply: FastifyReply) => {
+      if (!validateInternalSecret(request, reply)) return;
+
+      const { eventId } = request.params as { eventId: string };
+      const room = getRoom(eventId);
+
+      if (!room) {
+        return reply.send({
+          connectedCount: 0,
+          participantCount: 0,
+          lastUpdate: null,
+        });
+      }
+
+      return reply.send({
+        connectedCount: room.spectatorCount,
+        participantCount: room.athletes.size,
+        lastUpdate: null,
+      });
+    }
+  );
 }

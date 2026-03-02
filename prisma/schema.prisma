@@ -1457,6 +1457,7 @@ enum EventStripeOnboardingStatus {
 
 enum EventLiveStatus {
   SCHEDULED
+  CHECK_IN_OPEN
   WARMUP     // Live room prepared, athletes/spectators can connect; race not started yet
   LIVE       // Race officially started — leaderboard active
   PAUSED

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
+import { getCheckInWindowStatus } from "@/lib/checkin-gating";
 
 interface RouteParams {
   params: Promise<{ id: string; registrationId: string }>;
@@ -22,10 +23,19 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
 
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { id: true },
+    select: {
+      id: true,
+      cancelled: true,
+      checkInOpensAt: true,
+      checkInClosesAt: true,
+    },
   });
   if (!event) {
     return NextResponse.json({ error: "Event not found" }, { status: 404 });
+  }
+
+  if (event.cancelled) {
+    return NextResponse.json({ error: "Event is cancelled" }, { status: 422 });
   }
 
   // Authorisation: platform admin, organizer (OWNER/ADMIN), or any staff member
@@ -82,6 +92,27 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
       { error: "Only confirmed registrations can be checked in" },
       { status: 422 }
     );
+  }
+
+  // Enforce the check-in window for non-admin users (staff must respect the window).
+  // Platform admins and organizers (OWNER/ADMIN) can override the window.
+  if (body.checkedIn && !isPlatformAdmin && !isAllowedOrganizer) {
+    const windowStatus = getCheckInWindowStatus(
+      event.checkInOpensAt,
+      event.checkInClosesAt
+    );
+    if (windowStatus === "NOT_OPEN_YET") {
+      return NextResponse.json(
+        { error: "Check-in window has not opened yet" },
+        { status: 422 }
+      );
+    }
+    if (windowStatus === "CLOSED") {
+      return NextResponse.json(
+        { error: "Check-in window is closed" },
+        { status: 422 }
+      );
+    }
   }
 
   // Prevent double check-in (idempotent: return success if already in desired state)

@@ -30,6 +30,7 @@ import type {
   CheckpointSplit,
 } from "./liverace.types.js";
 import type { LiveIO } from "../../plugins/socket.js";
+import type { LiveSocket } from "../../plugins/socket.js";
 
 // ─── In-memory rooms ────────────────────────────────────────────────────────
 
@@ -643,7 +644,7 @@ export function processGpsBatch(
   userId: string,
   rawPoints: GPSPoint[],
   io: LiveIO,
-  socket?: { emit: (ev: string, data: Record<string, unknown>) => void }
+  socket?: LiveSocket
 ): { processed: number; skipped: number; newCheckpoints: number } {
   const startMs = Date.now();
   const room = rooms.get(eventId);

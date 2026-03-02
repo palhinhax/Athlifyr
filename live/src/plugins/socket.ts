@@ -2,7 +2,7 @@
 // Athlifyr Live Server — Socket.io Setup
 // ============================================================================
 
-import { Server as SocketIOServer } from "socket.io";
+import { Server as SocketIOServer, Socket } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { config } from "../config.js";
 import { socketAuthMiddleware } from "../plugins/auth.js";
@@ -22,6 +22,13 @@ import type {
 } from "../types/index.js";
 
 export type LiveIO = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+export type LiveSocket = Socket<
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,

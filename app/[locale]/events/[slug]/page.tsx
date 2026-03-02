@@ -23,6 +23,7 @@ import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
 import { LiveRaceSection } from "@/components/live-race-section";
+import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -428,7 +429,12 @@ export default async function EventPage({ params }: PageProps) {
             />
 
             {/* LiveRace Section — visible when hasLiveRace */}
-            {event.hasLiveRace && (
+            {event.hasLiveRace && event.liveStatus === "CHECK_IN_OPEN" && (
+              <div className="mt-6">
+                <LiveRaceCheckinBanner />
+              </div>
+            )}
+            {event.hasLiveRace && event.liveStatus !== "CHECK_IN_OPEN" && (
               <div className="mt-6">
                 <LiveRaceSection eventId={event.id} />
               </div>

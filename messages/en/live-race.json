@@ -43,6 +43,8 @@
     "syncComplete": "Sync complete",
     "syncCompleteDetail": "{processed} points synced, {skipped} skipped",
     "offlineBanner": "You are offline. GPS data is being saved and will sync automatically when connectivity returns.",
-    "syncingBanner": "Syncing offline data with the server..."
+    "syncingBanner": "Syncing offline data with the server...",
+    "checkinOpenTitle": "Check-in open — race starting soon",
+    "checkinOpenDescription": "Athlete check-in is now open. The race will begin shortly. Stay tuned for live tracking."
   }
 }

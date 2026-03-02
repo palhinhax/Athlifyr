@@ -43,6 +43,8 @@
     "syncComplete": "Sincronización completa",
     "syncCompleteDetail": "{processed} puntos sincronizados, {skipped} omitidos",
     "offlineBanner": "Estás sin conexión a internet. Los datos GPS se están guardando y se sincronizarán automáticamente cuando vuelva la conexión.",
-    "syncingBanner": "Sincronizando datos offline con el servidor..."
+    "syncingBanner": "Sincronizando datos offline con el servidor...",
+    "checkinOpenTitle": "Check-in abierto — carrera próximamente",
+    "checkinOpenDescription": "El check-in de atletas está abierto. La carrera comenzará en breve. Estate atento al seguimiento en directo."
   }
 }

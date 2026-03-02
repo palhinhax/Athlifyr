@@ -43,6 +43,8 @@
     "syncComplete": "Synchronisation terminée",
     "syncCompleteDetail": "{processed} points synchronisés, {skipped} ignorés",
     "offlineBanner": "Vous êtes hors ligne. Les données GPS sont sauvegardées et seront synchronisées automatiquement lorsque la connexion sera rétablie.",
-    "syncingBanner": "Synchronisation des données hors ligne avec le serveur..."
+    "syncingBanner": "Synchronisation des données hors ligne avec le serveur...",
+    "checkinOpenTitle": "Enregistrement ouvert — course imminente",
+    "checkinOpenDescription": "L'enregistrement des athlètes est ouvert. La course débutera bientôt. Restez connecté pour le suivi en direct."
   }
 }

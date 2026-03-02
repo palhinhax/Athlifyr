@@ -234,6 +234,12 @@ export default async function RootLayout({
                             Gym Management
                           </Link>
                           <Link
+                            href="/presentation/live-race"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            Live Race
+                          </Link>
+                          <Link
                             href="/contact"
                             className="transition-colors hover:text-foreground"
                           >

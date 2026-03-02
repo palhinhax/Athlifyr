@@ -89,7 +89,12 @@ export async function POST(request: NextRequest) {
           position: result.rank,
           time: finishTimeStr,
           timeSeconds: totalSecs,
-          notes: result.status === "DNF" ? "DNF" : result.status === "DSQ" ? "DSQ" : null,
+          notes:
+            result.status === "DNF"
+              ? "DNF"
+              : result.status === "DSQ"
+                ? "DSQ"
+                : null,
         },
         create: {
           userId: result.userId,
@@ -98,7 +103,12 @@ export async function POST(request: NextRequest) {
           position: result.rank,
           time: finishTimeStr,
           timeSeconds: totalSecs,
-          notes: result.status === "DNF" ? "DNF" : result.status === "DSQ" ? "DSQ" : null,
+          notes:
+            result.status === "DNF"
+              ? "DNF"
+              : result.status === "DSQ"
+                ? "DSQ"
+                : null,
         },
       });
       persisted++;

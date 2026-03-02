@@ -276,6 +276,8 @@
       "prices": "Prices",
       "currentPhase": "(Current)",
       "spotsLeft": "spots left",
+      "showRoute": "View route",
+      "hideRoute": "Hide route",
       "triathlon": {
         "segments": "Triathlon Segments",
         "swim": "Swimming",

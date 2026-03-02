@@ -19,9 +19,9 @@ export interface JWTPayload {
 /** Authenticated socket data attached after auth middleware */
 export interface SocketAuthData {
   userId: string;
-  email: string;
+  email: string | null;
   userName: string | null;
-  role: UserRole;
+  role: UserRole | "spectator";
 }
 
 // ─── Chat Events ───────────────────────────────────────────────────────────
@@ -123,5 +123,5 @@ export interface InterServerEvents {
 }
 
 export interface SocketData extends SocketAuthData {
-  token: string; // JWT token for forwarding to Next.js API
+  token: string | null; // JWT token for forwarding to Next.js API (null for anonymous spectators)
 }

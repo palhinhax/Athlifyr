@@ -3,13 +3,15 @@
 import { useTranslations } from "next-intl";
 import { Radio, Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useLiveRace } from "@/hooks/use-live-race";
+import { useLiveRace, type EventLiveStatus } from "@/hooks/use-live-race";
 import { LiveLeaderboard } from "@/components/live-leaderboard";
 import { LiveEventFeed } from "@/components/live-event-feed";
 import { cn } from "@/lib/utils";
 
 interface LiveRaceSectionProps {
   eventId: string;
+  /** DB liveStatus — used as fallback until WebSocket connects */
+  dbStatus?: EventLiveStatus;
   /** Route points for map rendering (per variant) */
   variants?: {
     variantId: string;
@@ -28,7 +30,11 @@ interface LiveRaceSectionProps {
  *
  * Auto-activates when mounted (spectator-driven lazy activation).
  */
-export function LiveRaceSection({ eventId, className }: LiveRaceSectionProps) {
+export function LiveRaceSection({
+  eventId,
+  dbStatus,
+  className,
+}: LiveRaceSectionProps) {
   const t = useTranslations("liveRace");
 
   const { connected, status, leaderboard, spectatorCount, recentEvents } =
@@ -36,6 +42,7 @@ export function LiveRaceSection({ eventId, className }: LiveRaceSectionProps) {
       eventId,
       role: "spectator",
       autoConnect: true,
+      initialStatus: dbStatus,
     });
 
   // Don't render anything if the race hasn't been prepared yet

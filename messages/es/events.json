@@ -276,6 +276,8 @@
       "prices": "Precios",
       "currentPhase": "(Actual)",
       "spotsLeft": "plazas restantes",
+      "showRoute": "Ver recorrido",
+      "hideRoute": "Ocultar recorrido",
       "triathlon": {
         "segments": "Segmentos de Triatlón",
         "swim": "Natación",

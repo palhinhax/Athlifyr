@@ -67,8 +67,15 @@ export function socketAuthMiddleware(
     socket.handshake.auth?.token ||
     extractToken(socket.handshake.headers?.authorization);
 
+  // Allow anonymous spectators — they simply have no userId
   if (!token) {
-    return next(new Error("Authentication required"));
+    const data = socket.data as SocketData;
+    data.userId = `anon_${socket.id}`;
+    data.email = null;
+    data.userName = null;
+    data.role = "spectator";
+    data.token = null;
+    return next();
   }
 
   try {

@@ -103,6 +103,8 @@ interface UseLiveRaceOptions {
   autoConnect?: boolean;
   /** Live service URL (default: from env) */
   liveUrl?: string;
+  /** Initial status from DB — used as fallback until WebSocket connects */
+  initialStatus?: EventLiveStatus;
 }
 
 const MAX_RECENT_EVENTS = 20;
@@ -139,11 +141,12 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
     token,
     autoConnect = true,
     liveUrl,
+    initialStatus = "SCHEDULED",
   } = options;
 
   const [state, setState] = useState<LiveRaceState>({
     connected: false,
-    status: "SCHEDULED",
+    status: initialStatus,
     raceStartTime: null,
     athletes: [],
     leaderboard: [],

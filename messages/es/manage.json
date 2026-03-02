@@ -11,7 +11,8 @@
       "registrations": "Inscritos",
       "team": "Equipo",
       "payments": "Pagos",
-      "settings": "Configuración"
+      "settings": "Configuración",
+      "liverace": "LiveRace"
     },
     "event": {
       "eventImage": "Imagen del evento",
@@ -293,6 +294,61 @@
       "deleteError": "No se pudo eliminar el evento."
     },
     "adminLink": "Configuración avanzada (Admin)",
+    "liverace": {
+      "title": "Seguimiento GPS en Tiempo Real",
+      "subtitle": "Seguimiento GPS en tiempo real y resultados en vivo",
+      "serverOnline": "Servidor en línea",
+      "serverOffline": "Servidor sin conexión",
+      "refresh": "Actualizar",
+      "currentStatus": "Estado actual",
+      "spectators": "Espectadores conectados",
+      "participants": "Participantes rastreados",
+      "lastUpdate": "Última actualización GPS",
+      "controls": "Controles de carrera",
+      "notEnabled": "LiveRace no está activado para este evento. Pide al administrador de la plataforma que lo active en Configuración.",
+      "raceFinished": "La carrera ha terminado. Los resultados están disponibles en la página pública del evento.",
+      "raceCancelled": "La carrera fue cancelada.",
+      "publicPage": "Página pública en vivo",
+      "publicPageHelp": "Los espectadores siguen la carrera en tiempo real en esta página.",
+      "viewPublic": "Ver página en vivo",
+      "status": {
+        "SCHEDULED": "Programada",
+        "CHECK_IN_OPEN": "Check-in abierto",
+        "WARMUP": "Calentamiento",
+        "LIVE": "En directo",
+        "PAUSED": "Pausada",
+        "FINISHED": "Terminada",
+        "CANCELLED": "Cancelada"
+      },
+      "actions": {
+        "checkin": "Abrir check-in",
+        "checkinHelp": "Permite a los atletas hacer check-in. El marcador todavía no es visible.",
+        "checkinBtn": "Abrir check-in",
+        "warmup": "Iniciar calentamiento",
+        "warmupHelp": "La sala live queda disponible para atletas y espectadores. La carrera aún no ha comenzado.",
+        "warmupBtn": "Iniciar calentamiento",
+        "start": "Iniciar carrera",
+        "startHelp": "El marcador se activa y comienza el seguimiento GPS.",
+        "startBtn": "Iniciar carrera",
+        "pause": "Pausar carrera",
+        "pauseHelp": "Pausa temporal del seguimiento (p. ej. neutralización del recorrido).",
+        "pauseBtn": "Pausar",
+        "resume": "Reanudar carrera",
+        "resumeHelp": "Reanuda el seguimiento GPS y el marcador en vivo.",
+        "resumeBtn": "Reanudar",
+        "finish": "Terminar carrera",
+        "finishHelp": "Cierra la carrera y guarda los resultados finales.",
+        "finishBtn": "Terminar carrera"
+      },
+      "commandSuccess": {
+        "checkin": "Check-in abierto.",
+        "warmup": "Calentamiento iniciado.",
+        "start": "Carrera iniciada.",
+        "pause": "Carrera pausada.",
+        "resume": "Carrera reanudada.",
+        "finish": "Carrera terminada."
+      }
+    },
     "errors": {
       "saveError": "Error",
       "genericError": "Error al guardar"

@@ -11,7 +11,8 @@
       "registrations": "Registrations",
       "team": "Team",
       "payments": "Payments",
-      "settings": "Settings"
+      "settings": "Settings",
+      "liverace": "LiveRace"
     },
     "event": {
       "eventImage": "Event image",
@@ -293,6 +294,61 @@
       "deleteError": "Could not delete the event."
     },
     "adminLink": "Advanced settings (Admin)",
+    "liverace": {
+      "title": "Real-Time GPS Tracking",
+      "subtitle": "Real-time GPS tracking and live results",
+      "serverOnline": "Server online",
+      "serverOffline": "Server offline",
+      "refresh": "Refresh",
+      "currentStatus": "Current status",
+      "spectators": "Connected spectators",
+      "participants": "Tracked participants",
+      "lastUpdate": "Last GPS update",
+      "controls": "Race controls",
+      "notEnabled": "LiveRace is not enabled for this event. Ask a platform admin to enable it in Settings.",
+      "raceFinished": "The race has finished. Results are available on the public event page.",
+      "raceCancelled": "The race was cancelled.",
+      "publicPage": "Public live page",
+      "publicPageHelp": "Spectators follow the race in real time on this page.",
+      "viewPublic": "View live page",
+      "status": {
+        "SCHEDULED": "Scheduled",
+        "CHECK_IN_OPEN": "Check-in open",
+        "WARMUP": "Warm-up",
+        "LIVE": "Live",
+        "PAUSED": "Paused",
+        "FINISHED": "Finished",
+        "CANCELLED": "Cancelled"
+      },
+      "actions": {
+        "checkin": "Open check-in",
+        "checkinHelp": "Allows athletes to check in. The leaderboard is not yet visible.",
+        "checkinBtn": "Open check-in",
+        "warmup": "Start warm-up",
+        "warmupHelp": "The live room becomes available to athletes and spectators. The race has not started yet.",
+        "warmupBtn": "Start warm-up",
+        "start": "Start race",
+        "startHelp": "The leaderboard activates and GPS tracking begins.",
+        "startBtn": "Start race",
+        "pause": "Pause race",
+        "pauseHelp": "Temporarily pauses tracking (e.g. route neutralisation).",
+        "pauseBtn": "Pause",
+        "resume": "Resume race",
+        "resumeHelp": "Resumes GPS tracking and the live leaderboard.",
+        "resumeBtn": "Resume",
+        "finish": "Finish race",
+        "finishHelp": "Ends the race and saves the final results.",
+        "finishBtn": "Finish race"
+      },
+      "commandSuccess": {
+        "checkin": "Check-in opened.",
+        "warmup": "Warm-up started.",
+        "start": "Race started.",
+        "pause": "Race paused.",
+        "resume": "Race resumed.",
+        "finish": "Race finished."
+      }
+    },
     "errors": {
       "saveError": "Error",
       "genericError": "Error saving"

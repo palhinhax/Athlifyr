@@ -11,7 +11,8 @@
       "registrations": "Inscrits",
       "team": "Équipe",
       "payments": "Paiements",
-      "settings": "Paramètres"
+      "settings": "Paramètres",
+      "liverace": "LiveRace"
     },
     "event": {
       "eventImage": "Image de l'événement",
@@ -293,6 +294,61 @@
       "deleteError": "Impossible de supprimer l'événement."
     },
     "adminLink": "Paramètres avancés (Admin)",
+    "liverace": {
+      "title": "Suivi GPS en Temps Réel",
+      "subtitle": "Suivi GPS en temps réel et résultats en direct",
+      "serverOnline": "Serveur en ligne",
+      "serverOffline": "Serveur hors ligne",
+      "refresh": "Actualiser",
+      "currentStatus": "Statut actuel",
+      "spectators": "Spectateurs connectés",
+      "participants": "Participants suivis",
+      "lastUpdate": "Dernière mise à jour GPS",
+      "controls": "Contrôles de course",
+      "notEnabled": "LiveRace n'est pas activé pour cet événement. Demandez à un administrateur de la plateforme de l'activer dans les Paramètres.",
+      "raceFinished": "La course est terminée. Les résultats sont disponibles sur la page publique de l'événement.",
+      "raceCancelled": "La course a été annulée.",
+      "publicPage": "Page publique en direct",
+      "publicPageHelp": "Les spectateurs suivent la course en temps réel sur cette page.",
+      "viewPublic": "Voir la page en direct",
+      "status": {
+        "SCHEDULED": "Planifiée",
+        "CHECK_IN_OPEN": "Check-in ouvert",
+        "WARMUP": "Échauffement",
+        "LIVE": "En direct",
+        "PAUSED": "Pausée",
+        "FINISHED": "Terminée",
+        "CANCELLED": "Annulée"
+      },
+      "actions": {
+        "checkin": "Ouvrir le check-in",
+        "checkinHelp": "Permet aux athlètes de faire leur check-in. Le classement n'est pas encore visible.",
+        "checkinBtn": "Ouvrir le check-in",
+        "warmup": "Démarrer l'échauffement",
+        "warmupHelp": "La salle live est disponible pour les athlètes et les spectateurs. La course n'a pas encore commencé.",
+        "warmupBtn": "Démarrer l'échauffement",
+        "start": "Démarrer la course",
+        "startHelp": "Le classement s'active et le suivi GPS commence.",
+        "startBtn": "Démarrer la course",
+        "pause": "Mettre en pause",
+        "pauseHelp": "Pause temporaire du suivi (ex. neutralisation du parcours).",
+        "pauseBtn": "Pause",
+        "resume": "Reprendre la course",
+        "resumeHelp": "Reprend le suivi GPS et le classement en direct.",
+        "resumeBtn": "Reprendre",
+        "finish": "Terminer la course",
+        "finishHelp": "Clôture la course et enregistre les résultats finaux.",
+        "finishBtn": "Terminer la course"
+      },
+      "commandSuccess": {
+        "checkin": "Check-in ouvert.",
+        "warmup": "Échauffement démarré.",
+        "start": "Course démarrée.",
+        "pause": "Course mise en pause.",
+        "resume": "Course reprise.",
+        "finish": "Course terminée."
+      }
+    },
     "errors": {
       "saveError": "Erreur",
       "genericError": "Erreur lors de l'enregistrement"

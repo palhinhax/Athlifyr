@@ -323,7 +323,11 @@ Detailed documentation is available in the `docs/` folder:
 | [RESEND_SETUP.md](docs/RESEND_SETUP.md)                   | Email provider setup           |
 | [PALETTE.md](docs/PALETTE.md)                             | Design system & color palette  |
 
-## 📄 License
+## � Code Quality
+
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=GAIA-TECHNOLOGY_ATHLIFYR)
+
+## �📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
 

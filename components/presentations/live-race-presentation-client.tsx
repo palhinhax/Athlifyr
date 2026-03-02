@@ -29,6 +29,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { useTranslations } from "next-intl";
 import Link from "next/link";
+import {
+  MobileLiveTrackingMockup,
+  MobileLeaderboardMockup,
+  MobileRegistrationMockup,
+  DesktopLiveRaceMockup,
+  MobileSpectatorAlertsMockup,
+  DesktopRouteEditorMockup,
+  FeatureIllustration,
+} from "@/components/presentations/device-mockups";
 
 /* -------------------------------------------------------------------------
    Animated counter for the stats section
@@ -53,7 +62,7 @@ function AnimatedCounter({
 }
 
 /* -------------------------------------------------------------------------
-   Feature section — alternating layout (image-left / image-right)
+   Feature section — alternating layout with rich illustration
    ------------------------------------------------------------------------- */
 function FeatureSection({
   badge,
@@ -63,6 +72,7 @@ function FeatureSection({
   icon: Icon,
   index,
   comingSoon,
+  illustration,
 }: {
   badge: string;
   title: string;
@@ -71,6 +81,7 @@ function FeatureSection({
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   index: number;
   comingSoon?: boolean;
+  illustration?: React.ReactNode;
 }) {
   const isEven = index % 2 === 0;
 
@@ -110,28 +121,34 @@ function FeatureSection({
             </div>
           </motion.div>
 
-          {/* Illustration card */}
-          <motion.div
-            initial={{ opacity: 0, x: isEven ? 30 : -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.6, delay: 0.15 }}
-            viewport={{ once: true }}
-            className="flex flex-1 justify-center"
-          >
-            <div className="relative flex h-[320px] w-full max-w-md items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-muted/60 to-muted/30 shadow-lg">
-              {comingSoon && (
-                <div className="absolute right-4 top-4 z-10">
-                  <Badge variant="outline" className="animate-pulse">
-                    Coming Soon
-                  </Badge>
-                </div>
-              )}
-              <Icon
-                className="h-24 w-24 text-muted-foreground/30"
-                strokeWidth={1}
-              />
-            </div>
-          </motion.div>
+          {/* Illustration — device mockup or fallback */}
+          {illustration ? (
+            <FeatureIllustration isEven={isEven}>
+              {illustration}
+            </FeatureIllustration>
+          ) : (
+            <motion.div
+              initial={{ opacity: 0, x: isEven ? 30 : -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.6, delay: 0.15 }}
+              viewport={{ once: true }}
+              className="flex flex-1 justify-center"
+            >
+              <div className="relative flex h-[320px] w-full max-w-md items-center justify-center overflow-hidden rounded-2xl border bg-gradient-to-br from-muted/60 to-muted/30 shadow-lg">
+                {comingSoon && (
+                  <div className="absolute right-4 top-4 z-10">
+                    <Badge variant="outline" className="animate-pulse">
+                      Coming Soon
+                    </Badge>
+                  </div>
+                )}
+                <Icon
+                  className="h-24 w-24 text-muted-foreground/30"
+                  strokeWidth={1}
+                />
+              </div>
+            </motion.div>
+          )}
         </div>
       </div>
     </section>
@@ -156,26 +173,32 @@ export function LiveRacePresentationClient() {
     {
       key: "liveTracking",
       icon: MapPin,
+      illustration: <MobileLiveTrackingMockup />,
     },
     {
       key: "leaderboard",
       icon: Trophy,
+      illustration: <DesktopLiveRaceMockup />,
     },
     {
       key: "registration",
       icon: ClipboardList,
+      illustration: <MobileRegistrationMockup />,
     },
     {
       key: "spectators",
       icon: Users,
+      illustration: <MobileSpectatorAlertsMockup />,
     },
     {
       key: "alerts",
       icon: Bell,
+      illustration: <MobileLeaderboardMockup />,
     },
     {
       key: "routeEditor",
       icon: Route,
+      illustration: <DesktopRouteEditorMockup />,
     },
     {
       key: "liveStream",
@@ -362,6 +385,7 @@ export function LiveRacePresentationClient() {
           icon={feat.icon}
           index={idx}
           comingSoon={feat.comingSoon}
+          illustration={feat.illustration}
         />
       ))}
 

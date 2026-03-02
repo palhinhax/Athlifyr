@@ -86,17 +86,19 @@ export async function POST(request: NextRequest) {
           },
         },
         update: {
-          rank: result.rank,
-          finishTime: finishTimeStr,
-          status: result.status,
+          position: result.rank,
+          time: finishTimeStr,
+          timeSeconds: totalSecs,
+          notes: result.status === "DNF" ? "DNF" : result.status === "DSQ" ? "DSQ" : null,
         },
         create: {
           userId: result.userId,
           eventId,
           variantId: result.variantId,
-          rank: result.rank,
-          finishTime: finishTimeStr,
-          status: result.status,
+          position: result.rank,
+          time: finishTimeStr,
+          timeSeconds: totalSecs,
+          notes: result.status === "DNF" ? "DNF" : result.status === "DSQ" ? "DSQ" : null,
         },
       });
       persisted++;

@@ -15,8 +15,6 @@ import {
   ArrowRight,
   Zap,
   Globe,
-  Heart,
-  Shield,
   Mountain,
   Bike,
   Timer,
@@ -36,6 +34,7 @@ import {
   DesktopLiveRaceMockup,
   MobileSpectatorAlertsMockup,
   DesktopRouteEditorMockup,
+  DesktopLiveStreamMockup,
   FeatureIllustration,
 } from "@/components/presentations/device-mockups";
 
@@ -204,6 +203,7 @@ export function LiveRacePresentationClient() {
       key: "liveStream",
       icon: Video,
       comingSoon: true,
+      illustration: <DesktopLiveStreamMockup />,
     },
   ];
 
@@ -215,14 +215,6 @@ export function LiveRacePresentationClient() {
     { key: "cycling", icon: Bike, color: "from-red-500 to-rose-600" },
     { key: "ocr", icon: Target, color: "from-purple-500 to-violet-600" },
     { key: "triathlon", icon: Waves, color: "from-teal-500 to-cyan-600" },
-  ];
-
-  /* ------ Why free reasons ------ */
-  const whyFreeReasons = [
-    { key: "reason1", icon: Heart },
-    { key: "reason2", icon: Users },
-    { key: "reason3", icon: Shield },
-    { key: "reason4", icon: Globe },
   ];
 
   /* ------ Steps ------ */
@@ -496,61 +488,6 @@ export function LiveRacePresentationClient() {
                 )}
               </motion.div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ================================================================
-          WHY FREE
-          ================================================================ */}
-      <section className="bg-muted/30 py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mb-12 text-center"
-          >
-            <Badge className="mb-4 gap-1" variant="secondary">
-              <Zap className="h-3 w-3" />
-              {t("whyFree.badge")}
-            </Badge>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
-              {t("whyFree.title")}
-            </h2>
-            <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-              {t("whyFree.description")}
-            </p>
-          </motion.div>
-
-          <div className="mx-auto grid max-w-4xl gap-6 sm:grid-cols-2">
-            {whyFreeReasons.map((r, i) => {
-              const RIcon = r.icon;
-              return (
-                <motion.div
-                  key={r.key}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.4, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                >
-                  <Card className="h-full transition-shadow hover:shadow-lg">
-                    <CardContent className="p-6">
-                      <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10">
-                        <RIcon className="h-5 w-5 text-orange-500" />
-                      </div>
-                      <h3 className="mb-2 font-bold">
-                        {t(`whyFree.${r.key}Title`)}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {t(`whyFree.${r.key}Desc`)}
-                      </p>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              );
-            })}
           </div>
         </div>
       </section>

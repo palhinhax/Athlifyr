@@ -23,7 +23,7 @@
     "whyAthlifyr": {
       "badge": "Porquê Athlifyr?",
       "title": "Tudo o que precisas para organizar eventos de classe mundial",
-      "description": "De uma corrida local de 5K a um ultra trail de 100 milhas, o Athlifyr dá-te ferramentas profissionais — totalmente gratuitas, sem custos escondidos."
+      "description": "De uma corrida local de 5K a um ultra trail de 100 milhas, o Athlifyr dá-te ferramentas profissionais — totalmente gratuitas."
     },
     "features": {
       "liveTracking": {
@@ -106,19 +106,6 @@
       "ocrDesc": "Corridas de obstáculos com rastreamento em cada estação de obstáculo.",
       "triathlon": "Triatlo e Multi-Desporto",
       "triathlonDesc": "Eventos de natação-ciclismo-corrida com rastreamento nas zonas de transição e cronometragem multi-segmento."
-    },
-    "whyFree": {
-      "badge": "100% Gratuito",
-      "title": "Porque é o Athlifyr totalmente gratuito?",
-      "description": "Acreditamos que todos os organizadores merecem ferramentas profissionais, independentemente do orçamento.",
-      "reason1Title": "A Nossa Missão",
-      "reason1Desc": "Queremos tornar a organização de eventos desportivos acessível a todos — de clubes de corrida locais a diretores de prova profissionais.",
-      "reason2Title": "Crescer Juntos",
-      "reason2Desc": "Cada evento no Athlifyr traz mais atletas para a plataforma, criando uma comunidade próspera que beneficia todos.",
-      "reason3Title": "Sem Custos Escondidos",
-      "reason3Desc": "Sem taxas de configuração, sem mensalidades, sem custos por atleta. Funcionalidades premium no futuro serão opcionais — a plataforma base fica gratuita para sempre.",
-      "reason4Title": "Modelo Transparente",
-      "reason4Desc": "Cobramos apenas uma pequena taxa de processamento nas inscrições com pagamento. Eventos gratuitos são completamente gratuitos — sem condições."
     },
     "howItWorks": {
       "badge": "Como Funciona",

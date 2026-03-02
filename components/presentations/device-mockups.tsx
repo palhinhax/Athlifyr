@@ -1125,6 +1125,109 @@ export function DesktopRouteEditorMockup() {
 }
 
 /* =========================================================================
+   7) Desktop: Live Stream Mockup (Coming Soon)
+   ========================================================================= */
+export function DesktopLiveStreamMockup() {
+  const t = useTranslations("liveRacePresentation.mockups");
+
+  return (
+    <BrowserFrame url="athlifyr.com/events/trail-2026/live">
+      <div className="flex h-full flex-col bg-zinc-950">
+        {/* Video area */}
+        <div className="relative flex flex-1 items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900">
+          {/* Animated play button */}
+          <motion.div
+            className="flex h-16 w-16 items-center justify-center rounded-full bg-orange-500/20 backdrop-blur-sm"
+            animate={{ scale: [1, 1.15, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            <div className="ml-1 h-0 w-0 border-y-[10px] border-l-[18px] border-y-transparent border-l-white" />
+          </motion.div>
+
+          {/* Top bar overlay */}
+          <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/60 to-transparent px-3 py-2">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 rounded-full bg-red-500 px-2 py-0.5">
+                <Radio className="h-2.5 w-2.5 animate-pulse text-white" />
+                <span className="text-[8px] font-bold text-white">LIVE</span>
+              </div>
+              <span className="text-[9px] text-white/70">
+                Trail Manuelino 2026
+              </span>
+            </div>
+            <div className="flex items-center gap-1 text-[8px] text-white/60">
+              <Eye className="h-2.5 w-2.5" />
+              <span>1,247</span>
+            </div>
+          </div>
+
+          {/* Bottom bar overlay */}
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent px-3 py-2">
+            {/* Progress bar */}
+            <div className="mb-2 h-0.5 w-full overflow-hidden rounded-full bg-white/20">
+              <motion.div
+                className="h-full rounded-full bg-orange-500"
+                animate={{ width: ["30%", "65%"] }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  repeatType: "reverse",
+                }}
+              />
+            </div>
+            <div className="flex items-center justify-between text-[8px] text-white/80">
+              <span>02:34:18</span>
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-white/10 px-1.5 py-0.5 text-[7px]">
+                  720p
+                </span>
+                <span className="rounded bg-white/10 px-1.5 py-0.5 text-[7px]">
+                  1x
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Camera labels */}
+          <div className="absolute bottom-10 left-3 flex gap-1">
+            {["Finish Line", "Drone", "CP3"].map((cam, i) => (
+              <div
+                key={cam}
+                className={`rounded px-1.5 py-0.5 text-[7px] font-medium ${
+                  i === 0
+                    ? "bg-orange-500 text-white"
+                    : "bg-white/10 text-white/60"
+                }`}
+              >
+                {cam}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Bottom strip with live data overlay */}
+        <div className="flex items-center justify-between border-t border-zinc-800 bg-zinc-900 px-3 py-1.5">
+          <div className="flex items-center gap-2">
+            <Trophy className="h-3 w-3 text-orange-400" />
+            <span className="text-[8px] text-zinc-400">{t("liveResults")}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <motion.div
+              className="h-1.5 w-1.5 rounded-full bg-red-500"
+              animate={{ opacity: [1, 0.3, 1] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+            />
+            <span className="text-[8px] font-medium text-zinc-300">
+              {t("connected")}
+            </span>
+          </div>
+        </div>
+      </div>
+    </BrowserFrame>
+  );
+}
+
+/* =========================================================================
    Animated wrapper for feature illustrations
    ========================================================================= */
 export function FeatureIllustration({

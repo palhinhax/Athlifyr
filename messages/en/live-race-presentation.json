@@ -23,7 +23,7 @@
     "whyAthlifyr": {
       "badge": "Why Athlifyr?",
       "title": "Everything you need to organize world-class events",
-      "description": "From a local 5K to a 100-mile ultra trail, Athlifyr gives you professional tools — completely free, no hidden fees."
+      "description": "From a local 5K to a 100-mile ultra trail, Athlifyr gives you professional tools — completely free."
     },
     "features": {
       "liveTracking": {
@@ -106,19 +106,6 @@
       "ocrDesc": "Obstacle course races with checkpoint tracking at every obstacle station.",
       "triathlon": "Triathlon & Multi-Sport",
       "triathlonDesc": "Swim-bike-run events with transition zone tracking and multi-segment timing."
-    },
-    "whyFree": {
-      "badge": "100% Free",
-      "title": "Why is Athlifyr completely free?",
-      "description": "We believe every organizer deserves professional tools, regardless of budget.",
-      "reason1Title": "Our Mission",
-      "reason1Desc": "We want to make sports event organization accessible to everyone — from local running clubs to professional race directors.",
-      "reason2Title": "Growing Together",
-      "reason2Desc": "Every event on Athlifyr brings more athletes to the platform, creating a thriving community that benefits everyone.",
-      "reason3Title": "No Hidden Costs",
-      "reason3Desc": "No setup fees, no monthly charges, no per-athlete costs. Premium features in the future will be optional — the core platform stays free forever.",
-      "reason4Title": "Transparent Model",
-      "reason4Desc": "We only charge a small processing fee on registrations with payments. Free events are completely free — no strings attached."
     },
     "howItWorks": {
       "badge": "How It Works",

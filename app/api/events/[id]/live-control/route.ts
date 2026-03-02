@@ -115,19 +115,8 @@ export async function POST(
     console.warn("[live-control] Could not notify live server:", err);
   }
 
-  // Return updated event details for the UI
-  const updatedEvent = await prisma.event.findUnique({
-    where: { id: eventId },
-    select: {
-      id: true,
-      hasLiveRace: true,
-      liveStatus: true,
-      hasRegistrations: true,
-    },
-  });
-
+  // Return the new status only — the client updates its local state directly
   return NextResponse.json({
     liveStatus: transition.to,
-    event: updatedEvent,
   });
 }

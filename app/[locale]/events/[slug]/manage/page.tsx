@@ -297,9 +297,7 @@ export default function EventManagePage() {
             populateEvent={populateEvent}
           />
           <TabConfig event={event} isAdmin={isAdmin} onSave={patchEvent} />
-          {event.hasLiveRace && (
-            <TabLiverace event={event} onEventUpdate={populateEvent} />
-          )}
+          {event.hasLiveRace && <TabLiverace event={event} />}
         </Tabs>
 
         {/* Admin link */}

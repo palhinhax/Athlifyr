@@ -26,7 +26,6 @@ import { Link } from "@/i18n/routing";
 
 interface TabLiveraceProps {
   event: EventDetails;
-  onEventUpdate: (data: EventDetails) => void;
 }
 
 interface LiveStatusData {
@@ -50,7 +49,7 @@ const STATUS_COLORS: Record<string, string> = {
   CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300",
 };
 
-export function TabLiverace({ event, onEventUpdate }: TabLiveraceProps) {
+export function TabLiverace({ event }: TabLiveraceProps) {
   const t = useTranslations("manage.liverace");
   const tErr = useTranslations("manage.errors");
 
@@ -111,10 +110,8 @@ export function TabLiverace({ event, onEventUpdate }: TabLiveraceProps) {
       }
       const data = (await res.json()) as {
         liveStatus: string;
-        event?: EventDetails;
       };
       setLiveData((prev) => ({ ...prev, liveStatus: data.liveStatus }));
-      if (data.event) onEventUpdate(data.event);
       toast({ title: t(`commandSuccess.${command}`) });
       await fetchLiveStatus();
     } catch (e) {

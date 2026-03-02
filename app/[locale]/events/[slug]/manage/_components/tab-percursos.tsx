@@ -22,6 +22,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 import type { EventDetails, EventVariant } from "./types";
 import { toDateOnly } from "./types";
+import { VariantRouteEditor } from "@/components/variant-route-editor";
 
 interface TabPercursosProps {
   event: EventDetails;
@@ -31,6 +32,7 @@ interface TabPercursosProps {
 }
 
 export function TabPercursos({
+  event,
   variants,
   setVariants,
   onSave,
@@ -286,6 +288,15 @@ export function TabPercursos({
                 <p className="text-xs text-muted-foreground">
                   {t("teamSizeHelp")}
                 </p>
+
+                {/* Route editor — only available for saved variants (has id) */}
+                {v.id && (
+                  <VariantRouteEditor
+                    eventId={event.id}
+                    variantId={v.id}
+                    variantName={v.name}
+                  />
+                )}
               </div>
             ))}
             <div className="flex justify-end border-t pt-4">

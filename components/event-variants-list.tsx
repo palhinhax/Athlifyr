@@ -1,6 +1,7 @@
 import { Route } from "lucide-react";
 import { TriathlonSegmentsDisplay } from "./triathlon-segments-display";
 import { formatPrice, type Currency } from "@/lib/currency";
+import { VariantRouteMapViewer } from "./variant-route-map-viewer";
 
 interface TriathlonSegment {
   id: string;
@@ -66,6 +67,7 @@ interface VariantLabels {
 interface EventVariantsListProps {
   variants: EventVariant[];
   labels?: VariantLabels;
+  eventId?: string;
 }
 
 // Default labels in Portuguese (fallback)
@@ -98,6 +100,7 @@ const defaultLabels: VariantLabels = {
 export function EventVariantsList({
   variants,
   labels = defaultLabels,
+  eventId,
 }: EventVariantsListProps) {
   if (!variants || variants.length === 0) {
     return null;
@@ -297,6 +300,14 @@ export function EventVariantsList({
                         })}
                       </div>
                     )}
+
+                  {/* Route Map — shown when a GPX or checkpoints exist */}
+                  {eventId && (
+                    <VariantRouteMapViewer
+                      eventId={eventId}
+                      variantId={variant.id}
+                    />
+                  )}
                 </div>
               );
             })}

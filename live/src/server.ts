@@ -8,6 +8,7 @@ import helmet from "@fastify/helmet";
 import rateLimit from "@fastify/rate-limit";
 import { config } from "./config.js";
 import { chatRoutes } from "./modules/chat/chat.routes.js";
+import { liveRaceRoutes } from "./modules/liverace/liverace.routes.js";
 
 export async function buildServer() {
   // Build logger options — only use pino-pretty in development if available
@@ -62,6 +63,7 @@ export async function buildServer() {
   // ─── API Routes ────────────────────────────────────────────────────────
 
   await app.register(chatRoutes, { prefix: "/api/chat" });
+  await app.register(liveRaceRoutes, { prefix: "/live" });
 
   // ─── Error Handler ─────────────────────────────────────────────────────
 

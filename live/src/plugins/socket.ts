@@ -10,6 +10,10 @@ import {
   handleChatConnect,
   handleChatDisconnect,
 } from "../modules/chat/chat.handlers.js";
+import {
+  registerLiveRaceHandlers,
+  handleLiveRaceDisconnect,
+} from "../modules/liverace/liverace.handlers.js";
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -54,11 +58,13 @@ export function createSocketServer(httpServer: HttpServer): LiveIO {
 
     // Register module handlers
     await handleChatConnect(io, socket);
+    registerLiveRaceHandlers(io, socket);
 
     // Handle disconnection
     socket.on("disconnect", async (reason) => {
       console.log(`[Socket] User ${userId} disconnected: ${reason}`);
       await handleChatDisconnect(io, socket);
+      handleLiveRaceDisconnect(io, socket);
     });
 
     // Handle errors

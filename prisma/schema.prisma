@@ -313,9 +313,61 @@ model EventVariant {
   results           Result[]
   triathlonSegments TriathlonSegment[]
   registrations     Registration[]
+  route             EventRoute?
 
   @@index([eventId])
   @@index([startDate])
+}
+
+/// GPX route for an event variant — one route per variant
+model EventRoute {
+  id              String             @id @default(cuid())
+  variantId       String             @unique
+  variant         EventVariant       @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  /// Original GPX file content (XML string)
+  gpxData         String?            @db.Text
+  /// Simplified polyline points [[lat, lng], ...] — used for map rendering
+  routePoints     Json               @default("[]")
+  /// Distance in km (auto-calculated from GPX or manually set)
+  distanceKm      Float?
+  /// Total elevation gain in meters (auto-calculated from GPX)
+  elevationGainM  Int?
+  /// Total elevation loss in meters (auto-calculated from GPX)
+  elevationLossM  Int?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  checkpoints     RouteCheckpoint[]
+
+  @@index([variantId])
+}
+
+enum CheckpointType {
+  START
+  FINISH
+  INTERMEDIATE
+  TRANSITION   // for triathlon/multi-sport
+}
+
+/// A gate/checkpoint that athletes must pass through
+model RouteCheckpoint {
+  id          String         @id @default(cuid())
+  routeId     String
+  route       EventRoute     @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  name        String
+  type        CheckpointType @default(INTERMEDIATE)
+  /// Order of passage (0 = start, last = finish)
+  order       Int
+  latitude    Float
+  longitude   Float
+  /// Optional radius in meters for geofencing detection on mobile
+  radiusM     Int            @default(50)
+  /// Optional cutoff time from race start in minutes
+  cutoffMin   Int?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([routeId])
+  @@index([routeId, order])
 }
 
 model EventVariantTranslation {
@@ -1406,9 +1458,10 @@ enum EventStripeOnboardingStatus {
 enum EventLiveStatus {
   SCHEDULED
   CHECK_IN_OPEN
-  LIVE
+  WARMUP     // Live room prepared, athletes/spectators can connect; race not started yet
+  LIVE       // Race officially started — leaderboard active
   PAUSED
-  FINISHED
+  FINISHED   // Race ended — results persisted
   CANCELLED
 }
 

@@ -166,6 +166,8 @@
       "variantSoldOutDesc": "Diese Variante hat keine freien Plätze mehr.",
       "registrationClosed": "Anmeldung geschlossen",
       "registrationClosedDesc": "Für diese Variante gibt es derzeit keinen aktiven Anmeldezeitraum.",
+      "registrationsClosed": "Anmeldungen nicht verfügbar",
+      "registrationsClosedDesc": "Die Anmeldungen für diese Veranstaltung haben noch nicht begonnen oder der Anmeldezeitraum ist bereits abgelaufen.",
       "consent": {
         "title": "Einwilligung zur Datenfreigabe",
         "description": "Diese Veranstaltung erfordert persönliche Informationen für die Anmeldung. Diese Daten werden an den Veranstalter weitergegeben.",

@@ -381,12 +381,14 @@ export function useEventRegistration({
   })();
 
   const allVariantsSoldOut =
+    variants.length > 0 && variants.every((v) => isVariantSoldOut(v));
+
+  // True when paid event has variants but none have an active pricing phase
+  const allVariantsNoPrice =
+    hasRegistrations &&
     variants.length > 0 &&
-    variants.every((v) => {
-      if (isVariantSoldOut(v)) return true;
-      if (hasRegistrations && !variantHasActivePrice(v)) return true;
-      return false;
-    });
+    !allVariantsSoldOut &&
+    variants.every((v) => !variantHasActivePrice(v));
 
   // ── Action handlers ───────────────────────────────────────────────────
 
@@ -863,6 +865,7 @@ export function useEventRegistration({
       selectedVariantSoldOut,
       selectedVariantNoPrice,
       allVariantsSoldOut,
+      allVariantsNoPrice,
       selectedVariantTeamSize,
       needsConsentOrTeam,
       requiredRegistrationFields,

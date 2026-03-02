@@ -5,7 +5,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import {
   Gift,
@@ -14,7 +13,10 @@ import {
   Ticket,
   ShieldCheck,
   ChevronDown,
+  CheckCircle2,
+  XCircle,
 } from "lucide-react-native";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 import { useTranslation } from "react-i18next";
 import { useRouter } from "expo-router";
 import { api } from "@/src/lib/api";
@@ -58,6 +60,11 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isJoining, setIsJoining] = useState(false);
   const [isTransparencyOpen, setIsTransparencyOpen] = useState(false);
+  const [joinModal, setJoinModal] = useState<{
+    visible: boolean;
+    success: boolean;
+    ticketNumber?: number;
+  }>({ visible: false, success: false });
 
   const fetchGiveaway = useCallback(async () => {
     try {
@@ -86,12 +93,11 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
       setIsJoining(true);
       const res = await api.post(`/giveaways/${giveaway!.id}/join`);
       const data = res.data;
-      Alert.alert(
-        t("events.giveaway.joinSuccess"),
-        t("events.giveaway.transparency.yourTicketNumber", {
-          number: data.ticketNumber,
-        })
-      );
+      setJoinModal({
+        visible: true,
+        success: true,
+        ticketNumber: data.ticketNumber,
+      });
       setGiveaway((prev) =>
         prev
           ? {
@@ -103,7 +109,7 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
           : prev
       );
     } catch {
-      Alert.alert(t("events.giveaway.joinError"));
+      setJoinModal({ visible: true, success: false });
     } finally {
       setIsJoining(false);
     }
@@ -143,6 +149,38 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
         isWinner ? styles.containerWinner : styles.containerDefault,
       ]}
     >
+      {/* Join result modal */}
+      <ConfirmModal
+        visible={joinModal.visible}
+        onClose={() => setJoinModal((prev) => ({ ...prev, visible: false }))}
+        title={
+          joinModal.success
+            ? t("events.giveaway.joinSuccess")
+            : t("events.giveaway.joinError")
+        }
+        message={
+          joinModal.success && joinModal.ticketNumber != null
+            ? t("events.giveaway.transparency.yourTicketNumber", {
+                number: joinModal.ticketNumber,
+              })
+            : undefined
+        }
+        icon={
+          joinModal.success ? (
+            <CheckCircle2 size={28} color={theme.colors.success} />
+          ) : (
+            <XCircle size={28} color={theme.colors.error} />
+          )
+        }
+        actions={[
+          {
+            label: t("common.close"),
+            variant: "primary",
+            onPress: () =>
+              setJoinModal((prev) => ({ ...prev, visible: false })),
+          },
+        ]}
+      />
       {/* Winner banner */}
       {isWinner && (
         <View style={styles.winnerBanner}>

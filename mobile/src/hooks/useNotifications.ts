@@ -98,9 +98,9 @@ export function useNotifications() {
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
     enabled: isAuthenticated,
-    refetchInterval: 15000,
+    refetchInterval: 5 * 60 * 1000, // 5 minutes — push notifications handle real-time
     refetchIntervalInBackground: false,
-    staleTime: 10000,
+    staleTime: 2 * 60 * 1000, // consider data fresh for 2 minutes
   });
 
   const markAsReadMutation = useMutation({

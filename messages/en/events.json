@@ -134,6 +134,8 @@
       "variantSoldOutDesc": "This variant has no spots available.",
       "registrationClosed": "Registration closed",
       "registrationClosedDesc": "There is no active registration period for this variant at the moment.",
+      "registrationsClosed": "Registrations unavailable",
+      "registrationsClosedDesc": "Registrations for this event have not opened yet or the registration period has ended.",
       "consent": {
         "title": "Data Sharing Consent",
         "description": "This event requires some personal information for registration. This data will be shared with the event organizer.",

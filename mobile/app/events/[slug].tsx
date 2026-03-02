@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Share2,
   Ban,
+  Radio,
 } from "lucide-react-native";
 import Markdown from "react-native-markdown-display";
 import { useTranslation } from "react-i18next";
@@ -49,11 +50,11 @@ export default function EventDetailScreen() {
       setEvent(response.data);
     } catch (err) {
       console.error("Error fetching event:", err);
-      setError("Failed to load event");
+      setError(t("events.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, t]);
 
   useEffect(() => {
     if (slug) {
@@ -79,13 +80,22 @@ export default function EventDetailScreen() {
     try {
       if (!event) return;
 
-      const shareMessage = `Check out this event: ${event.title}\n${
+      const shareMessage = [
+        t("events.shareMessage", { title: event.title }),
         event.startDate
-          ? `Date: ${new Date(event.startDate).toLocaleDateString()}`
-          : ""
-      }${event.city && event.country ? `\nLocation: ${event.city}, ${event.country}` : ""}${
-        event.externalUrl ? `\n${event.externalUrl}` : ""
-      }`;
+          ? t("events.shareDate", {
+              date: new Date(event.startDate).toLocaleDateString(),
+            })
+          : null,
+        event.city && event.country
+          ? t("events.shareLocation", {
+              location: `${event.city}, ${event.country}`,
+            })
+          : null,
+        event.externalUrl ?? null,
+      ]
+        .filter(Boolean)
+        .join("\n");
 
       await Share.share({
         message: shareMessage,
@@ -119,7 +129,7 @@ export default function EventDetailScreen() {
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || "Event not found"}</Text>
+          <Text style={styles.errorText}>{error || t("events.notFound")}</Text>
         </View>
       </View>
     );
@@ -232,8 +242,38 @@ export default function EventDetailScreen() {
             <EventRegistration
               eventId={event.id}
               variants={event.variants || []}
+              hasRegistrations={event.hasRegistrations ?? false}
             />
           )}
+
+          {/* Live Race Button */}
+          {event.hasLiveRace &&
+            event.liveStatus !== "CANCELLED" &&
+            event.liveStatus !== "FINISHED" && (
+              <TouchableOpacity
+                style={styles.liveRaceButton}
+                onPress={() =>
+                  router.push({
+                    pathname: "/live-race",
+                    params: { eventId: event.id },
+                  })
+                }
+                activeOpacity={0.8}
+              >
+                <Radio size={20} color="#fff" />
+                <Text style={styles.liveRaceButtonText}>
+                  {event.liveStatus === "LIVE"
+                    ? t("liveRace.sectionTitle")
+                    : event.liveStatus === "WARMUP"
+                      ? t("liveRace.sectionTitle")
+                      : t("liveRace.startTracking")}
+                </Text>
+                {(event.liveStatus === "LIVE" ||
+                  event.liveStatus === "WARMUP") && (
+                  <View style={styles.liveRaceDot} />
+                )}
+              </TouchableOpacity>
+            )}
 
           {/* Location Map */}
           {event.latitude && event.longitude && (
@@ -250,7 +290,7 @@ export default function EventDetailScreen() {
           {/* Description */}
           {event.description && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About</Text>
+              <Text style={styles.sectionTitle}>{t("events.about")}</Text>
               <Markdown style={markdownStyles}>{event.description}</Markdown>
             </View>
           )}
@@ -269,7 +309,7 @@ export default function EventDetailScreen() {
             >
               <ExternalLink size={20} color={theme.colors.white} />
               <Text style={styles.externalLinkText}>
-                Visit Official Website
+                {t("events.visitWebsite")}
               </Text>
             </TouchableOpacity>
           )}
@@ -439,6 +479,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: theme.colors.white,
+  },
+  liveRaceButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+    backgroundColor: "#EF4444",
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  liveRaceButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  liveRaceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#fff",
   },
 });
 

@@ -68,7 +68,7 @@ function FeatureSection({
   title: string;
   description: string;
   points: string[];
-  icon: React.ElementType;
+  icon: React.ComponentType<{ className?: string }>;
   index: number;
   comingSoon?: boolean;
 }) {

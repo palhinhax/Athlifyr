@@ -1,7 +1,5 @@
 # Athlifyr
 
-[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=GAIA-TECHNOLOGY_ATHLIFYR)
-
 **one place. all sports.**
 
 Athlifyr is a comprehensive sports platform for discovering events, managing venues, building workouts, and connecting with the sports community. From running and trail to HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon, and more — across Portugal, Spain, and beyond.
@@ -323,7 +321,11 @@ Detailed documentation is available in the `docs/` folder:
 | [RESEND_SETUP.md](docs/RESEND_SETUP.md)                   | Email provider setup           |
 | [PALETTE.md](docs/PALETTE.md)                             | Design system & color palette  |
 
-## 📄 License
+## � Code Quality
+
+[![SonarQube Cloud](https://sonarcloud.io/images/project_badges/sonarcloud-light.svg)](https://sonarcloud.io/summary/new_code?id=GAIA-TECHNOLOGY_ATHLIFYR)
+
+## �📄 License
 
 MIT License — see [LICENSE](LICENSE) for details.
 

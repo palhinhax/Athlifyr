@@ -83,13 +83,38 @@ export interface ChatSeenEvent {
   lastSeenAt: string;
 }
 
+// ─── LiveRace Events (re-exported from module) ────────────────────────────
+
+import type {
+  LiveRaceClientToServerEvents,
+  LiveRaceServerToClientEvents,
+  AthletePositionUpdate as _AthletePositionUpdate,
+  LeaderboardEntry as _LeaderboardEntry,
+  EventLiveStatus as _EventLiveStatus,
+  AthleteStatus as _AthleteStatus,
+  GPSPoint as _GPSPoint,
+  CheckpointSplit as _CheckpointSplit,
+} from "../modules/liverace/liverace.types.js";
+
+export type { LiveRaceClientToServerEvents, LiveRaceServerToClientEvents };
+
+// Re-export common types for convenience
+export type AthletePositionUpdate = _AthletePositionUpdate;
+export type LeaderboardEntry = _LeaderboardEntry;
+export type EventLiveStatus = _EventLiveStatus;
+export type AthleteStatus = _AthleteStatus;
+export type GPSPoint = _GPSPoint;
+export type CheckpointSplit = _CheckpointSplit;
+
 // ─── Generic Socket Types ──────────────────────────────────────────────────
 
-export interface ServerToClientEvents extends ChatServerToClientEvents {
+export interface ServerToClientEvents
+  extends ChatServerToClientEvents, LiveRaceServerToClientEvents {
   "connection:authenticated": (data: { userId: string }) => void;
 }
 
-export interface ClientToServerEvents extends ChatClientToServerEvents {
+export interface ClientToServerEvents
+  extends ChatClientToServerEvents, LiveRaceClientToServerEvents {
   ping: () => void;
 }
 

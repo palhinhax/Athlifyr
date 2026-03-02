@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Share2,
   Ban,
+  Radio,
 } from "lucide-react-native";
 import Markdown from "react-native-markdown-display";
 import { useTranslation } from "react-i18next";
@@ -245,6 +246,35 @@ export default function EventDetailScreen() {
             />
           )}
 
+          {/* Live Race Button */}
+          {event.hasLiveRace &&
+            event.liveStatus !== "CANCELLED" &&
+            event.liveStatus !== "FINISHED" && (
+              <TouchableOpacity
+                style={styles.liveRaceButton}
+                onPress={() =>
+                  router.push({
+                    pathname: "/live-race",
+                    params: { eventId: event.id },
+                  })
+                }
+                activeOpacity={0.8}
+              >
+                <Radio size={20} color="#fff" />
+                <Text style={styles.liveRaceButtonText}>
+                  {event.liveStatus === "LIVE"
+                    ? t("liveRace.sectionTitle")
+                    : event.liveStatus === "WARMUP"
+                      ? t("liveRace.sectionTitle")
+                      : t("liveRace.startTracking")}
+                </Text>
+                {(event.liveStatus === "LIVE" ||
+                  event.liveStatus === "WARMUP") && (
+                  <View style={styles.liveRaceDot} />
+                )}
+              </TouchableOpacity>
+            )}
+
           {/* Location Map */}
           {event.latitude && event.longitude && (
             <EventLocationMap
@@ -449,6 +479,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     color: theme.colors.white,
+  },
+  liveRaceButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: theme.spacing.sm,
+    backgroundColor: "#EF4444",
+    borderRadius: theme.borderRadius.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    marginTop: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  liveRaceButtonText: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#fff",
+  },
+  liveRaceDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#fff",
   },
 });
 

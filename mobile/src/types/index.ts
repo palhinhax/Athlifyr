@@ -39,6 +39,14 @@ export interface Event {
   cancelled?: boolean;
   cancellationReason?: string | null;
   hasRegistrations?: boolean;
+  hasLiveRace?: boolean;
+  liveStatus?:
+    | "SCHEDULED"
+    | "WARMUP"
+    | "LIVE"
+    | "PAUSED"
+    | "FINISHED"
+    | "CANCELLED";
   variants?: EventVariant[];
   faqs?: EventFAQ[];
   _count?: {

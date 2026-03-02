@@ -22,6 +22,7 @@ import { EventWeatherMobile } from "@/components/event-weather-mobile";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
+import { LiveRaceSection } from "@/components/live-race-section";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -425,6 +426,13 @@ export default async function EventPage({ params }: PageProps) {
               labels={variantLabels}
               eventId={event.id}
             />
+
+            {/* LiveRace Section — visible when hasLiveRace */}
+            {event.hasLiveRace && (
+              <div className="mt-6">
+                <LiveRaceSection eventId={event.id} />
+              </div>
+            )}
 
             {/* Location Map - Mobile Only */}
             {event.latitude && event.longitude && (

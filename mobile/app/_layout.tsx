@@ -88,6 +88,10 @@ export default function RootLayout() {
               name="motion-analysis-view"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="live-race"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
           </Stack>
         </SocketProvider>
       </I18nextProvider>

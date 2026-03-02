@@ -30,6 +30,14 @@
     "noEventsDescription": "Schau später wieder vorbei für kommende Events",
     "loadingMore": "Weitere Events werden geladen...",
     "allEventsLoaded": "Alle Events geladen",
+    "eventCancelled": "Dieses Event wurde abgesagt",
+    "loadError": "Event konnte nicht geladen werden",
+    "notFound": "Event nicht gefunden",
+    "about": "Über",
+    "visitWebsite": "Offizielle Website besuchen",
+    "shareMessage": "Schau dir dieses Event an: {{title}}",
+    "shareDate": "Datum: {{date}}",
+    "shareLocation": "Ort: {{location}}",
     "filters": {
       "searchPlaceholder": "Events suchen...",
       "searchingGlobally": "Alle Events durchsuchen",
@@ -37,7 +45,6 @@
       "resultsCount": "{{count}} Events gefunden",
       "dateRange": "Datumsbereich"
     },
-    "eventCancelled": "Dieses Event wurde abgesagt",
     "registration": {
       "willYouGo": "Nimmst du teil?",
       "participants": "Teilnehmer",
@@ -61,7 +68,23 @@
       "markedAsParticipant": "Teilnahme markiert",
       "participationRegistered": "Deine Teilnahme wurde registriert.",
       "registrationError": "Deine Teilnahme konnte nicht registriert werden. Bitte versuche es erneut.",
-      "cancellationError": "Deine Teilnahme konnte nicht abgesagt werden. Bitte versuche es erneut."
+      "cancellationError": "Deine Teilnahme konnte nicht abgesagt werden. Bitte versuche es erneut.",
+      "registration": "Anmeldungen",
+      "registeredCount": "{{count}} angemeldet",
+      "registerNow": "Anmelden",
+      "price": "Preis",
+      "registrationConfirmed": "Anmeldung bestätigt",
+      "registrationPending": "Zahlung ausstehend",
+      "registrationPendingDesc": "Deine Zahlung wird verarbeitet.",
+      "retryPayment": "Zahlung fortsetzen",
+      "checkoutError": "Zahlungsfehler",
+      "checkoutErrorDesc": "Die Zahlung konnte nicht gestartet werden. Bitte versuche es erneut.",
+      "soldOut": "Ausverkauft",
+      "allSoldOut": "Anmeldungen geschlossen",
+      "allSoldOutDesc": "Alle Varianten dieses Events sind ausverkauft.",
+      "registrationsClosed": "Anmeldungen nicht verfügbar",
+      "registrationsClosedDesc": "Die Anmeldungen haben noch nicht begonnen oder der Zeitraum ist abgelaufen.",
+      "registrationClosed": "Kein aktiver Anmeldezeitraum"
     },
     "giveaway": {
       "badge": "Verlosung",

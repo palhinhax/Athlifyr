@@ -423,6 +423,7 @@ export default async function EventPage({ params }: PageProps) {
                   v._count.registrations + v._count.participations,
               }))}
               labels={variantLabels}
+              eventId={event.id}
             />
 
             {/* Location Map - Mobile Only */}

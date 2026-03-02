@@ -11,6 +11,15 @@ export interface User {
 }
 
 // Event types
+export interface PricingPhase {
+  id: string;
+  name: string | null;
+  price: number;
+  currency: string;
+  startDate: string | null;
+  endDate: string | null;
+}
+
 export interface Event {
   id: string;
   slug: string;
@@ -29,6 +38,7 @@ export interface Event {
   sportTypes: string[];
   cancelled?: boolean;
   cancellationReason?: string | null;
+  hasRegistrations?: boolean;
   variants?: EventVariant[];
   faqs?: EventFAQ[];
   _count?: {
@@ -46,6 +56,9 @@ export interface EventVariant {
   distanceKm?: number | null;
   startDate?: string | null;
   startTime?: string | null;
+  maxParticipants?: number | null;
+  pricingPhases?: PricingPhase[];
+  _count?: { registrations: number };
   triathlonSegments?: TriathlonSegment[];
 }
 
@@ -137,7 +150,7 @@ export interface EventFilters {
   endDate?: string;
   location?: string;
   search?: string;
-  status?: Event["status"];
+  status?: string;
 }
 
 export interface VenueFilters {

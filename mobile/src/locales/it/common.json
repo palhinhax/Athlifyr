@@ -30,6 +30,14 @@
     "noEventsDescription": "Torna più tardi per i prossimi eventi",
     "loadingMore": "Caricamento di altri eventi...",
     "allEventsLoaded": "Tutti gli eventi caricati",
+    "eventCancelled": "Questo evento è stato cancellato",
+    "loadError": "Impossibile caricare l'evento",
+    "notFound": "Evento non trovato",
+    "about": "Info",
+    "visitWebsite": "Visita il sito ufficiale",
+    "shareMessage": "Guarda questo evento: {{title}}",
+    "shareDate": "Data: {{date}}",
+    "shareLocation": "Luogo: {{location}}",
     "filters": {
       "searchPlaceholder": "Cerca eventi...",
       "searchingGlobally": "Ricerca in tutti gli eventi",
@@ -37,7 +45,6 @@
       "resultsCount": "{{count}} eventi trovati",
       "dateRange": "Intervallo di Date"
     },
-    "eventCancelled": "Questo evento è stato cancellato",
     "registration": {
       "willYouGo": "Parteciperai?",
       "participants": "partecipanti",
@@ -61,7 +68,23 @@
       "markedAsParticipant": "Partecipazione segnata",
       "participationRegistered": "La tua partecipazione è stata registrata.",
       "registrationError": "Impossibile registrare la tua partecipazione. Riprova.",
-      "cancellationError": "Impossibile annullare la tua partecipazione. Riprova."
+      "cancellationError": "Impossibile annullare la tua partecipazione. Riprova.",
+      "registration": "Iscrizioni",
+      "registeredCount": "{{count}} iscritti",
+      "registerNow": "Iscriviti",
+      "price": "Prezzo",
+      "registrationConfirmed": "Iscrizione confermata",
+      "registrationPending": "Pagamento in sospeso",
+      "registrationPendingDesc": "Il tuo pagamento è in elaborazione.",
+      "retryPayment": "Riprendi pagamento",
+      "checkoutError": "Errore di pagamento",
+      "checkoutErrorDesc": "Impossibile avviare il pagamento. Riprova.",
+      "soldOut": "Esaurito",
+      "allSoldOut": "Iscrizioni chiuse",
+      "allSoldOutDesc": "Tutte le varianti di questo evento sono esaurite.",
+      "registrationsClosed": "Iscrizioni non disponibili",
+      "registrationsClosedDesc": "Le iscrizioni non sono ancora aperte o il periodo è terminato.",
+      "registrationClosed": "Nessun periodo di iscrizione attivo"
     },
     "giveaway": {
       "badge": "Sorteggio",

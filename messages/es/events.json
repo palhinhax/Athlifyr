@@ -134,6 +134,8 @@
       "variantSoldOutDesc": "Esta variante no tiene plazas disponibles.",
       "registrationClosed": "Inscripciones cerradas",
       "registrationClosedDesc": "No existe un periodo de inscripción activo para esta variante en este momento.",
+      "registrationsClosed": "Inscripciones no disponibles",
+      "registrationsClosedDesc": "Las inscripciones para este evento aún no han abierto o el período de inscripción ya ha finalizado.",
       "consent": {
         "title": "Consentimiento de Compartición de Datos",
         "description": "Este evento requiere información personal para la inscripción. Estos datos serán compartidos con el organizador del evento.",

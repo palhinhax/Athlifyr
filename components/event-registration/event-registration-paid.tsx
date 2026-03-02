@@ -25,6 +25,7 @@ interface EventRegistrationPaidProps {
   selectedVariantSoldOut: boolean;
   selectedVariantNoPrice: boolean;
   allVariantsSoldOut: boolean;
+  allVariantsNoPrice: boolean;
   showTicketModal: boolean;
   onShowTicketModal: (show: boolean) => void;
   isCancellingPending: boolean;
@@ -64,6 +65,7 @@ export function EventRegistrationPaid({
   selectedVariantSoldOut,
   selectedVariantNoPrice,
   allVariantsSoldOut,
+  allVariantsNoPrice,
   showTicketModal,
   onShowTicketModal,
   isCancellingPending,
@@ -220,8 +222,21 @@ export function EventRegistrationPaid({
         </div>
       )}
 
+      {/* No active pricing phase — registrations not yet open or closed */}
+      {allVariantsNoPrice && (
+        <div className="rounded-md bg-muted/60 p-4 text-sm">
+          <div className="flex items-center gap-2 font-medium text-muted-foreground">
+            <Clock className="h-5 w-5" />
+            {t("registrationsClosed")}
+          </div>
+          <p className="mt-1 text-muted-foreground">
+            {t("registrationsClosedDesc")}
+          </p>
+        </div>
+      )}
+
       {/* Variant Selection */}
-      {variants.length > 0 && !allVariantsSoldOut && (
+      {variants.length > 0 && !allVariantsSoldOut && !allVariantsNoPrice && (
         <EventVariantSelect
           variants={variants}
           selectedVariantId={selectedVariantId}
@@ -271,7 +286,7 @@ export function EventRegistrationPaid({
         </div>
       )}
 
-      {!allVariantsSoldOut && (
+      {!allVariantsSoldOut && !allVariantsNoPrice && (
         <>
           <Button
             onClick={onCheckout}

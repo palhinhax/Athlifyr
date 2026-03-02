@@ -1,4 +1,5 @@
 ﻿import { NextRequest } from "next/server";
+import { headers } from "next/headers";
 import { auth } from "@/lib/auth";
 import { verifyToken, extractTokenFromHeader } from "@/lib/jwt";
 import { prisma } from "@/lib/prisma";
@@ -15,9 +16,13 @@ export interface AuthenticatedUser {
  * Unified authentication helper that supports both:
  * 1. NextAuth session (web app with cookies)
  * 2. JWT Bearer tokens (mobile app)
+ *
+ * When no request is passed, falls back to next/headers() to read the
+ * Authorization header from the current server context — this allows all
+ * route handlers to support mobile JWT auth without needing to pass request.
  */
 export async function getAuthenticatedUser(
-  request?: NextRequest
+  request?: NextRequest | Request
 ): Promise<AuthenticatedUser | null> {
   // Try NextAuth session first (for web app)
   try {
@@ -36,13 +41,26 @@ export async function getAuthenticatedUser(
     console.log("NextAuth session not found, trying JWT token");
   }
 
-  // Try JWT Bearer token (for mobile app)
+  // Resolve the Authorization header — from request if provided, otherwise
+  // from the Next.js server context headers (works without passing request)
+  let authHeader: string | null = null;
+
   if (request) {
+    authHeader = request.headers.get("authorization");
+  } else {
     try {
-      const authHeader = request.headers.get("authorization");
+      const headersList = await headers();
+      authHeader = headersList.get("authorization");
+    } catch {
+      // headers() not available in this context (e.g. middleware edge)
+    }
+  }
+
+  if (authHeader) {
+    try {
       console.log("🔍 JWT Auth attempt:", {
-        hasAuthHeader: !!authHeader,
-        authHeaderPrefix: authHeader?.substring(0, 30),
+        hasAuthHeader: true,
+        authHeaderPrefix: authHeader.substring(0, 30),
       });
 
       const token = extractTokenFromHeader(authHeader);
@@ -92,7 +110,9 @@ export async function getAuthenticatedUser(
       }
     }
   } else {
-    console.log("⚠️ No request object provided to getAuthenticatedUser");
+    console.log(
+      "⚠️ No Authorization header found in request or server context"
+    );
   }
 
   console.log("❌ Authentication failed - returning null");

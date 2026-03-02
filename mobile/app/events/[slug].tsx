@@ -49,11 +49,11 @@ export default function EventDetailScreen() {
       setEvent(response.data);
     } catch (err) {
       console.error("Error fetching event:", err);
-      setError("Failed to load event");
+      setError(t("events.loadError"));
     } finally {
       setLoading(false);
     }
-  }, [slug]);
+  }, [slug, t]);
 
   useEffect(() => {
     if (slug) {
@@ -79,13 +79,22 @@ export default function EventDetailScreen() {
     try {
       if (!event) return;
 
-      const shareMessage = `Check out this event: ${event.title}\n${
+      const shareMessage = [
+        t("events.shareMessage", { title: event.title }),
         event.startDate
-          ? `Date: ${new Date(event.startDate).toLocaleDateString()}`
-          : ""
-      }${event.city && event.country ? `\nLocation: ${event.city}, ${event.country}` : ""}${
-        event.externalUrl ? `\n${event.externalUrl}` : ""
-      }`;
+          ? t("events.shareDate", {
+              date: new Date(event.startDate).toLocaleDateString(),
+            })
+          : null,
+        event.city && event.country
+          ? t("events.shareLocation", {
+              location: `${event.city}, ${event.country}`,
+            })
+          : null,
+        event.externalUrl ?? null,
+      ]
+        .filter(Boolean)
+        .join("\n");
 
       await Share.share({
         message: shareMessage,
@@ -119,7 +128,7 @@ export default function EventDetailScreen() {
       <View style={styles.container}>
         <Stack.Screen options={{ headerShown: false }} />
         <View style={styles.errorContainer}>
-          <Text style={styles.errorText}>{error || "Event not found"}</Text>
+          <Text style={styles.errorText}>{error || t("events.notFound")}</Text>
         </View>
       </View>
     );
@@ -232,6 +241,7 @@ export default function EventDetailScreen() {
             <EventRegistration
               eventId={event.id}
               variants={event.variants || []}
+              hasRegistrations={event.hasRegistrations ?? false}
             />
           )}
 
@@ -250,7 +260,7 @@ export default function EventDetailScreen() {
           {/* Description */}
           {event.description && (
             <View style={styles.section}>
-              <Text style={styles.sectionTitle}>About</Text>
+              <Text style={styles.sectionTitle}>{t("events.about")}</Text>
               <Markdown style={markdownStyles}>{event.description}</Markdown>
             </View>
           )}
@@ -269,7 +279,7 @@ export default function EventDetailScreen() {
             >
               <ExternalLink size={20} color={theme.colors.white} />
               <Text style={styles.externalLinkText}>
-                Visit Official Website
+                {t("events.visitWebsite")}
               </Text>
             </TouchableOpacity>
           )}

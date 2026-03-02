@@ -88,9 +88,9 @@ export function useNotifications(options: UseNotificationsOptions = {}) {
     queryKey: ["notifications"],
     queryFn: fetchNotifications,
     enabled,
-    refetchInterval: 15000,
-    refetchIntervalInBackground: true,
-    staleTime: 10000,
+    refetchInterval: 5 * 60 * 1000, // 5 minutes — no live socket for general notifications
+    refetchIntervalInBackground: false,
+    staleTime: 2 * 60 * 1000,
   });
 
   const markAsReadMutation = useMutation({

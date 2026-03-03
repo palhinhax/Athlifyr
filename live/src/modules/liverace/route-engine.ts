@@ -426,3 +426,29 @@ export function isAccuracyAcceptable(
   if (accuracy === undefined) return true; // No accuracy info — accept
   return accuracy <= maxAccuracyM;
 }
+
+// ─── Anti-cheat: Timestamp Validation ───────────────────────────────────────
+
+/** Maximum allowed future offset for a GPS timestamp (1 minute tolerance for clock drift). */
+const MAX_FUTURE_MS = 60_000;
+
+/** Default maximum age for a single GPS update (configurable via maxAgeMs param). */
+const DEFAULT_MAX_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+
+/**
+ * Check if a GPS timestamp is valid.
+ * Rejects:
+ * - Future timestamps (beyond tolerance)
+ * - Extremely old timestamps (beyond max age)
+ */
+export function isTimestampValid(
+  timestamp: number,
+  maxAgeMs: number = DEFAULT_MAX_AGE_MS
+): boolean {
+  const now = Date.now();
+  // Reject future timestamps beyond tolerance
+  if (timestamp > now + MAX_FUTURE_MS) return false;
+  // Reject timestamps that are too old
+  if (now - timestamp > maxAgeMs) return false;
+  return true;
+}

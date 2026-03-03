@@ -212,6 +212,8 @@ export interface LiveRaceServerToClientEvents {
     eventId: string;
     status: EventLiveStatus;
     role: "athlete" | "spectator";
+    serverTime: number; // unix ms — used by client to compute clock offset for countdown sync
+    variantStartTimes?: Record<string, number>; // variantId → scheduled start (unix ms)
   }) => void;
   "liverace:error": (data: { message: string; code: string }) => void;
 

@@ -494,14 +494,35 @@ export function TrainingPlanDetailClient({
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>{t("weeks.title")}</CardTitle>
           {isOwner && (
-            <Button onClick={handleAddWeek} disabled={isAddingWeek}>
-              {isAddingWeek ? (
-                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <PlusIcon className="mr-2 h-4 w-4" />
-              )}
-              {t("weeks.addWeek")}
-            </Button>
+            <>
+              {/* Mobile: icon-only button */}
+              <Button
+                size="icon"
+                onClick={handleAddWeek}
+                disabled={isAddingWeek}
+                className="sm:hidden"
+                aria-label={t("weeks.addWeek")}
+              >
+                {isAddingWeek ? (
+                  <Loader2Icon className="h-4 w-4 animate-spin" />
+                ) : (
+                  <PlusIcon className="h-4 w-4" />
+                )}
+              </Button>
+              {/* Desktop: full button with text */}
+              <Button
+                onClick={handleAddWeek}
+                disabled={isAddingWeek}
+                className="hidden sm:flex"
+              >
+                {isAddingWeek ? (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <PlusIcon className="mr-2 h-4 w-4" />
+                )}
+                {t("weeks.addWeek")}
+              </Button>
+            </>
           )}
         </CardHeader>
         <CardContent>

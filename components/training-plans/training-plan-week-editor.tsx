@@ -9,6 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -31,6 +38,7 @@ import {
   ChevronUpIcon,
   CopyIcon,
   Loader2Icon,
+  MoreVerticalIcon,
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
@@ -125,91 +133,165 @@ export function TrainingPlanWeekEditor({
     <>
       <Card>
         <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
+          <div className="flex min-w-0 items-center justify-between gap-2">
             <div
-              className="flex flex-1 cursor-pointer items-center gap-3"
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 sm:gap-3"
               onClick={onToggleExpand}
             >
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                 {weekNumber}
               </div>
-              <div className="flex-1">
-                <CardTitle className="text-base">
+              <div className="min-w-0 flex-1">
+                <CardTitle className="truncate text-base">
                   {week.name || t("weeks.weekNumber", { number: weekNumber })}
                 </CardTitle>
                 {week.description && (
-                  <p className="text-sm text-muted-foreground">
+                  <p className="truncate text-sm text-muted-foreground">
                     {week.description}
                   </p>
                 )}
               </div>
-              <Badge variant="secondary" className="ml-2">
+              <Badge variant="secondary" className="hidden shrink-0 sm:inline-flex">
                 {t("stats.totalWorkouts", { count: workoutsCount })}
               </Badge>
               {isExpanded ? (
-                <ChevronUpIcon className="h-5 w-5 text-muted-foreground" />
+                <ChevronUpIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
               ) : (
-                <ChevronDownIcon className="h-5 w-5 text-muted-foreground" />
+                <ChevronDownIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
               )}
             </div>
             {canEdit && (
-              <div className="flex items-center gap-1">
-                {canMoveUp && (
+              <>
+                {/* Mobile: single dropdown for all actions */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0 sm:hidden"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <MoreVerticalIcon className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem className="text-xs font-medium text-muted-foreground">
+                      {t("stats.totalWorkouts", { count: workoutsCount })}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {canMoveUp && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMoveUp?.();
+                        }}
+                      >
+                        <ChevronUpIcon className="mr-2 h-4 w-4" />
+                        {t("weeks.moveUp")}
+                      </DropdownMenuItem>
+                    )}
+                    {canMoveDown && (
+                      <DropdownMenuItem
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMoveDown?.();
+                        }}
+                      >
+                        <ChevronDownIcon className="mr-2 h-4 w-4" />
+                        {t("weeks.moveDown")}
+                      </DropdownMenuItem>
+                    )}
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsEditing(true);
+                      }}
+                    >
+                      <PencilIcon className="mr-2 h-4 w-4" />
+                      {t("weeks.editWeek")}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDuplicate();
+                      }}
+                    >
+                      <CopyIcon className="mr-2 h-4 w-4" />
+                      {t("weeks.duplicateWeek")}
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsDeleting(true);
+                      }}
+                    >
+                      <TrashIcon className="mr-2 h-4 w-4" />
+                      {t("weeks.deleteWeek")}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                {/* Desktop: inline icon buttons */}
+                <div className="hidden shrink-0 items-center gap-1 sm:flex">
+                  {canMoveUp && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMoveUp?.();
+                      }}
+                    >
+                      <ChevronUpIcon className="h-4 w-4" />
+                    </Button>
+                  )}
+                  {canMoveDown && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMoveDown?.();
+                      }}
+                    >
+                      <ChevronDownIcon className="h-4 w-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onMoveUp?.();
+                      setIsEditing(true);
                     }}
                   >
-                    <ChevronUpIcon className="h-4 w-4" />
+                    <PencilIcon className="h-4 w-4" />
                   </Button>
-                )}
-                {canMoveDown && (
                   <Button
                     variant="ghost"
                     size="icon"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onMoveDown?.();
+                      handleDuplicate();
                     }}
                   >
-                    <ChevronDownIcon className="h-4 w-4" />
+                    <CopyIcon className="h-4 w-4" />
                   </Button>
-                )}
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsEditing(true);
-                  }}
-                >
-                  <PencilIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDuplicate();
-                  }}
-                >
-                  <CopyIcon className="h-4 w-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-destructive hover:text-destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setIsDeleting(true);
-                  }}
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </Button>
-              </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsDeleting(true);
+                    }}
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </Button>
+                </div>
+              </>
             )}
           </div>
         </CardHeader>

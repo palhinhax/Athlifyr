@@ -342,6 +342,8 @@
         "editWeek": "Woche Bearbeiten",
         "deleteWeek": "Woche Löschen",
         "duplicateWeek": "Woche Duplizieren",
+        "moveUp": "Nach Oben Verschieben",
+        "moveDown": "Nach Unten Verschieben",
         "name": "Wochenname",
         "namePlaceholder": "z.B.: Grundlagenwoche",
         "description": "Beschreibung",

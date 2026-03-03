@@ -343,6 +343,8 @@
         "editWeek": "Editar Semana",
         "deleteWeek": "Apagar Semana",
         "duplicateWeek": "Duplicar Semana",
+        "moveUp": "Mover para Cima",
+        "moveDown": "Mover para Baixo",
         "name": "Nome da Semana",
         "namePlaceholder": "Ex.: Semana de Fundação",
         "description": "Descrição",

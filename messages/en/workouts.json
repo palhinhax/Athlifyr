@@ -343,6 +343,8 @@
         "editWeek": "Edit Week",
         "deleteWeek": "Delete Week",
         "duplicateWeek": "Duplicate Week",
+        "moveUp": "Move Up",
+        "moveDown": "Move Down",
         "name": "Week Name",
         "namePlaceholder": "E.g.: Foundation Week",
         "description": "Description",

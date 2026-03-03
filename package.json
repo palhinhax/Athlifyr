@@ -170,7 +170,20 @@
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "@sentry-internal/node-cpu-profiler"
+      "@ffprobe-installer/linux-x64",
+      "@parcel/watcher",
+      "@prisma/client",
+      "@prisma/engines",
+      "@sentry-internal/node-cpu-profiler",
+      "@sentry/cli",
+      "@swc/core",
+      "core-js",
+      "esbuild",
+      "ffmpeg-static",
+      "msw",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
     ]
   }
 }

@@ -45,6 +45,9 @@
     "offlineBanner": "Sei offline. I dati GPS vengono salvati e saranno sincronizzati automaticamente quando la connessione sarà ripristinata.",
     "syncingBanner": "Sincronizzazione dei dati offline con il server...",
     "checkinOpenTitle": "Check-in aperto — gara in arrivo",
-    "checkinOpenDescription": "Il check-in degli atleti è aperto. La gara inizierà a breve. Rimani sintonizzato per il tracciamento in diretta."
+    "checkinOpenDescription": "Il check-in degli atleti è aperto. La gara inizierà a breve. Rimani sintonizzato per il tracciamento in diretta.",
+    "checkInOpen": "Check-in aperto",
+    "countdownLabel": "La gara inizia tra",
+    "countdownReady": "La gara è pronta per iniziare!"
   }
 }

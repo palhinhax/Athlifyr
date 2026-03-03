@@ -414,5 +414,18 @@
       "labelRequired": "Field name is required.",
       "minTwoOptions": "At least 2 options are required for a choice field."
     }
+  },
+  "liverace": {
+    "actions": {
+      "cancel": "Cancel race",
+      "cancelHelp": "Cancels the race. Athletes will be notified.",
+      "cancelBtn": "Cancel race"
+    },
+    "commandSuccess": {
+      "cancel": "Race cancelled."
+    },
+    "readiness": {
+      "errNoStartTime": "\"{variant}\" has no start time defined. A start time is required."
+    }
   }
 }

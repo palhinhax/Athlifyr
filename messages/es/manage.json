@@ -414,5 +414,18 @@
       "labelRequired": "El nombre del campo es obligatorio.",
       "minTwoOptions": "Se necesitan al menos 2 opciones para un campo de selección."
     }
+  },
+  "liverace": {
+    "actions": {
+      "cancel": "Cancelar carrera",
+      "cancelHelp": "Cancela la carrera. Los atletas serán notificados.",
+      "cancelBtn": "Cancelar carrera"
+    },
+    "commandSuccess": {
+      "cancel": "Carrera cancelada."
+    },
+    "readiness": {
+      "errNoStartTime": "\"{variant}\" no tiene hora de inicio definida. La hora de inicio es obligatoria."
+    }
   }
 }

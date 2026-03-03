@@ -35,7 +35,7 @@ const COMMAND_TRANSITIONS: Record<
 > = {
   checkin: { from: ["SCHEDULED"], to: "CHECK_IN_OPEN" },
   warmup: { from: ["CHECK_IN_OPEN"], to: "WARMUP" },
-  start: { from: ["WARMUP", "CHECK_IN_OPEN"], to: "LIVE" },
+  start: { from: ["WARMUP"], to: "LIVE" },
   pause: { from: ["LIVE"], to: "PAUSED" },
   resume: { from: ["PAUSED"], to: "LIVE" },
   finish: { from: ["LIVE", "PAUSED"], to: "FINISHED" },

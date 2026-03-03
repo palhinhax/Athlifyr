@@ -20,6 +20,7 @@ import {
   MapPin,
   Flag,
   Route,
+  Ban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -138,7 +139,14 @@ export function TabLiverace({ event }: TabLiveraceProps) {
   // ─── Send control command to Live server ─────────────────────────────────
 
   const sendCommand = async (
-    command: "start" | "pause" | "resume" | "finish" | "checkin"
+    command:
+      | "start"
+      | "pause"
+      | "resume"
+      | "finish"
+      | "checkin"
+      | "warmup"
+      | "cancel"
   ) => {
     setIsLoading(true);
     try {
@@ -191,7 +199,7 @@ export function TabLiverace({ event }: TabLiveraceProps) {
       case "NO_FINISH":
         return t("readiness.errNoFinish", { variant: variantName });
       case "NO_START_TIME":
-        return t("readiness.warnNoStartTime", { variant: variantName });
+        return t("readiness.errNoStartTime", { variant: variantName });
       case "NO_CHECKPOINTS":
         return t("readiness.warnNoCheckpoints", { variant: variantName });
       default:
@@ -485,7 +493,7 @@ export function TabLiverace({ event }: TabLiveraceProps) {
                   size="sm"
                   variant="outline"
                   className="gap-2"
-                  onClick={() => void sendCommand("start")}
+                  onClick={() => void sendCommand("warmup")}
                   disabled={isLoading}
                 >
                   {isLoading ? (
@@ -610,6 +618,32 @@ export function TabLiverace({ event }: TabLiveraceProps) {
                     <Square className="h-4 w-4" />
                   )}
                   {t("actions.finishBtn")}
+                </Button>
+              </div>
+            )}
+
+            {/* Cancel */}
+            {(status === "LIVE" || status === "PAUSED") && (
+              <div className="flex items-center justify-between rounded-lg border border-red-200 p-4 dark:border-red-800">
+                <div>
+                  <p className="text-sm font-medium">{t("actions.cancel")}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {t("actions.cancelHelp")}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="gap-2 border-red-300 text-red-700 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
+                  onClick={() => void sendCommand("cancel")}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Ban className="h-4 w-4" />
+                  )}
+                  {t("actions.cancelBtn")}
                 </Button>
               </div>
             )}

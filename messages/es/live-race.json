@@ -45,6 +45,9 @@
     "offlineBanner": "Estás sin conexión a internet. Los datos GPS se están guardando y se sincronizarán automáticamente cuando vuelva la conexión.",
     "syncingBanner": "Sincronizando datos offline con el servidor...",
     "checkinOpenTitle": "Check-in abierto — carrera próximamente",
-    "checkinOpenDescription": "El check-in de atletas está abierto. La carrera comenzará en breve. Estate atento al seguimiento en directo."
+    "checkinOpenDescription": "El check-in de atletas está abierto. La carrera comenzará en breve. Estate atento al seguimiento en directo.",
+    "checkInOpen": "Check-in abierto",
+    "countdownLabel": "La carrera empieza en",
+    "countdownReady": "¡La carrera está lista para comenzar!"
   }
 }

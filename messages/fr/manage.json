@@ -347,6 +347,28 @@
         "pause": "Course mise en pause.",
         "resume": "Course reprise.",
         "finish": "Course terminée."
+      },
+      "readiness": {
+        "allGood": "Prête à démarrer",
+        "allGoodDesc": "Toutes les variantes ont des parcours avec des points de DÉPART et d'ARRIVÉE configurés. La course peut être lancée.",
+        "errorsTitle": "La course ne peut pas démarrer",
+        "errorsDesc": "Corrigez les problèmes suivants avant de lancer la course :",
+        "warningsTitle": "Avertissements",
+        "cannotStart": "Corrigez les erreurs de configuration ci-dessus avant de lancer la course.",
+        "errLiveraceNotEnabled": "LiveRace n'est pas activé pour cet événement.",
+        "errNoVariants": "Aucune variante de course configurée.",
+        "errNoRoute": "\"{variant}\" n'a pas de parcours configuré. Téléchargez un fichier GPX dans l'onglet Variantes.",
+        "errNoStart": "\"{variant}\" n'a pas de point de DÉPART. Ajoutez-en un dans l'éditeur de parcours.",
+        "errNoFinish": "\"{variant}\" n'a pas de point d'ARRIVÉE. Ajoutez-en un dans l'éditeur de parcours.",
+        "warnNoStartTime": "\"{variant}\" n'a pas d'heure de départ définie.",
+        "warnNoCheckpoints": "\"{variant}\" a un parcours mais pas de points intermédiaires.",
+        "variantsTitle": "État des variantes",
+        "hasRoute": "Parcours",
+        "noRoute": "Sans parcours",
+        "hasStart": "Départ",
+        "noStart": "Sans départ",
+        "hasFinish": "Arrivée",
+        "noFinish": "Sans arrivée"
       }
     },
     "errors": {

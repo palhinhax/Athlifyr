@@ -14,11 +14,18 @@ import {
   ExternalLink,
   Wifi,
   WifiOff,
+  AlertTriangle,
+  XCircle,
+  CheckCircle2,
+  MapPin,
+  Flag,
+  Route,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations } from "next-intl";
 import type { EventDetails } from "./types";
@@ -33,6 +40,26 @@ interface LiveStatusData {
   connectedCount: number;
   participantCount: number;
   lastUpdate: string | null;
+}
+
+interface VariantReadiness {
+  variantId: string;
+  variantName: string;
+  hasRoute: boolean;
+  routePointCount: number;
+  hasStartCheckpoint: boolean;
+  hasFinishCheckpoint: boolean;
+  checkpointCount: number;
+  hasStartTime: boolean;
+}
+
+interface LiveReadinessData {
+  ready: boolean;
+  hasLiveRace: boolean;
+  variantCount: number;
+  variants: VariantReadiness[];
+  errors: string[];
+  warnings: string[];
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -62,6 +89,21 @@ export function TabLiverace({ event }: TabLiveraceProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPolling, setIsPolling] = useState(false);
   const [serverReachable, setServerReachable] = useState<boolean | null>(null);
+  const [readiness, setReadiness] = useState<LiveReadinessData | null>(null);
+
+  // ─── Fetch readiness data ────────────────────────────────────────────────
+
+  const fetchReadiness = useCallback(async () => {
+    try {
+      const res = await fetch(`/api/events/${event.id}/live-readiness`);
+      if (res.ok) {
+        const data = (await res.json()) as LiveReadinessData;
+        setReadiness(data);
+      }
+    } catch {
+      // Non-critical — readiness is informational
+    }
+  }, [event.id]);
 
   // ─── Fetch live status from Live server ──────────────────────────────────
 
@@ -84,13 +126,14 @@ export function TabLiverace({ event }: TabLiveraceProps) {
 
   useEffect(() => {
     void fetchLiveStatus();
+    void fetchReadiness();
     const interval = setInterval(() => void fetchLiveStatus(), 10_000);
     setIsPolling(true);
     return () => {
       clearInterval(interval);
       setIsPolling(false);
     };
-  }, [fetchLiveStatus]);
+  }, [fetchLiveStatus, fetchReadiness]);
 
   // ─── Send control command to Live server ─────────────────────────────────
 
@@ -126,6 +169,35 @@ export function TabLiverace({ event }: TabLiveraceProps) {
   };
 
   const status = liveData.liveStatus;
+
+  // Compute whether the race is ready to go LIVE
+  const raceNotReady = readiness !== null && !readiness.ready;
+  const hasBlockingErrors = readiness !== null && readiness.errors.length > 0;
+
+  // Parse readiness error codes into translated messages
+  const parseReadinessCode = (code: string): string => {
+    const parts = code.split(":");
+    const type = parts[0];
+    const variantName = parts[1] ?? "";
+    switch (type) {
+      case "LIVERACE_NOT_ENABLED":
+        return t("readiness.errLiveraceNotEnabled");
+      case "NO_VARIANTS":
+        return t("readiness.errNoVariants");
+      case "NO_ROUTE":
+        return t("readiness.errNoRoute", { variant: variantName });
+      case "NO_START":
+        return t("readiness.errNoStart", { variant: variantName });
+      case "NO_FINISH":
+        return t("readiness.errNoFinish", { variant: variantName });
+      case "NO_START_TIME":
+        return t("readiness.warnNoStartTime", { variant: variantName });
+      case "NO_CHECKPOINTS":
+        return t("readiness.warnNoCheckpoints", { variant: variantName });
+      default:
+        return code;
+    }
+  };
 
   return (
     <TabsContent value="liverace" className="space-y-6">
@@ -228,6 +300,145 @@ export function TabLiverace({ event }: TabLiveraceProps) {
         </Card>
       )}
 
+      {/* ─── Readiness Check ──────────────────────────────────────────── */}
+      {event.hasLiveRace && readiness && (
+        <>
+          {/* All good */}
+          {readiness.ready && readiness.warnings.length === 0 && (
+            <Alert className="border-green-200 bg-green-50/50 dark:border-green-800 dark:bg-green-950/20">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertTitle className="text-green-800 dark:text-green-300">
+                {t("readiness.allGood")}
+              </AlertTitle>
+              <AlertDescription className="text-green-700 dark:text-green-400">
+                {t("readiness.allGoodDesc")}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Blocking errors */}
+          {hasBlockingErrors && (
+            <Alert variant="destructive">
+              <XCircle className="h-4 w-4" />
+              <AlertTitle>{t("readiness.errorsTitle")}</AlertTitle>
+              <AlertDescription>
+                <p className="mb-2">{t("readiness.errorsDesc")}</p>
+                <ul className="space-y-1.5">
+                  {readiness.errors.map((code) => (
+                    <li key={code} className="flex items-start gap-2 text-sm">
+                      {code.startsWith("NO_ROUTE") && (
+                        <Route className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      )}
+                      {code.startsWith("NO_START") && (
+                        <Flag className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      )}
+                      {code.startsWith("NO_FINISH") && (
+                        <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      )}
+                      {!code.startsWith("NO_ROUTE") &&
+                        !code.startsWith("NO_START") &&
+                        !code.startsWith("NO_FINISH") && (
+                          <XCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                        )}
+                      <span>{parseReadinessCode(code)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Warnings (non-blocking) */}
+          {readiness.warnings.length > 0 && (
+            <Alert className="border-amber-200 bg-amber-50/50 dark:border-amber-800 dark:bg-amber-950/20">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800 dark:text-amber-300">
+                {t("readiness.warningsTitle")}
+              </AlertTitle>
+              <AlertDescription>
+                <ul className="space-y-1.5">
+                  {readiness.warnings.map((code) => (
+                    <li
+                      key={code}
+                      className="flex items-start gap-2 text-sm text-amber-700 dark:text-amber-400"
+                    >
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                      <span>{parseReadinessCode(code)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Per-variant readiness overview */}
+          {readiness.variants.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">
+                  {t("readiness.variantsTitle")}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {readiness.variants.map((v) => (
+                    <div
+                      key={v.variantId}
+                      className="flex items-center justify-between rounded-lg border p-3"
+                    >
+                      <span className="text-sm font-medium">
+                        {v.variantName}
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <Badge
+                          variant="outline"
+                          className={
+                            v.hasRoute
+                              ? "border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                              : "border-red-300 text-red-700 dark:border-red-700 dark:text-red-400"
+                          }
+                        >
+                          <Route className="mr-1 h-3 w-3" />
+                          {v.hasRoute
+                            ? t("readiness.hasRoute")
+                            : t("readiness.noRoute")}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={
+                            v.hasStartCheckpoint
+                              ? "border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                              : "border-red-300 text-red-700 dark:border-red-700 dark:text-red-400"
+                          }
+                        >
+                          <Flag className="mr-1 h-3 w-3" />
+                          {v.hasStartCheckpoint
+                            ? t("readiness.hasStart")
+                            : t("readiness.noStart")}
+                        </Badge>
+                        <Badge
+                          variant="outline"
+                          className={
+                            v.hasFinishCheckpoint
+                              ? "border-green-300 text-green-700 dark:border-green-700 dark:text-green-400"
+                              : "border-red-300 text-red-700 dark:border-red-700 dark:text-red-400"
+                          }
+                        >
+                          <MapPin className="mr-1 h-3 w-3" />
+                          {v.hasFinishCheckpoint
+                            ? t("readiness.hasFinish")
+                            : t("readiness.noFinish")}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
+      )}
+
       {/* Controls */}
       {event.hasLiveRace && (
         <Card>
@@ -289,21 +500,35 @@ export function TabLiverace({ event }: TabLiveraceProps) {
 
             {/* Start race */}
             {status === "WARMUP" && (
-              <div className="flex items-center justify-between rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950/20">
+              <div
+                className={`flex items-center justify-between rounded-lg border p-4 ${
+                  raceNotReady
+                    ? "border-red-200 bg-red-50/50 dark:border-red-800 dark:bg-red-950/20"
+                    : "border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-950/20"
+                }`}
+              >
                 <div>
                   <p className="text-sm font-medium">{t("actions.start")}</p>
                   <p className="text-xs text-muted-foreground">
-                    {t("actions.startHelp")}
+                    {raceNotReady
+                      ? t("readiness.cannotStart")
+                      : t("actions.startHelp")}
                   </p>
                 </div>
                 <Button
                   size="sm"
-                  className="gap-2 bg-green-600 hover:bg-green-700"
+                  className={`gap-2 ${
+                    raceNotReady
+                      ? "cursor-not-allowed bg-gray-400 hover:bg-gray-400"
+                      : "bg-green-600 hover:bg-green-700"
+                  }`}
                   onClick={() => void sendCommand("start")}
-                  disabled={isLoading}
+                  disabled={isLoading || raceNotReady}
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : raceNotReady ? (
+                    <XCircle className="h-4 w-4" />
                   ) : (
                     <Play className="h-4 w-4" />
                   )}

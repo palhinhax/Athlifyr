@@ -6,6 +6,7 @@
 
 export type EventLiveStatus =
   | "SCHEDULED"
+  | "CHECK_IN_OPEN"
   | "WARMUP"
   | "LIVE"
   | "PAUSED"

@@ -347,6 +347,28 @@
         "pause": "Rennen pausiert.",
         "resume": "Rennen fortgesetzt.",
         "finish": "Rennen beendet."
+      },
+      "readiness": {
+        "allGood": "Bereit zum Starten",
+        "allGoodDesc": "Alle Varianten haben Strecken mit START- und ZIEL-Punkten konfiguriert. Das Rennen kann gestartet werden.",
+        "errorsTitle": "Rennen kann nicht gestartet werden",
+        "errorsDesc": "Behebe die folgenden Probleme, bevor du das Rennen startest:",
+        "warningsTitle": "Warnungen",
+        "cannotStart": "Behebe die oben genannten Konfigurationsfehler, bevor du das Rennen startest.",
+        "errLiveraceNotEnabled": "LiveRace ist für dieses Event nicht aktiviert.",
+        "errNoVariants": "Keine Rennvarianten konfiguriert.",
+        "errNoRoute": "\"{variant}\" hat keine Strecke konfiguriert. Lade eine GPX-Datei im Tab Varianten hoch.",
+        "errNoStart": "\"{variant}\" hat keinen START-Punkt. Füge einen im Streckeneditor hinzu.",
+        "errNoFinish": "\"{variant}\" hat keinen ZIEL-Punkt. Füge einen im Streckeneditor hinzu.",
+        "warnNoStartTime": "\"{variant}\" hat keine Startzeit definiert.",
+        "warnNoCheckpoints": "\"{variant}\" hat eine Strecke, aber keine Zwischenpunkte.",
+        "variantsTitle": "Status der Varianten",
+        "hasRoute": "Strecke",
+        "noRoute": "Keine Strecke",
+        "hasStart": "Start",
+        "noStart": "Kein Start",
+        "hasFinish": "Ziel",
+        "noFinish": "Kein Ziel"
       }
     },
     "errors": {

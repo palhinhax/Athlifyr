@@ -69,7 +69,27 @@ export async function POST(
   // Fetch event
   const event = await prisma.event.findUnique({
     where: { id: eventId },
-    select: { id: true, hasLiveRace: true, liveStatus: true, slug: true },
+    select: {
+      id: true,
+      hasLiveRace: true,
+      liveStatus: true,
+      slug: true,
+      variants: {
+        select: {
+          id: true,
+          name: true,
+          route: {
+            select: {
+              id: true,
+              routePoints: true,
+              checkpoints: {
+                select: { type: true },
+              },
+            },
+          },
+        },
+      },
+    },
   });
 
   if (!event) {
@@ -90,6 +110,48 @@ export async function POST(
       },
       { status: 409 }
     );
+  }
+
+  // ─── Validate readiness before going LIVE ──────────────────────────────
+  if (command === "start" && transition.to === "LIVE") {
+    const errors: string[] = [];
+
+    if (event.variants.length === 0) {
+      errors.push("No variants configured for this event");
+    }
+
+    for (const variant of event.variants) {
+      const route = variant.route;
+      const routePoints = route
+        ? (route.routePoints as [number, number][])
+        : [];
+      const checkpoints = route?.checkpoints ?? [];
+
+      if (!route || routePoints.length < 2) {
+        errors.push(`Variant "${variant.name}" has no route configured`);
+        continue;
+      }
+
+      const hasStart = checkpoints.some((cp) => cp.type === "START");
+      const hasFinish = checkpoints.some((cp) => cp.type === "FINISH");
+
+      if (!hasStart) {
+        errors.push(`Variant "${variant.name}" is missing a START checkpoint`);
+      }
+      if (!hasFinish) {
+        errors.push(`Variant "${variant.name}" is missing a FINISH checkpoint`);
+      }
+    }
+
+    if (errors.length > 0) {
+      return NextResponse.json(
+        {
+          error: `Race not ready: ${errors.join("; ")}`,
+          details: errors,
+        },
+        { status: 422 }
+      );
+    }
   }
 
   // Update DB status

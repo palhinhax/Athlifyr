@@ -347,6 +347,28 @@
         "pause": "Carrera pausada.",
         "resume": "Carrera reanudada.",
         "finish": "Carrera terminada."
+      },
+      "readiness": {
+        "allGood": "Lista para iniciar",
+        "allGoodDesc": "Todas las variantes tienen rutas con puntos de SALIDA y META configurados. La carrera puede iniciarse.",
+        "errorsTitle": "La carrera no puede iniciarse",
+        "errorsDesc": "Soluciona los siguientes problemas antes de iniciar la carrera:",
+        "warningsTitle": "Advertencias",
+        "cannotStart": "Soluciona los errores de configuración anteriores antes de iniciar la carrera.",
+        "errLiveraceNotEnabled": "LiveRace no está activado para este evento.",
+        "errNoVariants": "No hay variantes de carrera configuradas.",
+        "errNoRoute": "\"{variant}\" no tiene ruta configurada. Sube un archivo GPX en la pestaña Variantes.",
+        "errNoStart": "\"{variant}\" no tiene punto de SALIDA. Añade uno en el editor de ruta.",
+        "errNoFinish": "\"{variant}\" no tiene punto de META. Añade uno en el editor de ruta.",
+        "warnNoStartTime": "\"{variant}\" no tiene hora de salida definida.",
+        "warnNoCheckpoints": "\"{variant}\" tiene ruta pero no tiene puntos intermedios.",
+        "variantsTitle": "Estado de las variantes",
+        "hasRoute": "Ruta",
+        "noRoute": "Sin ruta",
+        "hasStart": "Salida",
+        "noStart": "Sin salida",
+        "hasFinish": "Meta",
+        "noFinish": "Sin meta"
       }
     },
     "errors": {

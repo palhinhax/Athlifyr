@@ -347,6 +347,28 @@
         "pause": "Gara in pausa.",
         "resume": "Gara ripresa.",
         "finish": "Gara terminata."
+      },
+      "readiness": {
+        "allGood": "Pronta per partire",
+        "allGoodDesc": "Tutte le varianti hanno percorsi con punti di PARTENZA e ARRIVO configurati. La gara può essere avviata.",
+        "errorsTitle": "La gara non può essere avviata",
+        "errorsDesc": "Risolvi i seguenti problemi prima di avviare la gara:",
+        "warningsTitle": "Avvisi",
+        "cannotStart": "Risolvi gli errori di configurazione sopra prima di avviare la gara.",
+        "errLiveraceNotEnabled": "LiveRace non è attivato per questo evento.",
+        "errNoVariants": "Nessuna variante di gara configurata.",
+        "errNoRoute": "\"{variant}\" non ha un percorso configurato. Carica un file GPX nella scheda Varianti.",
+        "errNoStart": "\"{variant}\" non ha un punto di PARTENZA. Aggiungine uno nell'editor del percorso.",
+        "errNoFinish": "\"{variant}\" non ha un punto di ARRIVO. Aggiungine uno nell'editor del percorso.",
+        "warnNoStartTime": "\"{variant}\" non ha un orario di partenza definito.",
+        "warnNoCheckpoints": "\"{variant}\" ha un percorso ma nessun punto intermedio.",
+        "variantsTitle": "Stato delle varianti",
+        "hasRoute": "Percorso",
+        "noRoute": "Senza percorso",
+        "hasStart": "Partenza",
+        "noStart": "Senza partenza",
+        "hasFinish": "Arrivo",
+        "noFinish": "Senza arrivo"
       }
     },
     "errors": {

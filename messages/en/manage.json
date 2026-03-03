@@ -347,6 +347,28 @@
         "pause": "Race paused.",
         "resume": "Race resumed.",
         "finish": "Race finished."
+      },
+      "readiness": {
+        "allGood": "Ready to go live",
+        "allGoodDesc": "All variants have routes with START and FINISH checkpoints. The race can be started.",
+        "errorsTitle": "Race cannot start",
+        "errorsDesc": "Fix the following issues before starting the race:",
+        "warningsTitle": "Warnings",
+        "cannotStart": "Fix the configuration errors above before starting the race.",
+        "errLiveraceNotEnabled": "LiveRace is not enabled for this event.",
+        "errNoVariants": "No race variants configured.",
+        "errNoRoute": "\"{variant}\" has no route configured. Upload a GPX file in the Variants tab.",
+        "errNoStart": "\"{variant}\" is missing a START checkpoint. Add one in the route editor.",
+        "errNoFinish": "\"{variant}\" is missing a FINISH checkpoint. Add one in the route editor.",
+        "warnNoStartTime": "\"{variant}\" has no start time defined.",
+        "warnNoCheckpoints": "\"{variant}\" has a route but no intermediate checkpoints.",
+        "variantsTitle": "Variant readiness",
+        "hasRoute": "Route",
+        "noRoute": "No route",
+        "hasStart": "Start",
+        "noStart": "No start",
+        "hasFinish": "Finish",
+        "noFinish": "No finish"
       }
     },
     "errors": {

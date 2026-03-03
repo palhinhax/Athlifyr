@@ -2992,7 +2992,8 @@ export async function saveWorkout(
     totalExercises += resolvedExercises.length;
   }
 
-  // If no exercises were added at all, clean up and return error
+  // If no exercises were added and no blocks were created, clean up and return error.
+  // Both checks are needed: REST blocks increment blockOrderIndex without exercises.
   if (totalExercises === 0 && blockOrderIndex === 0) {
     await prisma.workout.delete({ where: { id: workout.id } });
     return JSON.stringify({

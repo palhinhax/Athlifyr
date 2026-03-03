@@ -2615,7 +2615,8 @@ export async function getSessionDetails(
  * NEVER creates new exercises - only uses existing ones from the database.
  */
 async function findExercise(name: string): Promise<string | null> {
-  const existing = await prisma.exercise.findFirst({
+  // 1. Try exact match (case-insensitive) or alias match
+  const exact = await prisma.exercise.findFirst({
     where: {
       OR: [
         { name: { equals: name, mode: "insensitive" } },
@@ -2625,7 +2626,17 @@ async function findExercise(name: string): Promise<string | null> {
     select: { id: true },
   });
 
-  return existing?.id ?? null;
+  if (exact) return exact.id;
+
+  // 2. Fallback: partial contains match (handles minor naming differences)
+  const partial = await prisma.exercise.findFirst({
+    where: {
+      name: { contains: name, mode: "insensitive" },
+    },
+    select: { id: true },
+  });
+
+  return partial?.id ?? null;
 }
 
 /**
@@ -2741,6 +2752,7 @@ export async function saveTrainingPlan(
         });
 
         // 5. Create exercises for this block
+        let exercisesAdded = 0;
         for (let ei = 0; ei < blockInput.exercises.length; ei++) {
           const exInput = blockInput.exercises[ei];
           const exerciseId = await findExercise(exInput.name);
@@ -2780,6 +2792,15 @@ export async function saveTrainingPlan(
               notes: exInput.notes,
             },
           });
+          exercisesAdded++;
+        }
+
+        // Remove blocks that ended up with no exercises to avoid empty blocks
+        if (exercisesAdded === 0) {
+          console.warn(
+            `[Athli] Removing empty block "${blockInput.name ?? blockInput.type}" — all exercises were unknown`
+          );
+          await prisma.workoutBlock.delete({ where: { id: block.id } });
         }
       }
 
@@ -2884,6 +2905,7 @@ export async function saveWorkout(
     });
 
     // 3. Create exercises for this block
+    let exercisesAdded = 0;
     for (let ei = 0; ei < blockInput.exercises.length; ei++) {
       const exInput = blockInput.exercises[ei];
       const exerciseId = await findExercise(exInput.name);
@@ -2923,6 +2945,15 @@ export async function saveWorkout(
           notes: exInput.notes,
         },
       });
+      exercisesAdded++;
+    }
+
+    // Remove blocks that ended up with no exercises to avoid empty blocks
+    if (exercisesAdded === 0) {
+      console.warn(
+        `[Athli] Removing empty block "${blockInput.name ?? blockInput.type}" — all exercises were unknown`
+      );
+      await prisma.workoutBlock.delete({ where: { id: block.id } });
     }
   }
 

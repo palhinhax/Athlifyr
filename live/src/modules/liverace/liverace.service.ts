@@ -13,6 +13,7 @@ import {
   detectFinish,
   isPlausibleUpdate,
   isAccuracyAcceptable,
+  isTimestampValid,
   haversineM,
 } from "./route-engine.js";
 import {
@@ -197,6 +198,20 @@ export function getVariantStartTime(
   variantId: string
 ): number | null {
   return room.variantStartTimes.get(variantId) ?? null;
+}
+
+/**
+ * Get the scheduled start times for all variants (used for countdown sync).
+ * Returns a map of variantId → scheduled start timestamp (unix ms).
+ */
+export function getScheduledVariantStartTimes(
+  room: EventRoomState
+): Record<string, number> {
+  const result: Record<string, number> = {};
+  for (const variant of room.config.variants) {
+    result[variant.variantId] = computeVariantStartMs(room, variant.variantId);
+  }
+  return result;
 }
 
 /**
@@ -542,6 +557,14 @@ export function processGpsUpdate(
 
   // Anti-cheat: accuracy check
   if (!isAccuracyAcceptable(point.accuracy)) return;
+
+  // Anti-cheat: timestamp validation (reject future or extremely old timestamps)
+  if (!isTimestampValid(point.timestamp)) {
+    console.warn(
+      `[LiveRace] Rejected GPS from ${userId}: invalid timestamp ${point.timestamp}`
+    );
+    return;
+  }
 
   // Anti-cheat: speed check (if we have a previous point)
   if (athlete.currentPosition) {

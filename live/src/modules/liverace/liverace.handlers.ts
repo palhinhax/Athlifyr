@@ -22,6 +22,7 @@ import {
   processGpsBatch,
   getSnapshot,
   eventRoom,
+  getScheduledVariantStartTimes,
 } from "./liverace.service.js";
 import type { GPSPoint } from "./liverace.types.js";
 
@@ -82,6 +83,8 @@ export function registerLiveRaceHandlers(
         eventId,
         status: room.status,
         role: "athlete",
+        serverTime: Date.now(),
+        variantStartTimes: getScheduledVariantStartTimes(room),
       });
 
       // Send current snapshot to the newly joined athlete
@@ -129,6 +132,8 @@ export function registerLiveRaceHandlers(
         eventId,
         status: room.status,
         role: "spectator",
+        serverTime: Date.now(),
+        variantStartTimes: getScheduledVariantStartTimes(room),
       });
 
       // Send current snapshot

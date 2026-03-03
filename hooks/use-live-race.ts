@@ -14,6 +14,7 @@ import { io, type Socket } from "socket.io-client";
 
 export type EventLiveStatus =
   | "SCHEDULED"
+  | "CHECK_IN_OPEN"
   | "WARMUP"
   | "LIVE"
   | "PAUSED"
@@ -93,6 +94,12 @@ export interface LiveRaceState {
   syncing: boolean;
   /** Sync progress percentage (0-100) during batch upload */
   syncProgress: number;
+  /** Countdown in ms until the earliest variant starts (null if no data or already started) */
+  countdownMs: number | null;
+  /** Scheduled start times per variant (variantId → unix ms), synced from server */
+  scheduledStartTimes: Record<string, number> | null;
+  /** Clock offset: server time - client time (ms). Positive = client clock is behind. */
+  serverTimeOffset: number;
 }
 
 interface UseLiveRaceOptions {
@@ -156,6 +163,9 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
     offlineQueueSize: 0,
     syncing: false,
     syncProgress: 0,
+    countdownMs: null,
+    scheduledStartTimes: null,
+    serverTimeOffset: 0,
   });
 
   const socketRef = useRef<Socket | null>(null);
@@ -230,18 +240,29 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
 
     // ─── LiveRace Events ──────────────────────────────────────────────
 
-    socket.on("liverace:joined", ({ status }) => {
-      setState((prev) => ({ ...prev, status }));
-      hasJoinedRef.current = true;
+    socket.on(
+      "liverace:joined",
+      ({ status, serverTime, variantStartTimes }) => {
+        // Compute clock offset: positive = client clock is behind server
+        const offset = serverTime ? serverTime - Date.now() : 0;
 
-      // Auto-flush offline buffer on (re)join as athlete
-      if (role === "athlete" && offlineBuffer.current.length > 0) {
-        // Small delay to ensure the server has processed the join
-        setTimeout(() => {
-          flushOfflineQueue();
-        }, 500);
+        setState((prev) => ({
+          ...prev,
+          status,
+          serverTimeOffset: offset,
+          scheduledStartTimes: variantStartTimes ?? null,
+        }));
+        hasJoinedRef.current = true;
+
+        // Auto-flush offline buffer on (re)join as athlete
+        if (role === "athlete" && offlineBuffer.current.length > 0) {
+          // Small delay to ensure the server has processed the join
+          setTimeout(() => {
+            flushOfflineQueue();
+          }, 500);
+        }
       }
-    });
+    );
 
     socket.on("liverace:error", ({ message }) => {
       setState((prev) => ({ ...prev, error: message }));
@@ -367,6 +388,46 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
       disconnect();
     };
   }, [autoConnect, connect, disconnect]);
+
+  // ─── Countdown Timer (updates every second during CHECK_IN_OPEN / WARMUP) ─
+  useEffect(() => {
+    const shouldCountdown =
+      state.scheduledStartTimes &&
+      (state.status === "CHECK_IN_OPEN" ||
+        state.status === "WARMUP" ||
+        state.status === "SCHEDULED");
+
+    if (!shouldCountdown) {
+      // Clear countdown when race is live or finished
+      if (state.countdownMs !== null) {
+        setState((prev) => ({ ...prev, countdownMs: null }));
+      }
+      return;
+    }
+
+    const computeCountdown = () => {
+      const starts = state.scheduledStartTimes;
+      if (!starts) return null;
+      const times = Object.values(starts);
+      if (times.length === 0) return null;
+      // Earliest variant start time
+      const earliest = Math.min(...times);
+      // Use server time offset for accuracy
+      const serverNow = Date.now() + state.serverTimeOffset;
+      const remaining = earliest - serverNow;
+      return remaining > 0 ? remaining : 0;
+    };
+
+    // Update immediately
+    setState((prev) => ({ ...prev, countdownMs: computeCountdown() }));
+
+    // Update every second
+    const interval = setInterval(() => {
+      setState((prev) => ({ ...prev, countdownMs: computeCountdown() }));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [state.scheduledStartTimes, state.status, state.serverTimeOffset]);
 
   return {
     ...state,

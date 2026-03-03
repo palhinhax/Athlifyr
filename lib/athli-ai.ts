@@ -2615,12 +2615,15 @@ export async function getSessionDetails(
  * NEVER creates new exercises - only uses existing ones from the database.
  */
 async function findExercise(name: string): Promise<string | null> {
+  const trimmed = name.trim();
+  if (trimmed.length < 2) return null;
+
   // 1. Try exact match (case-insensitive) or alias match
   const exact = await prisma.exercise.findFirst({
     where: {
       OR: [
-        { name: { equals: name, mode: "insensitive" } },
-        { aliases: { has: name } },
+        { name: { equals: trimmed, mode: "insensitive" } },
+        { aliases: { has: trimmed } },
       ],
     },
     select: { id: true },
@@ -2631,8 +2634,9 @@ async function findExercise(name: string): Promise<string | null> {
   // 2. Fallback: partial contains match (handles minor naming differences)
   const partial = await prisma.exercise.findFirst({
     where: {
-      name: { contains: name, mode: "insensitive" },
+      name: { contains: trimmed, mode: "insensitive" },
     },
+    orderBy: { name: "asc" },
     select: { id: true },
   });
 
@@ -2682,11 +2686,139 @@ function mapBlockType(
   return mapping[type.toUpperCase()] || "FOR_TIME";
 }
 
+function resolveWeightUnit(
+  exInput: PlanExerciseInput
+): "KG" | "LB" | undefined {
+  if (exInput.weightUnit === "LB") return "LB";
+  return exInput.weight ? "KG" : undefined;
+}
+
+function resolveDistanceUnit(
+  exInput: PlanExerciseInput
+): "KM" | "MI" | "M" | undefined {
+  if (exInput.distanceUnit === "MI") return "MI";
+  if (exInput.distanceUnit === "M") return "M";
+  return exInput.distance ? "KM" : undefined;
+}
+
+async function createBlockExercises(
+  blockId: string,
+  exercises: PlanExerciseInput[]
+): Promise<number> {
+  let added = 0;
+  for (let ei = 0; ei < exercises.length; ei++) {
+    const exInput = exercises[ei];
+    const exerciseId = await findExercise(exInput.name);
+
+    if (!exerciseId) {
+      console.warn(
+        `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
+      );
+      continue;
+    }
+
+    await prisma.workoutBlockExercise.create({
+      data: {
+        blockId,
+        exerciseId,
+        orderIndex: ei,
+        prescribedReps: exInput.reps,
+        prescribedWeight: exInput.weight,
+        prescribedWeightUnit: resolveWeightUnit(exInput),
+        prescribedDistance: exInput.distance,
+        prescribedDistanceUnit: resolveDistanceUnit(exInput),
+        prescribedTime: exInput.time,
+        prescribedCalories: exInput.calories,
+        prescribedSets: exInput.sets,
+        notes: exInput.notes,
+      },
+    });
+    added++;
+  }
+  return added;
+}
+
+async function createWorkoutBlocks(
+  workoutId: string,
+  blocks: (PlanBlockInput | WorkoutBlockInput)[]
+): Promise<number> {
+  let blocksCreated = 0;
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const blockInput = blocks[bi];
+
+    const block = await prisma.workoutBlock.create({
+      data: {
+        workoutId,
+        type: mapBlockType(blockInput.type),
+        name: blockInput.name,
+        orderIndex: bi,
+        rounds: blockInput.rounds,
+        timeCap: blockInput.timeCap,
+        workTime: blockInput.workTime,
+        notes: blockInput.notes,
+      },
+    });
+
+    const exercisesAdded = await createBlockExercises(
+      block.id,
+      blockInput.exercises
+    );
+
+    // Only remove blocks that had exercises but none resolved;
+    // preserve exercise-less blocks (e.g. REST with notes/timeCap)
+    if (blockInput.exercises.length > 0 && exercisesAdded === 0) {
+      console.warn(
+        `[Athli] Removing empty block "${blockInput.name ?? blockInput.type}" — all exercises were unknown`
+      );
+      await prisma.workoutBlock.delete({ where: { id: block.id } });
+    } else {
+      blocksCreated++;
+    }
+  }
+  return blocksCreated;
+}
+
+async function createPlanWeekWorkouts(
+  weekId: string,
+  workouts: PlanWorkoutInput[],
+  userId: string,
+  difficulty: number,
+  category: string
+): Promise<number> {
+  for (let wi = 0; wi < workouts.length; wi++) {
+    const workoutInput = workouts[wi];
+
+    const workout = await prisma.workout.create({
+      data: {
+        name: workoutInput.name,
+        description: workoutInput.description,
+        createdById: userId,
+        estimatedTime: workoutInput.estimatedTime,
+        difficulty,
+        tags: [category.toLowerCase()],
+        isTemplate: false,
+        isPublic: false,
+      },
+    });
+
+    await createWorkoutBlocks(workout.id, workoutInput.blocks);
+
+    await prisma.trainingPlanWorkout.create({
+      data: {
+        weekId,
+        workoutId: workout.id,
+        dayOfWeek: workoutInput.dayOfWeek,
+        orderIndex: wi,
+      },
+    });
+  }
+  return workouts.length;
+}
+
 export async function saveTrainingPlan(
   params: SaveTrainingPlanParams,
   userId: string
 ): Promise<string> {
-  // 1. Create the TrainingPlan
   const plan = await prisma.trainingPlan.create({
     data: {
       name: params.name,
@@ -2704,7 +2836,6 @@ export async function saveTrainingPlan(
 
   let totalWorkouts = 0;
 
-  // 2. Create weeks with workouts
   for (const weekInput of params.weeks) {
     const week = await prisma.trainingPlanWeek.create({
       data: {
@@ -2716,109 +2847,15 @@ export async function saveTrainingPlan(
       },
     });
 
-    // 3. Create workouts for this week
-    for (let wi = 0; wi < weekInput.workouts.length; wi++) {
-      const workoutInput = weekInput.workouts[wi];
-
-      // Create the Workout
-      const workout = await prisma.workout.create({
-        data: {
-          name: workoutInput.name,
-          description: workoutInput.description,
-          createdById: userId,
-          estimatedTime: workoutInput.estimatedTime,
-          difficulty: params.difficulty,
-          tags: [params.category.toLowerCase()],
-          isTemplate: false,
-          isPublic: false,
-        },
-      });
-
-      // 4. Create blocks for this workout
-      for (let bi = 0; bi < workoutInput.blocks.length; bi++) {
-        const blockInput = workoutInput.blocks[bi];
-
-        const block = await prisma.workoutBlock.create({
-          data: {
-            workoutId: workout.id,
-            type: mapBlockType(blockInput.type),
-            name: blockInput.name,
-            orderIndex: bi,
-            rounds: blockInput.rounds,
-            timeCap: blockInput.timeCap,
-            workTime: blockInput.workTime,
-            notes: blockInput.notes,
-          },
-        });
-
-        // 5. Create exercises for this block
-        let exercisesAdded = 0;
-        for (let ei = 0; ei < blockInput.exercises.length; ei++) {
-          const exInput = blockInput.exercises[ei];
-          const exerciseId = await findExercise(exInput.name);
-
-          if (!exerciseId) {
-            console.warn(
-              `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
-            );
-            continue;
-          }
-
-          await prisma.workoutBlockExercise.create({
-            data: {
-              blockId: block.id,
-              exerciseId,
-              orderIndex: ei,
-              prescribedReps: exInput.reps,
-              prescribedWeight: exInput.weight,
-              prescribedWeightUnit:
-                exInput.weightUnit === "LB"
-                  ? "LB"
-                  : exInput.weight
-                    ? "KG"
-                    : undefined,
-              prescribedDistance: exInput.distance,
-              prescribedDistanceUnit:
-                exInput.distanceUnit === "MI"
-                  ? "MI"
-                  : exInput.distanceUnit === "M"
-                    ? "M"
-                    : exInput.distance
-                      ? "KM"
-                      : undefined,
-              prescribedTime: exInput.time,
-              prescribedCalories: exInput.calories,
-              prescribedSets: exInput.sets,
-              notes: exInput.notes,
-            },
-          });
-          exercisesAdded++;
-        }
-
-        // Remove blocks that ended up with no exercises to avoid empty blocks
-        if (exercisesAdded === 0) {
-          console.warn(
-            `[Athli] Removing empty block "${blockInput.name ?? blockInput.type}" — all exercises were unknown`
-          );
-          await prisma.workoutBlock.delete({ where: { id: block.id } });
-        }
-      }
-
-      // 6. Link workout to week
-      await prisma.trainingPlanWorkout.create({
-        data: {
-          weekId: week.id,
-          workoutId: workout.id,
-          dayOfWeek: workoutInput.dayOfWeek,
-          orderIndex: wi,
-        },
-      });
-
-      totalWorkouts++;
-    }
+    totalWorkouts += await createPlanWeekWorkouts(
+      week.id,
+      weekInput.workouts,
+      userId,
+      params.difficulty,
+      params.category
+    );
   }
 
-  // 7. Assign plan to user
   const startDate = new Date();
   const endDate = new Date();
   endDate.setDate(endDate.getDate() + params.duration * 7);
@@ -2873,7 +2910,6 @@ export async function saveWorkout(
   params: SaveWorkoutParams,
   userId: string
 ): Promise<string> {
-  // 1. Create the Workout
   const workout = await prisma.workout.create({
     data: {
       name: params.name,
@@ -2887,77 +2923,8 @@ export async function saveWorkout(
     },
   });
 
-  // 2. Create blocks
-  for (let bi = 0; bi < params.blocks.length; bi++) {
-    const blockInput = params.blocks[bi];
+  const totalBlocks = await createWorkoutBlocks(workout.id, params.blocks);
 
-    const block = await prisma.workoutBlock.create({
-      data: {
-        workoutId: workout.id,
-        type: mapBlockType(blockInput.type),
-        name: blockInput.name,
-        orderIndex: bi,
-        rounds: blockInput.rounds,
-        timeCap: blockInput.timeCap,
-        workTime: blockInput.workTime,
-        notes: blockInput.notes,
-      },
-    });
-
-    // 3. Create exercises for this block
-    let exercisesAdded = 0;
-    for (let ei = 0; ei < blockInput.exercises.length; ei++) {
-      const exInput = blockInput.exercises[ei];
-      const exerciseId = await findExercise(exInput.name);
-
-      if (!exerciseId) {
-        console.warn(
-          `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
-        );
-        continue;
-      }
-
-      await prisma.workoutBlockExercise.create({
-        data: {
-          blockId: block.id,
-          exerciseId,
-          orderIndex: ei,
-          prescribedReps: exInput.reps,
-          prescribedWeight: exInput.weight,
-          prescribedWeightUnit:
-            exInput.weightUnit === "LB"
-              ? "LB"
-              : exInput.weight
-                ? "KG"
-                : undefined,
-          prescribedDistance: exInput.distance,
-          prescribedDistanceUnit:
-            exInput.distanceUnit === "MI"
-              ? "MI"
-              : exInput.distanceUnit === "M"
-                ? "M"
-                : exInput.distance
-                  ? "KM"
-                  : undefined,
-          prescribedTime: exInput.time,
-          prescribedCalories: exInput.calories,
-          prescribedSets: exInput.sets,
-          notes: exInput.notes,
-        },
-      });
-      exercisesAdded++;
-    }
-
-    // Remove blocks that ended up with no exercises to avoid empty blocks
-    if (exercisesAdded === 0) {
-      console.warn(
-        `[Athli] Removing empty block "${blockInput.name ?? blockInput.type}" — all exercises were unknown`
-      );
-      await prisma.workoutBlock.delete({ where: { id: block.id } });
-    }
-  }
-
-  // 4. Save to user's workouts
   await prisma.savedWorkout.create({
     data: {
       userId,
@@ -2970,7 +2937,7 @@ export async function saveWorkout(
     name: workout.name,
     estimatedTime: workout.estimatedTime,
     difficulty: workout.difficulty,
-    totalBlocks: params.blocks.length,
+    totalBlocks,
     url: `/workouts/${workout.id}/run`,
   });
 }

@@ -170,9 +170,7 @@ export async function POST(
         ([lat, lng]) => !isValidCoordinate(lat, lng)
       );
       if (hasInvalidCoords) {
-        errors.push(
-          `Variant "${variant.name}" contains invalid coordinates`
-        );
+        errors.push(`Variant "${variant.name}" contains invalid coordinates`);
         continue;
       }
 

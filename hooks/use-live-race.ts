@@ -14,6 +14,7 @@ import { io, type Socket } from "socket.io-client";
 
 export type EventLiveStatus =
   | "SCHEDULED"
+  | "CHECK_IN_OPEN"
   | "WARMUP"
   | "LIVE"
   | "PAUSED"

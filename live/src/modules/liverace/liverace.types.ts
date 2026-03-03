@@ -101,6 +101,11 @@ export interface AthleteState {
   currentPosition: GPSPoint | null;
   lastUpdateAt: number; // unix ms
 
+  // Personal start (chip time)
+  // The timer starts when the athlete EXITS the START zone, not at the gun.
+  personalStartTime: number | null; // unix ms when this athlete left the START zone
+  wasInsideStartZone: boolean; // tracking flag for start zone exit detection
+
   // Route progress
   distanceAlongRouteM: number; // meters from start along the route polyline
   deviationM: number; // perpendicular distance from route
@@ -133,6 +138,7 @@ export interface LeaderboardEntry {
   lastCheckpointOrder: number;
   lastCheckpointName: string | null;
   finishTimeMs: number | null;
+  personalStartTime: number | null; // unix ms — null means not yet exited START zone
   gap: string | null; // e.g. "+1:23" or "+500m"
 }
 
@@ -142,7 +148,8 @@ export interface EventRoomState {
   eventId: string;
   config: LiveConfig;
   status: EventLiveStatus;
-  raceStartTime: number | null; // unix ms when race actually started
+  raceStartTime: number | null; // unix ms when first variant started (backward compat)
+  variantStartTimes: Map<string, number>; // variantId → unix ms when that variant started
   athletes: Map<string, AthleteState>; // userId → AthleteState
   spectatorCount: number;
 
@@ -150,6 +157,7 @@ export interface EventRoomState {
   routeHelpers: Map<string, RouteHelper>;
 
   // Timers
+  variantStartTimers: Map<string, ReturnType<typeof setTimeout>>; // variantId → scheduled timer
   leaderboardInterval: ReturnType<typeof setInterval> | null;
   positionInterval: ReturnType<typeof setInterval> | null;
   inactivityCheckInterval: ReturnType<typeof setInterval> | null;
@@ -211,6 +219,15 @@ export interface LiveRaceServerToClientEvents {
     eventId: string;
     status: EventLiveStatus;
     raceStartTime?: number;
+    variantStartTimes?: Record<string, number>; // variantId → unix ms
+  }) => void;
+
+  // Variant-level start (fired when each variant's gun goes off)
+  "liverace:variant_started": (data: {
+    eventId: string;
+    variantId: string;
+    variantName: string;
+    raceStartTime: number; // unix ms for this variant
   }) => void;
 
   // Athlete positions (broadcast to spectators)
@@ -247,6 +264,12 @@ export interface LiveRaceServerToClientEvents {
     athleteName: string | null;
     rank: number;
     finishTimeMs: number;
+  }) => void;
+  "liverace:athlete_started": (data: {
+    eventId: string;
+    userId: string;
+    athleteName: string | null;
+    personalStartTime: number; // unix ms when this athlete exited the START zone
   }) => void;
   "liverace:athlete_status": (data: {
     eventId: string;

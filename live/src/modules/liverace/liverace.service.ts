@@ -13,6 +13,7 @@ import {
   detectFinish,
   isPlausibleUpdate,
   isAccuracyAcceptable,
+  haversineM,
 } from "./route-engine.js";
 import {
   fetchLiveConfig,
@@ -28,6 +29,7 @@ import type {
   AthletePositionUpdate,
   EventLiveStatus,
   CheckpointSplit,
+  LiveConfigCheckpoint,
 } from "./liverace.types.js";
 import type { LiveIO } from "../../plugins/socket.js";
 import type { LiveSocket } from "../../plugins/socket.js";
@@ -119,9 +121,11 @@ export async function startEvent(
     config: liveConfig,
     status: initialStatus,
     raceStartTime: null,
+    variantStartTimes: new Map(),
     athletes: new Map(),
     spectatorCount: 0,
     routeHelpers,
+    variantStartTimers: new Map(),
     leaderboardInterval: null,
     positionInterval: null,
     inactivityCheckInterval: null,
@@ -153,53 +157,147 @@ export async function startEvent(
   return { room, created: true };
 }
 
-// ─── Schedule Race Start ────────────────────────────────────────────────────
+// ─── Schedule Race Start (per variant) ─────────────────────────────────────
 
-function scheduleRaceStart(room: EventRoomState, io: LiveIO): void {
-  const startTime = new Date(room.config.startDate).getTime();
-  const now = Date.now();
-  const delay = startTime - now;
+/**
+ * Compute the absolute start timestamp (ms) for a given variant.
+ * Uses the variant's own startDate/startTime if available,
+ * otherwise falls back to the event-level startDate.
+ */
+function computeVariantStartMs(
+  room: EventRoomState,
+  variantId: string
+): number {
+  const variant = room.config.variants.find((v) => v.variantId === variantId);
+  if (!variant) return new Date(room.config.startDate).getTime();
 
-  if (delay <= 0) {
-    // Start time already passed — transition to LIVE immediately
-    if (room.status === "WARMUP") {
-      transitionToLive(room, io);
+  // If the variant has its own startDate, use it
+  if (variant.startDate) {
+    const base = new Date(variant.startDate);
+    // If startTime is provided (e.g. "09:30"), overlay it onto the date
+    if (variant.startTime) {
+      const [hours, minutes] = variant.startTime.split(":").map(Number);
+      if (!isNaN(hours) && !isNaN(minutes)) {
+        base.setUTCHours(hours, minutes, 0, 0);
+      }
     }
-    return;
+    return base.getTime();
   }
 
-  console.log(
-    `[LiveRace] Race start scheduled in ${Math.round(delay / 1000)}s for event ${room.eventId}`
-  );
-
-  setTimeout(() => {
-    if (room.status === "WARMUP") {
-      transitionToLive(room, io);
-    }
-  }, delay);
+  // Fallback: event-level startDate
+  return new Date(room.config.startDate).getTime();
 }
 
-async function transitionToLive(
+/**
+ * Get the start time for a specific variant from the room state.
+ * Returns the actual recorded start time if already started, else null.
+ */
+export function getVariantStartTime(
   room: EventRoomState,
+  variantId: string
+): number | null {
+  return room.variantStartTimes.get(variantId) ?? null;
+}
+
+/**
+ * Schedule individual timers for each variant's start.
+ * Variants may start at different times (e.g. 50km at 07:00, 25km at 09:00).
+ * The room transitions to LIVE when the FIRST variant starts.
+ */
+function scheduleRaceStart(room: EventRoomState, io: LiveIO): void {
+  const now = Date.now();
+
+  for (const variant of room.config.variants) {
+    const variantStartMs = computeVariantStartMs(room, variant.variantId);
+    const delay = variantStartMs - now;
+
+    if (delay <= 0) {
+      // Start time already passed — start this variant immediately
+      if (room.status === "WARMUP" || room.status === "LIVE") {
+        startVariant(room, variant.variantId, io);
+      }
+    } else {
+      console.log(
+        `[LiveRace] Variant "${variant.variantName}" start scheduled in ${Math.round(delay / 1000)}s ` +
+          `for event ${room.eventId}`
+      );
+
+      const timer = setTimeout(() => {
+        if (room.status === "WARMUP" || room.status === "LIVE") {
+          startVariant(room, variant.variantId, io);
+        }
+      }, delay);
+
+      room.variantStartTimers.set(variant.variantId, timer);
+    }
+  }
+}
+
+/**
+ * Start a single variant's race clock.
+ * If this is the first variant to start, transitions the room to LIVE.
+ */
+async function startVariant(
+  room: EventRoomState,
+  variantId: string,
   io: LiveIO
 ): Promise<void> {
-  room.status = "LIVE";
-  room.raceStartTime = Date.now();
+  // Already started?
+  if (room.variantStartTimes.has(variantId)) return;
 
-  try {
-    await updateLiveStatus(room.eventId, "LIVE");
-  } catch (err) {
-    console.error(`[LiveRace] Failed to update DB status to LIVE:`, err);
+  const startTime = Date.now();
+  room.variantStartTimes.set(variantId, startTime);
+
+  // Remove the timer reference
+  room.variantStartTimers.delete(variantId);
+
+  const variant = room.config.variants.find((v) => v.variantId === variantId);
+  const variantName = variant?.variantName ?? variantId;
+
+  // First variant to start? Transition room to LIVE
+  const isFirstStart = room.status === "WARMUP";
+  if (isFirstStart) {
+    room.status = "LIVE";
+    room.raceStartTime = startTime; // backward compat: first variant = global start
+
+    try {
+      await updateLiveStatus(room.eventId, "LIVE");
+    } catch (err) {
+      console.error(`[LiveRace] Failed to update DB status to LIVE:`, err);
+    }
+
+    // Broadcast room-level status change
+    io.to(eventRoom(room.eventId)).emit("liverace:status_changed", {
+      eventId: room.eventId,
+      status: "LIVE",
+      raceStartTime: room.raceStartTime,
+      variantStartTimes: Object.fromEntries(room.variantStartTimes),
+    });
+
+    console.log(
+      `[LiveRace] 🏁 Race LIVE for event ${room.eventId} (first variant: "${variantName}")`
+    );
+  } else {
+    // Subsequent variant start — broadcast updated variant start times
+    io.to(eventRoom(room.eventId)).emit("liverace:status_changed", {
+      eventId: room.eventId,
+      status: "LIVE",
+      raceStartTime: room.raceStartTime!,
+      variantStartTimes: Object.fromEntries(room.variantStartTimes),
+    });
   }
 
-  // Broadcast status change
-  io.to(eventRoom(room.eventId)).emit("liverace:status_changed", {
+  // Always emit the per-variant start event
+  io.to(eventRoom(room.eventId)).emit("liverace:variant_started", {
     eventId: room.eventId,
-    status: "LIVE",
-    raceStartTime: room.raceStartTime,
+    variantId,
+    variantName,
+    raceStartTime: startTime,
   });
 
-  console.log(`[LiveRace] 🏁 Race STARTED for event ${room.eventId}`);
+  console.log(
+    `[LiveRace] 🚩 Variant "${variantName}" STARTED for event ${room.eventId}`
+  );
 }
 
 // ─── Stop Event ─────────────────────────────────────────────────────────────
@@ -218,6 +316,12 @@ export async function stopEvent(
   if (room.leaderboardInterval) clearInterval(room.leaderboardInterval);
   if (room.positionInterval) clearInterval(room.positionInterval);
   if (room.inactivityCheckInterval) clearInterval(room.inactivityCheckInterval);
+
+  // Clear any pending variant start timers
+  for (const timer of room.variantStartTimers.values()) {
+    clearTimeout(timer);
+  }
+  room.variantStartTimers.clear();
 
   // Persist final results if finishing
   if (reason === "FINISHED") {
@@ -302,6 +406,8 @@ export async function joinAthlete(
     status: "ACTIVE",
     currentPosition: null,
     lastUpdateAt: Date.now(),
+    personalStartTime: null,
+    wasInsideStartZone: false,
     distanceAlongRouteM: 0,
     deviationM: 0,
     progressPercent: 0,
@@ -420,6 +526,20 @@ export function processGpsUpdate(
 
   if (room.status !== "LIVE") return;
 
+  // Check if this athlete's variant has started yet
+  // (room may be LIVE because another variant started first)
+  const variantStart = getVariantStartTime(room, athlete.variantId);
+  if (!variantStart) {
+    // Variant hasn't started — accept position but don't process route/checkpoints
+    athlete.currentPosition = point;
+    athlete.lastUpdateAt = Date.now();
+    athlete.status = "ACTIVE";
+    return;
+  }
+
+  // Detect personal start: athlete exiting the START zone
+  detectStartZoneExit(room, athlete, point, io);
+
   // Anti-cheat: accuracy check
   if (!isAccuracyAcceptable(point.accuracy)) return;
 
@@ -521,9 +641,8 @@ export function processGpsUpdate(
 
   for (const cpIdx of newCheckpoints) {
     const cp = routeHelper.checkpoints[cpIdx];
-    const splitTimeMs = room.raceStartTime
-      ? Date.now() - room.raceStartTime
-      : 0;
+    const athleteStart = getAthleteRaceStart(room, athlete);
+    const splitTimeMs = athleteStart ? Date.now() - athleteStart : 0;
 
     const split: CheckpointSplit = {
       checkpointId: cp.id,
@@ -562,13 +681,14 @@ export function processGpsUpdate(
     );
     if (finished) {
       athlete.status = "FINISHED";
-      athlete.finishTimeMs = room.raceStartTime
-        ? Date.now() - room.raceStartTime
-        : 0;
+      const athleteStart = getAthleteRaceStart(room, athlete);
+      athlete.finishTimeMs = athleteStart ? Date.now() - athleteStart : 0;
 
-      // Compute rank
+      // Compute rank (within same variant)
       const finishedAthletes = Array.from(room.athletes.values())
-        .filter((a) => a.status === "FINISHED")
+        .filter(
+          (a) => a.variantId === athlete.variantId && a.status === "FINISHED"
+        )
         .sort(
           (a, b) => (a.finishTimeMs ?? Infinity) - (b.finishTimeMs ?? Infinity)
         );
@@ -766,6 +886,9 @@ export function processGpsBatch(
       athlete.status = "ACTIVE";
     }
 
+    // Detect personal start: athlete exiting the START zone (batch replay)
+    detectStartZoneExitBatch(room, athlete, point);
+
     // Checkpoint detection
     const reachedOrders = new Set(
       athlete.checkpointsReached.map((s) => {
@@ -782,7 +905,11 @@ export function processGpsBatch(
       reachedOrders
     );
 
-    const raceStart = room.raceStartTime ?? 0;
+    const raceStart =
+      getAthleteRaceStart(room, athlete) ??
+      getVariantStartTime(room, athlete.variantId) ??
+      room.raceStartTime ??
+      0;
     for (const cpIdx of newCpIndices) {
       const cp = routeHelper.checkpoints[cpIdx];
       const splitTimeMs = point.timestamp - raceStart;
@@ -821,7 +948,9 @@ export function processGpsBatch(
         athlete.finishTimeMs = raceStart ? point.timestamp - raceStart : 0;
 
         const finishedAthletes = Array.from(room.athletes.values())
-          .filter((a) => a.status === "FINISHED")
+          .filter(
+            (a) => a.variantId === athlete.variantId && a.status === "FINISHED"
+          )
           .sort(
             (a, b) =>
               (a.finishTimeMs ?? Infinity) - (b.finishTimeMs ?? Infinity)
@@ -857,6 +986,16 @@ export function processGpsBatch(
       eventId,
       userId,
       status: athlete.status,
+    });
+  }
+
+  // Emit personal start event if detected during batch
+  if (athlete.personalStartTime !== null) {
+    io.to(eventRoom(eventId)).emit("liverace:athlete_started", {
+      eventId,
+      userId,
+      athleteName: athlete.name,
+      personalStartTime: athlete.personalStartTime,
     });
   }
 
@@ -981,6 +1120,7 @@ export function computeLeaderboard(room: EventRoomState): LeaderboardEntry[] {
       lastCheckpointOrder: a.lastCheckpointOrder,
       lastCheckpointName: lastCp?.checkpointName ?? null,
       finishTimeMs: a.finishTimeMs,
+      personalStartTime: a.personalStartTime,
       gap,
     });
   }
@@ -993,6 +1133,7 @@ export function computeLeaderboard(room: EventRoomState): LeaderboardEntry[] {
 export function getSnapshot(eventId: string): {
   status: EventLiveStatus;
   raceStartTime: number | null;
+  variantStartTimes: Record<string, number>;
   athletes: AthletePositionUpdate[];
   leaderboard: LeaderboardEntry[];
   spectatorCount: number;
@@ -1003,6 +1144,7 @@ export function getSnapshot(eventId: string): {
   return {
     status: room.status,
     raceStartTime: room.raceStartTime,
+    variantStartTimes: Object.fromEntries(room.variantStartTimes),
     athletes: getPositionUpdates(room),
     leaderboard: computeLeaderboard(room),
     spectatorCount: room.spectatorCount,
@@ -1062,6 +1204,139 @@ function startBroadcastTimers(room: EventRoomState, io: LiveIO): void {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+/**
+ * Find the START checkpoint for a given variant.
+ */
+function findStartCheckpoint(
+  room: EventRoomState,
+  variantId: string
+): LiveConfigCheckpoint | null {
+  const variant = room.config.variants.find((v) => v.variantId === variantId);
+  if (!variant) return null;
+  return variant.checkpoints.find((cp) => cp.type === "START") ?? null;
+}
+
+/**
+ * Check if a GPS point is inside a checkpoint's radius.
+ */
+function isInsideCheckpointZone(
+  lat: number,
+  lng: number,
+  checkpoint: LiveConfigCheckpoint
+): boolean {
+  const dist = haversineM(lat, lng, checkpoint.latitude, checkpoint.longitude);
+  return dist <= checkpoint.radiusM;
+}
+
+/**
+ * Detect if an athlete has exited the START zone.
+ *
+ * Logic:
+ * 1. If athlete was previously inside the START zone and is now outside → they started
+ * 2. If athlete was never inside the START zone and is already outside → they started
+ *    (they may have entered/exited before GPS tracking began)
+ *
+ * Only triggers if the variant's gun time has passed.
+ *
+ * Returns the timestamp of the personal start, or null if not yet started.
+ */
+function detectStartZoneExit(
+  room: EventRoomState,
+  athlete: AthleteState,
+  point: GPSPoint,
+  io: LiveIO
+): void {
+  // Already has a personal start time — nothing to do
+  if (athlete.personalStartTime !== null) return;
+
+  // Variant must have started (gun time)
+  const variantStart = getVariantStartTime(room, athlete.variantId);
+  if (!variantStart) return;
+
+  const startCp = findStartCheckpoint(room, athlete.variantId);
+  if (!startCp) {
+    // No START checkpoint defined — fall back to variant gun time
+    athlete.personalStartTime = variantStart;
+    return;
+  }
+
+  const isInside = isInsideCheckpointZone(point.lat, point.lng, startCp);
+
+  if (isInside) {
+    // Mark that we've seen the athlete inside the START zone
+    athlete.wasInsideStartZone = true;
+    return;
+  }
+
+  // Athlete is OUTSIDE the start zone
+  if (athlete.wasInsideStartZone) {
+    // Was inside, now outside → personal start!
+    athlete.personalStartTime = point.timestamp || Date.now();
+
+    io.to(eventRoom(room.eventId)).emit("liverace:athlete_started", {
+      eventId: room.eventId,
+      userId: athlete.userId,
+      athleteName: athlete.name,
+      personalStartTime: athlete.personalStartTime,
+    });
+
+    console.log(
+      `[LiveRace] ⏱️ ${athlete.name || athlete.userId} personal start ` +
+        `(exited START zone) at ${new Date(athlete.personalStartTime).toISOString()}`
+    );
+  }
+  // If never seen inside and is outside — we don't start yet.
+  // The athlete needs to be detected inside the START zone first,
+  // then exit it. This prevents false starts from distant GPS signals.
+}
+
+/**
+ * Silent version of detectStartZoneExit for batch replay.
+ * Same logic but does not emit WebSocket events (they are emitted once after the batch).
+ */
+function detectStartZoneExitBatch(
+  room: EventRoomState,
+  athlete: AthleteState,
+  point: GPSPoint
+): void {
+  if (athlete.personalStartTime !== null) return;
+
+  const variantStart = getVariantStartTime(room, athlete.variantId);
+  if (!variantStart) return;
+
+  const startCp = findStartCheckpoint(room, athlete.variantId);
+  if (!startCp) {
+    athlete.personalStartTime = variantStart;
+    return;
+  }
+
+  const isInside = isInsideCheckpointZone(point.lat, point.lng, startCp);
+
+  if (isInside) {
+    athlete.wasInsideStartZone = true;
+    return;
+  }
+
+  if (athlete.wasInsideStartZone) {
+    athlete.personalStartTime = point.timestamp || Date.now();
+  }
+}
+
+/**
+ * Get the effective race start time for an athlete's timing calculations.
+ * Priority: personalStartTime > variantStartTime > raceStartTime
+ */
+export function getAthleteRaceStart(
+  room: EventRoomState,
+  athlete: AthleteState
+): number | null {
+  // Personal chip time (exited START zone)
+  if (athlete.personalStartTime !== null) return athlete.personalStartTime;
+
+  // Fallback: variant gun time
+  return getVariantStartTime(room, athlete.variantId);
+}
+
 function getPositionUpdates(room: EventRoomState): AthletePositionUpdate[] {
   const updates: AthletePositionUpdate[] = [];
 
@@ -1112,11 +1387,17 @@ function formatTimeMs(ms: number): string {
 }
 
 async function persistFinalResults(room: EventRoomState): Promise<void> {
-  const finishedAthletes = Array.from(room.athletes.values())
-    .filter((a) => a.status === "FINISHED" && a.finishTimeMs !== null)
-    .sort((a, b) => (a.finishTimeMs ?? 0) - (b.finishTimeMs ?? 0));
+  const allAthletes = Array.from(room.athletes.values());
 
-  if (finishedAthletes.length === 0) return;
+  // Group finished athletes by variant for per-variant ranking
+  const finishedByVariant = new Map<string, AthleteState[]>();
+  for (const a of allAthletes) {
+    if (a.status === "FINISHED" && a.finishTimeMs !== null) {
+      const list = finishedByVariant.get(a.variantId) ?? [];
+      list.push(a);
+      finishedByVariant.set(a.variantId, list);
+    }
+  }
 
   const results: {
     userId: string;
@@ -1124,16 +1405,26 @@ async function persistFinalResults(room: EventRoomState): Promise<void> {
     rank: number;
     finishTimeMs: number;
     status: "FINISHED" | "DNF";
-  }[] = finishedAthletes.map((a, i) => ({
-    userId: a.userId,
-    variantId: a.variantId,
-    rank: i + 1,
-    finishTimeMs: a.finishTimeMs!,
-    status: "FINISHED" as const,
-  }));
+  }[] = [];
+
+  // Rank per variant
+  for (const [, athletes] of finishedByVariant) {
+    athletes.sort((a, b) => (a.finishTimeMs ?? 0) - (b.finishTimeMs ?? 0));
+    for (let i = 0; i < athletes.length; i++) {
+      results.push({
+        userId: athletes[i].userId,
+        variantId: athletes[i].variantId,
+        rank: i + 1,
+        finishTimeMs: athletes[i].finishTimeMs!,
+        status: "FINISHED",
+      });
+    }
+  }
+
+  if (results.length === 0 && allAthletes.length === 0) return;
 
   // Also add DNF athletes
-  const dnfAthletes = Array.from(room.athletes.values()).filter(
+  const dnfAthletes = allAthletes.filter(
     (a) => a.status !== "FINISHED" && a.status !== "DSQ"
   );
   for (const a of dnfAthletes) {

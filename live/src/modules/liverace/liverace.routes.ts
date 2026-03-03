@@ -176,6 +176,10 @@ export async function internalRoutes(app: FastifyInstance): Promise<void> {
         ...(room.raceStartTime != null && {
           raceStartTime: room.raceStartTime,
         }),
+        variantStartTimes:
+          room.variantStartTimes.size > 0
+            ? Object.fromEntries(room.variantStartTimes)
+            : undefined,
       });
     }
 

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { Camera, Activity, Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -160,7 +159,7 @@ interface AnalysisMenuItemProps {
 
 /**
  * Analysis menu item for mobile navigation.
- * Renders as a nav link-style button with "New" badge.
+ * Renders as a nav link-style button.
  */
 export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -203,18 +202,10 @@ export function AnalysisMobileMenuItem({ onClick }: AnalysisMenuItemProps) {
     <>
       <button
         onClick={handleOpen}
-        className="flex w-full items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+        className="flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
       >
-        <div className="flex items-center gap-3">
-          <Camera className="h-4 w-4" />
-          {t("videoAnalysis")}
-        </div>
-        <Badge
-          variant="default"
-          className="bg-gradient-to-r from-orange-500 to-red-500 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white"
-        >
-          {t("new")}
-        </Badge>
+        <Camera className="h-4 w-4" />
+        {t("videoAnalysis")}
       </button>
 
       {/* Analysis Type Selection Dialog */}

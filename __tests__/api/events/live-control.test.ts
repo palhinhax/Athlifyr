@@ -218,7 +218,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const res = await POST(makeRequest("checkin"), makeParams());
     expect(res.status).toBe(422);
     const body = await res.json();
-    expect(body.error).toBe("LIVE_RACE_NOT_READY");
+    expect(body.code).toBe("LIVE_RACE_NOT_READY");
     expect(body.details).toContainEqual(
       expect.stringContaining("at least 50 route points")
     );
@@ -234,7 +234,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const res = await POST(makeRequest("warmup"), makeParams());
     expect(res.status).toBe(422);
     const body = await res.json();
-    expect(body.error).toBe("LIVE_RACE_NOT_READY");
+    expect(body.code).toBe("LIVE_RACE_NOT_READY");
     expect(body.details).toContainEqual(
       expect.stringContaining("missing a start time")
     );
@@ -252,7 +252,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const res = await POST(makeRequest("start"), makeParams());
     expect(res.status).toBe(422);
     const body = await res.json();
-    expect(body.error).toBe("LIVE_RACE_NOT_READY");
+    expect(body.code).toBe("LIVE_RACE_NOT_READY");
     expect(body.details).toContainEqual(
       expect.stringContaining("invalid coordinates")
     );
@@ -272,7 +272,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const res1 = await POST(makeRequest("checkin"), makeParams());
     expect(res1.status).toBe(422);
     const body1 = await res1.json();
-    expect(body1.error).toBe("LIVE_RACE_NOT_READY");
+    expect(body1.code).toBe("LIVE_RACE_NOT_READY");
   });
 
   it("does NOT validate readiness on non-advancing commands (pause, resume, finish)", async () => {

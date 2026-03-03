@@ -216,8 +216,8 @@ export async function POST(
     if (errors.length > 0) {
       return NextResponse.json(
         {
-          error: "LIVE_RACE_NOT_READY",
-          message: errors.join("; "),
+          error: `LIVE_RACE_NOT_READY: ${errors.join("; ")}`,
+          code: "LIVE_RACE_NOT_READY",
           details: errors,
         },
         { status: 422 }

@@ -427,12 +427,7 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [
-    state.scheduledStartTimes,
-    state.status,
-    state.serverTimeOffset,
-    state.countdownMs,
-  ]);
+  }, [state.scheduledStartTimes, state.status, state.serverTimeOffset]);
 
   return {
     ...state,

@@ -414,5 +414,18 @@
       "labelRequired": "Der Feldname ist erforderlich.",
       "minTwoOptions": "Mindestens 2 Optionen sind für ein Auswahlfeld erforderlich."
     }
+  },
+  "liverace": {
+    "actions": {
+      "cancel": "Rennen abbrechen",
+      "cancelHelp": "Bricht das Rennen ab. Athleten werden benachrichtigt.",
+      "cancelBtn": "Rennen abbrechen"
+    },
+    "commandSuccess": {
+      "cancel": "Rennen abgebrochen."
+    },
+    "readiness": {
+      "errNoStartTime": "\"{variant}\" hat keine Startzeit definiert. Eine Startzeit ist erforderlich."
+    }
   }
 }

@@ -414,5 +414,18 @@
       "labelRequired": "Le nom du champ est obligatoire.",
       "minTwoOptions": "Au moins 2 options sont requises pour un champ de sélection."
     }
+  },
+  "liverace": {
+    "actions": {
+      "cancel": "Annuler la course",
+      "cancelHelp": "Annule la course. Les athlètes seront notifiés.",
+      "cancelBtn": "Annuler la course"
+    },
+    "commandSuccess": {
+      "cancel": "Course annulée."
+    },
+    "readiness": {
+      "errNoStartTime": "\"{variant}\" n'a pas d'heure de départ définie. L'heure de départ est obligatoire."
+    }
   }
 }

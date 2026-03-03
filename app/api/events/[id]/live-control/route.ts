@@ -2,7 +2,7 @@
 // POST /api/events/[id]/live-control
 //
 // Called by event organizers from the manage page to control live race state.
-// Supports: checkin | start (warmup) | start (live) | pause | resume | finish
+// Supports: checkin | warmup | start | pause | resume | finish | cancel
 // ============================================================================
 
 import { NextRequest, NextResponse } from "next/server";
@@ -26,15 +26,19 @@ const COMMAND_TRANSITIONS: Record<
 > = {
   checkin: { from: ["SCHEDULED"], to: "CHECK_IN_OPEN" },
   warmup: { from: ["CHECK_IN_OPEN"], to: "WARMUP" },
-  start: { from: ["WARMUP", "CHECK_IN_OPEN"], to: "LIVE" },
+  start: { from: ["WARMUP"], to: "LIVE" },
   pause: { from: ["LIVE"], to: "PAUSED" },
   resume: { from: ["PAUSED"], to: "LIVE" },
   finish: { from: ["LIVE", "PAUSED"], to: "FINISHED" },
+  cancel: { from: ["LIVE", "PAUSED"], to: "CANCELLED" },
 };
 
 interface ControlBody {
   command: string;
 }
+
+/** Minimum number of route points required for a valid route */
+const MIN_ROUTE_POINTS = 50;
 
 export async function POST(
   request: NextRequest,
@@ -78,6 +82,7 @@ export async function POST(
         select: {
           id: true,
           name: true,
+          startTime: true,
           route: {
             select: {
               id: true,
@@ -112,8 +117,8 @@ export async function POST(
     );
   }
 
-  // ─── Validate readiness before going LIVE ──────────────────────────────
-  if (command === "start" && transition.to === "LIVE") {
+  // ─── Validate readiness before WARMUP or LIVE ─────────────────────────
+  if (command === "warmup" || command === "start") {
     const errors: string[] = [];
 
     if (event.variants.length === 0) {
@@ -127,8 +132,10 @@ export async function POST(
         : [];
       const checkpoints = route?.checkpoints ?? [];
 
-      if (!route || routePoints.length < 2) {
-        errors.push(`Variant "${variant.name}" has no route configured`);
+      if (!route || routePoints.length < MIN_ROUTE_POINTS) {
+        errors.push(
+          `Variant "${variant.name}" has no valid route (minimum ${MIN_ROUTE_POINTS} points required)`
+        );
         continue;
       }
 
@@ -141,12 +148,16 @@ export async function POST(
       if (!hasFinish) {
         errors.push(`Variant "${variant.name}" is missing a FINISH checkpoint`);
       }
+
+      if (!variant.startTime) {
+        errors.push(`Variant "${variant.name}" has no start time defined`);
+      }
     }
 
     if (errors.length > 0) {
       return NextResponse.json(
         {
-          error: `Race not ready: ${errors.join("; ")}`,
+          error: `LIVE_RACE_NOT_READY: ${errors.join("; ")}`,
           details: errors,
         },
         { status: 422 }

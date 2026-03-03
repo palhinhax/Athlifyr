@@ -45,6 +45,9 @@
     "offlineBanner": "Du bist offline. GPS-Daten werden gespeichert und automatisch synchronisiert, sobald die Verbindung wiederhergestellt ist.",
     "syncingBanner": "Offline-Daten werden mit dem Server synchronisiert...",
     "checkinOpenTitle": "Check-in geöffnet — Rennen beginnt bald",
-    "checkinOpenDescription": "Die Athleten-Anmeldung ist geöffnet. Das Rennen beginnt in Kürze. Bleib dran für das Live-Tracking."
+    "checkinOpenDescription": "Die Athleten-Anmeldung ist geöffnet. Das Rennen beginnt in Kürze. Bleib dran für das Live-Tracking.",
+    "checkInOpen": "Check-in offen",
+    "countdownLabel": "Rennen startet in",
+    "countdownReady": "Das Rennen ist startbereit!"
   }
 }

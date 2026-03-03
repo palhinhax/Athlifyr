@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLiveRace, type EventLiveStatus } from "@/hooks/use-live-race";
 import { LiveLeaderboard } from "@/components/live-leaderboard";
 import { LiveEventFeed } from "@/components/live-event-feed";
+import { LiveCountdown } from "@/components/live-countdown";
 import { cn } from "@/lib/utils";
 
 interface LiveRaceSectionProps {
@@ -25,6 +26,7 @@ interface LiveRaceSectionProps {
  * LiveRace section for the event page.
  * Connects to the Live Service as a spectator and renders:
  *   - Connection status
+ *   - Countdown timer (during CHECK_IN_OPEN / WARMUP)
  *   - Live leaderboard
  *   - Recent events feed (checkpoint, finish notifications)
  *
@@ -50,6 +52,8 @@ export function LiveRaceSection({
     return null;
   }
 
+  const showCountdown = status === "CHECK_IN_OPEN" || status === "WARMUP";
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Section Header */}
@@ -62,6 +66,14 @@ export function LiveRaceSection({
         <div className="flex items-center gap-2">
           {status === "LIVE" && (
             <Badge className="animate-pulse bg-red-500 text-white">LIVE</Badge>
+          )}
+          {status === "CHECK_IN_OPEN" && (
+            <Badge
+              variant="outline"
+              className="border-yellow-500 text-yellow-600"
+            >
+              {t("checkInOpen")}
+            </Badge>
           )}
           {status === "WARMUP" && (
             <Badge
@@ -88,6 +100,9 @@ export function LiveRaceSection({
           </div>
         )}
       </div>
+
+      {/* Countdown Timer — shown during CHECK_IN_OPEN and WARMUP */}
+      {showCountdown && <LiveCountdown eventId={eventId} />}
 
       {/* Leaderboard + Feed side by side on desktop */}
       <div className="grid gap-4 lg:grid-cols-3">

@@ -45,6 +45,9 @@
     "offlineBanner": "Vous êtes hors ligne. Les données GPS sont sauvegardées et seront synchronisées automatiquement lorsque la connexion sera rétablie.",
     "syncingBanner": "Synchronisation des données hors ligne avec le serveur...",
     "checkinOpenTitle": "Enregistrement ouvert — course imminente",
-    "checkinOpenDescription": "L'enregistrement des athlètes est ouvert. La course débutera bientôt. Restez connecté pour le suivi en direct."
+    "checkinOpenDescription": "L'enregistrement des athlètes est ouvert. La course débutera bientôt. Restez connecté pour le suivi en direct.",
+    "checkInOpen": "Check-in ouvert",
+    "countdownLabel": "La course commence dans",
+    "countdownReady": "La course est prête à démarrer !"
   }
 }

@@ -103,7 +103,7 @@ export async function GET(
     const route = variant.route;
     const routePoints = route ? (route.routePoints as [number, number][]) : [];
     const checkpoints = route?.checkpoints ?? [];
-    const hasRoute = !!route && routePoints.length >= 2;
+    const hasRoute = !!route && routePoints.length >= 50;
     const hasStart = checkpoints.some((cp) => cp.type === "START");
     const hasFinish = checkpoints.some((cp) => cp.type === "FINISH");
     const hasStartTime = !!variant.startTime;
@@ -132,7 +132,7 @@ export async function GET(
     }
 
     if (!hasStartTime) {
-      warnings.push(`NO_START_TIME:${variant.name}`);
+      errors.push(`NO_START_TIME:${variant.name}`);
     }
 
     if (hasRoute && checkpoints.length === 0) {

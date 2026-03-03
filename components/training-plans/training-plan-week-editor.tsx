@@ -12,6 +12,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
@@ -134,9 +135,11 @@ export function TrainingPlanWeekEditor({
       <Card>
         <CardHeader className="pb-3">
           <div className="flex min-w-0 items-center justify-between gap-2">
-            <div
-              className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 sm:gap-3"
+            <button
+              type="button"
+              className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded sm:gap-3"
               onClick={onToggleExpand}
+              aria-expanded={isExpanded}
             >
               <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                 {weekNumber}
@@ -159,7 +162,7 @@ export function TrainingPlanWeekEditor({
               ) : (
                 <ChevronDownIcon className="h-5 w-5 shrink-0 text-muted-foreground" />
               )}
-            </div>
+            </button>
             {canEdit && (
               <>
                 {/* Mobile: single dropdown for all actions */}
@@ -170,14 +173,16 @@ export function TrainingPlanWeekEditor({
                       size="icon"
                       className="shrink-0 sm:hidden"
                       onClick={(e) => e.stopPropagation()}
+                      aria-label={t("weeks.moreActions")}
+                      title={t("weeks.moreActions")}
                     >
                       <MoreVerticalIcon className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuItem className="text-xs font-medium text-muted-foreground">
+                    <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
                       {t("stats.totalWorkouts", { count: workoutsCount })}
-                    </DropdownMenuItem>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {canMoveUp && (
                       <DropdownMenuItem

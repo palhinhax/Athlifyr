@@ -501,6 +501,7 @@ export function TrainingPlanDetailClient({
                 onClick={handleAddWeek}
                 disabled={isAddingWeek}
                 className="sm:hidden"
+                aria-label={t("weeks.addWeek")}
               >
                 {isAddingWeek ? (
                   <Loader2Icon className="h-4 w-4 animate-spin" />

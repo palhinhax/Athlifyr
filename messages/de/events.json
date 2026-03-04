@@ -6,6 +6,14 @@
     "metaDescription": "Erkunden Sie alle Sportveranstaltungen. Finden Sie Rennen, Wettbewerbe und Herausforderungen in Ihrer Nähe.",
     "eventCancelled": "Veranstaltung Abgesagt",
     "cancelled": "Abgesagt",
+    "liveStatus": {
+      "SCHEDULED": "Geplant",
+      "CHECK_IN_OPEN": "Check-in Offen",
+      "LIVE": "Läuft",
+      "PAUSED": "Pausiert",
+      "FINISHED": "Beendet",
+      "CANCELLED": "Abgesagt"
+    },
     "going": "Dabei",
     "registered": "Angemeldet",
     "viewMap": "Karte Anzeigen",

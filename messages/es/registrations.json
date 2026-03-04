@@ -1,0 +1,19 @@
+{
+  "registrations": {
+    "title": "Mis Inscripciones",
+    "description": "Consulta todas tus inscripciones en eventos, estado del check-in y entradas.",
+    "upcoming": "Próximos",
+    "past": "Pasados",
+    "noUpcoming": "No tienes inscripciones en eventos futuros.",
+    "noPast": "No tienes inscripciones en eventos pasados.",
+    "showTicket": "Ver Entrada",
+    "bibNumber": "Dorsal",
+    "checkedIn": "Check-in realizado",
+    "status": {
+      "CONFIRMED": "Confirmada",
+      "PENDING": "Pendiente",
+      "CANCELLED": "Cancelada",
+      "REFUNDED": "Reembolsada"
+    }
+  }
+}

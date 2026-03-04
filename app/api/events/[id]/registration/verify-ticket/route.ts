@@ -63,6 +63,39 @@ export async function POST(req: NextRequest, { params }: RouteParams) {
     );
   }
 
+  // Fetch event to check the check-in window
+  const event = await prisma.event.findUnique({
+    where: { id: eventId },
+    select: { checkInOpensAt: true, checkInClosesAt: true },
+  });
+
+  if (!event) {
+    return NextResponse.json(
+      { valid: false, error: "Event not found" },
+      { status: 404 }
+    );
+  }
+
+  // Validate check-in window
+  const now = new Date();
+  const windowOpen = event.checkInOpensAt ? now >= event.checkInOpensAt : true;
+  const windowClosed = event.checkInClosesAt
+    ? now > event.checkInClosesAt
+    : false;
+
+  if (!windowOpen) {
+    return NextResponse.json(
+      { valid: false, error: "Check-in window is not open yet" },
+      { status: 422 }
+    );
+  }
+  if (windowClosed) {
+    return NextResponse.json(
+      { valid: false, error: "Check-in window has closed" },
+      { status: 422 }
+    );
+  }
+
   // Find the registration
   const registration = await prisma.registration.findUnique({
     where: { id: payload.registrationId },

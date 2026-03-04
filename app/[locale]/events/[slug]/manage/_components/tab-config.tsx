@@ -8,6 +8,10 @@ import {
   Trash2,
   Ban,
   ClipboardList,
+  Play,
+  Pause,
+  Square,
+  Radio,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -89,6 +94,77 @@ export function TabConfig({ event, isAdmin, onSave }: TabConfigProps) {
   const [cancelReason, setCancelReason] = useState("");
   const [isCancelling, setIsCancelling] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Live status
+  const [liveStatus, setLiveStatus] = useState(
+    event.liveStatus || "SCHEDULED"
+  );
+  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [pendingTransition, setPendingTransition] = useState<string | null>(
+    null
+  );
+
+  const statusLabel = (status: string): string => {
+    const map: Record<string, string> = {
+      SCHEDULED: t("statusScheduled"),
+      LIVE: t("statusLive"),
+      PAUSED: t("statusPaused"),
+      FINISHED: t("statusFinished"),
+      CANCELLED: t("statusCancelled"),
+    };
+    return map[status] || status;
+  };
+
+  const statusColor = (status: string): string => {
+    const map: Record<string, string> = {
+      SCHEDULED:
+        "bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300",
+      LIVE: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
+      PAUSED:
+        "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300",
+      FINISHED:
+        "bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300",
+      CANCELLED:
+        "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300",
+    };
+    return map[status] || "";
+  };
+
+  const handleLiveStatusTransition = async (targetStatus: string) => {
+    setPendingTransition(null);
+    setIsTransitioning(true);
+    try {
+      const res = await fetch(`/api/events/${event.id}/live-status`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: targetStatus }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error: string };
+        throw new Error(data.error || "Failed to update status");
+      }
+      const result = (await res.json()) as {
+        liveStatus: string;
+        previousStatus: string;
+      };
+      setLiveStatus(result.liveStatus);
+      toast({
+        title: t("liveStatusChanged"),
+        description: t("liveStatusChangedDesc", {
+          from: statusLabel(result.previousStatus),
+          to: statusLabel(result.liveStatus),
+        }),
+      });
+    } catch (e) {
+      toast({
+        title: t("liveStatusError"),
+        description: (e as Error).message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsTransitioning(false);
+    }
+  };
 
   const handleSaveConfig = async () => {
     setIsSavingConfig(true);
@@ -222,6 +298,160 @@ export function TabConfig({ event, isAdmin, onSave }: TabConfigProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Live Status Control */}
+      {event.hasLiveRace && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Radio className="h-4 w-4" />
+              {t("liveStatus")}
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              {t("liveStatusHelp")}
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">
+                {t("liveStatusCurrent")}:
+              </span>
+              <Badge className={statusColor(liveStatus)}>
+                {statusLabel(liveStatus)}
+              </Badge>
+            </div>
+
+            <div className="flex flex-wrap gap-2">
+              {liveStatus === "SCHEDULED" && (
+                <Button
+                  size="sm"
+                  className="gap-2"
+                  disabled={isTransitioning}
+                  onClick={() => setPendingTransition("LIVE")}
+                >
+                  {isTransitioning ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  {t("startRace")}
+                </Button>
+              )}
+              {liveStatus === "LIVE" && (
+                <>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-2"
+                    disabled={isTransitioning}
+                    onClick={() => setPendingTransition("PAUSED")}
+                  >
+                    {isTransitioning ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Pause className="h-4 w-4" />
+                    )}
+                    {t("pauseRace")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="gap-2"
+                    disabled={isTransitioning}
+                    onClick={() => setPendingTransition("FINISHED")}
+                  >
+                    {isTransitioning ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                    {t("finishRace")}
+                  </Button>
+                </>
+              )}
+              {liveStatus === "PAUSED" && (
+                <>
+                  <Button
+                    size="sm"
+                    className="gap-2"
+                    disabled={isTransitioning}
+                    onClick={() => setPendingTransition("LIVE")}
+                  >
+                    {isTransitioning ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Play className="h-4 w-4" />
+                    )}
+                    {t("resumeRace")}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    className="gap-2"
+                    disabled={isTransitioning}
+                    onClick={() => setPendingTransition("FINISHED")}
+                  >
+                    {isTransitioning ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                    {t("finishRace")}
+                  </Button>
+                </>
+              )}
+              {liveStatus !== "CANCELLED" && liveStatus !== "FINISHED" && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  className="gap-2"
+                  disabled={isTransitioning}
+                  onClick={() => setPendingTransition("CANCELLED")}
+                >
+                  {isTransitioning ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Ban className="h-4 w-4" />
+                  )}
+                  {t("cancelRace")}
+                </Button>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Transition confirmation dialog */}
+      <AlertDialog
+        open={!!pendingTransition}
+        onOpenChange={(open) => {
+          if (!open) setPendingTransition(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("confirmTransition")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("confirmTransitionDesc", {
+                from: statusLabel(liveStatus),
+                to: pendingTransition ? statusLabel(pendingTransition) : "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tCommon("cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingTransition) {
+                  void handleLiveStatusTransition(pendingTransition);
+                }
+              }}
+            >
+              {tCommon("save")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Refunds */}
       <Card>

@@ -1,0 +1,19 @@
+{
+  "registrations": {
+    "title": "Le Mie Iscrizioni",
+    "description": "Consulta tutte le tue iscrizioni agli eventi, lo stato del check-in e i tuoi biglietti.",
+    "upcoming": "In programma",
+    "past": "Passati",
+    "noUpcoming": "Non hai iscrizioni a eventi futuri.",
+    "noPast": "Non hai iscrizioni a eventi passati.",
+    "showTicket": "Mostra Biglietto",
+    "bibNumber": "Pettorale",
+    "checkedIn": "Check-in effettuato",
+    "status": {
+      "CONFIRMED": "Confermata",
+      "PENDING": "In attesa",
+      "CANCELLED": "Annullata",
+      "REFUNDED": "Rimborsata"
+    }
+  }
+}

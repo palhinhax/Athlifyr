@@ -22,6 +22,7 @@ import { EventWeatherMobile } from "@/components/event-weather-mobile";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
+import { EventLiveStatusBadge } from "@/components/event-live-status-badge";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -414,6 +415,16 @@ export default async function EventPage({ params }: PageProps) {
               friendsGoing={friendsGoing}
               friendsGoingCount={friendsGoingCount}
             />
+
+            {/* Live Status Badge */}
+            <div className="mb-4">
+              <EventLiveStatusBadge
+                liveStatus={event.liveStatus}
+                hasLiveRace={event.hasLiveRace}
+                checkInOpensAt={event.checkInOpensAt}
+                checkInClosesAt={event.checkInClosesAt}
+              />
+            </div>
 
             {/* Variants List with Distances */}
             <EventVariantsList

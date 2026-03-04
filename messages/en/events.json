@@ -6,6 +6,14 @@
     "metaDescription": "Explore all sports events. Find races, competitions and challenges near you.",
     "eventCancelled": "Event Cancelled",
     "cancelled": "Cancelled",
+    "liveStatus": {
+      "SCHEDULED": "Scheduled",
+      "CHECK_IN_OPEN": "Check-in Open",
+      "LIVE": "In Progress",
+      "PAUSED": "Paused",
+      "FINISHED": "Finished",
+      "CANCELLED": "Cancelled"
+    },
     "going": "Going",
     "registered": "Registered",
     "viewMap": "View Map",

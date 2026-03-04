@@ -27,6 +27,7 @@ export interface EventDetails {
   refundDeadline: string | null;
   checkInOpensAt: string | null;
   checkInClosesAt: string | null;
+  liveStatus: string;
   cancelled: boolean;
   cancellationReason: string | null;
   registrationFieldSettings: RegistrationFieldSettings;

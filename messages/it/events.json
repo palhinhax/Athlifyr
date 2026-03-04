@@ -6,6 +6,14 @@
     "metaDescription": "Esplora tutti gli eventi sportivi. Trova gare, competizioni e sfide vicino a te.",
     "eventCancelled": "Evento Annullato",
     "cancelled": "Annullato",
+    "liveStatus": {
+      "SCHEDULED": "Programmato",
+      "CHECK_IN_OPEN": "Check-in Aperto",
+      "LIVE": "In Corso",
+      "PAUSED": "In Pausa",
+      "FINISHED": "Terminato",
+      "CANCELLED": "Annullato"
+    },
     "going": "Partecipo",
     "registered": "Iscritto",
     "viewMap": "Vedi Mappa",

@@ -1,0 +1,19 @@
+{
+  "registrations": {
+    "title": "Meine Anmeldungen",
+    "description": "Sieh dir alle deine Veranstaltungsanmeldungen, den Check-in-Status und deine Tickets an.",
+    "upcoming": "Bevorstehend",
+    "past": "Vergangen",
+    "noUpcoming": "Du hast keine bevorstehenden Veranstaltungsanmeldungen.",
+    "noPast": "Du hast keine vergangenen Veranstaltungsanmeldungen.",
+    "showTicket": "Ticket anzeigen",
+    "bibNumber": "Startnummer",
+    "checkedIn": "Eingecheckt",
+    "status": {
+      "CONFIRMED": "Bestätigt",
+      "PENDING": "Ausstehend",
+      "CANCELLED": "Storniert",
+      "REFUNDED": "Erstattet"
+    }
+  }
+}

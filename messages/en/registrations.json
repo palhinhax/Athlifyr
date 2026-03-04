@@ -1,0 +1,19 @@
+{
+  "registrations": {
+    "title": "My Registrations",
+    "description": "View all your event registrations, check-in status, and tickets.",
+    "upcoming": "Upcoming",
+    "past": "Past",
+    "noUpcoming": "You don't have any upcoming event registrations.",
+    "noPast": "You don't have any past event registrations.",
+    "showTicket": "Show Ticket",
+    "bibNumber": "Bib",
+    "checkedIn": "Checked in",
+    "status": {
+      "CONFIRMED": "Confirmed",
+      "PENDING": "Pending",
+      "CANCELLED": "Cancelled",
+      "REFUNDED": "Refunded"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "registrations": {
+    "title": "Mes Inscriptions",
+    "description": "Consultez toutes vos inscriptions aux événements, le statut du check-in et vos billets.",
+    "upcoming": "À venir",
+    "past": "Passés",
+    "noUpcoming": "Vous n'avez aucune inscription à des événements à venir.",
+    "noPast": "Vous n'avez aucune inscription à des événements passés.",
+    "showTicket": "Voir le Billet",
+    "bibNumber": "Dossard",
+    "checkedIn": "Check-in effectué",
+    "status": {
+      "CONFIRMED": "Confirmée",
+      "PENDING": "En attente",
+      "CANCELLED": "Annulée",
+      "REFUNDED": "Remboursée"
+    }
+  }
+}

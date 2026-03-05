@@ -208,10 +208,10 @@ describe("POST /api/events/[id]/live-control", () => {
     expect(body.liveStatus).toBe("CANCELLED");
   });
 
-  it("returns LIVE_RACE_NOT_READY (422) when route has < 50 points on checkin", async () => {
+  it("returns LIVE_RACE_NOT_READY (422) when route has < 10 points on checkin", async () => {
     mockAdminPermission();
     const event = makeValidEvent("SCHEDULED");
-    event.variants[0].route!.routePoints = generateRoutePoints(10);
+    event.variants[0].route!.routePoints = generateRoutePoints(5);
 
     (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
 
@@ -220,7 +220,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const body = await res.json();
     expect(body.code).toBe("LIVE_RACE_NOT_READY");
     expect(body.details).toContainEqual(
-      expect.stringContaining("at least 50 route points")
+      expect.stringContaining("at least 10 route points")
     );
   });
 

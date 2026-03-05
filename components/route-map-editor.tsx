@@ -222,6 +222,134 @@ function geoGateLine(
   };
 }
 
+/** Remove geofence layers and source for a given index. */
+function cleanupGateZone(map: mapboxgl.Map, idx: number): boolean {
+  const layerFill = `gate-zone-fill-${idx}`;
+  const layerLine = `gate-zone-line-${idx}`;
+  const src = `gate-zone-${idx}`;
+  if (map.getLayer(layerFill)) map.removeLayer(layerFill);
+  if (map.getLayer(layerLine)) map.removeLayer(layerLine);
+  if (map.getSource(src)) {
+    map.removeSource(src);
+    return true;
+  }
+  return false;
+}
+
+/** Compute staggered pole heights so overlapping checkpoint banners cascade. */
+function computePoleHeights(checkpoints: RouteCheckpoint[]): number[] {
+  const CLOSE_THRESHOLD_DEG = 0.0005; // ~55 metres
+  const BASE_POLE = 14;
+  const POLE_STEP = 28;
+  const heights: number[] = checkpoints.map(() => BASE_POLE);
+
+  for (let i = 0; i < checkpoints.length; i++) {
+    for (let j = i + 1; j < checkpoints.length; j++) {
+      const dlat = Math.abs(checkpoints[j].latitude - checkpoints[i].latitude);
+      const dlng = Math.abs(
+        checkpoints[j].longitude - checkpoints[i].longitude
+      );
+      if (dlat < CLOSE_THRESHOLD_DEG && dlng < CLOSE_THRESHOLD_DEG) {
+        heights[j] = Math.max(heights[j], heights[i] + POLE_STEP);
+      }
+    }
+  }
+  return heights;
+}
+
+/** Add the geofence zone (gate line or circle) for a checkpoint. */
+function addCheckpointZone(
+  map: mapboxgl.Map,
+  cp: RouteCheckpoint,
+  idx: number,
+  routePoints: [number, number][]
+): void {
+  const color = CHECKPOINT_COLORS[cp.type];
+  const isGateLine = cp.type === "START" || cp.type === "FINISH";
+  const srcId = `gate-zone-${idx}`;
+
+  if (isGateLine && routePoints.length >= 2) {
+    const lineFeature = geoGateLine(
+      cp.longitude,
+      cp.latitude,
+      routePoints,
+      cp.radiusM
+    );
+    map.addSource(srcId, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [lineFeature] },
+    });
+    map.addLayer({
+      id: `gate-zone-line-${idx}`,
+      type: "line",
+      source: srcId,
+      paint: { "line-color": color, "line-width": 4, "line-opacity": 0.85 },
+    });
+  } else {
+    const circleFeature = geoCircle(cp.longitude, cp.latitude, cp.radiusM);
+    map.addSource(srcId, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: [circleFeature] },
+    });
+    map.addLayer({
+      id: `gate-zone-fill-${idx}`,
+      type: "fill",
+      source: srcId,
+      paint: { "fill-color": color, "fill-opacity": 0.12 },
+    });
+    map.addLayer({
+      id: `gate-zone-line-${idx}`,
+      type: "line",
+      source: srcId,
+      paint: {
+        "line-color": color,
+        "line-width": 2,
+        "line-dasharray": [3, 2],
+        "line-opacity": 0.6,
+      },
+    });
+  }
+}
+
+/** Create and add a checkpoint marker to the map. */
+function addCheckpointMarker(
+  map: mapboxgl.Map,
+  cp: RouteCheckpoint,
+  idx: number,
+  poleHeight: number,
+  editable: boolean,
+  onCheckpointMove?: (index: number, lat: number, lng: number) => void
+): mapboxgl.Marker {
+  const el = makeMarkerEl(cp.type, cp.name, cp.order, poleHeight);
+
+  const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
+    `<div style="padding:4px;">
+      <div style="font-weight:600;font-size:13px;">${cp.name}</div>
+      <div style="font-size:11px;color:#666;margin-top:2px;">
+        Raio: ${cp.radiusM}m${cp.cutoffMin ? ` · Corte: ${cp.cutoffMin} min` : ""}
+      </div>
+    </div>`
+  );
+
+  const marker = new mapboxgl.Marker({
+    element: el,
+    draggable: editable,
+    anchor: "bottom",
+  })
+    .setLngLat([cp.longitude, cp.latitude])
+    .setPopup(popup)
+    .addTo(map);
+
+  if (editable && onCheckpointMove) {
+    marker.on("dragend", () => {
+      const { lat, lng } = marker.getLngLat();
+      onCheckpointMove(idx, lat, lng);
+    });
+  }
+
+  return marker;
+}
+
 export default function RouteMapEditor({
   routePoints,
   checkpoints,
@@ -230,7 +358,7 @@ export default function RouteMapEditor({
   height = 400,
   editable = false,
   clickMode = false,
-}: RouteMapEditorProps) {
+}: Readonly<RouteMapEditorProps>) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const markerRefs = useRef<mapboxgl.Marker[]>([]);
@@ -315,14 +443,12 @@ export default function RouteMapEditor({
   // ─── Update route polyline when routePoints changes ───────────────────────
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map?.isStyleLoaded()) return;
 
-    const source = map.getSource("route") as mapboxgl.GeoJSONSource | undefined;
-    if (source) {
-      source.setData(buildGeoJson(routePoints));
-      if (routePoints.length > 1) {
-        fitToRoute(map, routePoints);
-      }
+    const source = map.getSource("route");
+    (source as mapboxgl.GeoJSONSource)?.setData(buildGeoJson(routePoints));
+    if (routePoints.length > 1) {
+      fitToRoute(map, routePoints);
     }
   }, [routePoints]);
 
@@ -343,147 +469,23 @@ export default function RouteMapEditor({
     markerRefs.current = [];
 
     // Remove old geofence layers and sources
-    checkpoints.forEach((_, idx) => {
-      const layerFill = `gate-zone-fill-${idx}`;
-      const layerLine = `gate-zone-line-${idx}`;
-      const src = `gate-zone-${idx}`;
-      if (map.getLayer(layerFill)) map.removeLayer(layerFill);
-      if (map.getLayer(layerLine)) map.removeLayer(layerLine);
-      if (map.getSource(src)) map.removeSource(src);
-    });
-    // Also clean up any leftover sources from previous renders with more checkpoints
+    checkpoints.forEach((_, idx) => cleanupGateZone(map, idx));
     for (let i = checkpoints.length; i < checkpoints.length + 50; i++) {
-      const layerFill = `gate-zone-fill-${i}`;
-      const layerLine = `gate-zone-line-${i}`;
-      const src = `gate-zone-${i}`;
-      if (map.getLayer(layerFill)) map.removeLayer(layerFill);
-      if (map.getLayer(layerLine)) map.removeLayer(layerLine);
-      if (map.getSource(src)) map.removeSource(src);
-      else break;
+      if (!cleanupGateZone(map, i)) break;
     }
 
-    // ── Compute pole heights to stagger overlapping banners ─────────────
-    // Checkpoints that are geographically very close get progressively taller
-    // poles so the banners cascade instead of stacking on top of each other.
-    const CLOSE_THRESHOLD_DEG = 0.0005; // ~55 metres
-    const BASE_POLE = 14;
-    const POLE_STEP = 28;
-    const poleHeights: number[] = checkpoints.map(() => BASE_POLE);
-
-    for (let i = 0; i < checkpoints.length; i++) {
-      for (let j = i + 1; j < checkpoints.length; j++) {
-        const dlat = Math.abs(
-          checkpoints[j].latitude - checkpoints[i].latitude
-        );
-        const dlng = Math.abs(
-          checkpoints[j].longitude - checkpoints[i].longitude
-        );
-        if (dlat < CLOSE_THRESHOLD_DEG && dlng < CLOSE_THRESHOLD_DEG) {
-          // The later checkpoint gets a taller pole
-          poleHeights[j] = Math.max(poleHeights[j], poleHeights[i] + POLE_STEP);
-        }
-      }
-    }
+    const poleHeights = computePoleHeights(checkpoints);
 
     checkpoints.forEach((cp, idx) => {
-      const color = CHECKPOINT_COLORS[cp.type];
-      const isGateLine = cp.type === "START" || cp.type === "FINISH";
-      const srcId = `gate-zone-${idx}`;
-
-      if (isGateLine && routePoints.length >= 2) {
-        // ── Gate line perpendicular to route (start/finish line) ──────────
-        const lineFeature = geoGateLine(
-          cp.longitude,
-          cp.latitude,
-          routePoints,
-          cp.radiusM
-        );
-
-        map.addSource(srcId, {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [lineFeature],
-          },
-        });
-
-        // Thick solid line across the route
-        map.addLayer({
-          id: `gate-zone-line-${idx}`,
-          type: "line",
-          source: srcId,
-          paint: {
-            "line-color": color,
-            "line-width": 4,
-            "line-opacity": 0.85,
-          },
-        });
-      } else {
-        // ── Geofence circle (for intermediate/transition or when no route) ──
-        const circleFeature = geoCircle(cp.longitude, cp.latitude, cp.radiusM);
-
-        map.addSource(srcId, {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: [circleFeature],
-          },
-        });
-
-        // Fill — semi-transparent
-        map.addLayer({
-          id: `gate-zone-fill-${idx}`,
-          type: "fill",
-          source: srcId,
-          paint: {
-            "fill-color": color,
-            "fill-opacity": 0.12,
-          },
-        });
-
-        // Outline — dashed border
-        map.addLayer({
-          id: `gate-zone-line-${idx}`,
-          type: "line",
-          source: srcId,
-          paint: {
-            "line-color": color,
-            "line-width": 2,
-            "line-dasharray": [3, 2],
-            "line-opacity": 0.6,
-          },
-        });
-      }
-
-      // ── Gate marker (banner + pole) ────────────────────────────────────
-      const el = makeMarkerEl(cp.type, cp.name, cp.order, poleHeights[idx]);
-
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-        `<div style="padding:4px;">
-          <div style="font-weight:600;font-size:13px;">${cp.name}</div>
-          <div style="font-size:11px;color:#666;margin-top:2px;">
-            Raio: ${cp.radiusM}m${cp.cutoffMin ? ` · Corte: ${cp.cutoffMin} min` : ""}
-          </div>
-        </div>`
+      addCheckpointZone(map, cp, idx, routePoints);
+      const marker = addCheckpointMarker(
+        map,
+        cp,
+        idx,
+        poleHeights[idx],
+        editable,
+        onCheckpointMove
       );
-
-      // anchor: "bottom" → the bottom of the element (ground pin) sits at the coordinate
-      const marker = new mapboxgl.Marker({
-        element: el,
-        draggable: editable,
-        anchor: "bottom",
-      })
-        .setLngLat([cp.longitude, cp.latitude])
-        .setPopup(popup)
-        .addTo(map);
-
-      if (editable && onCheckpointMove) {
-        marker.on("dragend", () => {
-          const { lat, lng } = marker.getLngLat();
-          onCheckpointMove(idx, lat, lng);
-        });
-      }
-
       markerRefs.current.push(marker);
     });
   }, [checkpoints, editable, onCheckpointMove, routePoints]);

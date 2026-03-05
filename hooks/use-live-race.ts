@@ -117,6 +117,12 @@ interface UseLiveRaceOptions {
 const MAX_RECENT_EVENTS = 20;
 /** Maximum offline buffer size to prevent unbounded memory growth */
 const MAX_OFFLINE_BUFFER = 5000;
+/** Statuses that should display a countdown timer */
+const COUNTDOWN_STATUSES: ReadonlySet<EventLiveStatus> = new Set([
+  "CHECK_IN_OPEN",
+  "WARMUP",
+  "SCHEDULED",
+]);
 
 interface BufferedGpsPoint {
   lat: number;
@@ -125,6 +131,158 @@ interface BufferedGpsPoint {
   accuracy?: number;
   speed?: number;
   altitude?: number;
+}
+
+// ─── Helper: compute countdown to the earliest variant start ────────────────
+
+function computeCountdown(
+  scheduledStartTimes: Record<string, number> | null,
+  serverTimeOffset: number
+): number | null {
+  if (!scheduledStartTimes) return null;
+  const times = Object.values(scheduledStartTimes);
+  if (times.length === 0) return null;
+  const earliest = Math.min(...times);
+  const serverNow = Date.now() + serverTimeOffset;
+  return Math.max(earliest - serverNow, 0);
+}
+
+// ─── Helper: register connection-level socket listeners ─────────────────────
+
+interface ConnectionHandlerDeps {
+  setState: React.Dispatch<React.SetStateAction<LiveRaceState>>;
+  reconnectAttempts: React.RefObject<number>;
+  role: "spectator" | "athlete";
+  eventId: string;
+}
+
+function registerConnectionListeners(
+  socket: Socket,
+  deps: ConnectionHandlerDeps
+): void {
+  const { setState, reconnectAttempts, role, eventId } = deps;
+
+  socket.on("connect", () => {
+    setState((prev) => ({ ...prev, connected: true, error: null }));
+    reconnectAttempts.current = 0;
+
+    if (role === "athlete") {
+      socket.emit("liverace:join_athlete", { eventId });
+    } else {
+      socket.emit("liverace:join_spectator", { eventId });
+    }
+  });
+
+  socket.on("disconnect", () => {
+    setState((prev) => ({ ...prev, connected: false, syncing: false }));
+  });
+
+  socket.on("connect_error", (err) => {
+    reconnectAttempts.current++;
+    setState((prev) => ({
+      ...prev,
+      connected: false,
+      error: `Connection error: ${err.message}`,
+    }));
+  });
+}
+
+// ─── Helper: register LiveRace event listeners ──────────────────────────────
+
+interface LiveRaceHandlerDeps {
+  setState: React.Dispatch<React.SetStateAction<LiveRaceState>>;
+  hasJoinedRef: React.RefObject<boolean>;
+  offlineBuffer: React.RefObject<BufferedGpsPoint[]>;
+  role: "spectator" | "athlete";
+  flushOfflineQueue: () => void;
+}
+
+function registerLiveRaceListeners(
+  socket: Socket,
+  deps: LiveRaceHandlerDeps
+): void {
+  const { setState, hasJoinedRef, offlineBuffer, role, flushOfflineQueue } =
+    deps;
+
+  socket.on("liverace:joined", ({ status, serverTime, variantStartTimes }) => {
+    const offset = serverTime ? serverTime - Date.now() : 0;
+
+    setState((prev) => ({
+      ...prev,
+      status,
+      serverTimeOffset: offset,
+      scheduledStartTimes: variantStartTimes ?? null,
+    }));
+    hasJoinedRef.current = true;
+
+    if (role === "athlete" && offlineBuffer.current.length > 0) {
+      setTimeout(() => {
+        flushOfflineQueue();
+      }, 500);
+    }
+  });
+
+  socket.on("liverace:error", ({ message }) => {
+    setState((prev) => ({ ...prev, error: message }));
+  });
+
+  socket.on("liverace:status_changed", ({ status, raceStartTime }) => {
+    setState((prev) => ({
+      ...prev,
+      status,
+      raceStartTime: raceStartTime ?? prev.raceStartTime,
+    }));
+  });
+
+  socket.on("liverace:positions", ({ athletes }) => {
+    setState((prev) => ({ ...prev, athletes }));
+  });
+
+  socket.on("liverace:leaderboard", ({ entries }) => {
+    setState((prev) => ({ ...prev, leaderboard: entries }));
+  });
+
+  socket.on("liverace:spectator_count", ({ count }) => {
+    setState((prev) => ({ ...prev, spectatorCount: count }));
+  });
+
+  socket.on("liverace:checkpoint_reached", (data) => {
+    setState((prev) => ({
+      ...prev,
+      recentEvents: [data, ...prev.recentEvents].slice(0, MAX_RECENT_EVENTS),
+    }));
+  });
+
+  socket.on("liverace:athlete_finished", (data) => {
+    setState((prev) => ({
+      ...prev,
+      recentEvents: [data, ...prev.recentEvents].slice(0, MAX_RECENT_EVENTS),
+    }));
+  });
+}
+
+// ─── Helper: register offline sync listeners ────────────────────────────────
+
+function registerSyncListeners(
+  socket: Socket,
+  setState: React.Dispatch<React.SetStateAction<LiveRaceState>>
+): void {
+  socket.on("liverace:sync_progress", ({ processed, total }) => {
+    const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
+    setState((prev) => ({ ...prev, syncProgress: pct }));
+  });
+
+  socket.on("liverace:sync_complete", ({ processed, skipped }) => {
+    setState((prev) => ({
+      ...prev,
+      syncing: false,
+      syncProgress: 100,
+      error: null,
+    }));
+    console.log(
+      `[LiveRace] Sync complete: ${processed} processed, ${skipped} skipped`
+    );
+  });
 }
 
 export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
@@ -213,113 +371,22 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
 
     socketRef.current = socket;
 
-    socket.on("connect", () => {
-      setState((prev) => ({ ...prev, connected: true, error: null }));
-      reconnectAttempts.current = 0;
-
-      // Join the event room
-      if (role === "athlete") {
-        socket.emit("liverace:join_athlete", { eventId });
-      } else {
-        socket.emit("liverace:join_spectator", { eventId });
-      }
+    registerConnectionListeners(socket, {
+      setState,
+      reconnectAttempts,
+      role,
+      eventId,
     });
 
-    socket.on("disconnect", () => {
-      setState((prev) => ({ ...prev, connected: false, syncing: false }));
+    registerLiveRaceListeners(socket, {
+      setState,
+      hasJoinedRef,
+      offlineBuffer,
+      role,
+      flushOfflineQueue,
     });
 
-    socket.on("connect_error", (err) => {
-      reconnectAttempts.current++;
-      setState((prev) => ({
-        ...prev,
-        connected: false,
-        error: `Connection error: ${err.message}`,
-      }));
-    });
-
-    // ─── LiveRace Events ──────────────────────────────────────────────
-
-    socket.on(
-      "liverace:joined",
-      ({ status, serverTime, variantStartTimes }) => {
-        // Compute clock offset: positive = client clock is behind server
-        const offset = serverTime ? serverTime - Date.now() : 0;
-
-        setState((prev) => ({
-          ...prev,
-          status,
-          serverTimeOffset: offset,
-          scheduledStartTimes: variantStartTimes ?? null,
-        }));
-        hasJoinedRef.current = true;
-
-        // Auto-flush offline buffer on (re)join as athlete
-        if (role === "athlete" && offlineBuffer.current.length > 0) {
-          // Small delay to ensure the server has processed the join
-          setTimeout(() => {
-            flushOfflineQueue();
-          }, 500);
-        }
-      }
-    );
-
-    socket.on("liverace:error", ({ message }) => {
-      setState((prev) => ({ ...prev, error: message }));
-    });
-
-    socket.on("liverace:status_changed", ({ status, raceStartTime }) => {
-      setState((prev) => ({
-        ...prev,
-        status,
-        raceStartTime: raceStartTime ?? prev.raceStartTime,
-      }));
-    });
-
-    socket.on("liverace:positions", ({ athletes }) => {
-      setState((prev) => ({ ...prev, athletes }));
-    });
-
-    socket.on("liverace:leaderboard", ({ entries }) => {
-      setState((prev) => ({ ...prev, leaderboard: entries }));
-    });
-
-    socket.on("liverace:spectator_count", ({ count }) => {
-      setState((prev) => ({ ...prev, spectatorCount: count }));
-    });
-
-    socket.on("liverace:checkpoint_reached", (data) => {
-      setState((prev) => ({
-        ...prev,
-        recentEvents: [data, ...prev.recentEvents].slice(0, MAX_RECENT_EVENTS),
-      }));
-    });
-
-    socket.on("liverace:athlete_finished", (data) => {
-      setState((prev) => ({
-        ...prev,
-        recentEvents: [data, ...prev.recentEvents].slice(0, MAX_RECENT_EVENTS),
-      }));
-    });
-
-    // ─── Offline Sync Events ────────────────────────────────────────────
-
-    socket.on("liverace:sync_progress", ({ processed, total }) => {
-      const pct = total > 0 ? Math.round((processed / total) * 100) : 0;
-      setState((prev) => ({ ...prev, syncProgress: pct }));
-    });
-
-    socket.on("liverace:sync_complete", ({ processed, skipped }) => {
-      setState((prev) => ({
-        ...prev,
-        syncing: false,
-        syncProgress: 100,
-        error: null,
-      }));
-      console.log(
-        `[LiveRace] Sync complete: ${processed} processed, ${skipped} skipped`
-      );
-    });
+    registerSyncListeners(socket, setState);
   }, [eventId, role, token, liveUrl, flushOfflineQueue]);
 
   const disconnect = useCallback(() => {
@@ -391,42 +458,24 @@ export function useLiveRace(options: UseLiveRaceOptions): LiveRaceState & {
 
   // ─── Countdown Timer (updates every second during CHECK_IN_OPEN / WARMUP) ─
   useEffect(() => {
-    const shouldCountdown =
-      state.scheduledStartTimes &&
-      (state.status === "CHECK_IN_OPEN" ||
-        state.status === "WARMUP" ||
-        state.status === "SCHEDULED");
-
-    if (!shouldCountdown) {
-      // Clear countdown when race is live or finished
-      if (state.countdownMs !== null) {
-        setState((prev) => ({ ...prev, countdownMs: null }));
-      }
+    if (!state.scheduledStartTimes || !COUNTDOWN_STATUSES.has(state.status)) {
+      setState((prev) =>
+        prev.countdownMs === null ? prev : { ...prev, countdownMs: null }
+      );
       return;
     }
 
-    const computeCountdown = () => {
-      const starts = state.scheduledStartTimes;
-      if (!starts) return null;
-      const times = Object.values(starts);
-      if (times.length === 0) return null;
-      // Earliest variant start time
-      const earliest = Math.min(...times);
-      // Use server time offset for accuracy
-      const serverNow = Date.now() + state.serverTimeOffset;
-      const remaining = earliest - serverNow;
-      return remaining > 0 ? remaining : 0;
-    };
+    const update = () =>
+      computeCountdown(state.scheduledStartTimes, state.serverTimeOffset);
 
-    // Update immediately
-    setState((prev) => ({ ...prev, countdownMs: computeCountdown() }));
+    setState((prev) => ({ ...prev, countdownMs: update() }));
 
-    // Update every second
     const interval = setInterval(() => {
-      setState((prev) => ({ ...prev, countdownMs: computeCountdown() }));
+      setState((prev) => ({ ...prev, countdownMs: update() }));
     }, 1000);
 
     return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.scheduledStartTimes, state.status, state.serverTimeOffset]);
 
   return {

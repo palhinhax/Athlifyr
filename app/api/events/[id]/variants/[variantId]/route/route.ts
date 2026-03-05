@@ -110,17 +110,17 @@ export async function PUT(
       gpxData: body.gpxData ?? null,
       routePoints: parsed?.routePoints ?? body.routePoints ?? [],
       distanceKm:
-        body.distanceKm !== undefined
-          ? body.distanceKm
-          : (parsed?.distanceKm ?? null),
+        body.distanceKm === undefined
+          ? (parsed?.distanceKm ?? null)
+          : body.distanceKm,
       elevationGainM:
-        body.elevationGainM !== undefined
-          ? body.elevationGainM
-          : (parsed?.elevationGainM ?? null),
+        body.elevationGainM === undefined
+          ? (parsed?.elevationGainM ?? null)
+          : body.elevationGainM,
       elevationLossM:
-        body.elevationLossM !== undefined
-          ? body.elevationLossM
-          : (parsed?.elevationLossM ?? null),
+        body.elevationLossM === undefined
+          ? (parsed?.elevationLossM ?? null)
+          : body.elevationLossM,
     };
 
     // Upsert the route

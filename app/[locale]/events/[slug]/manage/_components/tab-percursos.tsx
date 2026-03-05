@@ -36,7 +36,7 @@ export function TabPercursos({
   variants,
   setVariants,
   onSave,
-}: TabPercursosProps) {
+}: Readonly<TabPercursosProps>) {
   const t = useTranslations("manage.variants");
   const tErr = useTranslations("manage.errors");
   const tCommon = useTranslations("manage.common");
@@ -58,20 +58,25 @@ export function TabPercursos({
     setVariants((prev) =>
       prev.map((v, i) => {
         if (i !== index) return v;
-        const parsed =
+
+        const isNumericField =
           field === "distanceKm" ||
           field === "elevationGainM" ||
           field === "price" ||
           field === "maxParticipants" ||
-          field === "teamSize"
-            ? value === ""
-              ? field === "teamSize"
-                ? 1
-                : null
-              : field === "maxParticipants" || field === "teamSize"
-                ? parseInt(value, 10)
-                : parseFloat(value)
-            : value || null;
+          field === "teamSize";
+
+        let parsed: string | number | null;
+        if (!isNumericField) {
+          parsed = value || null;
+        } else if (value === "") {
+          parsed = field === "teamSize" ? 1 : null;
+        } else if (field === "maxParticipants" || field === "teamSize") {
+          parsed = Number.parseInt(value, 10);
+        } else {
+          parsed = Number.parseFloat(value);
+        }
+
         return { ...v, [field]: parsed };
       })
     );
@@ -123,14 +128,16 @@ export function TabPercursos({
     try {
       const newVariant = {
         name: newName.trim(),
-        distanceKm: newDistance ? parseFloat(newDistance) : undefined,
-        elevationGainM: newElevation ? parseFloat(newElevation) : undefined,
+        distanceKm: newDistance ? Number.parseFloat(newDistance) : undefined,
+        elevationGainM: newElevation
+          ? Number.parseFloat(newElevation)
+          : undefined,
         startDate: newStartDate || undefined,
         startTime: newStartTime || undefined,
         maxParticipants: newMaxParticipants
-          ? parseInt(newMaxParticipants, 10)
+          ? Number.parseInt(newMaxParticipants, 10)
           : undefined,
-        teamSize: parseInt(newTeamSize, 10) || 1,
+        teamSize: Number.parseInt(newTeamSize, 10) || 1,
       };
       await onSave({ variants: [...variants, newVariant] });
       setNewName("");

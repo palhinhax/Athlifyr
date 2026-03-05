@@ -47,8 +47,8 @@ function isValidCoordinate(lat: number, lng: number): boolean {
   return (
     typeof lat === "number" &&
     typeof lng === "number" &&
-    !isNaN(lat) &&
-    !isNaN(lng) &&
+    !Number.isNaN(lat) &&
+    !Number.isNaN(lng) &&
     lat >= -90 &&
     lat <= 90 &&
     lng >= -180 &&
@@ -61,6 +61,117 @@ function isValidCoordinate(lat: number, lng: number): boolean {
  */
 function areAllCoordinatesValid(points: [number, number][]): boolean {
   return points.every(([lat, lng]) => isValidCoordinate(lat, lng));
+}
+
+interface Checkpoint {
+  id: string;
+  type: string;
+  name: string | null;
+  order: number;
+  latitude: number;
+  longitude: number;
+}
+
+interface RouteData {
+  id: string;
+  routePoints: unknown;
+  checkpoints: Checkpoint[];
+}
+
+interface VariantData {
+  id: string;
+  name: string;
+  startTime: string | null;
+  route: RouteData | null;
+}
+
+interface VariantValidationResult {
+  readiness: VariantReadiness;
+  errors: string[];
+  warnings: string[];
+}
+
+function validateCheckpointOrdering(
+  checkpoints: Checkpoint[],
+  variantName: string,
+  hasExplicitFinish: boolean
+): string[] {
+  const errors: string[] = [];
+  const orders = checkpoints.map((cp) => cp.order);
+
+  if (new Set(orders).size !== orders.length) {
+    errors.push(`CHECKPOINT_DUPLICATE_ORDER:${variantName}`);
+  }
+
+  if (hasExplicitFinish) {
+    const finishCp = checkpoints.find((cp) => cp.type === "FINISH");
+    const maxOrder = Math.max(...orders);
+    if (finishCp && finishCp.order !== maxOrder) {
+      errors.push(`CHECKPOINT_FINISH_NOT_LAST:${variantName}`);
+    }
+  }
+
+  return errors;
+}
+
+function validateVariant(variant: VariantData): VariantValidationResult {
+  const errors: string[] = [];
+  const warnings: string[] = [];
+
+  const route = variant.route;
+  const routePoints = route ? (route.routePoints as [number, number][]) : [];
+  const checkpoints = route?.checkpoints ?? [];
+  const hasRoute = !!route && routePoints.length >= MIN_ROUTE_POINTS;
+  const hasValidCoordinates =
+    routePoints.length > 0 && areAllCoordinatesValid(routePoints);
+
+  const hasExplicitStart = checkpoints.some((cp) => cp.type === "START");
+  const hasExplicitFinish = checkpoints.some((cp) => cp.type === "FINISH");
+  const canDeriveStartFinish = hasRoute && hasValidCoordinates;
+  const hasStart = hasExplicitStart || canDeriveStartFinish;
+  const hasFinish = hasExplicitFinish || canDeriveStartFinish;
+  const hasStartTime = !!variant.startTime;
+
+  const readiness: VariantReadiness = {
+    variantId: variant.id,
+    variantName: variant.name,
+    hasRoute,
+    routePointCount: routePoints.length,
+    hasStartCheckpoint: hasStart,
+    hasFinishCheckpoint: hasFinish,
+    checkpointCount: checkpoints.length,
+    hasStartTime,
+    hasValidCoordinates,
+  };
+
+  if (!route || routePoints.length === 0) {
+    errors.push(`NO_ROUTE:${variant.name}`);
+  } else if (routePoints.length < MIN_ROUTE_POINTS) {
+    errors.push(`INSUFFICIENT_ROUTE_POINTS:${variant.name}`);
+  }
+
+  if (routePoints.length > 0 && !hasValidCoordinates) {
+    errors.push(`INVALID_COORDINATES:${variant.name}`);
+  }
+  if (!hasStart) errors.push(`NO_START:${variant.name}`);
+  if (!hasFinish) errors.push(`NO_FINISH:${variant.name}`);
+  if (!hasStartTime) errors.push(`NO_START_TIME:${variant.name}`);
+
+  if (checkpoints.length > 0) {
+    errors.push(
+      ...validateCheckpointOrdering(
+        checkpoints,
+        variant.name,
+        hasExplicitFinish
+      )
+    );
+  }
+
+  if (hasRoute && checkpoints.length === 0) {
+    warnings.push(`NO_CHECKPOINTS:${variant.name}`);
+  }
+
+  return { readiness, errors, warnings };
 }
 
 export async function GET(
@@ -131,79 +242,10 @@ export async function GET(
   }
 
   for (const variant of event.variants) {
-    const route = variant.route;
-    const routePoints = route ? (route.routePoints as [number, number][]) : [];
-    const checkpoints = route?.checkpoints ?? [];
-    const hasRoute = !!route && routePoints.length >= MIN_ROUTE_POINTS;
-    const hasValidCoordinates =
-      routePoints.length > 0 && areAllCoordinatesValid(routePoints);
-
-    // Start/Finish: either explicit checkpoints or auto-derived from route endpoints
-    const hasExplicitStart = checkpoints.some((cp) => cp.type === "START");
-    const hasExplicitFinish = checkpoints.some((cp) => cp.type === "FINISH");
-    const canDeriveStartFinish = hasRoute && hasValidCoordinates;
-    const hasStart = hasExplicitStart || canDeriveStartFinish;
-    const hasFinish = hasExplicitFinish || canDeriveStartFinish;
-
-    const hasStartTime = !!variant.startTime;
-
-    variants.push({
-      variantId: variant.id,
-      variantName: variant.name,
-      hasRoute,
-      routePointCount: routePoints.length,
-      hasStartCheckpoint: hasStart,
-      hasFinishCheckpoint: hasFinish,
-      checkpointCount: checkpoints.length,
-      hasStartTime,
-      hasValidCoordinates,
-    });
-
-    if (!route || routePoints.length === 0) {
-      errors.push(`NO_ROUTE:${variant.name}`);
-    } else if (routePoints.length < MIN_ROUTE_POINTS) {
-      errors.push(`INSUFFICIENT_ROUTE_POINTS:${variant.name}`);
-    }
-
-    if (routePoints.length > 0 && !hasValidCoordinates) {
-      errors.push(`INVALID_COORDINATES:${variant.name}`);
-    }
-
-    if (!hasStart) {
-      errors.push(`NO_START:${variant.name}`);
-    }
-
-    if (!hasFinish) {
-      errors.push(`NO_FINISH:${variant.name}`);
-    }
-
-    // startTime is now required (error, not warning)
-    if (!hasStartTime) {
-      errors.push(`NO_START_TIME:${variant.name}`);
-    }
-
-    // Checkpoint validation (optional but validated if present)
-    if (checkpoints.length > 0) {
-      // Check ordering: orders must be sequential and unique
-      const orders = checkpoints.map((cp) => cp.order);
-      const hasDuplicateOrders = new Set(orders).size !== orders.length;
-      if (hasDuplicateOrders) {
-        errors.push(`CHECKPOINT_DUPLICATE_ORDER:${variant.name}`);
-      }
-
-      // Ensure FINISH checkpoint is last in order
-      if (hasExplicitFinish) {
-        const finishCp = checkpoints.find((cp) => cp.type === "FINISH");
-        const maxOrder = Math.max(...orders);
-        if (finishCp && finishCp.order !== maxOrder) {
-          errors.push(`CHECKPOINT_FINISH_NOT_LAST:${variant.name}`);
-        }
-      }
-    }
-
-    if (hasRoute && checkpoints.length === 0) {
-      warnings.push(`NO_CHECKPOINTS:${variant.name}`);
-    }
+    const result = validateVariant(variant);
+    variants.push(result.readiness);
+    errors.push(...result.errors);
+    warnings.push(...result.warnings);
   }
 
   const ready = event.hasLiveRace && errors.length === 0;

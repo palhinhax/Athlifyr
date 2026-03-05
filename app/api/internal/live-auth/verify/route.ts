@@ -70,8 +70,9 @@ export async function POST(request: NextRequest) {
     });
 
     // Also check free participations
-    const participation = !registration
-      ? await prisma.participation.findFirst({
+    const participation = registration
+      ? null
+      : await prisma.participation.findFirst({
           where: {
             userId,
             eventId,
@@ -95,8 +96,7 @@ export async function POST(request: NextRequest) {
               },
             },
           },
-        })
-      : null;
+        });
 
     const record = registration ?? participation;
 

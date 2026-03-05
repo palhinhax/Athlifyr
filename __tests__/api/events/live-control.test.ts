@@ -55,7 +55,7 @@ const mockFetch = jest.fn().mockResolvedValue({
   ok: true,
   json: async () => ({}),
 });
-global.fetch = mockFetch as unknown as typeof fetch;
+globalThis.fetch = mockFetch as unknown as typeof fetch;
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -211,7 +211,7 @@ describe("POST /api/events/[id]/live-control", () => {
   it("returns LIVE_RACE_NOT_READY (422) when route has < 10 points on checkin", async () => {
     mockAdminPermission();
     const event = makeValidEvent("SCHEDULED");
-    event.variants[0].route!.routePoints = generateRoutePoints(5);
+    event.variants[0].route.routePoints = generateRoutePoints(5);
 
     (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
 
@@ -245,7 +245,7 @@ describe("POST /api/events/[id]/live-control", () => {
     const event = makeValidEvent("WARMUP");
     const points = generateRoutePoints(60);
     points[3] = [999, 999]; // invalid
-    event.variants[0].route!.routePoints = points;
+    event.variants[0].route.routePoints = points;
 
     (prisma.event.findUnique as jest.Mock).mockResolvedValue(event);
 

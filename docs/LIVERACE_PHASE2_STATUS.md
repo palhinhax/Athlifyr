@@ -15,19 +15,19 @@ the live control state machine — are built, tested, and integrated. The implem
 exceeds the original spec in several areas (ticket revocation, live-readiness
 validation, multi-role authorization).
 
-| Area                           | Status         |
-| ------------------------------ | -------------- |
-| Check-in window configuration  | ✅ Complete    |
-| Check-in API (staff)           | ✅ Complete    |
-| Check-in API (self-service)    | ✅ Complete    |
-| QR code ticket generation      | ✅ Complete    |
-| QR code ticket verification    | ✅ Complete    |
-| Ticket revocation (nonce)      | ✅ Complete    |
-| Staff check-in UI (dashboard)  | ✅ Complete    |
-| Race-start gating              | ✅ Complete    |
-| Live control state machine     | ✅ Complete    |
-| Live readiness validation      | ✅ Complete    |
-| Test coverage                  | ✅ 99 tests   |
+| Area                          | Status      |
+| ----------------------------- | ----------- |
+| Check-in window configuration | ✅ Complete |
+| Check-in API (staff)          | ✅ Complete |
+| Check-in API (self-service)   | ✅ Complete |
+| QR code ticket generation     | ✅ Complete |
+| QR code ticket verification   | ✅ Complete |
+| Ticket revocation (nonce)     | ✅ Complete |
+| Staff check-in UI (dashboard) | ✅ Complete |
+| Race-start gating             | ✅ Complete |
+| Live control state machine    | ✅ Complete |
+| Live readiness validation     | ✅ Complete |
+| Test coverage                 | ✅ 99 tests |
 
 ---
 
@@ -37,21 +37,21 @@ All Phase 2 fields are present in the Prisma schema and migrated.
 
 ### Event Model
 
-| Field             | Type              | Default     | Purpose                            |
-| ----------------- | ----------------- | ----------- | ---------------------------------- |
-| `hasLiveRace`     | `Boolean`         | `false`     | Enables LiveRace features (admin)  |
-| `checkInOpensAt`  | `DateTime?`       | `null`      | Start of check-in window           |
-| `checkInClosesAt` | `DateTime?`       | `null`      | End of check-in window             |
-| `liveStatus`      | `EventLiveStatus` | `SCHEDULED` | Current race lifecycle state       |
+| Field             | Type              | Default     | Purpose                           |
+| ----------------- | ----------------- | ----------- | --------------------------------- |
+| `hasLiveRace`     | `Boolean`         | `false`     | Enables LiveRace features (admin) |
+| `checkInOpensAt`  | `DateTime?`       | `null`      | Start of check-in window          |
+| `checkInClosesAt` | `DateTime?`       | `null`      | End of check-in window            |
+| `liveStatus`      | `EventLiveStatus` | `SCHEDULED` | Current race lifecycle state      |
 
 ### Registration Model
 
-| Field          | Type               | Default   | Purpose                          |
-| -------------- | ------------------ | --------- | -------------------------------- |
-| `status`       | `RegistrationStatus` | `PENDING` | Payment/confirmation status    |
-| `checkedInAt`  | `DateTime?`        | `null`    | Timestamp of check-in            |
-| `ticketNonce`  | `String`           | `cuid()`  | Rotated on ticket revocation     |
-| `bibNumber`    | `String?`          | `null`    | Dorsal number                    |
+| Field         | Type                 | Default   | Purpose                      |
+| ------------- | -------------------- | --------- | ---------------------------- |
+| `status`      | `RegistrationStatus` | `PENDING` | Payment/confirmation status  |
+| `checkedInAt` | `DateTime?`          | `null`    | Timestamp of check-in        |
+| `ticketNonce` | `String`             | `cuid()`  | Rotated on ticket revocation |
+| `bibNumber`   | `String?`            | `null`    | Dorsal number                |
 
 ### EventLiveStatus Enum
 
@@ -78,12 +78,12 @@ set by the organizer via the event management dashboard.
 
 ### Window States
 
-| State            | Condition                              | Effect                                    |
-| ---------------- | -------------------------------------- | ----------------------------------------- |
-| `NO_WINDOW_SET`  | Both fields are `null`                 | Check-in allowed anytime (no time gate)   |
-| `NOT_OPEN_YET`   | `now < checkInOpensAt`                 | Check-in blocked for staff; allowed for admin/organizer |
-| `OPEN`           | Within window boundaries               | Check-in allowed for all authorized roles |
-| `CLOSED`         | `now > checkInClosesAt`                | Check-in blocked for staff; allowed for admin/organizer |
+| State           | Condition                | Effect                                                  |
+| --------------- | ------------------------ | ------------------------------------------------------- |
+| `NO_WINDOW_SET` | Both fields are `null`   | Check-in allowed anytime (no time gate)                 |
+| `NOT_OPEN_YET`  | `now < checkInOpensAt`   | Check-in blocked for staff; allowed for admin/organizer |
+| `OPEN`          | Within window boundaries | Check-in allowed for all authorized roles               |
+| `CLOSED`        | `now > checkInClosesAt`  | Check-in blocked for staff; allowed for admin/organizer |
 
 ### Configuration UI
 
@@ -197,11 +197,11 @@ PATCH /api/events/[id]/registrations/[registrationId]/revoke-ticket
 
 ### Gate Conditions (ALL must pass)
 
-| # | Gate                               | Blocks when                             |
-| - | ---------------------------------- | --------------------------------------- |
-| 1 | Registration status is `CONFIRMED` | `PENDING`, `CANCELLED`, or `REFUNDED`   |
-| 2 | Check-in completed                 | `checkedInAt == null`                   |
-| 3 | Event is `LIVE`                    | Any status other than `LIVE`            |
+| #   | Gate                               | Blocks when                           |
+| --- | ---------------------------------- | ------------------------------------- |
+| 1   | Registration status is `CONFIRMED` | `PENDING`, `CANCELLED`, or `REFUNDED` |
+| 2   | Check-in completed                 | `checkedInAt == null`                 |
+| 3   | Event is `LIVE`                    | Any status other than `LIVE`          |
 
 ### Race Gate API
 
@@ -231,15 +231,15 @@ POST /api/events/[id]/live-control
 - **File**: `app/api/events/[id]/live-control/route.ts`
 - **Body**: `{ command: string }`
 
-| Command    | From States               | To State        |
-| ---------- | ------------------------- | --------------- |
-| `checkin`  | `SCHEDULED`               | `CHECK_IN_OPEN` |
-| `warmup`   | `CHECK_IN_OPEN`           | `WARMUP`        |
-| `start`    | `WARMUP`                  | `LIVE`          |
-| `pause`    | `LIVE`                    | `PAUSED`        |
-| `resume`   | `PAUSED`                  | `LIVE`          |
-| `finish`   | `LIVE`, `PAUSED`          | `FINISHED`      |
-| `cancel`   | Any (except `CANCELLED`)  | `CANCELLED`     |
+| Command   | From States              | To State        |
+| --------- | ------------------------ | --------------- |
+| `checkin` | `SCHEDULED`              | `CHECK_IN_OPEN` |
+| `warmup`  | `CHECK_IN_OPEN`          | `WARMUP`        |
+| `start`   | `WARMUP`                 | `LIVE`          |
+| `pause`   | `LIVE`                   | `PAUSED`        |
+| `resume`  | `PAUSED`                 | `LIVE`          |
+| `finish`  | `LIVE`, `PAUSED`         | `FINISHED`      |
+| `cancel`  | Any (except `CANCELLED`) | `CANCELLED`     |
 
 Invalid transitions return 409 Conflict.
 
@@ -323,14 +323,14 @@ with graceful fallback to DB-only).
 
 **Total: 99 test cases across 6 test files**
 
-| Test File                             | Tests | Scope                                  |
-| ------------------------------------- | ----- | -------------------------------------- |
-| `events/registrations/checkin.test.ts` | 17   | Staff check-in endpoint                |
-| `registrations/check-in.test.ts`       | 16   | Self-service check-in endpoint         |
-| `registrations/race-gate.test.ts`      | 13   | Race-start gating endpoint             |
-| `lib/checkin-gating.test.ts`           | 17   | Window status & gating logic           |
-| `events/live-control.test.ts`          | 18   | Live state machine & readiness         |
-| `events/live-readiness.test.ts`        | 18   | Variant readiness validation           |
+| Test File                              | Tests | Scope                          |
+| -------------------------------------- | ----- | ------------------------------ |
+| `events/registrations/checkin.test.ts` | 17    | Staff check-in endpoint        |
+| `registrations/check-in.test.ts`       | 16    | Self-service check-in endpoint |
+| `registrations/race-gate.test.ts`      | 13    | Race-start gating endpoint     |
+| `lib/checkin-gating.test.ts`           | 17    | Window status & gating logic   |
+| `events/live-control.test.ts`          | 18    | Live state machine & readiness |
+| `events/live-readiness.test.ts`        | 18    | Variant readiness validation   |
 
 ### Coverage Areas
 
@@ -349,13 +349,13 @@ with graceful fallback to DB-only).
 
 ## 10. Phase 2 Acceptance Criteria — Validation
 
-| Acceptance Criterion                                          | Status | Implementation                                                        |
-| ------------------------------------------------------------- | ------ | --------------------------------------------------------------------- |
-| Check-in only works for `CONFIRMED` within window             | ✅     | Both staff and self-service endpoints enforce status + window          |
-| QR scan + manual fallback work                                | ✅     | `verify-ticket` (QR) + `checkin` (manual toggle) endpoints            |
-| UI shows correct states (open/closed/already checked-in)      | ✅     | Dashboard table, ticket modal, badge indicators                       |
-| Start race blocked without check-in (real gating)             | ✅     | `race-gate` endpoint + `validateRaceStartGating()` library            |
-| Tests cover window, status, and permissions                   | ✅     | 99 tests across 6 files covering all branches                         |
+| Acceptance Criterion                                     | Status | Implementation                                                |
+| -------------------------------------------------------- | ------ | ------------------------------------------------------------- |
+| Check-in only works for `CONFIRMED` within window        | ✅     | Both staff and self-service endpoints enforce status + window |
+| QR scan + manual fallback work                           | ✅     | `verify-ticket` (QR) + `checkin` (manual toggle) endpoints    |
+| UI shows correct states (open/closed/already checked-in) | ✅     | Dashboard table, ticket modal, badge indicators               |
+| Start race blocked without check-in (real gating)        | ✅     | `race-gate` endpoint + `validateRaceStartGating()` library    |
+| Tests cover window, status, and permissions              | ✅     | 99 tests across 6 files covering all branches                 |
 
 ---
 
@@ -385,33 +385,33 @@ The original issue described endpoints at:
 
 ## 12. API Reference Summary
 
-| Method | Endpoint                                                       | Purpose                   | Auth Required        |
-| ------ | -------------------------------------------------------------- | ------------------------- | -------------------- |
-| PATCH  | `/api/events/[id]/registrations/[regId]/checkin`               | Staff check-in toggle     | Admin/Organizer/Staff |
-| POST   | `/api/registrations/[regId]/check-in`                          | Self-service check-in     | Registration owner   |
-| POST   | `/api/events/[id]/registration/verify-ticket`                  | QR verification + check-in| Admin/Organizer/Staff |
-| GET    | `/api/events/[id]/registration/ticket`                         | Generate QR ticket        | Registration owner   |
-| PATCH  | `/api/events/[id]/registrations/[regId]/revoke-ticket`         | Revoke ticket             | Admin/Organizer/Staff |
-| GET    | `/api/registrations/[regId]/race-gate`                         | Race-start gating check   | Registration owner   |
-| POST   | `/api/events/[id]/live-control`                                | State machine commands    | Admin/Organizer      |
-| GET    | `/api/events/[id]/live-status`                                 | Current live status       | Admin/Organizer      |
-| GET    | `/api/events/[id]/live-readiness`                              | Variant readiness report  | Admin/Organizer      |
+| Method | Endpoint                                               | Purpose                    | Auth Required         |
+| ------ | ------------------------------------------------------ | -------------------------- | --------------------- |
+| PATCH  | `/api/events/[id]/registrations/[regId]/checkin`       | Staff check-in toggle      | Admin/Organizer/Staff |
+| POST   | `/api/registrations/[regId]/check-in`                  | Self-service check-in      | Registration owner    |
+| POST   | `/api/events/[id]/registration/verify-ticket`          | QR verification + check-in | Admin/Organizer/Staff |
+| GET    | `/api/events/[id]/registration/ticket`                 | Generate QR ticket         | Registration owner    |
+| PATCH  | `/api/events/[id]/registrations/[regId]/revoke-ticket` | Revoke ticket              | Admin/Organizer/Staff |
+| GET    | `/api/registrations/[regId]/race-gate`                 | Race-start gating check    | Registration owner    |
+| POST   | `/api/events/[id]/live-control`                        | State machine commands     | Admin/Organizer       |
+| GET    | `/api/events/[id]/live-status`                         | Current live status        | Admin/Organizer       |
+| GET    | `/api/events/[id]/live-readiness`                      | Variant readiness report   | Admin/Organizer       |
 
 ---
 
 ## 13. Key Files
 
-| File                                                              | Purpose                               |
-| ----------------------------------------------------------------- | ------------------------------------- |
-| `lib/checkin-gating.ts`                                           | Shared gating logic (window + race)   |
-| `app/api/events/[id]/registrations/[regId]/checkin/route.ts`      | Staff check-in endpoint               |
-| `app/api/registrations/[regId]/check-in/route.ts`                 | Self-service check-in endpoint        |
-| `app/api/events/[id]/registration/verify-ticket/route.ts`         | QR ticket verification                |
-| `app/api/events/[id]/registration/ticket/route.ts`                | Ticket generation                     |
-| `app/api/registrations/[regId]/race-gate/route.ts`                | Race-start gating                     |
-| `app/api/events/[id]/live-control/route.ts`                       | State machine control                 |
-| `app/api/events/[id]/live-status/route.ts`                        | Live status query                     |
-| `app/api/events/[id]/live-readiness/route.ts`                     | Readiness validation                  |
-| `components/event-ticket-modal.tsx`                                | QR ticket display modal               |
-| `app/[locale]/events/[slug]/manage/_components/tab-inscritos.tsx`  | Staff check-in UI                     |
-| `app/[locale]/events/[slug]/manage/_components/tab-config.tsx`     | Check-in window config UI             |
+| File                                                              | Purpose                             |
+| ----------------------------------------------------------------- | ----------------------------------- |
+| `lib/checkin-gating.ts`                                           | Shared gating logic (window + race) |
+| `app/api/events/[id]/registrations/[regId]/checkin/route.ts`      | Staff check-in endpoint             |
+| `app/api/registrations/[regId]/check-in/route.ts`                 | Self-service check-in endpoint      |
+| `app/api/events/[id]/registration/verify-ticket/route.ts`         | QR ticket verification              |
+| `app/api/events/[id]/registration/ticket/route.ts`                | Ticket generation                   |
+| `app/api/registrations/[regId]/race-gate/route.ts`                | Race-start gating                   |
+| `app/api/events/[id]/live-control/route.ts`                       | State machine control               |
+| `app/api/events/[id]/live-status/route.ts`                        | Live status query                   |
+| `app/api/events/[id]/live-readiness/route.ts`                     | Readiness validation                |
+| `components/event-ticket-modal.tsx`                               | QR ticket display modal             |
+| `app/[locale]/events/[slug]/manage/_components/tab-inscritos.tsx` | Staff check-in UI                   |
+| `app/[locale]/events/[slug]/manage/_components/tab-config.tsx`    | Check-in window config UI           |

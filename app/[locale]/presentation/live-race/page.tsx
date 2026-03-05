@@ -2,19 +2,8 @@ import { Metadata } from "next";
 import { LiveRacePresentationClient } from "@/components/presentations/live-race-presentation-client";
 import { LiveRaceFAQSection } from "@/components/presentations/live-race-faq-section";
 import { LiveRaceSEOContent } from "@/components/presentations/live-race-seo-content";
-import { getTranslations } from "next-intl/server";
 import { StructuredData } from "@/components/structured-data";
-
-const SUPPORTED_LOCALES = ["pt", "en", "es", "fr", "de", "it"] as const;
-
-const localeToOgLocale: Record<string, string> = {
-  pt: "pt_PT",
-  en: "en_US",
-  es: "es_ES",
-  fr: "fr_FR",
-  de: "de_DE",
-  it: "it_IT",
-};
+import { generatePresentationMetadata } from "@/lib/presentation-metadata";
 
 export async function generateMetadata({
   params,
@@ -22,64 +11,11 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>;
 }): Promise<Metadata> {
   const { locale } = await params;
-  const t = await getTranslations({
+  return generatePresentationMetadata({
     locale,
-    namespace: "liveRacePresentation.meta",
+    translationNamespace: "liveRacePresentation.meta",
+    pagePath: "live-race",
   });
-
-  const baseUrl =
-    process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
-  const pageUrl = `${baseUrl}/${locale}/presentation/live-race`;
-
-  const languageAlternates: Record<string, string> = {};
-  for (const loc of SUPPORTED_LOCALES) {
-    languageAlternates[loc] = `${baseUrl}/${loc}/presentation/live-race`;
-  }
-  languageAlternates["x-default"] = `${baseUrl}/en/presentation/live-race`;
-
-  return {
-    title: t("title"),
-    description: t("description"),
-    keywords: t("keywords"),
-    alternates: {
-      canonical: pageUrl,
-      languages: languageAlternates,
-    },
-    openGraph: {
-      title: t("title"),
-      description: t("description"),
-      url: pageUrl,
-      siteName: "Athlifyr",
-      images: [
-        {
-          url: `${baseUrl}/logo.png`,
-          width: 1200,
-          height: 630,
-          alt: t("title"),
-        },
-      ],
-      locale: localeToOgLocale[locale] || "en_US",
-      type: "website",
-    },
-    twitter: {
-      card: "summary_large_image",
-      title: t("title"),
-      description: t("description"),
-      images: [`${baseUrl}/logo.png`],
-      creator: "@athlifyr",
-    },
-    robots: {
-      index: true,
-      follow: true,
-      googleBot: {
-        index: true,
-        follow: true,
-        "max-video-preview": -1,
-        "max-image-preview": "large",
-        "max-snippet": -1,
-      },
-    },
-  };
 }
 
 function generateSoftwareApplicationSchema(locale: string) {

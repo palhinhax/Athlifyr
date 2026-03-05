@@ -29,6 +29,110 @@ export function SocialParticipationFlow({
 }: SocialParticipationFlowProps) {
   const { t } = useTranslation();
 
+  const renderActionButtons = () => {
+    if (!userParticipation) {
+      return (
+        <>
+          <TouchableOpacity
+            style={styles.goingButton}
+            onPress={onRegister}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={theme.colors.white} />
+            ) : (
+              <>
+                <Check size={18} color={theme.colors.white} />
+                <Text style={styles.goingButtonText}>
+                  {t("events.registration.markAsGoing")}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.interestedButton}
+            onPress={onMarkInterested}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={theme.colors.warning} />
+            ) : (
+              <>
+                <Target size={18} color={theme.colors.warning} />
+                <Text style={styles.interestedButtonText}>
+                  {t("events.registration.markAsInterested")}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    if (userParticipation.status === "interested") {
+      return (
+        <>
+          <TouchableOpacity
+            style={styles.goingButton}
+            onPress={onRegister}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={theme.colors.white} />
+            ) : (
+              <>
+                <Check size={18} color={theme.colors.white} />
+                <Text style={styles.goingButtonText}>
+                  {t("events.registration.markAsGoing")}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.interestedButton}
+            onPress={onUnregister}
+            disabled={isLoading}
+            activeOpacity={0.8}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={theme.colors.warning} />
+            ) : (
+              <>
+                <X size={18} color={theme.colors.warning} />
+                <Text style={styles.interestedButtonText}>
+                  {t("events.registration.removeInterest")}
+                </Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={styles.cancelButton}
+        onPress={onUnregister}
+        disabled={isLoading}
+        activeOpacity={0.8}
+      >
+        {isLoading ? (
+          <ActivityIndicator size="small" color={theme.colors.error} />
+        ) : (
+          <>
+            <X size={18} color={theme.colors.error} />
+            <Text style={styles.cancelButtonText}>
+              {t("events.registration.cancelParticipation")}
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <>
       {/* Variant Selection */}
@@ -104,101 +208,7 @@ export function SocialParticipationFlow({
       )}
 
       {/* Action Buttons */}
-      <View style={styles.actionsRow}>
-        {!userParticipation ? (
-          <>
-            <TouchableOpacity
-              style={styles.goingButton}
-              onPress={onRegister}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color={theme.colors.white} />
-              ) : (
-                <>
-                  <Check size={18} color={theme.colors.white} />
-                  <Text style={styles.goingButtonText}>
-                    {t("events.registration.markAsGoing")}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.interestedButton}
-              onPress={onMarkInterested}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color={theme.colors.warning} />
-              ) : (
-                <>
-                  <Target size={18} color={theme.colors.warning} />
-                  <Text style={styles.interestedButtonText}>
-                    {t("events.registration.markAsInterested")}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </>
-        ) : userParticipation.status === "interested" ? (
-          <>
-            <TouchableOpacity
-              style={styles.goingButton}
-              onPress={onRegister}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color={theme.colors.white} />
-              ) : (
-                <>
-                  <Check size={18} color={theme.colors.white} />
-                  <Text style={styles.goingButtonText}>
-                    {t("events.registration.markAsGoing")}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.interestedButton}
-              onPress={onUnregister}
-              disabled={isLoading}
-              activeOpacity={0.8}
-            >
-              {isLoading ? (
-                <ActivityIndicator size="small" color={theme.colors.warning} />
-              ) : (
-                <>
-                  <X size={18} color={theme.colors.warning} />
-                  <Text style={styles.interestedButtonText}>
-                    {t("events.registration.removeInterest")}
-                  </Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </>
-        ) : (
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onUnregister}
-            disabled={isLoading}
-            activeOpacity={0.8}
-          >
-            {isLoading ? (
-              <ActivityIndicator size="small" color={theme.colors.error} />
-            ) : (
-              <>
-                <X size={18} color={theme.colors.error} />
-                <Text style={styles.cancelButtonText}>
-                  {t("events.registration.cancelParticipation")}
-                </Text>
-              </>
-            )}
-          </TouchableOpacity>
-        )}
-      </View>
+      <View style={styles.actionsRow}>{renderActionButtons()}</View>
     </>
   );
 }

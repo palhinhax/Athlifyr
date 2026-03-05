@@ -199,6 +199,28 @@ export function useEventRegistration({
     }
   };
 
+  const performUnregister = async () => {
+    setIsLoading(true);
+    try {
+      await api.delete(`/participations?eventId=${eventId}`);
+      const prevStatus = userParticipation?.status;
+      setUserParticipation(null);
+      setSelectedVariantId("");
+      if (prevStatus === "interested") {
+        setInterestedCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setParticipantsCount((prev) => Math.max(0, prev - 1));
+      }
+    } catch {
+      Alert.alert(
+        t("common.error"),
+        t("events.registration.cancellationError")
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleUnregister = async () => {
     if (!isAuthenticated) return;
     const isInterested = userParticipation?.status === "interested";
@@ -214,26 +236,8 @@ export function useEventRegistration({
         {
           text: t("common.delete"),
           style: "destructive",
-          onPress: async () => {
-            setIsLoading(true);
-            try {
-              await api.delete(`/participations?eventId=${eventId}`);
-              const prevStatus = userParticipation?.status;
-              setUserParticipation(null);
-              setSelectedVariantId("");
-              if (prevStatus === "interested") {
-                setInterestedCount((prev) => Math.max(0, prev - 1));
-              } else {
-                setParticipantsCount((prev) => Math.max(0, prev - 1));
-              }
-            } catch {
-              Alert.alert(
-                t("common.error"),
-                t("events.registration.cancellationError")
-              );
-            } finally {
-              setIsLoading(false);
-            }
+          onPress: () => {
+            void performUnregister();
           },
         },
       ]

@@ -13,7 +13,7 @@ export {
   type TeamMemberData,
 } from "./event-registration-types";
 
-export function EventRegistration(props: EventRegistrationProps) {
+export function EventRegistration(props: Readonly<EventRegistrationProps>) {
   const { hasRegistrations = false, variants = [], eventId } = props;
 
   const { state, actions, derived, session } = useEventRegistration(props);

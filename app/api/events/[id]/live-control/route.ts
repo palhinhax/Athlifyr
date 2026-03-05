@@ -65,19 +65,135 @@ function isValidCoordinate(lat: number, lng: number): boolean {
   );
 }
 
+interface EventVariant {
+  id: string;
+  name: string;
+  startTime: Date | string | null;
+  route: {
+    id: string;
+    routePoints: unknown;
+    checkpoints: { type: string; order: number }[];
+  } | null;
+}
+
+/**
+ * Validate checkpoint ordering for a variant.
+ */
+function validateCheckpointOrdering(
+  checkpoints: { type: string; order: number }[],
+  variantName: string,
+  hasExplicitFinish: boolean
+): string[] {
+  if (checkpoints.length === 0) return [];
+
+  const errors: string[] = [];
+  const orders = checkpoints.map((cp) => cp.order);
+
+  if (new Set(orders).size !== orders.length) {
+    errors.push(`Variant "${variantName}" has duplicate checkpoint orders`);
+  }
+
+  if (hasExplicitFinish) {
+    const finishCp = checkpoints.find((cp) => cp.type === "FINISH");
+    const maxOrder = Math.max(...orders);
+    if (finishCp && finishCp.order !== maxOrder) {
+      errors.push(
+        `Variant "${variantName}" FINISH checkpoint must be last in order`
+      );
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Validate a single variant's readiness for live race.
+ */
+function validateVariant(variant: EventVariant): string[] {
+  const route = variant.route;
+  const routePoints = route ? (route.routePoints as [number, number][]) : [];
+  const checkpoints = route?.checkpoints ?? [];
+
+  if (!route || routePoints.length < MIN_ROUTE_POINTS) {
+    return [
+      `Variant "${variant.name}" requires at least ${MIN_ROUTE_POINTS} route points (has ${routePoints.length})`,
+    ];
+  }
+
+  const hasInvalidCoords = routePoints.some(
+    ([lat, lng]) => !isValidCoordinate(lat, lng)
+  );
+  if (hasInvalidCoords) {
+    return [`Variant "${variant.name}" contains invalid coordinates`];
+  }
+
+  const errors: string[] = [];
+  const hasExplicitStart = checkpoints.some((cp) => cp.type === "START");
+  const hasExplicitFinish = checkpoints.some((cp) => cp.type === "FINISH");
+  const canDerive = routePoints.length >= MIN_ROUTE_POINTS;
+
+  if (!hasExplicitStart && !canDerive) {
+    errors.push(`Variant "${variant.name}" is missing a START checkpoint`);
+  }
+  if (!hasExplicitFinish && !canDerive) {
+    errors.push(`Variant "${variant.name}" is missing a FINISH checkpoint`);
+  }
+  if (!variant.startTime) {
+    errors.push(`Variant "${variant.name}" is missing a start time`);
+  }
+
+  errors.push(
+    ...validateCheckpointOrdering(checkpoints, variant.name, hasExplicitFinish)
+  );
+
+  return errors;
+}
+
+/**
+ * Validate that all event variants are ready for live race.
+ */
+function validateReadiness(variants: EventVariant[]): string[] {
+  if (variants.length === 0) {
+    return ["No variants configured for this event"];
+  }
+  return variants.flatMap(validateVariant);
+}
+
+/**
+ * Notify the external live service of a status change (non-fatal on failure).
+ */
+async function notifyLiveServer(
+  eventId: string,
+  status: EventLiveStatus
+): Promise<void> {
+  try {
+    await fetch(`${LIVE_SERVICE_URL}/internal/status`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "x-live-server": "true",
+        "x-live-secret": process.env.LIVE_INTERNAL_SECRET ?? "",
+      },
+      body: JSON.stringify({ eventId, status }),
+      signal: AbortSignal.timeout(5000),
+    });
+  } catch (err) {
+    // Non-fatal: DB is already updated — live server will sync on next poll
+    console.warn("[live-control] Could not notify live server:", err);
+  }
+}
+
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: eventId } = await params;
 
-  // Auth
   const user = await getAuthenticatedUser();
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Permission: manage_event (organizers) or manage_liverace (admin)
   const ctx = await getUserEventContext(user.id, user.role, eventId);
   const canControl =
     hasEventPermission(ctx, "manage_liverace") ||
@@ -95,7 +211,6 @@ export async function POST(
     return NextResponse.json({ error: "Invalid command" }, { status: 400 });
   }
 
-  // Fetch event
   const event = await prisma.event.findUnique({
     where: { id: eventId },
     select: {
@@ -142,77 +257,8 @@ export async function POST(
     );
   }
 
-  // ─── Validate readiness before state-advancing commands ────────────────
   if (COMMANDS_REQUIRING_READINESS.has(command)) {
-    const errors: string[] = [];
-
-    if (event.variants.length === 0) {
-      errors.push("No variants configured for this event");
-    }
-
-    for (const variant of event.variants) {
-      const route = variant.route;
-      const routePoints = route
-        ? (route.routePoints as [number, number][])
-        : [];
-      const checkpoints = route?.checkpoints ?? [];
-
-      // Route requirement: >= MIN_ROUTE_POINTS valid points
-      if (!route || routePoints.length < MIN_ROUTE_POINTS) {
-        errors.push(
-          `Variant "${variant.name}" requires at least ${MIN_ROUTE_POINTS} route points (has ${routePoints.length})`
-        );
-        continue;
-      }
-
-      // Coordinate validation
-      const hasInvalidCoords = routePoints.some(
-        ([lat, lng]) => !isValidCoordinate(lat, lng)
-      );
-      if (hasInvalidCoords) {
-        errors.push(`Variant "${variant.name}" contains invalid coordinates`);
-        continue;
-      }
-
-      // Start/Finish: explicit checkpoints OR auto-derived from route endpoints
-      const hasExplicitStart = checkpoints.some((cp) => cp.type === "START");
-      const hasExplicitFinish = checkpoints.some((cp) => cp.type === "FINISH");
-      const canDerive = routePoints.length >= MIN_ROUTE_POINTS;
-      const hasStart = hasExplicitStart || canDerive;
-      const hasFinish = hasExplicitFinish || canDerive;
-
-      if (!hasStart) {
-        errors.push(`Variant "${variant.name}" is missing a START checkpoint`);
-      }
-      if (!hasFinish) {
-        errors.push(`Variant "${variant.name}" is missing a FINISH checkpoint`);
-      }
-
-      // startTime is required
-      if (!variant.startTime) {
-        errors.push(`Variant "${variant.name}" is missing a start time`);
-      }
-
-      // Checkpoint ordering validation (if checkpoints exist)
-      if (checkpoints.length > 0) {
-        const orders = checkpoints.map((cp) => cp.order);
-        if (new Set(orders).size !== orders.length) {
-          errors.push(
-            `Variant "${variant.name}" has duplicate checkpoint orders`
-          );
-        }
-        if (hasExplicitFinish) {
-          const finishCp = checkpoints.find((cp) => cp.type === "FINISH");
-          const maxOrder = Math.max(...orders);
-          if (finishCp && finishCp.order !== maxOrder) {
-            errors.push(
-              `Variant "${variant.name}" FINISH checkpoint must be last in order`
-            );
-          }
-        }
-      }
-    }
-
+    const errors = validateReadiness(event.variants);
     if (errors.length > 0) {
       return NextResponse.json(
         {
@@ -225,30 +271,13 @@ export async function POST(
     }
   }
 
-  // Update DB status
   await prisma.event.update({
     where: { id: eventId },
     data: { liveStatus: transition.to },
   });
 
-  // Notify Live server
-  try {
-    await fetch(`${LIVE_SERVICE_URL}/internal/status`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-live-server": "true",
-        "x-live-secret": process.env.LIVE_INTERNAL_SECRET ?? "",
-      },
-      body: JSON.stringify({ eventId, status: transition.to }),
-      signal: AbortSignal.timeout(5000),
-    });
-  } catch (err) {
-    // Non-fatal: DB is already updated — live server will sync on next poll
-    console.warn("[live-control] Could not notify live server:", err);
-  }
+  await notifyLiveServer(eventId, transition.to);
 
-  // Return the new status only — the client updates its local state directly
   return NextResponse.json({
     liveStatus: transition.to,
   });

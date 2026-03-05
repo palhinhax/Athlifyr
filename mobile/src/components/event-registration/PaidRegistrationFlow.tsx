@@ -154,6 +154,33 @@ export function PaidRegistrationFlow({
               const price = getActivePrice(variant);
               const soldOutVariant = isVariantSoldOut(variant);
               const selected = selectedVariantId === variant.id;
+
+              function renderVariantStatus() {
+                if (soldOutVariant) {
+                  return (
+                    <Text style={styles.variantSoldOutBadge}>
+                      {t("events.registration.soldOut")}
+                    </Text>
+                  );
+                }
+                if (price) {
+                  return (
+                    <Text
+                      style={[
+                        styles.variantPriceText,
+                        selected && styles.variantPriceTextSelected,
+                      ]}
+                    >
+                      {(price.price / 100).toLocaleString(i18n.language, {
+                        style: "currency",
+                        currency: price.currency,
+                      })}
+                    </Text>
+                  );
+                }
+                return null;
+              }
+
               return (
                 <TouchableOpacity
                   key={variant.id}
@@ -178,23 +205,7 @@ export function PaidRegistrationFlow({
                     {variant.name}
                     {variant.distanceKm ? ` · ${variant.distanceKm}km` : ""}
                   </Text>
-                  {soldOutVariant ? (
-                    <Text style={styles.variantSoldOutBadge}>
-                      {t("events.registration.soldOut")}
-                    </Text>
-                  ) : price ? (
-                    <Text
-                      style={[
-                        styles.variantPriceText,
-                        selected && styles.variantPriceTextSelected,
-                      ]}
-                    >
-                      {(price.price / 100).toLocaleString(i18n.language, {
-                        style: "currency",
-                        currency: price.currency,
-                      })}
-                    </Text>
-                  ) : null}
+                  {renderVariantStatus()}
                 </TouchableOpacity>
               );
             })}

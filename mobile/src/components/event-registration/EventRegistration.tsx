@@ -45,6 +45,44 @@ export function EventRegistration({
     handleMarkInterested,
   } = useEventRegistration({ eventId, variants, hasRegistrations });
 
+  function renderRegistrationContent() {
+    if (hasRegistrations) {
+      return (
+        <View style={styles.content}>
+          <PaidRegistrationFlow
+            variants={variants}
+            registrationChecked={registrationChecked}
+            paidRegistration={paidRegistration}
+            selectedVariantId={selectedVariantId}
+            setSelectedVariantId={setSelectedVariantId}
+            isCheckingOut={isCheckingOut}
+            soldOut={soldOut}
+            noPrice={noPrice}
+            selectedSoldOut={selectedSoldOut}
+            selectedVariant={selectedVariant}
+            activePrice={activePrice}
+            onCheckout={handleCheckout}
+          />
+        </View>
+      );
+    }
+
+    return (
+      <View style={styles.content}>
+        <SocialParticipationFlow
+          variants={variants}
+          userParticipation={userParticipation}
+          selectedVariantId={selectedVariantId}
+          setSelectedVariantId={setSelectedVariantId}
+          isLoading={isLoading}
+          onRegister={handleRegister}
+          onUnregister={handleUnregister}
+          onMarkInterested={handleMarkInterested}
+        />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -89,7 +127,9 @@ export function EventRegistration({
       </View>
 
       {/* Not authenticated */}
-      {!isAuthenticated ? (
+      {isAuthenticated ? (
+        renderRegistrationContent()
+      ) : (
         <View style={styles.authContainer}>
           <Text style={styles.authText}>
             {t("events.registration.loginToParticipate")}
@@ -103,36 +143,6 @@ export function EventRegistration({
               {t("common.signInButton")}
             </Text>
           </TouchableOpacity>
-        </View>
-      ) : hasRegistrations ? (
-        <View style={styles.content}>
-          <PaidRegistrationFlow
-            variants={variants}
-            registrationChecked={registrationChecked}
-            paidRegistration={paidRegistration}
-            selectedVariantId={selectedVariantId}
-            setSelectedVariantId={setSelectedVariantId}
-            isCheckingOut={isCheckingOut}
-            soldOut={soldOut}
-            noPrice={noPrice}
-            selectedSoldOut={selectedSoldOut}
-            selectedVariant={selectedVariant}
-            activePrice={activePrice}
-            onCheckout={handleCheckout}
-          />
-        </View>
-      ) : (
-        <View style={styles.content}>
-          <SocialParticipationFlow
-            variants={variants}
-            userParticipation={userParticipation}
-            selectedVariantId={selectedVariantId}
-            setSelectedVariantId={setSelectedVariantId}
-            isLoading={isLoading}
-            onRegister={handleRegister}
-            onUnregister={handleUnregister}
-            onMarkInterested={handleMarkInterested}
-          />
         </View>
       )}
     </View>

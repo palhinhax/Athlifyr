@@ -626,7 +626,17 @@ export function processGpsUpdate(
   athlete.lastUpdateAt = Date.now();
   athlete.distanceAlongRouteM = newDistance;
   athlete.deviationM = projection.deviationM;
-  athlete.progressPercent = projection.progressPercent;
+  // Derive progressPercent from the monotonically clamped newDistance, not
+  // from the raw projection. On out-and-back routes the projection may snap to
+  // an earlier overlapping segment (outbound), which would cause the displayed
+  // progress to jump backward even though distanceAlongRouteM is protected.
+  athlete.progressPercent =
+    routeHelper.totalDistanceM > 0
+      ? Math.min(
+          100,
+          Math.max(0, (newDistance / routeHelper.totalDistanceM) * 100)
+        )
+      : 0;
 
   // Off-route detection
   if (projection.deviationM > room.config.settings.deviationThresholdM) {
@@ -908,7 +918,16 @@ export function processGpsBatch(
     athlete.lastUpdateAt = point.timestamp;
     athlete.distanceAlongRouteM = newDistance;
     athlete.deviationM = projection.deviationM;
-    athlete.progressPercent = projection.progressPercent;
+    // Derive progressPercent from the monotonically clamped newDistance, not
+    // from the raw projection. On out-and-back routes the projection may snap
+    // to an earlier overlapping segment, causing a visible progress regression.
+    athlete.progressPercent =
+      routeHelper.totalDistanceM > 0
+        ? Math.min(
+            100,
+            Math.max(0, (newDistance / routeHelper.totalDistanceM) * 100)
+          )
+        : 0;
 
     // Off-route detection (silent during batch — no per-point broadcast)
     if (projection.deviationM > room.config.settings.deviationThresholdM) {

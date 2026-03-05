@@ -627,6 +627,128 @@ finished:
 
 ---
 
+## 15a. Out-and-Back Route Support
+
+An **out-and-back** race is one where athletes run the same physical path in both
+directions — they travel from START to the turnaround point and then return along
+the identical route back to the FINISH (which is at the same location as the START).
+Examples include many marathons and trail races such as Maratona do Porto.
+
+The key challenge: the outbound and return GPS tracks are spatially identical (or
+within a few metres of each other due to GPS drift), so a naive closest-segment
+projection could confuse outbound progress with return progress.
+
+### How the Engine Handles Out-and-Back
+
+#### 1. Route Representation
+
+A GPX file for an out-and-back route contains the full path: outbound points
+(indices 0 → N) followed by return points (indices N → 2N). The live server
+represents this as segments with monotonically increasing `cumulativeDistanceM`.
+Even though the GPS coordinates overlap, the segments are distinct objects with
+different cumulative distances.
+
+Example: a 40 km out-and-back route with 400 GPS points:
+
+```
+Segments 0–199   →  outbound leg  (0–20 km)
+Segments 200–399 →  return leg   (20–40 km)
+```
+
+Segment 50 (outbound, km 5) and segment 350 (return, km 35) are physically at
+the same GPS coordinates.
+
+#### 2. GPS Projection — Windowed Search
+
+`projectPointOnRouteNear()` searches only within a ±10-segment window centred on
+the athlete's previous segment index. Once an athlete is on the return leg (e.g.
+previous segment index = 300), the window 290–310 contains **only return segments**
+and cannot jump back to the physically equivalent outbound segment (index ~100).
+
+The monotonic progress clamp (`distanceAlongRouteM = Math.max(prev − 50, projected)`)
+provides an additional safety net: even in the rare case where the projection
+briefly snaps to an outbound segment, the displayed distance cannot regress by
+more than 50 m per GPS update.
+
+#### 3. Progress Percentage — Derived from Clamped Distance
+
+`progressPercent` is computed from the **monotonically clamped** `distanceAlongRouteM`,
+not from the raw projection result. This prevents a display regression where the
+percentage could jump backward even if `distanceAlongRouteM` is protected.
+
+```
+progressPercent = (newDistance / totalDistanceM) × 100
+```
+
+At the turnaround (km 20 of a 40 km route): `progressPercent = 50%`.  
+Returning at km 30: `progressPercent = 75%`. ✅
+
+#### 4. Checkpoint Distance Assignment — Monotonic Search
+
+`buildRouteHelper()` assigns each checkpoint a distance along the route using a
+**monotonic search** ordered by the checkpoint's `order` field. For each checkpoint,
+the search begins at the segment where the previous (lower-order) checkpoint landed.
+
+This guarantees that two checkpoints at the same physical GPS location receive
+distinct route distances:
+
+- A START checkpoint (order 1) at the start/finish area → `distanceAlongRouteM ≈ 0`
+- A FINISH checkpoint (order N) at the same location → `distanceAlongRouteM ≈ totalDistance`
+
+Without this, a naïve full-scan would always assign the **outbound** distance (lowest
+index with minimum deviation) to both, causing return-leg checkpoints to be detected
+prematurely.
+
+#### 5. FINISH Detection Guard
+
+`detectFinish()` and the FINISH gate in `detectNewCheckpoints()` both include a
+**minimum progress guard**: a finish crossing is only credited if the athlete has
+covered at least **90% of the FINISH checkpoint's route distance**. This prevents
+the following false-positive scenario on out-and-back routes:
+
+```
+Athlete departs the start area → crosses the FINISH gate line (same physical
+location) at distanceAlongRouteM ≈ 0 → would immediately be marked FINISHED
+without the guard.
+```
+
+With the guard (`distanceAlongRouteM >= finishDistanceM × 0.9`), the crossing is
+ignored at race start and credited only on the return pass near the end.
+
+#### 6. Gate Line Orientation
+
+Each START/FINISH gate line is derived from the **segment bearing at the checkpoint's
+assigned route position** (rather than searching for the nearest route point by GPS
+distance). This means:
+
+- The START gate line uses the bearing of the first outbound segment → correct
+  perpendicular for athletes departing
+- The FINISH gate line uses the bearing of the last inbound segment → a distinct
+  perpendicular that faces the returning athletes
+
+### Confirmed Behaviour
+
+| Scenario                                             | Status | Mechanism                                      |
+| ---------------------------------------------------- | ------ | ---------------------------------------------- |
+| Progress does not regress on return path             | ✅     | Monotonic clamp + windowed projection          |
+| `progressPercent` never regresses to a backward value | ✅     | Derived from clamped distance, not raw projection |
+| FINISH not falsely triggered at race start           | ✅     | 90% minimum progress guard                     |
+| Intermediate checkpoints not double-triggered        | ✅     | `alreadyReachedOrders` set deduplication        |
+| Return-leg checkpoints get correct route distance    | ✅     | Monotonic search in `buildRouteHelper`          |
+| Leaderboard distance ranking remains correct         | ✅     | `distanceAlongRouteM` always monotonically increasing |
+| Offline batch sync preserves out-and-back semantics  | ✅     | Same projection + monotonic logic in `processGpsBatch` |
+
+### Limitations and Recommendations for Race Organisers
+
+| Limitation                          | Guidance                                                                                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **GPS drift at turnaround**         | Near the turnaround point, GPS drift may cause the projection to briefly hesitate between the last outbound segment and the first return segment. The 50 m backward tolerance handles this gracefully. |
+| **Checkpoint radius on return leg** | An intermediate checkpoint placed on the outbound leg will **not** trigger a second time on the return (deduplication is by order). If you need a second split at the same physical location, add a second checkpoint with a different `order`. |
+| **Very short out-and-back routes**  | The 90% finish guard requires the athlete to have covered ≥ 90% of the declared FINISH route distance. For routes under ~1 km, ensure the FINISH is placed accurately in the GPX so the distance is correct. |
+| **Spectator map display**          | On the spectator map, outbound and return athletes are shown at their GPS coordinates. Two athletes at the same physical spot but on different legs are visually indistinguishable on the map; the leaderboard distance column clarifies their relative positions. |
+
+---
+
 ## 16. Key Files
 
 ### Live Server

@@ -2,7 +2,7 @@
 // Athlifyr Live Server — Entry Point
 //
 // Fastify + Socket.io + Redis
-// Chat · Notifications · LiveRace (coming soon)
+// Chat · Notifications · LiveRace
 //
 // NOTE: All database operations are delegated to the Next.js API.
 // This server is a real-time layer only (WebSockets + Redis).
@@ -14,6 +14,7 @@ import "./env.js";
 import { buildServer } from "./server.js";
 import { createSocketServer } from "./plugins/socket.js";
 import { getRedis, disconnectRedis } from "./plugins/redis.js";
+import { setLiveRaceIO } from "./modules/liverace/liverace.routes.js";
 import { config } from "./config.js";
 
 async function main() {
@@ -45,6 +46,9 @@ async function main() {
   // Attach Socket.io to the HTTP server
   const httpServer = app.server;
   const io = createSocketServer(httpServer);
+
+  // Wire up LiveRace REST routes with the IO instance
+  setLiveRaceIO(io);
 
   console.log(`[Boot] Fastify listening on ${config.host}:${config.port} ✓`);
   console.log(`[Boot] Socket.io attached ✓`);

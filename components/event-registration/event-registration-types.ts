@@ -122,6 +122,7 @@ export interface RegistrationDerived {
   selectedVariantSoldOut: boolean;
   selectedVariantNoPrice: boolean;
   allVariantsSoldOut: boolean;
+  allVariantsNoPrice: boolean;
   selectedVariantTeamSize: number;
   needsConsentOrTeam: boolean;
   requiredRegistrationFields: string[];

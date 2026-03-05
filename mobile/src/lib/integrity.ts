@@ -1,6 +1,8 @@
 import { Platform } from "react-native";
 import * as Crypto from "expo-crypto";
-import { API_URL } from "@/src/lib/api";
+
+// Read API_URL directly from env to avoid circular dependency with api.ts
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
 
 /**
  * Google Cloud project number for Play Integrity.

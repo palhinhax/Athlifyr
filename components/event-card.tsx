@@ -91,6 +91,18 @@ export function EventCard({
               {t("giveaway.badge")}
             </div>
           )}
+          {event.hasLiveRace && (
+            <div className="absolute bottom-2 left-2 flex items-center gap-1.5 rounded-full bg-black/80 px-2.5 py-1 shadow-md backdrop-blur-sm">
+              <Image
+                src="/liverace.png"
+                alt="LiveRace"
+                width={14}
+                height={14}
+                className="h-3.5 w-3.5"
+              />
+              <span className="text-xs font-semibold text-white">LiveRace</span>
+            </div>
+          )}
         </div>
         <CardContent className="p-4">
           <h3 className="mb-2 line-clamp-2 text-lg font-bold">{event.title}</h3>

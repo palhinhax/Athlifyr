@@ -19,6 +19,7 @@ export interface EventDetails {
   stravaRouteEmbed: string | null;
   hasRegistrations: boolean;
   hasLiveRace: boolean;
+  liveStatus: string;
   stripeOnboardingStatus: string;
   stripeChargesEnabled: boolean;
   stripePayoutsEnabled: boolean;

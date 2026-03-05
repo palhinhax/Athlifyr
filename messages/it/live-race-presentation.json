@@ -1,0 +1,193 @@
+{
+  "liveRacePresentation": {
+    "meta": {
+      "title": "Piattaforma Gare Live e Gestione Eventi | Athlifyr",
+      "description": "Organizza trail running, gare su strada, MTB e ciclismo gratis. Tracciamento GPS in tempo reale, classifiche live, avvisi per spettatori e iscrizioni online — tutto in una piattaforma.",
+      "keywords": "tracciamento gara live, piattaforma gestione eventi, organizzazione trail running, software cronometraggio, tracciamento GPS gara, classifica live, iscrizione gare, gestione eventi sportivi, evento MTB, evento ciclismo, organizzazione gare su strada, piattaforma gratuita gare"
+    },
+    "hero": {
+      "badge": "Per Organizzatori di Eventi",
+      "h1Primary": "Organizza la Tua Gara",
+      "h1Secondary": "Come Mai Prima",
+      "description": "La piattaforma tutto-in-uno per eventi di trail, strada, MTB e ciclismo. Tracciamento in tempo reale, risultati live, iscrizioni online e coinvolgimento degli spettatori — completamente gratis.",
+      "cta": "Crea il Tuo Evento",
+      "ctaSecondary": "Scopri Come Funziona",
+      "free": "100% Gratuito"
+    },
+    "stats": {
+      "events": "Eventi Organizzati",
+      "athletes": "Atleti Tracciati",
+      "countries": "Paesi",
+      "uptime": "Disponibilità"
+    },
+    "whyAthlifyr": {
+      "badge": "Perché Athlifyr?",
+      "title": "Tutto ciò di cui hai bisogno per organizzare eventi di classe mondiale",
+      "description": "Da una gara locale di 5K a un ultra trail di 100 miglia, Athlifyr ti offre strumenti professionali — completamente gratuiti."
+    },
+    "features": {
+      "liveTracking": {
+        "badge": "GPS in Tempo Reale",
+        "title": "Tracciamento Atleti Live sulla Mappa",
+        "description": "Segui ogni atleta sulla mappa in tempo reale. Spettatori, allenatori e ufficiali possono seguire la gara da qualsiasi parte del mondo.",
+        "point1": "Posizione GPS aggiornata ogni pochi secondi",
+        "point2": "Visualizza velocità, distanza e tempi intermedi",
+        "point3": "Funziona su qualsiasi dispositivo — nessuna app necessaria",
+        "point4": "Rilevamento automatico fuori percorso e avvisi"
+      },
+      "leaderboard": {
+        "badge": "Risultati Live",
+        "title": "Classifica e Ranking in Tempo Reale",
+        "description": "Man mano che gli atleti attraversano i punti di controllo e il traguardo, la classifica si aggiorna istantaneamente. Niente attesa dei risultati — appaiono live.",
+        "point1": "Classificazione automatica all'arrivo degli atleti",
+        "point2": "Tempi intermedi ad ogni punto di controllo",
+        "point3": "Filtra per categoria, fascia d'età o genere",
+        "point4": "Widget integrabile per il tuo sito dell'evento"
+      },
+      "registration": {
+        "badge": "Iscrizione Online",
+        "title": "Iscrizioni Online Senza Sforzo",
+        "description": "Gli atleti possono scoprire il tuo evento e iscriversi online in pochi secondi. Gestisci varianti, fasi di prezzo e campi personalizzati — tutto integrato.",
+        "point1": "Varianti multiple di gara (10K, 21K, 42K, ecc.)",
+        "point2": "Fasi di prezzo automatiche con scadenze",
+        "point3": "Campi di iscrizione personalizzati",
+        "point4": "Elaborazione sicura dei pagamenti tramite Stripe"
+      },
+      "spectators": {
+        "badge": "Esperienza Spettatore",
+        "title": "Coinvolgi il Pubblico",
+        "description": "Gli spettatori possono seguire i loro atleti preferiti in tempo reale, ricevere notifiche push ai punti di controllo e condividere l'emozione sui social media.",
+        "point1": "Segui atleti specifici sulla mappa",
+        "point2": "Avvisi push al passaggio dai punti di controllo",
+        "point3": "Condivisione sui social del progresso degli atleti",
+        "point4": "Feed della community e commenti dell'evento"
+      },
+      "alerts": {
+        "badge": "Avvisi in Tempo Reale",
+        "title": "Notifiche Istantanee Per Tutti",
+        "description": "Atleti, spettatori e organizzatori ricevono avvisi in tempo reale. Dai passaggi ai punti di controllo ai cambi di stato della gara — non perderti nessun momento.",
+        "point1": "Notifiche push per tutti i partecipanti",
+        "point2": "Avvisi di passaggio ai punti di controllo",
+        "point3": "Notifiche DNF, DSQ ed emergenza",
+        "point4": "Preferenze di notifica personalizzabili"
+      },
+      "routeEditor": {
+        "badge": "Gestione Percorso",
+        "title": "Editor Percorso GPX e Punti di Controllo",
+        "description": "Carica il tuo percorso GPX, imposta i punti di controllo e definisci le zone di partenza/arrivo. L'editor visuale facilita la pianificazione di ogni dettaglio del percorso.",
+        "point1": "Caricamento percorso GPX con drag and drop",
+        "point2": "Posizionamento visuale dei punti di controllo",
+        "point3": "Profilo altimetrico e analisi del terreno",
+        "point4": "Percorsi multipli per variante dell'evento"
+      },
+      "liveStream": {
+        "badge": "Prossimamente",
+        "title": "Trasmetti i Tuoi Eventi in Diretta",
+        "description": "Presto potrai trasmettere i tuoi eventi direttamente tramite Athlifyr. Integra riprese con drone, telecamere al traguardo e commenti — tutto in un unico posto.",
+        "point1": "Streaming video live integrato",
+        "point2": "Supporto multi-telecamera",
+        "point3": "Overlay con dati della gara in tempo reale",
+        "point4": "Generazione di replay e highlights"
+      }
+    },
+    "eventTypes": {
+      "badge": "Qualsiasi Evento, Qualsiasi Sport",
+      "title": "Costruito per ogni tipo di gara",
+      "description": "Dai sentieri di montagna alle strade cittadine, Athlifyr si adatta al tuo tipo di evento.",
+      "trail": "Trail Running",
+      "trailDesc": "Ultra trail, gare di montagna, gare verticali ed eventi di skyrunning con tracciamento GPS completo nei terreni più selvaggi.",
+      "road": "Gara su Strada",
+      "roadDesc": "Maratone, mezze maratone, gare di 10K e corse urbane con cronometraggio basato su GPS e risultati live.",
+      "btt": "MTB / Mountain Bike",
+      "bttDesc": "Eventi di cross-country, enduro e marathon XC con tracciamento GPS su terreno tecnico.",
+      "cycling": "Ciclismo su Strada",
+      "cyclingDesc": "Gran fondo, ciclosportive e sfide ciclistiche con tracciamento in tempo reale su lunghe distanze.",
+      "ocr": "OCR / Gare a Ostacoli",
+      "ocrDesc": "Gare a ostacoli con tracciamento ad ogni stazione ostacolo.",
+      "triathlon": "Triathlon e Multi-Sport",
+      "triathlonDesc": "Eventi nuoto-bici-corsa con tracciamento nelle zone di transizione e cronometraggio multi-segmento."
+    },
+    "howItWorks": {
+      "badge": "Come Funziona",
+      "title": "Lancia il tuo evento in 3 semplici passi",
+      "description": "Dalla configurazione al traguardo, Athlifyr ti guida attraverso l'intero processo.",
+      "step1Title": "Crea il Tuo Evento",
+      "step1Desc": "Aggiungi i dettagli dell'evento, carica il percorso GPX, definisci le varianti di gara e configura le iscrizioni. Tutto in una dashboard intuitiva.",
+      "step2Title": "Gli Atleti Si Iscrivono e Corrono",
+      "step2Desc": "Condividi la pagina del tuo evento. Gli atleti lo scoprono, si iscrivono online e il giorno della gara il tracciamento live parte automaticamente.",
+      "step3Title": "Risultati e Analisi",
+      "step3Desc": "I risultati live si aggiornano in tempo reale. Dopo la gara, scarica risultati completi, genera certificati e condividi i migliori momenti."
+    },
+    "seoContent": {
+      "badge": "Su Athlifyr Live Race",
+      "title": "Il futuro dell'organizzazione di gare è qui",
+      "paragraph1": "Athlifyr è una piattaforma moderna progettata per organizzatori di eventi sportivi che vogliono offrire un'esperienza professionale senza il costo delle soluzioni tradizionali di cronometraggio e tracciamento. Che tu stia organizzando un trail locale, una maratona cittadina o un evento enduro MTB, Athlifyr fornisce gli strumenti necessari — dall'iscrizione online e gestione del percorso al tracciamento GPS in tempo reale e risultati live.",
+      "paragraph2": "Con Athlifyr, gli spettatori non devono più aspettare al traguardo chiedendosi dove sia il loro atleta. Possono seguire la gara live sulla mappa, ricevere notifiche push ad ogni punto di controllo e condividere l'emozione sui social media. Per gli organizzatori, questo significa più coinvolgimento, più visibilità e partecipanti più soddisfatti.",
+      "paragraph3": "La nostra piattaforma supporta trail running, gare su strada, MTB, ciclismo, OCR e triathlon. L'editor visuale di percorso GPX con posizionamento dei punti di controllo, combinato con tracciamento GPS in tempo reale e aggiornamento automatico delle classifiche, rende Athlifyr la soluzione di gestione eventi gratuita più completa disponibile oggi."
+    },
+    "faq": {
+      "badge": "FAQ",
+      "title": "Domande Frequenti",
+      "subtitle": "Tutto quello che devi sapere sull'organizzazione di eventi con Athlifyr.",
+      "q1": "Athlifyr è davvero gratuito per gli organizzatori di eventi?",
+      "a1": "Sì, 100% gratuito. Nessuna tassa di configurazione, nessun abbonamento mensile e nessun costo per atleta. Applichiamo solo una piccola commissione di elaborazione sulle iscrizioni a pagamento. Gli eventi gratuiti non costano assolutamente nulla.",
+      "q2": "Quali tipi di eventi posso organizzare?",
+      "a2": "Athlifyr supporta trail running, gare su strada, MTB/mountain bike, ciclismo su strada, OCR, triathlon e qualsiasi sport di resistenza con tracciamento GPS. Da una gara di 5K a un ultra trail di 100 miglia — abbiamo tutto coperto.",
+      "q3": "Come funziona il tracciamento GPS live?",
+      "a3": "Gli atleti usano l'app mobile Athlifyr durante la gara. La posizione GPS viene inviata in tempo reale ai nostri server, che aggiornano la mappa live e la classifica. Gli spettatori possono seguire la gara da qualsiasi browser web.",
+      "q4": "Gli spettatori devono installare un'app?",
+      "a4": "No! Gli spettatori seguono tutto dal browser web. Possono seguire gli atleti sulla mappa, vedere la classifica e ricevere notifiche push — tutto senza installare nulla.",
+      "q5": "Come si iscrivono gli atleti al mio evento?",
+      "a5": "Gli atleti si iscrivono tramite la pagina del tuo evento su Athlifyr. Puoi configurare varianti multiple di gara, fasi di prezzo con scadenze e campi di iscrizione personalizzati. I pagamenti vengono elaborati in modo sicuro tramite Stripe.",
+      "q6": "Posso esportare i risultati dopo la gara?",
+      "a6": "Sì, puoi esportare risultati completi in CSV e formati standard. I risultati includono tempi di arrivo, tempi intermedi, classifiche per categoria e tutti i dati dei punti di controllo.",
+      "q7": "E la funzionalità di streaming live?",
+      "a7": "Lo streaming live è attualmente in fase di sviluppo e sarà disponibile presto. Permetterà di trasmettere telecamere al traguardo, riprese con drone e commenti direttamente sulla pagina dell'evento Athlifyr."
+    },
+    "mockups": {
+      "liveTracking": "Tracciamento Live",
+      "leaderboard": "Classifica",
+      "checkpoint": "Posto",
+      "water": "Ristoro",
+      "start": "Partenza",
+      "finish": "Arrivo",
+      "connected": "Connesso",
+      "watching": "spettatori",
+      "dist": "Distanza",
+      "pace": "Passo Med.",
+      "speed": "Velocità",
+      "position": "Posizione",
+      "elevGain": "Dislivello +",
+      "alt": "Altitudine",
+      "progress": "Progresso",
+      "checkpoints": "Posti",
+      "all": "Tutti",
+      "male": "Uomini",
+      "female": "Donne",
+      "selectVariant": "Scegli la tua gara",
+      "earlyBird": "Prezzo anticipato attivo!",
+      "endsIn": "Scade tra",
+      "days": "giorni",
+      "registerNow": "Iscriviti Ora",
+      "notifications": "Notifiche",
+      "tracking": "Seguendo",
+      "checkpointPassed": "Posto Superato",
+      "positionUpdate": "Aggiornamento Posizione",
+      "athleteFinished": "Atleta ha Terminato",
+      "raceUpdate": "Aggiornamento Gara",
+      "leadChanged": "Cambio al comando — nuovo leader!",
+      "raceStatus": "Stato della Gara",
+      "raceStartedDesc": "La gara è iniziata!",
+      "liveResults": "Risultati Live",
+      "dragCheckpoints": "Trascina i posti per riposizionare",
+      "checkpointList": "Punti di Controllo",
+      "uploadGpx": "Carica GPX"
+    },
+    "cta": {
+      "title": "Pronto a organizzare il tuo prossimo evento?",
+      "description": "Unisciti a centinaia di organizzatori che si affidano ad Athlifyr per le loro gare. Crea il tuo evento in pochi minuti — è completamente gratuito.",
+      "button": "Crea il Tuo Evento Ora",
+      "secondary": "Contattaci"
+    }
+  }
+}

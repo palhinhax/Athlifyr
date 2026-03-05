@@ -8,17 +8,17 @@ import { EventVariantSelect } from "./event-variant-select";
 import type { EventVariant, Participation } from "./event-registration-types";
 
 interface EventRegistrationFreeProps {
-  isAuthenticated: boolean;
-  userParticipation: Participation | null;
-  variants: EventVariant[];
-  selectedVariantId: string;
-  onVariantChange: (id: string) => void;
-  isLoading: boolean;
-  selectedVariantSoldOut: boolean;
-  allVariantsSoldOut: boolean;
-  onRegister: () => void;
-  onUnregister: () => void;
-  onMarkInterested: () => void;
+  readonly isAuthenticated: boolean;
+  readonly userParticipation: Participation | null;
+  readonly variants: EventVariant[];
+  readonly selectedVariantId: string;
+  readonly onVariantChange: (id: string) => void;
+  readonly isLoading: boolean;
+  readonly selectedVariantSoldOut: boolean;
+  readonly allVariantsSoldOut: boolean;
+  readonly onRegister: () => void;
+  readonly onUnregister: () => void;
+  readonly onMarkInterested: () => void;
 }
 
 // Helper function for variant status
@@ -46,6 +46,73 @@ export function EventRegistrationFree({
   onMarkInterested,
 }: EventRegistrationFreeProps) {
   const t = useTranslations("events.registration");
+
+  const renderActionButtons = () => {
+    if (!userParticipation) {
+      return (
+        <>
+          <Button
+            onClick={onRegister}
+            disabled={isLoading || selectedVariantSoldOut}
+            className="flex-1"
+            size="sm"
+          >
+            <Check className="mr-2 h-4 w-4" />
+            {t("markAsGoing")}
+          </Button>
+          <Button
+            onClick={onMarkInterested}
+            disabled={isLoading}
+            variant="outline"
+            className="flex-1"
+            size="sm"
+          >
+            <Target className="mr-2 h-4 w-4" />
+            {t("markAsInterested")}
+          </Button>
+        </>
+      );
+    }
+
+    if (userParticipation.status === "interested") {
+      return (
+        <>
+          <Button
+            onClick={onRegister}
+            disabled={isLoading}
+            className="flex-1"
+            size="sm"
+          >
+            <Check className="mr-2 h-4 w-4" />
+            {t("markAsGoing")}
+          </Button>
+          <Button
+            onClick={onUnregister}
+            disabled={isLoading}
+            variant="outline"
+            className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
+            size="sm"
+          >
+            <X className="mr-2 h-4 w-4" />
+            {t("removeInterest")}
+          </Button>
+        </>
+      );
+    }
+
+    return (
+      <Button
+        onClick={onUnregister}
+        disabled={isLoading}
+        variant="outline"
+        className="flex-1"
+        size="sm"
+      >
+        <X className="mr-2 h-4 w-4" />
+        {t("cancelParticipation")}
+      </Button>
+    );
+  };
 
   if (!isAuthenticated) {
     return (
@@ -97,7 +164,7 @@ export function EventRegistrationFree({
       )}
 
       {/* Current Participation Status */}
-      {userParticipation && userParticipation.status === "going" && (
+      {userParticipation?.status === "going" && (
         <div className="rounded-md bg-p-brand/10 p-3 text-sm">
           <div className="mb-1 flex items-center gap-2 font-medium text-p-brand">
             <Check className="h-4 w-4" />
@@ -127,7 +194,7 @@ export function EventRegistrationFree({
         </div>
       )}
 
-      {userParticipation && userParticipation.status === "interested" && (
+      {userParticipation?.status === "interested" && (
         <div className="rounded-md bg-amber-500/10 p-3 text-sm">
           <div className="mb-1 flex items-center gap-2 font-medium text-amber-600 dark:text-amber-400">
             <Target className="h-4 w-4" />
@@ -139,64 +206,7 @@ export function EventRegistrationFree({
 
       {/* Action Buttons */}
       {!allVariantsSoldOut && (
-        <div className="flex gap-3">
-          {!userParticipation ? (
-            <>
-              <Button
-                onClick={onRegister}
-                disabled={isLoading || selectedVariantSoldOut}
-                className="flex-1"
-                size="sm"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {t("markAsGoing")}
-              </Button>
-              <Button
-                onClick={onMarkInterested}
-                disabled={isLoading}
-                variant="outline"
-                className="flex-1"
-                size="sm"
-              >
-                <Target className="mr-2 h-4 w-4" />
-                {t("markAsInterested")}
-              </Button>
-            </>
-          ) : userParticipation.status === "interested" ? (
-            <>
-              <Button
-                onClick={onRegister}
-                disabled={isLoading}
-                className="flex-1"
-                size="sm"
-              >
-                <Check className="mr-2 h-4 w-4" />
-                {t("markAsGoing")}
-              </Button>
-              <Button
-                onClick={onUnregister}
-                disabled={isLoading}
-                variant="outline"
-                className="flex-1 border-amber-500 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950"
-                size="sm"
-              >
-                <X className="mr-2 h-4 w-4" />
-                {t("removeInterest")}
-              </Button>
-            </>
-          ) : (
-            <Button
-              onClick={onUnregister}
-              disabled={isLoading}
-              variant="outline"
-              className="flex-1"
-              size="sm"
-            >
-              <X className="mr-2 h-4 w-4" />
-              {t("cancelParticipation")}
-            </Button>
-          )}
-        </div>
+        <div className="flex gap-3">{renderActionButtons()}</div>
       )}
     </div>
   );

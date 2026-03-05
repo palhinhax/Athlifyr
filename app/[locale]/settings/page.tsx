@@ -36,6 +36,7 @@ export default async function SettingsPage({
       nationality: true,
       emergencyContactName: true,
       emergencyContactPhone: true,
+      liveRaceVisibility: true,
     },
   });
 

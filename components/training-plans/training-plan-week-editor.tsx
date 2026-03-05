@@ -154,7 +154,10 @@ export function TrainingPlanWeekEditor({
                   </p>
                 )}
               </div>
-              <Badge variant="secondary" className="hidden shrink-0 sm:inline-flex">
+              <Badge
+                variant="secondary"
+                className="hidden shrink-0 sm:inline-flex"
+              >
                 {t("stats.totalWorkouts", { count: workoutsCount })}
               </Badge>
               {isExpanded ? (

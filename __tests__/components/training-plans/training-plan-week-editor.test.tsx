@@ -123,9 +123,7 @@ describe("TrainingPlanWeekEditor", () => {
   });
 
   it("shows expanded content when isExpanded is true", () => {
-    render(
-      <TrainingPlanWeekEditor {...createProps({ isExpanded: true })} />
-    );
+    render(<TrainingPlanWeekEditor {...createProps({ isExpanded: true })} />);
     expect(screen.getByTestId("week-days")).toBeInTheDocument();
   });
 
@@ -140,18 +138,14 @@ describe("TrainingPlanWeekEditor", () => {
   });
 
   it("sets aria-expanded to true when expanded", () => {
-    render(
-      <TrainingPlanWeekEditor {...createProps({ isExpanded: true })} />
-    );
+    render(<TrainingPlanWeekEditor {...createProps({ isExpanded: true })} />);
     const toggleButton = screen.getByText("Push Day Week").closest("button");
     expect(toggleButton).toHaveAttribute("aria-expanded", "true");
   });
 
   it("calls onToggleExpand when the toggle button is clicked", async () => {
     const onToggleExpand = jest.fn();
-    render(
-      <TrainingPlanWeekEditor {...createProps({ onToggleExpand })} />
-    );
+    render(<TrainingPlanWeekEditor {...createProps({ onToggleExpand })} />);
     const toggleButton = screen.getByText("Push Day Week").closest("button")!;
     await userEvent.click(toggleButton);
     expect(onToggleExpand).toHaveBeenCalledTimes(1);
@@ -178,14 +172,10 @@ describe("TrainingPlanWeekEditor", () => {
   it("calls onMoveUp when move up button is clicked", async () => {
     const onMoveUp = jest.fn();
     render(
-      <TrainingPlanWeekEditor
-        {...createProps({ canMoveUp: true, onMoveUp })}
-      />
+      <TrainingPlanWeekEditor {...createProps({ canMoveUp: true, onMoveUp })} />
     );
     // Open the mobile dropdown
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const moveUpItem = await screen.findByText("Move Up");
     await userEvent.click(moveUpItem);
     expect(onMoveUp).toHaveBeenCalledTimes(1);
@@ -198,9 +188,7 @@ describe("TrainingPlanWeekEditor", () => {
         {...createProps({ canMoveDown: true, onMoveDown })}
       />
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const moveDownItem = await screen.findByText("Move Down");
     await userEvent.click(moveDownItem);
     expect(onMoveDown).toHaveBeenCalledTimes(1);
@@ -212,9 +200,7 @@ describe("TrainingPlanWeekEditor", () => {
         {...createProps({ canMoveUp: false, canMoveDown: true })}
       />
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await screen.findByText("Move Down");
     expect(screen.queryByText("Move Up")).not.toBeInTheDocument();
   });
@@ -225,9 +211,7 @@ describe("TrainingPlanWeekEditor", () => {
         {...createProps({ canMoveUp: true, canMoveDown: false })}
       />
     );
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await screen.findByText("Move Up");
     expect(screen.queryByText("Move Down")).not.toBeInTheDocument();
   });
@@ -236,12 +220,8 @@ describe("TrainingPlanWeekEditor", () => {
 
   it("calls onDuplicate when duplicate menu item is clicked", async () => {
     const onDuplicate = jest.fn().mockResolvedValue(undefined);
-    render(
-      <TrainingPlanWeekEditor {...createProps({ onDuplicate })} />
-    );
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    render(<TrainingPlanWeekEditor {...createProps({ onDuplicate })} />);
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const dupItem = await screen.findByText("Duplicate Week");
     await userEvent.click(dupItem);
     expect(onDuplicate).toHaveBeenCalledWith("week-1");
@@ -251,9 +231,7 @@ describe("TrainingPlanWeekEditor", () => {
 
   it("opens edit dialog when edit menu item is clicked", async () => {
     render(<TrainingPlanWeekEditor {...createProps()} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const editItem = await screen.findByText("Edit Week");
     await userEvent.click(editItem);
 
@@ -270,9 +248,7 @@ describe("TrainingPlanWeekEditor", () => {
     render(<TrainingPlanWeekEditor {...createProps({ onUpdate })} />);
 
     // Open edit dialog via mobile dropdown
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await userEvent.click(await screen.findByText("Edit Week"));
 
     await waitFor(() => {
@@ -296,9 +272,7 @@ describe("TrainingPlanWeekEditor", () => {
 
   it("closes edit dialog when Cancel is clicked", async () => {
     render(<TrainingPlanWeekEditor {...createProps()} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await userEvent.click(await screen.findByText("Edit Week"));
 
     await waitFor(() => {
@@ -318,9 +292,7 @@ describe("TrainingPlanWeekEditor", () => {
 
   it("opens delete confirmation when delete menu item is clicked", async () => {
     render(<TrainingPlanWeekEditor {...createProps()} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
 
     // Click the delete item in the dropdown (identified by text)
     const deleteItem = await screen.findByRole("menuitem", {
@@ -338,9 +310,7 @@ describe("TrainingPlanWeekEditor", () => {
     render(<TrainingPlanWeekEditor {...createProps({ onDelete })} />);
 
     // Open dropdown and click delete
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const deleteItem = await screen.findByRole("menuitem", {
       name: /Delete Week/i,
     });
@@ -364,9 +334,7 @@ describe("TrainingPlanWeekEditor", () => {
 
   it("closes delete dialog when Cancel is clicked", async () => {
     render(<TrainingPlanWeekEditor {...createProps()} />);
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     const deleteItem = await screen.findByRole("menuitem", {
       name: /Delete Week/i,
     });
@@ -404,9 +372,7 @@ describe("TrainingPlanWeekEditor", () => {
   it("calls onMoveUp from desktop inline button", async () => {
     const onMoveUp = jest.fn();
     const { container } = render(
-      <TrainingPlanWeekEditor
-        {...createProps({ canMoveUp: true, onMoveUp })}
-      />
+      <TrainingPlanWeekEditor {...createProps({ canMoveUp: true, onMoveUp })} />
     );
     const desktopDiv = container.querySelector(".hidden.sm\\:flex");
     const buttons = desktopDiv!.querySelectorAll("button");
@@ -430,9 +396,7 @@ describe("TrainingPlanWeekEditor", () => {
   });
 
   it("opens edit dialog from desktop inline edit button", async () => {
-    const { container } = render(
-      <TrainingPlanWeekEditor {...createProps()} />
-    );
+    const { container } = render(<TrainingPlanWeekEditor {...createProps()} />);
     const desktopDiv = container.querySelector(".hidden.sm\\:flex");
     const buttons = desktopDiv!.querySelectorAll("button");
     // With no move up/down, buttons: edit(0), duplicate(1), delete(2)
@@ -456,9 +420,7 @@ describe("TrainingPlanWeekEditor", () => {
   });
 
   it("opens delete dialog from desktop inline delete button", async () => {
-    const { container } = render(
-      <TrainingPlanWeekEditor {...createProps()} />
-    );
+    const { container } = render(<TrainingPlanWeekEditor {...createProps()} />);
     const desktopDiv = container.querySelector(".hidden.sm\\:flex");
     const buttons = desktopDiv!.querySelectorAll("button");
     // buttons: edit(0), duplicate(1), delete(2)
@@ -475,9 +437,7 @@ describe("TrainingPlanWeekEditor", () => {
     const onUpdate = jest.fn().mockResolvedValue(undefined);
     render(<TrainingPlanWeekEditor {...createProps({ onUpdate })} />);
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await userEvent.click(await screen.findByText("Edit Week"));
 
     await waitFor(() => {
@@ -504,23 +464,17 @@ describe("TrainingPlanWeekEditor", () => {
   it("saves with undefined values when fields are empty", async () => {
     const onUpdate = jest.fn().mockResolvedValue(undefined);
     render(
-      <TrainingPlanWeekEditor
-        {...createProps({ week: emptyWeek, onUpdate })}
-      />
+      <TrainingPlanWeekEditor {...createProps({ week: emptyWeek, onUpdate })} />
     );
 
-    await userEvent.click(
-      screen.getByRole("button", { name: "More actions" })
-    );
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }));
     await userEvent.click(await screen.findByText("Edit Week"));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog")).toBeInTheDocument();
     });
 
-    await userEvent.click(
-      within(screen.getByRole("dialog")).getByText("Save")
-    );
+    await userEvent.click(within(screen.getByRole("dialog")).getByText("Save"));
 
     await waitFor(() => {
       expect(onUpdate).toHaveBeenCalledWith("week-1", {

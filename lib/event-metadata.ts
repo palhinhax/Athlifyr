@@ -1,19 +1,10 @@
 import { formatDate, sportTypeLabels } from "@/lib/event-utils";
 import type { Metadata } from "next";
 import { SportType } from "@prisma/client";
-
-// Map locale codes to Open Graph locale format
-const localeToOgLocale: Record<string, string> = {
-  pt: "pt_PT",
-  en: "en_US",
-  es: "es_ES",
-  fr: "fr_FR",
-  de: "de_DE",
-  it: "it_IT",
-};
-
-// Supported locales for hreflang generation
-const SUPPORTED_LOCALES = ["pt", "en", "es", "fr", "de", "it"] as const;
+import {
+  SUPPORTED_LOCALES,
+  localeToOgLocale,
+} from "@/lib/presentation-metadata";
 
 interface EventMetadataProps {
   event: {

@@ -1,0 +1,193 @@
+{
+  "liveRacePresentation": {
+    "meta": {
+      "title": "Live-Rennen & Event-Management-Plattform | Athlifyr",
+      "description": "Organisieren Sie Trailrunning, Straßenläufe, MTB und Radsport kostenlos. GPS-Echtzeit-Tracking, Live-Bestenlisten, Zuschauer-Benachrichtigungen und Online-Anmeldung — alles auf einer Plattform.",
+      "keywords": "Live-Rennen-Tracking, Event-Management-Plattform, Trailrunning Organisation, Zeitmessung Software, GPS-Tracking Rennen, Live-Bestenliste, Renn-Anmeldung, Sport-Event-Management, MTB Event, Radsport Event, Straßenlauf Organisation, kostenlose Renn-Plattform"
+    },
+    "hero": {
+      "badge": "Für Veranstalter",
+      "h1Primary": "Organisieren Sie Ihr Rennen",
+      "h1Secondary": "Wie Nie Zuvor",
+      "description": "Die All-in-One-Plattform für Trail-, Straßen-, MTB- und Rad-Events. Echtzeit-Tracking, Live-Ergebnisse, Online-Anmeldung und Zuschauer-Engagement — komplett kostenlos.",
+      "cta": "Event Erstellen",
+      "ctaSecondary": "So Funktioniert's",
+      "free": "100% Kostenlos"
+    },
+    "stats": {
+      "events": "Organisierte Events",
+      "athletes": "Getrackte Athleten",
+      "countries": "Länder",
+      "uptime": "Verfügbarkeit"
+    },
+    "whyAthlifyr": {
+      "badge": "Warum Athlifyr?",
+      "title": "Alles was Sie brauchen für erstklassige Events",
+      "description": "Von einem lokalen 5K-Lauf bis zu einem 100-Meilen-Ultra-Trail — Athlifyr bietet Ihnen professionelle Tools — komplett kostenlos."
+    },
+    "features": {
+      "liveTracking": {
+        "badge": "GPS in Echtzeit",
+        "title": "Live-Athleten-Tracking auf der Karte",
+        "description": "Verfolgen Sie jeden Athleten in Echtzeit auf der Karte. Zuschauer, Trainer und Offizielle können das Rennen von überall auf der Welt verfolgen.",
+        "point1": "GPS-Position alle paar Sekunden aktualisiert",
+        "point2": "Geschwindigkeit, Distanz und Zwischenzeiten sehen",
+        "point3": "Funktioniert auf jedem Gerät — keine App nötig",
+        "point4": "Automatische Streckenabweichungserkennung und Warnungen"
+      },
+      "leaderboard": {
+        "badge": "Live-Ergebnisse",
+        "title": "Echtzeit-Bestenliste und Rankings",
+        "description": "Sobald Athleten Kontrollpunkte und die Ziellinie überqueren, aktualisiert sich die Bestenliste sofort. Kein Warten auf Ergebnisse — sie erscheinen live.",
+        "point1": "Automatisches Ranking bei Zieleinlauf",
+        "point2": "Zwischenzeiten an jedem Kontrollpunkt",
+        "point3": "Filter nach Kategorie, Altersgruppe oder Geschlecht",
+        "point4": "Einbettbares Widget für Ihre Event-Website"
+      },
+      "registration": {
+        "badge": "Online-Anmeldung",
+        "title": "Mühelose Online-Anmeldung",
+        "description": "Athleten können Ihr Event entdecken und sich in Sekunden online anmelden. Verwalten Sie Varianten, Preisphasen und benutzerdefinierte Felder — alles integriert.",
+        "point1": "Mehrere Rennvarianten (10K, 21K, 42K, usw.)",
+        "point2": "Automatische Preisphasen mit Fristen",
+        "point3": "Benutzerdefinierte Anmeldefelder",
+        "point4": "Sichere Zahlungsabwicklung über Stripe"
+      },
+      "spectators": {
+        "badge": "Zuschauer-Erlebnis",
+        "title": "Halten Sie das Publikum bei Laune",
+        "description": "Zuschauer können ihre Lieblingsathleten in Echtzeit verfolgen, Push-Benachrichtigungen an Kontrollpunkten erhalten und die Begeisterung in sozialen Medien teilen.",
+        "point1": "Bestimmte Athleten auf der Karte verfolgen",
+        "point2": "Push-Benachrichtigungen an Kontrollpunkten",
+        "point3": "Teilen des Athletenfortschritts in sozialen Medien",
+        "point4": "Community-Feed und Event-Kommentare"
+      },
+      "alerts": {
+        "badge": "Echtzeit-Warnungen",
+        "title": "Sofortige Benachrichtigungen für Alle",
+        "description": "Athleten, Zuschauer und Organisatoren erhalten Echtzeit-Warnungen. Von Kontrollpunkt-Durchgängen bis zu Statusänderungen — verpassen Sie keinen Moment.",
+        "point1": "Push-Benachrichtigungen für alle Teilnehmer",
+        "point2": "Kontrollpunkt-Durchgangswarnungen",
+        "point3": "DNF-, DSQ- und Notfall-Benachrichtigungen",
+        "point4": "Anpassbare Benachrichtigungspräferenzen"
+      },
+      "routeEditor": {
+        "badge": "Streckenmanagement",
+        "title": "GPX-Streckeneditor & Kontrollpunkte",
+        "description": "Laden Sie Ihre GPX-Strecke hoch, setzen Sie Kontrollpunkte und definieren Sie Start-/Zielzonen. Der visuelle Editor erleichtert die Planung jedes Streckendetails.",
+        "point1": "GPX-Strecken-Upload per Drag & Drop",
+        "point2": "Visuelle Kontrollpunkt-Platzierung",
+        "point3": "Höhenprofil und Geländeanalyse",
+        "point4": "Mehrere Strecken pro Event-Variante"
+      },
+      "liveStream": {
+        "badge": "Demnächst",
+        "title": "Streamen Sie Ihre Events Live",
+        "description": "Bald können Sie Ihre Events direkt über Athlifyr streamen. Integrieren Sie Drohnenaufnahmen, Zielkameras und Kommentare — alles an einem Ort.",
+        "point1": "Integriertes Live-Video-Streaming",
+        "point2": "Multi-Kamera-Unterstützung",
+        "point3": "Overlay mit Live-Renndaten",
+        "point4": "Replay- und Highlight-Erstellung"
+      }
+    },
+    "eventTypes": {
+      "badge": "Jedes Event, Jeder Sport",
+      "title": "Für jeden Renntyp gebaut",
+      "description": "Von Bergpfaden bis Stadtstraßen — Athlifyr passt sich Ihrem Event-Typ an.",
+      "trail": "Trailrunning",
+      "trailDesc": "Ultra Trails, Bergläufe, Vertikalrennen und Skyrunning-Events mit vollem GPS-Tracking durch wildestes Gelände.",
+      "road": "Straßenlauf",
+      "roadDesc": "Marathons, Halbmarathons, 10K-Läufe und Stadt-Fun-Runs mit GPS-basierter Zeitmessung und Live-Ergebnissen.",
+      "btt": "MTB / Mountainbike",
+      "bttDesc": "Cross-Country-, Enduro- und Marathon-XC-Events mit GPS-Tracking im technischen Gelände.",
+      "cycling": "Straßenradsport",
+      "cyclingDesc": "Gran Fondos, Sportives und Rad-Challenges mit Echtzeit-Tracking über lange Distanzen.",
+      "ocr": "OCR / Hindernisläufe",
+      "ocrDesc": "Hindernisläufe mit Tracking an jeder Hindernis-Station.",
+      "triathlon": "Triathlon & Multi-Sport",
+      "triathlonDesc": "Schwimm-Rad-Lauf-Events mit Tracking in Wechselzonen und Multi-Segment-Zeitmessung."
+    },
+    "howItWorks": {
+      "badge": "So Funktioniert's",
+      "title": "Starten Sie Ihr Event in 3 einfachen Schritten",
+      "description": "Von der Einrichtung bis zur Ziellinie — Athlifyr führt Sie durch den gesamten Prozess.",
+      "step1Title": "Event Erstellen",
+      "step1Desc": "Fügen Sie Event-Details hinzu, laden Sie die GPX-Strecke hoch, definieren Sie Rennvarianten und konfigurieren Sie die Anmeldung. Alles in einem intuitiven Dashboard.",
+      "step2Title": "Athleten Melden Sich An und Laufen",
+      "step2Desc": "Teilen Sie Ihre Event-Seite. Athleten entdecken sie, melden sich online an und am Renntag startet das Live-Tracking automatisch.",
+      "step3Title": "Ergebnisse und Analyse",
+      "step3Desc": "Live-Ergebnisse aktualisieren sich in Echtzeit. Nach dem Rennen laden Sie komplette Ergebnisse herunter, erstellen Urkunden und teilen Highlights."
+    },
+    "seoContent": {
+      "badge": "Über Athlifyr Live Race",
+      "title": "Die Zukunft der Rennorganisation ist hier",
+      "paragraph1": "Athlifyr ist eine moderne Plattform für Sportveranstalter, die ein professionelles Erlebnis bieten wollen, ohne die Kosten traditioneller Zeitmessungs- und Tracking-Lösungen. Ob Sie einen lokalen Traillauf, einen Stadtmarathon oder ein MTB-Enduro-Event organisieren — Athlifyr bietet die nötigen Tools — von der Online-Anmeldung und Streckenmanagement bis zum GPS-Echtzeit-Tracking und Live-Ergebnissen.",
+      "paragraph2": "Mit Athlifyr müssen Zuschauer nicht mehr an der Ziellinie warten und sich fragen, wo ihr Athlet ist. Sie können das Rennen live auf einer Karte verfolgen, Push-Benachrichtigungen an jedem Kontrollpunkt erhalten und die Begeisterung in sozialen Medien teilen. Für Organisatoren bedeutet das mehr Engagement, mehr Sichtbarkeit und zufriedenere Teilnehmer.",
+      "paragraph3": "Unsere Plattform unterstützt Trailrunning, Straßenläufe, MTB, Radsport, OCR und Triathlon. Der visuelle GPX-Streckeneditor mit Kontrollpunkt-Platzierung, kombiniert mit GPS-Echtzeit-Tracking und automatischer Bestenlisten-Aktualisierung, macht Athlifyr zur vollständigsten kostenlosen Event-Management-Lösung auf dem Markt."
+    },
+    "faq": {
+      "badge": "FAQ",
+      "title": "Häufig Gestellte Fragen",
+      "subtitle": "Alles was Sie über die Eventorganisation mit Athlifyr wissen müssen.",
+      "q1": "Ist Athlifyr wirklich kostenlos für Veranstalter?",
+      "a1": "Ja, 100% kostenlos. Keine Einrichtungsgebühren, keine monatlichen Abos und keine Kosten pro Athlet. Wir berechnen nur eine kleine Bearbeitungsgebühr bei kostenpflichtigen Anmeldungen. Kostenlose Events kosten gar nichts.",
+      "q2": "Welche Event-Typen kann ich organisieren?",
+      "a2": "Athlifyr unterstützt Trailrunning, Straßenläufe, MTB/Mountainbike, Straßenradsport, OCR, Triathlon und jeden GPS-trackbaren Ausdauersport. Von einem 5K-Fun-Run bis zum 100-Meilen-Ultra-Trail — wir haben alles abgedeckt.",
+      "q3": "Wie funktioniert das Live-GPS-Tracking?",
+      "a3": "Athleten nutzen die Athlifyr-Mobile-App während des Rennens. Ihre GPS-Position wird in Echtzeit an unsere Server gesendet, die die Live-Karte und Bestenliste aktualisieren. Zuschauer können das Rennen von jedem Webbrowser aus verfolgen.",
+      "q4": "Müssen Zuschauer eine App installieren?",
+      "a4": "Nein! Zuschauer verfolgen alles über den Webbrowser. Sie können Athleten auf der Karte folgen, die Bestenliste sehen und Push-Benachrichtigungen erhalten — alles ohne Installation.",
+      "q5": "Wie melden sich Athleten für mein Event an?",
+      "a5": "Athleten melden sich über Ihre Event-Seite auf Athlifyr an. Sie können mehrere Rennvarianten, Preisphasen mit Fristen und benutzerdefinierte Anmeldefelder einrichten. Zahlungen werden sicher über Stripe abgewickelt.",
+      "q6": "Kann ich die Ergebnisse nach dem Rennen exportieren?",
+      "a6": "Ja, Sie können vollständige Ergebnisse in CSV und Standard-Formaten exportieren. Die Ergebnisse umfassen Zielzeiten, Zwischenzeiten, Kategorien-Rankings und alle Kontrollpunkt-Daten.",
+      "q7": "Was ist mit der Live-Streaming-Funktion?",
+      "a7": "Live-Streaming befindet sich derzeit in Entwicklung und wird bald verfügbar sein. Es wird ermöglichen, Zielkameras, Drohnenaufnahmen und Kommentare direkt auf der Athlifyr-Event-Seite zu streamen."
+    },
+    "mockups": {
+      "liveTracking": "Live-Tracking",
+      "leaderboard": "Bestenliste",
+      "checkpoint": "Kontrollpunkt",
+      "water": "Verpflegung",
+      "start": "Start",
+      "finish": "Ziel",
+      "connected": "Verbunden",
+      "watching": "schauen zu",
+      "dist": "Distanz",
+      "pace": "Ø Tempo",
+      "speed": "Geschw.",
+      "position": "Position",
+      "elevGain": "Höhenmeter +",
+      "alt": "Höhe",
+      "progress": "Fortschritt",
+      "checkpoints": "Kontrollp.",
+      "all": "Alle",
+      "male": "Männer",
+      "female": "Frauen",
+      "selectVariant": "Wähle dein Rennen",
+      "earlyBird": "Frühbucherpreis aktiv!",
+      "endsIn": "Endet in",
+      "days": "Tagen",
+      "registerNow": "Jetzt Anmelden",
+      "notifications": "Benachrichtigungen",
+      "tracking": "Verfolgen",
+      "checkpointPassed": "Kontrollpunkt Passiert",
+      "positionUpdate": "Positionsupdate",
+      "athleteFinished": "Athlet im Ziel",
+      "raceUpdate": "Renn-Update",
+      "leadChanged": "Führungswechsel — neuer Leader!",
+      "raceStatus": "Renn-Status",
+      "raceStartedDesc": "Das Rennen hat begonnen!",
+      "liveResults": "Live-Ergebnisse",
+      "dragCheckpoints": "Kontrollpunkte verschieben",
+      "checkpointList": "Kontrollpunkte",
+      "uploadGpx": "GPX Hochladen"
+    },
+    "cta": {
+      "title": "Bereit Ihr nächstes Event zu organisieren?",
+      "description": "Schließen Sie sich hunderten von Veranstaltern an, die Athlifyr für ihre Rennen vertrauen. Erstellen Sie Ihr Event in Minuten — es ist komplett kostenlos.",
+      "button": "Event Jetzt Erstellen",
+      "secondary": "Kontaktieren Sie Uns"
+    }
+  }
+}

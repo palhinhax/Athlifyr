@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const user = await getAuthenticatedUser();
+    const user = await getAuthenticatedUser(_request);
     if (!user) {
       return NextResponse.json({ registration: null }, { status: 200 });
     }

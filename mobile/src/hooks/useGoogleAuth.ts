@@ -43,7 +43,10 @@ export function useGoogleAuth() {
     Constants.executionEnvironment === "storeClient" ||
     (Constants as unknown as Record<string, string>).appOwnership === "expo";
 
+  const isWeb = Platform.OS === "web";
+
   // Build the redirect URI dynamically:
+  // - Web: use makeRedirectUri() which produces the current page URL
   // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected, uses Web Client ID)
   // - Dev build / Production (Android): com.athlifyr.app:/oauth2redirect
   //     This is the reverse-DNS scheme required by Android OAuth Client IDs.
@@ -53,23 +56,18 @@ export function useGoogleAuth() {
   // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
   //    but Android OAuth clients require "scheme:/path" (one slash).
   //    Use the literal string to avoid the Error 400: invalid_request from Google.
-  const redirectUri = isExpoGo
-    ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
-    : "com.athlifyr.app:/oauth2redirect";
+  const redirectUri = isWeb
+    ? AuthSession.makeRedirectUri({ preferLocalhost: true })
+    : isExpoGo
+      ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
+      : "com.athlifyr.app:/oauth2redirect";
 
-  // Both environments use PKCE authorization code flow.
-  // Expo Go  → Web Client ID   (web-type credential in Google Cloud Console)
-  //            The redirect URI (exp://...) must be added to the client's
-  //            "Authorized redirect URIs" in Google Cloud Console.
-  // Standalone → Android Client ID (android-type credential)
-  //              Uses reverse-DNS redirect URI (com.athlifyr.app:/oauth2redirect)
-  //              which Google validates automatically - no manual registration needed.
-  //
-  // The authorization code is exchanged server-side via /auth/google/exchange
-  // which uses GOOGLE_CLIENT_SECRET.
-  const clientId = isExpoGo
-    ? (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "")
-    : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
+  // Web and Expo Go use the Web Client ID (web-type credential in Google Cloud Console).
+  // Standalone Android uses the Android Client ID.
+  const clientId =
+    isWeb || isExpoGo
+      ? (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "")
+      : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
 
   console.log("[GoogleAuth]", {
     isExpoGo,
@@ -99,7 +97,7 @@ export function useGoogleAuth() {
 
   // Wrap promptAsync to warn when running in Expo Go
   const safePromptAsync: typeof promptAsync = async (options) => {
-    if (isExpoGo) {
+    if (isExpoGo && !isWeb) {
       console.warn(
         "[GoogleAuth] Google Sign-In is not supported in Expo Go. " +
           "Use a development or preview build (eas build --profile preview)."
@@ -126,7 +124,12 @@ export function useGoogleAuth() {
           code,
           codeVerifier,
           redirectUri,
-          platform: Platform.OS === "ios" ? "ios" : "android",
+          platform:
+            Platform.OS === "web"
+              ? "web"
+              : Platform.OS === "ios"
+                ? "ios"
+                : "android",
         });
         return res.data;
       };

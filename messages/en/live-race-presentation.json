@@ -1,0 +1,193 @@
+{
+  "liveRacePresentation": {
+    "meta": {
+      "title": "Live Race & Event Management Platform | Athlifyr",
+      "description": "Organize trail running, road races, BTT, and cycling events for free. Real-time GPS tracking, live leaderboards, spectator alerts, and online registration — all in one platform.",
+      "keywords": "live race tracking, event management platform, trail running organization, race timing software, GPS tracking race, live leaderboard, race registration, sports event management, BTT event, cycling event, road race organization, free race platform"
+    },
+    "hero": {
+      "badge": "For Event Organizers",
+      "h1Primary": "Organize Your Race",
+      "h1Secondary": "Like Never Before",
+      "description": "The all-in-one platform for trail, road, BTT, and cycling events. Real-time tracking, live results, online registration, and spectator engagement — completely free.",
+      "cta": "Create Your Event",
+      "ctaSecondary": "See How It Works",
+      "free": "100% Free"
+    },
+    "stats": {
+      "events": "Events Organized",
+      "athletes": "Athletes Tracked",
+      "countries": "Countries",
+      "uptime": "Uptime"
+    },
+    "whyAthlifyr": {
+      "badge": "Why Athlifyr?",
+      "title": "Everything you need to organize world-class events",
+      "description": "From a local 5K to a 100-mile ultra trail, Athlifyr gives you professional tools — completely free."
+    },
+    "features": {
+      "liveTracking": {
+        "badge": "Real-Time GPS",
+        "title": "Live Athlete Tracking on the Map",
+        "description": "Watch every athlete move on the map in real time. Spectators, coaches, and officials can follow the race from anywhere in the world.",
+        "point1": "GPS position updated every few seconds",
+        "point2": "See speed, distance, and checkpoint splits",
+        "point3": "Works on any device — no app required",
+        "point4": "Automatic off-route detection and alerts"
+      },
+      "leaderboard": {
+        "badge": "Live Results",
+        "title": "Real-Time Leaderboard & Rankings",
+        "description": "As athletes cross checkpoints and the finish line, the leaderboard updates instantly. No waiting for results — they appear live.",
+        "point1": "Automatic ranking as athletes finish",
+        "point2": "Split times at every checkpoint",
+        "point3": "Filter by category, age group, or gender",
+        "point4": "Embeddable widget for your event website"
+      },
+      "registration": {
+        "badge": "Online Registration",
+        "title": "Effortless Online Registration",
+        "description": "Athletes can discover your event and register online in seconds. Manage variants, pricing phases, and custom fields — all built in.",
+        "point1": "Multiple race variants (10K, 21K, 42K, etc.)",
+        "point2": "Automatic pricing phases with deadlines",
+        "point3": "Custom registration fields",
+        "point4": "Secure payment processing via Stripe"
+      },
+      "spectators": {
+        "badge": "Spectator Experience",
+        "title": "Keep the Crowd Engaged",
+        "description": "Spectators can follow their favorite athletes in real time, receive push notifications at checkpoints, and share the excitement on social media.",
+        "point1": "Follow specific athletes on the map",
+        "point2": "Push alerts at checkpoint crossings",
+        "point3": "Social sharing of athlete progress",
+        "point4": "Event community feed and comments"
+      },
+      "alerts": {
+        "badge": "Real-Time Alerts",
+        "title": "Instant Notifications for Everyone",
+        "description": "Athletes, spectators, and organizers all receive real-time alerts. From checkpoint crossings to race status changes — never miss a moment.",
+        "point1": "Push notifications to all participants",
+        "point2": "Checkpoint crossing alerts",
+        "point3": "DNF, DSQ, and emergency notifications",
+        "point4": "Customizable alert preferences"
+      },
+      "routeEditor": {
+        "badge": "Route Management",
+        "title": "GPX Route Editor & Checkpoints",
+        "description": "Upload your GPX route, set checkpoint gates, and define start/finish zones. The visual editor makes it easy to plan every detail of your course.",
+        "point1": "Drag-and-drop GPX route upload",
+        "point2": "Visual checkpoint gate placement",
+        "point3": "Elevation profile and terrain analysis",
+        "point4": "Multiple routes per event variant"
+      },
+      "liveStream": {
+        "badge": "Coming Soon",
+        "title": "Live Stream Your Events",
+        "description": "Soon you'll be able to stream your events directly through Athlifyr. Integrate drone footage, finish line cameras, and commentary — all in one place.",
+        "point1": "Integrated live video streaming",
+        "point2": "Multi-camera support",
+        "point3": "Overlay with live race data",
+        "point4": "Replay and highlight generation"
+      }
+    },
+    "eventTypes": {
+      "badge": "Any Event, Any Sport",
+      "title": "Built for every type of race",
+      "description": "From mountain trails to city roads, Athlifyr adapts to your event type.",
+      "trail": "Trail Running",
+      "trailDesc": "Ultra trails, mountain races, vertical races, and skyrunning events with full GPS tracking through the wildest terrain.",
+      "road": "Road Running",
+      "roadDesc": "Marathons, half marathons, 10K races, and city fun runs with GPS-based timing and live results.",
+      "btt": "BTT / Mountain Bike",
+      "bttDesc": "Cross-country, enduro, and marathon XC events with GPS tracking through technical terrain.",
+      "cycling": "Road Cycling",
+      "cyclingDesc": "Gran fondos, sportives, and cycling challenges with real-time tracking across long distances.",
+      "ocr": "OCR / Obstacle Races",
+      "ocrDesc": "Obstacle course races with checkpoint tracking at every obstacle station.",
+      "triathlon": "Triathlon & Multi-Sport",
+      "triathlonDesc": "Swim-bike-run events with transition zone tracking and multi-segment timing."
+    },
+    "howItWorks": {
+      "badge": "How It Works",
+      "title": "Launch your event in 3 simple steps",
+      "description": "From setup to finish line, Athlifyr guides you through the entire process.",
+      "step1Title": "Create Your Event",
+      "step1Desc": "Add your event details, upload the GPX route, set race variants, and configure registration. Everything in one intuitive dashboard.",
+      "step2Title": "Athletes Register & Race",
+      "step2Desc": "Share your event page. Athletes discover it, register online, and on race day the live tracking starts automatically.",
+      "step3Title": "Results & Analytics",
+      "step3Desc": "Live results update in real time. After the race, download complete results, generate certificates, and share highlights."
+    },
+    "seoContent": {
+      "badge": "About Athlifyr Live Race",
+      "title": "The future of race organization is here",
+      "paragraph1": "Athlifyr is a modern platform designed for sports event organizers who want to deliver a professional experience without the cost of traditional timing and tracking solutions. Whether you are organizing a local trail run, a city marathon, or a BTT enduro event, Athlifyr provides the tools you need — from online registration and route management to real-time GPS tracking and live results.",
+      "paragraph2": "With Athlifyr, spectators no longer have to wait at the finish line wondering where their athlete is. They can follow the race live on a map, receive push notifications at every checkpoint, and share the excitement on social media. For organizers, this means more engagement, more visibility, and happier participants.",
+      "paragraph3": "Our platform supports trail running, road racing, BTT, cycling, OCR, and triathlon events. The visual GPX route editor with checkpoint gate placement, combined with real-time GPS tracking and automatic leaderboard updates, makes Athlifyr the most complete free event management solution available today."
+    },
+    "faq": {
+      "badge": "FAQ",
+      "title": "Frequently Asked Questions",
+      "subtitle": "Everything you need to know about organizing events with Athlifyr.",
+      "q1": "Is Athlifyr really free for event organizers?",
+      "a1": "Yes, 100% free. There are no setup fees, no monthly subscriptions, and no per-athlete charges. We only charge a small processing fee on paid registrations. Free events cost nothing at all.",
+      "q2": "What types of events can I organize?",
+      "a2": "Athlifyr supports trail running, road races, BTT/mountain biking, road cycling, OCR, triathlon, and any GPS-trackable endurance sport. From a 5K fun run to a 100-mile ultra trail — we've got you covered.",
+      "q3": "How does the live GPS tracking work?",
+      "a3": "Athletes use the Athlifyr mobile app during the race. Their GPS position is sent in real time to our servers, which update the live map and leaderboard. Spectators can follow the race from any web browser.",
+      "q4": "Do spectators need to install an app?",
+      "a4": "No! Spectators watch everything from the web browser. They can follow athletes on the map, see the leaderboard, and receive push notifications — all without installing anything.",
+      "q5": "How do athletes register for my event?",
+      "a5": "Athletes register through your event page on Athlifyr. You can set up multiple race variants, pricing phases with deadlines, and custom registration fields. Payments are processed securely via Stripe.",
+      "q6": "Can I export the results after the race?",
+      "a6": "Yes, you can export complete results in CSV and standard formats. Results include finish times, splits, rankings by category, and all checkpoint data.",
+      "q7": "What about the live streaming feature?",
+      "a7": "Live streaming is currently in development and will be available soon. It will allow you to stream finish line cameras, drone footage, and commentary directly through the Athlifyr event page."
+    },
+    "mockups": {
+      "liveTracking": "Live Tracking",
+      "leaderboard": "Leaderboard",
+      "checkpoint": "Checkpoint",
+      "water": "Water Station",
+      "start": "Start",
+      "finish": "Finish",
+      "connected": "Connected",
+      "watching": "watching",
+      "dist": "Distance",
+      "pace": "Avg Pace",
+      "speed": "Speed",
+      "position": "Position",
+      "elevGain": "Elev. Gain",
+      "alt": "Altitude",
+      "progress": "Progress",
+      "checkpoints": "Checkpoints",
+      "all": "All",
+      "male": "Male",
+      "female": "Female",
+      "selectVariant": "Select your race",
+      "earlyBird": "Early bird price active!",
+      "endsIn": "Ends in",
+      "days": "days",
+      "registerNow": "Register Now",
+      "notifications": "Notifications",
+      "tracking": "Tracking",
+      "checkpointPassed": "Checkpoint Passed",
+      "positionUpdate": "Position Update",
+      "athleteFinished": "Athlete Finished",
+      "raceUpdate": "Race Update",
+      "leadChanged": "Lead changed — new leader!",
+      "raceStatus": "Race Status",
+      "raceStartedDesc": "Race has started!",
+      "liveResults": "Live Results",
+      "dragCheckpoints": "Drag checkpoints to reposition",
+      "checkpointList": "Checkpoints",
+      "uploadGpx": "Upload GPX"
+    },
+    "cta": {
+      "title": "Ready to organize your next event?",
+      "description": "Join hundreds of organizers who trust Athlifyr for their races. Create your event in minutes — it's completely free.",
+      "button": "Create Your Event Now",
+      "secondary": "Contact Us"
+    }
+  }
+}

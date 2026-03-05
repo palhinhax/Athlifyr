@@ -2,7 +2,7 @@
 // Athlifyr Live Server — Socket.io Setup
 // ============================================================================
 
-import { Server as SocketIOServer } from "socket.io";
+import { Server as SocketIOServer, Socket } from "socket.io";
 import type { Server as HttpServer } from "http";
 import { config } from "../config.js";
 import { socketAuthMiddleware } from "../plugins/auth.js";
@@ -10,6 +10,10 @@ import {
   handleChatConnect,
   handleChatDisconnect,
 } from "../modules/chat/chat.handlers.js";
+import {
+  registerLiveRaceHandlers,
+  handleLiveRaceDisconnect,
+} from "../modules/liverace/liverace.handlers.js";
 import type {
   ServerToClientEvents,
   ClientToServerEvents,
@@ -18,6 +22,13 @@ import type {
 } from "../types/index.js";
 
 export type LiveIO = SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+
+export type LiveSocket = Socket<
   ClientToServerEvents,
   ServerToClientEvents,
   InterServerEvents,
@@ -54,11 +65,13 @@ export function createSocketServer(httpServer: HttpServer): LiveIO {
 
     // Register module handlers
     await handleChatConnect(io, socket);
+    registerLiveRaceHandlers(io, socket);
 
     // Handle disconnection
     socket.on("disconnect", async (reason) => {
       console.log(`[Socket] User ${userId} disconnected: ${reason}`);
       await handleChatDisconnect(io, socket);
+      handleLiveRaceDisconnect(io, socket);
     });
 
     // Handle errors

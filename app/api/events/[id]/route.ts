@@ -123,6 +123,16 @@ export async function GET(request: Request, { params }: RouteParams) {
             triathlonSegments: {
               orderBy: { order: "asc" },
             },
+            pricingPhases: {
+              orderBy: { startDate: "asc" },
+            },
+            _count: {
+              select: {
+                registrations: {
+                  where: { status: "CONFIRMED" },
+                },
+              },
+            },
           },
           orderBy: { startDate: "asc" },
         },

@@ -11,7 +11,8 @@
       "registrations": "Anmeldungen",
       "team": "Team",
       "payments": "Zahlungen",
-      "settings": "Einstellungen"
+      "settings": "Einstellungen",
+      "liverace": "LiveRace"
     },
     "event": {
       "eventImage": "Event-Bild",
@@ -293,6 +294,83 @@
       "deleteError": "Das Event konnte nicht gelöscht werden."
     },
     "adminLink": "Erweiterte Einstellungen (Admin)",
+    "liverace": {
+      "title": "Echtzeit-GPS-Verfolgung",
+      "subtitle": "Echtzeit-GPS-Verfolgung und Live-Ergebnisse",
+      "serverOnline": "Server online",
+      "serverOffline": "Server offline",
+      "refresh": "Aktualisieren",
+      "currentStatus": "Aktueller Status",
+      "spectators": "Verbundene Zuschauer",
+      "participants": "Verfolgte Teilnehmer",
+      "lastUpdate": "Letztes GPS-Update",
+      "controls": "Rennen-Steuerung",
+      "notEnabled": "LiveRace ist für dieses Event nicht aktiviert. Bitte einen Plattformadministrator, es in den Einstellungen zu aktivieren.",
+      "raceFinished": "Das Rennen ist beendet. Die Ergebnisse sind auf der öffentlichen Seite des Events verfügbar.",
+      "raceCancelled": "Das Rennen wurde abgebrochen.",
+      "publicPage": "Öffentliche Live-Seite",
+      "publicPageHelp": "Zuschauer verfolgen das Rennen in Echtzeit auf dieser Seite.",
+      "viewPublic": "Live-Seite ansehen",
+      "status": {
+        "SCHEDULED": "Geplant",
+        "CHECK_IN_OPEN": "Check-in offen",
+        "WARMUP": "Aufwärmen",
+        "LIVE": "Live",
+        "PAUSED": "Pausiert",
+        "FINISHED": "Beendet",
+        "CANCELLED": "Abgebrochen"
+      },
+      "actions": {
+        "checkin": "Check-in öffnen",
+        "checkinHelp": "Ermöglicht Athleten das Einchecken. Die Rangliste ist noch nicht sichtbar.",
+        "checkinBtn": "Check-in öffnen",
+        "warmup": "Aufwärmen starten",
+        "warmupHelp": "Der Live-Raum ist für Athleten und Zuschauer verfügbar. Das Rennen hat noch nicht begonnen.",
+        "warmupBtn": "Aufwärmen starten",
+        "start": "Rennen starten",
+        "startHelp": "Die Rangliste wird aktiviert und die GPS-Verfolgung beginnt.",
+        "startBtn": "Rennen starten",
+        "pause": "Rennen pausieren",
+        "pauseHelp": "Temporäre Pause der Verfolgung (z. B. Strecken-Neutralisierung).",
+        "pauseBtn": "Pausieren",
+        "resume": "Rennen fortsetzen",
+        "resumeHelp": "Setzt die GPS-Verfolgung und die Live-Rangliste fort.",
+        "resumeBtn": "Fortsetzen",
+        "finish": "Rennen beenden",
+        "finishHelp": "Beendet das Rennen und speichert die Endergebnisse.",
+        "finishBtn": "Rennen beenden"
+      },
+      "commandSuccess": {
+        "checkin": "Check-in geöffnet.",
+        "warmup": "Aufwärmen gestartet.",
+        "start": "Rennen gestartet.",
+        "pause": "Rennen pausiert.",
+        "resume": "Rennen fortgesetzt.",
+        "finish": "Rennen beendet."
+      },
+      "readiness": {
+        "allGood": "Bereit zum Starten",
+        "allGoodDesc": "Alle Varianten haben Strecken mit START- und ZIEL-Punkten konfiguriert. Das Rennen kann gestartet werden.",
+        "errorsTitle": "Rennen kann nicht gestartet werden",
+        "errorsDesc": "Behebe die folgenden Probleme, bevor du das Rennen startest:",
+        "warningsTitle": "Warnungen",
+        "cannotStart": "Behebe die oben genannten Konfigurationsfehler, bevor du das Rennen startest.",
+        "errLiveraceNotEnabled": "LiveRace ist für dieses Event nicht aktiviert.",
+        "errNoVariants": "Keine Rennvarianten konfiguriert.",
+        "errNoRoute": "\"{variant}\" hat keine Strecke konfiguriert. Lade eine GPX-Datei im Tab Varianten hoch.",
+        "errNoStart": "\"{variant}\" hat keinen START-Punkt. Füge einen im Streckeneditor hinzu.",
+        "errNoFinish": "\"{variant}\" hat keinen ZIEL-Punkt. Füge einen im Streckeneditor hinzu.",
+        "warnNoStartTime": "\"{variant}\" hat keine Startzeit definiert.",
+        "warnNoCheckpoints": "\"{variant}\" hat eine Strecke, aber keine Zwischenpunkte.",
+        "variantsTitle": "Status der Varianten",
+        "hasRoute": "Strecke",
+        "noRoute": "Keine Strecke",
+        "hasStart": "Start",
+        "noStart": "Kein Start",
+        "hasFinish": "Ziel",
+        "noFinish": "Kein Ziel"
+      }
+    },
     "errors": {
       "saveError": "Fehler",
       "genericError": "Fehler beim Speichern"
@@ -335,6 +413,19 @@
       "yesNo": "Ja / Nein",
       "labelRequired": "Der Feldname ist erforderlich.",
       "minTwoOptions": "Mindestens 2 Optionen sind für ein Auswahlfeld erforderlich."
+    }
+  },
+  "liverace": {
+    "actions": {
+      "cancel": "Rennen abbrechen",
+      "cancelHelp": "Bricht das Rennen ab. Athleten werden benachrichtigt.",
+      "cancelBtn": "Rennen abbrechen"
+    },
+    "commandSuccess": {
+      "cancel": "Rennen abgebrochen."
+    },
+    "readiness": {
+      "errNoStartTime": "\"{variant}\" hat keine Startzeit definiert. Eine Startzeit ist erforderlich."
     }
   }
 }

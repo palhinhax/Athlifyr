@@ -51,16 +51,16 @@ GitHub Actions (.github/workflows/sonar.yml)
 5. Anota:
    - **Organization key**: geralmente `gaia-technology` (confirmar na URL do dashboard)
    - **Project key**: geralmente `GAIA-TECHNOLOGY_Athlifyr` (confirmar nas definições do projeto)
-   - **Token**: gerado em *My Account → Security → Generate Token*
+   - **Token**: gerado em _My Account → Security → Generate Token_
 
 ### 2. Configurar GitHub Secrets
 
 No repositório GitHub: **Settings → Secrets and variables → Actions → New repository secret**
 
-| Secret | Valor |
-|--------|-------|
-| `SONAR_TOKEN` | Token gerado no SonarCloud (passo anterior) |
-| `SONAR_ORG` | Organization key do SonarCloud (ex: `gaia-technology`) |
+| Secret              | Valor                                                      |
+| ------------------- | ---------------------------------------------------------- |
+| `SONAR_TOKEN`       | Token gerado no SonarCloud (passo anterior)                |
+| `SONAR_ORG`         | Organization key do SonarCloud (ex: `gaia-technology`)     |
 | `SONAR_PROJECT_KEY` | Project key do SonarCloud (ex: `GAIA-TECHNOLOGY_Athlifyr`) |
 
 > ⚠️ **Nunca** commites o token ou qualquer secret no repositório.
@@ -89,6 +89,7 @@ Acede a: `https://sonarcloud.io/project/overview?id=<SONAR_PROJECT_KEY>`
 ### Nos Pull Requests
 
 O SonarCloud decora automaticamente cada PR com:
+
 - Um **status check** ("SonarCloud Code Analysis") — pass ✅ ou fail ❌
 - Um **comentário** com o resumo das issues introduzidas no novo código
 - Links diretos para cada issue no dashboard
@@ -101,14 +102,14 @@ O Quality Gate define os critérios mínimos que o **novo código** deve cumprir
 
 ### Métricas Recomendadas (New Code)
 
-| Métrica | Limiar |
-|---------|--------|
-| Coverage on New Code | ≥ 60% |
-| Duplications on New Code | ≤ 3% |
-| Reliability Rating | A |
-| Security Rating | A |
-| Maintainability Rating | A |
-| New Issues | 0 bugs, 0 vulnerabilities |
+| Métrica                  | Limiar                    |
+| ------------------------ | ------------------------- |
+| Coverage on New Code     | ≥ 60%                     |
+| Duplications on New Code | ≤ 3%                      |
+| Reliability Rating       | A                         |
+| Security Rating          | A                         |
+| Maintainability Rating   | A                         |
+| New Issues               | 0 bugs, 0 vulnerabilities |
 
 ### Configurar Quality Gate no SonarCloud
 
@@ -192,9 +193,11 @@ SONAR_TOKEN=<token> SONAR_ORG=<org> SONAR_PROJECT_KEY=<key> sonar-scanner
 **Sintoma**: SonarCloud reporta "No files to analyze" ou análise vazia.
 
 **Solução**: Verifica os paths em `sonar-project.properties`:
+
 ```properties
 sonar.sources=app,components,hooks,lib,providers,types,i18n.ts,middleware.ts
 ```
+
 Confirma que os diretórios existem e não estão todos excluídos por `sonar.exclusions`.
 
 ---
@@ -204,11 +207,13 @@ Confirma que os diretórios existem e não estão todos excluídos por `sonar.ex
 **Sintoma**: "Coverage" aparece como N/A ou 0%.
 
 **Causas possíveis**:
+
 1. O step `pnpm test:coverage` falhou — verifica os logs do workflow
 2. O ficheiro `coverage/lcov.info` não foi gerado
 3. O path em `sonar.javascript.lcov.reportPaths` está errado
 
 **Solução**:
+
 ```bash
 # Verificar localmente
 pnpm test:coverage
@@ -224,6 +229,7 @@ O step de coverage no workflow usa `continue-on-error: true` para não bloquear 
 **Sintoma**: O scan corre mas não há comentários ou status check no PR.
 
 **Solução**:
+
 1. Verifica que o `SONAR_TOKEN` tem permissões de **PR Decoration** (requer token com scope `public_repos` ou repo privado configurado)
 2. No SonarCloud: **Administration → GitHub → Install GitHub App** — confirma que a GitHub App está instalada na organização
 3. Verifica que o projeto no SonarCloud está em modo **CI-based analysis** (não Automatic)
@@ -235,6 +241,7 @@ O step de coverage no workflow usa `continue-on-error: true` para não bloquear 
 **Sintoma**: O Quality Gate falha sem issues óbvios.
 
 **Solução**:
+
 1. Acede ao dashboard do projeto → **Quality Gate** → vê quais condições falharam
 2. As condições aplicam-se apenas ao **new code** — código introduzido desde a baseline
 3. Se a cobertura for baixa, adiciona testes ou ajusta o limiar no Quality Gate
@@ -246,6 +253,7 @@ O step de coverage no workflow usa `continue-on-error: true` para não bloquear 
 **Sintoma**: "Organization not found" ou "Forbidden" durante o scan.
 
 **Solução**:
+
 1. Confirma que o `SONAR_TOKEN` é válido e não expirou
 2. Confirma que `SONAR_ORG` corresponde ao slug da organização no SonarCloud (não o nome display)
 3. Confirma que o utilizador que gerou o token tem permissão de **Execute Analysis** no projeto
@@ -260,11 +268,11 @@ O workflow usa `fetch-depth: 0` no checkout. Isto é **obrigatório** para que o
 
 ## Ficheiros Relacionados
 
-| Ficheiro | Descrição |
-|----------|-----------|
+| Ficheiro                      | Descrição                                    |
+| ----------------------------- | -------------------------------------------- |
 | `.github/workflows/sonar.yml` | Workflow GitHub Actions para executar o scan |
-| `sonar-project.properties` | Configuração do projeto SonarCloud |
-| `jest.config.js` | Configuração Jest com `collectCoverageFrom` |
+| `sonar-project.properties`    | Configuração do projeto SonarCloud           |
+| `jest.config.js`              | Configuração Jest com `collectCoverageFrom`  |
 
 ---
 

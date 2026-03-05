@@ -22,6 +22,8 @@ import { EventWeatherMobile } from "@/components/event-weather-mobile";
 import { EventMainContent } from "@/components/event-main-content";
 import { EventFAQ } from "@/components/event-faq";
 import { RelatedEvents } from "@/components/related-events";
+import { LiveRaceSection } from "@/components/live-race-section";
+import { LiveRaceCheckinBanner } from "@/components/live-race-checkin-banner";
 import { Language } from "@prisma/client";
 import { getTranslations } from "next-intl/server";
 import { generateEventMetadata } from "@/lib/event-metadata";
@@ -372,6 +374,8 @@ export default async function EventPage({ params }: PageProps) {
     currentPhase: t("variants.currentPhase"),
     soldOut: t("registration.soldOut"),
     spotsLeft: t("variants.spotsLeft"),
+    showRoute: t("variants.showRoute"),
+    hideRoute: t("variants.hideRoute"),
   };
 
   return (
@@ -398,6 +402,13 @@ export default async function EventPage({ params }: PageProps) {
         <div className="grid gap-8 lg:grid-cols-[1fr,400px]">
           {/* Main Content - Left Column */}
           <div className="min-w-0 overflow-hidden">
+            {/* Check-in Banner — top-of-page highlight when CHECK_IN_OPEN */}
+            {event.hasLiveRace && event.liveStatus === "CHECK_IN_OPEN" && (
+              <div className="mb-6">
+                <LiveRaceCheckinBanner />
+              </div>
+            )}
+
             {/* Giveaway Banner - Top of Content */}
             {!event.cancelled && (
               <div className="mb-6">
@@ -415,7 +426,7 @@ export default async function EventPage({ params }: PageProps) {
               friendsGoingCount={friendsGoingCount}
             />
 
-            {/* Variants List with Distances */}
+            {/* Variants List with Distances (compact) */}
             <EventVariantsList
               variants={event.variants.map((v) => ({
                 ...v,
@@ -423,7 +434,18 @@ export default async function EventPage({ params }: PageProps) {
                   v._count.registrations + v._count.participations,
               }))}
               labels={variantLabels}
+              eventId={event.id}
             />
+
+            {/* LiveRace Section — visible when hasLiveRace (non check-in) */}
+            {event.hasLiveRace && event.liveStatus !== "CHECK_IN_OPEN" && (
+              <div className="mt-6">
+                <LiveRaceSection
+                  eventId={event.id}
+                  dbStatus={event.liveStatus}
+                />
+              </div>
+            )}
 
             {/* Location Map - Mobile Only */}
             {event.latitude && event.longitude && (
@@ -448,29 +470,9 @@ export default async function EventPage({ params }: PageProps) {
               />
             )}
 
-            {/* Description, Pricing, and CTA */}
-            <EventMainContent
-              description={event.description}
-              pricingPhases={event.pricingPhases}
-              variants={event.variants.map((v) => ({
-                id: v.id,
-                name: v.name,
-              }))}
-              externalUrl={event.externalUrl}
-              stravaRouteEmbed={event.stravaRouteEmbed}
-              cancelled={event.cancelled}
-              hasRegistrations={event.hasRegistrations}
-              translations={{
-                aboutEvent: t("aboutEvent"),
-                readyToParticipate: t("readyToParticipate"),
-                moreInfoDescription: t("moreInfoDescription"),
-                goToWebsite: t("goToWebsite"),
-              }}
-            />
-
             {/* Event Registration */}
             {!event.cancelled && (
-              <div className="mt-12">
+              <div className="mt-8">
                 {/* Check if event has already happened */}
                 {new Date(event.endDate || event.startDate) < new Date() ? (
                   <EventPastParticipation
@@ -533,6 +535,26 @@ export default async function EventPage({ params }: PageProps) {
                 }}
               />
             )}
+
+            {/* About the Event — Description, Pricing & CTA */}
+            <EventMainContent
+              description={event.description}
+              pricingPhases={event.pricingPhases}
+              variants={event.variants.map((v) => ({
+                id: v.id,
+                name: v.name,
+              }))}
+              externalUrl={event.externalUrl}
+              stravaRouteEmbed={event.stravaRouteEmbed}
+              cancelled={event.cancelled}
+              hasRegistrations={event.hasRegistrations}
+              translations={{
+                aboutEvent: t("aboutEvent"),
+                readyToParticipate: t("readyToParticipate"),
+                moreInfoDescription: t("moreInfoDescription"),
+                goToWebsite: t("goToWebsite"),
+              }}
+            />
 
             {/* Community Section */}
             <EventCommunity

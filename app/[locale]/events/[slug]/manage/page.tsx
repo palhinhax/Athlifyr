@@ -18,6 +18,7 @@ import {
   Layers,
   Settings,
   ClipboardList,
+  Radio,
 } from "lucide-react";
 import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
@@ -37,6 +38,7 @@ import { TabEquipa } from "./_components/tab-equipa";
 import { TabPagamentos } from "./_components/tab-pagamentos";
 import { TabConfig } from "./_components/tab-config";
 import { TabInscritos } from "./_components/tab-inscritos";
+import { TabLiverace } from "./_components/tab-liverace";
 import { PageContainer } from "@/components/page-container";
 
 export default function EventManagePage() {
@@ -258,6 +260,12 @@ export default function EventManagePage() {
               <Settings className="h-4 w-4" />
               <span className="hidden sm:inline">{t("tabs.settings")}</span>
             </TabsTrigger>
+            {event.hasLiveRace && (
+              <TabsTrigger value="liverace" className="gap-2">
+                <Radio className="h-4 w-4" />
+                <span className="hidden sm:inline">{t("tabs.liverace")}</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabEvento event={event} onSave={patchEvent} />
@@ -289,6 +297,7 @@ export default function EventManagePage() {
             populateEvent={populateEvent}
           />
           <TabConfig event={event} isAdmin={isAdmin} onSave={patchEvent} />
+          {event.hasLiveRace && <TabLiverace event={event} />}
         </Tabs>
 
         {/* Admin link */}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
 import {
   User,
@@ -24,6 +25,7 @@ import { SubscriptionsHistory } from "@/components/subscriptions-history";
 import { NotificationSettings } from "@/components/notification-settings";
 import { ThemeSelector } from "@/components/theme-selector";
 import { PersonalDataForm } from "@/components/personal-data-form";
+import { LiveRaceVisibilitySettings } from "@/components/live-race-visibility-settings";
 import type { SportType } from "@prisma/client";
 
 interface SettingsTabsProps {
@@ -41,6 +43,7 @@ interface SettingsTabsProps {
     nationality: string | null;
     emergencyContactName: string | null;
     emergencyContactPhone: string | null;
+    liveRaceVisibility: "PUBLIC" | "FRIENDS" | "ORGANIZER_ONLY";
   };
   locale: string;
 }
@@ -48,7 +51,7 @@ interface SettingsTabsProps {
 export function SettingsTabs({ user, locale }: SettingsTabsProps) {
   const t = useTranslations("settings");
   const [activeTab, setActiveTab] = useState<
-    "profile" | "preferences" | "notifications" | "account"
+    "profile" | "preferences" | "notifications" | "privacy" | "account"
   >("profile");
 
   const formatDate = (date: Date) => {
@@ -78,7 +81,7 @@ export function SettingsTabs({ user, locale }: SettingsTabsProps) {
       }
       className="w-full"
     >
-      <TabsList className="mb-6 grid w-full grid-cols-4">
+      <TabsList className="mb-6 grid w-full grid-cols-5">
         <TabsTrigger
           value="profile"
           className="gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm"
@@ -99,6 +102,19 @@ export function SettingsTabs({ user, locale }: SettingsTabsProps) {
         >
           <Bell className="h-4 w-4 shrink-0" />
           <span className="hidden sm:inline">{t("tabs.notifications")}</span>
+        </TabsTrigger>
+        <TabsTrigger
+          value="privacy"
+          className="gap-1.5 px-2 text-xs sm:gap-2 sm:px-3 sm:text-sm"
+        >
+          <Image
+            src="/liverace.png"
+            alt="LiveRace"
+            width={16}
+            height={16}
+            className="h-4 w-4 shrink-0"
+          />
+          <span className="hidden sm:inline">{t("tabs.privacy")}</span>
         </TabsTrigger>
         <TabsTrigger
           value="account"
@@ -220,6 +236,28 @@ export function SettingsTabs({ user, locale }: SettingsTabsProps) {
             emailVerified={!!user.emailVerified}
             emailNotificationsEnabled={user.emailNotifications}
             userEmail={user.email}
+          />
+        </Card>
+      </TabsContent>
+
+      {/* Privacy Tab */}
+      <TabsContent value="privacy" className="space-y-6">
+        <Card className="p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-xl font-semibold">
+            <Image
+              src="/liverace.png"
+              alt="LiveRace"
+              width={24}
+              height={24}
+              className="h-6 w-6"
+            />
+            {t("privacySettings.liveRaceVisibility")}
+          </h2>
+          <p className="mb-6 text-sm text-muted-foreground">
+            {t("privacySettings.liveRaceVisibilityDesc")}
+          </p>
+          <LiveRaceVisibilitySettings
+            initialVisibility={user.liveRaceVisibility}
           />
         </Card>
       </TabsContent>

@@ -13,7 +13,7 @@ export {
   type TeamMemberData,
 } from "./event-registration-types";
 
-export function EventRegistration(props: EventRegistrationProps) {
+export function EventRegistration(props: Readonly<EventRegistrationProps>) {
   const { hasRegistrations = false, variants = [], eventId } = props;
 
   const { state, actions, derived, session } = useEventRegistration(props);
@@ -46,6 +46,7 @@ export function EventRegistration(props: EventRegistrationProps) {
           selectedVariantSoldOut={derived.selectedVariantSoldOut}
           selectedVariantNoPrice={derived.selectedVariantNoPrice}
           allVariantsSoldOut={derived.allVariantsSoldOut}
+          allVariantsNoPrice={derived.allVariantsNoPrice}
           showTicketModal={state.showTicketModal}
           onShowTicketModal={actions.setShowTicketModal}
           isCancellingPending={state.isCancellingPending}

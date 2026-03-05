@@ -218,19 +218,19 @@ export function useEventRegistration({
         title: t("paymentSuccessTitle"),
         description: t("paymentSuccessDesc"),
       });
-      const url = new URL(window.location.href);
+      const url = new URL(globalThis.location.href);
       url.searchParams.delete("registration");
       url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.toString());
+      globalThis.history.replaceState({}, "", url.toString());
     } else if (registrationParam === "success") {
       toast({
         title: t("paymentSuccessTitle"),
         description: t("paymentSuccessDesc"),
       });
-      const url = new URL(window.location.href);
+      const url = new URL(globalThis.location.href);
       url.searchParams.delete("registration");
       url.searchParams.delete("session_id");
-      window.history.replaceState({}, "", url.toString());
+      globalThis.history.replaceState({}, "", url.toString());
     } else if (registrationParam === "cancelled") {
       justCancelledRef.current = true;
       setPaidRegistration(null);
@@ -240,9 +240,9 @@ export function useEventRegistration({
         description: t("paymentCancelledDesc"),
         variant: "destructive",
       });
-      const url = new URL(window.location.href);
+      const url = new URL(globalThis.location.href);
       url.searchParams.delete("registration");
-      window.history.replaceState({}, "", url.toString());
+      globalThis.history.replaceState({}, "", url.toString());
 
       void fetch(`/api/events/${eventId}/registration/cancel`, {
         method: "POST",
@@ -258,7 +258,7 @@ export function useEventRegistration({
 
       if (justCancelledRef.current) return;
 
-      const currentParams = new URLSearchParams(window.location.search);
+      const currentParams = new URLSearchParams(globalThis.location.search);
       if (currentParams.get("registration") === "cancelled") return;
 
       try {
@@ -381,12 +381,14 @@ export function useEventRegistration({
   })();
 
   const allVariantsSoldOut =
+    variants.length > 0 && variants.every((v) => isVariantSoldOut(v));
+
+  // True when paid event has variants but none have an active pricing phase
+  const allVariantsNoPrice =
+    hasRegistrations &&
     variants.length > 0 &&
-    variants.every((v) => {
-      if (isVariantSoldOut(v)) return true;
-      if (hasRegistrations && !variantHasActivePrice(v)) return true;
-      return false;
-    });
+    !allVariantsSoldOut &&
+    variants.every((v) => !variantHasActivePrice(v));
 
   // ── Action handlers ───────────────────────────────────────────────────
 
@@ -453,7 +455,7 @@ export function useEventRegistration({
         resetCustomFieldAnswers();
       }
 
-      window.location.href = checkoutData.url;
+      globalThis.location.href = checkoutData.url;
     } catch (error) {
       toast({
         title: t("error"),
@@ -505,7 +507,7 @@ export function useEventRegistration({
       }
 
       const { url } = (await res.json()) as { url: string };
-      window.location.href = url;
+      globalThis.location.href = url;
     } catch (error) {
       toast({
         title: t("error"),
@@ -863,6 +865,7 @@ export function useEventRegistration({
       selectedVariantSoldOut,
       selectedVariantNoPrice,
       allVariantsSoldOut,
+      allVariantsNoPrice,
       selectedVariantTeamSize,
       needsConsentOrTeam,
       requiredRegistrationFields,

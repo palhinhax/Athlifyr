@@ -166,6 +166,8 @@
       "variantSoldOutDesc": "Questa variante non ha posti disponibili.",
       "registrationClosed": "Iscrizioni chiuse",
       "registrationClosedDesc": "Non esiste un periodo di iscrizione attivo per questa variante al momento.",
+      "registrationsClosed": "Iscrizioni non disponibili",
+      "registrationsClosedDesc": "Le iscrizioni per questo evento non sono ancora aperte o il periodo di iscrizione è già terminato.",
       "consent": {
         "title": "Consenso alla Condivisione dei Dati",
         "description": "Questo evento richiede informazioni personali per l'iscrizione. Questi dati saranno condivisi con l'organizzatore dell'evento.",
@@ -306,6 +308,8 @@
       "prices": "Prezzi",
       "currentPhase": "(Attuale)",
       "spotsLeft": "posti rimanenti",
+      "showRoute": "Mostra percorso",
+      "hideRoute": "Nascondi percorso",
       "triathlon": {
         "segments": "Segmenti Triathlon",
         "swim": "Nuoto",

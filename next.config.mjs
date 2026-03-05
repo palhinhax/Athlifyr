@@ -7,6 +7,8 @@ const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 const liveServerUrl =
   process.env.NEXT_PUBLIC_LIVE_URL || "http://localhost:4000";
 const liveServerWs = liveServerUrl.replace(/^http/, "ws");
+// Railway wildcard for live service (covers both HTTP and WS)
+const railwayLive = "https://*.up.railway.app wss://*.up.railway.app";
 
 // Content Security Policy - carefully configured for Next.js compatibility
 const ContentSecurityPolicy = `
@@ -15,7 +17,7 @@ const ContentSecurityPolicy = `
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https: http:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' ${liveServerUrl} ${liveServerWs} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com;
+  connect-src 'self' ${liveServerUrl} ${liveServerWs} ${railwayLive} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com;
   media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
   object-src 'none';
   base-uri 'self';
@@ -151,6 +153,29 @@ const nextConfig = {
   // Security headers for all routes
   async headers() {
     return [
+      {
+        // CORS headers for API routes — allows mobile app (Expo) to call Next.js APIs
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value:
+              "Content-Type, Authorization, X-Requested-With, X-Internal-Secret",
+          },
+          {
+            key: "Access-Control-Max-Age",
+            value: "86400",
+          },
+        ],
+      },
       {
         // Apply security headers to all routes
         source: "/:path*",

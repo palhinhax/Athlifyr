@@ -25,6 +25,7 @@ model User {
   emailNotifications       Boolean                   @default(false)
   pushNotificationsEnabled Boolean                   @default(true)
   isProAccount             Boolean                   @default(false)
+  liveRaceVisibility       LiveRaceVisibility        @default(PUBLIC)
   dateOfBirth              DateTime?
   citizenId                String?
   nationality              String?
@@ -1627,6 +1628,12 @@ enum FriendshipStatus {
   PENDING
   ACCEPTED
   REJECTED
+}
+
+enum LiveRaceVisibility {
+  PUBLIC
+  FRIENDS
+  ORGANIZER_ONLY
 }
 
 enum InstagramFormat {

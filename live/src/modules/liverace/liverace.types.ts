@@ -21,6 +21,8 @@ export type AthleteStatus =
   | "DNF"
   | "DSQ";
 
+export type LiveRaceVisibility = "PUBLIC" | "FRIENDS" | "ORGANIZER_ONLY";
+
 export type CheckpointType = "START" | "FINISH" | "INTERMEDIATE" | "TRANSITION";
 
 // ─── Config from Next.js API ────────────────────────────────────────────────
@@ -97,6 +99,7 @@ export interface AthleteState {
   variantName: string;
   bibNumber: string | null;
   status: AthleteStatus;
+  visibility: LiveRaceVisibility;
 
   // Current position
   currentPosition: GPSPoint | null;
@@ -134,6 +137,7 @@ export interface LeaderboardEntry {
   variantId: string;
   variantName: string;
   status: AthleteStatus;
+  visibility: LiveRaceVisibility;
   distanceAlongRouteM: number;
   progressPercent: number;
   lastCheckpointOrder: number;
@@ -178,6 +182,23 @@ export interface RouteSegment {
   lengthM: number;
 }
 
+/**
+ * A "gate line" perpendicular to the route at a checkpoint.
+ * Used for precise START/FINISH line-crossing detection.
+ */
+export interface GateLine {
+  /** Index into routeHelper.checkpoints */
+  checkpointIdx: number;
+  /** Endpoint A of the perpendicular line */
+  aLat: number;
+  aLng: number;
+  /** Endpoint B of the perpendicular line */
+  bLat: number;
+  bLng: number;
+  /** Distance along the route (m) at this gate — for ordering / sanity checks */
+  distanceAlongRouteM: number;
+}
+
 export interface RouteHelper {
   variantId: string;
   totalDistanceM: number;
@@ -185,6 +206,8 @@ export interface RouteHelper {
   checkpoints: LiveConfigCheckpoint[];
   /** Cumulative distance at each checkpoint (precomputed) */
   checkpointDistancesM: number[];
+  /** Precomputed gate lines for START / FINISH checkpoints */
+  gateLines: GateLine[];
 }
 
 // ─── WebSocket Events (Client ↔ Server) ─────────────────────────────────────
@@ -310,6 +333,7 @@ export interface AthletePositionUpdate {
   lat: number;
   lng: number;
   status: AthleteStatus;
+  visibility: LiveRaceVisibility;
   distanceAlongRouteM: number;
   progressPercent: number;
   rank: number;

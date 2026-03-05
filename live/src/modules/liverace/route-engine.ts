@@ -12,6 +12,7 @@
 import type {
   RouteHelper,
   RouteSegment,
+  GateLine,
   GPSPoint,
   LiveConfigCheckpoint,
 } from "./liverace.types.js";
@@ -101,6 +102,158 @@ function alongTrackDistanceM(
   );
 }
 
+// ─── Gate Line Computation (perpendicular to route at checkpoint) ────────────
+
+/**
+ * Compute a perpendicular "gate line" across the route at the given checkpoint.
+ * The line extends `halfWidthM` in each direction from the checkpoint centre,
+ * perpendicular to the local route bearing.
+ *
+ * Used for precise START/FINISH line-crossing detection.
+ */
+function computeGateLine(
+  cp: LiveConfigCheckpoint,
+  cpIdx: number,
+  routePoints: [number, number][],
+  cpDistanceAlongRouteM: number,
+  halfWidthM?: number
+): GateLine {
+  const width = halfWidthM ?? cp.radiusM; // default: use checkpoint radius
+
+  // Find the closest route point to the checkpoint
+  let minDist = Infinity;
+  let closestIdx = 0;
+  for (let i = 0; i < routePoints.length; i++) {
+    const dlat = routePoints[i][0] - cp.latitude;
+    const dlng = routePoints[i][1] - cp.longitude;
+    const d = dlat * dlat + dlng * dlng;
+    if (d < minDist) {
+      minDist = d;
+      closestIdx = i;
+    }
+  }
+
+  // Compute the local route bearing at that point
+  const prevIdx = Math.max(0, closestIdx - 1);
+  const nextIdx = Math.min(routePoints.length - 1, closestIdx + 1);
+  const dLat = routePoints[nextIdx][0] - routePoints[prevIdx][0];
+  const dLng = routePoints[nextIdx][1] - routePoints[prevIdx][1];
+  const routeBearing = Math.atan2(dLng, dLat); // radians
+
+  // Perpendicular bearing (90° rotated)
+  const perpBearing = routeBearing + Math.PI / 2;
+
+  // Approximate metres → degrees conversion at this latitude
+  const metresToDegLat = 1 / 111_320;
+  const metresToDegLng =
+    1 / (111_320 * Math.cos((cp.latitude * Math.PI) / 180));
+
+  const offLat = Math.cos(perpBearing) * width * metresToDegLat;
+  const offLng = Math.sin(perpBearing) * width * metresToDegLng;
+
+  return {
+    checkpointIdx: cpIdx,
+    aLat: cp.latitude - offLat,
+    aLng: cp.longitude - offLng,
+    bLat: cp.latitude + offLat,
+    bLng: cp.longitude + offLng,
+    distanceAlongRouteM: cpDistanceAlongRouteM,
+  };
+}
+
+// ─── 2-D Line Segment Intersection (lat/lng as flat coords — fine at <1 km) ─
+
+/**
+ * Returns true if segment P1→P2 intersects segment P3→P4.
+ * Uses the standard cross-product orientation test.
+ */
+function segmentsIntersect(
+  p1Lat: number,
+  p1Lng: number,
+  p2Lat: number,
+  p2Lng: number,
+  p3Lat: number,
+  p3Lng: number,
+  p4Lat: number,
+  p4Lng: number
+): boolean {
+  const d1 = cross(p3Lat, p3Lng, p4Lat, p4Lng, p1Lat, p1Lng);
+  const d2 = cross(p3Lat, p3Lng, p4Lat, p4Lng, p2Lat, p2Lng);
+  const d3 = cross(p1Lat, p1Lng, p2Lat, p2Lng, p3Lat, p3Lng);
+  const d4 = cross(p1Lat, p1Lng, p2Lat, p2Lng, p4Lat, p4Lng);
+
+  if (
+    ((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+    ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))
+  ) {
+    return true;
+  }
+
+  // Collinear / endpoint-on-segment cases
+  if (d1 === 0 && onSegment(p3Lat, p3Lng, p4Lat, p4Lng, p1Lat, p1Lng))
+    return true;
+  if (d2 === 0 && onSegment(p3Lat, p3Lng, p4Lat, p4Lng, p2Lat, p2Lng))
+    return true;
+  if (d3 === 0 && onSegment(p1Lat, p1Lng, p2Lat, p2Lng, p3Lat, p3Lng))
+    return true;
+  if (d4 === 0 && onSegment(p1Lat, p1Lng, p2Lat, p2Lng, p4Lat, p4Lng))
+    return true;
+
+  return false;
+}
+
+/** Cross product of vectors (b-a) × (c-a) — sign determines orientation. */
+function cross(
+  aLat: number,
+  aLng: number,
+  bLat: number,
+  bLng: number,
+  cLat: number,
+  cLng: number
+): number {
+  return (bLat - aLat) * (cLng - aLng) - (bLng - aLng) * (cLat - aLat);
+}
+
+/** Check if point (pLat,pLng) lies on segment (aLat,aLng)→(bLat,bLng) when collinear. */
+function onSegment(
+  aLat: number,
+  aLng: number,
+  bLat: number,
+  bLng: number,
+  pLat: number,
+  pLng: number
+): boolean {
+  return (
+    Math.min(aLat, bLat) <= pLat &&
+    pLat <= Math.max(aLat, bLat) &&
+    Math.min(aLng, bLng) <= pLng &&
+    pLng <= Math.max(aLng, bLng)
+  );
+}
+
+/**
+ * Check whether the GPS movement from `prev` to `curr` crosses a gate line.
+ * This is the core "line-crossing" detection used for START and FINISH.
+ */
+export function crossesGateLine(
+  prevLat: number,
+  prevLng: number,
+  currLat: number,
+  currLng: number,
+  gate: GateLine
+): boolean {
+  return segmentsIntersect(
+    prevLat,
+    prevLng,
+    currLat,
+    currLng,
+    gate.aLat,
+    gate.aLng,
+    gate.bLat,
+    gate.bLng
+  );
+}
+
 // ─── Precompute Route Helper ────────────────────────────────────────────────
 
 export function buildRouteHelper(
@@ -135,12 +288,26 @@ export function buildRouteHelper(
     return projection.distanceAlongRouteM;
   });
 
+  // Precompute gate lines for START and FINISH checkpoints
+  const gateLines: GateLine[] = [];
+  if (routePoints.length >= 2) {
+    for (let i = 0; i < checkpoints.length; i++) {
+      const cp = checkpoints[i];
+      if (cp.type === "START" || cp.type === "FINISH") {
+        gateLines.push(
+          computeGateLine(cp, i, routePoints, checkpointDistancesM[i])
+        );
+      }
+    }
+  }
+
   return {
     variantId,
     totalDistanceM: cumulativeDistance,
     segments,
     checkpoints,
     checkpointDistancesM,
+    gateLines,
   };
 }
 
@@ -331,13 +498,18 @@ export function projectPointOnRouteNear(
 /**
  * Check if the athlete has reached new checkpoints based on their progress.
  * Returns the indices (into the checkpoints array) of newly reached checkpoints.
+ *
+ * For START/FINISH checkpoints: uses gate-line crossing (precise).
+ * For INTERMEDIATE/TRANSITION: uses distance + radius (existing logic).
  */
 export function detectNewCheckpoints(
   distanceAlongRouteM: number,
   lat: number,
   lng: number,
   routeHelper: RouteHelper,
-  alreadyReachedOrders: Set<number>
+  alreadyReachedOrders: Set<number>,
+  prevLat?: number,
+  prevLng?: number
 ): number[] {
   const newlyReached: number[] = [];
 
@@ -347,17 +519,34 @@ export function detectNewCheckpoints(
     // Skip already reached
     if (alreadyReachedOrders.has(cp.order)) continue;
 
-    // Two detection methods:
-    // 1. Distance-based: athlete's route distance has passed the checkpoint's route distance
-    const cpDistanceM = routeHelper.checkpointDistancesM[i];
-    const passedByDistance = distanceAlongRouteM >= cpDistanceM - 50; // 50m tolerance
+    const isGateCheckpoint = cp.type === "START" || cp.type === "FINISH";
 
-    // 2. Proximity-based: athlete is within the checkpoint's radius
-    const distToCheckpoint = haversineM(lat, lng, cp.latitude, cp.longitude);
-    const withinRadius = distToCheckpoint <= cp.radiusM;
+    if (isGateCheckpoint && prevLat !== undefined && prevLng !== undefined) {
+      // ── Gate-line crossing for START/FINISH ──────────────────────
+      const gate = routeHelper.gateLines.find((g) => g.checkpointIdx === i);
+      if (gate && crossesGateLine(prevLat, prevLng, lat, lng, gate)) {
+        newlyReached.push(i);
+        continue;
+      }
+      // Fallback: distance-based (in case gate line wasn't precomputed)
+      const cpDistanceM = routeHelper.checkpointDistancesM[i];
+      if (distanceAlongRouteM >= cpDistanceM - 30) {
+        newlyReached.push(i);
+      }
+    } else {
+      // ── Radius / distance for INTERMEDIATE/TRANSITION ───────────
+      // Two detection methods:
+      // 1. Distance-based: athlete's route distance has passed the checkpoint's route distance
+      const cpDistanceM = routeHelper.checkpointDistancesM[i];
+      const passedByDistance = distanceAlongRouteM >= cpDistanceM - 50; // 50m tolerance
 
-    if (passedByDistance || withinRadius) {
-      newlyReached.push(i);
+      // 2. Proximity-based: athlete is within the checkpoint's radius
+      const distToCheckpoint = haversineM(lat, lng, cp.latitude, cp.longitude);
+      const withinRadius = distToCheckpoint <= cp.radiusM;
+
+      if (passedByDistance || withinRadius) {
+        newlyReached.push(i);
+      }
     }
   }
 
@@ -368,13 +557,16 @@ export function detectNewCheckpoints(
 
 /**
  * Check if the athlete has crossed the finish line.
- * The finish is the last checkpoint with type "FINISH".
+ * Primary: gate-line crossing (precise).
+ * Fallback: distance + radius (for backward compat / no prev point).
  */
 export function detectFinish(
   distanceAlongRouteM: number,
   lat: number,
   lng: number,
-  routeHelper: RouteHelper
+  routeHelper: RouteHelper,
+  prevLat?: number,
+  prevLng?: number
 ): boolean {
   const finishCp = routeHelper.checkpoints.find((cp) => cp.type === "FINISH");
   if (!finishCp) {
@@ -383,6 +575,18 @@ export function detectFinish(
   }
 
   const finishIdx = routeHelper.checkpoints.indexOf(finishCp);
+
+  // ── Primary: gate-line crossing ───────────────────────────────────
+  if (prevLat !== undefined && prevLng !== undefined) {
+    const gate = routeHelper.gateLines.find(
+      (g) => g.checkpointIdx === finishIdx
+    );
+    if (gate && crossesGateLine(prevLat, prevLng, lat, lng, gate)) {
+      return true;
+    }
+  }
+
+  // ── Fallback: distance-based + radius (for first point / no gate) ─
   const finishDistanceM = routeHelper.checkpointDistancesM[finishIdx];
   const passedByDistance = distanceAlongRouteM >= finishDistanceM - 30;
   const distToFinish = haversineM(
@@ -394,6 +598,31 @@ export function detectFinish(
   const withinRadius = distToFinish <= finishCp.radiusM;
 
   return passedByDistance || withinRadius;
+}
+
+/**
+ * Detect if the GPS movement from prev → curr crosses the START gate line
+ * for the given variant. Returns the timestamp of crossing (uses curr point
+ * timestamp) or null if no crossing detected.
+ */
+export function detectStartLineCrossing(
+  prevLat: number,
+  prevLng: number,
+  currLat: number,
+  currLng: number,
+  routeHelper: RouteHelper
+): boolean {
+  const startCpIdx = routeHelper.checkpoints.findIndex(
+    (cp) => cp.type === "START"
+  );
+  if (startCpIdx === -1) return false;
+
+  const gate = routeHelper.gateLines.find(
+    (g) => g.checkpointIdx === startCpIdx
+  );
+  if (!gate) return false;
+
+  return crossesGateLine(prevLat, prevLng, currLat, currLng, gate);
 }
 
 // ─── Anti-cheat: Speed Validation ───────────────────────────────────────────

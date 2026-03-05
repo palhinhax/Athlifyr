@@ -63,6 +63,7 @@ export async function POST(request: NextRequest) {
             id: true,
             name: true,
             image: true,
+            liveRaceVisibility: true,
           },
         },
       },
@@ -90,6 +91,7 @@ export async function POST(request: NextRequest) {
                 id: true,
                 name: true,
                 image: true,
+                liveRaceVisibility: true,
               },
             },
           },
@@ -114,6 +116,7 @@ export async function POST(request: NextRequest) {
         variantId: record.variantId,
         variantName: record.variant?.name ?? null,
         bibNumber: "bibNumber" in record ? record.bibNumber : null,
+        liveRaceVisibility: record.user.liveRaceVisibility ?? "PUBLIC",
       },
     });
   } catch (error) {

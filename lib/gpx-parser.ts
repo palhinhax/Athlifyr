@@ -182,7 +182,11 @@ export function parseGpx(
     (p) => [p.lat, p.lng] as [number, number]
   );
 
-  simplified = rdpSimplify(simplified, simplificationEpsilon);
+  // Skip simplification if already few points — RDP can over-reduce short routes
+  const MIN_POINTS_FOR_SIMPLIFICATION = 50;
+  if (simplified.length >= MIN_POINTS_FOR_SIMPLIFICATION) {
+    simplified = rdpSimplify(simplified, simplificationEpsilon);
+  }
 
   // Further reduce if still too many points
   if (simplified.length > maxPoints) {

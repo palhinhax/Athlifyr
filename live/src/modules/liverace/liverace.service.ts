@@ -11,6 +11,7 @@ import {
   projectPointOnRouteNear,
   detectNewCheckpoints,
   detectFinish,
+  detectStartLineCrossing,
   isPlausibleUpdate,
   isAccuracyAcceptable,
   isTimestampValid,
@@ -21,6 +22,7 @@ import {
   updateLiveStatus,
   verifyAthlete,
   persistResults,
+  fetchFriendIds,
 } from "./liverace.api.js";
 import type {
   EventRoomState,
@@ -419,6 +421,7 @@ export async function joinAthlete(
     variantName: athleteInfo.variantName ?? "",
     bibNumber: athleteInfo.bibNumber,
     status: "ACTIVE",
+    visibility: athleteInfo.liveRaceVisibility ?? "PUBLIC",
     currentPosition: null,
     lastUpdateAt: Date.now(),
     personalStartTime: null,
@@ -615,6 +618,9 @@ export function processGpsUpdate(
     projection.distanceAlongRouteM
   );
 
+  // Save previous position for gate-line crossing detection
+  const prevPos = athlete.currentPosition;
+
   // Update athlete state
   athlete.currentPosition = point;
   athlete.lastUpdateAt = Date.now();
@@ -659,7 +665,9 @@ export function processGpsUpdate(
     point.lat,
     point.lng,
     routeHelper,
-    reachedOrders
+    reachedOrders,
+    prevPos?.lat,
+    prevPos?.lng
   );
 
   for (const cpIdx of newCheckpoints) {
@@ -700,7 +708,9 @@ export function processGpsUpdate(
       newDistance,
       point.lat,
       point.lng,
-      routeHelper
+      routeHelper,
+      prevPos?.lat,
+      prevPos?.lng
     );
     if (finished) {
       athlete.status = "FINISHED";
@@ -910,7 +920,7 @@ export function processGpsBatch(
     }
 
     // Detect personal start: athlete exiting the START zone (batch replay)
-    detectStartZoneExitBatch(room, athlete, point);
+    detectStartZoneExitBatch(room, athlete, point, prevPoint);
 
     // Checkpoint detection
     const reachedOrders = new Set(
@@ -925,7 +935,9 @@ export function processGpsBatch(
       point.lat,
       point.lng,
       routeHelper,
-      reachedOrders
+      reachedOrders,
+      prevPoint?.lat,
+      prevPoint?.lng
     );
 
     const raceStart =
@@ -964,7 +976,9 @@ export function processGpsBatch(
         newDistance,
         point.lat,
         point.lng,
-        routeHelper
+        routeHelper,
+        prevPoint?.lat,
+        prevPoint?.lng
       );
       if (finished) {
         athlete.status = "FINISHED";
@@ -1138,6 +1152,7 @@ export function computeLeaderboard(room: EventRoomState): LeaderboardEntry[] {
       variantId: a.variantId,
       variantName: a.variantName,
       status: a.status,
+      visibility: a.visibility,
       distanceAlongRouteM: Math.round(a.distanceAlongRouteM),
       progressPercent: Math.round(a.progressPercent * 10) / 10,
       lastCheckpointOrder: a.lastCheckpointOrder,
@@ -1252,16 +1267,15 @@ function isInsideCheckpointZone(
 }
 
 /**
- * Detect if an athlete has exited the START zone.
+ * Detect if an athlete has crossed the START line.
  *
- * Logic:
- * 1. If athlete was previously inside the START zone and is now outside → they started
- * 2. If athlete was never inside the START zone and is already outside → they started
- *    (they may have entered/exited before GPS tracking began)
+ * Primary: gate-line crossing — the GPS segment (prev → curr) intersects
+ * the perpendicular START line on the route.
+ *
+ * Fallback (no previous point / no route helper): zone-exit detection
+ * (inside → outside the START checkpoint radius).
  *
  * Only triggers if the variant's gun time has passed.
- *
- * Returns the timestamp of the personal start, or null if not yet started.
  */
 function detectStartZoneExit(
   room: EventRoomState,
@@ -1283,6 +1297,36 @@ function detectStartZoneExit(
     return;
   }
 
+  // ── Primary: gate-line crossing ─────────────────────────────────────
+  const routeHelper = room.routeHelpers.get(athlete.variantId);
+  if (routeHelper && athlete.currentPosition) {
+    const crossed = detectStartLineCrossing(
+      athlete.currentPosition.lat,
+      athlete.currentPosition.lng,
+      point.lat,
+      point.lng,
+      routeHelper
+    );
+
+    if (crossed) {
+      athlete.personalStartTime = point.timestamp || Date.now();
+
+      io.to(eventRoom(room.eventId)).emit("liverace:athlete_started", {
+        eventId: room.eventId,
+        userId: athlete.userId,
+        athleteName: athlete.name,
+        personalStartTime: athlete.personalStartTime,
+      });
+
+      console.log(
+        `[LiveRace] ⏱️ ${athlete.name || athlete.userId} personal start ` +
+          `(crossed START line) at ${new Date(athlete.personalStartTime).toISOString()}`
+      );
+      return;
+    }
+  }
+
+  // ── Fallback: zone-exit detection (no prev point or no route) ───────
   const isInside = isInsideCheckpointZone(point.lat, point.lng, startCp);
 
   if (isInside) {
@@ -1305,7 +1349,7 @@ function detectStartZoneExit(
 
     console.log(
       `[LiveRace] ⏱️ ${athlete.name || athlete.userId} personal start ` +
-        `(exited START zone) at ${new Date(athlete.personalStartTime).toISOString()}`
+        `(exited START zone — fallback) at ${new Date(athlete.personalStartTime).toISOString()}`
     );
   }
   // If never seen inside and is outside — we don't start yet.
@@ -1315,12 +1359,13 @@ function detectStartZoneExit(
 
 /**
  * Silent version of detectStartZoneExit for batch replay.
- * Same logic but does not emit WebSocket events (they are emitted once after the batch).
+ * Same gate-line crossing logic but does not emit WebSocket events.
  */
 function detectStartZoneExitBatch(
   room: EventRoomState,
   athlete: AthleteState,
-  point: GPSPoint
+  point: GPSPoint,
+  prevPoint?: GPSPoint | null
 ): void {
   if (athlete.personalStartTime !== null) return;
 
@@ -1333,6 +1378,24 @@ function detectStartZoneExitBatch(
     return;
   }
 
+  // ── Primary: gate-line crossing ─────────────────────────────────────
+  const routeHelper = room.routeHelpers.get(athlete.variantId);
+  if (routeHelper && prevPoint) {
+    const crossed = detectStartLineCrossing(
+      prevPoint.lat,
+      prevPoint.lng,
+      point.lat,
+      point.lng,
+      routeHelper
+    );
+
+    if (crossed) {
+      athlete.personalStartTime = point.timestamp || Date.now();
+      return;
+    }
+  }
+
+  // ── Fallback: zone-exit detection ───────────────────────────────────
   const isInside = isInsideCheckpointZone(point.lat, point.lng, startCp);
 
   if (isInside) {
@@ -1373,6 +1436,7 @@ function getPositionUpdates(room: EventRoomState): AthletePositionUpdate[] {
       lat: athlete.currentPosition.lat,
       lng: athlete.currentPosition.lng,
       status: athlete.status,
+      visibility: athlete.visibility,
       distanceAlongRouteM: Math.round(athlete.distanceAlongRouteM),
       progressPercent: Math.round(athlete.progressPercent * 10) / 10,
       rank: athlete.rank,
@@ -1468,4 +1532,121 @@ async function persistFinalResults(room: EventRoomState): Promise<void> {
   } catch (err) {
     console.error(`[LiveRace] Failed to persist results:`, err);
   }
+}
+
+// ─── Spectator Friend Cache ─────────────────────────────────────────────────
+
+/**
+ * Cache spectator friend lists so we don't call the internal API every broadcast.
+ * Key: spectatorUserId → Set of accepted friend IDs.
+ * TTL: refreshed every 60 seconds or on first access.
+ */
+const spectatorFriendsCache = new Map<
+  string,
+  { friendIds: Set<string>; fetchedAt: number }
+>();
+
+const FRIEND_CACHE_TTL_MS = 60_000; // 60 seconds
+
+/**
+ * Get friend IDs for a spectator (cached).
+ * Returns empty set for anonymous spectators.
+ */
+export async function getSpectatorFriends(
+  spectatorUserId: string | undefined
+): Promise<Set<string>> {
+  if (!spectatorUserId) return new Set();
+
+  const cached = spectatorFriendsCache.get(spectatorUserId);
+  if (cached && Date.now() - cached.fetchedAt < FRIEND_CACHE_TTL_MS) {
+    return cached.friendIds;
+  }
+
+  try {
+    const result = await fetchFriendIds(spectatorUserId);
+    const friendSet = new Set(result.friendIds);
+    spectatorFriendsCache.set(spectatorUserId, {
+      friendIds: friendSet,
+      fetchedAt: Date.now(),
+    });
+    return friendSet;
+  } catch (err) {
+    console.error(
+      `[LiveRace] Failed to fetch friends for spectator ${spectatorUserId}:`,
+      err
+    );
+    return cached?.friendIds ?? new Set();
+  }
+}
+
+/**
+ * Clear friend cache for a spectator (e.g. on disconnect).
+ */
+export function clearSpectatorFriendsCache(
+  spectatorUserId: string | undefined
+): void {
+  if (spectatorUserId) {
+    spectatorFriendsCache.delete(spectatorUserId);
+  }
+}
+
+// ─── Visibility Filtering ───────────────────────────────────────────────────
+
+/**
+ * Filter leaderboard entries based on visibility rules for a given viewer.
+ *
+ * Rules:
+ * - PUBLIC athletes → always visible to everyone
+ * - FRIENDS athletes → visible only to their friends, the athlete themselves, and event organizers
+ * - ORGANIZER_ONLY athletes → visible only to event organizers (and the athlete themselves)
+ *
+ * Hidden athletes are replaced with anonymized entries to preserve ranking integrity.
+ */
+export function filterLeaderboardForViewer(
+  entries: LeaderboardEntry[],
+  viewerUserId: string | undefined,
+  viewerFriendIds: Set<string>,
+  isOrganizer: boolean
+): LeaderboardEntry[] {
+  return entries.map((entry) => {
+    if (isOrganizer) return entry;
+    if (entry.visibility === "PUBLIC") return entry;
+    if (viewerUserId && entry.userId === viewerUserId) return entry;
+
+    if (entry.visibility === "FRIENDS") {
+      if (viewerUserId && viewerFriendIds.has(entry.userId)) return entry;
+    }
+
+    // Hidden: anonymize the entry but keep position/rank for leaderboard integrity
+    return {
+      ...entry,
+      name: null,
+      image: null,
+      bibNumber: null,
+    };
+  });
+}
+
+/**
+ * Filter athlete position updates based on visibility rules for a given viewer.
+ * Hidden athletes are completely excluded from position broadcasts (no GPS leak).
+ */
+export function filterPositionsForViewer(
+  positions: AthletePositionUpdate[],
+  viewerUserId: string | undefined,
+  viewerFriendIds: Set<string>,
+  isOrganizer: boolean
+): AthletePositionUpdate[] {
+  return positions.filter((pos) => {
+    if (isOrganizer) return true;
+    if (pos.visibility === "PUBLIC") return true;
+    if (viewerUserId && pos.userId === viewerUserId) return true;
+
+    if (pos.visibility === "FRIENDS") {
+      return viewerUserId ? viewerFriendIds.has(pos.userId) : false;
+    }
+
+    // ORGANIZER_ONLY → not visible to non-organizers
+    return false;
+  });
 }

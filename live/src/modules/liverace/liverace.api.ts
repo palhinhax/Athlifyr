@@ -105,6 +105,7 @@ export async function verifyAthlete(
     variantId: string;
     variantName: string | null;
     bibNumber: string | null;
+    liveRaceVisibility: "PUBLIC" | "FRIENDS" | "ORGANIZER_ONLY";
   };
   reason?: string;
 }> {
@@ -112,6 +113,19 @@ export async function verifyAthlete(
     method: "POST",
     body: { userId, eventId },
   });
+}
+
+/** Fetch accepted friend IDs for a user (used for FRIENDS visibility filtering) */
+export async function fetchFriendIds(
+  userId: string
+): Promise<{ friendIds: string[] }> {
+  return internalRequest<{ friendIds: string[] }>(
+    "/api/internal/live-friends",
+    {
+      method: "POST",
+      body: { userId },
+    }
+  );
 }
 
 export { LiveApiError };

@@ -113,18 +113,22 @@ export function LiveLeaderboard({
         </CardTitle>
 
         <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          <div className="flex items-center gap-1">
-            {connected ? (
-              <Wifi className="h-3 w-3 text-green-500" />
-            ) : (
-              <WifiOff className="h-3 w-3 text-red-500" />
-            )}
-            <span>{connected ? t("connected") : t("disconnected")}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            <span>{t("spectatorCount", { count: spectatorCount })}</span>
-          </div>
+          {status !== "FINISHED" && status !== "CANCELLED" && (
+            <>
+              <div className="flex items-center gap-1">
+                {connected ? (
+                  <Wifi className="h-3 w-3 text-green-500" />
+                ) : (
+                  <WifiOff className="h-3 w-3 text-red-500" />
+                )}
+                <span>{connected ? t("connected") : t("disconnected")}</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="h-3 w-3" />
+                <span>{t("spectatorCount", { count: spectatorCount })}</span>
+              </div>
+            </>
+          )}
         </div>
       </CardHeader>
 
@@ -145,7 +149,11 @@ export function LiveLeaderboard({
         {/* Empty state */}
         {displayEntries.length === 0 && (
           <div className="py-8 text-center text-sm text-muted-foreground">
-            {status === "WARMUP" ? t("waitingForAthletes") : t("noAthletes")}
+            {status === "WARMUP"
+              ? t("waitingForAthletes")
+              : status === "FINISHED"
+                ? t("noResults")
+                : t("noAthletes")}
           </div>
         )}
 

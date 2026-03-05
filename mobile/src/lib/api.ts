@@ -1,10 +1,15 @@
 import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
 import * as SecureStore from "expo-secure-store";
+import { Platform } from "react-native";
 import { getIntegrityToken } from "@/src/lib/integrity";
 
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+
+// On web, use a relative URL so requests go through the dev-server proxy (avoids CORS).
+// On native, use the full backend URL.
+const BASE_URL = Platform.OS === "web" ? "/api" : `${API_URL}/api`;
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
@@ -28,7 +33,7 @@ function processQueue(error: Error | null, token: string | null = null) {
 }
 
 export const api = axios.create({
-  baseURL: `${API_URL}/api`,
+  baseURL: BASE_URL,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",

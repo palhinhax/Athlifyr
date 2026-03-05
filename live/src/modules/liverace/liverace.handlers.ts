@@ -23,6 +23,10 @@ import {
   getSnapshot,
   eventRoom,
   getScheduledVariantStartTimes,
+  getSpectatorFriends,
+  clearSpectatorFriendsCache,
+  filterLeaderboardForViewer,
+  filterPositionsForViewer,
 } from "./liverace.service.js";
 import type { GPSPoint } from "./liverace.types.js";
 
@@ -136,17 +140,33 @@ export function registerLiveRaceHandlers(
         variantStartTimes: getScheduledVariantStartTimes(room),
       });
 
-      // Send current snapshot
+      // Pre-fetch spectator's friends for visibility filtering
+      const spectatorFriends = await getSpectatorFriends(userId);
+
+      // Send current snapshot (with visibility filtering applied)
       const snapshot = getSnapshot(eventId);
       if (snapshot) {
+        const filteredLeaderboard = filterLeaderboardForViewer(
+          snapshot.leaderboard,
+          userId,
+          spectatorFriends,
+          false // spectators are not organizers
+        );
+        const filteredPositions = filterPositionsForViewer(
+          snapshot.athletes,
+          userId,
+          spectatorFriends,
+          false
+        );
+
         socket.emit("liverace:leaderboard", {
           eventId,
-          entries: snapshot.leaderboard,
+          entries: filteredLeaderboard,
           timestamp: Date.now(),
         });
         socket.emit("liverace:positions", {
           eventId,
-          athletes: snapshot.athletes,
+          athletes: filteredPositions,
         });
         socket.emit("liverace:spectator_count", {
           eventId,
@@ -246,6 +266,11 @@ export function handleLiveRaceDisconnect(
 ): void {
   const role = socketEventRoles.get(socket.id);
   if (!role) return;
+
+  // Clear spectator friend cache on disconnect
+  if (role.role === "spectator") {
+    clearSpectatorFriendsCache(socket.data.userId);
+  }
 
   handleLeave(io, socket, role.eventId);
 }

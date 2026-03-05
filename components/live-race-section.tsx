@@ -1,9 +1,15 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useTranslations } from "next-intl";
-import { Radio, Eye } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useLiveRace, type EventLiveStatus } from "@/hooks/use-live-race";
+import {
+  useLiveRace,
+  type EventLiveStatus,
+  type LeaderboardEntry,
+} from "@/hooks/use-live-race";
 import { LiveLeaderboard } from "@/components/live-leaderboard";
 import { LiveEventFeed } from "@/components/live-event-feed";
 import { LiveCountdown } from "@/components/live-countdown";
@@ -39,35 +45,72 @@ export function LiveRaceSection({
 }: LiveRaceSectionProps) {
   const t = useTranslations("liveRace");
 
+  // Terminal states — render static results without connecting to the live server
+  const isTerminal = dbStatus === "FINISHED" || dbStatus === "CANCELLED";
+
+  // Fetch persisted final results for terminal races
+  const [finalLeaderboard, setFinalLeaderboard] = useState<LeaderboardEntry[]>(
+    []
+  );
+
+  useEffect(() => {
+    if (!isTerminal) return;
+
+    async function fetchFinalResults() {
+      try {
+        const res = await fetch(`/api/events/${eventId}/final-leaderboard`);
+        if (!res.ok) return;
+        const data = (await res.json()) as { entries: LeaderboardEntry[] };
+        setFinalLeaderboard(data.entries ?? []);
+      } catch {
+        // Silently fail — empty leaderboard is acceptable
+      }
+    }
+
+    fetchFinalResults();
+  }, [isTerminal, eventId]);
+
   const { connected, status, leaderboard, spectatorCount, recentEvents } =
     useLiveRace({
       eventId,
       role: "spectator",
-      autoConnect: true,
+      autoConnect: !isTerminal,
       initialStatus: dbStatus,
     });
 
+  // Use the DB status for terminal races (no WebSocket needed)
+  const effectiveStatus = isTerminal ? dbStatus : status;
+  // Use persisted results for terminal races, live data otherwise
+  const effectiveLeaderboard = isTerminal ? finalLeaderboard : leaderboard;
+
   // Don't render anything if the race hasn't been prepared yet
-  if (status === "SCHEDULED" && !connected) {
+  if (effectiveStatus === "SCHEDULED" && !connected) {
     return null;
   }
 
-  const showCountdown = status === "CHECK_IN_OPEN" || status === "WARMUP";
+  const showCountdown =
+    effectiveStatus === "CHECK_IN_OPEN" || effectiveStatus === "WARMUP";
 
   return (
     <div className={cn("space-y-4", className)}>
       {/* Section Header */}
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-2">
-          <Radio className="h-5 w-5 text-red-500" />
+          <Image
+            src="/liverace.png"
+            alt="LiveRace"
+            width={24}
+            height={24}
+            className="h-6 w-6"
+          />
           <h2 className="text-xl font-bold">{t("sectionTitle")}</h2>
         </div>
 
         <div className="flex items-center gap-2">
-          {status === "LIVE" && (
+          {effectiveStatus === "LIVE" && (
             <Badge className="animate-pulse bg-red-500 text-white">LIVE</Badge>
           )}
-          {status === "CHECK_IN_OPEN" && (
+          {effectiveStatus === "CHECK_IN_OPEN" && (
             <Badge
               variant="outline"
               className="border-yellow-500 text-yellow-600"
@@ -75,7 +118,7 @@ export function LiveRaceSection({
               {t("checkInOpen")}
             </Badge>
           )}
-          {status === "WARMUP" && (
+          {effectiveStatus === "WARMUP" && (
             <Badge
               variant="outline"
               className="border-amber-500 text-amber-600"
@@ -83,7 +126,7 @@ export function LiveRaceSection({
               {t("warmup")}
             </Badge>
           )}
-          {status === "FINISHED" && (
+          {effectiveStatus === "FINISHED" && (
             <Badge
               variant="outline"
               className="border-green-500 text-green-600"
@@ -93,7 +136,8 @@ export function LiveRaceSection({
           )}
         </div>
 
-        {spectatorCount > 0 && (
+        {/* Only show spectator count for active races (connected to live server) */}
+        {!isTerminal && spectatorCount > 0 && (
           <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
             <Eye className="h-3.5 w-3.5" />
             <span>{t("watching", { count: spectatorCount })}</span>
@@ -108,10 +152,10 @@ export function LiveRaceSection({
       <div className="grid gap-4 lg:grid-cols-3">
         {/* Leaderboard — 2 cols */}
         <LiveLeaderboard
-          leaderboard={leaderboard}
-          status={status}
-          spectatorCount={spectatorCount}
-          connected={connected}
+          leaderboard={effectiveLeaderboard}
+          status={effectiveStatus}
+          spectatorCount={isTerminal ? 0 : spectatorCount}
+          connected={isTerminal ? false : connected}
           maxDisplay={20}
           className="lg:col-span-2"
         />

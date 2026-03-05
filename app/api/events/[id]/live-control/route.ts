@@ -26,7 +26,7 @@ const LIVE_SERVICE_URL =
   "http://localhost:4000";
 
 /** Minimum number of route points for a valid LiveRace route. */
-const MIN_ROUTE_POINTS = 50;
+const MIN_ROUTE_POINTS = 10;
 
 // Valid transitions per command
 const COMMAND_TRANSITIONS: Record<

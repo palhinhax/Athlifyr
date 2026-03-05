@@ -11,7 +11,7 @@
  * - Event not found (404)
  * - LiveRace not enabled → error LIVERACE_NOT_ENABLED
  * - No variants → error NO_VARIANTS
- * - Insufficient route points (< 50) → error INSUFFICIENT_ROUTE_POINTS
+ * - Insufficient route points (< 10) → error INSUFFICIENT_ROUTE_POINTS
  * - Invalid coordinates → error INVALID_COORDINATES
  * - Missing startTime → error NO_START_TIME (not just a warning)
  * - Auto-derive start/finish from route endpoints
@@ -176,7 +176,7 @@ describe("GET /api/events/[id]/live-readiness", () => {
     expect(body.errors).toContain("NO_VARIANTS");
   });
 
-  it("returns INSUFFICIENT_ROUTE_POINTS when route has fewer than 50 points", async () => {
+  it("returns INSUFFICIENT_ROUTE_POINTS when route has fewer than 10 points", async () => {
     mockAdminPermission();
     (prisma.event.findUnique as jest.Mock).mockResolvedValue({
       id: "event-1",
@@ -188,7 +188,7 @@ describe("GET /api/events/[id]/live-readiness", () => {
           startTime: "09:00",
           route: {
             id: "route-1",
-            routePoints: generateRoutePoints(10), // only 10 points
+            routePoints: generateRoutePoints(5), // only 5 points
             checkpoints: [
               {
                 id: "cp-1",

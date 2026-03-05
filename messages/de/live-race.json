@@ -13,6 +13,7 @@
     "finishedMessage": "Das Rennen ist beendet. Sieh dir die Endergebnisse unten an.",
     "waitingForAthletes": "Warten auf Verbindung der Athleten...",
     "noAthletes": "Noch keine Athleten verbunden",
+    "noResults": "Keine Ergebnisse für dieses Rennen verfügbar",
     "noEvents": "Noch keine Ereignisse",
     "unknownAthlete": "Unbekannter Athlet",
     "moreAthletes": "+{count} weitere Athleten",

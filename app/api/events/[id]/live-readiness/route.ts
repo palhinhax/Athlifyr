@@ -17,7 +17,7 @@ import {
 } from "@/lib/event-permissions";
 
 /** Minimum number of route points for a valid LiveRace route. */
-const MIN_ROUTE_POINTS = 50;
+const MIN_ROUTE_POINTS = 10;
 
 export interface VariantReadiness {
   variantId: string;

@@ -13,6 +13,7 @@
     "finishedMessage": "The race has ended. Check the final results below.",
     "waitingForAthletes": "Waiting for athletes to connect...",
     "noAthletes": "No athletes connected yet",
+    "noResults": "No results available for this race",
     "noEvents": "No events yet",
     "unknownAthlete": "Unknown athlete",
     "moreAthletes": "+{count} more athletes",

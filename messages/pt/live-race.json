@@ -13,6 +13,7 @@
     "finishedMessage": "A corrida terminou. Consulta os resultados finais abaixo.",
     "waitingForAthletes": "À espera que os atletas se liguem...",
     "noAthletes": "Nenhum atleta ligado",
+    "noResults": "Sem resultados disponíveis para esta corrida",
     "noEvents": "Ainda sem eventos",
     "unknownAthlete": "Atleta desconhecido",
     "moreAthletes": "+{count} atletas",

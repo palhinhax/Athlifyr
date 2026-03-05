@@ -159,6 +159,69 @@ function geoCircle(
   };
 }
 
+/**
+ * Generates a GeoJSON LineString perpendicular to the route at a checkpoint.
+ * Creates a "finish line" / "start line" effect across the route.
+ *
+ * @param cpLng - checkpoint longitude
+ * @param cpLat - checkpoint latitude
+ * @param routePoints - the full route [[lat, lng], ...]
+ * @param widthM - half-width of the line in metres (extends each side)
+ */
+function geoGateLine(
+  cpLng: number,
+  cpLat: number,
+  routePoints: [number, number][],
+  widthM = 30
+): GeoJSON.Feature<GeoJSON.LineString> {
+  // Find the closest route segment to the checkpoint
+  let bearing = 0;
+
+  if (routePoints.length >= 2) {
+    let minDist = Infinity;
+    let closestIdx = 0;
+
+    for (let i = 0; i < routePoints.length; i++) {
+      const dlat = routePoints[i][0] - cpLat;
+      const dlng = routePoints[i][1] - cpLng;
+      const dist = dlat * dlat + dlng * dlng;
+      if (dist < minDist) {
+        minDist = dist;
+        closestIdx = i;
+      }
+    }
+
+    // Determine the bearing of the route at that point
+    const prevIdx = Math.max(0, closestIdx - 1);
+    const nextIdx = Math.min(routePoints.length - 1, closestIdx + 1);
+    const dLat = routePoints[nextIdx][0] - routePoints[prevIdx][0];
+    const dLng = routePoints[nextIdx][1] - routePoints[prevIdx][1];
+    bearing = Math.atan2(dLng, dLat); // bearing of route direction
+  }
+
+  // Perpendicular bearing (90° rotated)
+  const perpBearing = bearing + Math.PI / 2;
+
+  // Calculate offset in degrees (approximate at this latitude)
+  const metresToDegLat = 1 / 111320;
+  const metresToDegLng = 1 / (111320 * Math.cos((cpLat * Math.PI) / 180));
+
+  const dLat = Math.cos(perpBearing) * widthM * metresToDegLat;
+  const dLng = Math.sin(perpBearing) * widthM * metresToDegLng;
+
+  return {
+    type: "Feature",
+    properties: {},
+    geometry: {
+      type: "LineString",
+      coordinates: [
+        [cpLng - dLng, cpLat - dLat],
+        [cpLng + dLng, cpLat + dLat],
+      ],
+    },
+  };
+}
+
 export default function RouteMapEditor({
   routePoints,
   checkpoints,
@@ -324,42 +387,73 @@ export default function RouteMapEditor({
 
     checkpoints.forEach((cp, idx) => {
       const color = CHECKPOINT_COLORS[cp.type];
-
-      // ── Geofence circle (zone where runner must pass) ──────────────────
-      const circleFeature = geoCircle(cp.longitude, cp.latitude, cp.radiusM);
+      const isGateLine = cp.type === "START" || cp.type === "FINISH";
       const srcId = `gate-zone-${idx}`;
 
-      map.addSource(srcId, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [circleFeature],
-        },
-      });
+      if (isGateLine && routePoints.length >= 2) {
+        // ── Gate line perpendicular to route (start/finish line) ──────────
+        const lineFeature = geoGateLine(
+          cp.longitude,
+          cp.latitude,
+          routePoints,
+          cp.radiusM
+        );
 
-      // Fill — semi-transparent
-      map.addLayer({
-        id: `gate-zone-fill-${idx}`,
-        type: "fill",
-        source: srcId,
-        paint: {
-          "fill-color": color,
-          "fill-opacity": 0.12,
-        },
-      });
+        map.addSource(srcId, {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [lineFeature],
+          },
+        });
 
-      // Outline — dashed border
-      map.addLayer({
-        id: `gate-zone-line-${idx}`,
-        type: "line",
-        source: srcId,
-        paint: {
-          "line-color": color,
-          "line-width": 2,
-          "line-dasharray": [3, 2],
-          "line-opacity": 0.6,
-        },
-      });
+        // Thick solid line across the route
+        map.addLayer({
+          id: `gate-zone-line-${idx}`,
+          type: "line",
+          source: srcId,
+          paint: {
+            "line-color": color,
+            "line-width": 4,
+            "line-opacity": 0.85,
+          },
+        });
+      } else {
+        // ── Geofence circle (for intermediate/transition or when no route) ──
+        const circleFeature = geoCircle(cp.longitude, cp.latitude, cp.radiusM);
+
+        map.addSource(srcId, {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            features: [circleFeature],
+          },
+        });
+
+        // Fill — semi-transparent
+        map.addLayer({
+          id: `gate-zone-fill-${idx}`,
+          type: "fill",
+          source: srcId,
+          paint: {
+            "fill-color": color,
+            "fill-opacity": 0.12,
+          },
+        });
+
+        // Outline — dashed border
+        map.addLayer({
+          id: `gate-zone-line-${idx}`,
+          type: "line",
+          source: srcId,
+          paint: {
+            "line-color": color,
+            "line-width": 2,
+            "line-dasharray": [3, 2],
+            "line-opacity": 0.6,
+          },
+        });
+      }
 
       // ── Gate marker (banner + pole) ────────────────────────────────────
       const el = makeMarkerEl(cp.type, cp.name, cp.order, poleHeights[idx]);
@@ -392,7 +486,7 @@ export default function RouteMapEditor({
 
       markerRefs.current.push(marker);
     });
-  }, [checkpoints, editable, onCheckpointMove]);
+  }, [checkpoints, editable, onCheckpointMove, routePoints]);
 
   // ─── Run syncMarkers whenever checkpoints change AND map is ready ────────
   useEffect(() => {

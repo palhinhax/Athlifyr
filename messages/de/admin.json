@@ -382,7 +382,11 @@
         "prizeCount": "Anzahl der Preise",
         "status": "Status",
         "participants": "Teilnehmer",
-        "winners": "Gewinner"
+        "winners": "Gewinner",
+        "variant": "Variante (optional)",
+        "variantPlaceholder": "Variante auswählen",
+        "variantAll": "Alle Varianten",
+        "variantHelp": "Beschränkt die Teilnahme am Gewinnspiel auf Teilnehmer dieser spezifischen Variante."
       },
       "form": {
         "title": "Titel",

@@ -34,6 +34,7 @@ import { VenuePromoForm } from "@/components/instagram/venue-promo-form";
 import { GiveawayPromoForm } from "@/components/instagram/giveaway-promo-form";
 import { AppDownloadForm } from "@/components/instagram/app-download-form";
 import { AthliChatPromoForm } from "@/components/instagram/athli-chat-promo-form";
+import { GiveawayWinnerForm } from "@/components/instagram/giveaway-winner-form";
 import {
   type TemplateKey,
   type InstagramFormat,
@@ -52,6 +53,7 @@ import {
   type GiveawayPromoPayload,
   type AppDownloadPayload,
   type AthliChatPromoPayload,
+  type GiveawayWinnerPayload,
   type Background,
   BRAND_COLORS,
   BRAND_GRADIENTS,
@@ -263,6 +265,21 @@ export default function InstagramGeneratorPage() {
     "Treino rápido",
   ]);
   const [t14Cta, setT14Cta] = useState("Experimenta agora");
+
+  // T15: Giveaway Winner
+  const [t15EventName, setT15EventName] = useState("");
+  const [t15GiveawayTitle, setT15GiveawayTitle] = useState(
+    "VENCEDORES DO SORTEIO"
+  );
+  const [t15Prize, setT15Prize] = useState("1 Inscrição Gratuita");
+  const [t15Winners, setT15Winners] = useState<
+    GiveawayWinnerPayload["winners"]
+  >([{ ticketNumber: "#0042", label: "1º Lugar" }]);
+  const [t15DrawDate, setT15DrawDate] = useState("");
+  const [t15ThankYouLine, setT15ThankYouLine] = useState(
+    "Obrigado a todos os participantes! 🙌"
+  );
+  const [t15VerificationHash, setT15VerificationHash] = useState("");
 
   const [isSavingDraft, setIsSavingDraft] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
@@ -675,8 +692,20 @@ export default function InstagramGeneratorPage() {
           background,
         } as AthliChatPromoPayload;
 
+      case "T15":
+        return {
+          eventName: t15EventName,
+          giveawayTitle: t15GiveawayTitle,
+          prize: t15Prize,
+          winners: t15Winners.filter((w) => w.ticketNumber.trim()),
+          drawDate: t15DrawDate || undefined,
+          thankYouLine: t15ThankYouLine || undefined,
+          verificationHash: t15VerificationHash || undefined,
+          background,
+        } as GiveawayWinnerPayload;
+
       default:
-        throw new Error(`Unknown template: ${templateKey}. Expected T1-T14.`);
+        throw new Error(`Unknown template: ${templateKey}. Expected T1-T15.`);
     }
   };
 
@@ -1136,6 +1165,25 @@ export default function InstagramGeneratorPage() {
                 onSubheadlineChange={setT14Subheadline}
                 onChatSuggestionsChange={setT14ChatSuggestions}
                 onCtaChange={setT14Cta}
+              />
+            )}
+
+            {templateKey === "T15" && (
+              <GiveawayWinnerForm
+                eventName={t15EventName}
+                giveawayTitle={t15GiveawayTitle}
+                prize={t15Prize}
+                winners={t15Winners}
+                drawDate={t15DrawDate}
+                thankYouLine={t15ThankYouLine}
+                verificationHash={t15VerificationHash}
+                onEventNameChange={setT15EventName}
+                onGiveawayTitleChange={setT15GiveawayTitle}
+                onPrizeChange={setT15Prize}
+                onWinnersChange={setT15Winners}
+                onDrawDateChange={setT15DrawDate}
+                onThankYouLineChange={setT15ThankYouLine}
+                onVerificationHashChange={setT15VerificationHash}
               />
             )}
           </Card>

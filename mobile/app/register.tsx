@@ -112,7 +112,11 @@ export default function RegisterScreen() {
       });
 
       showToast(t("register.nowYouCanSignIn"), "success");
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/");
+      }
       setTimeout(() => router.push("/login"), 100);
     } catch (error) {
       const code = isAxiosError(error)
@@ -136,7 +140,11 @@ export default function RegisterScreen() {
   // Navigate when Google auth succeeds (async flow handled in useGoogleAuth hook)
   useEffect(() => {
     if (isAuthenticated) {
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/");
+      }
     }
   }, [isAuthenticated, router]);
 
@@ -161,7 +169,13 @@ export default function RegisterScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/");
+              }
+            }}
             style={styles.backButton}
           >
             <ArrowLeft size={24} color={colors.text} />

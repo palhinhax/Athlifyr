@@ -154,6 +154,29 @@ const nextConfig = {
   async headers() {
     return [
       {
+        // CORS headers for API routes — allows mobile app (Expo) to call Next.js APIs
+        source: "/api/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value:
+              "Content-Type, Authorization, X-Requested-With, X-Internal-Secret",
+          },
+          {
+            key: "Access-Control-Max-Age",
+            value: "86400",
+          },
+        ],
+      },
+      {
         // Apply security headers to all routes
         source: "/:path*",
         headers: [

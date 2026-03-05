@@ -52,12 +52,34 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Use the web client ID + secret for the server-to-server token exchange.
-    // Google requires the web client credentials for authorization code exchange,
-    // even when the code was obtained on a native client.
+    // Select the correct Google client credentials for the token exchange.
+    // The authorization code was issued for a specific client ID (the one the
+    // mobile app used), so the exchange MUST use that same client ID + its secret.
+    //
+    // The mobile app (Expo) requests the auth code using GOOGLE_MOBILE_WEB_CLIENT_ID.
+    // The server must exchange that code with the SAME client ID + secret pair.
+    // Using a different web client (GOOGLE_CLIENT_ID — the NextAuth credential)
+    // causes "unauthorized_client" because the code was not issued for that client.
+    //
+    // Required env vars:
+    //   GOOGLE_MOBILE_WEB_CLIENT_ID     — the web-type OAuth client used by the mobile app
+    //   GOOGLE_MOBILE_WEB_CLIENT_SECRET — its corresponding client secret (from Google Cloud Console)
+    const mobileClientId = process.env.GOOGLE_MOBILE_WEB_CLIENT_ID;
+    const mobileClientSecret = process.env.GOOGLE_MOBILE_WEB_CLIENT_SECRET;
+
+    if (!mobileClientId || !mobileClientSecret) {
+      console.error(
+        "[Google Exchange] Missing GOOGLE_MOBILE_WEB_CLIENT_ID or GOOGLE_MOBILE_WEB_CLIENT_SECRET in env"
+      );
+      return NextResponse.json(
+        { error: "Server OAuth configuration incomplete" },
+        { status: 500 }
+      );
+    }
+
     const googleClient = new OAuth2Client(
-      process.env.GOOGLE_CLIENT_ID,
-      process.env.GOOGLE_CLIENT_SECRET,
+      mobileClientId,
+      mobileClientSecret,
       redirectUri
     );
 
@@ -246,4 +268,18 @@ export async function POST(request: NextRequest) {
       { status: 500 }
     );
   }
+}
+
+/** Handle CORS preflight requests from mobile app */
+export async function OPTIONS() {
+  return new NextResponse(null, {
+    status: 204,
+    headers: {
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Allow-Headers":
+        "Content-Type, Authorization, X-Requested-With",
+      "Access-Control-Max-Age": "86400",
+    },
+  });
 }

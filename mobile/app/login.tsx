@@ -69,7 +69,11 @@ export default function LoginScreen() {
     setIsLoading(true);
     try {
       await login(email.trim(), password);
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/");
+      }
     } catch (error) {
       const code = isAxiosError(error)
         ? (error.response?.data as { code?: string })?.code
@@ -90,7 +94,11 @@ export default function LoginScreen() {
   // Navigate back when authentication succeeds (Google flow is async via useEffect)
   useEffect(() => {
     if (isAuthenticated) {
-      router.back();
+      if (router.canGoBack()) {
+        router.back();
+      } else {
+        router.replace("/");
+      }
     }
   }, [isAuthenticated, router]);
 
@@ -123,7 +131,13 @@ export default function LoginScreen() {
         {/* Header */}
         <View style={styles.header}>
           <TouchableOpacity
-            onPress={() => router.back()}
+            onPress={() => {
+              if (router.canGoBack()) {
+                router.back();
+              } else {
+                router.replace("/");
+              }
+            }}
             style={styles.backButton}
           >
             <ArrowLeft size={24} color={colors.text} />

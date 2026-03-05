@@ -54,3 +54,4 @@ mobile/athlifyr-mobile-firebase-adminsdk-fbsvc-db3558b416.json
 
 # SonarQube
 .scannerwork/
+live/package-lock.json

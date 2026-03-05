@@ -2,11 +2,20 @@ import * as Sentry from "@sentry/nextjs";
 import { Link } from "@/i18n/routing";
 import { Button } from "@/components/ui/button";
 import { getTranslations } from "next-intl/server";
+import { headers } from "next/headers";
 
 export default async function NotFound() {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const referer = headersList.get("referer") || "";
+
   Sentry.captureMessage("404 Not Found (locale route)", {
     level: "warning",
     tags: { feature: "not-found" },
+    extra: {
+      pathname,
+      referer,
+    },
   });
 
   const t = await getTranslations("common");

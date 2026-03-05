@@ -172,11 +172,39 @@ export default function middleware(request: NextRequest) {
   // For bots with valid locale in URL, serve content directly without additional redirects
   if (isBotRequest && hasLocalePrefix) {
     // Let next-intl handle it but the URL is already correct
-    return intlMiddleware(request);
+    return withPathnameHeader(request, intlMiddleware(request));
   }
 
   // Continue with internationalization middleware for regular users
-  return intlMiddleware(request);
+  return withPathnameHeader(request, intlMiddleware(request));
+}
+
+/**
+ * Wraps an intl middleware response to add x-pathname request header
+ * so that server components can identify the current request path via headers().
+ */
+function withPathnameHeader(
+  request: NextRequest,
+  response: NextResponse
+): NextResponse {
+  // Don't modify redirect responses — the browser will follow the redirect
+  if (response.headers.get("location")) {
+    return response;
+  }
+
+  const requestHeaders = new Headers(request.headers);
+  requestHeaders.set("x-pathname", request.nextUrl.pathname);
+
+  const newResponse = NextResponse.next({
+    request: { headers: requestHeaders },
+  });
+
+  // Preserve response headers from the intl middleware (cookies, locale, etc.)
+  response.headers.forEach((value, key) => {
+    newResponse.headers.set(key, value);
+  });
+
+  return newResponse;
 }
 
 export const config = {

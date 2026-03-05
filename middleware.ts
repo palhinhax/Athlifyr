@@ -182,6 +182,13 @@ export default function middleware(request: NextRequest) {
 /**
  * Wraps an intl middleware response to add x-pathname request header
  * so that server components can identify the current request path via headers().
+ *
+ * - Redirect responses are returned as-is because the browser will follow the
+ *   redirect and the new request will go through the middleware again.
+ * - Response headers from the intl middleware (e.g. locale cookies) are
+ *   preserved on the new response to maintain correct i18n behavior.
+ * - The x-pathname header is consumed by app/[locale]/not-found.tsx to include
+ *   the actual request path in Sentry 404 reports.
  */
 function withPathnameHeader(
   request: NextRequest,

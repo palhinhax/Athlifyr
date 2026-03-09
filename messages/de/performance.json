@@ -167,6 +167,18 @@
         "teams": "Teams",
         "adaptive": "Adaptive"
       }
+    },
+    "activity": {
+      "title": "Laufaktivität",
+      "distance": "Distanz",
+      "duration": "Dauer",
+      "avgPace": "Ø Tempo",
+      "maxSpeed": "Max. Tempo",
+      "elevGain": "Höhenmeter Aufstieg",
+      "elevLoss": "Höhenmeter Abstieg",
+      "gpsPoints": "GPS-Punkte",
+      "back": "Zurück",
+      "viewActivity": "Aktivität ansehen"
     }
   }
 }

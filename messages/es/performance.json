@@ -167,6 +167,18 @@
         "teams": "Equipos",
         "adaptive": "Adaptive"
       }
+    },
+    "activity": {
+      "title": "Actividad de Carrera",
+      "distance": "Distancia",
+      "duration": "Duración",
+      "avgPace": "Ritmo Medio",
+      "maxSpeed": "Velocidad Máx.",
+      "elevGain": "Desnivel Positivo",
+      "elevLoss": "Desnivel Negativo",
+      "gpsPoints": "Puntos GPS",
+      "back": "Volver",
+      "viewActivity": "Ver actividad"
     }
   }
 }

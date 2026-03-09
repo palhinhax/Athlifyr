@@ -30,6 +30,7 @@ import {
   ChevronUp,
   Medal,
   ExternalLink,
+  MapPin,
 } from "lucide-react";
 import { EditRunDialog } from "./edit-run-dialog";
 import { EditStrengthDialog } from "./edit-strength-dialog";
@@ -185,6 +186,18 @@ export function PerformanceEntriesList({
               )}
             </div>
             <div className="ml-2 flex shrink-0 items-center gap-0.5">
+              {entry.runActivityId && (
+                <Link href={`/profile/activities/${entry.runActivityId}`}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-blue-500 hover:text-blue-600"
+                    title={t("activity.viewActivity")}
+                  >
+                    <MapPin className="h-4 w-4" />
+                  </Button>
+                </Link>
+              )}
               <Button
                 variant="ghost"
                 size="icon"
@@ -320,6 +333,18 @@ export function PerformanceEntriesList({
                 )}
                 <TableCell>
                   <div className="flex items-center gap-1">
+                    {entry.runActivityId && (
+                      <Link href={`/profile/activities/${entry.runActivityId}`}>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-blue-500 hover:text-blue-600"
+                          title={t("activity.viewActivity")}
+                        >
+                          <MapPin className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"

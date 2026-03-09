@@ -728,24 +728,24 @@ distance). This means:
 
 ### Confirmed Behaviour
 
-| Scenario                                             | Status | Mechanism                                      |
-| ---------------------------------------------------- | ------ | ---------------------------------------------- |
-| Progress does not regress on return path             | ✅     | Monotonic clamp + windowed projection          |
-| `progressPercent` never regresses to a backward value | ✅     | Derived from clamped distance, not raw projection |
-| FINISH not falsely triggered at race start           | ✅     | 90% minimum progress guard                     |
-| Intermediate checkpoints not double-triggered        | ✅     | `alreadyReachedOrders` set deduplication        |
-| Return-leg checkpoints get correct route distance    | ✅     | Monotonic search in `buildRouteHelper`          |
-| Leaderboard distance ranking remains correct         | ✅     | `distanceAlongRouteM` always monotonically increasing |
-| Offline batch sync preserves out-and-back semantics  | ✅     | Same projection + monotonic logic in `processGpsBatch` |
+| Scenario                                              | Status | Mechanism                                              |
+| ----------------------------------------------------- | ------ | ------------------------------------------------------ |
+| Progress does not regress on return path              | ✅     | Monotonic clamp + windowed projection                  |
+| `progressPercent` never regresses to a backward value | ✅     | Derived from clamped distance, not raw projection      |
+| FINISH not falsely triggered at race start            | ✅     | 90% minimum progress guard                             |
+| Intermediate checkpoints not double-triggered         | ✅     | `alreadyReachedOrders` set deduplication               |
+| Return-leg checkpoints get correct route distance     | ✅     | Monotonic search in `buildRouteHelper`                 |
+| Leaderboard distance ranking remains correct          | ✅     | `distanceAlongRouteM` always monotonically increasing  |
+| Offline batch sync preserves out-and-back semantics   | ✅     | Same projection + monotonic logic in `processGpsBatch` |
 
 ### Limitations and Recommendations for Race Organisers
 
-| Limitation                          | Guidance                                                                                                                                                                        |
-| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GPS drift at turnaround**         | Near the turnaround point, GPS drift may cause the projection to briefly hesitate between the last outbound segment and the first return segment. The 50 m backward tolerance handles this gracefully. |
-| **Checkpoint radius on return leg** | An intermediate checkpoint placed on the outbound leg will **not** trigger a second time on the return (deduplication is by order). If you need a second split at the same physical location, add a second checkpoint with a different `order`. |
-| **Very short out-and-back routes**  | The 90% finish guard requires the athlete to have covered ≥ 90% of the declared FINISH route distance. For routes under ~1 km, ensure the FINISH is placed accurately in the GPX so the distance is correct. |
-| **Spectator map display**          | On the spectator map, outbound and return athletes are shown at their GPS coordinates. Two athletes at the same physical spot but on different legs are visually indistinguishable on the map; the leaderboard distance column clarifies their relative positions. |
+| Limitation                          | Guidance                                                                                                                                                                                                                                                           |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **GPS drift at turnaround**         | Near the turnaround point, GPS drift may cause the projection to briefly hesitate between the last outbound segment and the first return segment. The 50 m backward tolerance handles this gracefully.                                                             |
+| **Checkpoint radius on return leg** | An intermediate checkpoint placed on the outbound leg will **not** trigger a second time on the return (deduplication is by order). If you need a second split at the same physical location, add a second checkpoint with a different `order`.                    |
+| **Very short out-and-back routes**  | The 90% finish guard requires the athlete to have covered ≥ 90% of the declared FINISH route distance. For routes under ~1 km, ensure the FINISH is placed accurately in the GPX so the distance is correct.                                                       |
+| **Spectator map display**           | On the spectator map, outbound and return athletes are shown at their GPS coordinates. Two athletes at the same physical spot but on different legs are visually indistinguishable on the map; the leaderboard distance column clarifies their relative positions. |
 
 ---
 

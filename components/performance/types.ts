@@ -23,6 +23,7 @@ export interface PerformanceEntry {
   reps?: number | null;
   hyroxCategory?: HyroxCategory | null;
   eventResult?: EventResultInfo | null;
+  runActivityId?: string | null;
 }
 
 // HYROX Categories

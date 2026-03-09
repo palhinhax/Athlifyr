@@ -19,6 +19,17 @@ import type {
 
 const EARTH_RADIUS_M = 6_371_000;
 
+/** Minimum segment length (meters) to consider valid.  Shorter segments
+ *  arise from duplicate/near-duplicate GPX points and produce degenerate
+ *  cross-track / along-track calculations. */
+const MIN_SEGMENT_LENGTH_M = 0.01;
+
+/** Clamp a value to [-1, 1] to prevent NaN from Math.acos / Math.asin
+ *  caused by floating-point rounding slightly exceeding the valid domain. */
+function clampUnit(v: number): number {
+  return v < -1 ? -1 : v > 1 ? 1 : v;
+}
+
 // ─── Haversine Distance (meters) ────────────────────────────────────────────
 
 export function haversineM(
@@ -70,10 +81,8 @@ function crossTrackDistanceM(
   const b12 =
     (bearingDeg(segStartLat, segStartLng, segEndLat, segEndLng) * Math.PI) /
     180;
-  return Math.abs(
-    Math.asin(Math.sin(d13 / EARTH_RADIUS_M) * Math.sin(b13 - b12)) *
-      EARTH_RADIUS_M
-  );
+  const sinArg = Math.sin(d13 / EARTH_RADIUS_M) * Math.sin(b13 - b12);
+  return Math.abs(Math.asin(clampUnit(sinArg)) * EARTH_RADIUS_M);
 }
 
 // ─── Along-track distance: distance from seg start to projection point ──────
@@ -87,6 +96,12 @@ function alongTrackDistanceM(
   segEndLng: number
 ): number {
   const d13 = haversineM(segStartLat, segStartLng, pointLat, pointLng);
+
+  // Guard: if the point is coincident with the segment start, the
+  // along-track distance is trivially zero.  This avoids a 0/0 ratio
+  // inside acos that would produce NaN.
+  if (d13 < MIN_SEGMENT_LENGTH_M) return 0;
+
   const crossTrack = crossTrackDistanceM(
     pointLat,
     pointLng,
@@ -95,11 +110,20 @@ function alongTrackDistanceM(
     segEndLat,
     segEndLng
   );
-  return (
-    Math.acos(
-      Math.cos(d13 / EARTH_RADIUS_M) / Math.cos(crossTrack / EARTH_RADIUS_M)
-    ) * EARTH_RADIUS_M
-  );
+
+  const cosD13 = Math.cos(d13 / EARTH_RADIUS_M);
+  const cosCT = Math.cos(crossTrack / EARTH_RADIUS_M);
+
+  // Guard: when cosCT ≈ 0 (crossTrack ≈ π/2 * R ≈ 10 000 km) or when
+  // floating-point rounding pushes |cosD13/cosCT| > 1, clamp to the
+  // valid acos domain to prevent NaN.
+  if (cosCT === 0) return 0;
+  const ratio = clampUnit(cosD13 / cosCT);
+
+  const result = Math.acos(ratio) * EARTH_RADIUS_M;
+  // Final safety net: if result is NaN despite the guards (should not
+  // happen), fall back to the straight-line distance from segment start.
+  return Number.isNaN(result) ? d13 : result;
 }
 
 // ─── Gate Line Computation (perpendicular to route at checkpoint) ────────────
@@ -265,6 +289,13 @@ export function buildRouteHelper(
     const [endLat, endLng] = routePoints[i + 1];
     const lengthM = haversineM(startLat, startLng, endLat, endLng);
 
+    // Skip degenerate segments (duplicate / near-duplicate GPX points).
+    // These produce meaningless cross-track and along-track results and
+    // can cause NaN propagation in the projection functions.
+    if (lengthM < MIN_SEGMENT_LENGTH_M) {
+      continue;
+    }
+
     segments.push({
       startIdx: i,
       startLat,
@@ -302,9 +333,21 @@ export function buildRouteHelper(
       .sort((a, b) => a.order - b.order)
       .map(({ idx }) => idx);
 
+    // Deviation tolerance for tie-breaking (meters). When two segments
+    // produce deviations within this epsilon, later-order checkpoints
+    // (e.g. FINISH) prefer the later segment so they land on the return
+    // leg of an out-and-back route instead of the outbound leg.
+    const DEVIATION_EPSILON_M = 0.5;
+
     let minSearchIdx = 0;
-    for (const cpIdx of sortedIndices) {
+    for (let sortedPos = 0; sortedPos < sortedIndices.length; sortedPos++) {
+      const cpIdx = sortedIndices[sortedPos];
       const cp = checkpoints[cpIdx];
+      // The first checkpoint in race order (typically START) keeps the
+      // earliest matching segment. All subsequent checkpoints prefer
+      // a later segment when deviations are within epsilon — this
+      // ensures FINISH lands on the return leg, not the outbound leg.
+      const preferLaterSegment = sortedPos > 0;
       let bestDeviation = Infinity;
       let bestDistance = 0;
       let bestSegIdx = minSearchIdx;
@@ -351,7 +394,17 @@ export function buildRouteHelper(
           );
         }
 
-        if (deviation < bestDeviation) {
+        const isBetterMatch = deviation < bestDeviation;
+        // Tie-breaker: for later-order checkpoints, accept a later segment
+        // when the deviation is within epsilon of the current best. This
+        // resolves the out-and-back ambiguity where START and FINISH at the
+        // same GPS coordinates would otherwise both snap to the outbound leg.
+        const isTiedLaterMatch =
+          preferLaterSegment &&
+          Math.abs(deviation - bestDeviation) < DEVIATION_EPSILON_M &&
+          i > bestSegIdx;
+
+        if (isBetterMatch || isTiedLaterMatch) {
           bestDeviation = deviation;
           bestDistance = seg.cumulativeDistanceM + alongDist;
           bestSegIdx = i;
@@ -560,8 +613,11 @@ export function projectPointOnRouteNear(
     }
   }
 
-  // If the local result has reasonable deviation, return it without full scan
-  if (bestDeviation < 500) {
+  // If the local result has reasonable deviation, return it without full scan.
+  // 150 m is tight enough to reject incorrect matches on parallel/overlapping
+  // segments (e.g. out-and-back routes, switchbacks) while still tolerating
+  // normal GPS noise and brief off-trail excursions.
+  if (bestDeviation < 150) {
     return {
       distanceAlongRouteM: bestDistanceAlong,
       deviationM: bestDeviation,
@@ -705,15 +761,18 @@ export function detectFinish(
   }
 
   // ── Fallback: distance-based + radius (for first point / no gate) ─
-  const passedByDistance = distanceAlongRouteM >= finishDistanceM - 30;
+  // Both fallback methods require the minimum progress guard to prevent
+  // false finishes on out-and-back routes where the finish zone overlaps
+  // the start area.
+  const passedByDistance =
+    distanceAlongRouteM >= finishDistanceM - 30 &&
+    distanceAlongRouteM >= minFinishDistanceM;
   const distToFinish = haversineM(
     lat,
     lng,
     finishCp.latitude,
     finishCp.longitude
   );
-  // Proximity check also requires minimum progress to avoid a false finish
-  // when the athlete is physically near the finish/start zone at race start.
   const withinRadius =
     distToFinish <= finishCp.radiusM &&
     distanceAlongRouteM >= minFinishDistanceM;

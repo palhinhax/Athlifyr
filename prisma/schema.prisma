@@ -110,6 +110,9 @@ model User {
   // Custom field responses (event registration extras)
   customFieldResponses    CustomFieldResponse[]
 
+  // GPS-tracked run activities (Free Run, etc.)
+  runActivities RunActivity[]
+
   @@index([email])
   @@index([name])
 }
@@ -1742,6 +1745,9 @@ model UserPerformanceEntry {
   qualityScore     Float @default(0.5)
   predictionWeight Float @default(0.5)
 
+  // Link to GPS activity (when entry comes from a tracked run)
+  runActivityId String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1752,6 +1758,9 @@ model UserPerformanceEntry {
   // Workout Builder relations
   workoutExerciseResult WorkoutExerciseResult? @relation("WorkoutResultPerformance", fields: [workoutExerciseResultId], references: [id])
   workoutExerciseSet    WorkoutExerciseSet?    @relation("SetPerformance", fields: [workoutExerciseSetId], references: [id])
+
+  // GPS activity relation
+  runActivity RunActivity? @relation(fields: [runActivityId], references: [id], onDelete: SetNull)
 
   @@index([userId, type, performedAt])
   @@index([userId, exerciseId])
@@ -2566,6 +2575,31 @@ enum AthliMessageRole {
 // ============================================================================
 // PLATFORM KNOWLEDGE BASE (for Athli AI to answer questions about Athlifyr)
 // ============================================================================
+
+// GPS-tracked run activity (from mobile Free Run feature)
+model RunActivity {
+  id     String @id @default(cuid())
+  userId String
+
+  startedAt      DateTime
+  finishedAt     DateTime
+  durationMs     Int
+  distanceM      Int       // total distance in meters
+  avgPaceMinKm   Float?    // avg pace in min/km
+  maxSpeedKmh    Float?
+  elevationGainM Int       @default(0)
+  elevationLossM Int       @default(0)
+
+  // GPS track stored as JSON array of {lat, lng, timestamp, altitude?, speed?, accuracy?}
+  track Json @db.JsonB
+
+  createdAt DateTime @default(now())
+
+  user             User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  performanceEntry UserPerformanceEntry?
+
+  @@index([userId, startedAt])
+}
 
 model PlatformKnowledge {
   id        String   @id @default(cuid())

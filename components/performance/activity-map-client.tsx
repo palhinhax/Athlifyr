@@ -3,16 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { type GpsPoint } from "./types";
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
-
-interface GpsPoint {
-  lat: number;
-  lng: number;
-  timestamp: number;
-  altitude?: number;
-  speed?: number;
-}
 
 interface ActivityMapProps {
   track: GpsPoint[];

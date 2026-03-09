@@ -40,6 +40,51 @@ import { Link } from "@/i18n/routing";
 
 export type { PerformanceEntry };
 
+function EntryActions({
+  entry,
+  activityLabel,
+  onEdit,
+  onDelete,
+}: {
+  entry: PerformanceEntry;
+  activityLabel: string;
+  onEdit: (entry: PerformanceEntry) => void;
+  onDelete: (id: string) => void;
+}) {
+  return (
+    <>
+      {entry.runActivityId && (
+        <Link href={`/profile/activities/${entry.runActivityId}`}>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-blue-500 hover:text-blue-600"
+            title={activityLabel}
+          >
+            <MapPin className="h-4 w-4" />
+          </Button>
+        </Link>
+      )}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8"
+        onClick={() => onEdit(entry)}
+      >
+        <Pencil className="h-4 w-4" />
+      </Button>
+      <Button
+        variant="ghost"
+        size="icon"
+        className="h-8 w-8 text-destructive hover:text-destructive"
+        onClick={() => onDelete(entry.id)}
+      >
+        <Trash2 className="h-4 w-4" />
+      </Button>
+    </>
+  );
+}
+
 interface PerformanceEntriesListProps {
   entries: PerformanceEntry[];
   type: "RUN" | "TRAIL" | "STRENGTH";
@@ -186,34 +231,12 @@ export function PerformanceEntriesList({
               )}
             </div>
             <div className="ml-2 flex shrink-0 items-center gap-0.5">
-              {entry.runActivityId && (
-                <Link href={`/profile/activities/${entry.runActivityId}`}>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-blue-500 hover:text-blue-600"
-                    title={t("activity.viewActivity")}
-                  >
-                    <MapPin className="h-4 w-4" />
-                  </Button>
-                </Link>
-              )}
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8"
-                onClick={() => setEditEntry(entry)}
-              >
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-8 w-8 text-destructive hover:text-destructive"
-                onClick={() => setDeleteId(entry.id)}
-              >
-                <Trash2 className="h-4 w-4" />
-              </Button>
+              <EntryActions
+                entry={entry}
+                activityLabel={t("activity.viewActivity")}
+                onEdit={setEditEntry}
+                onDelete={setDeleteId}
+              />
             </div>
           </div>
         ))}
@@ -333,34 +356,12 @@ export function PerformanceEntriesList({
                 )}
                 <TableCell>
                   <div className="flex items-center gap-1">
-                    {entry.runActivityId && (
-                      <Link href={`/profile/activities/${entry.runActivityId}`}>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8 text-blue-500 hover:text-blue-600"
-                          title={t("activity.viewActivity")}
-                        >
-                          <MapPin className="h-4 w-4" />
-                        </Button>
-                      </Link>
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8"
-                      onClick={() => setEditEntry(entry)}
-                    >
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => setDeleteId(entry.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <EntryActions
+                      entry={entry}
+                      activityLabel={t("activity.viewActivity")}
+                      onEdit={setEditEntry}
+                      onDelete={setDeleteId}
+                    />
                   </div>
                 </TableCell>
               </TableRow>

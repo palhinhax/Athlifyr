@@ -1,3 +1,11 @@
+export interface GpsPoint {
+  lat: number;
+  lng: number;
+  timestamp: number;
+  altitude?: number;
+  speed?: number;
+}
+
 export interface EventResultInfo {
   eventId: string;
   eventSlug: string;

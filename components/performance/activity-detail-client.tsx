@@ -14,6 +14,12 @@ import {
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
+import {
+  formatTime,
+  formatPace as formatPaceRaw,
+} from "@/lib/performance/scoring";
+import { formatDistance as formatDistanceKm } from "@/lib/geolocation";
+import { type GpsPoint } from "./types";
 
 const ActivityMapClient = dynamic(
   () =>
@@ -27,14 +33,6 @@ const ActivityMapClient = dynamic(
     ),
   }
 );
-
-interface GpsPoint {
-  lat: number;
-  lng: number;
-  timestamp: number;
-  altitude?: number;
-  speed?: number;
-}
 
 interface ActivityData {
   id: string;
@@ -62,24 +60,15 @@ interface Labels {
 }
 
 function formatDuration(ms: number): string {
-  const totalSec = Math.floor(ms / 1000);
-  const h = Math.floor(totalSec / 3600);
-  const m = Math.floor((totalSec % 3600) / 60);
-  const s = totalSec % 60;
-  if (h > 0)
-    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  return `${m}:${String(s).padStart(2, "0")}`;
+  return formatTime(Math.floor(ms / 1000));
 }
 
 function formatDistance(meters: number): string {
-  if (meters < 1000) return `${meters}m`;
-  return `${(meters / 1000).toFixed(2)} km`;
+  return formatDistanceKm(meters / 1000);
 }
 
 function formatPace(paceMinKm: number): string {
-  const mins = Math.floor(paceMinKm);
-  const secs = Math.round((paceMinKm - mins) * 60);
-  return `${mins}:${String(secs).padStart(2, "0")} /km`;
+  return `${formatPaceRaw(paceMinKm * 60)} /km`;
 }
 
 interface ActivityDetailClientProps {

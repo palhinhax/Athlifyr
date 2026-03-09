@@ -6,19 +6,44 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+// ── Shared helper: authenticate + resolve activity id ──
+
+async function authenticateAndResolveId(
+  request: NextRequest,
+  params: Promise<{ id: string }>
+): Promise<
+  | { userId: string; activityId: string; error?: never }
+  | { error: NextResponse }
+> {
+  const user = await getAuthenticatedUser(request);
+  if (!user?.id) {
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+  const { id } = await params;
+  return { userId: user.id, activityId: id };
+}
+
+function verifyOwnership(
+  activityUserId: string,
+  requestUserId: string
+): NextResponse | null {
+  if (activityUserId !== requestUserId) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  return null;
+}
+
 // ── GET /api/profile/activities/[id] — Get single activity with full GPS track ──
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getAuthenticatedUser(request);
-    if (!user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const auth = await authenticateAndResolveId(request, params);
+    if ("error" in auth) return auth.error;
 
     const activity = await prisma.runActivity.findUnique({
-      where: { id },
+      where: { id: auth.activityId },
       include: {
         performanceEntry: {
           select: { id: true },
@@ -33,9 +58,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (activity.userId !== user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = verifyOwnership(activity.userId, auth.userId);
+    if (forbidden) return forbidden;
 
     return NextResponse.json(activity);
   } catch (error) {
@@ -51,15 +75,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getAuthenticatedUser(request);
-    if (!user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { id } = await params;
+    const auth = await authenticateAndResolveId(request, params);
+    if ("error" in auth) return auth.error;
 
     const activity = await prisma.runActivity.findUnique({
-      where: { id },
+      where: { id: auth.activityId },
       select: { userId: true },
     });
 
@@ -70,19 +90,18 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (activity.userId !== user.id) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const forbidden = verifyOwnership(activity.userId, auth.userId);
+    if (forbidden) return forbidden;
 
     // Delete activity (performance entry unlinks via SetNull)
     await prisma.$transaction(async (tx) => {
       // First unlink the performance entry
       await tx.userPerformanceEntry.updateMany({
-        where: { runActivityId: id },
+        where: { runActivityId: auth.activityId },
         data: { runActivityId: null },
       });
       // Then delete the activity
-      await tx.runActivity.delete({ where: { id } });
+      await tx.runActivity.delete({ where: { id: auth.activityId } });
     });
 
     return NextResponse.json({ success: true });

@@ -86,7 +86,11 @@ export function calculateCategory(
 
   const age = calculateAge(dateOfBirth, eventDate);
   const ageGroup = getAgeGroup(age);
-  const genderCode = gender === "MALE" ? "M" : gender === "FEMALE" ? "F" : "X";
+  const genderMap: Record<string, string> = {
+    MALE: "M",
+    FEMALE: "F",
+  };
+  const genderCode = genderMap[gender] ?? "X";
 
   return {
     label: `${genderCode}${ageGroup}`,

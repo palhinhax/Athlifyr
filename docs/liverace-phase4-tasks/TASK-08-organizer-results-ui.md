@@ -43,7 +43,7 @@ race results with management capabilities: view, filter, export, DQ, and adjust.
 
 - [ ] Columns: Position, Bib #, Name, Time, Status, Variant, Actions
 - [ ] Sorted by position ASC per variant
-- [ ] Colour-coded status badges: FINISHED (green), DNF (yellow), DSQ (red)
+- [ ] Color-coded status badges: FINISHED (green), DNF (yellow), DSQ (red)
 - [ ] Pagination (50 results per page)
 - [ ] Empty state with message when no results
 

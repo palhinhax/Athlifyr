@@ -167,6 +167,18 @@
         "teams": "Teams",
         "adaptive": "Adaptive"
       }
+    },
+    "activity": {
+      "title": "Run Activity",
+      "distance": "Distance",
+      "duration": "Duration",
+      "avgPace": "Avg Pace",
+      "maxSpeed": "Max Speed",
+      "elevGain": "Elevation Gain",
+      "elevLoss": "Elevation Loss",
+      "gpsPoints": "GPS Points",
+      "back": "Back",
+      "viewActivity": "View activity"
     }
   }
 }

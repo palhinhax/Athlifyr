@@ -19,6 +19,17 @@ import type {
 
 const EARTH_RADIUS_M = 6_371_000;
 
+/** Minimum segment length (meters) to consider valid.  Shorter segments
+ *  arise from duplicate/near-duplicate GPX points and produce degenerate
+ *  cross-track / along-track calculations. */
+const MIN_SEGMENT_LENGTH_M = 0.01;
+
+/** Clamp a value to [-1, 1] to prevent NaN from Math.acos / Math.asin
+ *  caused by floating-point rounding slightly exceeding the valid domain. */
+function clampUnit(v: number): number {
+  return v < -1 ? -1 : v > 1 ? 1 : v;
+}
+
 // ─── Haversine Distance (meters) ────────────────────────────────────────────
 
 export function haversineM(
@@ -70,10 +81,8 @@ function crossTrackDistanceM(
   const b12 =
     (bearingDeg(segStartLat, segStartLng, segEndLat, segEndLng) * Math.PI) /
     180;
-  return Math.abs(
-    Math.asin(Math.sin(d13 / EARTH_RADIUS_M) * Math.sin(b13 - b12)) *
-      EARTH_RADIUS_M
-  );
+  const sinArg = Math.sin(d13 / EARTH_RADIUS_M) * Math.sin(b13 - b12);
+  return Math.abs(Math.asin(clampUnit(sinArg)) * EARTH_RADIUS_M);
 }
 
 // ─── Along-track distance: distance from seg start to projection point ──────
@@ -87,6 +96,12 @@ function alongTrackDistanceM(
   segEndLng: number
 ): number {
   const d13 = haversineM(segStartLat, segStartLng, pointLat, pointLng);
+
+  // Guard: if the point is coincident with the segment start, the
+  // along-track distance is trivially zero.  This avoids a 0/0 ratio
+  // inside acos that would produce NaN.
+  if (d13 < MIN_SEGMENT_LENGTH_M) return 0;
+
   const crossTrack = crossTrackDistanceM(
     pointLat,
     pointLng,
@@ -95,11 +110,20 @@ function alongTrackDistanceM(
     segEndLat,
     segEndLng
   );
-  return (
-    Math.acos(
-      Math.cos(d13 / EARTH_RADIUS_M) / Math.cos(crossTrack / EARTH_RADIUS_M)
-    ) * EARTH_RADIUS_M
-  );
+
+  const cosD13 = Math.cos(d13 / EARTH_RADIUS_M);
+  const cosCT = Math.cos(crossTrack / EARTH_RADIUS_M);
+
+  // Guard: when cosCT ≈ 0 (crossTrack ≈ π/2 * R ≈ 10 000 km) or when
+  // floating-point rounding pushes |cosD13/cosCT| > 1, clamp to the
+  // valid acos domain to prevent NaN.
+  if (cosCT === 0) return 0;
+  const ratio = clampUnit(cosD13 / cosCT);
+
+  const result = Math.acos(ratio) * EARTH_RADIUS_M;
+  // Final safety net: if result is NaN despite the guards (should not
+  // happen), fall back to the straight-line distance from segment start.
+  return Number.isNaN(result) ? d13 : result;
 }
 
 // ─── Gate Line Computation (perpendicular to route at checkpoint) ────────────
@@ -110,34 +134,30 @@ function alongTrackDistanceM(
  * perpendicular to the local route bearing.
  *
  * Used for precise START/FINISH line-crossing detection.
+ *
+ * `cpSegmentIdx` is the index of the route segment at this checkpoint (from
+ * the monotonic distance search in buildRouteHelper). Using the segment index
+ * rather than searching for the nearest route point by GPS distance ensures
+ * correct gate orientation on out-and-back routes where the FINISH checkpoint
+ * is at the same physical location as the START but on the return leg.
  */
 function computeGateLine(
   cp: LiveConfigCheckpoint,
   cpIdx: number,
-  routePoints: [number, number][],
+  segments: RouteSegment[],
   cpDistanceAlongRouteM: number,
+  cpSegmentIdx: number,
   halfWidthM?: number
 ): GateLine {
   const width = halfWidthM ?? cp.radiusM; // default: use checkpoint radius
 
-  // Find the closest route point to the checkpoint
-  let minDist = Infinity;
-  let closestIdx = 0;
-  for (let i = 0; i < routePoints.length; i++) {
-    const dlat = routePoints[i][0] - cp.latitude;
-    const dlng = routePoints[i][1] - cp.longitude;
-    const d = dlat * dlat + dlng * dlng;
-    if (d < minDist) {
-      minDist = d;
-      closestIdx = i;
-    }
-  }
-
-  // Compute the local route bearing at that point
-  const prevIdx = Math.max(0, closestIdx - 1);
-  const nextIdx = Math.min(routePoints.length - 1, closestIdx + 1);
-  const dLat = routePoints[nextIdx][0] - routePoints[prevIdx][0];
-  const dLng = routePoints[nextIdx][1] - routePoints[prevIdx][1];
+  // Derive local route bearing directly from the precomputed segment at this
+  // checkpoint. This correctly handles out-and-back routes: the FINISH
+  // checkpoint (return leg) uses the inbound segment bearing while the START
+  // checkpoint uses the outbound segment bearing.
+  const seg = segments[cpSegmentIdx];
+  const dLat = seg.endLat - seg.startLat;
+  const dLng = seg.endLng - seg.startLng;
   const routeBearing = Math.atan2(dLng, dLat); // radians
 
   // Perpendicular bearing (90° rotated)
@@ -269,6 +289,13 @@ export function buildRouteHelper(
     const [endLat, endLng] = routePoints[i + 1];
     const lengthM = haversineM(startLat, startLng, endLat, endLng);
 
+    // Skip degenerate segments (duplicate / near-duplicate GPX points).
+    // These produce meaningless cross-track and along-track results and
+    // can cause NaN propagation in the projection functions.
+    if (lengthM < MIN_SEGMENT_LENGTH_M) {
+      continue;
+    }
+
     segments.push({
       startIdx: i,
       startLat,
@@ -282,20 +309,130 @@ export function buildRouteHelper(
     cumulativeDistance += lengthM;
   }
 
-  // Precompute checkpoint distances along the route
-  const checkpointDistancesM = checkpoints.map((cp) => {
-    const projection = projectPointOnRoute(cp.latitude, cp.longitude, segments);
-    return projection.distanceAlongRouteM;
-  });
+  // Precompute checkpoint distances along the route using a monotonic search.
+  //
+  // Checkpoints are processed in race order (sorted by `order` field). For each
+  // checkpoint the segment search starts from the segment where the previous
+  // checkpoint landed. This guarantees that two checkpoints at the same physical
+  // GPS location (e.g. the START and FINISH of an out-and-back race) receive
+  // distinct, monotonically increasing route distances — the START is assigned
+  // to the outbound leg and the FINISH to the return leg.
+  //
+  // Both arrays are zero-initialized as a safe fallback for the empty-segment
+  // case (segments.length === 0), where checkpoints cannot be projected.
+  const checkpointDistancesM: number[] = new Array(checkpoints.length).fill(0);
+  const checkpointSegmentIndices: number[] = new Array(checkpoints.length).fill(
+    0
+  );
 
-  // Precompute gate lines for START and FINISH checkpoints
+  if (segments.length > 0) {
+    // Process checkpoints in race sequence so the monotonic search advances
+    // correctly through the route.
+    const sortedIndices = checkpoints
+      .map((cp, idx) => ({ order: cp.order, idx }))
+      .sort((a, b) => a.order - b.order)
+      .map(({ idx }) => idx);
+
+    // Deviation tolerance for tie-breaking (meters). When two segments
+    // produce deviations within this epsilon, later-order checkpoints
+    // (e.g. FINISH) prefer the later segment so they land on the return
+    // leg of an out-and-back route instead of the outbound leg.
+    const DEVIATION_EPSILON_M = 0.5;
+
+    let minSearchIdx = 0;
+    for (let sortedPos = 0; sortedPos < sortedIndices.length; sortedPos++) {
+      const cpIdx = sortedIndices[sortedPos];
+      const cp = checkpoints[cpIdx];
+      // The first checkpoint in race order (typically START) keeps the
+      // earliest matching segment. All subsequent checkpoints prefer
+      // a later segment when deviations are within epsilon — this
+      // ensures FINISH lands on the return leg, not the outbound leg.
+      const preferLaterSegment = sortedPos > 0;
+      let bestDeviation = Infinity;
+      let bestDistance = 0;
+      let bestSegIdx = minSearchIdx;
+
+      for (let i = minSearchIdx; i < segments.length; i++) {
+        const seg = segments[i];
+        const crossDist = crossTrackDistanceM(
+          cp.latitude,
+          cp.longitude,
+          seg.startLat,
+          seg.startLng,
+          seg.endLat,
+          seg.endLng
+        );
+        const alongDist = Math.max(
+          0,
+          Math.min(
+            alongTrackDistanceM(
+              cp.latitude,
+              cp.longitude,
+              seg.startLat,
+              seg.startLng,
+              seg.endLat,
+              seg.endLng
+            ),
+            seg.lengthM
+          )
+        );
+
+        let deviation = crossDist;
+        if (alongDist <= 0) {
+          deviation = haversineM(
+            cp.latitude,
+            cp.longitude,
+            seg.startLat,
+            seg.startLng
+          );
+        } else if (alongDist >= seg.lengthM) {
+          deviation = haversineM(
+            cp.latitude,
+            cp.longitude,
+            seg.endLat,
+            seg.endLng
+          );
+        }
+
+        const isBetterMatch = deviation < bestDeviation;
+        // Tie-breaker: for later-order checkpoints, accept a later segment
+        // when the deviation is within epsilon of the current best. This
+        // resolves the out-and-back ambiguity where START and FINISH at the
+        // same GPS coordinates would otherwise both snap to the outbound leg.
+        const isTiedLaterMatch =
+          preferLaterSegment &&
+          Math.abs(deviation - bestDeviation) < DEVIATION_EPSILON_M &&
+          i > bestSegIdx;
+
+        if (isBetterMatch || isTiedLaterMatch) {
+          bestDeviation = deviation;
+          bestDistance = seg.cumulativeDistanceM + alongDist;
+          bestSegIdx = i;
+        }
+      }
+
+      checkpointDistancesM[cpIdx] = bestDistance;
+      checkpointSegmentIndices[cpIdx] = bestSegIdx;
+      minSearchIdx = bestSegIdx;
+    }
+  }
+
+  // Precompute gate lines for START and FINISH checkpoints.
+  // Pass the segment index so computeGateLine uses the correct bearing for
+  // each leg (important for out-and-back routes).
   const gateLines: GateLine[] = [];
-  if (routePoints.length >= 2) {
+  if (segments.length >= 1) {
     for (let i = 0; i < checkpoints.length; i++) {
       const cp = checkpoints[i];
       if (cp.type === "START" || cp.type === "FINISH") {
         gateLines.push(
-          computeGateLine(cp, i, routePoints, checkpointDistancesM[i])
+          computeGateLine(
+            cp,
+            i,
+            segments,
+            checkpointDistancesM[i],
+            checkpointSegmentIndices[i]
+          )
         );
       }
     }
@@ -476,8 +613,11 @@ export function projectPointOnRouteNear(
     }
   }
 
-  // If the local result has reasonable deviation, return it without full scan
-  if (bestDeviation < 500) {
+  // If the local result has reasonable deviation, return it without full scan.
+  // 150 m is tight enough to reject incorrect matches on parallel/overlapping
+  // segments (e.g. out-and-back routes, switchbacks) while still tolerating
+  // normal GPS noise and brief off-trail excursions.
+  if (bestDeviation < 150) {
     return {
       distanceAlongRouteM: bestDistanceAlong,
       deviationM: bestDeviation,
@@ -501,6 +641,11 @@ export function projectPointOnRouteNear(
  *
  * For START/FINISH checkpoints: uses gate-line crossing (precise).
  * For INTERMEDIATE/TRANSITION: uses distance + radius (existing logic).
+ *
+ * Out-and-back safety: FINISH gate-line crossings are only credited once the
+ * athlete has covered at least 90% of the FINISH checkpoint's route distance.
+ * This prevents a false FINISH detection at race start when the FINISH gate is
+ * at the same physical location as the START (common in out-and-back races).
  */
 export function detectNewCheckpoints(
   distanceAlongRouteM: number,
@@ -525,24 +670,55 @@ export function detectNewCheckpoints(
       // ── Gate-line crossing for START/FINISH ──────────────────────
       const gate = routeHelper.gateLines.find((g) => g.checkpointIdx === i);
       if (gate && crossesGateLine(prevLat, prevLng, lat, lng, gate)) {
+        // For FINISH checkpoints: require the athlete to have covered at least
+        // 90% of the FINISH distance before crediting the gate crossing.
+        // On out-and-back routes the FINISH gate is at the same physical
+        // location as the START, so without this guard an athlete departing
+        // the start area would be immediately marked as finished.
+        if (cp.type === "FINISH") {
+          const cpDistanceM = routeHelper.checkpointDistancesM[i];
+          if (distanceAlongRouteM < cpDistanceM * 0.9) {
+            // Too early — athlete is near the finish gate but hasn't run the course
+            continue;
+          }
+        }
         newlyReached.push(i);
         continue;
       }
-      // Fallback: distance-based (in case gate line wasn't precomputed)
+      // Fallback: distance-based (in case gate line wasn't precomputed).
+      // Apply the same 90% minimum-progress guard as the gate-line path so
+      // a co-located FINISH cannot be triggered on the outbound leg.
       const cpDistanceM = routeHelper.checkpointDistancesM[i];
-      if (distanceAlongRouteM >= cpDistanceM - 30) {
+      const minProgressRequired =
+        cp.type === "FINISH" ? cpDistanceM * 0.9 : -Infinity;
+      if (
+        distanceAlongRouteM >= cpDistanceM - 30 &&
+        distanceAlongRouteM >= minProgressRequired
+      ) {
         newlyReached.push(i);
       }
     } else {
-      // ── Radius / distance for INTERMEDIATE/TRANSITION ───────────
+      // ── Radius / distance for INTERMEDIATE/TRANSITION and gate checkpoints
+      //    without a previous position ─────────────────────────────────────
       // Two detection methods:
       // 1. Distance-based: athlete's route distance has passed the checkpoint's route distance
       const cpDistanceM = routeHelper.checkpointDistancesM[i];
-      const passedByDistance = distanceAlongRouteM >= cpDistanceM - 50; // 50m tolerance
+      // Apply the 90% minimum-progress guard for FINISH checkpoints so that
+      // a co-located START/FINISH zone is not credited at race start when
+      // the athlete has no previous position yet (first GPS update).
+      const minProgressRequired =
+        cp.type === "FINISH" ? cpDistanceM * 0.9 : -Infinity;
+      const passedByDistance =
+        distanceAlongRouteM >= cpDistanceM - 50 && // 50m tolerance
+        distanceAlongRouteM >= minProgressRequired;
 
-      // 2. Proximity-based: athlete is within the checkpoint's radius
+      // 2. Proximity-based: athlete is within the checkpoint's radius.
+      // Same guard: proximity alone should not trigger a FINISH checkpoint
+      // at the start of an out-and-back race.
       const distToCheckpoint = haversineM(lat, lng, cp.latitude, cp.longitude);
-      const withinRadius = distToCheckpoint <= cp.radiusM;
+      const withinRadius =
+        distToCheckpoint <= cp.radiusM &&
+        distanceAlongRouteM >= minProgressRequired;
 
       if (passedByDistance || withinRadius) {
         newlyReached.push(i);
@@ -559,6 +735,12 @@ export function detectNewCheckpoints(
  * Check if the athlete has crossed the finish line.
  * Primary: gate-line crossing (precise).
  * Fallback: distance + radius (for backward compat / no prev point).
+ *
+ * Out-and-back safety: both detection methods require the athlete to have
+ * covered at least 90% of the FINISH checkpoint's route distance before
+ * crediting a finish. This prevents false finishes at race start when the
+ * FINISH gate/zone is at the same physical location as the START (common in
+ * out-and-back and loop races).
  */
 export function detectFinish(
   distanceAlongRouteM: number,
@@ -575,27 +757,44 @@ export function detectFinish(
   }
 
   const finishIdx = routeHelper.checkpoints.indexOf(finishCp);
+  const finishDistanceM = routeHelper.checkpointDistancesM[finishIdx];
+
+  // Minimum progress required before a finish can be credited.
+  // 90% of the finish checkpoint's route distance guards against false
+  // positives on out-and-back routes where the FINISH gate is co-located
+  // with the START gate.
+  const minFinishDistanceM = finishDistanceM * 0.9;
 
   // ── Primary: gate-line crossing ───────────────────────────────────
   if (prevLat !== undefined && prevLng !== undefined) {
     const gate = routeHelper.gateLines.find(
       (g) => g.checkpointIdx === finishIdx
     );
-    if (gate && crossesGateLine(prevLat, prevLng, lat, lng, gate)) {
+    if (
+      gate &&
+      crossesGateLine(prevLat, prevLng, lat, lng, gate) &&
+      distanceAlongRouteM >= minFinishDistanceM
+    ) {
       return true;
     }
   }
 
   // ── Fallback: distance-based + radius (for first point / no gate) ─
-  const finishDistanceM = routeHelper.checkpointDistancesM[finishIdx];
-  const passedByDistance = distanceAlongRouteM >= finishDistanceM - 30;
+  // Both fallback methods require the minimum progress guard to prevent
+  // false finishes on out-and-back routes where the finish zone overlaps
+  // the start area.
+  const passedByDistance =
+    distanceAlongRouteM >= finishDistanceM - 30 &&
+    distanceAlongRouteM >= minFinishDistanceM;
   const distToFinish = haversineM(
     lat,
     lng,
     finishCp.latitude,
     finishCp.longitude
   );
-  const withinRadius = distToFinish <= finishCp.radiusM;
+  const withinRadius =
+    distToFinish <= finishCp.radiusM &&
+    distanceAlongRouteM >= minFinishDistanceM;
 
   return passedByDistance || withinRadius;
 }

@@ -92,6 +92,14 @@ export default function RootLayout() {
               name="live-race"
               options={{ headerShown: false, gestureEnabled: false }}
             />
+            <Stack.Screen
+              name="free-run"
+              options={{ headerShown: false, gestureEnabled: false }}
+            />
+            <Stack.Screen
+              name="activity-detail"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </SocketProvider>
       </I18nextProvider>

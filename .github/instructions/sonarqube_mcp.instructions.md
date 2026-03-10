@@ -26,11 +26,14 @@ These are guidelines when using the SonarQube MCP server in the **Athlifyr** pro
 ## Branch and Pull Request Context
 
 - This project follows a strict branch strategy:
-  - `main` — production branch, protected, requires PR
+  - `main` — integration branch, all development merges here first, protected, requires PR
+  - `production/web` — web deployment branch, triggers CI/CD, semantic-release, and SonarCloud
+  - `production/mobile` — mobile deployment branch, triggers iOS builds and App Store submissions
   - `feature/*` — new features and planned work
   - `hotfix/*` — urgent production fixes
 - Many SonarQube operations support branch-specific analysis
 - If the user mentions working on a `feature/*` or `hotfix/*` branch, always include the branch parameter
+- If analyzing `production/web` or `production/mobile` branches, include the branch parameter
 - PR titles follow Conventional Commits format — use this context when reviewing issues
 
 ## Code Issues and Violations

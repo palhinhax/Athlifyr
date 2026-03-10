@@ -1,4 +1,4 @@
-name: iOS Production Build (IPA)
+name: Android Production Build (AAB)
 
 on:
   push:
@@ -8,20 +8,12 @@ on:
       - "mobile/**"
 
   workflow_dispatch:
-    inputs:
-      force_run:
-        description: "Force run even if disabled"
-        type: boolean
-        default: false
 
 jobs:
-  build-ios-ipa:
-    name: Build iOS IPA
+  build-android-aab:
+    name: Build Android AAB
     runs-on: ubuntu-latest
-    # iOS builds DISABLED — change 'false' to 'true' to re-enable
-    if: >-
-      (false || github.event.inputs.force_run == 'true') &&
-      !contains(github.event.head_commit.message, '[skip ci]')
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
 
     defaults:
       run:
@@ -59,15 +51,15 @@ jobs:
           "
           echo "✅ Mobile version synced to $WEB_VERSION"
 
-      - name: Build iOS IPA (Production)
-        run: eas build --platform ios --profile production --non-interactive
+      - name: Build Android AAB (Production)
+        run: eas build --platform android --profile production --non-interactive
 
-      - name: Submit to App Store Connect
+      - name: Submit to Google Play Store
         if: success()
-        run: eas submit --platform ios --profile production --non-interactive --latest
+        run: eas submit --platform android --profile production --non-interactive --latest
 
       - name: Get build URL
         if: success()
         run: |
-          echo "✅ iOS production IPA built and submitted to App Store Connect!"
+          echo "✅ Android production AAB built and submitted to Google Play Store!"
           echo "Check build status at: https://expo.dev/accounts/joaomduart/projects/athlifyr/builds"

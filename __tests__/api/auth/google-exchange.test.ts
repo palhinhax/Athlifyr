@@ -281,11 +281,11 @@ describe("POST /api/auth/google/exchange — env var validation", () => {
   );
 
   it(
-    "returns 500 when GOOGLE_IOS_CLIENT_ID is missing for ios",
+    "returns 500 when GOOGLE_ANDROID_CLIENT_ID is missing for ios (ios uses android client)",
     withEnv(
       {
-        GOOGLE_ANDROID_CLIENT_ID: "android-id",
-        GOOGLE_IOS_CLIENT_ID: undefined,
+        GOOGLE_ANDROID_CLIENT_ID: undefined,
+        GOOGLE_IOS_CLIENT_ID: "ios-id",
         GOOGLE_MOBILE_WEB_CLIENT_ID: "web-id",
         GOOGLE_MOBILE_WEB_CLIENT_SECRET: "web-secret",
       },
@@ -455,7 +455,8 @@ describe("POST /api/auth/google/exchange — native PKCE flow", () => {
     expect(res.status).toBe(200);
     const fetchCall = (globalThis.fetch as jest.Mock).mock.calls[0];
     const body = fetchCall[1].body as string;
-    expect(body).toContain("client_id=ios-client-id");
+    // iOS now uses GOOGLE_ANDROID_CLIENT_ID (unified with Android for PKCE flow)
+    expect(body).toContain("client_id=android-client-id");
   });
 
   it("returns 400 when native token exchange fails", async () => {

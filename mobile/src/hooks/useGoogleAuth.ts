@@ -56,11 +56,14 @@ export function useGoogleAuth() {
   // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
   //    but Android OAuth clients require "scheme:/path" (one slash).
   //    Use the literal string to avoid the Error 400: invalid_request from Google.
-  const redirectUri = isWeb
-    ? AuthSession.makeRedirectUri({ preferLocalhost: true })
-    : isExpoGo
-      ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
-      : "com.athlifyr.app:/oauth2redirect";
+  let redirectUri: string;
+  if (isWeb) {
+    redirectUri = AuthSession.makeRedirectUri({ preferLocalhost: true });
+  } else if (isExpoGo) {
+    redirectUri = AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" });
+  } else {
+    redirectUri = "com.athlifyr.app:/oauth2redirect";
+  }
 
   // Web and Expo Go use the Web Client ID (web-type credential in Google Cloud Console).
   // Standalone Android uses the Android Client ID.
@@ -127,9 +130,7 @@ export function useGoogleAuth() {
           platform:
             Platform.OS === "web"
               ? "web"
-              : Platform.OS === "ios"
-                ? "ios"
-                : "android",
+              : "android",
         });
         return res.data;
       };

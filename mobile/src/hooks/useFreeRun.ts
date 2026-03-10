@@ -206,7 +206,6 @@ export function useFreeRun() {
       return true;
     } catch (error) {
       console.error("[FreeRun] Failed to start GPS tracking:", error);
-      setState((prev) => ({ ...prev, gpsPermission: "denied" }));
       return false;
     }
   }, [requestGpsPermission]);

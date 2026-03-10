@@ -6,7 +6,7 @@
 // On completion, saves the activity locally and navigates to activity detail.
 // ============================================================================
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -37,27 +37,13 @@ export default function FreeRunScreen() {
     stats,
     finished,
     savedActivityId,
+    trackPoints,
     startRun,
     stopRun,
   } = useFreeRun();
 
-  // Build live track polyline from current position updates
-  const [trackPoints, setTrackPoints] = useState<[number, number][]>([]);
-
-  // Track the position for the map polyline
-  const prevPosRef = React.useRef<{ lat: number; lng: number } | null>(null);
-  React.useEffect(() => {
-    if (!currentPosition) return;
-    const { lat, lng } = currentPosition;
-    if (
-      !prevPosRef.current ||
-      prevPosRef.current.lat !== lat ||
-      prevPosRef.current.lng !== lng
-    ) {
-      prevPosRef.current = { lat, lng };
-      setTrackPoints((prev) => [...prev, [lat, lng]]);
-    }
-  }, [currentPosition]);
+  // Build live track polyline from the global store (already computed)
+  // trackPoints comes directly from useFreeRun now
 
   // ─── Handlers ───────────────────────────────────────────────────────
 
@@ -70,7 +56,6 @@ export default function FreeRunScreen() {
       );
       return;
     }
-    setTrackPoints([]);
     try {
       await startRun();
     } catch {
@@ -102,22 +87,10 @@ export default function FreeRunScreen() {
   }, [stopRun, router, t]);
 
   const handleBack = useCallback(() => {
-    if (gpsActive) {
-      Alert.alert(t("freeRun.runActive"), t("freeRun.runActiveLeave"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("freeRun.leaveAndStop"),
-          style: "destructive",
-          onPress: async () => {
-            await stopRun();
-            router.back();
-          },
-        },
-      ]);
-    } else {
-      router.back();
-    }
-  }, [gpsActive, stopRun, router, t]);
+    // Allow navigating back freely — the run continues in the background
+    // via the global Zustand store. The floating banner will show on other screens.
+    router.back();
+  }, [router]);
 
   const handleViewActivity = useCallback(() => {
     if (savedActivityId) {
@@ -130,9 +103,7 @@ export default function FreeRunScreen() {
 
   return (
     <>
-      <Stack.Screen
-        options={{ headerShown: false, gestureEnabled: !gpsActive }}
-      />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.container, { paddingTop: insets.top }]}>

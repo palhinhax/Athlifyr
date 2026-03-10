@@ -35,6 +35,17 @@ const config = ({ config }) => {
     plugins: [
       "expo-router",
       [
+        "expo-location",
+        {
+          locationAlwaysAndWhenInUsePermission:
+            "O Athlifyr precisa da tua localização em segundo plano para registar o percurso da corrida mesmo com o ecrã bloqueado.",
+          locationWhenInUsePermission:
+            "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
+          isAndroidBackgroundLocationEnabled: true,
+          isAndroidForegroundServiceEnabled: true,
+        },
+      ],
+      [
         "expo-camera",
         {
           cameraPermission:

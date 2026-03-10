@@ -8,18 +8,65 @@ import { notifyEventNewPost } from "@/lib/notifications";
 // Schema for creating a post
 const createPostSchema = z.object({
   content: z.string().min(1, "Content is required").max(5000),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.url().optional(),
   mediaType: z.enum(["image", "video"]).default("image"),
-  eventId: z.string().cuid().optional(),
-  venueId: z.string().cuid().optional(),
+  eventId: z.cuid2().optional(),
+  venueId: z.cuid2().optional(),
   isPublic: z.boolean().default(false), // Public posts appear in main feed, private posts only in venue/event
   // WOD Post fields
-  workoutId: z.string().cuid().optional(),
-  sessionId: z.string().cuid().optional(),
+  workoutId: z.cuid2().optional(),
+  sessionId: z.cuid2().optional(),
   postType: z
     .enum(["STANDARD", "WOD", "EVENT", "ACHIEVEMENT"])
     .default("STANDARD"),
 });
+
+type CreatePostData = z.infer<typeof createPostSchema>;
+
+/** Validate that referenced entities (event, venue, workout) exist. */
+async function validatePostReferences(
+  data: CreatePostData,
+  userId: string
+): Promise<NextResponse | null> {
+  if (data.eventId) {
+    const event = await prisma.event.findUnique({
+      where: { id: data.eventId },
+    });
+    if (!event) {
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
+    }
+  }
+
+  if (data.venueId) {
+    const venue = await prisma.venue.findUnique({
+      where: { id: data.venueId },
+    });
+    if (!venue) {
+      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+    }
+  }
+
+  if (data.workoutId) {
+    const workout = await prisma.workout.findFirst({
+      where: {
+        id: data.workoutId,
+        OR: [
+          { createdById: userId },
+          { isPublic: true },
+          { venueId: data.venueId },
+        ],
+      },
+    });
+    if (!workout) {
+      return NextResponse.json(
+        { error: "Workout not found or access denied" },
+        { status: 404 }
+      );
+    }
+  }
+
+  return null;
+}
 
 // POST /api/posts - Create a new post
 export async function POST(request: NextRequest) {
@@ -41,48 +88,12 @@ export async function POST(request: NextRequest) {
       console.log("Creating post with image URL:", validatedData.imageUrl);
     }
 
-    // If eventId provided, check if event exists
-    if (validatedData.eventId) {
-      const event = await prisma.event.findUnique({
-        where: { id: validatedData.eventId },
-      });
-
-      if (!event) {
-        return NextResponse.json({ error: "Event not found" }, { status: 404 });
-      }
-    }
-
-    // If venueId provided, check if venue exists
-    if (validatedData.venueId) {
-      const venue = await prisma.venue.findUnique({
-        where: { id: validatedData.venueId },
-      });
-
-      if (!venue) {
-        return NextResponse.json({ error: "Venue not found" }, { status: 404 });
-      }
-    }
-
-    // If workoutId provided (WOD post), verify the workout exists and user has access
-    if (validatedData.workoutId) {
-      const workout = await prisma.workout.findFirst({
-        where: {
-          id: validatedData.workoutId,
-          OR: [
-            { createdById: user.id },
-            { isPublic: true },
-            { venueId: validatedData.venueId },
-          ],
-        },
-      });
-
-      if (!workout) {
-        return NextResponse.json(
-          { error: "Workout not found or access denied" },
-          { status: 404 }
-        );
-      }
-    }
+    // Validate referenced entities exist
+    const validationError = await validatePostReferences(
+      validatedData,
+      user.id
+    );
+    if (validationError) return validationError;
 
     const post = await prisma.post.create({
       data: {
@@ -200,8 +211,8 @@ export async function GET(request: NextRequest) {
     const userId = searchParams.get("userId");
     const venueId = searchParams.get("venueId");
     const feed = searchParams.get("feed"); // Main feed: only public posts + user's event posts
-    const page = parseInt(searchParams.get("page") || "1");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const page = Number.parseInt(searchParams.get("page") || "1");
+    const pageSize = Number.parseInt(searchParams.get("pageSize") || "10");
 
     // Get user to check likes
     const user = await getAuthenticatedUser(request);
@@ -408,11 +419,6 @@ export async function DELETE(request: NextRequest) {
     await prisma.post.delete({
       where: { id: postId },
     });
-
-    // TODO: Delete image from B2 if exists
-    // if (post.imageUrl) {
-    //   await deleteFromB2(post.imageUrl);
-    // }
 
     return NextResponse.json(
       { message: "Post deleted successfully" },

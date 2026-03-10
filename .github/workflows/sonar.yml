@@ -2,9 +2,9 @@ name: SonarCloud
 
 on:
   push:
-    branches: [production/web]
+    branches: [main]
   pull_request:
-    branches: [production/web]
+    branches: [main]
 
 jobs:
   sonarcloud:

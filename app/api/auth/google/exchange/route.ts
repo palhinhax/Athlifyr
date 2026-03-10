@@ -53,23 +53,41 @@ export async function POST(request: NextRequest) {
     }
 
     // Select the correct Google client credentials for the token exchange.
-    // The authorization code was issued for a specific client ID (the one the
-    // mobile app used), so the exchange MUST use that same client ID + its secret.
+    // The authorization code is bound to the client_id that the mobile app used
+    // to request it. The exchange MUST use that SAME client_id.
     //
-    // The mobile app (Expo) requests the auth code using GOOGLE_MOBILE_WEB_CLIENT_ID.
-    // The server must exchange that code with the SAME client ID + secret pair.
-    // Using a different web client (GOOGLE_CLIENT_ID — the NextAuth credential)
-    // causes "unauthorized_client" because the code was not issued for that client.
+    // - Web / Expo Go: uses GOOGLE_MOBILE_WEB_CLIENT_ID + secret (standard OAuth2)
+    // - Android:       uses GOOGLE_ANDROID_CLIENT_ID without secret (PKCE only)
+    // - iOS:           uses GOOGLE_IOS_CLIENT_ID without secret (PKCE only)
     //
-    // Required env vars:
-    //   GOOGLE_MOBILE_WEB_CLIENT_ID     — the web-type OAuth client used by the mobile app
-    //   GOOGLE_MOBILE_WEB_CLIENT_SECRET — its corresponding client secret (from Google Cloud Console)
-    const mobileClientId = process.env.GOOGLE_MOBILE_WEB_CLIENT_ID;
-    const mobileClientSecret = process.env.GOOGLE_MOBILE_WEB_CLIENT_SECRET;
+    // Native OAuth clients (Android/iOS) do not have a client secret — Google
+    // verifies the app via package name + SHA-1 (Android) or bundle ID (iOS).
+    // PKCE (code_verifier) replaces the secret for the token exchange.
+    const mobileWebClientId = process.env.GOOGLE_MOBILE_WEB_CLIENT_ID;
+    const mobileWebClientSecret = process.env.GOOGLE_MOBILE_WEB_CLIENT_SECRET;
 
-    if (!mobileClientId || !mobileClientSecret) {
+    let exchangeClientId: string | undefined;
+    let exchangeClientSecret: string | undefined;
+
+    switch (platform) {
+      case "android":
+        exchangeClientId = process.env.GOOGLE_ANDROID_CLIENT_ID;
+        exchangeClientSecret = undefined; // Native PKCE: no secret needed
+        break;
+      case "ios":
+        exchangeClientId = process.env.GOOGLE_IOS_CLIENT_ID;
+        exchangeClientSecret = undefined; // Native PKCE: no secret needed
+        break;
+      default: // "web"
+        exchangeClientId = mobileWebClientId;
+        exchangeClientSecret = mobileWebClientSecret;
+        break;
+    }
+
+    if (!exchangeClientId) {
       console.error(
-        "[Google Exchange] Missing GOOGLE_MOBILE_WEB_CLIENT_ID or GOOGLE_MOBILE_WEB_CLIENT_SECRET in env"
+        `[Google Exchange] Missing client ID for platform "${platform}". ` +
+          `Check env: GOOGLE_${platform === "android" ? "ANDROID" : platform === "ios" ? "IOS" : "MOBILE_WEB"}_CLIENT_ID`
       );
       return NextResponse.json(
         { error: "Server OAuth configuration incomplete" },
@@ -77,18 +95,81 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const googleClient = new OAuth2Client(
-      mobileClientId,
-      mobileClientSecret,
-      redirectUri
-    );
+    if (platform === "web" && !exchangeClientSecret) {
+      console.error(
+        "[Google Exchange] Missing GOOGLE_MOBILE_WEB_CLIENT_SECRET in env"
+      );
+      return NextResponse.json(
+        { error: "Server OAuth configuration incomplete" },
+        { status: 500 }
+      );
+    }
 
-    // Exchange authorization code for tokens (server-to-server)
-    const { tokens } = await googleClient.getToken({
-      code,
-      codeVerifier,
-      redirect_uri: redirectUri,
-    });
+    // Exchange authorization code for tokens (server-to-server).
+    // For native platforms (Android/iOS), PKCE replaces the client secret,
+    // so we call Google's token endpoint directly without a secret.
+    // For web, we use OAuth2Client with the secret.
+    let tokens: {
+      id_token?: string | null;
+      access_token?: string | null;
+      refresh_token?: string | null;
+      expiry_date?: number | null;
+    };
+
+    if (platform === "web") {
+      const googleClient = new OAuth2Client(
+        exchangeClientId,
+        exchangeClientSecret,
+        redirectUri
+      );
+      const result = await googleClient.getToken({
+        code,
+        codeVerifier,
+        redirect_uri: redirectUri,
+      });
+      tokens = result.tokens;
+    } else {
+      // Native PKCE exchange: direct call to Google token endpoint without secret
+      const params = new URLSearchParams({
+        client_id: exchangeClientId,
+        code,
+        code_verifier: codeVerifier,
+        redirect_uri: redirectUri,
+        grant_type: "authorization_code",
+      });
+
+      const tokenResponse = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
+      });
+
+      if (!tokenResponse.ok) {
+        const errorBody = await tokenResponse.json().catch(() => ({}));
+        console.error(
+          `[Google Exchange] Native ${platform} token exchange failed:`,
+          errorBody
+        );
+        const errorDesc =
+          (errorBody as Record<string, string>).error_description ||
+          (errorBody as Record<string, string>).error ||
+          "Token exchange failed";
+        return NextResponse.json({ error: errorDesc }, { status: 400 });
+      }
+
+      const tokenData = (await tokenResponse.json()) as Record<
+        string,
+        string | number
+      >;
+      tokens = {
+        id_token: tokenData.id_token as string | undefined,
+        access_token: tokenData.access_token as string | undefined,
+        refresh_token: tokenData.refresh_token as string | undefined,
+        expiry_date: tokenData.expires_in
+          ? Date.now() + (tokenData.expires_in as number) * 1000
+          : undefined,
+      };
+    }
 
     if (!tokens.id_token) {
       return NextResponse.json(
@@ -105,9 +186,10 @@ export async function POST(request: NextRequest) {
       process.env.GOOGLE_MOBILE_WEB_CLIENT_ID,
     ].filter(Boolean) as string[];
 
-    // Verify the ID token
-    const ticket = await googleClient.verifyIdToken({
-      idToken: tokens.id_token,
+    // Verify the ID token (use a standalone client — verification only needs a client ID)
+    const verificationClient = new OAuth2Client(exchangeClientId);
+    const ticket = await verificationClient.verifyIdToken({
+      idToken: tokens.id_token!,
       audience: validAudiences,
     });
 

@@ -44,13 +44,10 @@ export function useGoogleAuth() {
     (Constants as unknown as Record<string, string>).appOwnership === "expo";
 
   const isWeb = Platform.OS === "web";
-  const isIOS = Platform.OS === "ios";
 
   // Build the redirect URI dynamically:
   // - Web: use makeRedirectUri() which produces the current page URL
   // - Expo Go: exp://127.0.0.1:8081/--/redirect  (auto-detected, uses Web Client ID)
-  // - Dev build / Production (iOS): athlifyr://oauth2redirect
-  //     Uses the custom URL scheme registered in app.json.
   // - Dev build / Production (Android): com.athlifyr.app:/oauth2redirect
   //     This is the reverse-DNS scheme required by Android OAuth Client IDs.
   //     Google validates it automatically via package name + SHA-1 fingerprint.
@@ -58,27 +55,19 @@ export function useGoogleAuth() {
   //
   // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
   //    but Android OAuth clients require "scheme:/path" (one slash).
-  //    Use the literal string for Android to avoid the Error 400: invalid_request from Google.
+  //    Use the literal string to avoid the Error 400: invalid_request from Google.
   const redirectUri = isWeb
     ? AuthSession.makeRedirectUri({ preferLocalhost: true })
     : isExpoGo
       ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
-      : isIOS
-        ? AuthSession.makeRedirectUri({
-            scheme: "athlifyr",
-            path: "oauth2redirect",
-          })
-        : "com.athlifyr.app:/oauth2redirect";
+      : "com.athlifyr.app:/oauth2redirect";
 
   // Web and Expo Go use the Web Client ID (web-type credential in Google Cloud Console).
-  // Standalone iOS uses the iOS Client ID.
   // Standalone Android uses the Android Client ID.
   const clientId =
     isWeb || isExpoGo
       ? (process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID ?? "")
-      : isIOS
-        ? (process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID ?? "")
-        : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
+      : (process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID ?? "");
 
   console.log("[GoogleAuth]", {
     isExpoGo,

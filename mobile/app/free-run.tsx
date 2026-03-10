@@ -71,7 +71,15 @@ export default function FreeRunScreen() {
       return;
     }
     setTrackPoints([]);
-    await startRun();
+    try {
+      await startRun();
+    } catch {
+      Alert.alert(
+        t("freeRun.gpsRequired"),
+        t("freeRun.gpsRequiredDescription"),
+        [{ text: t("common.ok") }]
+      );
+    }
   }, [gpsPermission, startRun, t]);
 
   const handleStop = useCallback(() => {

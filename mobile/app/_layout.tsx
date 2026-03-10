@@ -100,6 +100,14 @@ export default function RootLayout() {
               name="activity-detail"
               options={{ headerShown: false }}
             />
+            <Stack.Screen
+              name="oauth2redirect"
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="redirect"
+              options={{ headerShown: false }}
+            />
           </Stack>
         </SocketProvider>
       </I18nextProvider>

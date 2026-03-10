@@ -767,7 +767,7 @@ export function processGpsUpdate(
           ts: point.timestamp,
           dist: Math.round(newDistance),
           dev: Math.round(projection.deviationM),
-          prog: Math.round(projection.progressPercent * 10) / 10,
+          prog: Math.round(athlete.progressPercent * 10) / 10,
           status: athlete.status,
         })
       )

@@ -685,21 +685,40 @@ export function detectNewCheckpoints(
         newlyReached.push(i);
         continue;
       }
-      // Fallback: distance-based (in case gate line wasn't precomputed)
+      // Fallback: distance-based (in case gate line wasn't precomputed).
+      // Apply the same 90% minimum-progress guard as the gate-line path so
+      // a co-located FINISH cannot be triggered on the outbound leg.
       const cpDistanceM = routeHelper.checkpointDistancesM[i];
-      if (distanceAlongRouteM >= cpDistanceM - 30) {
+      const minProgressRequired =
+        cp.type === "FINISH" ? cpDistanceM * 0.9 : -Infinity;
+      if (
+        distanceAlongRouteM >= cpDistanceM - 30 &&
+        distanceAlongRouteM >= minProgressRequired
+      ) {
         newlyReached.push(i);
       }
     } else {
-      // ── Radius / distance for INTERMEDIATE/TRANSITION ───────────
+      // ── Radius / distance for INTERMEDIATE/TRANSITION and gate checkpoints
+      //    without a previous position ─────────────────────────────────────
       // Two detection methods:
       // 1. Distance-based: athlete's route distance has passed the checkpoint's route distance
       const cpDistanceM = routeHelper.checkpointDistancesM[i];
-      const passedByDistance = distanceAlongRouteM >= cpDistanceM - 50; // 50m tolerance
+      // Apply the 90% minimum-progress guard for FINISH checkpoints so that
+      // a co-located START/FINISH zone is not credited at race start when
+      // the athlete has no previous position yet (first GPS update).
+      const minProgressRequired =
+        cp.type === "FINISH" ? cpDistanceM * 0.9 : -Infinity;
+      const passedByDistance =
+        distanceAlongRouteM >= cpDistanceM - 50 && // 50m tolerance
+        distanceAlongRouteM >= minProgressRequired;
 
-      // 2. Proximity-based: athlete is within the checkpoint's radius
+      // 2. Proximity-based: athlete is within the checkpoint's radius.
+      // Same guard: proximity alone should not trigger a FINISH checkpoint
+      // at the start of an out-and-back race.
       const distToCheckpoint = haversineM(lat, lng, cp.latitude, cp.longitude);
-      const withinRadius = distToCheckpoint <= cp.radiusM;
+      const withinRadius =
+        distToCheckpoint <= cp.radiusM &&
+        distanceAlongRouteM >= minProgressRequired;
 
       if (passedByDistance || withinRadius) {
         newlyReached.push(i);

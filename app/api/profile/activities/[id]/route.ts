@@ -11,10 +11,7 @@ interface RouteParams {
 async function authenticateAndResolveId(
   request: NextRequest,
   params: Promise<{ id: string }>
-): Promise<
-  | { userId: string; activityId: string; error?: never }
-  | { error: NextResponse }
-> {
+): Promise<{ userId: string; activityId: string } | { error: NextResponse }> {
   const user = await getAuthenticatedUser(request);
   if (!user?.id) {
     return {
@@ -37,10 +34,13 @@ function verifyOwnership(
 
 // ── GET /api/profile/activities/[id] — Get single activity with full GPS track ──
 
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(
+  request: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
   try {
     const auth = await authenticateAndResolveId(request, params);
-    if ("error" in auth) return auth.error;
+    if (!("userId" in auth)) return auth.error;
 
     const activity = await prisma.runActivity.findUnique({
       where: { id: auth.activityId },
@@ -73,10 +73,13 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 // ── DELETE /api/profile/activities/[id] — Delete a GPS activity + linked performance entry ──
 
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(
+  request: NextRequest,
+  { params }: RouteParams
+): Promise<NextResponse> {
   try {
     const auth = await authenticateAndResolveId(request, params);
-    if ("error" in auth) return auth.error;
+    if (!("userId" in auth)) return auth.error;
 
     const activity = await prisma.runActivity.findUnique({
       where: { id: auth.activityId },

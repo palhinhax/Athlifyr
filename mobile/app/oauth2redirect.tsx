@@ -1,20 +1,127 @@
 // ============================================================================
 // Athlifyr Mobile — OAuth2 Redirect Handler
 //
-// Handles the deep-link callback from Google OAuth.
-// The `maybeCompleteAuthSession()` call at module scope intercepts the
-// authorization response so that `useAuthRequest` in useGoogleAuth can
-// process the code exchange.  The user should never see this screen — it
-// exists only so expo-router has a valid route for the redirect URI.
+// Handles the deep-link callback from Google OAuth on Android dev/production
+// builds.  When the deep-link fires, expo-router may reset the navigation
+// stack, unmounting the login screen and its useAuthRequest hook.  This
+// screen therefore handles the full code → token exchange itself using the
+// PKCE codeVerifier that useGoogleAuth persisted before opening the browser.
 // ============================================================================
 
-import { View, ActivityIndicator } from "react-native";
+import { useEffect, useRef } from "react";
+import { View, ActivityIndicator, Platform } from "react-native";
 import * as WebBrowser from "expo-web-browser";
+import * as SecureStore from "expo-secure-store";
+import { useRouter, useLocalSearchParams } from "expo-router";
+import { useAuthStore } from "@/src/lib/auth-store";
+import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 
 WebBrowser.maybeCompleteAuthSession();
 
+const TOKEN_KEY = "auth-token";
+const REFRESH_TOKEN_KEY = "refresh-token";
+const TOKEN_EXPIRY_KEY = "token-expiry";
+
 export default function OAuth2RedirectScreen() {
+  const router = useRouter();
+  const params = useLocalSearchParams<{ code?: string }>();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const setUser = useAuthStore((s) => s.setUser);
+  const processingRef = useRef(false);
+
+  // Already authenticated (login screen handled it) → go home
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/");
+    }
+  }, [isAuthenticated, router]);
+
+  // Handle the OAuth code exchange when we land here via deep-link
+  useEffect(() => {
+    const code = params.code;
+    if (!code || processingRef.current) return;
+    if (useAuthStore.getState().isAuthenticated) return;
+
+    processingRef.current = true;
+
+    (async () => {
+      try {
+        const codeVerifier = await SecureStore.getItemAsync(
+          "google-code-verifier"
+        );
+        const redirectUri = await SecureStore.getItemAsync(
+          "google-redirect-uri"
+        );
+
+        if (!codeVerifier || !redirectUri) {
+          console.error(
+            "❌ [oauth2redirect] Missing codeVerifier or redirectUri"
+          );
+          router.replace("/login");
+          return;
+        }
+
+        const res = await api.post("/auth/google/exchange", {
+          code,
+          codeVerifier,
+          redirectUri,
+          platform: Platform.OS === "web" ? "web" : "android",
+        });
+
+        const { token, refreshToken, user, expiresIn } = res.data;
+
+        await SecureStore.setItemAsync(TOKEN_KEY, token);
+        if (refreshToken)
+          await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
+        if (expiresIn) {
+          await SecureStore.setItemAsync(
+            TOKEN_EXPIRY_KEY,
+            String(Date.now() + expiresIn * 1000)
+          );
+        }
+
+        setUser(user);
+        useAuthStore.setState({
+          token,
+          isAuthenticated: true,
+          isLoading: false,
+        });
+
+        // Clean up persisted PKCE values
+        await SecureStore.deleteItemAsync("google-code-verifier");
+        await SecureStore.deleteItemAsync("google-redirect-uri");
+
+        console.log("✅ [oauth2redirect] Google auth OK, user:", user.id);
+        router.replace("/");
+      } catch (err) {
+        console.error("❌ [oauth2redirect] Exchange failed:", err);
+        // If the login screen already exchanged the code, we may get a 400.
+        // Check auth state before giving up.
+        if (useAuthStore.getState().isAuthenticated) {
+          router.replace("/");
+        } else {
+          router.replace("/login");
+        }
+      } finally {
+        processingRef.current = false;
+        SecureStore.deleteItemAsync("google-code-verifier");
+        SecureStore.deleteItemAsync("google-redirect-uri");
+      }
+    })();
+  }, [params.code, router, setUser]);
+
+  // Timeout fallback: if nothing resolves within 15 s, go back to login
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      if (!useAuthStore.getState().isAuthenticated) {
+        console.warn("⏰ [oauth2redirect] Timeout — redirecting to login");
+        router.replace("/login");
+      }
+    }, 15_000);
+    return () => clearTimeout(timeout);
+  }, [router]);
+
   return (
     <View
       style={{

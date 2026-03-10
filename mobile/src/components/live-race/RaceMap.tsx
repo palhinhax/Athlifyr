@@ -1,5 +1,5 @@
 // ============================================================================
-// Athlifyr Mobile — RaceMap Component
+// Athlifyr Mobile — RaceMap Component (Mapbox)
 //
 // Map showing:
 // - Route polyline (from event route data)
@@ -11,16 +11,25 @@
 
 import React, { useRef, useEffect, useMemo } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import MapView, {
-  Polyline,
-  Marker,
-  Circle,
-  PROVIDER_DEFAULT,
-  type Region,
-} from "react-native-maps";
 import { MapPin, Flag, Navigation } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import type { GPSPoint, AthletePosition } from "@/src/hooks/useLiveRace";
+
+// Dynamic Mapbox import (requires native code, not available in Expo Go)
+let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
+let mapboxAvailable = false;
+try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  Mapbox = require("@rnmapbox/maps").default;
+  mapboxAvailable = true;
+} catch {
+  console.warn("@rnmapbox/maps is not available for RaceMap. Using fallback.");
+}
+
+const MAPBOX_ACCESS_TOKEN = process.env.EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN || "";
+if (mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN) {
+  Mapbox.setAccessToken(MAPBOX_ACCESS_TOKEN);
+}
 
 interface Checkpoint {
   id: string;
@@ -56,101 +65,98 @@ export function RaceMap({
   isOffRoute = false,
   height = 300,
   followUser = true,
-}: RaceMapProps) {
-  const mapRef = useRef<MapView>(null);
+}: Readonly<RaceMapProps>) {
+  const cameraRef = useRef<InstanceType<
+    typeof import("@rnmapbox/maps").default.Camera
+  > | null>(null);
 
-  // Convert route points for react-native-maps
-  const polylineCoords = useMemo(
-    () =>
-      routePoints.map(([lat, lng]) => ({
-        latitude: lat,
-        longitude: lng,
-      })),
-    [routePoints]
-  );
-
-  // Calculate initial region to fit the route
-  const initialRegion = useMemo<Region>(() => {
-    if (polylineCoords.length === 0) {
-      return {
-        latitude: currentPosition?.lat ?? 39.5,
-        longitude: currentPosition?.lng ?? -8.0,
-        latitudeDelta: 0.05,
-        longitudeDelta: 0.05,
-      };
-    }
-
-    let minLat = Infinity,
-      maxLat = -Infinity;
-    let minLng = Infinity,
-      maxLng = -Infinity;
-
-    for (const coord of polylineCoords) {
-      minLat = Math.min(minLat, coord.latitude);
-      maxLat = Math.max(maxLat, coord.latitude);
-      minLng = Math.min(minLng, coord.longitude);
-      maxLng = Math.max(maxLng, coord.longitude);
-    }
-
+  // GeoJSON LineString for the route polyline
+  const routeGeoJSON = useMemo(() => {
+    if (routePoints.length < 2) return null;
     return {
-      latitude: (minLat + maxLat) / 2,
-      longitude: (minLng + maxLng) / 2,
-      latitudeDelta: (maxLat - minLat) * 1.3 || 0.05,
-      longitudeDelta: (maxLng - minLng) * 1.3 || 0.05,
+      type: "Feature" as const,
+      properties: {},
+      geometry: {
+        type: "LineString" as const,
+        coordinates: routePoints.map(([lat, lng]) => [lng, lat]),
+      },
     };
-  }, [polylineCoords, currentPosition]);
+  }, [routePoints]);
+
+  // Calculate map center & bounds
+  const centerCoord = useMemo<[number, number]>(() => {
+    if (currentPosition) return [currentPosition.lng, currentPosition.lat];
+    if (routePoints.length > 0) {
+      const mid = routePoints[Math.floor(routePoints.length / 2)];
+      return [mid[1], mid[0]];
+    }
+    return [-8, 39.5]; // Default: Portugal
+  }, [currentPosition, routePoints]);
 
   // Follow athlete's position
   useEffect(() => {
-    if (followUser && currentPosition && mapRef.current) {
-      mapRef.current.animateToRegion(
-        {
-          latitude: currentPosition.lat,
-          longitude: currentPosition.lng,
-          latitudeDelta: 0.008,
-          longitudeDelta: 0.008,
-        },
-        500
-      );
+    if (followUser && currentPosition && cameraRef.current) {
+      cameraRef.current.setCamera({
+        centerCoordinate: [currentPosition.lng, currentPosition.lat],
+        zoomLevel: 16,
+        animationDuration: 500,
+      });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPosition?.lat, currentPosition?.lng, followUser]);
+
+  const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
+
+  if (!canShowMap || !Mapbox) {
+    return (
+      <View style={[styles.container, { height }]}>
+        <View style={styles.fallback}>
+          <MapPin size={48} color={theme.colors.primary} />
+          <Text style={styles.fallbackText}>Map unavailable</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, { height }]}>
-      <MapView
-        ref={mapRef}
+      <Mapbox.MapView
         style={styles.map}
-        provider={PROVIDER_DEFAULT}
-        initialRegion={initialRegion}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-        showsCompass
-        showsScale
+        styleURL={Mapbox.StyleURL.Outdoors}
+        compassEnabled
+        scaleBarEnabled
         rotateEnabled={false}
-        mapType="terrain"
+        attributionEnabled={false}
+        logoEnabled={false}
       >
+        <Mapbox.Camera
+          ref={cameraRef}
+          centerCoordinate={centerCoord}
+          zoomLevel={followUser && currentPosition ? 16 : 13}
+          animationMode="flyTo"
+          animationDuration={500}
+        />
+
         {/* Route polyline */}
-        {polylineCoords.length > 1 && (
-          <Polyline
-            coordinates={polylineCoords}
-            strokeColor={theme.colors.primary}
-            strokeWidth={3}
-            lineDashPattern={[0]}
-          />
+        {routeGeoJSON && (
+          <Mapbox.ShapeSource id="route-line" shape={routeGeoJSON}>
+            <Mapbox.LineLayer
+              id="route-line-layer"
+              style={{
+                lineColor: theme.colors.primary,
+                lineWidth: 3,
+                lineCap: "round",
+                lineJoin: "round",
+              }}
+            />
+          </Mapbox.ShapeSource>
         )}
 
         {/* Checkpoint markers */}
         {checkpoints.map((cp) => (
-          <Marker
+          <Mapbox.PointAnnotation
             key={cp.id}
-            coordinate={{
-              latitude: cp.latitude,
-              longitude: cp.longitude,
-            }}
-            title={cp.name}
-            description={`#${cp.order} — ${cp.type}`}
-            anchor={{ x: 0.5, y: 0.5 }}
+            id={`checkpoint-${cp.id}`}
+            coordinate={[cp.longitude, cp.latitude]}
           >
             <View
               style={[
@@ -159,94 +165,54 @@ export function RaceMap({
                 cp.type === "FINISH" && styles.finishMarker,
               ]}
             >
-              {cp.type === "START" ? (
-                <Navigation size={12} color="#fff" />
-              ) : cp.type === "FINISH" ? (
-                <Flag size={12} color="#fff" />
-              ) : (
+              {cp.type === "START" && <Navigation size={12} color="#fff" />}
+              {cp.type === "FINISH" && <Flag size={12} color="#fff" />}
+              {cp.type !== "START" && cp.type !== "FINISH" && (
                 <MapPin size={10} color="#fff" />
               )}
             </View>
-          </Marker>
+          </Mapbox.PointAnnotation>
         ))}
 
         {/* Other athletes (small dots) */}
         {otherAthletes.map((a) => (
-          <Circle
+          <Mapbox.PointAnnotation
             key={a.userId}
-            center={{
-              latitude: a.lat,
-              longitude: a.lng,
-            }}
-            radius={8}
-            fillColor={
-              a.status === "FINISHED"
-                ? theme.colors.success + "80"
-                : a.status === "OFF_ROUTE"
-                  ? theme.colors.warning + "80"
-                  : theme.colors.muted + "80"
-            }
-            strokeColor={
-              a.status === "FINISHED"
-                ? theme.colors.success
-                : theme.colors.muted
-            }
-            strokeWidth={1}
-          />
+            id={`athlete-${a.userId}`}
+            coordinate={[a.lng, a.lat]}
+          >
+            <View
+              style={[
+                styles.otherAthleteDot,
+                a.status === "FINISHED" && styles.otherAthleteFinished,
+                a.status === "OFF_ROUTE" && styles.otherAthleteOffRoute,
+              ]}
+            />
+          </Mapbox.PointAnnotation>
         ))}
 
         {/* Athlete's own position — larger, distinctive marker */}
         {currentPosition && (
-          <>
-            {/* Accuracy circle */}
-            {currentPosition.accuracy != null &&
-              currentPosition.accuracy > 0 && (
-                <Circle
-                  center={{
-                    latitude: currentPosition.lat,
-                    longitude: currentPosition.lng,
-                  }}
-                  radius={currentPosition.accuracy}
-                  fillColor={
-                    isOffRoute
-                      ? "rgba(239, 68, 68, 0.08)"
-                      : "rgba(59, 130, 246, 0.08)"
-                  }
-                  strokeColor={
-                    isOffRoute
-                      ? "rgba(239, 68, 68, 0.2)"
-                      : "rgba(59, 130, 246, 0.2)"
-                  }
-                  strokeWidth={1}
-                />
-              )}
-
-            {/* Position dot */}
-            <Marker
-              coordinate={{
-                latitude: currentPosition.lat,
-                longitude: currentPosition.lng,
-              }}
-              anchor={{ x: 0.5, y: 0.5 }}
-              flat
+          <Mapbox.PointAnnotation
+            id="athlete-position"
+            coordinate={[currentPosition.lng, currentPosition.lat]}
+          >
+            <View
+              style={[
+                styles.athleteDot,
+                isOffRoute && styles.athleteDotOffRoute,
+              ]}
             >
               <View
                 style={[
-                  styles.athleteDot,
-                  isOffRoute && styles.athleteDotOffRoute,
+                  styles.athleteDotInner,
+                  isOffRoute && styles.athleteDotInnerOffRoute,
                 ]}
-              >
-                <View
-                  style={[
-                    styles.athleteDotInner,
-                    isOffRoute && styles.athleteDotInnerOffRoute,
-                  ]}
-                />
-              </View>
-            </Marker>
-          </>
+              />
+            </View>
+          </Mapbox.PointAnnotation>
         )}
-      </MapView>
+      </Mapbox.MapView>
 
       {/* Off-route overlay */}
       {isOffRoute && (
@@ -269,6 +235,17 @@ const styles = StyleSheet.create({
   map: {
     flex: 1,
   },
+  fallback: {
+    flex: 1,
+    backgroundColor: theme.colors.muted,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  fallbackText: {
+    marginTop: 8,
+    color: theme.colors.textSecondary,
+    fontSize: 14,
+  },
   checkpointMarker: {
     width: 24,
     height: 24,
@@ -289,6 +266,20 @@ const styles = StyleSheet.create({
   },
   finishMarker: {
     backgroundColor: theme.colors.error,
+  },
+  otherAthleteDot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.muted,
+    borderWidth: 1,
+    borderColor: "#fff",
+  },
+  otherAthleteFinished: {
+    backgroundColor: theme.colors.success,
+  },
+  otherAthleteOffRoute: {
+    backgroundColor: theme.colors.warning,
   },
   athleteDot: {
     width: 22,

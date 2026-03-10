@@ -7,7 +7,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": ["athlifyr", "com.athlifyr.app"],
+    "scheme": [
+      "athlifyr",
+      "com.athlifyr.app"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -29,7 +32,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 15,
+      "versionCode": 18,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -44,7 +47,10 @@
               "scheme": "com.athlifyr.app"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -75,6 +81,6 @@
         "projectId": "d8beface-ad76-4676-ba16-5779e1c7672e"
       }
     },
-    "owner": "joaomduart"
+    "owner": "athlifyr"
   }
 }

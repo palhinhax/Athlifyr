@@ -1,9 +1,9 @@
-name: Release
+name: Web Production Build
 
 on:
   push:
     branches:
-      - main
+      - production/web
 
 permissions:
   contents: write

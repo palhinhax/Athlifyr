@@ -3,7 +3,7 @@ name: Create Production Builds
 on:
   push:
     branches:
-      - main
+      - production/mobile
 
 jobs:
   build_android:

@@ -113,9 +113,9 @@ export function useFreeRun() {
 
   // ─── Start GPS ─────────────────────────────────────────────────────
 
-  const startGps = useCallback(async () => {
+  const startGps = useCallback(async (): Promise<boolean> => {
     const hasPermission = await requestGpsPermission();
-    if (!hasPermission) return;
+    if (!hasPermission) return false;
 
     try {
       await activateKeepAwakeAsync(KEEP_AWAKE_TAG);
@@ -123,85 +123,91 @@ export function useFreeRun() {
       // non-critical
     }
 
-    const sub = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: GPS_INTERVAL_MS,
-        distanceInterval: GPS_MIN_DISTANCE_M,
-      },
-      (location) => {
-        const point: FreeRunGPSPoint = {
-          lat: location.coords.latitude,
-          lng: location.coords.longitude,
-          timestamp: location.timestamp,
-          accuracy: location.coords.accuracy ?? undefined,
-          speed: location.coords.speed ?? undefined,
-          altitude: location.coords.altitude ?? undefined,
-        };
+    try {
+      const sub = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.BestForNavigation,
+          timeInterval: GPS_INTERVAL_MS,
+          distanceInterval: GPS_MIN_DISTANCE_M,
+        },
+        (location) => {
+          const point: FreeRunGPSPoint = {
+            lat: location.coords.latitude,
+            lng: location.coords.longitude,
+            timestamp: location.timestamp,
+            accuracy: location.coords.accuracy ?? undefined,
+            speed: location.coords.speed ?? undefined,
+            altitude: location.coords.altitude ?? undefined,
+          };
 
-        // Elevation tracking
-        const prev = lastPointRef.current;
-        if (prev && point.altitude != null && prev.altitude != null) {
-          const diff = point.altitude - prev.altitude;
-          if (diff > 0) {
-            elevGainRef.current += diff;
-          } else {
-            elevLossRef.current += Math.abs(diff);
+          // Elevation tracking
+          const prev = lastPointRef.current;
+          if (prev && point.altitude != null && prev.altitude != null) {
+            const diff = point.altitude - prev.altitude;
+            if (diff > 0) {
+              elevGainRef.current += diff;
+            } else {
+              elevLossRef.current += Math.abs(diff);
+            }
           }
-        }
 
-        // Distance tracking (skip teleportation)
-        if (prev) {
-          const d = haversineM(prev.lat, prev.lng, point.lat, point.lng);
-          if (d < TELEPORT_THRESHOLD_M) {
-            totalDistRef.current += d;
+          // Distance tracking (skip teleportation)
+          if (prev) {
+            const d = haversineM(prev.lat, prev.lng, point.lat, point.lng);
+            if (d < TELEPORT_THRESHOLD_M) {
+              totalDistRef.current += d;
+            }
           }
-        }
 
-        // Max speed
-        if (point.speed != null) {
-          const speedKmh = point.speed * 3.6;
-          if (speedKmh > maxSpeedRef.current && speedKmh < 100) {
-            maxSpeedRef.current = speedKmh;
+          // Max speed
+          if (point.speed != null) {
+            const speedKmh = point.speed * 3.6;
+            if (speedKmh > maxSpeedRef.current && speedKmh < 100) {
+              maxSpeedRef.current = speedKmh;
+            }
           }
+
+          lastPointRef.current = point;
+          trackRef.current.push(point);
+
+          // Compute live stats
+          const elapsedMs = startTimeRef.current
+            ? Date.now() - startTimeRef.current
+            : 0;
+          const distKm = totalDistRef.current / 1000;
+          const elapsedMin = elapsedMs / 60_000;
+          const avgPace =
+            distKm > 0.1 && elapsedMin > 0 ? elapsedMin / distKm : null;
+
+          setState((prev) => ({
+            ...prev,
+            currentPosition: point,
+            gpsActive: true,
+            stats: {
+              distanceM: totalDistRef.current,
+              elevationGainM: Math.round(elevGainRef.current),
+              elevationLossM: Math.round(elevLossRef.current),
+              currentAltitudeM:
+                point.altitude != null ? Math.round(point.altitude) : null,
+              currentSpeedKmh:
+                point.speed != null
+                  ? Math.round(point.speed * 3.6 * 10) / 10
+                  : null,
+              maxSpeedKmh: Math.round(maxSpeedRef.current * 10) / 10,
+              avgPaceMinKm: avgPace ? Math.round(avgPace * 100) / 100 : null,
+              elapsedTimeMs: elapsedMs,
+            },
+          }));
         }
+      );
 
-        lastPointRef.current = point;
-        trackRef.current.push(point);
-
-        // Compute live stats
-        const elapsedMs = startTimeRef.current
-          ? Date.now() - startTimeRef.current
-          : 0;
-        const distKm = totalDistRef.current / 1000;
-        const elapsedMin = elapsedMs / 60_000;
-        const avgPace =
-          distKm > 0.1 && elapsedMin > 0 ? elapsedMin / distKm : null;
-
-        setState((prev) => ({
-          ...prev,
-          currentPosition: point,
-          gpsActive: true,
-          stats: {
-            distanceM: totalDistRef.current,
-            elevationGainM: Math.round(elevGainRef.current),
-            elevationLossM: Math.round(elevLossRef.current),
-            currentAltitudeM:
-              point.altitude != null ? Math.round(point.altitude) : null,
-            currentSpeedKmh:
-              point.speed != null
-                ? Math.round(point.speed * 3.6 * 10) / 10
-                : null,
-            maxSpeedKmh: Math.round(maxSpeedRef.current * 10) / 10,
-            avgPaceMinKm: avgPace ? Math.round(avgPace * 100) / 100 : null,
-            elapsedTimeMs: elapsedMs,
-          },
-        }));
-      }
-    );
-
-    locationSubRef.current = sub;
-    setState((prev) => ({ ...prev, gpsActive: true }));
+      locationSubRef.current = sub;
+      setState((prev) => ({ ...prev, gpsActive: true }));
+      return true;
+    } catch (error) {
+      console.error("[FreeRun] Failed to start GPS tracking:", error);
+      return false;
+    }
   }, [requestGpsPermission]);
 
   const stopGps = useCallback(() => {
@@ -234,7 +240,11 @@ export function useFreeRun() {
       stats: { ...initialStats },
     }));
 
-    await startGps();
+    const gpsStarted = await startGps();
+    if (!gpsStarted) {
+      startTimeRef.current = null;
+      return;
+    }
 
     // Elapsed timer
     elapsedTimerRef.current = setInterval(() => {

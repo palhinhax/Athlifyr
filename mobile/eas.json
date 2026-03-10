@@ -18,8 +18,9 @@
         "EXPO_PUBLIC_API_URL": "https://www.athlifyr.com",
         "EXPO_PUBLIC_LIVE_URL": "https://athlifyr-production.up.railway.app",
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-b3e26goccuvhndhfn8hiptfecr3q5bqq.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-4oo3r0ia80ces1bqfo5c46qs8fb2vbk9.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
       }
     },
     "preview": {
@@ -36,8 +37,9 @@
         "EXPO_PUBLIC_API_URL": "https://www.athlifyr.com",
         "EXPO_PUBLIC_LIVE_URL": "https://athlifyr-production.up.railway.app",
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-b3e26goccuvhndhfn8hiptfecr3q5bqq.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-4oo3r0ia80ces1bqfo5c46qs8fb2vbk9.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
       }
     },
     "production": {
@@ -53,8 +55,9 @@
         "EXPO_PUBLIC_API_URL": "https://www.athlifyr.com",
         "EXPO_PUBLIC_LIVE_URL": "https://athlifyr-production.up.railway.app",
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
-        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-b3e26goccuvhndhfn8hiptfecr3q5bqq.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-4oo3r0ia80ces1bqfo5c46qs8fb2vbk9.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
       }
     }
   },

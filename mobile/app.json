@@ -20,7 +20,10 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "A câmara é utilizada para atualizar a foto de perfil e partilhar momentos desportivos com a comunidade Athlifyr.",
-        "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr."
+        "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr.",
+        "NSLocationWhenInUseUsageDescription": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "O Athlifyr precisa da tua localização em segundo plano para continuar a registar o percurso quando o ecrã está bloqueado.",
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
@@ -29,11 +32,16 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 15,
+      "versionCode": 18,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "intentFilters": [
         {
@@ -53,6 +61,16 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "O Athlifyr precisa da tua localização em segundo plano para registar o percurso da corrida mesmo com o ecrã bloqueado.",
+          "locationWhenInUsePermission": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
+          "locationAlwaysPermission": "O Athlifyr precisa da tua localização em segundo plano para registar a corrida.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-notifications",
         {
@@ -75,6 +93,6 @@
         "projectId": "d8beface-ad76-4676-ba16-5779e1c7672e"
       }
     },
-    "owner": "joaomduart"
+    "owner": "athlifyr"
   }
 }

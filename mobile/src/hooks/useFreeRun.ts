@@ -4,20 +4,27 @@
 // GPS-only solo run tracking — no live server, no socket.
 // Records the GPS track locally and computes stats in real time.
 // On stop, persists the activity to AsyncStorage.
+//
+// State lives in a global Zustand store (free-run-session-store) so the run
+// survives navigation between screens and continues in background.
 // ============================================================================
 
-import { useEffect, useRef, useCallback, useState } from "react";
-import { AppState, type AppStateStatus } from "react-native";
-import * as Location from "expo-location";
+import { useEffect, useCallback } from "react";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
+import * as Location from "expo-location";
 import {
   saveActivity,
   type FreeRunGPSPoint,
   type FreeRunActivity,
 } from "../lib/free-run-store";
+import { useFreeRunSession } from "../lib/free-run-session-store";
+import {
+  startBackgroundLocation,
+  stopBackgroundLocation,
+} from "../lib/background-location";
 import { api } from "../lib/api";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types (re-exported for consumers) ──────────────────────────────────────
 
 export interface FreeRunStats {
   distanceM: number;
@@ -41,235 +48,97 @@ export interface FreeRunState {
 
 // ─── Constants ──────────────────────────────────────────────────────────────
 
-const GPS_INTERVAL_MS = 2000;
-const GPS_MIN_DISTANCE_M = 5;
 const KEEP_AWAKE_TAG = "FREE_RUN_GPS";
-const TELEPORT_THRESHOLD_M = 500;
-
-// ─── Haversine ──────────────────────────────────────────────────────────────
-
-function haversineM(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
-  const R = 6_371_000;
-  const dLat = ((lat2 - lat1) * Math.PI) / 180;
-  const dLng = ((lng2 - lng1) * Math.PI) / 180;
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos((lat1 * Math.PI) / 180) *
-      Math.cos((lat2 * Math.PI) / 180) *
-      Math.sin(dLng / 2) ** 2;
-  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-}
 
 // ─── Hook ───────────────────────────────────────────────────────────────────
 
-const initialStats: FreeRunStats = {
-  distanceM: 0,
-  avgPaceMinKm: null,
-  currentSpeedKmh: null,
-  maxSpeedKmh: 0,
-  elevationGainM: 0,
-  elevationLossM: 0,
-  currentAltitudeM: null,
-  elapsedTimeMs: 0,
-};
-
 export function useFreeRun() {
-  const [state, setState] = useState<FreeRunState>({
-    gpsPermission: "undetermined",
-    gpsActive: false,
-    currentPosition: null,
-    stats: { ...initialStats },
-    finished: false,
-    savedActivityId: null,
-  });
-
-  // Mutable refs (hot path)
-  const locationSubRef = useRef<Location.LocationSubscription | null>(null);
-  const trackRef = useRef<FreeRunGPSPoint[]>([]);
-  const lastPointRef = useRef<FreeRunGPSPoint | null>(null);
-  const elevGainRef = useRef(0);
-  const elevLossRef = useRef(0);
-  const totalDistRef = useRef(0);
-  const maxSpeedRef = useRef(0);
-  const startTimeRef = useRef<number | null>(null);
-  const elapsedTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const session = useFreeRunSession();
 
   // ─── GPS Permission ─────────────────────────────────────────────────
 
   const requestGpsPermission = useCallback(async () => {
-    const { status } = await Location.requestForegroundPermissionsAsync();
-    const granted = status === "granted";
-    setState((prev) => ({
-      ...prev,
-      gpsPermission: granted ? "granted" : "denied",
-    }));
-    return granted;
+    const { status: fgStatus } =
+      await Location.requestForegroundPermissionsAsync();
+    if (fgStatus !== "granted") {
+      useFreeRunSession.getState().update({ gpsPermission: "denied" });
+      return false;
+    }
+    // Also request background permission (needed for screen-off tracking)
+    const { status: bgStatus } =
+      await Location.requestBackgroundPermissionsAsync();
+    useFreeRunSession.getState().update({
+      gpsPermission:
+        bgStatus === "granted" || fgStatus === "granted" ? "granted" : "denied",
+    });
+    return fgStatus === "granted";
   }, []);
 
-  // ─── Start GPS ─────────────────────────────────────────────────────
+  // ─── Start / Stop GPS (background-capable) ─────────────────────────
 
-  const startGps = useCallback(async () => {
+  const startGps = useCallback(async (): Promise<boolean> => {
     const hasPermission = await requestGpsPermission();
-    if (!hasPermission) return;
+    if (!hasPermission) return false;
 
-    try {
-      await activateKeepAwakeAsync(KEEP_AWAKE_TAG);
-    } catch {
-      // non-critical
+    await activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
+
+    const started = await startBackgroundLocation();
+    if (started) {
+      useFreeRunSession.getState().update({ isActive: true });
     }
-
-    const sub = await Location.watchPositionAsync(
-      {
-        accuracy: Location.Accuracy.BestForNavigation,
-        timeInterval: GPS_INTERVAL_MS,
-        distanceInterval: GPS_MIN_DISTANCE_M,
-      },
-      (location) => {
-        const point: FreeRunGPSPoint = {
-          lat: location.coords.latitude,
-          lng: location.coords.longitude,
-          timestamp: location.timestamp,
-          accuracy: location.coords.accuracy ?? undefined,
-          speed: location.coords.speed ?? undefined,
-          altitude: location.coords.altitude ?? undefined,
-        };
-
-        // Elevation tracking
-        const prev = lastPointRef.current;
-        if (prev && point.altitude != null && prev.altitude != null) {
-          const diff = point.altitude - prev.altitude;
-          if (diff > 0) {
-            elevGainRef.current += diff;
-          } else {
-            elevLossRef.current += Math.abs(diff);
-          }
-        }
-
-        // Distance tracking (skip teleportation)
-        if (prev) {
-          const d = haversineM(prev.lat, prev.lng, point.lat, point.lng);
-          if (d < TELEPORT_THRESHOLD_M) {
-            totalDistRef.current += d;
-          }
-        }
-
-        // Max speed
-        if (point.speed != null) {
-          const speedKmh = point.speed * 3.6;
-          if (speedKmh > maxSpeedRef.current && speedKmh < 100) {
-            maxSpeedRef.current = speedKmh;
-          }
-        }
-
-        lastPointRef.current = point;
-        trackRef.current.push(point);
-
-        // Compute live stats
-        const elapsedMs = startTimeRef.current
-          ? Date.now() - startTimeRef.current
-          : 0;
-        const distKm = totalDistRef.current / 1000;
-        const elapsedMin = elapsedMs / 60_000;
-        const avgPace =
-          distKm > 0.1 && elapsedMin > 0 ? elapsedMin / distKm : null;
-
-        setState((prev) => ({
-          ...prev,
-          currentPosition: point,
-          gpsActive: true,
-          stats: {
-            distanceM: totalDistRef.current,
-            elevationGainM: Math.round(elevGainRef.current),
-            elevationLossM: Math.round(elevLossRef.current),
-            currentAltitudeM:
-              point.altitude != null ? Math.round(point.altitude) : null,
-            currentSpeedKmh:
-              point.speed != null
-                ? Math.round(point.speed * 3.6 * 10) / 10
-                : null,
-            maxSpeedKmh: Math.round(maxSpeedRef.current * 10) / 10,
-            avgPaceMinKm: avgPace ? Math.round(avgPace * 100) / 100 : null,
-            elapsedTimeMs: elapsedMs,
-          },
-        }));
-      }
-    );
-
-    locationSubRef.current = sub;
-    setState((prev) => ({ ...prev, gpsActive: true }));
+    return started;
   }, [requestGpsPermission]);
 
-  const stopGps = useCallback(() => {
-    locationSubRef.current?.remove();
-    locationSubRef.current = null;
-    try {
-      deactivateKeepAwake(KEEP_AWAKE_TAG);
-    } catch {
-      // non-critical
-    }
-    setState((prev) => ({ ...prev, gpsActive: false }));
+  const stopGps = useCallback(async () => {
+    await stopBackgroundLocation();
+    deactivateKeepAwake(KEEP_AWAKE_TAG);
+    useFreeRunSession.getState().update({ isActive: false });
   }, []);
 
   // ─── Start / Stop Run ───────────────────────────────────────────────
 
   const startRun = useCallback(async () => {
-    // Reset state for a new run
-    trackRef.current = [];
-    lastPointRef.current = null;
-    elevGainRef.current = 0;
-    elevLossRef.current = 0;
-    totalDistRef.current = 0;
-    maxSpeedRef.current = 0;
-    startTimeRef.current = Date.now();
+    // Reset session for a new run
+    useFreeRunSession.getState().reset();
+    const now = Date.now();
+    useFreeRunSession.getState().update({ startTime: now });
 
-    setState((prev) => ({
-      ...prev,
-      finished: false,
-      savedActivityId: null,
-      stats: { ...initialStats },
-    }));
-
-    await startGps();
+    const gpsStarted = await startGps();
+    if (!gpsStarted) {
+      useFreeRunSession.getState().update({ startTime: null });
+      return;
+    }
 
     // Elapsed timer
-    elapsedTimerRef.current = setInterval(() => {
-      if (startTimeRef.current) {
-        setState((prev) => ({
-          ...prev,
-          stats: {
-            ...prev.stats,
-            elapsedTimeMs: Date.now() - startTimeRef.current!,
-          },
-        }));
-      }
+    const timer = setInterval(() => {
+      useFreeRunSession.getState().tickElapsed();
     }, 1000);
+    useFreeRunSession.getState().update({ elapsedTimer: timer });
   }, [startGps]);
 
   const stopRun = useCallback(async (): Promise<string | null> => {
-    stopGps();
+    await stopGps();
 
-    if (elapsedTimerRef.current) {
-      clearInterval(elapsedTimerRef.current);
-      elapsedTimerRef.current = null;
+    const state = useFreeRunSession.getState();
+    if (state.elapsedTimer) {
+      clearInterval(state.elapsedTimer);
+      useFreeRunSession.getState().update({ elapsedTimer: null });
     }
 
-    const track = trackRef.current;
-    const startedAt = startTimeRef.current ?? Date.now();
+    const track = state.track;
+    const startedAt = state.startTime ?? Date.now();
     const finishedAt = Date.now();
     const durationMs = finishedAt - startedAt;
 
     // Only save if we have meaningful data (>10m, >10s, >3 points)
-    if (track.length < 3 || totalDistRef.current < 10 || durationMs < 10_000) {
-      setState((prev) => ({ ...prev, finished: true }));
+    if (track.length < 3 || state.totalDistance < 10 || durationMs < 10_000) {
+      useFreeRunSession
+        .getState()
+        .update({ isFinished: true, isActive: false });
       return null;
     }
 
-    const distKm = totalDistRef.current / 1000;
+    const distKm = state.totalDistance / 1000;
     const durationMin = durationMs / 60_000;
 
     const activity: FreeRunActivity = {
@@ -277,18 +146,18 @@ export function useFreeRun() {
       startedAt,
       finishedAt,
       durationMs,
-      distanceM: Math.round(totalDistRef.current),
+      distanceM: Math.round(state.totalDistance),
       avgPaceMinKm:
         distKm > 0.1 ? Math.round((durationMin / distKm) * 100) / 100 : null,
-      maxSpeedKmh: Math.round(maxSpeedRef.current * 10) / 10,
-      elevationGainM: Math.round(elevGainRef.current),
-      elevationLossM: Math.round(elevLossRef.current),
+      maxSpeedKmh: Math.round(state.maxSpeed * 10) / 10,
+      elevationGainM: Math.round(state.elevationGain),
+      elevationLossM: Math.round(state.elevationLoss),
       track,
     };
 
     await saveActivity(activity);
 
-    // Sync to server (fire & forget — local storage is the source of truth)
+    // Sync to server (fire & forget)
     try {
       await api.post("/profile/activities", {
         startedAt: activity.startedAt,
@@ -302,45 +171,36 @@ export function useFreeRun() {
         track: activity.track,
       });
     } catch {
-      // Non-critical: activity is saved locally, server sync can be retried
       console.warn("Failed to sync activity to server");
     }
 
-    setState((prev) => ({
-      ...prev,
-      finished: true,
+    useFreeRunSession.getState().update({
+      isFinished: true,
+      isActive: false,
       savedActivityId: activity.id,
-    }));
+    });
 
     return activity.id;
   }, [stopGps]);
 
-  // ─── AppState handling ──────────────────────────────────────────────
+  // ─── No cleanup on unmount — GPS persists in the global store ───────
 
-  useEffect(() => {
-    const handleAppState = (_nextState: AppStateStatus) => {
-      // GPS continues in background via expo-location
-    };
-    const sub = AppState.addEventListener("change", handleAppState);
-    return () => sub.remove();
-  }, []);
-
-  // ─── Cleanup on unmount ─────────────────────────────────────────────
-
+  // Only clean up when the component that OWNS the run unmounts and there's
+  // no active run. The store owns the lifecycle now.
   useEffect(() => {
     return () => {
-      locationSubRef.current?.remove();
-      if (elapsedTimerRef.current) clearInterval(elapsedTimerRef.current);
-      try {
-        deactivateKeepAwake(KEEP_AWAKE_TAG);
-      } catch {
-        /* noop */
-      }
+      // Don't clean up if a run is still active — it should keep going
     };
   }, []);
 
   return {
-    ...state,
+    gpsPermission: session.gpsPermission,
+    gpsActive: session.isActive,
+    currentPosition: session.currentPosition,
+    stats: session.stats,
+    finished: session.isFinished,
+    savedActivityId: session.savedActivityId,
+    trackPoints: session.track.map((p) => [p.lat, p.lng] as [number, number]),
     startRun,
     stopRun,
     requestGpsPermission,

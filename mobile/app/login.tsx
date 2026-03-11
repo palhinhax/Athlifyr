@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   ActivityIndicator,
   ScrollView,
 } from "react-native";
-import { useRouter } from "expo-router";
+import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -91,16 +91,17 @@ export default function LoginScreen() {
     }
   };
 
-  // Navigate back when authentication succeeds (Google flow is async via useEffect)
-  useEffect(() => {
-    if (isAuthenticated) {
-      if (router.canGoBack()) {
-        router.back();
-      } else {
+  // Navigate away when authentication succeeds.
+  // useFocusEffect ensures this only fires when the login screen is actually
+  // visible — prevents it from interfering with navigation when the screen
+  // is buried under oauth2redirect/(tabs) in the stack.
+  useFocusEffect(
+    useCallback(() => {
+      if (isAuthenticated) {
         router.replace("/");
       }
-    }
-  }, [isAuthenticated, router]);
+    }, [isAuthenticated, router])
+  );
 
   // Show toast on Google auth error
   useEffect(() => {

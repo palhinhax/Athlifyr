@@ -317,13 +317,13 @@ The PR body can contain additional context, which will become the commit body.
 
 ## Branch Strategy
 
-This repository uses **3 main branch patterns**. Always follow this strategy when developing features or fixes.
+This repository uses **5 main branch patterns**. Always follow this strategy when developing features or fixes.
 
 ---
 
 ### 1. `main`
 
-Production branch — always stable and deployable.
+Integration branch — all development merges here first.
 
 **Rules:**
 
@@ -339,7 +339,29 @@ Production branch — always stable and deployable.
 
 ---
 
-### 2. `feature/*`
+### 2. `production/web`
+
+Production deployment branch for the **web application**. Automated CI/CD, semantic-release, and SonarCloud analysis run on pushes to this branch. Vercel deploys from this branch.
+
+**Workflow:**
+
+- Merge `main` → `production/web` when ready to deploy web changes
+- Triggers: CI, release (semantic-release), SonarCloud analysis
+
+---
+
+### 3. `production/mobile`
+
+Production deployment branch for the **mobile application**. Automated iOS builds and App Store submissions run on pushes to this branch.
+
+**Workflow:**
+
+- Merge `main` → `production/mobile` when ready to deploy mobile changes
+- Triggers: iOS production build + App Store Connect submission (when `mobile/**` files change)
+
+---
+
+### 4. `feature/*`
 
 Used for all new feature development.
 
@@ -361,7 +383,7 @@ Used for all new feature development.
 
 ---
 
-### 3. `hotfix/*`
+### 5. `hotfix/*`
 
 Used for urgent production fixes that cannot wait for a normal feature cycle.
 
@@ -382,6 +404,7 @@ Used for urgent production fixes that cannot wait for a normal feature cycle.
 **Workflow:**
 
 - Hotfix branches must be merged into `main` via a pull request
+- Then merged from `main` into `production/web` and/or `production/mobile` as needed
 
 ---
 
@@ -394,7 +417,7 @@ Used for urgent production fixes that cannot wait for a normal feature cycle.
 | Urgent production bug requiring immediate fix | `hotfix/*`  | `hotfix/stripe-webhook-bug`           |
 | Critical security patch for live environment  | `hotfix/*`  | `hotfix/auth-token-exposure`          |
 
-**Summary**: Use `feature/*` for all planned work. Use `hotfix/*` only when production is broken and the fix cannot wait for the normal development cycle.
+**Summary**: Use `feature/*` for all planned work. Use `hotfix/*` only when production is broken and the fix cannot wait for the normal development cycle. Deploy by merging `main` into `production/web` or `production/mobile`.
 
 ---
 

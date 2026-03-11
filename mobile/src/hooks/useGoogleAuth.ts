@@ -56,11 +56,17 @@ export function useGoogleAuth() {
   // ⚠️ IMPORTANT: makeRedirectUri({ scheme, path }) produces "scheme://path" (two slashes),
   //    but Android OAuth clients require "scheme:/path" (one slash).
   //    Use the literal string to avoid the Error 400: invalid_request from Google.
-  const redirectUri = isWeb
-    ? AuthSession.makeRedirectUri({ preferLocalhost: true })
-    : isExpoGo
-      ? AuthSession.makeRedirectUri({ scheme: "athlifyr", path: "redirect" })
-      : "com.athlifyr.app:/oauth2redirect";
+  let redirectUri: string;
+  if (isWeb) {
+    redirectUri = AuthSession.makeRedirectUri({ preferLocalhost: true });
+  } else if (isExpoGo) {
+    redirectUri = AuthSession.makeRedirectUri({
+      scheme: "athlifyr",
+      path: "redirect",
+    });
+  } else {
+    redirectUri = "com.athlifyr.app:/oauth2redirect";
+  }
 
   // Web and Expo Go use the Web Client ID (web-type credential in Google Cloud Console).
   // Standalone Android uses the Android Client ID.
@@ -96,6 +102,8 @@ export function useGoogleAuth() {
   );
 
   // Wrap promptAsync to warn when running in Expo Go
+  // and persist PKCE codeVerifier so the redirect screen can
+  // complete the exchange if this screen is unmounted by deep-link navigation.
   const safePromptAsync: typeof promptAsync = async (options) => {
     if (isExpoGo && !isWeb) {
       console.warn(
@@ -103,13 +111,28 @@ export function useGoogleAuth() {
           "Use a development or preview build (eas build --profile preview)."
       );
     }
+    if (request?.codeVerifier) {
+      await SecureStore.setItemAsync(
+        "google-code-verifier",
+        request.codeVerifier
+      );
+    }
+    await SecureStore.setItemAsync("google-redirect-uri", redirectUri);
     return promptAsync(options);
   };
 
   useEffect(() => {
     if (!response || processingRef.current) return;
 
+    // On native Android/iOS, the oauth2redirect / redirect screen handles
+    // the code exchange via deep-link.  Skip here to avoid a race condition
+    // where both try to exchange the same authorization code.
+    if (!isWeb && !isExpoGo) return;
+
     if (response.type === "success") {
+      // If oauth2redirect already completed auth, skip.
+      if (useAuthStore.getState().isAuthenticated) return;
+
       processingRef.current = true;
       setIsLoading(true);
       setError(null);
@@ -124,12 +147,7 @@ export function useGoogleAuth() {
           code,
           codeVerifier,
           redirectUri,
-          platform:
-            Platform.OS === "web"
-              ? "web"
-              : Platform.OS === "ios"
-                ? "ios"
-                : "android",
+          platform: "web",
         });
         return res.data;
       };
@@ -155,6 +173,8 @@ export function useGoogleAuth() {
           console.log("✅ Google auth OK, user:", user.id);
         })
         .catch((err: unknown) => {
+          // Don't wipe tokens if authentication already succeeded elsewhere
+          if (useAuthStore.getState().isAuthenticated) return;
           const message =
             err instanceof Error ? err.message : "Authentication failed";
           console.error("❌ Google auth error:", message);

@@ -127,7 +127,7 @@ export default function RegisterScreen() {
         EMAIL_ALREADY_IN_USE: "register.emailAlreadyInUse",
         NAME_TOO_SHORT: "register.nameMinLength",
         EMAIL_INVALID: "register.emailInvalid",
-        PASSWORD_TOO_SHORT: "register.passwordMinLengthServer",
+        PASSWORD_TOO_SHORT: "register.passwordMinLengthServer", // NOSONAR - error code, not a password
       };
 
       const key = (code && codeToKey[code]) ?? "register.registrationFailed";

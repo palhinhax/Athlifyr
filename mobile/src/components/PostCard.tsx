@@ -53,10 +53,10 @@ function timeAgo(dateStr: string): string {
 function PostAvatar({
   image,
   name,
-}: {
+}: Readonly<{
   image: string | null;
   name: string | null;
-}) {
+}>) {
   if (image) {
     return (
       <CachedAvatar
@@ -100,11 +100,11 @@ function MiniAvatar({
   image,
   name,
   size = 32,
-}: {
+}: Readonly<{
   image: string | null;
   name: string | null;
   size?: number;
-}) {
+}>) {
   if (image) {
     return (
       <CachedAvatar
@@ -137,7 +137,7 @@ function MiniAvatar({
 // ─── Post Card ─────────────────────────────────────────────────
 
 interface PostCardProps {
-  post: FeedPost;
+  readonly post: FeedPost;
 }
 
 export function PostCard({ post }: PostCardProps) {
@@ -446,16 +446,19 @@ export function PostCard({ post }: PostCardProps) {
           )}
 
           {/* Comments List */}
-          {isLoadingComments ? (
+          {isLoadingComments && (
             <View style={styles.commentsLoading}>
               <ActivityIndicator size="small" color={colors.textTertiary} />
               <Text style={styles.commentsLoadingText}>
                 {t("feed.loadingComments")}
               </Text>
             </View>
-          ) : comments.length === 0 ? (
+          )}
+          {!isLoadingComments && comments.length === 0 && (
             <Text style={styles.noCommentsText}>{t("feed.noComments")}</Text>
-          ) : (
+          )}
+          {!isLoadingComments &&
+            comments.length > 0 &&
             comments.map((comment) => (
               <View key={comment.id} style={styles.commentRow}>
                 <MiniAvatar
@@ -485,8 +488,7 @@ export function PostCard({ post }: PostCardProps) {
                   </View>
                 </View>
               </View>
-            ))
-          )}
+            ))}
         </View>
       )}
 
@@ -520,7 +522,7 @@ export function PostCard({ post }: PostCardProps) {
           {
             label: t("common.delete"),
             variant: "destructive",
-            onPress: confirmDeleteComment,
+            onPress: () => void confirmDeleteComment(),
           },
         ]}
       />

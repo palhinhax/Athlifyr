@@ -6,7 +6,7 @@
 // On completion, saves the activity locally and navigates to activity detail.
 // ============================================================================
 
-import React, { useCallback, useState } from "react";
+import React, { useCallback } from "react";
 import {
   View,
   Text,
@@ -37,27 +37,13 @@ export default function FreeRunScreen() {
     stats,
     finished,
     savedActivityId,
+    trackPoints,
     startRun,
     stopRun,
   } = useFreeRun();
 
-  // Build live track polyline from current position updates
-  const [trackPoints, setTrackPoints] = useState<[number, number][]>([]);
-
-  // Track the position for the map polyline
-  const prevPosRef = React.useRef<{ lat: number; lng: number } | null>(null);
-  React.useEffect(() => {
-    if (!currentPosition) return;
-    const { lat, lng } = currentPosition;
-    if (
-      !prevPosRef.current ||
-      prevPosRef.current.lat !== lat ||
-      prevPosRef.current.lng !== lng
-    ) {
-      prevPosRef.current = { lat, lng };
-      setTrackPoints((prev) => [...prev, [lat, lng]]);
-    }
-  }, [currentPosition]);
+  // Build live track polyline from the global store (already computed)
+  // trackPoints comes directly from useFreeRun now
 
   // ─── Handlers ───────────────────────────────────────────────────────
 
@@ -70,8 +56,15 @@ export default function FreeRunScreen() {
       );
       return;
     }
-    setTrackPoints([]);
-    await startRun();
+    try {
+      await startRun();
+    } catch {
+      Alert.alert(
+        t("freeRun.gpsRequired"),
+        t("freeRun.gpsRequiredDescription"),
+        [{ text: t("common.ok") }]
+      );
+    }
   }, [gpsPermission, startRun, t]);
 
   const handleStop = useCallback(() => {
@@ -80,36 +73,25 @@ export default function FreeRunScreen() {
       {
         text: t("freeRun.stopRun"),
         style: "destructive",
-        onPress: async () => {
-          const activityId = await stopRun();
-          if (activityId) {
-            router.replace({
-              pathname: "/activity-detail",
-              params: { activityId },
-            });
-          }
+        onPress: () => {
+          void stopRun().then((activityId) => {
+            if (activityId) {
+              router.replace({
+                pathname: "/activity-detail",
+                params: { activityId },
+              });
+            }
+          });
         },
       },
     ]);
   }, [stopRun, router, t]);
 
   const handleBack = useCallback(() => {
-    if (gpsActive) {
-      Alert.alert(t("freeRun.runActive"), t("freeRun.runActiveLeave"), [
-        { text: t("common.cancel"), style: "cancel" },
-        {
-          text: t("freeRun.leaveAndStop"),
-          style: "destructive",
-          onPress: async () => {
-            await stopRun();
-            router.back();
-          },
-        },
-      ]);
-    } else {
-      router.back();
-    }
-  }, [gpsActive, stopRun, router, t]);
+    // Allow navigating back freely — the run continues in the background
+    // via the global Zustand store. The floating banner will show on other screens.
+    router.back();
+  }, [router]);
 
   const handleViewActivity = useCallback(() => {
     if (savedActivityId) {
@@ -120,11 +102,49 @@ export default function FreeRunScreen() {
     }
   }, [savedActivityId, router]);
 
+  const renderFab = () => {
+    if (!gpsActive && !finished) {
+      return (
+        <TouchableOpacity
+          style={[styles.fab, styles.fabStart]}
+          onPress={handleStart}
+        >
+          <Play size={22} color="#fff" />
+          <Text style={styles.fabText}>{t("freeRun.startRun")}</Text>
+        </TouchableOpacity>
+      );
+    }
+    if (finished) {
+      if (savedActivityId) {
+        return (
+          <TouchableOpacity
+            style={[styles.fab, styles.fabFinished]}
+            onPress={handleViewActivity}
+          >
+            <Text style={styles.fabText}>🏃 {t("freeRun.viewActivity")}</Text>
+          </TouchableOpacity>
+        );
+      }
+      return (
+        <View style={[styles.fab, styles.fabFinished]}>
+          <Text style={styles.fabText}>{t("freeRun.runTooShort")}</Text>
+        </View>
+      );
+    }
+    return (
+      <TouchableOpacity
+        style={[styles.fab, styles.fabStop]}
+        onPress={handleStop}
+      >
+        <Square size={18} color="#fff" />
+        <Text style={styles.fabText}>{t("freeRun.stopRun")}</Text>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <>
-      <Stack.Screen
-        options={{ headerShown: false, gestureEnabled: !gpsActive }}
-      />
+      <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
       <StatusBar barStyle="light-content" />
 
       <View style={[styles.container, { paddingTop: insets.top }]}>
@@ -182,38 +202,7 @@ export default function FreeRunScreen() {
         <View
           style={[styles.fabContainer, { paddingBottom: insets.bottom + 12 }]}
         >
-          {!gpsActive && !finished ? (
-            <TouchableOpacity
-              style={[styles.fab, styles.fabStart]}
-              onPress={handleStart}
-            >
-              <Play size={22} color="#fff" />
-              <Text style={styles.fabText}>{t("freeRun.startRun")}</Text>
-            </TouchableOpacity>
-          ) : finished ? (
-            savedActivityId ? (
-              <TouchableOpacity
-                style={[styles.fab, styles.fabFinished]}
-                onPress={handleViewActivity}
-              >
-                <Text style={styles.fabText}>
-                  🏃 {t("freeRun.viewActivity")}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.fab, styles.fabFinished]}>
-                <Text style={styles.fabText}>{t("freeRun.runTooShort")}</Text>
-              </View>
-            )
-          ) : (
-            <TouchableOpacity
-              style={[styles.fab, styles.fabStop]}
-              onPress={handleStop}
-            >
-              <Square size={18} color="#fff" />
-              <Text style={styles.fabText}>{t("freeRun.stopRun")}</Text>
-            </TouchableOpacity>
-          )}
+          {renderFab()}
         </View>
       </View>
     </>

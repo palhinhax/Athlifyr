@@ -7,10 +7,7 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": [
-      "athlifyr",
-      "com.athlifyr.app"
-    ],
+    "scheme": ["athlifyr", "com.athlifyr.app"],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -23,7 +20,10 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "A câmara é utilizada para atualizar a foto de perfil e partilhar momentos desportivos com a comunidade Athlifyr.",
-        "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr."
+        "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr.",
+        "NSLocationWhenInUseUsageDescription": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "O Athlifyr precisa da tua localização em segundo plano para continuar a registar o percurso quando o ecrã está bloqueado.",
+        "UIBackgroundModes": ["location"]
       }
     },
     "android": {
@@ -36,7 +36,12 @@
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE"
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_BACKGROUND_LOCATION",
+        "FOREGROUND_SERVICE",
+        "FOREGROUND_SERVICE_LOCATION"
       ],
       "intentFilters": [
         {
@@ -47,10 +52,7 @@
               "scheme": "com.athlifyr.app"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -59,6 +61,16 @@
     },
     "plugins": [
       "expo-router",
+      [
+        "expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "O Athlifyr precisa da tua localização em segundo plano para registar o percurso da corrida mesmo com o ecrã bloqueado.",
+          "locationWhenInUsePermission": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
+          "locationAlwaysPermission": "O Athlifyr precisa da tua localização em segundo plano para registar a corrida.",
+          "isAndroidBackgroundLocationEnabled": true,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
       [
         "expo-notifications",
         {

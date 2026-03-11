@@ -990,6 +990,7 @@
     "gpsRequiredDescription": "L'autorisation de localisation est requise pour suivre votre course.",
     "gpsPermissionDenied": "Permission GPS refusée. Activez la localisation dans les paramètres.",
     "myActivities": "Mes Activités",
-    "noActivities": "Aucune activité. Allez courir !"
+    "noActivities": "Aucune activité. Allez courir !",
+    "tapToReturn": "Appuyez pour revenir"
   }
 }

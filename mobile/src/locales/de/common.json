@@ -990,6 +990,7 @@
     "gpsRequiredDescription": "Standortberechtigung ist erforderlich, um deinen Lauf zu verfolgen.",
     "gpsPermissionDenied": "GPS-Berechtigung verweigert. Aktiviere den Standort in den Geräteeinstellungen.",
     "myActivities": "Meine Aktivitäten",
-    "noActivities": "Noch keine Aktivitäten. Geh laufen!"
+    "noActivities": "Noch keine Aktivitäten. Geh laufen!",
+    "tapToReturn": "Tippe, um zurückzukehren"
   }
 }

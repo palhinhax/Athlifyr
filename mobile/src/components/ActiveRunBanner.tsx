@@ -11,6 +11,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter, usePathname } from "expo-router";
 import { Play } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { useFreeRunSession } from "@/src/lib/free-run-session-store";
 import { theme } from "@/src/constants/theme";
 
@@ -35,6 +36,7 @@ export function ActiveRunBanner() {
   const router = useRouter();
   const pathname = usePathname();
   const insets = useSafeAreaInsets();
+  const { t } = useTranslation();
   const isActive = useFreeRunSession((s) => s.isActive);
   const stats = useFreeRunSession((s) => s.stats);
 
@@ -62,7 +64,7 @@ export function ActiveRunBanner() {
       <Text style={styles.time}>{formatElapsed(stats.elapsedTimeMs)}</Text>
       <View style={styles.separator} />
       <Text style={styles.distance}>{formatDistance(stats.distanceM)}</Text>
-      <Text style={styles.tapHint}>Toque para voltar</Text>
+      <Text style={styles.tapHint}>{t("freeRun.tapToReturn")}</Text>
     </TouchableOpacity>
   );
 }

@@ -12,6 +12,7 @@
 import React, { useRef, useEffect, useMemo } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { MapPin, Flag, Navigation } from "lucide-react-native";
+import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import type { GPSPoint, AthletePosition } from "@/src/hooks/useLiveRace";
 
@@ -66,6 +67,7 @@ export function RaceMap({
   height = 300,
   followUser = true,
 }: Readonly<RaceMapProps>) {
+  const { t } = useTranslation();
   const cameraRef = useRef<InstanceType<
     typeof import("@rnmapbox/maps").default.Camera
   > | null>(null);
@@ -111,7 +113,9 @@ export function RaceMap({
       <View style={[styles.container, { height }]}>
         <View style={styles.fallback}>
           <MapPin size={48} color={theme.colors.primary} />
-          <Text style={styles.fallbackText}>Map unavailable</Text>
+          <Text style={styles.fallbackText}>
+            {t("liveRace.mapUnavailable")}
+          </Text>
         </View>
       </View>
     );

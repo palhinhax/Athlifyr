@@ -993,6 +993,7 @@
     "gpsRequiredDescription": "Permissão de localização é necessária para rastrear a tua corrida.",
     "gpsPermissionDenied": "Permissão GPS negada. Ativa a localização nas definições do dispositivo.",
     "myActivities": "As Minhas Atividades",
-    "noActivities": "Ainda não tens atividades. Vai correr!"
+    "noActivities": "Ainda não tens atividades. Vai correr!",
+    "tapToReturn": "Toca para voltar"
   }
 }

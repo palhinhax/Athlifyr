@@ -993,6 +993,7 @@
     "gpsRequiredDescription": "Location permission is required to track your run.",
     "gpsPermissionDenied": "GPS permission denied. Enable location in your device settings.",
     "myActivities": "My Activities",
-    "noActivities": "No activities yet. Go for a run!"
+    "noActivities": "No activities yet. Go for a run!",
+    "tapToReturn": "Tap to return"
   }
 }

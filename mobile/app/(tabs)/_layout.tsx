@@ -27,6 +27,100 @@ import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
 
+// ── Extracted components (avoids nested component definitions) ──────────────
+
+function TabHeaderTitle() {
+  return <HeaderLogo />;
+}
+
+function TabHeaderRight() {
+  return (
+    <View style={styles.headerRight}>
+      <RunButton />
+      <CameraButton />
+      <SearchButton />
+      <CalendarButton />
+      <NotificationBell />
+    </View>
+  );
+}
+
+function FeedTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <Activity color={color} size={size} />;
+}
+
+function EventsTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <Calendar color={color} size={size} />;
+}
+
+function VenuesTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <MapPin color={color} size={size} />;
+}
+
+function MyVenueTabIcon({
+  color,
+  activeVenues,
+}: Readonly<{
+  color: string;
+  activeVenues: ActiveVenue[];
+}>) {
+  const singleVenue = activeVenues.length === 1 ? activeVenues[0] : null;
+
+  return (
+    <View
+      style={[
+        styles.centerTabIcon,
+        activeVenues.length > 0 && styles.centerTabIconActive,
+        singleVenue?.imageUrl && styles.centerTabIconWithImage,
+      ]}
+    >
+      {singleVenue?.imageUrl ? (
+        <CachedImage
+          uri={singleVenue.imageUrl}
+          style={styles.venueLogo}
+          contentFit="cover"
+          alt={singleVenue.name}
+        />
+      ) : (
+        <Building2
+          color={activeVenues.length > 0 ? theme.colors.white : color}
+          size={28}
+        />
+      )}
+    </View>
+  );
+}
+
+function ExercisesTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <Dumbbell color={color} size={size} />;
+}
+
+function MessagesTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <MessageCircle color={color} size={size} />;
+}
+
+function ProfileTabIcon({
+  color,
+  size,
+}: Readonly<{ color: string; size: number }>) {
+  return <User color={color} size={size} />;
+}
+
 export default function TabLayout() {
   const { t } = useTranslation();
   const router = useRouter();
@@ -98,6 +192,13 @@ export default function TabLayout() {
     // If no venues, the my-venues screen will be shown by default
   }, [activeVenues, navigateToVenue]);
 
+  const renderMyVenueIcon = useCallback(
+    (props: Readonly<{ color: string }>) => (
+      <MyVenueTabIcon color={props.color} activeVenues={activeVenues} />
+    ),
+    [activeVenues]
+  );
+
   return (
     <>
       <Tabs
@@ -116,43 +217,29 @@ export default function TabLayout() {
             paddingBottom: tabBarPaddingBottom,
             paddingTop: 8,
           },
-          headerTitle: () => <HeaderLogo />,
-          headerRight: () => (
-            <View style={styles.headerRight}>
-              <RunButton />
-              <CameraButton />
-              <SearchButton />
-              <CalendarButton />
-              <NotificationBell />
-            </View>
-          ),
+          headerTitle: TabHeaderTitle,
+          headerRight: TabHeaderRight,
         }}
       >
         <Tabs.Screen
           name="feed"
           options={{
             title: t("navigation.feed"),
-            tabBarIcon: ({ color, size }) => (
-              <Activity color={color} size={size} />
-            ),
+            tabBarIcon: FeedTabIcon,
           }}
         />
         <Tabs.Screen
           name="index"
           options={{
             title: t("navigation.events"),
-            tabBarIcon: ({ color, size }) => (
-              <Calendar color={color} size={size} />
-            ),
+            tabBarIcon: EventsTabIcon,
           }}
         />
         <Tabs.Screen
           name="venues"
           options={{
             title: t("navigation.venues"),
-            tabBarIcon: ({ color, size }) => (
-              <MapPin color={color} size={size} />
-            ),
+            tabBarIcon: VenuesTabIcon,
           }}
         />
         <Tabs.Screen
@@ -161,36 +248,7 @@ export default function TabLayout() {
             // Hide tab when not logged in or no venues
             href: showMyVenuesTab ? undefined : null,
             title: t("navigation.myVenue"),
-            tabBarIcon: ({ color, focused: _focused }) => {
-              const singleVenue =
-                activeVenues.length === 1 ? activeVenues[0] : null;
-
-              return (
-                <View
-                  style={[
-                    styles.centerTabIcon,
-                    activeVenues.length > 0 && styles.centerTabIconActive,
-                    singleVenue?.imageUrl && styles.centerTabIconWithImage,
-                  ]}
-                >
-                  {singleVenue?.imageUrl ? (
-                    <CachedImage
-                      uri={singleVenue.imageUrl}
-                      style={styles.venueLogo}
-                      contentFit="cover"
-                      alt={singleVenue.name}
-                    />
-                  ) : (
-                    <Building2
-                      color={
-                        activeVenues.length > 0 ? theme.colors.white : color
-                      }
-                      size={28}
-                    />
-                  )}
-                </View>
-              );
-            },
+            tabBarIcon: renderMyVenueIcon,
             tabBarLabel: () => null,
           }}
           listeners={{
@@ -208,25 +266,21 @@ export default function TabLayout() {
           name="exercises"
           options={{
             title: t("navigation.workouts"),
-            tabBarIcon: ({ color, size }) => (
-              <Dumbbell color={color} size={size} />
-            ),
+            tabBarIcon: ExercisesTabIcon,
           }}
         />
         <Tabs.Screen
           name="messages"
           options={{
             title: t("navigation.messages"),
-            tabBarIcon: ({ color, size }) => (
-              <MessageCircle color={color} size={size} />
-            ),
+            tabBarIcon: MessagesTabIcon,
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
             title: t("navigation.profile"),
-            tabBarIcon: ({ color, size }) => <User color={color} size={size} />,
+            tabBarIcon: ProfileTabIcon,
           }}
         />
         <Tabs.Screen

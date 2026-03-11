@@ -67,14 +67,10 @@ export function useFreeRun() {
     // Also request background permission (needed for screen-off tracking)
     const { status: bgStatus } =
       await Location.requestBackgroundPermissionsAsync();
-    useFreeRunSession
-      .getState()
-      .update({
-        gpsPermission:
-          bgStatus === "granted" || fgStatus === "granted"
-            ? "granted"
-            : "denied",
-      });
+    useFreeRunSession.getState().update({
+      gpsPermission:
+        bgStatus === "granted" || fgStatus === "granted" ? "granted" : "denied",
+    });
     return fgStatus === "granted";
   }, []);
 
@@ -84,11 +80,7 @@ export function useFreeRun() {
     const hasPermission = await requestGpsPermission();
     if (!hasPermission) return false;
 
-    try {
-      await activateKeepAwakeAsync(KEEP_AWAKE_TAG);
-    } catch {
-      // non-critical
-    }
+    await activateKeepAwakeAsync(KEEP_AWAKE_TAG).catch(() => {});
 
     const started = await startBackgroundLocation();
     if (started) {
@@ -99,11 +91,7 @@ export function useFreeRun() {
 
   const stopGps = useCallback(async () => {
     await stopBackgroundLocation();
-    try {
-      deactivateKeepAwake(KEEP_AWAKE_TAG);
-    } catch {
-      // non-critical
-    }
+    deactivateKeepAwake(KEEP_AWAKE_TAG);
     useFreeRunSession.getState().update({ isActive: false });
   }, []);
 

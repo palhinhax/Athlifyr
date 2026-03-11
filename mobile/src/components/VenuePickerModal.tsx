@@ -14,6 +14,10 @@ import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
 import type { ActiveVenue } from "@/src/hooks/useActiveVenues";
 
+function ListSeparator() {
+  return <View style={styles.separator} />;
+}
+
 interface VenuePickerModalProps {
   visible: boolean;
   venues: ActiveVenue[];
@@ -26,7 +30,7 @@ export function VenuePickerModal({
   venues,
   onSelect,
   onClose,
-}: VenuePickerModalProps) {
+}: Readonly<VenuePickerModalProps>) {
   const { t } = useTranslation();
 
   const renderVenueItem = ({ item }: { item: ActiveVenue }) => (
@@ -95,7 +99,7 @@ export function VenuePickerModal({
             keyExtractor={(item) => item.id}
             contentContainerStyle={styles.list}
             showsVerticalScrollIndicator={false}
-            ItemSeparatorComponent={() => <View style={styles.separator} />}
+            ItemSeparatorComponent={ListSeparator}
           />
         </Pressable>
       </Pressable>

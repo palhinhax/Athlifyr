@@ -73,14 +73,15 @@ export default function FreeRunScreen() {
       {
         text: t("freeRun.stopRun"),
         style: "destructive",
-        onPress: async () => {
-          const activityId = await stopRun();
-          if (activityId) {
-            router.replace({
-              pathname: "/activity-detail",
-              params: { activityId },
-            });
-          }
+        onPress: () => {
+          void stopRun().then((activityId) => {
+            if (activityId) {
+              router.replace({
+                pathname: "/activity-detail",
+                params: { activityId },
+              });
+            }
+          });
         },
       },
     ]);
@@ -100,6 +101,46 @@ export default function FreeRunScreen() {
       });
     }
   }, [savedActivityId, router]);
+
+  const renderFab = () => {
+    if (!gpsActive && !finished) {
+      return (
+        <TouchableOpacity
+          style={[styles.fab, styles.fabStart]}
+          onPress={handleStart}
+        >
+          <Play size={22} color="#fff" />
+          <Text style={styles.fabText}>{t("freeRun.startRun")}</Text>
+        </TouchableOpacity>
+      );
+    }
+    if (finished) {
+      if (savedActivityId) {
+        return (
+          <TouchableOpacity
+            style={[styles.fab, styles.fabFinished]}
+            onPress={handleViewActivity}
+          >
+            <Text style={styles.fabText}>🏃 {t("freeRun.viewActivity")}</Text>
+          </TouchableOpacity>
+        );
+      }
+      return (
+        <View style={[styles.fab, styles.fabFinished]}>
+          <Text style={styles.fabText}>{t("freeRun.runTooShort")}</Text>
+        </View>
+      );
+    }
+    return (
+      <TouchableOpacity
+        style={[styles.fab, styles.fabStop]}
+        onPress={handleStop}
+      >
+        <Square size={18} color="#fff" />
+        <Text style={styles.fabText}>{t("freeRun.stopRun")}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <>
@@ -161,38 +202,7 @@ export default function FreeRunScreen() {
         <View
           style={[styles.fabContainer, { paddingBottom: insets.bottom + 12 }]}
         >
-          {!gpsActive && !finished ? (
-            <TouchableOpacity
-              style={[styles.fab, styles.fabStart]}
-              onPress={handleStart}
-            >
-              <Play size={22} color="#fff" />
-              <Text style={styles.fabText}>{t("freeRun.startRun")}</Text>
-            </TouchableOpacity>
-          ) : finished ? (
-            savedActivityId ? (
-              <TouchableOpacity
-                style={[styles.fab, styles.fabFinished]}
-                onPress={handleViewActivity}
-              >
-                <Text style={styles.fabText}>
-                  🏃 {t("freeRun.viewActivity")}
-                </Text>
-              </TouchableOpacity>
-            ) : (
-              <View style={[styles.fab, styles.fabFinished]}>
-                <Text style={styles.fabText}>{t("freeRun.runTooShort")}</Text>
-              </View>
-            )
-          ) : (
-            <TouchableOpacity
-              style={[styles.fab, styles.fabStop]}
-              onPress={handleStop}
-            >
-              <Square size={18} color="#fff" />
-              <Text style={styles.fabText}>{t("freeRun.stopRun")}</Text>
-            </TouchableOpacity>
-          )}
+          {renderFab()}
         </View>
       </View>
     </>

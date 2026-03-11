@@ -961,7 +961,8 @@
     "raceComplete": "Race Complete!",
     "checkpoints": "Checkpoints",
     "unknownAthlete": "Unknown",
-    "you": "You"
+    "you": "You",
+    "mapUnavailable": "Map unavailable"
   },
   "freeRun": {
     "sectionTitle": "Free Run",
@@ -994,6 +995,8 @@
     "gpsPermissionDenied": "GPS permission denied. Enable location in your device settings.",
     "myActivities": "My Activities",
     "noActivities": "No activities yet. Go for a run!",
-    "tapToReturn": "Tap to return"
+    "tapToReturn": "Tap to return",
+    "backgroundNotificationTitle": "Athlifyr — Run in progress",
+    "backgroundNotificationBody": "Tracking your GPS route"
   }
 }

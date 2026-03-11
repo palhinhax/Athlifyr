@@ -11,6 +11,7 @@
 
 import * as TaskManager from "expo-task-manager";
 import * as Location from "expo-location";
+import i18n from "i18next";
 import { useFreeRunSession } from "./free-run-session-store";
 import type { FreeRunGPSPoint } from "./free-run-store";
 
@@ -72,8 +73,8 @@ export async function startBackgroundLocation(): Promise<boolean> {
     deferredUpdatesInterval: 1000,
     showsBackgroundLocationIndicator: true,
     foregroundService: {
-      notificationTitle: "Athlifyr — Corrida em curso",
-      notificationBody: "A monitorizar o teu percurso GPS",
+      notificationTitle: i18n.t("freeRun.backgroundNotificationTitle"),
+      notificationBody: i18n.t("freeRun.backgroundNotificationBody"),
       notificationColor: "#FF6B2B",
       killServiceOnDestroy: false,
     },

@@ -51,7 +51,7 @@ export function useGoogleAuth() {
       const { authUrl } = await response.json();
 
       // Redirect to Google OAuth
-      window.location.href = authUrl;
+      globalThis.location.href = authUrl;
     } catch (error) {
       console.error("REST API Google sign-in error:", error);
       throw new Error("Failed to sign in with Google");

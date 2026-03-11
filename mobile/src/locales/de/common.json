@@ -958,7 +958,8 @@
     "raceComplete": "Rennen Abgeschlossen!",
     "checkpoints": "Kontrollpunkte",
     "unknownAthlete": "Unbekannt",
-    "you": "Du"
+    "you": "Du",
+    "mapUnavailable": "Karte nicht verfügbar"
   },
   "freeRun": {
     "sectionTitle": "Freier Lauf",
@@ -990,6 +991,9 @@
     "gpsRequiredDescription": "Standortberechtigung ist erforderlich, um deinen Lauf zu verfolgen.",
     "gpsPermissionDenied": "GPS-Berechtigung verweigert. Aktiviere den Standort in den Geräteeinstellungen.",
     "myActivities": "Meine Aktivitäten",
-    "noActivities": "Noch keine Aktivitäten. Geh laufen!"
+    "noActivities": "Noch keine Aktivitäten. Geh laufen!",
+    "tapToReturn": "Tippe, um zurückzukehren",
+    "backgroundNotificationTitle": "Athlifyr — Lauf läuft",
+    "backgroundNotificationBody": "Deine GPS-Route wird aufgezeichnet"
   }
 }

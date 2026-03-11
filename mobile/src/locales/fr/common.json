@@ -958,7 +958,8 @@
     "raceComplete": "Course Terminée !",
     "checkpoints": "Points de Contrôle",
     "unknownAthlete": "Inconnu",
-    "you": "Toi"
+    "you": "Toi",
+    "mapUnavailable": "Carte indisponible"
   },
   "freeRun": {
     "sectionTitle": "Course Libre",
@@ -990,6 +991,9 @@
     "gpsRequiredDescription": "L'autorisation de localisation est requise pour suivre votre course.",
     "gpsPermissionDenied": "Permission GPS refusée. Activez la localisation dans les paramètres.",
     "myActivities": "Mes Activités",
-    "noActivities": "Aucune activité. Allez courir !"
+    "noActivities": "Aucune activité. Allez courir !",
+    "tapToReturn": "Appuyez pour revenir",
+    "backgroundNotificationTitle": "Athlifyr — Course en cours",
+    "backgroundNotificationBody": "Suivi de votre parcours GPS"
   }
 }

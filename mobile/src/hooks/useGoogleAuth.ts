@@ -124,7 +124,15 @@ export function useGoogleAuth() {
   useEffect(() => {
     if (!response || processingRef.current) return;
 
+    // On native Android/iOS, the oauth2redirect / redirect screen handles
+    // the code exchange via deep-link.  Skip here to avoid a race condition
+    // where both try to exchange the same authorization code.
+    if (!isWeb && !isExpoGo) return;
+
     if (response.type === "success") {
+      // If oauth2redirect already completed auth, skip.
+      if (useAuthStore.getState().isAuthenticated) return;
+
       processingRef.current = true;
       setIsLoading(true);
       setError(null);
@@ -139,7 +147,7 @@ export function useGoogleAuth() {
           code,
           codeVerifier,
           redirectUri,
-          platform: Platform.OS === "web" ? "web" : "android",
+          platform: "web",
         });
         return res.data;
       };
@@ -165,6 +173,8 @@ export function useGoogleAuth() {
           console.log("✅ Google auth OK, user:", user.id);
         })
         .catch((err: unknown) => {
+          // Don't wipe tokens if authentication already succeeded elsewhere
+          if (useAuthStore.getState().isAuthenticated) return;
           const message =
             err instanceof Error ? err.message : "Authentication failed";
           console.error("❌ Google auth error:", message);

@@ -84,7 +84,7 @@ api.interceptors.request.use(
     return config;
   },
   (error) => {
-    return Promise.reject(error);
+    throw error;
   }
 );
 
@@ -109,7 +109,7 @@ api.interceptors.response.use(
       // Don't retry refresh or login endpoints to avoid infinite loops
       const url = originalRequest.url || "";
       if (url.includes("/auth/refresh") || url.includes("/auth/login")) {
-        return Promise.reject(error);
+        throw error;
       }
 
       if (isRefreshing) {
@@ -123,7 +123,9 @@ api.interceptors.response.use(
             }
             return api(originalRequest);
           })
-          .catch((err) => Promise.reject(err));
+          .catch((err) => {
+            throw err;
+          });
       }
 
       originalRequest._retry = true;
@@ -160,12 +162,12 @@ api.interceptors.response.use(
         processQueue(refreshError as Error, null);
         await SecureStore.deleteItemAsync(TOKEN_KEY);
         await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-        return Promise.reject(error);
+        throw error;
       } finally {
         isRefreshing = false;
       }
     }
 
-    return Promise.reject(error);
+    throw error;
   }
 );

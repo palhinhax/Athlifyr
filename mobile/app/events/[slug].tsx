@@ -262,11 +262,9 @@ export default function EventDetailScreen() {
               >
                 <Radio size={20} color="#fff" />
                 <Text style={styles.liveRaceButtonText}>
-                  {event.liveStatus === "LIVE"
+                  {event.liveStatus === "LIVE" || event.liveStatus === "WARMUP"
                     ? t("liveRace.sectionTitle")
-                    : event.liveStatus === "WARMUP"
-                      ? t("liveRace.sectionTitle")
-                      : t("liveRace.startTracking")}
+                    : t("liveRace.startTracking")}
                 </Text>
                 {(event.liveStatus === "LIVE" ||
                   event.liveStatus === "WARMUP") && (
@@ -288,7 +286,7 @@ export default function EventDetailScreen() {
           )}
 
           {/* Description */}
-          {event.description && (
+          {!!event.description && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>{t("events.about")}</Text>
               <Markdown style={markdownStyles}>{event.description}</Markdown>

@@ -568,20 +568,22 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    if (body.variants && Array.isArray(body.variants)) {
-      await handleVariants(id, body.variants);
+    const hasVariantUpdates = body.variants && Array.isArray(body.variants);
+
+    if (hasVariantUpdates) {
+      await handleVariants(id, body.variants!);
     }
 
     if (body.translations && Array.isArray(body.translations)) {
       await handleTranslations(id, body.translations);
     }
 
-    if (body.variants && Array.isArray(body.variants)) {
-      const eventWithVariants = await prisma.event.findUnique({
+    if (hasVariantUpdates) {
+      const refreshedEvent = await prisma.event.findUnique({
         where: { id },
         include: { variants: true },
       });
-      return NextResponse.json(eventWithVariants);
+      return NextResponse.json(refreshedEvent);
     }
 
     return NextResponse.json(updatedEvent);

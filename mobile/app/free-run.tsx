@@ -22,6 +22,7 @@ import { ArrowLeft, Play, Square, MapPin } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import { useFreeRun } from "@/src/hooks/useFreeRun";
+import { useFreeRunSession } from "@/src/lib/free-run-session-store";
 import { FreeRunHUD } from "@/src/components/free-run/FreeRunHUD";
 import { RaceMap } from "@/src/components/live-race/RaceMap";
 
@@ -102,6 +103,10 @@ export default function FreeRunScreen() {
     }
   }, [savedActivityId, router]);
 
+  const handleDismissTooShort = useCallback(() => {
+    useFreeRunSession.getState().reset();
+  }, []);
+
   const renderFab = () => {
     if (!gpsActive && !finished) {
       return (
@@ -126,9 +131,13 @@ export default function FreeRunScreen() {
         );
       }
       return (
-        <View style={[styles.fab, styles.fabFinished]}>
+        <TouchableOpacity
+          style={[styles.fab, styles.fabFinished]}
+          onPress={handleDismissTooShort}
+        >
           <Text style={styles.fabText}>{t("freeRun.runTooShort")}</Text>
-        </View>
+          <Text style={styles.fabSubtext}>{t("freeRun.tapToRetry")}</Text>
+        </TouchableOpacity>
       );
     }
     return (
@@ -303,5 +312,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 16,
     fontWeight: "700",
+  },
+  fabSubtext: {
+    color: "rgba(255,255,255,0.8)",
+    fontSize: 12,
+    fontWeight: "500",
   },
 });

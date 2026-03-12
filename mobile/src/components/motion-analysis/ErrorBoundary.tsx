@@ -1,5 +1,6 @@
 import React, { Component, ReactNode } from "react";
 import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
+import * as Sentry from "@sentry/react-native";
 import { theme } from "@/src/constants/theme";
 
 interface Props {
@@ -31,6 +32,12 @@ export class ErrorBoundary extends Component<Props, State> {
     );
     console.error("🛑 ErrorBoundary - Error:", error.toString());
     console.error("🛑 ErrorBoundary - Error stack:", error.stack);
+
+    // Report to Sentry
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: errorInfo.componentStack } },
+    });
+
     this.setState({
       errorInfo: errorInfo.componentStack || "No stack trace available",
     });

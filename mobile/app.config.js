@@ -73,6 +73,13 @@ const config = ({ config }) => {
         },
       ],
       "@react-native-community/datetimepicker",
+      [
+        "@sentry/react-native/expo",
+        {
+          organization: "athlifyr",
+          project: "react-native",
+        },
+      ],
     ],
   };
 };

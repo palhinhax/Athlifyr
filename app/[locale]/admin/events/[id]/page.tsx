@@ -29,6 +29,7 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { SportType, EventOrganizerRole } from "@prisma/client";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -67,6 +68,7 @@ const ORGANIZER_ROLE_LABELS: Record<EventOrganizerRole, string> = {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminEventSettingsPage() {
+  const t = useTranslations("admin.events");
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -249,7 +251,7 @@ export default function AdminEventSettingsPage() {
             {event.isFeatured && (
               <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
                 <Star className="mr-1 h-3 w-3" />
-                Destaque
+                {t("featuredBadge")}
               </Badge>
             )}
             {event.hasLiveRace && (
@@ -393,9 +395,9 @@ export default function AdminEventSettingsPage() {
 
               <div className="flex items-center justify-between rounded-lg border p-4">
                 <div>
-                  <p className="font-medium">Evento em destaque</p>
+                  <p className="font-medium">{t("featuredToggleTitle")}</p>
                   <p className="text-sm text-muted-foreground">
-                    Aparece no topo da lista de eventos na app mobile
+                    {t("featuredToggleDescription")}
                   </p>
                 </div>
                 <button

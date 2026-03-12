@@ -173,7 +173,10 @@
         "uploadImage": "Subir Imagen",
         "saving": "Guardando...",
         "saveChanges": "Guardar Cambios"
-      }
+      },
+      "featuredBadge": "Destacado",
+      "featuredToggleTitle": "Evento destacado",
+      "featuredToggleDescription": "Aparece en la parte superior de la lista de eventos en la app móvil"
     },
     "posts": {
       "toast": {

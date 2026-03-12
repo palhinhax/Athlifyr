@@ -35,7 +35,7 @@ race results with management capabilities: view, filter, export, DQ, and adjust.
 ### Layout
 
 - [ ] New "Results" tab in event management dashboard
-  (`app/[locale]/events/[slug]/manage/`)
+      (`app/[locale]/events/[slug]/manage/`)
 - [ ] Tab visible when `event.liveStatus = FINISHED` or results exist
 - [ ] Follows existing tab pattern (same as Registrations, LiveRace tabs)
 
@@ -114,13 +114,13 @@ TabResults
 
 ### API Calls
 
-| Action              | Endpoint                                    | Method |
-| ------------------- | ------------------------------------------- | ------ |
-| Fetch results       | `/api/events/[id]/results/public`           | GET    |
-| Export CSV          | `/api/events/[id]/results/export`           | GET    |
-| Recalculate         | `/api/events/[id]/results/recalculate`      | POST   |
-| DQ / DNF / Adjust   | `/api/events/[id]/results/[resultId]`       | PATCH  |
-| Fetch audit log     | `/api/events/[id]/results/audit-log`        | GET    |
+| Action            | Endpoint                               | Method |
+| ----------------- | -------------------------------------- | ------ |
+| Fetch results     | `/api/events/[id]/results/public`      | GET    |
+| Export CSV        | `/api/events/[id]/results/export`      | GET    |
+| Recalculate       | `/api/events/[id]/results/recalculate` | POST   |
+| DQ / DNF / Adjust | `/api/events/[id]/results/[resultId]`  | PATCH  |
+| Fetch audit log   | `/api/events/[id]/results/audit-log`   | GET    |
 
 ### i18n Keys Required
 

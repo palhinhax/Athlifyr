@@ -24,6 +24,27 @@
     "OTHER": "Altro"
   },
   "events": {
+    "suggest": {
+      "title": "Suggerisci un evento",
+      "description": "Conosci un evento sportivo che non è ancora su Athlifyr? Faccelo sapere e lo aggiungeremo!",
+      "eventName": "Nome dell'evento",
+      "eventNamePlaceholder": "es: Trail Serra da Estrela 2026",
+      "date": "Data",
+      "sport": "Sport",
+      "sportPlaceholder": "Seleziona...",
+      "location": "Luogo",
+      "locationPlaceholder": "Città o regione",
+      "website": "Sito web",
+      "websitePlaceholder": "https://...",
+      "message": "Dettagli aggiuntivi",
+      "messagePlaceholder": "Altri dettagli sull'evento (distanze, link di iscrizione, ecc.)",
+      "submit": "Invia suggerimento",
+      "thankYouTitle": "Grazie!",
+      "thankYouDesc": "Il tuo suggerimento è stato inviato. Il nostro team lo esaminerà e aggiungerà l'evento il prima possibile.",
+      "close": "Chiudi",
+      "errorSubmitting": "Impossibile inviare il suggerimento. Riprova.",
+      "loginRequired": "Accedi per suggerire un evento"
+    },
     "title": "Eventi",
     "description": "Scopri eventi sportivi vicino a te",
     "noEvents": "Nessun evento trovato",

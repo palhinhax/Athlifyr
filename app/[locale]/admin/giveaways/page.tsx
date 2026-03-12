@@ -14,6 +14,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -35,6 +45,9 @@ import {
   Trash2,
   Send,
   Smartphone,
+  Search,
+  X,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
@@ -117,10 +130,15 @@ export default function AdminGiveawaysPage() {
   const [participants, setParticipants] = useState<
     Array<{
       id: string;
+      ticketNumber: number;
       createdAt: string;
       user: { id: string; name: string | null; email: string };
     }>
   >([]);
+  const [removeTarget, setRemoveTarget] = useState<{
+    userId: string;
+    name: string;
+  } | null>(null);
   const [isLoadingParticipants, setIsLoadingParticipants] = useState(false);
   const [winners, setWinners] = useState<
     Array<{
@@ -137,6 +155,20 @@ export default function AdminGiveawaysPage() {
   const [winningTicketNumbers, setWinningTicketNumbers] = useState<number[]>(
     []
   );
+
+  // Add participant dialog state
+  const [isAddParticipantOpen, setIsAddParticipantOpen] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
+  const [userResults, setUserResults] = useState<
+    Array<{
+      id: string;
+      name: string | null;
+      email: string;
+      image: string | null;
+    }>
+  >([]);
+  const [isSearchingUsers, setIsSearchingUsers] = useState(false);
+  const [isAddingParticipant, setIsAddingParticipant] = useState(false);
 
   const [formData, setFormData] = useState({
     eventId: "",
@@ -331,6 +363,113 @@ export default function AdminGiveawaysPage() {
       toast({
         title: t("toast.error"),
         description: t("toast.deleteError"),
+        variant: "destructive",
+      });
+    }
+  };
+
+  const searchUsers = useCallback(async (query: string) => {
+    if (!query.trim() || query.length < 2) {
+      setUserResults([]);
+      return;
+    }
+    setIsSearchingUsers(true);
+    try {
+      const res = await fetch(
+        `/api/admin/users?search=${encodeURIComponent(query)}&limit=10`
+      );
+      if (!res.ok) return;
+      const data = await res.json();
+      setUserResults(
+        data.users.map(
+          (u: {
+            id: string;
+            name: string | null;
+            email: string;
+            image: string | null;
+          }) => ({
+            id: u.id,
+            name: u.name,
+            email: u.email,
+            image: u.image,
+          })
+        )
+      );
+    } catch {
+      setUserResults([]);
+    } finally {
+      setIsSearchingUsers(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => searchUsers(userSearch), 300);
+    return () => clearTimeout(timeout);
+  }, [userSearch, searchUsers]);
+
+  const handleAddParticipant = async (userId: string) => {
+    if (!selectedGiveaway) return;
+    setIsAddingParticipant(true);
+    try {
+      const res = await fetch(
+        `/api/admin/giveaways/${selectedGiveaway.id}/participants`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }
+      );
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Failed to add");
+      }
+      toast({
+        title: t("toast.participantAdded"),
+        description: t("toast.participantAddedDesc"),
+      });
+      setIsAddParticipantOpen(false);
+      setUserSearch("");
+      setUserResults([]);
+      // Refresh participants
+      openDetail(selectedGiveaway);
+      fetchGiveaways();
+    } catch (error) {
+      toast({
+        title: t("toast.error"),
+        description:
+          error instanceof Error &&
+          error.message === "User already participates"
+            ? t("toast.alreadyParticipates")
+            : t("toast.addParticipantError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsAddingParticipant(false);
+    }
+  };
+
+  const handleRemoveParticipant = async (userId: string) => {
+    if (!selectedGiveaway) return;
+    try {
+      const res = await fetch(
+        `/api/admin/giveaways/${selectedGiveaway.id}/participants`,
+        {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ userId }),
+        }
+      );
+      if (!res.ok) throw new Error("Failed to remove");
+      toast({
+        title: t("toast.participantRemoved"),
+        description: t("toast.participantRemovedDesc"),
+      });
+      setParticipants((prev) => prev.filter((p) => p.user.id !== userId));
+      fetchGiveaways();
+    } catch {
+      toast({
+        title: t("toast.error"),
+        description: t("toast.removeParticipantError"),
         variant: "destructive",
       });
     }
@@ -769,9 +908,20 @@ export default function AdminGiveawaysPage() {
 
                 {/* Participants */}
                 <div>
-                  <h3 className="mb-2 font-medium">
-                    {t("detail.participants")}
-                  </h3>
+                  <div className="mb-2 flex items-center justify-between">
+                    <h3 className="font-medium">{t("detail.participants")}</h3>
+                    {selectedGiveaway.status !== GiveawayStatus.DRAWN &&
+                      selectedGiveaway.status !== GiveawayStatus.CANCELLED && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setIsAddParticipantOpen(true)}
+                        >
+                          <UserPlus className="mr-1 h-3.5 w-3.5" />
+                          {t("detail.addParticipant")}
+                        </Button>
+                      )}
+                  </div>
                   {isLoadingParticipants ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
                   ) : participants.length === 0 ? (
@@ -785,14 +935,39 @@ export default function AdminGiveawaysPage() {
                           key={p.id}
                           className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
                         >
-                          <div>
-                            <p className="text-sm font-medium">
-                              {p.user.name || "—"}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {p.user.email}
-                            </p>
+                          <div className="flex items-center gap-3">
+                            <Badge
+                              variant="secondary"
+                              className="min-w-[3rem] justify-center font-mono text-xs"
+                            >
+                              #{p.ticketNumber}
+                            </Badge>
+                            <div>
+                              <p className="text-sm font-medium">
+                                {p.user.name || "—"}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {p.user.email}
+                              </p>
+                            </div>
                           </div>
+                          {selectedGiveaway.status !== GiveawayStatus.DRAWN &&
+                            selectedGiveaway.status !==
+                              GiveawayStatus.CANCELLED && (
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7 text-muted-foreground hover:text-destructive"
+                                onClick={() =>
+                                  setRemoveTarget({
+                                    userId: p.user.id,
+                                    name: p.user.name || p.user.email,
+                                  })
+                                }
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
                         </div>
                       ))}
                     </div>
@@ -861,6 +1036,114 @@ export default function AdminGiveawaysPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Add Participant Dialog */}
+      <Dialog
+        open={isAddParticipantOpen}
+        onOpenChange={(open) => {
+          setIsAddParticipantOpen(open);
+          if (!open) {
+            setUserSearch("");
+            setUserResults([]);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{t("detail.addParticipant")}</DialogTitle>
+            <DialogDescription>
+              {t("detail.searchUserDescription")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder={t("detail.searchPlaceholder")}
+                value={userSearch}
+                onChange={(e) => setUserSearch(e.target.value)}
+                className="pl-9"
+                autoFocus
+              />
+            </div>
+            {isSearchingUsers && (
+              <div className="flex justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin" />
+              </div>
+            )}
+            {!isSearchingUsers && userResults.length > 0 && (
+              <div className="max-h-60 overflow-y-auto rounded-md border">
+                {userResults.map((u) => {
+                  const alreadyIn = participants.some(
+                    (p) => p.user.id === u.id
+                  );
+                  return (
+                    <div
+                      key={u.id}
+                      className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
+                    >
+                      <div>
+                        <p className="text-sm font-medium">{u.name || "—"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {u.email}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={alreadyIn ? "secondary" : "default"}
+                        disabled={alreadyIn || isAddingParticipant}
+                        onClick={() => handleAddParticipant(u.id)}
+                      >
+                        {alreadyIn ? t("detail.alreadyIn") : t("detail.add")}
+                      </Button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {!isSearchingUsers &&
+              userSearch.length >= 2 &&
+              userResults.length === 0 && (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  {t("detail.noUsersFound")}
+                </p>
+              )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remove Participant Confirmation */}
+      <AlertDialog
+        open={!!removeTarget}
+        onOpenChange={(open) => !open && setRemoveTarget(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("detail.confirmRemoveTitle")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("detail.confirmRemoveDesc", {
+                name: removeTarget?.name ?? "",
+              })}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("detail.cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (removeTarget) {
+                  handleRemoveParticipant(removeTarget.userId);
+                  setRemoveTarget(null);
+                }
+              }}
+            >
+              {t("detail.confirmRemove")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

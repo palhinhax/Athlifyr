@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { Language } from "@prisma/client";
+import { Language, Prisma, SportType } from "@prisma/client";
 import {
   notifyEventDateChange,
   notifyEventCancelled,
@@ -13,7 +13,6 @@ interface RouteParams {
   }>;
 }
 
-// Helper function to handle translations
 interface TranslationInput {
   language: Language;
   title: string;
@@ -42,77 +41,352 @@ interface VariantInput {
   translations?: VariantTranslationInput[];
 }
 
+interface PatchBody {
+  title?: string;
+  description?: string;
+  sportTypes?: string[];
+  startDate?: string;
+  endDate?: string | null;
+  city?: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
+  imageUrl?: string | null;
+  externalUrl?: string | null;
+  stravaRouteEmbed?: string | null;
+  featuredVenueId?: string | null;
+  variants?: VariantInput[];
+  translations?: TranslationInput[];
+  cancelled?: boolean;
+  cancellationReason?: string | null;
+  hasRegistrations?: boolean;
+  isFeatured?: boolean;
+  hasLiveRace?: boolean;
+  commissionPercent?: number | null;
+  refundDeadline?: string | null;
+  checkInOpensAt?: string | null;
+  checkInClosesAt?: string | null;
+  registrationFieldSettings?: Prisma.InputJsonValue;
+}
+
+// --- Slug helpers ---
+
+function slugify(value: string): string {
+  return value
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+}
+
+async function generateUniqueSlug(
+  title: string,
+  excludeId: string
+): Promise<string> {
+  const slug = slugify(title);
+  const existing = await prisma.event.findFirst({
+    where: { slug, id: { not: excludeId } },
+  });
+  return existing ? `${slug}-${Date.now()}` : slug;
+}
+
+// --- Translation helpers ---
+
 async function handleTranslations(
   eventId: string,
   translations: TranslationInput[]
 ) {
-  // Fetch existing translations to compare
-  const existingTranslations = await prisma.eventTranslation.findMany({
+  const existing = await prisma.eventTranslation.findMany({
     where: { eventId },
   });
-
-  const existingMap = new Map(existingTranslations.map((t) => [t.language, t]));
+  const existingMap = new Map(existing.map((t) => [t.language, t]));
 
   for (const t of translations) {
-    const existing = existingMap.get(t.language);
+    const prev = existingMap.get(t.language);
+    const hasContent = Boolean(t.title?.trim() || t.description?.trim());
 
-    // Only save if there's content
-    if (!t.title?.trim() && !t.description?.trim()) {
-      // Delete if exists but now empty
-      if (existing) {
-        await prisma.eventTranslation.delete({
-          where: { id: existing.id },
-        });
+    if (!hasContent) {
+      if (prev) {
+        await prisma.eventTranslation.delete({ where: { id: prev.id } });
       }
       continue;
     }
 
-    // Check if translation actually changed
-    const hasChanged =
-      !existing ||
-      existing.title !== (t.title || "") ||
-      existing.description !== (t.description || "") ||
-      existing.city !== (t.city || null) ||
-      existing.metaTitle !== (t.metaTitle || null) ||
-      existing.metaDescription !== (t.metaDescription || null);
+    const changed =
+      !prev ||
+      prev.title !== (t.title || "") ||
+      prev.description !== (t.description || "") ||
+      prev.city !== (t.city || null) ||
+      prev.metaTitle !== (t.metaTitle || null) ||
+      prev.metaDescription !== (t.metaDescription || null);
 
-    // Only upsert if changed
-    if (hasChanged) {
-      await prisma.eventTranslation.upsert({
-        where: {
-          eventId_language: {
-            eventId: eventId,
-            language: t.language,
-          },
-        },
-        update: {
-          title: t.title || "",
-          description: t.description || "",
-          city: t.city || null,
-          metaTitle: t.metaTitle || null,
-          metaDescription: t.metaDescription || null,
-        },
-        create: {
-          eventId: eventId,
-          language: t.language,
-          title: t.title || "",
-          description: t.description || "",
-          city: t.city || null,
-          metaTitle: t.metaTitle || null,
-          metaDescription: t.metaDescription || null,
-        },
-      });
+    if (!changed) continue;
+
+    const data = {
+      title: t.title || "",
+      description: t.description || "",
+      city: t.city || null,
+      metaTitle: t.metaTitle || null,
+      metaDescription: t.metaDescription || null,
+    };
+
+    await prisma.eventTranslation.upsert({
+      where: { eventId_language: { eventId, language: t.language } },
+      update: data,
+      create: { eventId, language: t.language, ...data },
+    });
+  }
+}
+
+async function upsertVariantTranslations(
+  variantId: string,
+  translations: VariantTranslationInput[]
+) {
+  const existing = await prisma.eventVariantTranslation.findMany({
+    where: { variantId },
+  });
+  const existingMap = new Map(existing.map((t) => [t.language, t]));
+
+  for (const t of translations) {
+    if (!t.name?.trim() && !t.description?.trim()) continue;
+
+    const prev = existingMap.get(t.language);
+    const changed =
+      !prev ||
+      prev.name !== (t.name || "") ||
+      prev.description !== (t.description || null);
+
+    if (!changed) continue;
+
+    await prisma.eventVariantTranslation.upsert({
+      where: { variantId_language: { variantId, language: t.language } },
+      update: { name: t.name || "", description: t.description || null },
+      create: {
+        variantId,
+        language: t.language,
+        name: t.name || "",
+        description: t.description || null,
+      },
+    });
+  }
+}
+
+// --- Variant helpers ---
+
+function buildVariantData(variant: VariantInput) {
+  return {
+    name: variant.name,
+    distanceKm: variant.distanceKm || null,
+    elevationGainM: variant.elevationGainM || null,
+    price: variant.price || null,
+    maxParticipants: variant.maxParticipants ?? null,
+    teamSize: variant.teamSize ?? 1,
+    startDate: variant.startDate ? new Date(variant.startDate) : null,
+    startTime: variant.startTime || null,
+  };
+}
+
+function hasVariantChanged(
+  existing: {
+    name: string;
+    distanceKm: number | null;
+    elevationGainM: number | null;
+    price: number | null;
+    maxParticipants: number | null;
+    teamSize: number;
+    startDate: Date | null;
+    startTime: string | null;
+  },
+  v: VariantInput
+): boolean {
+  return (
+    existing.name !== v.name ||
+    existing.distanceKm !== (v.distanceKm || null) ||
+    existing.elevationGainM !== (v.elevationGainM || null) ||
+    existing.price !== (v.price || null) ||
+    existing.maxParticipants !== (v.maxParticipants ?? null) ||
+    existing.teamSize !== (v.teamSize ?? 1) ||
+    (v.startDate
+      ? existing.startDate?.getTime() !== new Date(v.startDate).getTime()
+      : existing.startDate !== null) ||
+    existing.startTime !== (v.startTime || null)
+  );
+}
+
+async function upsertVariant(
+  eventId: string,
+  v: VariantInput
+): Promise<{ id: string } | null> {
+  if (!v.id) {
+    return prisma.eventVariant.create({
+      data: { eventId, ...buildVariantData(v) },
+    });
+  }
+
+  const existing = await prisma.eventVariant.findUnique({
+    where: { id: v.id },
+  });
+  if (!existing) return null;
+
+  if (!hasVariantChanged(existing, v)) return existing;
+
+  return prisma.eventVariant.update({
+    where: { id: v.id },
+    data: buildVariantData(v),
+  });
+}
+
+async function deleteRemovedVariants(
+  eventId: string,
+  variants: VariantInput[]
+) {
+  const existing = await prisma.eventVariant.findMany({
+    where: { eventId },
+    select: { id: true },
+  });
+
+  const keepIds = new Set(
+    variants.filter((v) => v.id).map((v) => v.id as string)
+  );
+  const removeIds = existing.filter((v) => !keepIds.has(v.id)).map((v) => v.id);
+
+  if (removeIds.length > 0) {
+    await prisma.eventVariant.deleteMany({
+      where: { id: { in: removeIds } },
+    });
+  }
+}
+
+async function syncVariants(eventId: string, variants: VariantInput[]) {
+  await deleteRemovedVariants(eventId, variants);
+
+  for (const v of variants) {
+    const saved = await upsertVariant(eventId, v);
+    if (saved && v.translations?.length) {
+      await upsertVariantTranslations(saved.id, v.translations);
     }
   }
 }
 
-// GET - Get event by ID or slug
+// --- Event update data builder ---
+
+function buildEventUpdateData(
+  body: PatchBody,
+  existingTitle: string,
+  slug: string,
+  isAdmin: boolean
+): Prisma.EventUncheckedUpdateInput {
+  const data: Prisma.EventUncheckedUpdateInput = {};
+
+  if (body.title) {
+    data.title = body.title;
+    if (body.title !== existingTitle) data.slug = slug;
+  }
+  if (body.description !== undefined) data.description = body.description;
+  if (body.sportTypes && Array.isArray(body.sportTypes))
+    data.sportTypes = body.sportTypes as SportType[];
+  if (body.startDate) data.startDate = new Date(body.startDate);
+  if (body.endDate !== undefined)
+    data.endDate = body.endDate ? new Date(body.endDate) : null;
+  if (body.city) data.city = body.city;
+  if (body.country) data.country = body.country;
+  if (body.latitude !== undefined) data.latitude = body.latitude || null;
+  if (body.longitude !== undefined) data.longitude = body.longitude || null;
+  if (body.googleMapsUrl !== undefined)
+    data.googleMapsUrl = body.googleMapsUrl || null;
+  if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl || null;
+  if (body.externalUrl !== undefined)
+    data.externalUrl = body.externalUrl || null;
+  if (body.stravaRouteEmbed !== undefined)
+    data.stravaRouteEmbed = body.stravaRouteEmbed || null;
+  if (body.featuredVenueId !== undefined)
+    data.featuredVenueId = body.featuredVenueId || null;
+  if (body.hasRegistrations !== undefined)
+    data.hasRegistrations = body.hasRegistrations;
+  if (body.refundDeadline !== undefined)
+    data.refundDeadline = body.refundDeadline
+      ? new Date(body.refundDeadline)
+      : null;
+  if (body.checkInOpensAt !== undefined)
+    data.checkInOpensAt = body.checkInOpensAt
+      ? new Date(body.checkInOpensAt)
+      : null;
+  if (body.checkInClosesAt !== undefined)
+    data.checkInClosesAt = body.checkInClosesAt
+      ? new Date(body.checkInClosesAt)
+      : null;
+  if (body.registrationFieldSettings !== undefined)
+    data.registrationFieldSettings = body.registrationFieldSettings;
+
+  // Admin-only fields
+  if (isAdmin) {
+    if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
+    if (body.cancelled !== undefined) data.cancelled = body.cancelled;
+    if (body.cancelled === true) data.cancelledAt = new Date();
+    if (body.cancellationReason !== undefined)
+      data.cancellationReason = body.cancellationReason;
+    if (body.hasLiveRace !== undefined) data.hasLiveRace = body.hasLiveRace;
+    if (body.commissionPercent !== undefined)
+      data.commissionPercent = body.commissionPercent ?? 0;
+  }
+
+  return data;
+}
+
+// --- Notification helpers ---
+
+async function handleCancellationEffects(
+  eventId: string,
+  eventTitle: string,
+  eventSlug: string,
+  cancellationReason?: string | null
+) {
+  await prisma.participation.deleteMany({ where: { eventId } });
+
+  notifyEventCancelled({
+    eventId,
+    eventTitle,
+    eventSlug,
+    cancellationReason: cancellationReason || undefined,
+  }).catch((error) => {
+    console.error("Error sending event cancellation notification:", error);
+  });
+}
+
+function notifyDateChangeIfNeeded(
+  eventId: string,
+  eventTitle: string,
+  eventSlug: string,
+  oldStartDate: Date | null,
+  newStartDateStr: string | undefined
+) {
+  if (!newStartDateStr || !oldStartDate) return;
+
+  const oldDate = new Date(oldStartDate);
+  const newDate = new Date(newStartDateStr);
+  const dateChanged =
+    oldDate.toISOString().split("T")[0] !== newDate.toISOString().split("T")[0];
+
+  if (!dateChanged) return;
+
+  notifyEventDateChange({
+    eventId,
+    eventTitle,
+    eventSlug,
+    oldDate,
+    newDate,
+  }).catch((error) => {
+    console.error("Error sending event date change notification:", error);
+  });
+}
+
+// --- GET handler ---
+
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
-
-    // Try to find by ID first (cuid format: starts with 'c' and ~25 chars),
-    // then fall back to slug lookup
     const isCuid = /^c[a-z0-9]{20,30}$/i.test(id);
 
     const event = await prisma.event.findFirst({
@@ -120,28 +394,18 @@ export async function GET(request: Request, { params }: RouteParams) {
       include: {
         variants: {
           include: {
-            triathlonSegments: {
-              orderBy: { order: "asc" },
-            },
-            pricingPhases: {
-              orderBy: { startDate: "asc" },
-            },
+            triathlonSegments: { orderBy: { order: "asc" } },
+            pricingPhases: { orderBy: { startDate: "asc" } },
             _count: {
               select: {
-                registrations: {
-                  where: { status: "CONFIRMED" },
-                },
+                registrations: { where: { status: "CONFIRMED" } },
               },
             },
           },
           orderBy: { startDate: "asc" },
         },
-        faqs: {
-          orderBy: { order: "asc" },
-        },
-        _count: {
-          select: { comments: true },
-        },
+        faqs: { orderBy: { order: "asc" } },
+        _count: { select: { comments: true } },
       },
     });
 
@@ -158,20 +422,18 @@ export async function GET(request: Request, { params }: RouteParams) {
   }
 }
 
-// PATCH - Update event (admin or organizer)
+// --- PATCH handler ---
+
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthenticatedUser(request);
-
     if (!user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const isAdmin = user.role === "ADMIN";
-
     const { id } = await params;
 
-    // Organizers can also edit basic event fields
     if (!isAdmin) {
       const organizer = await prisma.eventOrganizer.findFirst({
         where: { eventId: id, userId: user.id },
@@ -180,330 +442,62 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
-    const body = await request.json();
-    const {
-      title,
-      description,
-      sportTypes,
-      startDate,
-      endDate,
-      city,
-      country,
-      latitude,
-      longitude,
-      googleMapsUrl,
-      imageUrl,
-      externalUrl,
-      stravaRouteEmbed,
-      featuredVenueId,
-      variants,
-      translations,
-      cancelled,
-      cancellationReason,
-      hasRegistrations,
-      isFeatured,
-      // LiveRace Fase 0 fields
-      hasLiveRace,
-      commissionPercent,
-      refundDeadline,
-      checkInOpensAt,
-      checkInClosesAt,
-      // Registration field settings (JSON)
-      registrationFieldSettings,
-    } = body;
 
-    // Check if event exists
+    const body = (await request.json()) as PatchBody;
+
     const existingEvent = await prisma.event.findUnique({
       where: { id },
       include: { variants: true },
     });
-
     if (!existingEvent) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Generate slug if title changed
-    let slug = existingEvent.slug;
-    if (title && title !== existingEvent.title) {
-      slug = title
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+    const slug =
+      body.title && body.title !== existingEvent.title
+        ? await generateUniqueSlug(body.title, id)
+        : existingEvent.slug;
 
-      // Check if slug already exists
-      const existingSlug = await prisma.event.findFirst({
-        where: {
-          slug,
-          id: { not: id },
-        },
-      });
-
-      if (existingSlug) {
-        slug = `${slug}-${Date.now()}`;
-      }
-    }
-
-    // Check if event is being cancelled and send notifications
     const isBeingCancelled =
-      isAdmin && cancelled === true && !existingEvent.cancelled;
+      isAdmin && body.cancelled === true && !existingEvent.cancelled;
 
-    // Update event
     const updatedEvent = await prisma.event.update({
       where: { id },
-      data: {
-        ...(title && { title }),
-        ...(title && { slug }),
-        ...(description !== undefined && { description }),
-        ...(sportTypes && Array.isArray(sportTypes) && { sportTypes }),
-        ...(startDate && { startDate: new Date(startDate) }),
-        ...(endDate !== undefined && {
-          endDate: endDate ? new Date(endDate) : null,
-        }),
-        ...(city && { city }),
-        ...(country && { country }),
-        ...(latitude !== undefined && { latitude: latitude || null }),
-        ...(longitude !== undefined && { longitude: longitude || null }),
-        ...(googleMapsUrl !== undefined && {
-          googleMapsUrl: googleMapsUrl || null,
-        }),
-        ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
-        ...(externalUrl !== undefined && { externalUrl: externalUrl || null }),
-        ...(stravaRouteEmbed !== undefined && {
-          stravaRouteEmbed: stravaRouteEmbed || null,
-        }),
-        ...(featuredVenueId !== undefined && {
-          featuredVenueId: featuredVenueId || null,
-        }),
-        ...(hasRegistrations !== undefined && { hasRegistrations }),
-        ...(isFeatured !== undefined && isAdmin && { isFeatured }),
-        ...(cancelled !== undefined && isAdmin && { cancelled }),
-        ...(cancelled === true && isAdmin && { cancelledAt: new Date() }),
-        ...(cancellationReason !== undefined &&
-          isAdmin && { cancellationReason }),
-        // LiveRace Fase 0 fields — admin only
-        ...(hasLiveRace !== undefined && isAdmin && { hasLiveRace }),
-        ...(commissionPercent !== undefined &&
-          isAdmin && { commissionPercent }),
-        ...(refundDeadline !== undefined && {
-          refundDeadline: refundDeadline ? new Date(refundDeadline) : null,
-        }),
-        ...(checkInOpensAt !== undefined && {
-          checkInOpensAt: checkInOpensAt ? new Date(checkInOpensAt) : null,
-        }),
-        ...(checkInClosesAt !== undefined && {
-          checkInClosesAt: checkInClosesAt ? new Date(checkInClosesAt) : null,
-        }),
-        ...(registrationFieldSettings !== undefined && {
-          registrationFieldSettings,
-        }),
-      },
-      include: {
-        variants: true,
-      },
+      data: buildEventUpdateData(body, existingEvent.title, slug, isAdmin),
+      include: { variants: true },
     });
 
-    // Send notification if event was cancelled
     if (isBeingCancelled) {
-      // Delete all participations for this event
-      await prisma.participation.deleteMany({
-        where: { eventId: id },
-      });
-
-      // Send notification asynchronously (don't wait for it to complete)
-      notifyEventCancelled({
-        eventId: id,
-        eventTitle: updatedEvent.title,
-        eventSlug: updatedEvent.slug,
-        cancellationReason: cancellationReason || undefined,
-      }).catch((error) => {
-        console.error("Error sending event cancellation notification:", error);
-      });
+      await handleCancellationEffects(
+        id,
+        updatedEvent.title,
+        updatedEvent.slug,
+        body.cancellationReason
+      );
     }
 
-    // Send notification if event date changed
-    if (startDate && existingEvent.startDate) {
-      const oldDate = new Date(existingEvent.startDate);
-      const newDate = new Date(startDate);
+    notifyDateChangeIfNeeded(
+      id,
+      updatedEvent.title,
+      updatedEvent.slug,
+      existingEvent.startDate,
+      body.startDate
+    );
 
-      // Check if the date actually changed (compare only date part, not time)
-      const dateChanged =
-        oldDate.toISOString().split("T")[0] !==
-        newDate.toISOString().split("T")[0];
-
-      if (dateChanged) {
-        // Send notification asynchronously (don't wait for it to complete)
-        notifyEventDateChange({
-          eventId: id,
-          eventTitle: updatedEvent.title,
-          eventSlug: updatedEvent.slug,
-          oldDate,
-          newDate,
-        }).catch((error) => {
-          console.error("Error sending event date change notification:", error);
-        });
-      }
+    if (body.variants && Array.isArray(body.variants)) {
+      await syncVariants(id, body.variants);
     }
 
-    // Handle variants if provided
-    if (variants && Array.isArray(variants)) {
-      // Get existing variant IDs to identify which ones to delete
-      const existingVariants = await prisma.eventVariant.findMany({
-        where: { eventId: id },
-        select: { id: true },
-      });
-
-      const variantIdsInRequest = variants
-        .filter((v) => v.id)
-        .map((v) => v.id as string);
-
-      // Delete variants that are no longer in the request
-      const variantsToDelete = existingVariants
-        .filter((v) => !variantIdsInRequest.includes(v.id))
-        .map((v) => v.id);
-
-      if (variantsToDelete.length > 0) {
-        await prisma.eventVariant.deleteMany({
-          where: { id: { in: variantsToDelete } },
-        });
-      }
-
-      // Upsert variants (update existing, create new)
-      if (variants.length > 0) {
-        for (const v of variants as VariantInput[]) {
-          let variant;
-
-          if (v.id) {
-            // Fetch existing variant to check if changed
-            const existingVariant = await prisma.eventVariant.findUnique({
-              where: { id: v.id },
-            });
-
-            if (existingVariant) {
-              // Compare values to detect changes
-              const hasChanged =
-                existingVariant.name !== v.name ||
-                existingVariant.distanceKm !== (v.distanceKm || null) ||
-                existingVariant.elevationGainM !== (v.elevationGainM || null) ||
-                existingVariant.price !== (v.price || null) ||
-                existingVariant.maxParticipants !==
-                  (v.maxParticipants ?? null) ||
-                existingVariant.teamSize !== (v.teamSize ?? 1) ||
-                (v.startDate &&
-                  existingVariant.startDate?.getTime() !==
-                    new Date(v.startDate).getTime()) ||
-                existingVariant.startTime !== (v.startTime || null);
-
-              if (hasChanged) {
-                // Update existing variant only if changed
-                variant = await prisma.eventVariant.update({
-                  where: { id: v.id },
-                  data: {
-                    name: v.name,
-                    distanceKm: v.distanceKm || null,
-                    elevationGainM: v.elevationGainM || null,
-                    price: v.price || null,
-                    maxParticipants: v.maxParticipants ?? null,
-                    teamSize: v.teamSize ?? 1,
-                    startDate: v.startDate ? new Date(v.startDate) : null,
-                    startTime: v.startTime || null,
-                  },
-                });
-              } else {
-                // No changes, use existing variant
-                variant = existingVariant;
-              }
-            } else {
-              // Variant not found, skip
-              continue;
-            }
-          } else {
-            // Create new variant
-            variant = await prisma.eventVariant.create({
-              data: {
-                eventId: id,
-                name: v.name,
-                distanceKm: v.distanceKm || null,
-                elevationGainM: v.elevationGainM || null,
-                price: v.price || null,
-                maxParticipants: v.maxParticipants ?? null,
-                teamSize: v.teamSize ?? 1,
-                startDate: v.startDate ? new Date(v.startDate) : null,
-                startTime: v.startTime || null,
-              },
-            });
-          }
-
-          // Upsert variant translations if provided
-          if (v.translations && Array.isArray(v.translations)) {
-            // Fetch existing translations for comparison
-            const existingVarTranslations =
-              await prisma.eventVariantTranslation.findMany({
-                where: { variantId: variant.id },
-              });
-
-            const existingVarMap = new Map(
-              existingVarTranslations.map((t) => [t.language, t])
-            );
-
-            for (const t of v.translations) {
-              if (t.name?.trim() || t.description?.trim()) {
-                const existing = existingVarMap.get(t.language);
-
-                // Check if translation actually changed
-                const hasChanged =
-                  !existing ||
-                  existing.name !== (t.name || "") ||
-                  existing.description !== (t.description || null);
-
-                // Only upsert if changed
-                if (hasChanged) {
-                  await prisma.eventVariantTranslation.upsert({
-                    where: {
-                      variantId_language: {
-                        variantId: variant.id,
-                        language: t.language,
-                      },
-                    },
-                    update: {
-                      name: t.name || "",
-                      description: t.description || null,
-                    },
-                    create: {
-                      variantId: variant.id,
-                      language: t.language,
-                      name: t.name || "",
-                      description: t.description || null,
-                    },
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // Fetch updated event with new variants
-      const eventWithVariants = await prisma.event.findUnique({
-        where: { id },
-        include: { variants: true },
-      });
-
-      // Handle translations if provided
-      if (translations && Array.isArray(translations)) {
-        await handleTranslations(id, translations);
-      }
-
-      return NextResponse.json(eventWithVariants);
+    if (body.translations && Array.isArray(body.translations)) {
+      await handleTranslations(id, body.translations);
     }
 
-    // Handle translations if provided (even without variants)
-    if (translations && Array.isArray(translations)) {
-      await handleTranslations(id, translations);
-    }
+    const finalEvent = await prisma.event.findUnique({
+      where: { id },
+      include: { variants: true },
+    });
 
-    return NextResponse.json(updatedEvent);
+    return NextResponse.json(finalEvent ?? updatedEvent);
   } catch (error) {
     console.error("Error updating event:", error);
     return NextResponse.json(
@@ -513,7 +507,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-// DELETE - Delete event (admin only)
+// --- DELETE handler ---
+
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const user = await getAuthenticatedUser(request);

@@ -415,7 +415,17 @@
         "noWinners": "Pas encore de gagnants",
         "noParticipants": "Pas encore de participants",
         "rank": "Rang",
-        "ticket": "Billet"
+        "ticket": "Billet",
+        "addParticipant": "Ajouter un participant",
+        "searchUserDescription": "Recherchez un utilisateur par nom ou email pour l'ajouter au tirage.",
+        "searchPlaceholder": "Rechercher par nom ou email...",
+        "alreadyIn": "Déjà inscrit",
+        "add": "Ajouter",
+        "noUsersFound": "Aucun utilisateur trouvé",
+        "confirmRemoveTitle": "Retirer le participant",
+        "confirmRemoveDesc": "Êtes-vous sûr de vouloir retirer {name} de ce tirage ?",
+        "confirmRemove": "Retirer",
+        "cancel": "Annuler"
       },
       "toast": {
         "created": "Tirage créé",

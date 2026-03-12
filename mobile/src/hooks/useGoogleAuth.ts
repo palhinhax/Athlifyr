@@ -1,11 +1,7 @@
 ﻿import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState, useRef } from "react";
 import { Platform } from "react-native";
-import {
-  getSecureItem,
-  setSecureItem,
-  deleteSecureItem,
-} from "@/src/lib/token-storage";
+import { setSecureItem, deleteSecureItem } from "@/src/lib/token-storage";
 import { flushPendingActivities } from "@/src/lib/activity-sync-queue";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
@@ -117,10 +113,7 @@ export function useGoogleAuth() {
       );
     }
     if (request?.codeVerifier) {
-      await setSecureItem(
-        "google-code-verifier",
-        request.codeVerifier
-      );
+      await setSecureItem("google-code-verifier", request.codeVerifier);
     }
     await setSecureItem("google-redirect-uri", redirectUri);
     return promptAsync(options);

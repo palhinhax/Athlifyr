@@ -411,7 +411,17 @@
         "noWinners": "Ainda sem vencedores",
         "noParticipants": "Ainda sem participantes",
         "rank": "Posição",
-        "ticket": "Bilhete"
+        "ticket": "Bilhete",
+        "addParticipant": "Adicionar Participante",
+        "searchUserDescription": "Procura um utilizador por nome ou email para o adicionar ao sorteio.",
+        "searchPlaceholder": "Procurar por nome ou email...",
+        "alreadyIn": "Já inscrito",
+        "add": "Adicionar",
+        "noUsersFound": "Nenhum utilizador encontrado",
+        "confirmRemoveTitle": "Remover participante",
+        "confirmRemoveDesc": "Tens a certeza que queres remover {name} deste sorteio?",
+        "confirmRemove": "Remover",
+        "cancel": "Cancelar"
       },
       "toast": {
         "created": "Sorteio criado",

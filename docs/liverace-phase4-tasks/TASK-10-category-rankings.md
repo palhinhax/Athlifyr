@@ -72,9 +72,9 @@ data when available.
 // lib/result-categories.ts
 
 interface CategoryInfo {
-  label: string;      // "M30-39"
-  gender: string;     // "M"
-  ageGroup: string;   // "30-39"
+  label: string; // "M30-39"
+  gender: string; // "M"
+  ageGroup: string; // "30-39"
 }
 
 export function calculateCategory(

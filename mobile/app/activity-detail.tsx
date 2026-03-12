@@ -186,7 +186,9 @@ export default function ActivityDetailScreen() {
             {activity.title ? (
               <Text style={styles.dateTitle}>{activity.title}</Text>
             ) : null}
-            <Text style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}>
+            <Text
+              style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}
+            >
               {new Date(activity.startedAt).toLocaleDateString(undefined, {
                 weekday: "long",
                 year: "numeric",
@@ -270,6 +272,7 @@ export default function ActivityDetailScreen() {
                   key={uri}
                   source={{ uri }}
                   style={styles.photoImage}
+                  alt=""
                 />
               ))}
             </ScrollView>

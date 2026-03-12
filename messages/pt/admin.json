@@ -382,7 +382,8 @@
         "prizeCount": "Número de Prémios",
         "status": "Estado",
         "participants": "Participantes",
-        "winners": "Vencedores"
+        "winners": "Vencedores",
+        "platform": "Plataforma"
       },
       "form": {
         "title": "Título",
@@ -425,6 +426,12 @@
         "updateError": "Falha ao atualizar sorteio.",
         "drawError": "Falha ao realizar sorteio.",
         "deleteError": "Falha ao apagar sorteio."
+      },
+      "platform": {
+        "ALL": "Todas as Plataformas",
+        "MOBILE": "App Móvel",
+        "ANDROID": "Apenas Android",
+        "IOS": "Apenas iOS"
       }
     },
     "notes": {

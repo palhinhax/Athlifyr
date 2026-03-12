@@ -386,7 +386,8 @@
         "variant": "Variante (optionnel)",
         "variantPlaceholder": "Sélectionner une variante",
         "variantAll": "Toutes les variantes",
-        "variantHelp": "Limite la participation au tirage aux inscrits de cette variante spécifique."
+        "variantHelp": "Limite la participation au tirage aux inscrits à cette variante spécifique.",
+        "platform": "Plateforme"
       },
       "form": {
         "title": "Titre",
@@ -429,6 +430,12 @@
         "updateError": "Échec de la mise à jour du tirage.",
         "drawError": "Échec du tirage.",
         "deleteError": "Échec de la suppression du tirage."
+      },
+      "platform": {
+        "ALL": "Toutes les Plateformes",
+        "MOBILE": "App Mobile",
+        "ANDROID": "Android Uniquement",
+        "IOS": "iOS Uniquement"
       }
     },
     "notes": {

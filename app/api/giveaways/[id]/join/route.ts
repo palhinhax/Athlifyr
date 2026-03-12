@@ -1,10 +1,30 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { GiveawayStatus } from "@prisma/client";
+import { GiveawayStatus, GiveawayPlatform } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
+}
+
+function validatePlatformAccess(
+  platform: GiveawayPlatform,
+  request: NextRequest
+): string | null {
+  if (platform === GiveawayPlatform.ALL) return null;
+
+  const clientPlatform = request.headers.get("x-client-platform");
+  const isMobileClient =
+    clientPlatform === "android" || clientPlatform === "ios";
+
+  if (!isMobileClient) return "This giveaway is exclusive to the mobile app";
+  if (platform === GiveawayPlatform.ANDROID && clientPlatform !== "android") {
+    return "This giveaway is exclusive to Android";
+  }
+  if (platform === GiveawayPlatform.IOS && clientPlatform !== "ios") {
+    return "This giveaway is exclusive to iOS";
+  }
+  return null;
 }
 
 // POST - Join a giveaway (assigns a permanent sequential ticket number)
@@ -38,6 +58,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         { error: "Giveaway participation deadline has passed" },
         { status: 400 }
       );
+    }
+
+    // Block participation from non-mobile clients for platform-exclusive giveaways
+    const platformError = validatePlatformAccess(giveaway.platform, request);
+    if (platformError) {
+      return NextResponse.json({ error: platformError }, { status: 403 });
     }
 
     // Check if user already joined (fast path before transaction)

@@ -32,7 +32,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 18,
+      "versionCode": 20,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

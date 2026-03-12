@@ -25,6 +25,12 @@ const createActivitySchema = z.object({
   elevationGainM: z.number().int().nonnegative(),
   elevationLossM: z.number().int().nonnegative(),
   track: z.array(gpsPointSchema).min(3),
+  // Metadata (optional — added via save screen)
+  title: z.string().max(100).optional(),
+  description: z.string().max(500).optional(),
+  perceivedEffort: z.number().int().min(1).max(5).optional(),
+  visibility: z.enum(["everyone", "only_me"]).optional(),
+  muted: z.boolean().optional(),
 });
 
 // ── POST /api/profile/activities — Upload a GPS activity + auto-create performance entry ──
@@ -67,6 +73,11 @@ export async function POST(request: NextRequest) {
             elevationGainM: data.elevationGainM,
             elevationLossM: data.elevationLossM,
             track: data.track,
+            title: data.title,
+            description: data.description,
+            perceivedEffort: data.perceivedEffort,
+            visibility: data.visibility ?? "everyone",
+            muted: data.muted ?? false,
           },
         });
 

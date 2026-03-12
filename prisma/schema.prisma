@@ -2453,13 +2453,14 @@ model AiAnalysisUsage {
 // ============================================================================
 
 model Giveaway {
-  id                     String         @id @default(cuid())
+  id                     String              @id @default(cuid())
   eventId                String
-  status                 GiveawayStatus @default(DRAFT)
+  status                 GiveawayStatus      @default(DRAFT)
+  platform               GiveawayPlatform    @default(ALL)
   drawAt                 DateTime?
   drawnAt                DateTime?
-  prizeCount             Int            @default(1)
-  maxWinnersPerUser      Int            @default(1)
+  prizeCount             Int                 @default(1)
+  maxWinnersPerUser      Int                 @default(1)
   secret                 String? // Private: random secret used in draw algorithm (stored until draw)
   secretHash             String? // Public: SHA-256 hash of secret (published before draw for transparency)
   secretRevealed         String? // Public: revealed secret after draw (proves fairness)
@@ -2534,6 +2535,13 @@ enum GiveawayStatus {
   CANCELLED
 }
 
+enum GiveawayPlatform {
+  ALL
+  MOBILE
+  ANDROID
+  IOS
+}
+
 // ============================================================================
 // ATHLI AI ASSISTANT
 // ============================================================================
@@ -2592,6 +2600,14 @@ model RunActivity {
 
   // GPS track stored as JSON array of {lat, lng, timestamp, altitude?, speed?, accuracy?}
   track Json @db.JsonB
+
+  // Metadata (Strava-style save screen)
+  title           String?
+  description     String?
+  perceivedEffort Int?     // 1-5 scale
+  photos          Json?    @db.JsonB // array of photo URLs
+  visibility      String   @default("everyone") // "everyone" | "only_me"
+  muted           Boolean  @default(false)
 
   createdAt DateTime @default(now())
 

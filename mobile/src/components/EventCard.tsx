@@ -7,6 +7,7 @@ import {
   CheckCircle,
   MessageCircle,
   Gift,
+  Star,
 } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
@@ -72,6 +73,14 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
             <Text style={styles.giveawayBadgeText}>
               {t("events.giveaway.badge")}
             </Text>
+          </View>
+        )}
+
+        {/* Featured Badge */}
+        {event.isFeatured && (
+          <View style={styles.featuredBadge}>
+            <Star size={12} color={theme.colors.white} />
+            <Text style={styles.featuredBadgeText}>{t("events.featured")}</Text>
           </View>
         )}
       </View>
@@ -209,6 +218,23 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.full,
   },
   giveawayBadgeText: {
+    color: theme.colors.white,
+    fontSize: 11,
+    fontWeight: "700",
+  },
+  featuredBadge: {
+    position: "absolute",
+    bottom: theme.spacing.sm,
+    left: theme.spacing.sm,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    backgroundColor: "#f59e0b",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: theme.borderRadius.full,
+  },
+  featuredBadgeText: {
     color: theme.colors.white,
     fontSize: 11,
     fontWeight: "700",

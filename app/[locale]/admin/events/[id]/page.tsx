@@ -24,6 +24,7 @@ import {
   Shield,
   UserPlus,
   Users,
+  Star,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, EventOrganizerRole } from "@prisma/client";
@@ -41,6 +42,7 @@ interface EventDetails {
   sportTypes: SportType[];
   hasRegistrations: boolean;
   hasLiveRace: boolean;
+  isFeatured: boolean;
   commissionPercent: number;
   refundDeadline: string | null;
   checkInOpensAt: string | null;
@@ -77,6 +79,7 @@ export default function AdminEventSettingsPage() {
 
   const [settings, setSettings] = useState({
     hasLiveRace: false,
+    isFeatured: false,
     commissionPercent: 0.0,
     refundDeadline: "",
     checkInOpensAt: "",
@@ -105,6 +108,7 @@ export default function AdminEventSettingsPage() {
       setEvent(data);
       setSettings({
         hasLiveRace: data.hasLiveRace,
+        isFeatured: data.isFeatured,
         commissionPercent: data.commissionPercent,
         refundDeadline: data.refundDeadline
           ? new Date(data.refundDeadline).toISOString().slice(0, 16)
@@ -149,6 +153,7 @@ export default function AdminEventSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hasLiveRace: settings.hasLiveRace,
+          isFeatured: settings.isFeatured,
           commissionPercent: settings.commissionPercent,
           refundDeadline: settings.refundDeadline || null,
           checkInOpensAt: settings.checkInOpensAt || null,
@@ -241,6 +246,12 @@ export default function AdminEventSettingsPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {event.isFeatured && (
+              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <Star className="mr-1 h-3 w-3" />
+                Destaque
+              </Badge>
+            )}
             {event.hasLiveRace && (
               <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                 <Shield className="mr-1 h-3 w-3" />
@@ -375,6 +386,32 @@ export default function AdminEventSettingsPage() {
                   <span
                     className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
                       settings.hasLiveRace ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <p className="font-medium">Evento em destaque</p>
+                  <p className="text-sm text-muted-foreground">
+                    Aparece no topo da lista de eventos na app mobile
+                  </p>
+                </div>
+                <button
+                  onClick={() =>
+                    setSettings((prev) => ({
+                      ...prev,
+                      isFeatured: !prev.isFeatured,
+                    }))
+                  }
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                    settings.isFeatured ? "bg-amber-500" : "bg-muted"
+                  }`}
+                >
+                  <span
+                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
+                      settings.isFeatured ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>

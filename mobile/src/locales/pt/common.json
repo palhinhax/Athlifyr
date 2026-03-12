@@ -86,6 +86,7 @@
       "resultsCount": "{{count}} eventos encontrados",
       "dateRange": "Intervalo de Datas"
     },
+    "featured": "Destaque",
     "giveaway": {
       "badge": "Sorteio",
       "title": "Sorteio",

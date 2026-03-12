@@ -201,6 +201,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       cancelled,
       cancellationReason,
       hasRegistrations,
+      isFeatured,
       // LiveRace Fase 0 fields
       hasLiveRace,
       commissionPercent,
@@ -276,6 +277,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
           featuredVenueId: featuredVenueId || null,
         }),
         ...(hasRegistrations !== undefined && { hasRegistrations }),
+        ...(isFeatured !== undefined && isAdmin && { isFeatured }),
         ...(cancelled !== undefined && isAdmin && { cancelled }),
         ...(cancelled === true && isAdmin && { cancelledAt: new Date() }),
         ...(cancellationReason !== undefined &&

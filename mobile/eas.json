@@ -20,7 +20,8 @@
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://16fd6812580d282ccb58acc639f2879b@o4510941393256448.ingest.de.sentry.io/4511032721145936"
       }
     },
     "preview": {
@@ -39,7 +40,8 @@
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://16fd6812580d282ccb58acc639f2879b@o4510941393256448.ingest.de.sentry.io/4511032721145936"
       }
     },
     "production": {
@@ -57,7 +59,8 @@
         "EXPO_PUBLIC_MAPBOX_ACCESS_TOKEN": "pk.eyJ1Ijoiam9hb21kdWFydCIsImEiOiJjbWxnbjN5Y2YwMDR3M2ZzZzdrc3Y1cDA0In0._OMuRTMvc7PY3gWGzkgKiA",
         "EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID": "849323427488-kkkfbdemior14imjf3ruj7mv6tshrd0c.apps.googleusercontent.com",
         "EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID": "849323427488-g6shlp16nttp86rjojuqn0kod24v46lj.apps.googleusercontent.com",
-        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com"
+        "EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID": "849323427488-m9cfvtufoqjv3gcj3lhhrddvunduni5e.apps.googleusercontent.com",
+        "EXPO_PUBLIC_SENTRY_DSN": "https://16fd6812580d282ccb58acc639f2879b@o4510941393256448.ingest.de.sentry.io/4511032721145936"
       }
     }
   },

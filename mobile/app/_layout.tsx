@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { AppState, Platform, View } from "react-native";
 import type { AppStateStatus } from "react-native";
 import { Stack } from "expo-router";
+import * as Sentry from "@sentry/react-native";
 import {
   QueryClient,
   QueryClientProvider,
@@ -25,7 +26,7 @@ function onAppStateChange(status: AppStateStatus) {
 
 const queryClient = new QueryClient();
 
-export default function RootLayout() {
+function RootLayout() {
   const loadStoredAuth = useAuthStore((s) => s.loadStoredAuth);
 
   // Restore auth session + initialize Play Integrity on app launch
@@ -121,3 +122,5 @@ export default function RootLayout() {
     </QueryClientProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

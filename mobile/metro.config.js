@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const http = require("http");
 const url = require("url");
-const { getDefaultConfig } = require("expo/metro-config");
+const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 
 // Read API URL from .env for the dev proxy
 let API_TARGET = "http://192.168.1.206:3000";
@@ -18,7 +18,7 @@ try {
 const parsedTarget = url.parse(API_TARGET);
 
 /** @type {import('expo/metro-config').MetroConfig} */
-const config = getDefaultConfig(__dirname);
+const config = getSentryExpoConfig(__dirname);
 
 // Custom resolver for web platform compatibility
 const originalResolveRequest = config.resolver.resolveRequest;

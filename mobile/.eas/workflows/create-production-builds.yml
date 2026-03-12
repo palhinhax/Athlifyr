@@ -18,6 +18,7 @@ jobs:
     type: submit
     params:
       platform: android
+      build_id: ${{ needs.build_android.output.build_id }}
 
   build_ios:
     name: Build iOS IPA
@@ -31,3 +32,4 @@ jobs:
     type: submit
     params:
       platform: ios
+      build_id: ${{ needs.build_ios.output.build_id }}

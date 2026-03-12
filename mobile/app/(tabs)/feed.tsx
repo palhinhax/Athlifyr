@@ -6,16 +6,10 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
-  Platform,
 } from "react-native";
-import {
-  SafeAreaView,
-  useSafeAreaInsets,
-} from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
-import { MessageSquare, Play } from "lucide-react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
 import { CreatePostBox } from "@/src/components/CreatePostBox";
@@ -43,9 +37,6 @@ function EmptyFeed() {
 export default function FeedScreen() {
   const { posts, isLoading, refetch } = useFeedPosts();
   const user = useAuthStore((s) => s.user);
-  const { t } = useTranslation();
-  const router = useRouter();
-  const insets = useSafeAreaInsets();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -91,19 +82,6 @@ export default function FeedScreen() {
           />
         }
       />
-
-      {/* Free Run FAB */}
-      <TouchableOpacity
-        style={[
-          styles.fab,
-          { bottom: Platform.OS === "ios" ? 24 + insets.bottom : 24 },
-        ]}
-        activeOpacity={0.85}
-        onPress={() => router.push("/free-run")}
-      >
-        <Play size={22} color={theme.colors.white} fill={theme.colors.white} />
-        <Text style={styles.fabLabel}>{t("freeRun.startRun")}</Text>
-      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -174,26 +152,5 @@ const styles = StyleSheet.create({
     color: theme.colors.white,
     fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
-  },
-  fab: {
-    position: "absolute",
-    right: 20,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    backgroundColor: theme.colors.primary,
-    paddingVertical: 14,
-    paddingHorizontal: 20,
-    borderRadius: 28,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 8,
-  },
-  fabLabel: {
-    color: theme.colors.white,
-    fontSize: theme.typography.fontSize.base,
-    fontWeight: "700",
   },
 });

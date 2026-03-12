@@ -83,8 +83,14 @@ export function AssetDesigner({ platform }: AssetDesignerProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      updateDesign({ backgroundType: "image", backgroundImageUrl: url });
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateDesign({
+          backgroundType: "image",
+          backgroundImageUrl: reader.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
     },
     [updateDesign]
   );
@@ -94,8 +100,11 @@ export function AssetDesigner({ platform }: AssetDesignerProps) {
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
-      const url = URL.createObjectURL(file);
-      updateDesign({ deviceScreenImage: url });
+      const reader = new FileReader();
+      reader.onload = () => {
+        updateDesign({ deviceScreenImage: reader.result as string });
+      };
+      reader.readAsDataURL(file);
     },
     [updateDesign]
   );
@@ -111,18 +120,38 @@ export function AssetDesigner({ platform }: AssetDesignerProps) {
         await new Promise((r) => setTimeout(r, 400));
 
         const el = canvasRef.current;
+        const pixelRatio = selectedAsset.width / el.offsetWidth;
         const options = {
           quality: 0.95,
-          pixelRatio: selectedAsset.width / el.offsetWidth,
-          cacheBust: true,
+          pixelRatio,
+          cacheBust: false,
           skipFonts: false,
+          includeQueryParams: true,
           style: { transform: "scale(1)", transformOrigin: "top left" },
         };
 
-        const dataUrl =
-          format === "jpeg"
-            ? await toJpeg(el, options)
-            : await toPng(el, options);
+        // html-to-image sometimes loses <img> src during cloning.
+        // Retry up to 3 times to work around the race condition.
+        let dataUrl = "";
+        let lastError: unknown;
+        for (let attempt = 0; attempt < 3; attempt++) {
+          try {
+            dataUrl =
+              format === "jpeg"
+                ? await toJpeg(el, options)
+                : await toPng(el, options);
+            // Verify the result is not a blank/trivially small image
+            if (dataUrl && dataUrl.length > 1000) break;
+          } catch (e) {
+            lastError = e;
+          }
+          // Wait before retrying to let images settle
+          await new Promise((r) => setTimeout(r, 300));
+        }
+
+        if (!dataUrl || dataUrl.length <= 1000) {
+          throw lastError || new Error("Export produced empty image");
+        }
 
         const link = document.createElement("a");
         link.download = `${selectedAsset.id}-${selectedAsset.width}x${selectedAsset.height}.${format}`;
@@ -393,7 +422,7 @@ export function AssetDesigner({ platform }: AssetDesignerProps) {
                   <Slider
                     value={[design.deviceScale]}
                     min={0.3}
-                    max={1}
+                    max={2}
                     step={0.05}
                     onValueChange={([v]) => updateDesign({ deviceScale: v })}
                     className="mt-1"

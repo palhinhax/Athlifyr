@@ -2,7 +2,7 @@
   "expo": {
     "name": "Athlifyr",
     "slug": "athlifyr",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,7 +16,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.athlifyr.app",
-      "buildNumber": "10",
+      "buildNumber": "21",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "NSCameraUsageDescription": "A câmara é utilizada para atualizar a foto de perfil e partilhar momentos desportivos com a comunidade Athlifyr.",
@@ -32,7 +32,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 18,
+      "versionCode": 21,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",

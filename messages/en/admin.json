@@ -386,7 +386,8 @@
         "variant": "Variant (optional)",
         "variantPlaceholder": "Select a variant",
         "variantAll": "All variants",
-        "variantHelp": "Restricts giveaway participation to registrants of this specific variant."
+        "variantHelp": "Restricts giveaway participation to registrants of this specific variant.",
+        "platform": "Platform"
       },
       "form": {
         "title": "Title",
@@ -429,6 +430,12 @@
         "updateError": "Failed to update giveaway.",
         "drawError": "Failed to perform draw.",
         "deleteError": "Failed to delete giveaway."
+      },
+      "platform": {
+        "ALL": "All Platforms",
+        "MOBILE": "Mobile App",
+        "ANDROID": "Android Only",
+        "IOS": "iOS Only"
       }
     },
     "notes": {

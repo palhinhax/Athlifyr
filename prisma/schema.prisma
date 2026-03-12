@@ -2453,13 +2453,14 @@ model AiAnalysisUsage {
 // ============================================================================
 
 model Giveaway {
-  id                     String         @id @default(cuid())
+  id                     String              @id @default(cuid())
   eventId                String
-  status                 GiveawayStatus @default(DRAFT)
+  status                 GiveawayStatus      @default(DRAFT)
+  platform               GiveawayPlatform    @default(ALL)
   drawAt                 DateTime?
   drawnAt                DateTime?
-  prizeCount             Int            @default(1)
-  maxWinnersPerUser      Int            @default(1)
+  prizeCount             Int                 @default(1)
+  maxWinnersPerUser      Int                 @default(1)
   secret                 String? // Private: random secret used in draw algorithm (stored until draw)
   secretHash             String? // Public: SHA-256 hash of secret (published before draw for transparency)
   secretRevealed         String? // Public: revealed secret after draw (proves fairness)
@@ -2532,6 +2533,13 @@ enum GiveawayStatus {
   DRAWING
   DRAWN
   CANCELLED
+}
+
+enum GiveawayPlatform {
+  ALL
+  MOBILE
+  ANDROID
+  IOS
 }
 
 // ============================================================================

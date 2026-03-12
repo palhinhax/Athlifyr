@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -374,23 +375,13 @@ export default function AdminEventSettingsPage() {
                     Rastreamento GPS em tempo real e resultados ao vivo
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    setSettings((prev) => ({
-                      ...prev,
-                      hasLiveRace: !prev.hasLiveRace,
-                    }))
+                <Switch
+                  checked={settings.hasLiveRace}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, hasLiveRace: checked }))
                   }
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.hasLiveRace ? "bg-purple-600" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                      settings.hasLiveRace ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+                  className="data-[state=checked]:bg-purple-600"
+                />
               </div>
 
               <div className="flex items-center justify-between rounded-lg border p-4">
@@ -400,23 +391,13 @@ export default function AdminEventSettingsPage() {
                     {t("featuredToggleDescription")}
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    setSettings((prev) => ({
-                      ...prev,
-                      isFeatured: !prev.isFeatured,
-                    }))
+                <Switch
+                  checked={settings.isFeatured}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, isFeatured: checked }))
                   }
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.isFeatured ? "bg-amber-500" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                      settings.isFeatured ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+                  className="data-[state=checked]:bg-amber-500"
+                />
               </div>
 
               <div className="space-y-2">

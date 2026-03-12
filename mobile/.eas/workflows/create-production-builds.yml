@@ -12,8 +12,22 @@ jobs:
     params:
       platform: android
 
+  submit_android:
+    name: Submit Android to Google Play
+    needs: [build_android]
+    type: submit
+    params:
+      platform: android
+
   build_ios:
     name: Build iOS IPA
     type: build
+    params:
+      platform: ios
+
+  submit_ios:
+    name: Submit iOS to App Store
+    needs: [build_ios]
+    type: submit
     params:
       platform: ios

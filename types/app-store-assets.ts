@@ -178,7 +178,7 @@ export interface CanvasDesign {
   showDevice: boolean;
   deviceType: "iphone" | "android";
   deviceScreenImage: string | null; // Screenshot to show in device screen
-  deviceScale: number; // 0.3 - 1.0
+  deviceScale: number; // 0.3 - 2.0
   deviceOffsetX: number; // percentage -50 to 50
   deviceOffsetY: number; // percentage -50 to 50
   // Text

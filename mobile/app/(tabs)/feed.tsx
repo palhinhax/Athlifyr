@@ -6,11 +6,9 @@ import {
   FlatList,
   ActivityIndicator,
   RefreshControl,
-  TouchableOpacity,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useRouter } from "expo-router";
-import { useTranslation } from "react-i18next";
+
 import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";
@@ -39,8 +37,6 @@ function EmptyFeed() {
 export default function FeedScreen() {
   const { posts, isLoading, refetch } = useFeedPosts();
   const user = useAuthStore((s) => s.user);
-  const { t } = useTranslation();
-  const router = useRouter();
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async () => {
@@ -86,8 +82,6 @@ export default function FeedScreen() {
           />
         }
       />
-
-
     </SafeAreaView>
   );
 }
@@ -159,5 +153,4 @@ const styles = StyleSheet.create({
     fontSize: theme.typography.fontSize.sm,
     fontWeight: "600",
   },
-
 });

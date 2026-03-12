@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { Language } from "@prisma/client";
+import { Event, EventVariant, Language } from "@prisma/client";
 import {
   notifyEventDateChange,
   notifyEventCancelled,
@@ -13,7 +13,6 @@ interface RouteParams {
   }>;
 }
 
-// Helper function to handle translations
 interface TranslationInput {
   language: Language;
   title: string;
@@ -42,11 +41,41 @@ interface VariantInput {
   translations?: VariantTranslationInput[];
 }
 
+interface EventUpdateBody {
+  title?: string;
+  description?: string;
+  sportTypes?: string[];
+  startDate?: string;
+  endDate?: string | null;
+  city?: string;
+  country?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  googleMapsUrl?: string | null;
+  imageUrl?: string | null;
+  externalUrl?: string | null;
+  stravaRouteEmbed?: string | null;
+  featuredVenueId?: string | null;
+  variants?: VariantInput[];
+  translations?: TranslationInput[];
+  cancelled?: boolean;
+  cancellationReason?: string;
+  hasRegistrations?: boolean;
+  isFeatured?: boolean;
+  hasLiveRace?: boolean;
+  commissionPercent?: number;
+  refundDeadline?: string | null;
+  checkInOpensAt?: string | null;
+  checkInClosesAt?: string | null;
+  registrationFieldSettings?: Record<string, unknown>;
+}
+
+// --- Helper: Handle event translations ---
+
 async function handleTranslations(
   eventId: string,
   translations: TranslationInput[]
 ) {
-  // Fetch existing translations to compare
   const existingTranslations = await prisma.eventTranslation.findMany({
     where: { eventId },
   });
@@ -56,9 +85,7 @@ async function handleTranslations(
   for (const t of translations) {
     const existing = existingMap.get(t.language);
 
-    // Only save if there's content
     if (!t.title?.trim() && !t.description?.trim()) {
-      // Delete if exists but now empty
       if (existing) {
         await prisma.eventTranslation.delete({
           where: { id: existing.id },
@@ -67,7 +94,6 @@ async function handleTranslations(
       continue;
     }
 
-    // Check if translation actually changed
     const hasChanged =
       !existing ||
       existing.title !== (t.title || "") ||
@@ -76,7 +102,6 @@ async function handleTranslations(
       existing.metaTitle !== (t.metaTitle || null) ||
       existing.metaDescription !== (t.metaDescription || null);
 
-    // Only upsert if changed
     if (hasChanged) {
       await prisma.eventTranslation.upsert({
         where: {
@@ -106,13 +131,348 @@ async function handleTranslations(
   }
 }
 
+// --- Helper: Generate slug from title ---
+
+async function generateSlug(
+  title: string | undefined,
+  existingEvent: Event,
+  eventId: string
+): Promise<string> {
+  if (!title || title === existingEvent.title) {
+    return existingEvent.slug;
+  }
+
+  let slug = title
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/(^-|-$)/g, "");
+
+  const existingSlug = await prisma.event.findFirst({
+    where: { slug, id: { not: eventId } },
+  });
+
+  if (existingSlug) {
+    slug = `${slug}-${Date.now()}`;
+  }
+
+  return slug;
+}
+
+// --- Helper: Build event update data ---
+
+function buildEventUpdateData(
+  body: EventUpdateBody,
+  slug: string,
+  isAdmin: boolean
+): Record<string, unknown> {
+  const {
+    title,
+    description,
+    sportTypes,
+    startDate,
+    endDate,
+    city,
+    country,
+    latitude,
+    longitude,
+    googleMapsUrl,
+    imageUrl,
+    externalUrl,
+    stravaRouteEmbed,
+    featuredVenueId,
+    cancelled,
+    cancellationReason,
+    hasRegistrations,
+    isFeatured,
+    hasLiveRace,
+    commissionPercent,
+    refundDeadline,
+    checkInOpensAt,
+    checkInClosesAt,
+    registrationFieldSettings,
+  } = body;
+
+  return {
+    ...(title && { title, slug }),
+    ...(description !== undefined && { description }),
+    ...(sportTypes && Array.isArray(sportTypes) && { sportTypes }),
+    ...(startDate && { startDate: new Date(startDate) }),
+    ...(endDate !== undefined && {
+      endDate: endDate ? new Date(endDate) : null,
+    }),
+    ...(city && { city }),
+    ...(country && { country }),
+    ...(latitude !== undefined && { latitude: latitude || null }),
+    ...(longitude !== undefined && { longitude: longitude || null }),
+    ...(googleMapsUrl !== undefined && {
+      googleMapsUrl: googleMapsUrl || null,
+    }),
+    ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
+    ...(externalUrl !== undefined && { externalUrl: externalUrl || null }),
+    ...(stravaRouteEmbed !== undefined && {
+      stravaRouteEmbed: stravaRouteEmbed || null,
+    }),
+    ...(featuredVenueId !== undefined && {
+      featuredVenueId: featuredVenueId || null,
+    }),
+    ...(hasRegistrations !== undefined && { hasRegistrations }),
+    ...(isFeatured !== undefined && isAdmin && { isFeatured }),
+    ...(cancelled !== undefined && isAdmin && { cancelled }),
+    ...(cancelled === true && isAdmin && { cancelledAt: new Date() }),
+    ...(cancellationReason !== undefined && isAdmin && { cancellationReason }),
+    ...(hasLiveRace !== undefined && isAdmin && { hasLiveRace }),
+    ...(commissionPercent !== undefined && isAdmin && { commissionPercent }),
+    ...(refundDeadline !== undefined && {
+      refundDeadline: refundDeadline ? new Date(refundDeadline) : null,
+    }),
+    ...(checkInOpensAt !== undefined && {
+      checkInOpensAt: checkInOpensAt ? new Date(checkInOpensAt) : null,
+    }),
+    ...(checkInClosesAt !== undefined && {
+      checkInClosesAt: checkInClosesAt ? new Date(checkInClosesAt) : null,
+    }),
+    ...(registrationFieldSettings !== undefined && {
+      registrationFieldSettings,
+    }),
+  };
+}
+
+// --- Helper: Handle cancellation notification ---
+
+async function handleCancellationNotification(
+  eventId: string,
+  updatedEvent: Event & { variants: EventVariant[] },
+  cancellationReason?: string
+) {
+  await prisma.participation.deleteMany({
+    where: { eventId },
+  });
+
+  notifyEventCancelled({
+    eventId,
+    eventTitle: updatedEvent.title,
+    eventSlug: updatedEvent.slug,
+    cancellationReason: cancellationReason || undefined,
+  }).catch((error) => {
+    console.error("Error sending event cancellation notification:", error);
+  });
+}
+
+// --- Helper: Handle date change notification ---
+
+function handleDateChangeNotification(
+  eventId: string,
+  updatedEvent: Event & { variants: EventVariant[] },
+  existingStartDate: Date,
+  newStartDateStr: string
+) {
+  const oldDate = new Date(existingStartDate);
+  const newDate = new Date(newStartDateStr);
+
+  const dateChanged =
+    oldDate.toISOString().split("T")[0] !== newDate.toISOString().split("T")[0];
+
+  if (dateChanged) {
+    notifyEventDateChange({
+      eventId,
+      eventTitle: updatedEvent.title,
+      eventSlug: updatedEvent.slug,
+      oldDate,
+      newDate,
+    }).catch((error) => {
+      console.error("Error sending event date change notification:", error);
+    });
+  }
+}
+
+// --- Helper: Build variant data object ---
+
+function buildVariantData(v: VariantInput) {
+  return {
+    name: v.name,
+    distanceKm: v.distanceKm || null,
+    elevationGainM: v.elevationGainM || null,
+    price: v.price || null,
+    maxParticipants: v.maxParticipants ?? null,
+    teamSize: v.teamSize ?? 1,
+    startDate: v.startDate ? new Date(v.startDate) : null,
+    startTime: v.startTime || null,
+  };
+}
+
+// --- Helper: Check if variant has changed ---
+
+function hasVariantChanged(existing: EventVariant, v: VariantInput): boolean {
+  return (
+    existing.name !== v.name ||
+    existing.distanceKm !== (v.distanceKm || null) ||
+    existing.elevationGainM !== (v.elevationGainM || null) ||
+    existing.price !== (v.price || null) ||
+    existing.maxParticipants !== (v.maxParticipants ?? null) ||
+    existing.teamSize !== (v.teamSize ?? 1) ||
+    (v.startDate !== undefined &&
+      existing.startDate?.getTime() !== new Date(v.startDate).getTime()) ||
+    existing.startTime !== (v.startTime || null)
+  );
+}
+
+// --- Helper: Upsert a single variant ---
+
+async function upsertVariant(
+  eventId: string,
+  v: VariantInput
+): Promise<EventVariant | null> {
+  if (!v.id) {
+    return prisma.eventVariant.create({
+      data: { eventId, ...buildVariantData(v) },
+    });
+  }
+
+  const existingVariant = await prisma.eventVariant.findUnique({
+    where: { id: v.id },
+  });
+
+  if (!existingVariant) {
+    return null;
+  }
+
+  if (hasVariantChanged(existingVariant, v)) {
+    return prisma.eventVariant.update({
+      where: { id: v.id },
+      data: buildVariantData(v),
+    });
+  }
+
+  return existingVariant;
+}
+
+// --- Helper: Handle variant translations ---
+
+async function handleVariantTranslations(
+  variantId: string,
+  translations: VariantTranslationInput[]
+) {
+  const existingVarTranslations = await prisma.eventVariantTranslation.findMany(
+    {
+      where: { variantId },
+    }
+  );
+
+  const existingVarMap = new Map(
+    existingVarTranslations.map((t) => [t.language, t])
+  );
+
+  for (const t of translations) {
+    if (!t.name?.trim() && !t.description?.trim()) {
+      continue;
+    }
+
+    const existing = existingVarMap.get(t.language);
+    const hasChanged =
+      !existing ||
+      existing.name !== (t.name || "") ||
+      existing.description !== (t.description || null);
+
+    if (hasChanged) {
+      await prisma.eventVariantTranslation.upsert({
+        where: {
+          variantId_language: {
+            variantId,
+            language: t.language,
+          },
+        },
+        update: {
+          name: t.name || "",
+          description: t.description || null,
+        },
+        create: {
+          variantId,
+          language: t.language,
+          name: t.name || "",
+          description: t.description || null,
+        },
+      });
+    }
+  }
+}
+
+// --- Helper: Handle all variants for an event ---
+
+async function handleVariants(eventId: string, variants: VariantInput[]) {
+  const existingVariants = await prisma.eventVariant.findMany({
+    where: { eventId },
+    select: { id: true },
+  });
+
+  const variantIdsInRequest = variants
+    .filter((v) => v.id)
+    .map((v) => v.id as string);
+
+  const variantsToDelete = existingVariants
+    .filter((v) => !variantIdsInRequest.includes(v.id))
+    .map((v) => v.id);
+
+  if (variantsToDelete.length > 0) {
+    await prisma.eventVariant.deleteMany({
+      where: { id: { in: variantsToDelete } },
+    });
+  }
+
+  for (const v of variants) {
+    const variant = await upsertVariant(eventId, v);
+
+    if (!variant) {
+      continue;
+    }
+
+    if (v.translations && Array.isArray(v.translations)) {
+      await handleVariantTranslations(variant.id, v.translations);
+    }
+  }
+}
+
+// --- Helper: Authorize user for event update ---
+
+async function authorizeEventUpdate(
+  request: NextRequest,
+  eventId: string
+): Promise<
+  | { authorized: true; isAdmin: boolean }
+  | { authorized: false; response: NextResponse }
+> {
+  const user = await getAuthenticatedUser(request);
+
+  if (!user?.id) {
+    return {
+      authorized: false,
+      response: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+
+  const isAdmin = user.role === "ADMIN";
+
+  if (!isAdmin) {
+    const organizer = await prisma.eventOrganizer.findFirst({
+      where: { eventId, userId: user.id },
+    });
+    if (!organizer) {
+      return {
+        authorized: false,
+        response: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+      };
+    }
+  }
+
+  return { authorized: true, isAdmin };
+}
+
 // GET - Get event by ID or slug
 export async function GET(request: Request, { params }: RouteParams) {
   try {
     const { id } = await params;
 
-    // Try to find by ID first (cuid format: starts with 'c' and ~25 chars),
-    // then fall back to slug lookup
     const isCuid = /^c[a-z0-9]{20,30}$/i.test(id);
 
     const event = await prisma.event.findFirst({
@@ -161,58 +521,15 @@ export async function GET(request: Request, { params }: RouteParams) {
 // PATCH - Update event (admin or organizer)
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const user = await getAuthenticatedUser(request);
-
-    if (!user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const isAdmin = user.role === "ADMIN";
-
     const { id } = await params;
 
-    // Organizers can also edit basic event fields
-    if (!isAdmin) {
-      const organizer = await prisma.eventOrganizer.findFirst({
-        where: { eventId: id, userId: user.id },
-      });
-      if (!organizer) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
+    const auth = await authorizeEventUpdate(request, id);
+    if (!auth.authorized) {
+      return auth.response;
     }
-    const body = await request.json();
-    const {
-      title,
-      description,
-      sportTypes,
-      startDate,
-      endDate,
-      city,
-      country,
-      latitude,
-      longitude,
-      googleMapsUrl,
-      imageUrl,
-      externalUrl,
-      stravaRouteEmbed,
-      featuredVenueId,
-      variants,
-      translations,
-      cancelled,
-      cancellationReason,
-      hasRegistrations,
-      isFeatured,
-      // LiveRace Fase 0 fields
-      hasLiveRace,
-      commissionPercent,
-      refundDeadline,
-      checkInOpensAt,
-      checkInClosesAt,
-      // Registration field settings (JSON)
-      registrationFieldSettings,
-    } = body;
 
-    // Check if event exists
+    const body: EventUpdateBody = await request.json();
+
     const existingEvent = await prisma.event.findUnique({
       where: { id },
       include: { variants: true },
@@ -222,285 +539,49 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Generate slug if title changed
-    let slug = existingEvent.slug;
-    if (title && title !== existingEvent.title) {
-      slug = title
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/(^-|-$)/g, "");
+    const slug = await generateSlug(body.title, existingEvent, id);
+    const updateData = buildEventUpdateData(body, slug, auth.isAdmin);
 
-      // Check if slug already exists
-      const existingSlug = await prisma.event.findFirst({
-        where: {
-          slug,
-          id: { not: id },
-        },
-      });
-
-      if (existingSlug) {
-        slug = `${slug}-${Date.now()}`;
-      }
-    }
-
-    // Check if event is being cancelled and send notifications
-    const isBeingCancelled =
-      isAdmin && cancelled === true && !existingEvent.cancelled;
-
-    // Update event
     const updatedEvent = await prisma.event.update({
       where: { id },
-      data: {
-        ...(title && { title }),
-        ...(title && { slug }),
-        ...(description !== undefined && { description }),
-        ...(sportTypes && Array.isArray(sportTypes) && { sportTypes }),
-        ...(startDate && { startDate: new Date(startDate) }),
-        ...(endDate !== undefined && {
-          endDate: endDate ? new Date(endDate) : null,
-        }),
-        ...(city && { city }),
-        ...(country && { country }),
-        ...(latitude !== undefined && { latitude: latitude || null }),
-        ...(longitude !== undefined && { longitude: longitude || null }),
-        ...(googleMapsUrl !== undefined && {
-          googleMapsUrl: googleMapsUrl || null,
-        }),
-        ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
-        ...(externalUrl !== undefined && { externalUrl: externalUrl || null }),
-        ...(stravaRouteEmbed !== undefined && {
-          stravaRouteEmbed: stravaRouteEmbed || null,
-        }),
-        ...(featuredVenueId !== undefined && {
-          featuredVenueId: featuredVenueId || null,
-        }),
-        ...(hasRegistrations !== undefined && { hasRegistrations }),
-        ...(isFeatured !== undefined && isAdmin && { isFeatured }),
-        ...(cancelled !== undefined && isAdmin && { cancelled }),
-        ...(cancelled === true && isAdmin && { cancelledAt: new Date() }),
-        ...(cancellationReason !== undefined &&
-          isAdmin && { cancellationReason }),
-        // LiveRace Fase 0 fields — admin only
-        ...(hasLiveRace !== undefined && isAdmin && { hasLiveRace }),
-        ...(commissionPercent !== undefined &&
-          isAdmin && { commissionPercent }),
-        ...(refundDeadline !== undefined && {
-          refundDeadline: refundDeadline ? new Date(refundDeadline) : null,
-        }),
-        ...(checkInOpensAt !== undefined && {
-          checkInOpensAt: checkInOpensAt ? new Date(checkInOpensAt) : null,
-        }),
-        ...(checkInClosesAt !== undefined && {
-          checkInClosesAt: checkInClosesAt ? new Date(checkInClosesAt) : null,
-        }),
-        ...(registrationFieldSettings !== undefined && {
-          registrationFieldSettings,
-        }),
-      },
-      include: {
-        variants: true,
-      },
+      data: updateData,
+      include: { variants: true },
     });
 
-    // Send notification if event was cancelled
+    const isBeingCancelled =
+      auth.isAdmin && body.cancelled === true && !existingEvent.cancelled;
+
     if (isBeingCancelled) {
-      // Delete all participations for this event
-      await prisma.participation.deleteMany({
-        where: { eventId: id },
-      });
-
-      // Send notification asynchronously (don't wait for it to complete)
-      notifyEventCancelled({
-        eventId: id,
-        eventTitle: updatedEvent.title,
-        eventSlug: updatedEvent.slug,
-        cancellationReason: cancellationReason || undefined,
-      }).catch((error) => {
-        console.error("Error sending event cancellation notification:", error);
-      });
+      await handleCancellationNotification(
+        id,
+        updatedEvent,
+        body.cancellationReason
+      );
     }
 
-    // Send notification if event date changed
-    if (startDate && existingEvent.startDate) {
-      const oldDate = new Date(existingEvent.startDate);
-      const newDate = new Date(startDate);
-
-      // Check if the date actually changed (compare only date part, not time)
-      const dateChanged =
-        oldDate.toISOString().split("T")[0] !==
-        newDate.toISOString().split("T")[0];
-
-      if (dateChanged) {
-        // Send notification asynchronously (don't wait for it to complete)
-        notifyEventDateChange({
-          eventId: id,
-          eventTitle: updatedEvent.title,
-          eventSlug: updatedEvent.slug,
-          oldDate,
-          newDate,
-        }).catch((error) => {
-          console.error("Error sending event date change notification:", error);
-        });
-      }
+    if (body.startDate && existingEvent.startDate) {
+      handleDateChangeNotification(
+        id,
+        updatedEvent,
+        existingEvent.startDate,
+        body.startDate
+      );
     }
 
-    // Handle variants if provided
-    if (variants && Array.isArray(variants)) {
-      // Get existing variant IDs to identify which ones to delete
-      const existingVariants = await prisma.eventVariant.findMany({
-        where: { eventId: id },
-        select: { id: true },
-      });
+    if (body.variants && Array.isArray(body.variants)) {
+      await handleVariants(id, body.variants);
+    }
 
-      const variantIdsInRequest = variants
-        .filter((v) => v.id)
-        .map((v) => v.id as string);
+    if (body.translations && Array.isArray(body.translations)) {
+      await handleTranslations(id, body.translations);
+    }
 
-      // Delete variants that are no longer in the request
-      const variantsToDelete = existingVariants
-        .filter((v) => !variantIdsInRequest.includes(v.id))
-        .map((v) => v.id);
-
-      if (variantsToDelete.length > 0) {
-        await prisma.eventVariant.deleteMany({
-          where: { id: { in: variantsToDelete } },
-        });
-      }
-
-      // Upsert variants (update existing, create new)
-      if (variants.length > 0) {
-        for (const v of variants as VariantInput[]) {
-          let variant;
-
-          if (v.id) {
-            // Fetch existing variant to check if changed
-            const existingVariant = await prisma.eventVariant.findUnique({
-              where: { id: v.id },
-            });
-
-            if (existingVariant) {
-              // Compare values to detect changes
-              const hasChanged =
-                existingVariant.name !== v.name ||
-                existingVariant.distanceKm !== (v.distanceKm || null) ||
-                existingVariant.elevationGainM !== (v.elevationGainM || null) ||
-                existingVariant.price !== (v.price || null) ||
-                existingVariant.maxParticipants !==
-                  (v.maxParticipants ?? null) ||
-                existingVariant.teamSize !== (v.teamSize ?? 1) ||
-                (v.startDate &&
-                  existingVariant.startDate?.getTime() !==
-                    new Date(v.startDate).getTime()) ||
-                existingVariant.startTime !== (v.startTime || null);
-
-              if (hasChanged) {
-                // Update existing variant only if changed
-                variant = await prisma.eventVariant.update({
-                  where: { id: v.id },
-                  data: {
-                    name: v.name,
-                    distanceKm: v.distanceKm || null,
-                    elevationGainM: v.elevationGainM || null,
-                    price: v.price || null,
-                    maxParticipants: v.maxParticipants ?? null,
-                    teamSize: v.teamSize ?? 1,
-                    startDate: v.startDate ? new Date(v.startDate) : null,
-                    startTime: v.startTime || null,
-                  },
-                });
-              } else {
-                // No changes, use existing variant
-                variant = existingVariant;
-              }
-            } else {
-              // Variant not found, skip
-              continue;
-            }
-          } else {
-            // Create new variant
-            variant = await prisma.eventVariant.create({
-              data: {
-                eventId: id,
-                name: v.name,
-                distanceKm: v.distanceKm || null,
-                elevationGainM: v.elevationGainM || null,
-                price: v.price || null,
-                maxParticipants: v.maxParticipants ?? null,
-                teamSize: v.teamSize ?? 1,
-                startDate: v.startDate ? new Date(v.startDate) : null,
-                startTime: v.startTime || null,
-              },
-            });
-          }
-
-          // Upsert variant translations if provided
-          if (v.translations && Array.isArray(v.translations)) {
-            // Fetch existing translations for comparison
-            const existingVarTranslations =
-              await prisma.eventVariantTranslation.findMany({
-                where: { variantId: variant.id },
-              });
-
-            const existingVarMap = new Map(
-              existingVarTranslations.map((t) => [t.language, t])
-            );
-
-            for (const t of v.translations) {
-              if (t.name?.trim() || t.description?.trim()) {
-                const existing = existingVarMap.get(t.language);
-
-                // Check if translation actually changed
-                const hasChanged =
-                  !existing ||
-                  existing.name !== (t.name || "") ||
-                  existing.description !== (t.description || null);
-
-                // Only upsert if changed
-                if (hasChanged) {
-                  await prisma.eventVariantTranslation.upsert({
-                    where: {
-                      variantId_language: {
-                        variantId: variant.id,
-                        language: t.language,
-                      },
-                    },
-                    update: {
-                      name: t.name || "",
-                      description: t.description || null,
-                    },
-                    create: {
-                      variantId: variant.id,
-                      language: t.language,
-                      name: t.name || "",
-                      description: t.description || null,
-                    },
-                  });
-                }
-              }
-            }
-          }
-        }
-      }
-
-      // Fetch updated event with new variants
+    if (body.variants && Array.isArray(body.variants)) {
       const eventWithVariants = await prisma.event.findUnique({
         where: { id },
         include: { variants: true },
       });
-
-      // Handle translations if provided
-      if (translations && Array.isArray(translations)) {
-        await handleTranslations(id, translations);
-      }
-
       return NextResponse.json(eventWithVariants);
-    }
-
-    // Handle translations if provided (even without variants)
-    if (translations && Array.isArray(translations)) {
-      await handleTranslations(id, translations);
     }
 
     return NextResponse.json(updatedEvent);
@@ -528,7 +609,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    // Check if event exists
     const existingEvent = await prisma.event.findUnique({
       where: { id },
     });
@@ -537,7 +617,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
-    // Delete event (cascades to variants, comments, etc.)
     await prisma.event.delete({
       where: { id },
     });

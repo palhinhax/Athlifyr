@@ -77,12 +77,6 @@ const PLATFORM_OPTIONS: GiveawayPlatform[] = [
   "ANDROID",
   "IOS",
 ];
-const PLATFORM_LABELS: Record<GiveawayPlatform, string> = {
-  ALL: "All Platforms",
-  MOBILE: "Mobile App (Android + iOS)",
-  ANDROID: "Android Only",
-  IOS: "iOS Only",
-};
 
 interface Event {
   id: string;
@@ -614,7 +608,7 @@ export default function AdminGiveawaysPage() {
                 <SelectContent>
                   {PLATFORM_OPTIONS.map((p) => (
                     <SelectItem key={p} value={p}>
-                      {PLATFORM_LABELS[p]}
+                      {t(`platform.${p}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>

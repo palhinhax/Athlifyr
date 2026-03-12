@@ -13,12 +13,9 @@ function validatePlatformAccess(
 ): string | null {
   if (platform === GiveawayPlatform.ALL) return null;
 
-  const userAgent = request.headers.get("user-agent") || "";
   const clientPlatform = request.headers.get("x-client-platform");
   const isMobileClient =
-    clientPlatform === "android" ||
-    clientPlatform === "ios" ||
-    userAgent.includes("Athlifyr");
+    clientPlatform === "android" || clientPlatform === "ios";
 
   if (!isMobileClient) return "This giveaway is exclusive to the mobile app";
   if (platform === GiveawayPlatform.ANDROID && clientPlatform !== "android") {

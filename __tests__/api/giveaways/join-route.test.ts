@@ -174,27 +174,20 @@ describe("POST /api/giveaways/[id]/join", () => {
     });
   });
 
-  it("allows MOBILE giveaway from mobile client with Athlifyr user-agent", async () => {
+  it("returns 403 when MOBILE giveaway accessed with only Athlifyr user-agent (no x-client-platform)", async () => {
     (getAuthenticatedUser as jest.Mock).mockResolvedValue({ id: "u1" });
     (prisma.giveaway.findUnique as jest.Mock).mockResolvedValue(
       makeGiveaway({ platform: "MOBILE" })
     );
-    (prisma.giveawayParticipation.findUnique as jest.Mock).mockResolvedValue(
-      null
-    );
-    (prisma.$transaction as jest.Mock).mockResolvedValue({
-      created: { ticketNumber: 1 },
-      currentParticipantsCount: 1,
-    });
 
     const res = await POST(
       makeRequest({ "user-agent": "Athlifyr/1.0" }),
       makeParams()
     );
-    expect(res.status).toBe(200);
-    const json = await res.json();
-    expect(json.success).toBe(true);
-    expect(json.ticketNumber).toBe(1);
+    expect(res.status).toBe(403);
+    expect(await res.json()).toEqual({
+      error: "This giveaway is exclusive to the mobile app",
+    });
   });
 
   it("allows MOBILE giveaway from client with x-client-platform android", async () => {

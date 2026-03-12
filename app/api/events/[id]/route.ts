@@ -76,9 +76,9 @@ function slugify(value: string): string {
   return value
     .toLowerCase()
     .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/(^-|-$)/g, "");
+    .replaceAll(/[\u0300-\u036f]/g, "")
+    .replaceAll(/[^a-z0-9]+/g, "-")
+    .replaceAll(/(^-|-$)/g, "");
 }
 
 async function generateUniqueSlug(
@@ -116,11 +116,11 @@ async function handleTranslations(
 
     const changed =
       !prev ||
-      prev.title !== (t.title || "") ||
-      prev.description !== (t.description || "") ||
-      prev.city !== (t.city || null) ||
-      prev.metaTitle !== (t.metaTitle || null) ||
-      prev.metaDescription !== (t.metaDescription || null);
+      prev?.title !== (t.title || "") ||
+      prev?.description !== (t.description || "") ||
+      prev?.city !== (t.city || null) ||
+      prev?.metaTitle !== (t.metaTitle || null) ||
+      prev?.metaDescription !== (t.metaDescription || null);
 
     if (!changed) continue;
 
@@ -155,8 +155,8 @@ async function upsertVariantTranslations(
     const prev = existingMap.get(t.language);
     const changed =
       !prev ||
-      prev.name !== (t.name || "") ||
-      prev.description !== (t.description || null);
+      prev?.name !== (t.name || "") ||
+      prev?.description !== (t.description || null);
 
     if (!changed) continue;
 
@@ -272,6 +272,16 @@ async function syncVariants(eventId: string, variants: VariantInput[]) {
 
 // --- Event update data builder ---
 
+type UpdateHelpers = {
+  setIfDefined: <K extends keyof Prisma.EventUncheckedUpdateInput>(
+    key: K,
+    value: Prisma.EventUncheckedUpdateInput[K] | undefined
+  ) => void;
+  isDefined: <T>(value: T | undefined) => value is T;
+  toNullableDate: (value: string | Date | null | undefined) => Date | null;
+  toNullableValue: <T>(value: T | null | undefined) => T | null;
+};
+
 function buildEventUpdateData(
   body: PatchBody,
   existingTitle: string,
@@ -280,59 +290,164 @@ function buildEventUpdateData(
 ): Prisma.EventUncheckedUpdateInput {
   const data: Prisma.EventUncheckedUpdateInput = {};
 
-  if (body.title) {
-    data.title = body.title;
-    if (body.title !== existingTitle) data.slug = slug;
-  }
-  if (body.description !== undefined) data.description = body.description;
-  if (body.sportTypes && Array.isArray(body.sportTypes))
-    data.sportTypes = body.sportTypes as SportType[];
-  if (body.startDate) data.startDate = new Date(body.startDate);
-  if (body.endDate !== undefined)
-    data.endDate = body.endDate ? new Date(body.endDate) : null;
-  if (body.city) data.city = body.city;
-  if (body.country) data.country = body.country;
-  if (body.latitude !== undefined) data.latitude = body.latitude || null;
-  if (body.longitude !== undefined) data.longitude = body.longitude || null;
-  if (body.googleMapsUrl !== undefined)
-    data.googleMapsUrl = body.googleMapsUrl || null;
-  if (body.imageUrl !== undefined) data.imageUrl = body.imageUrl || null;
-  if (body.externalUrl !== undefined)
-    data.externalUrl = body.externalUrl || null;
-  if (body.stravaRouteEmbed !== undefined)
-    data.stravaRouteEmbed = body.stravaRouteEmbed || null;
-  if (body.featuredVenueId !== undefined)
-    data.featuredVenueId = body.featuredVenueId || null;
-  if (body.hasRegistrations !== undefined)
-    data.hasRegistrations = body.hasRegistrations;
-  if (body.refundDeadline !== undefined)
-    data.refundDeadline = body.refundDeadline
-      ? new Date(body.refundDeadline)
-      : null;
-  if (body.checkInOpensAt !== undefined)
-    data.checkInOpensAt = body.checkInOpensAt
-      ? new Date(body.checkInOpensAt)
-      : null;
-  if (body.checkInClosesAt !== undefined)
-    data.checkInClosesAt = body.checkInClosesAt
-      ? new Date(body.checkInClosesAt)
-      : null;
-  if (body.registrationFieldSettings !== undefined)
-    data.registrationFieldSettings = body.registrationFieldSettings;
+  const isDefined = <T>(value: T | undefined): value is T =>
+    value !== undefined;
 
-  // Admin-only fields
+  const helpers: UpdateHelpers = {
+    isDefined,
+    setIfDefined: <K extends keyof Prisma.EventUncheckedUpdateInput>(
+      key: K,
+      value: Prisma.EventUncheckedUpdateInput[K] | undefined
+    ) => {
+      if (isDefined(value)) {
+        data[key] = value;
+      }
+    },
+    toNullableDate: (value: string | Date | null | undefined) =>
+      value ? new Date(value) : null,
+    toNullableValue: <T>(value: T | null | undefined) => value ?? null,
+  };
+
+  applyBasicFields(data, body, existingTitle, slug, helpers);
+
   if (isAdmin) {
-    if (body.isFeatured !== undefined) data.isFeatured = body.isFeatured;
-    if (body.cancelled !== undefined) data.cancelled = body.cancelled;
-    if (body.cancelled === true) data.cancelledAt = new Date();
-    if (body.cancellationReason !== undefined)
-      data.cancellationReason = body.cancellationReason;
-    if (body.hasLiveRace !== undefined) data.hasLiveRace = body.hasLiveRace;
-    if (body.commissionPercent !== undefined)
-      data.commissionPercent = body.commissionPercent ?? 0;
+    applyAdminFields(data, body, helpers);
   }
 
   return data;
+}
+
+function applyTitleFields(
+  data: Prisma.EventUncheckedUpdateInput,
+  title: string | undefined,
+  existingTitle: string,
+  slug: string
+) {
+  if (!title) {
+    return;
+  }
+
+  data.title = title;
+
+  if (title !== existingTitle) {
+    data.slug = slug;
+  }
+}
+
+function applyBasicFields(
+  data: Prisma.EventUncheckedUpdateInput,
+  body: PatchBody,
+  existingTitle: string,
+  slug: string,
+  helpers: UpdateHelpers
+) {
+  applyTitleFields(data, body.title, existingTitle, slug);
+
+  helpers.setIfDefined("description", body.description);
+  helpers.setIfDefined(
+    "sportTypes",
+    Array.isArray(body.sportTypes)
+      ? (body.sportTypes as SportType[])
+      : undefined
+  );
+  helpers.setIfDefined(
+    "startDate",
+    body.startDate ? new Date(body.startDate) : undefined
+  );
+  helpers.setIfDefined(
+    "endDate",
+    helpers.isDefined(body.endDate)
+      ? helpers.toNullableDate(body.endDate)
+      : undefined
+  );
+  helpers.setIfDefined("city", body.city);
+  helpers.setIfDefined("country", body.country);
+  helpers.setIfDefined(
+    "latitude",
+    helpers.isDefined(body.latitude)
+      ? helpers.toNullableValue(body.latitude)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "longitude",
+    helpers.isDefined(body.longitude)
+      ? helpers.toNullableValue(body.longitude)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "googleMapsUrl",
+    helpers.isDefined(body.googleMapsUrl)
+      ? helpers.toNullableValue(body.googleMapsUrl)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "imageUrl",
+    helpers.isDefined(body.imageUrl)
+      ? helpers.toNullableValue(body.imageUrl)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "externalUrl",
+    helpers.isDefined(body.externalUrl)
+      ? helpers.toNullableValue(body.externalUrl)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "stravaRouteEmbed",
+    helpers.isDefined(body.stravaRouteEmbed)
+      ? helpers.toNullableValue(body.stravaRouteEmbed)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "featuredVenueId",
+    helpers.isDefined(body.featuredVenueId)
+      ? helpers.toNullableValue(body.featuredVenueId)
+      : undefined
+  );
+  helpers.setIfDefined("hasRegistrations", body.hasRegistrations);
+  helpers.setIfDefined(
+    "refundDeadline",
+    helpers.isDefined(body.refundDeadline)
+      ? helpers.toNullableDate(body.refundDeadline)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "checkInOpensAt",
+    helpers.isDefined(body.checkInOpensAt)
+      ? helpers.toNullableDate(body.checkInOpensAt)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "checkInClosesAt",
+    helpers.isDefined(body.checkInClosesAt)
+      ? helpers.toNullableDate(body.checkInClosesAt)
+      : undefined
+  );
+  helpers.setIfDefined(
+    "registrationFieldSettings",
+    body.registrationFieldSettings
+  );
+}
+
+function applyAdminFields(
+  data: Prisma.EventUncheckedUpdateInput,
+  body: PatchBody,
+  helpers: UpdateHelpers
+) {
+  helpers.setIfDefined("isFeatured", body.isFeatured);
+  helpers.setIfDefined("cancelled", body.cancelled);
+  helpers.setIfDefined("cancellationReason", body.cancellationReason);
+  helpers.setIfDefined("hasLiveRace", body.hasLiveRace);
+  helpers.setIfDefined(
+    "commissionPercent",
+    helpers.isDefined(body.commissionPercent)
+      ? (body.commissionPercent ?? 0)
+      : undefined
+  );
+
+  if (body.cancelled === true) {
+    data.cancelledAt = new Date();
+  }
 }
 
 // --- Notification helpers ---

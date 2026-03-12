@@ -99,10 +99,11 @@ export default function ActivityDetailScreen() {
       {
         text: t("common.delete"),
         style: "destructive",
-        onPress: async () => {
+        onPress: () => {
           if (activityId) {
-            await deleteActivity(activityId);
-            router.back();
+            deleteActivity(activityId).then(() => {
+              router.back();
+            });
           }
         },
       },
@@ -297,11 +298,11 @@ function StatRow({
   icon,
   label,
   value,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   label: string;
   value: string;
-}) {
+}>) {
   return (
     <View style={styles.statRow}>
       <View style={styles.statRowLeft}>

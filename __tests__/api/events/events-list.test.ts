@@ -93,7 +93,7 @@ describe("GET /api/events - isFeatured ordering", () => {
   it("returns correct pagination metadata", async () => {
     (prisma.event.count as jest.Mock).mockResolvedValue(25);
     (prisma.event.findMany as jest.Mock).mockResolvedValue(
-      Array(12).fill(REGULAR_EVENT)
+      new Array(12).fill(REGULAR_EVENT)
     );
 
     const res = await GET(makeRequest({ page: "1", pageSize: "12" }));

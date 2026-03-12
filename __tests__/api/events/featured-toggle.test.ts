@@ -96,7 +96,9 @@ describe("PATCH /api/events/[id] - isFeatured", () => {
 
   it("admin can set isFeatured to true", async () => {
     (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
-    (prisma.event.findUnique as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce({ ...EXISTING_EVENT, isFeatured: true });
     (prisma.event.update as jest.Mock).mockResolvedValue({
       ...EXISTING_EVENT,
       isFeatured: true,
@@ -116,10 +118,15 @@ describe("PATCH /api/events/[id] - isFeatured", () => {
 
   it("admin can set isFeatured to false", async () => {
     (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
-    (prisma.event.findUnique as jest.Mock).mockResolvedValue({
-      ...EXISTING_EVENT,
-      isFeatured: true,
-    });
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce({
+        ...EXISTING_EVENT,
+        isFeatured: true,
+      })
+      .mockResolvedValueOnce({
+        ...EXISTING_EVENT,
+        isFeatured: false,
+      });
     (prisma.event.update as jest.Mock).mockResolvedValue({
       ...EXISTING_EVENT,
       isFeatured: false,
@@ -142,7 +149,9 @@ describe("PATCH /api/events/[id] - isFeatured", () => {
       eventId: "event-1",
       userId: "user-org",
     });
-    (prisma.event.findUnique as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
     (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
 
     const res = await PATCH(makeRequest({ isFeatured: true }), makeParams());

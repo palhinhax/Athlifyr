@@ -17,6 +17,7 @@ import {
   Alert,
   ActivityIndicator,
   Share,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -180,9 +181,12 @@ export default function ActivityDetailScreen() {
             followUser={false}
           />
 
-          {/* Date / time header */}
+          {/* Title & Description */}
           <View style={styles.dateSection}>
-            <Text style={styles.dateTitle}>
+            {activity.title ? (
+              <Text style={styles.dateTitle}>{activity.title}</Text>
+            ) : null}
+            <Text style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}>
               {new Date(activity.startedAt).toLocaleDateString(undefined, {
                 weekday: "long",
                 year: "numeric",
@@ -201,6 +205,9 @@ export default function ActivityDetailScreen() {
                 minute: "2-digit",
               })}
             </Text>
+            {activity.description ? (
+              <Text style={styles.descriptionText}>{activity.description}</Text>
+            ) : null}
           </View>
 
           {/* Stats grid */}
@@ -249,6 +256,24 @@ export default function ActivityDetailScreen() {
               value={`${activity.track.length}`}
             />
           </View>
+
+          {/* Photos */}
+          {activity.photos && activity.photos.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.photoStrip}
+              contentContainerStyle={styles.photoStripContent}
+            >
+              {activity.photos.map((uri) => (
+                <Image
+                  key={uri}
+                  source={{ uri }}
+                  style={styles.photoImage}
+                />
+              ))}
+            </ScrollView>
+          )}
 
           {/* Export GPX button */}
           <TouchableOpacity style={styles.exportBtn} onPress={handleExportGPX}>
@@ -357,6 +382,12 @@ const styles = StyleSheet.create({
     color: theme.colors.muted,
     marginTop: 2,
   },
+  descriptionText: {
+    fontSize: 14,
+    color: theme.colors.textSecondary,
+    marginTop: 8,
+    lineHeight: 20,
+  },
   statsCard: {
     marginHorizontal: 16,
     backgroundColor: theme.colors.card,
@@ -397,6 +428,18 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.primary,
     paddingVertical: 12,
     borderRadius: 12,
+  },
+  photoStrip: {
+    marginTop: 12,
+    marginHorizontal: 16,
+  },
+  photoStripContent: {
+    gap: 8,
+  },
+  photoImage: {
+    width: 120,
+    height: 120,
+    borderRadius: 10,
   },
   exportBtnText: {
     color: "#fff",

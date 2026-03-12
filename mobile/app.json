@@ -7,7 +7,10 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "scheme": ["athlifyr", "com.athlifyr.app"],
+    "scheme": [
+      "athlifyr",
+      "com.athlifyr.app"
+    ],
     "splash": {
       "image": "./assets/splash-icon.png",
       "resizeMode": "contain",
@@ -23,7 +26,9 @@
         "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr.",
         "NSLocationWhenInUseUsageDescription": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "O Athlifyr precisa da tua localização em segundo plano para continuar a registar o percurso quando o ecrã está bloqueado.",
-        "UIBackgroundModes": ["location"]
+        "UIBackgroundModes": [
+          "location"
+        ]
       }
     },
     "android": {
@@ -32,7 +37,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.athlifyr.app",
-      "versionCode": 18,
+      "versionCode": 19,
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -52,7 +57,10 @@
               "scheme": "com.athlifyr.app"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },

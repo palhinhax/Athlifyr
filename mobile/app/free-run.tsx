@@ -6,29 +6,31 @@
 // On completion, saves the activity locally and navigates to activity detail.
 // ============================================================================
 
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  Alert,
   StatusBar,
+  Alert,
 } from "react-native";
 import { useRouter, Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ArrowLeft, Play, Square, MapPin } from "lucide-react-native";
+import { ArrowLeft, Play, Square, MapPin, StopCircle } from "lucide-react-native";
 import { useTranslation } from "react-i18next";
 import { theme } from "@/src/constants/theme";
 import { useFreeRun } from "@/src/hooks/useFreeRun";
 import { FreeRunHUD } from "@/src/components/free-run/FreeRunHUD";
 import { RaceMap } from "@/src/components/live-race/RaceMap";
+import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
 
 export default function FreeRunScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { t } = useTranslation();
+  const [showStopModal, setShowStopModal] = useState(false);
 
   const {
     gpsPermission,
@@ -68,24 +70,20 @@ export default function FreeRunScreen() {
   }, [gpsPermission, startRun, t]);
 
   const handleStop = useCallback(() => {
-    Alert.alert(t("freeRun.confirmStop"), t("freeRun.confirmStopDescription"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("freeRun.stopRun"),
-        style: "destructive",
-        onPress: () => {
-          void stopRun().then((activityId) => {
-            if (activityId) {
-              router.replace({
-                pathname: "/activity-detail",
-                params: { activityId },
-              });
-            }
-          });
-        },
-      },
-    ]);
-  }, [stopRun, router, t]);
+    setShowStopModal(true);
+  }, []);
+
+  const handleConfirmStop = useCallback(() => {
+    setShowStopModal(false);
+    void stopRun().then((activityId) => {
+      if (activityId) {
+        router.replace({
+          pathname: "/save-activity",
+          params: { activityId },
+        });
+      }
+    });
+  }, [stopRun, router]);
 
   const handleBack = useCallback(() => {
     // Allow navigating back freely — the run continues in the background
@@ -96,7 +94,7 @@ export default function FreeRunScreen() {
   const handleViewActivity = useCallback(() => {
     if (savedActivityId) {
       router.replace({
-        pathname: "/activity-detail",
+        pathname: "/save-activity",
         params: { activityId: savedActivityId },
       });
     }
@@ -109,7 +107,7 @@ export default function FreeRunScreen() {
           style={[styles.fab, styles.fabStart]}
           onPress={handleStart}
         >
-          <Play size={22} color="#fff" />
+          <Play size={18} color="#fff" />
           <Text style={styles.fabText}>{t("freeRun.startRun")}</Text>
         </TouchableOpacity>
       );
@@ -147,8 +145,28 @@ export default function FreeRunScreen() {
       <Stack.Screen options={{ headerShown: false, gestureEnabled: true }} />
       <StatusBar barStyle="light-content" />
 
+      <ConfirmModal
+        visible={showStopModal}
+        onClose={() => setShowStopModal(false)}
+        title={t("freeRun.confirmStop")}
+        message={t("freeRun.confirmStopDescription")}
+        icon={<StopCircle size={40} color={theme.colors.error} />}
+        actions={[
+          {
+            label: t("common.cancel"),
+            variant: "outline",
+            onPress: () => setShowStopModal(false),
+          },
+          {
+            label: t("freeRun.stopRun"),
+            variant: "destructive",
+            onPress: handleConfirmStop,
+          },
+        ]}
+      />
+
       <View style={[styles.container, { paddingTop: insets.top }]}>
-        {/* Header */}
+        {/* Header — same pattern as live-race */}
         <View style={styles.header}>
           <TouchableOpacity onPress={handleBack} style={styles.backBtn}>
             <ArrowLeft size={22} color={theme.colors.text} />
@@ -172,7 +190,7 @@ export default function FreeRunScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
         >
-          {/* Map — shows the recorded track in real time */}
+          {/* Map Section — same 320px height as live-race */}
           <RaceMap
             routePoints={trackPoints}
             checkpoints={[]}
@@ -183,7 +201,7 @@ export default function FreeRunScreen() {
             followUser={gpsActive}
           />
 
-          {/* Stats HUD */}
+          {/* Stats HUD — same card style as RaceHUD */}
           <FreeRunHUD stats={stats} finished={finished} />
 
           {/* GPS permission warning */}
@@ -195,10 +213,11 @@ export default function FreeRunScreen() {
             </View>
           )}
 
+          {/* Spacer for FAB */}
           <View style={{ height: 100 }} />
         </ScrollView>
 
-        {/* FAB */}
+        {/* Floating action button — same pattern as live-race */}
         <View
           style={[styles.fabContainer, { paddingBottom: insets.bottom + 12 }]}
         >
@@ -253,7 +272,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    paddingBottom: 20,
+    paddingBottom: 0,
   },
   permissionBanner: {
     marginHorizontal: 12,

@@ -429,6 +429,12 @@
         "updateError": "Fehler beim Aktualisieren des Gewinnspiels.",
         "drawError": "Fehler bei der Ziehung.",
         "deleteError": "Fehler beim Löschen des Gewinnspiels."
+      },
+      "platform": {
+        "ALL": "Alle Plattformen",
+        "MOBILE": "Mobile App",
+        "ANDROID": "Nur Android",
+        "IOS": "Nur iOS"
       }
     },
     "notes": {

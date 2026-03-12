@@ -382,7 +382,8 @@
         "variant": "Variante (opzionale)",
         "variantPlaceholder": "Seleziona una variante",
         "variantAll": "Tutte le varianti",
-        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica."
+        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica.",
+        "platform": "Piattaforma"
       },
       "form": {
         "title": "Titolo",
@@ -425,6 +426,12 @@
         "updateError": "Impossibile aggiornare il sorteggio.",
         "drawError": "Impossibile eseguire il sorteggio.",
         "deleteError": "Impossibile eliminare il sorteggio."
+      },
+      "platform": {
+        "ALL": "Tutte le Piattaforme",
+        "MOBILE": "App Mobile",
+        "ANDROID": "Solo Android",
+        "IOS": "Solo iOS"
       }
     },
     "notes": {

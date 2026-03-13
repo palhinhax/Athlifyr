@@ -8,7 +8,7 @@ interface RouteParams {
 
 async function requireAdmin() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (!session?.user || session?.user?.role !== "ADMIN") {
     return null;
   }
   return session;

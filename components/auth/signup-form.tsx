@@ -59,7 +59,7 @@ export function SignUpForm() {
     return t("passwordStrength.strong");
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 

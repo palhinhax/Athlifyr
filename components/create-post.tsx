@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import Image from "next/image";
@@ -157,7 +157,7 @@ export function CreatePost({
     }
   };
 
-  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!content.trim()) {

@@ -10,7 +10,7 @@ const suggestionSchema = z.object({
   location: z.string().max(200).optional(),
   date: z.string().max(100).optional(),
   sportType: z.string().max(50).optional(),
-  url: z.string().url().max(500).optional().or(z.literal("")),
+  url: z.url().max(500).optional().or(z.literal("")),
 });
 
 function getResendClient() {
@@ -37,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     if (!parsed.success) {
       return NextResponse.json(
-        { error: "Invalid data", details: parsed.error.flatten() },
+        { error: "Invalid data", details: z.flattenError(parsed.error) },
         { status: 400 }
       );
     }

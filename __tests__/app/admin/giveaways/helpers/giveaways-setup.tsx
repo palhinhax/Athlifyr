@@ -188,38 +188,52 @@ jest.mock("@/components/ui/alert-dialog", () => ({
   ),
 }));
 
-jest.mock("@/components/ui/select", () => ({
-  Select: ({
-    children,
-    onValueChange: _onValueChange,
-    value,
-  }: {
-    children: React.ReactNode;
-    onValueChange?: (v: string) => void;
-    value?: string;
-    disabled?: boolean;
-  }) => (
-    <div data-testid="select" data-value={value}>
-      {children}
-    </div>
-  ),
-  SelectTrigger: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SelectValue: ({ placeholder }: { placeholder?: string }) => (
-    <span>{placeholder}</span>
-  ),
-  SelectContent: ({ children }: { children: React.ReactNode }) => (
-    <div>{children}</div>
-  ),
-  SelectItem: ({
-    children,
-    value,
-  }: {
-    children: React.ReactNode;
-    value: string;
-  }) => <div data-value={value}>{children}</div>,
-}));
+jest.mock("@/components/ui/select", () => {
+  const SelectContext = React.createContext<((v: string) => void) | undefined>(
+    undefined
+  );
+  return {
+    Select: ({
+      children,
+      onValueChange,
+      value,
+    }: {
+      children: React.ReactNode;
+      onValueChange?: (v: string) => void;
+      value?: string;
+      disabled?: boolean;
+    }) => (
+      <SelectContext.Provider value={onValueChange}>
+        <div data-testid="select" data-value={value}>
+          {children}
+        </div>
+      </SelectContext.Provider>
+    ),
+    SelectTrigger: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+    SelectValue: ({ placeholder }: { placeholder?: string }) => (
+      <span>{placeholder}</span>
+    ),
+    SelectContent: ({ children }: { children: React.ReactNode }) => (
+      <div>{children}</div>
+    ),
+    SelectItem: ({
+      children,
+      value,
+    }: {
+      children: React.ReactNode;
+      value: string;
+    }) => {
+      const onChange = React.useContext(SelectContext);
+      return (
+        <div data-value={value} onClick={() => onChange?.(value)}>
+          {children}
+        </div>
+      );
+    },
+  };
+});
 
 // ── Shared Fixtures ──────────────────────────────────────────────────────────
 

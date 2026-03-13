@@ -922,13 +922,15 @@ export default function AdminGiveawaysPage() {
                         </Button>
                       )}
                   </div>
-                  {isLoadingParticipants ? (
+                  {isLoadingParticipants && (
                     <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : participants.length === 0 ? (
+                  )}
+                  {!isLoadingParticipants && participants.length === 0 && (
                     <p className="text-sm text-muted-foreground">
                       {t("detail.noParticipants")}
                     </p>
-                  ) : (
+                  )}
+                  {!isLoadingParticipants && participants.length > 0 && (
                     <div className="max-h-48 overflow-y-auto rounded-md border">
                       {participants.map((p) => (
                         <div

@@ -61,11 +61,10 @@ export function AdminEventSuggestions() {
       });
       if (!res.ok) return;
       setNotes((prev) => prev.map((n) => (n.id === id ? { ...n, status } : n)));
+      const wasPending = notes.find((n) => n.id === id)?.status === "pending";
+      const delta = wasPending ? 1 : 0;
       setPendingCount((prev) =>
-        status === "pending"
-          ? prev + 1
-          : prev -
-            (notes.find((n) => n.id === id)?.status === "pending" ? 1 : 0)
+        status === "pending" ? prev + 1 : prev - delta
       );
     } catch {
       // silently fail

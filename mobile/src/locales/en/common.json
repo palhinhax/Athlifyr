@@ -24,6 +24,27 @@
     "OTHER": "Other"
   },
   "events": {
+    "suggest": {
+      "title": "Suggest an Event",
+      "description": "Know of a sports event that isn't on Athlifyr yet? Let us know and we'll add it!",
+      "eventName": "Event name",
+      "eventNamePlaceholder": "e.g. Trail Serra da Estrela 2026",
+      "date": "Date",
+      "sport": "Sport",
+      "sportPlaceholder": "Select...",
+      "location": "Location",
+      "locationPlaceholder": "City or region",
+      "website": "Website",
+      "websitePlaceholder": "https://...",
+      "message": "Additional details",
+      "messagePlaceholder": "Any other details about the event (distances, registration link, etc.)",
+      "submit": "Submit Suggestion",
+      "thankYouTitle": "Thank you!",
+      "thankYouDesc": "Your suggestion has been submitted. Our team will review it and add the event as soon as possible.",
+      "close": "Close",
+      "errorSubmitting": "Failed to submit the suggestion. Please try again.",
+      "loginRequired": "Sign in to suggest an event"
+    },
     "title": "Events",
     "description": "Discover athletic events near you",
     "noEvents": "No events found",
@@ -86,6 +107,7 @@
       "resultsCount": "{{count}} events found",
       "dateRange": "Date Range"
     },
+    "featured": "Featured",
     "giveaway": {
       "badge": "Giveaway",
       "title": "Giveaway",

@@ -4,7 +4,7 @@ import { useTranslations, useLocale } from "next-intl";
 import { EventsFilters } from "@/components/events-filters";
 import { EventCard } from "@/components/event-card";
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { Loader2, Map, LayoutGrid, Search } from "lucide-react";
+import { Loader2, Map, LayoutGrid, Search, Plus } from "lucide-react";
 import { calculateDistance } from "@/lib/geolocation";
 import type { EventsFilters as EventsFiltersType } from "@/components/events-filters";
 import type { Event, EventVariant } from "@prisma/client";
@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { HeroBackground } from "@/components/hero-background";
 import { DateRangeSlider } from "@/components/date-range-slider";
+import { SuggestEventDialog } from "@/components/suggest-event-dialog";
+import { useSession } from "next-auth/react";
 import dynamic from "next/dynamic";
 
 // Event hero images
@@ -53,7 +55,9 @@ interface PaginationInfo {
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
   const locale = useLocale();
+  const { data: session } = useSession();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [isSuggestOpen, setIsSuggestOpen] = useState(false);
   const [filters, setFilters] = useState<EventsFiltersType>({
     sports: [],
     distanceRadius: null,
@@ -324,6 +328,18 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               <Map className="h-4 w-4 md:mr-2" />
               <span className="hidden md:inline">{t("viewMap")}</span>
             </Button>
+            {session?.user && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => setIsSuggestOpen(true)}
+                className="px-3 md:px-4"
+                title={t("suggest.title")}
+              >
+                <Plus className="h-4 w-4 md:mr-2" />
+                <span className="hidden md:inline">{t("suggest.button")}</span>
+              </Button>
+            )}
           </div>
         </div>
 
@@ -413,6 +429,11 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           )}
         </div>
       </section>
+
+      <SuggestEventDialog
+        open={isSuggestOpen}
+        onOpenChange={setIsSuggestOpen}
+      />
     </div>
   );
 }

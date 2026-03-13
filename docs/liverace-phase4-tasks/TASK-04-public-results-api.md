@@ -75,7 +75,10 @@ app/api/events/[id]/results/public/route.ts
 
 ```typescript
 const page = Math.max(1, parseInt(searchParams.get("page") ?? "1"));
-const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") ?? "50")));
+const limit = Math.min(
+  100,
+  Math.max(1, parseInt(searchParams.get("limit") ?? "50"))
+);
 const skip = (page - 1) * limit;
 
 const where = {
@@ -84,8 +87,12 @@ const where = {
   ...(variantId ? { variantId } : {}),
   ...(status === "DNF" ? { notes: "DNF" } : {}),
   ...(status === "DSQ" ? { notes: "DSQ" } : {}),
-  ...(status === "FINISHED" ? { notes: { not: "DNF", notIn: ["DNF", "DSQ"] } } : {}),
-  ...(search ? { user: { name: { contains: search, mode: "insensitive" } } } : {}),
+  ...(status === "FINISHED"
+    ? { notes: { not: "DNF", notIn: ["DNF", "DSQ"] } }
+    : {}),
+  ...(search
+    ? { user: { name: { contains: search, mode: "insensitive" } } }
+    : {}),
 };
 
 const [results, total] = await Promise.all([

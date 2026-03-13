@@ -170,7 +170,10 @@
         "uploadImage": "Carica Immagine",
         "saving": "Salvataggio...",
         "saveChanges": "Salva Modifiche"
-      }
+      },
+      "featuredBadge": "In evidenza",
+      "featuredToggleTitle": "Evento in evidenza",
+      "featuredToggleDescription": "Appare in cima alla lista degli eventi nell'app mobile"
     },
     "posts": {
       "toast": {
@@ -407,7 +410,17 @@
         "noWinners": "Ancora nessun vincitore",
         "noParticipants": "Ancora nessun partecipante",
         "rank": "Posizione",
-        "ticket": "Biglietto"
+        "ticket": "Biglietto",
+        "addParticipant": "Aggiungi partecipante",
+        "searchUserDescription": "Cerca un utente per nome o email per aggiungerlo al sorteggio.",
+        "searchPlaceholder": "Cerca per nome o email...",
+        "alreadyIn": "Già iscritto",
+        "add": "Aggiungi",
+        "noUsersFound": "Nessun utente trovato",
+        "confirmRemoveTitle": "Rimuovi partecipante",
+        "confirmRemoveDesc": "Sei sicuro di voler rimuovere {name} da questo sorteggio?",
+        "confirmRemove": "Rimuovi",
+        "cancel": "Annulla"
       },
       "toast": {
         "created": "Sorteggio creato",

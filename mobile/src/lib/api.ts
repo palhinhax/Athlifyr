@@ -63,12 +63,15 @@ api.interceptors.request.use(
       // Add Play Integrity token for protected (write) requests
       const method = (config.method || "get").toLowerCase();
       if (PROTECTED_METHODS.has(method)) {
+        // Always send platform identifier so the server knows this is a mobile client
+        config.headers["x-client-platform"] =
+          Platform.OS === "ios" ? "ios" : "android";
+
         try {
           const fullUrl = `${config.baseURL || ""}${config.url || ""}`;
           const integrityToken = await getIntegrityToken(method, fullUrl);
           if (integrityToken) {
             config.headers["x-app-integrity"] = integrityToken;
-            config.headers["x-client-platform"] = "android";
           }
         } catch (integrityError) {
           // Don't block request if integrity token fails

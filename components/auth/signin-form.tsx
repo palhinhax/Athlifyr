@@ -4,6 +4,7 @@ import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +57,7 @@ interface SignInFormProps {
 }
 
 export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
+  const t = useTranslations("auth.signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -80,24 +82,24 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
 
       if (result?.error) {
         toast({
-          title: "Erro ao fazer login",
-          description: "Não foi possível entrar com esta conta de demo",
+          title: t("errors.loginError"),
+          description: t("errors.demoLoginFailed"),
           variant: "destructive",
         });
       } else {
         // Clear cached data so it refreshes after login
         sessionStorage.removeItem("activeVenues");
         toast({
-          title: `Bem-vindo, ${user.name}!`,
-          description: `A entrar como ${user.role}...`,
+          title: t("toast.welcome", { name: user.name }),
+          description: t("toast.enteringAs", { role: user.role }),
         });
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
       toast({
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
+        title: t("errors.error"),
+        description: t("errors.somethingWentWrong"),
         variant: "destructive",
       });
     } finally {
@@ -118,24 +120,24 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
 
       if (result?.error) {
         toast({
-          title: "Erro ao fazer login",
-          description: "Email ou password incorretos",
+          title: t("errors.loginError"),
+          description: t("errors.wrongCredentials"),
           variant: "destructive",
         });
       } else {
         // Clear cached data so it refreshes after login
         sessionStorage.removeItem("activeVenues");
         toast({
-          title: "Login efetuado",
-          description: "Bem-vindo de volta!",
+          title: t("toast.loginSuccess"),
+          description: t("toast.welcomeBack"),
         });
         router.push(callbackUrl);
         router.refresh();
       }
     } catch {
       toast({
-        title: "Erro",
-        description: "Algo correu mal. Tenta novamente.",
+        title: t("errors.error"),
+        description: t("errors.somethingWentWrong"),
         variant: "destructive",
       });
     } finally {
@@ -148,8 +150,8 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
       await signInWithGoogle(callbackUrl);
     } catch {
       toast({
-        title: "Erro",
-        description: "Erro ao fazer login com Google",
+        title: t("errors.error"),
+        description: t("errors.googleSignIn"),
         variant: "destructive",
       });
     }
@@ -158,10 +160,8 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Entrar</CardTitle>
-        <CardDescription>
-          Entra na tua conta para aceder a todas as funcionalidades
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Demo Users Quick Login */}
@@ -169,7 +169,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           <>
             <div className="rounded-lg border border-dashed border-primary/50 bg-primary/5 p-4">
               <p className="mb-3 text-center text-sm font-medium text-primary">
-                🚀 Acesso Rápido Demo
+                🚀 {t("demo.quickAccess")}
               </p>
               <div className="grid grid-cols-3 gap-2">
                 {(
@@ -211,7 +211,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-background px-2 text-muted-foreground">
-                  Ou usa as tuas credenciais
+                  {t("demo.orUseCredentials")}
                 </span>
               </div>
             </div>
@@ -243,7 +243,7 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continuar com Google
+          {t("continueWithGoogle")}
         </Button>
 
         <div className="relative">
@@ -252,19 +252,19 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Ou continua com email
+              {t("orContinueWithEmail")}
             </span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="o-teu-email@exemplo.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -274,12 +274,12 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           </div>
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("password")}</Label>
               <Link
                 href="/auth/forgot-password"
                 className="text-sm text-primary hover:underline"
               >
-                Esqueceste a password?
+                {t("forgotPassword")}
               </Link>
             </div>
             <div className="relative">
@@ -314,12 +314,13 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />A entrar...
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {t("signingIn")}
               </>
             ) : (
               <>
                 <LogIn className="mr-2 h-4 w-4" />
-                Entrar
+                {t("title")}
               </>
             )}
           </Button>
@@ -327,12 +328,12 @@ export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
-          Não tens conta?{" "}
+          {t("noAccount")}{" "}
           <Link
             href={`/auth/signup${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="text-primary hover:underline"
           >
-            Criar conta
+            {t("createAccount")}
           </Link>
         </p>
       </CardFooter>

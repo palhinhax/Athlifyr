@@ -1,10 +1,20 @@
 import { SignUpForm } from "@/components/auth/signup-form";
 import { AuthVideoBackground } from "@/components/auth/auth-video-background";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-  title: "Criar Conta - Athlifyr",
-  description: "Cria a tua conta Athlifyr",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: "auth.signUp.meta" });
+
+  return {
+    title: t("title"),
+    description: t("description"),
+  };
+}
 
 export default function SignUpPage() {
   return (

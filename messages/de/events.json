@@ -1,5 +1,25 @@
 {
   "events": {
+    "suggest": {
+      "button": "Event vorschlagen",
+      "title": "Event vorschlagen",
+      "description": "Kennst du ein Sportevent, das noch nicht auf Athlifyr ist? Sag uns Bescheid und wir fügen es hinzu!",
+      "eventName": "Name des Events",
+      "eventNamePlaceholder": "z.B. Trail Serra da Estrela 2026",
+      "date": "Datum",
+      "sport": "Sportart",
+      "sportPlaceholder": "Auswählen...",
+      "location": "Ort",
+      "locationPlaceholder": "Stadt oder Region",
+      "website": "Webseite",
+      "websitePlaceholder": "https://...",
+      "message": "Weitere Details",
+      "messagePlaceholder": "Weitere Details zum Event (Distanzen, Anmeldelink, etc.)",
+      "submit": "Vorschlag senden",
+      "thankYouTitle": "Danke!",
+      "thankYouDesc": "Dein Vorschlag wurde gesendet. Unser Team wird ihn prüfen und das Event so schnell wie möglich hinzufügen.",
+      "close": "Schließen"
+    },
     "title": "Alle Veranstaltungen",
     "description": "Entdecken Sie die besten Sportveranstaltungen in Ihrer Nähe",
     "metaTitle": "Alle Veranstaltungen - Athlifyr",

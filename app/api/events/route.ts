@@ -205,9 +205,7 @@ export async function GET(request: NextRequest) {
       },
       orderBy: search
         ? undefined
-        : {
-            startDate: "asc",
-          },
+        : [{ isFeatured: "desc" }, { startDate: "asc" }],
       skip,
       take: pageSize,
     });

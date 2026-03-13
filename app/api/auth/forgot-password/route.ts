@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
-import crypto from "crypto";
+import crypto from "node:crypto";
 import {
   getPasswordResetEmailHtml,
   getPasswordResetEmailText,

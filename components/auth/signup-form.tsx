@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useGoogleAuth } from "@/hooks/use-google-auth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,7 @@ const calculatePasswordStrength = (password: string): number => {
 
 export function SignUpForm() {
   const locale = useLocale();
+  const t = useTranslations("auth.signUp");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,12 +54,12 @@ export function SignUpForm() {
   };
 
   const getStrengthText = () => {
-    if (passwordStrength < 40) return "Fraca";
-    if (passwordStrength < 70) return "Média";
-    return "Forte";
+    if (passwordStrength < 40) return t("passwordStrength.weak");
+    if (passwordStrength < 70) return t("passwordStrength.medium");
+    return t("passwordStrength.strong");
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
 
@@ -82,7 +83,7 @@ export function SignUpForm() {
           method: "email",
           error: data.error || "unknown",
         });
-        throw new Error(data.error || "Erro ao criar conta");
+        throw new Error(data.error || t("errors.createAccount"));
       }
 
       // Track successful signup
@@ -91,8 +92,8 @@ export function SignUpForm() {
       });
 
       toast({
-        title: "Conta criada com sucesso!",
-        description: "Agora podes fazer login",
+        title: t("toast.accountCreated"),
+        description: t("toast.canNowLogin"),
       });
 
       router.push(
@@ -100,8 +101,11 @@ export function SignUpForm() {
       );
     } catch (error) {
       toast({
-        title: "Erro ao criar conta",
-        description: error instanceof Error ? error.message : "Algo correu mal",
+        title: t("errors.createAccount"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("errors.somethingWentWrong"),
         variant: "destructive",
       });
     } finally {
@@ -125,8 +129,8 @@ export function SignUpForm() {
       });
 
       toast({
-        title: "Erro",
-        description: "Erro ao fazer login com Google",
+        title: t("errors.error"),
+        description: t("errors.googleSignIn"),
         variant: "destructive",
       });
     }
@@ -135,10 +139,8 @@ export function SignUpForm() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle>Criar Conta</CardTitle>
-        <CardDescription>
-          Cria a tua conta para começar a participar em eventos
-        </CardDescription>
+        <CardTitle>{t("title")}</CardTitle>
+        <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <Button
@@ -166,7 +168,7 @@ export function SignUpForm() {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          Continuar com Google
+          {t("continueWithGoogle")}
         </Button>
 
         <div className="relative">
@@ -175,19 +177,19 @@ export function SignUpForm() {
           </div>
           <div className="relative flex justify-center text-xs uppercase">
             <span className="bg-background px-2 text-muted-foreground">
-              Ou cria conta com email
+              {t("orCreateWithEmail")}
             </span>
           </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">Nome</Label>
+            <Label htmlFor="name">{t("name")}</Label>
             <Input
               id="name"
               name="name"
               type="text"
-              placeholder="O teu nome"
+              placeholder={t("namePlaceholder")}
               value={name}
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
@@ -196,12 +198,12 @@ export function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="email">{t("email")}</Label>
             <Input
               id="email"
               name="email"
               type="email"
-              placeholder="o-teu-email@exemplo.com"
+              placeholder={t("emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
@@ -210,7 +212,7 @@ export function SignUpForm() {
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">Password</Label>
+            <Label htmlFor="password">{t("password")}</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -257,25 +259,25 @@ export function SignUpForm() {
                 </div>
                 <p className="text-xs text-muted-foreground">
                   {passwordStrength < 70
-                    ? "Dica: Usa letras maiúsculas, minúsculas, números e símbolos"
-                    : "Password forte! ✓"}
+                    ? t("passwordStrength.hint")
+                    : t("passwordStrength.strongMessage")}
                 </p>
               </div>
             )}
           </div>
           <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? "A criar conta..." : "Criar Conta"}
+            {isLoading ? t("creating") : t("title")}
           </Button>
         </form>
       </CardContent>
       <CardFooter className="flex flex-col gap-4">
         <p className="text-center text-sm text-muted-foreground">
-          Já tens conta?{" "}
+          {t("alreadyHaveAccount")}{" "}
           <Link
             href={`/auth/signin${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
             className="text-primary hover:underline"
           >
-            Fazer login
+            {t("signIn")}
           </Link>
         </p>
       </CardFooter>

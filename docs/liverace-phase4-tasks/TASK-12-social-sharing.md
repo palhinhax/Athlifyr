@@ -62,7 +62,10 @@ event information.
 - [ ] Result page has proper Open Graph meta tags:
   ```html
   <meta property="og:title" content="John finished Trail 32km in 03:45:21!" />
-  <meta property="og:description" content="12th of 156 — Trail Manuelino 2026" />
+  <meta
+    property="og:description"
+    content="12th of 156 — Trail Manuelino 2026"
+  />
   <meta property="og:image" content="/api/og/result?id=..." />
   ```
 - [ ] Twitter Card meta tags included

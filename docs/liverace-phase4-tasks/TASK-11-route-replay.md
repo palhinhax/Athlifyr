@@ -69,7 +69,7 @@ components/race-route-map.tsx
 
 ```typescript
 interface RaceRouteMapProps {
-  routePoints: [number, number][];  // [lat, lng] pairs
+  routePoints: [number, number][]; // [lat, lng] pairs
   checkpoints: {
     name: string;
     type: "START" | "FINISH" | "INTERMEDIATE";

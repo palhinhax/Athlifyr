@@ -33,6 +33,8 @@ import { SportType } from "@prisma/client";
 import { formatDateShort } from "@/lib/event-utils";
 import { useTranslations } from "next-intl";
 import { SportBadge } from "@/components/sport-badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AdminEventSuggestions } from "@/components/admin-event-suggestions";
 
 interface Event {
   id: string;
@@ -451,629 +453,671 @@ export default function AdminEventsPage() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold">Gerir Eventos</h1>
-            <p className="text-muted-foreground">
-              {totalCount} {totalCount === 1 ? "evento" : "eventos"} no total
-              {(() => {
-                const incompleteCount = events.filter(
-                  (e) => getMissingFields(e).length > 0
-                ).length;
-                if (incompleteCount > 0) {
-                  return (
-                    <span className="ml-2 text-amber-600 dark:text-amber-400">
-                      • {incompleteCount} com campos em falta
-                    </span>
-                  );
-                }
-                return null;
-              })()}
-            </p>
-          </div>
+        <h1 className="mb-6 text-3xl font-bold">Gerir Eventos</h1>
 
-          <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2">
-                <Plus className="h-4 w-4" />
-                Novo Evento
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
-              <DialogHeader>
-                <DialogTitle>Criar Novo Evento</DialogTitle>
-                <DialogDescription>
-                  Preenche os detalhes do novo evento.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="title">Título *</Label>
-                  <Input
-                    id="title"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleInputChange}
-                    placeholder="Nome do evento"
-                  />
-                </div>
+        <Tabs defaultValue="events" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="events">Eventos</TabsTrigger>
+            <TabsTrigger value="suggestions">Sugestões</TabsTrigger>
+          </TabsList>
 
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Descrição</Label>
-                  <textarea
-                    id="description"
-                    name="description"
-                    value={formData.description}
-                    onChange={handleInputChange}
-                    placeholder="Descrição do evento..."
-                    className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Modalidades *</Label>
-                  <p className="text-xs text-muted-foreground">
-                    Seleciona uma ou mais modalidades
-                  </p>
-                  <div className="grid grid-cols-2 gap-3 rounded-md border border-input p-3">
-                    {Object.values(SportType).map((type) => (
-                      <label
-                        key={type}
-                        className="flex cursor-pointer items-center space-x-2 rounded-md p-2 hover:bg-muted"
-                      >
-                        <input
-                          type="checkbox"
-                          checked={formData.sportTypes.includes(type)}
-                          onChange={() => toggleSportType(type)}
-                          className="h-4 w-4 rounded border-gray-300"
-                        />
-                        <span className="text-sm">{tSports(type)}</span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="startDate">Data de Início *</Label>
-                    <Input
-                      id="startDate"
-                      name="startDate"
-                      type="date"
-                      value={formData.startDate}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="endDate">Data de Fim</Label>
-                    <Input
-                      id="endDate"
-                      name="endDate"
-                      type="date"
-                      value={formData.endDate}
-                      onChange={handleInputChange}
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="city">Cidade *</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleInputChange}
-                      placeholder="Lisboa"
-                    />
-                  </div>
-                  <div className="grid gap-2">
-                    <Label htmlFor="country">País</Label>
-                    <Input
-                      id="country"
-                      name="country"
-                      value={formData.country}
-                      onChange={handleInputChange}
-                      placeholder="Portugal"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label>Imagem do Evento</Label>
-                  {formData.imageUrl && (
-                    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-                      <Image
-                        src={formData.imageUrl}
-                        alt="Preview"
-                        fill
-                        className="object-cover"
-                      />
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setFormData((prev) => ({ ...prev, imageUrl: "" }))
-                        }
-                        className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-white hover:bg-destructive/90"
-                      >
-                        <X className="h-4 w-4" />
-                      </button>
-                    </div>
-                  )}
-                  <div className="flex gap-2">
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      disabled={isUploading}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                      className="flex-1"
-                    >
-                      {isUploading ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <ImagePlus className="mr-2 h-4 w-4" />
-                      )}
-                      {formData.imageUrl ? "Alterar imagem" : "Carregar imagem"}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="externalUrl">URL Externo (inscrições)</Label>
-                  <Input
-                    id="externalUrl"
-                    name="externalUrl"
-                    value={formData.externalUrl}
-                    onChange={handleInputChange}
-                    placeholder="https://..."
-                  />
-                </div>
-
-                <div className="grid gap-2">
-                  <Label htmlFor="stravaRouteEmbed">
-                    Strava Route Embed Code
-                  </Label>
-                  <textarea
-                    id="stravaRouteEmbed"
-                    name="stravaRouteEmbed"
-                    value={formData.stravaRouteEmbed}
-                    onChange={handleInputChange}
-                    placeholder='<iframe height="405" width="590" frameborder="0" allowtransparency="true" scrolling="no" src="https://www.strava.com/routes/..."></iframe>'
-                    className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Cole o código de embed do Strava Route (iframe completo)
-                  </p>
-                </div>
-
-                {/* Variants */}
-                <div className="grid gap-2">
-                  <div className="flex items-center justify-between">
-                    <Label>Variantes / Distâncias</Label>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={addVariant}
-                    >
-                      <Plus className="mr-1 h-3 w-3" />
-                      Adicionar
-                    </Button>
-                  </div>
-                  <div className="space-y-3">
-                    {variants.map((variant, index) => (
-                      <div key={index} className="rounded-lg border p-3">
-                        <div className="flex items-center gap-2">
-                          <Input
-                            placeholder="Nome (ex: 21km, Singles Pro)"
-                            value={variant.name}
-                            onChange={(e) =>
-                              handleVariantChange(index, "name", e.target.value)
-                            }
-                            className="flex-1"
-                          />
-                          <Input
-                            placeholder="km"
-                            value={variant.distanceKm}
-                            onChange={(e) =>
-                              handleVariantChange(
-                                index,
-                                "distanceKm",
-                                e.target.value
-                              )
-                            }
-                            className="w-20"
-                            type="number"
-                          />
-                          {variants.length > 1 && (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => removeVariant(index)}
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          )}
-                        </div>
-                        <div className="mt-2 flex items-center gap-2">
-                          <div className="flex-1">
-                            <Label className="text-xs text-muted-foreground">
-                              Data (opcional)
-                            </Label>
-                            <Input
-                              type="date"
-                              value={variant.startDate}
-                              onChange={(e) =>
-                                handleVariantChange(
-                                  index,
-                                  "startDate",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </div>
-                          <div className="w-24">
-                            <Label className="text-xs text-muted-foreground">
-                              Hora (opcional)
-                            </Label>
-                            <Input
-                              type="time"
-                              value={variant.startTime}
-                              onChange={(e) =>
-                                handleVariantChange(
-                                  index,
-                                  "startTime",
-                                  e.target.value
-                                )
-                              }
-                            />
-                          </div>
-                        </div>
-
-                        {/* Triathlon Segments - Only show for TRIATHLON sport type */}
-                        {formData.sportTypes.includes(SportType.TRIATHLON) && (
-                          <div className="mt-3 space-y-2 border-t pt-3">
-                            <div className="flex items-center justify-between">
-                              <Label className="text-sm font-medium">
-                                Segmentos de Triatlo
-                              </Label>
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() => addTriathlonSegment(index)}
-                              >
-                                <Plus className="mr-1 h-3 w-3" />
-                                Adicionar Segmento
-                              </Button>
-                            </div>
-                            {variant.triathlonSegments &&
-                              variant.triathlonSegments.length > 0 && (
-                                <div className="space-y-2">
-                                  {variant.triathlonSegments.map(
-                                    (segment, segIndex) => (
-                                      <div
-                                        key={segIndex}
-                                        className="flex items-center gap-2 rounded border bg-muted/50 p-2"
-                                      >
-                                        <select
-                                          value={segment.segmentType}
-                                          onChange={(e) =>
-                                            updateTriathlonSegment(
-                                              index,
-                                              segIndex,
-                                              "segmentType",
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-24 rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                        >
-                                          <option value="SWIM">Natação</option>
-                                          <option value="BIKE">Ciclismo</option>
-                                          <option value="RUN">Corrida</option>
-                                        </select>
-                                        <Input
-                                          placeholder="km"
-                                          value={segment.distanceKm}
-                                          onChange={(e) =>
-                                            updateTriathlonSegment(
-                                              index,
-                                              segIndex,
-                                              "distanceKm",
-                                              e.target.value
-                                            )
-                                          }
-                                          className="w-20 text-xs"
-                                          type="number"
-                                          step="0.1"
-                                        />
-                                        <select
-                                          value={segment.terrainType}
-                                          onChange={(e) =>
-                                            updateTriathlonSegment(
-                                              index,
-                                              segIndex,
-                                              "terrainType",
-                                              e.target.value
-                                            )
-                                          }
-                                          className="flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
-                                        >
-                                          <option value="POOL">Piscina</option>
-                                          <option value="OPEN_WATER">
-                                            Águas Abertas
-                                          </option>
-                                          <option value="ROAD">Estrada</option>
-                                          <option value="TRAIL">Trail</option>
-                                          <option value="MIXED">Misto</option>
-                                        </select>
-                                        <Button
-                                          type="button"
-                                          variant="ghost"
-                                          size="icon"
-                                          className="h-8 w-8"
-                                          onClick={() =>
-                                            removeTriathlonSegment(
-                                              index,
-                                              segIndex
-                                            )
-                                          }
-                                        >
-                                          <X className="h-3 w-3" />
-                                        </Button>
-                                      </div>
-                                    )
-                                  )}
-                                </div>
-                              )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
+          <TabsContent value="events">
+            {/* Header */}
+            <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-muted-foreground">
+                  {totalCount} {totalCount === 1 ? "evento" : "eventos"} no
+                  total
+                  {(() => {
+                    const incompleteCount = events.filter(
+                      (e) => getMissingFields(e).length > 0
+                    ).length;
+                    if (incompleteCount > 0) {
+                      return (
+                        <span className="ml-2 text-amber-600 dark:text-amber-400">
+                          • {incompleteCount} com campos em falta
+                        </span>
+                      );
+                    }
+                    return null;
+                  })()}
+                </p>
               </div>
-              <DialogFooter>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsCreateOpen(false);
-                    resetForm();
-                  }}
-                  disabled={isSubmitting}
-                >
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreate} disabled={isSubmitting}>
-                  {isSubmitting ? "A criar..." : "Criar Evento"}
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </div>
 
-        {/* Search and Filters */}
-        <div className="mb-6 space-y-3">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Pesquisar eventos..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
+              <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <Plus className="h-4 w-4" />
+                    Novo Evento
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Criar Novo Evento</DialogTitle>
+                    <DialogDescription>
+                      Preenche os detalhes do novo evento.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid gap-2">
+                      <Label htmlFor="title">Título *</Label>
+                      <Input
+                        id="title"
+                        name="title"
+                        value={formData.title}
+                        onChange={handleInputChange}
+                        placeholder="Nome do evento"
+                      />
+                    </div>
 
-          {/* Incomplete Events Filter */}
-          <div className="flex items-center space-x-2">
-            <input
-              type="checkbox"
-              id="show-incomplete"
-              checked={showIncompleteOnly}
-              onChange={(e) => {
-                setShowIncompleteOnly(e.target.checked);
-                setCurrentPage(1); // Reset to first page when filter changes
-              }}
-              className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
-            />
-            <label
-              htmlFor="show-incomplete"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-            >
-              Mostrar apenas eventos com campos em falta
-            </label>
-          </div>
-        </div>
+                    <div className="grid gap-2">
+                      <Label htmlFor="description">Descrição</Label>
+                      <textarea
+                        id="description"
+                        name="description"
+                        value={formData.description}
+                        onChange={handleInputChange}
+                        placeholder="Descrição do evento..."
+                        className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                    </div>
 
-        {/* Events List */}
-        {events.length === 0 ? (
-          <Card className="p-12 text-center">
-            <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="mb-2 text-lg font-semibold">
-              {searchQuery ? "Nenhum evento encontrado" : "Sem eventos"}
-            </h3>
-            <p className="mb-4 text-sm text-muted-foreground">
-              {searchQuery
-                ? "Tenta uma pesquisa diferente."
-                : "Cria o primeiro evento para começar."}
-            </p>
-            {!searchQuery && (
-              <Button onClick={() => setIsCreateOpen(true)} className="gap-2">
-                <Plus className="h-4 w-4" />
-                Criar Evento
-              </Button>
-            )}
-          </Card>
-        ) : (
-          <>
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {events.map((event) => (
-                <div key={event.id} className="group relative">
-                  <Link href={`/events/${event.slug}`}>
-                    <Card className="overflow-hidden transition-shadow hover:shadow-lg">
-                      <div className="relative h-40 w-full">
-                        <Image
-                          src={event.imageUrl || "/placeholder-event.jpg"}
-                          alt={event.title}
-                          fill
-                          className="object-cover"
-                        />
-                        <div className="absolute right-2 top-2 flex flex-wrap gap-1">
-                          {event.sportTypes.map((sport) => (
-                            <SportBadge
-                              key={sport}
-                              sportType={sport}
-                              size="md"
+                    <div className="grid gap-2">
+                      <Label>Modalidades *</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Seleciona uma ou mais modalidades
+                      </p>
+                      <div className="grid grid-cols-2 gap-3 rounded-md border border-input p-3">
+                        {Object.values(SportType).map((type) => (
+                          <label
+                            key={type}
+                            className="flex cursor-pointer items-center space-x-2 rounded-md p-2 hover:bg-muted"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={formData.sportTypes.includes(type)}
+                              onChange={() => toggleSportType(type)}
+                              className="h-4 w-4 rounded border-gray-300"
                             />
-                          ))}
-                        </div>
+                            <span className="text-sm">{tSports(type)}</span>
+                          </label>
+                        ))}
                       </div>
-                      <CardContent className="p-4">
-                        <h3 className="mb-2 line-clamp-1 font-semibold">
-                          {event.title}
-                        </h3>
-                        <div className="space-y-1 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="h-3 w-3" />
-                            <span>
-                              {formatDateShort(new Date(event.startDate))}
-                            </span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-3 w-3" />
-                            <span>
-                              {event.city}, {event.country}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="mt-3">
-                          {(() => {
-                            const missingFields = getMissingFields(event);
-                            if (missingFields.length > 0) {
-                              return (
-                                <div className="space-y-1">
-                                  <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
-                                    <span className="text-amber-600 dark:text-amber-400">
-                                      ⚠️
-                                    </span>
-                                    <span>Campos em falta</span>
-                                  </div>
-                                  <div className="flex flex-wrap gap-1">
-                                    {missingFields.map((field) => (
-                                      <span
-                                        key={field}
-                                        className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
-                                      >
-                                        {field}
-                                      </span>
-                                    ))}
-                                  </div>
-                                </div>
-                              );
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="startDate">Data de Início *</Label>
+                        <Input
+                          id="startDate"
+                          name="startDate"
+                          type="date"
+                          value={formData.startDate}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="endDate">Data de Fim</Label>
+                        <Input
+                          id="endDate"
+                          name="endDate"
+                          type="date"
+                          value={formData.endDate}
+                          onChange={handleInputChange}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="grid gap-2">
+                        <Label htmlFor="city">Cidade *</Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleInputChange}
+                          placeholder="Lisboa"
+                        />
+                      </div>
+                      <div className="grid gap-2">
+                        <Label htmlFor="country">País</Label>
+                        <Input
+                          id="country"
+                          name="country"
+                          value={formData.country}
+                          onChange={handleInputChange}
+                          placeholder="Portugal"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label>Imagem do Evento</Label>
+                      {formData.imageUrl && (
+                        <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+                          <Image
+                            src={formData.imageUrl}
+                            alt="Preview"
+                            fill
+                            className="object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() =>
+                              setFormData((prev) => ({ ...prev, imageUrl: "" }))
                             }
-                            return (
-                              <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
-                                <span className="text-green-600 dark:text-green-400">
-                                  ✓
-                                </span>
-                                <span>Completo</span>
-                              </div>
-                            );
-                          })()}
+                            className="absolute right-2 top-2 rounded-full bg-destructive p-1 text-white hover:bg-destructive/90"
+                          >
+                            <X className="h-4 w-4" />
+                          </button>
                         </div>
-                      </CardContent>
-                    </Card>
-                  </Link>
-                  {/* Admin settings button */}
-                  <Link
-                    href={`/admin/events/${event.id}`}
-                    className="absolute bottom-2 right-2 z-10"
-                    onClick={(e) => e.stopPropagation()}
-                  >
+                      )}
+                      <div className="flex gap-2">
+                        <input
+                          ref={fileInputRef}
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          className="hidden"
+                          disabled={isUploading}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={isUploading}
+                          className="flex-1"
+                        >
+                          {isUploading ? (
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          ) : (
+                            <ImagePlus className="mr-2 h-4 w-4" />
+                          )}
+                          {formData.imageUrl
+                            ? "Alterar imagem"
+                            : "Carregar imagem"}
+                        </Button>
+                      </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="externalUrl">
+                        URL Externo (inscrições)
+                      </Label>
+                      <Input
+                        id="externalUrl"
+                        name="externalUrl"
+                        value={formData.externalUrl}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                      />
+                    </div>
+
+                    <div className="grid gap-2">
+                      <Label htmlFor="stravaRouteEmbed">
+                        Strava Route Embed Code
+                      </Label>
+                      <textarea
+                        id="stravaRouteEmbed"
+                        name="stravaRouteEmbed"
+                        value={formData.stravaRouteEmbed}
+                        onChange={handleInputChange}
+                        placeholder='<iframe height="405" width="590" frameborder="0" allowtransparency="true" scrolling="no" src="https://www.strava.com/routes/..."></iframe>'
+                        className="min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 font-mono text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Cole o código de embed do Strava Route (iframe completo)
+                      </p>
+                    </div>
+
+                    {/* Variants */}
+                    <div className="grid gap-2">
+                      <div className="flex items-center justify-between">
+                        <Label>Variantes / Distâncias</Label>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={addVariant}
+                        >
+                          <Plus className="mr-1 h-3 w-3" />
+                          Adicionar
+                        </Button>
+                      </div>
+                      <div className="space-y-3">
+                        {variants.map((variant, index) => (
+                          <div key={index} className="rounded-lg border p-3">
+                            <div className="flex items-center gap-2">
+                              <Input
+                                placeholder="Nome (ex: 21km, Singles Pro)"
+                                value={variant.name}
+                                onChange={(e) =>
+                                  handleVariantChange(
+                                    index,
+                                    "name",
+                                    e.target.value
+                                  )
+                                }
+                                className="flex-1"
+                              />
+                              <Input
+                                placeholder="km"
+                                value={variant.distanceKm}
+                                onChange={(e) =>
+                                  handleVariantChange(
+                                    index,
+                                    "distanceKm",
+                                    e.target.value
+                                  )
+                                }
+                                className="w-20"
+                                type="number"
+                              />
+                              {variants.length > 1 && (
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="icon"
+                                  onClick={() => removeVariant(index)}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              )}
+                            </div>
+                            <div className="mt-2 flex items-center gap-2">
+                              <div className="flex-1">
+                                <Label className="text-xs text-muted-foreground">
+                                  Data (opcional)
+                                </Label>
+                                <Input
+                                  type="date"
+                                  value={variant.startDate}
+                                  onChange={(e) =>
+                                    handleVariantChange(
+                                      index,
+                                      "startDate",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                              <div className="w-24">
+                                <Label className="text-xs text-muted-foreground">
+                                  Hora (opcional)
+                                </Label>
+                                <Input
+                                  type="time"
+                                  value={variant.startTime}
+                                  onChange={(e) =>
+                                    handleVariantChange(
+                                      index,
+                                      "startTime",
+                                      e.target.value
+                                    )
+                                  }
+                                />
+                              </div>
+                            </div>
+
+                            {/* Triathlon Segments - Only show for TRIATHLON sport type */}
+                            {formData.sportTypes.includes(
+                              SportType.TRIATHLON
+                            ) && (
+                              <div className="mt-3 space-y-2 border-t pt-3">
+                                <div className="flex items-center justify-between">
+                                  <Label className="text-sm font-medium">
+                                    Segmentos de Triatlo
+                                  </Label>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => addTriathlonSegment(index)}
+                                  >
+                                    <Plus className="mr-1 h-3 w-3" />
+                                    Adicionar Segmento
+                                  </Button>
+                                </div>
+                                {variant.triathlonSegments &&
+                                  variant.triathlonSegments.length > 0 && (
+                                    <div className="space-y-2">
+                                      {variant.triathlonSegments.map(
+                                        (segment, segIndex) => (
+                                          <div
+                                            key={segIndex}
+                                            className="flex items-center gap-2 rounded border bg-muted/50 p-2"
+                                          >
+                                            <select
+                                              value={segment.segmentType}
+                                              onChange={(e) =>
+                                                updateTriathlonSegment(
+                                                  index,
+                                                  segIndex,
+                                                  "segmentType",
+                                                  e.target.value
+                                                )
+                                              }
+                                              className="w-24 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                            >
+                                              <option value="SWIM">
+                                                Natação
+                                              </option>
+                                              <option value="BIKE">
+                                                Ciclismo
+                                              </option>
+                                              <option value="RUN">
+                                                Corrida
+                                              </option>
+                                            </select>
+                                            <Input
+                                              placeholder="km"
+                                              value={segment.distanceKm}
+                                              onChange={(e) =>
+                                                updateTriathlonSegment(
+                                                  index,
+                                                  segIndex,
+                                                  "distanceKm",
+                                                  e.target.value
+                                                )
+                                              }
+                                              className="w-20 text-xs"
+                                              type="number"
+                                              step="0.1"
+                                            />
+                                            <select
+                                              value={segment.terrainType}
+                                              onChange={(e) =>
+                                                updateTriathlonSegment(
+                                                  index,
+                                                  segIndex,
+                                                  "terrainType",
+                                                  e.target.value
+                                                )
+                                              }
+                                              className="flex-1 rounded-md border border-input bg-background px-2 py-1 text-xs"
+                                            >
+                                              <option value="POOL">
+                                                Piscina
+                                              </option>
+                                              <option value="OPEN_WATER">
+                                                Águas Abertas
+                                              </option>
+                                              <option value="ROAD">
+                                                Estrada
+                                              </option>
+                                              <option value="TRAIL">
+                                                Trail
+                                              </option>
+                                              <option value="MIXED">
+                                                Misto
+                                              </option>
+                                            </select>
+                                            <Button
+                                              type="button"
+                                              variant="ghost"
+                                              size="icon"
+                                              className="h-8 w-8"
+                                              onClick={() =>
+                                                removeTriathlonSegment(
+                                                  index,
+                                                  segIndex
+                                                )
+                                              }
+                                            >
+                                              <X className="h-3 w-3" />
+                                            </Button>
+                                          </div>
+                                        )
+                                      )}
+                                    </div>
+                                  )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <DialogFooter>
                     <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
-                      title="Configurações admin"
+                      variant="outline"
+                      onClick={() => {
+                        setIsCreateOpen(false);
+                        resetForm();
+                      }}
+                      disabled={isSubmitting}
                     >
-                      <Settings2 className="h-3.5 w-3.5" />
+                      Cancelar
                     </Button>
-                  </Link>
-                </div>
-              ))}
+                    <Button onClick={handleCreate} disabled={isSubmitting}>
+                      {isSubmitting ? "A criar..." : "Criar Evento"}
+                    </Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             </div>
 
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-              <div className="mt-8 flex items-center justify-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                >
-                  Anterior
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1)
-                    .filter((page) => {
-                      // Show first page, last page, current page, and pages around current
-                      return (
-                        page === 1 ||
-                        page === totalPages ||
-                        Math.abs(page - currentPage) <= 1
-                      );
-                    })
-                    .map((page, index, array) => {
-                      // Add ellipsis if there's a gap
-                      const prevPage = array[index - 1];
-                      const showEllipsis = prevPage && page - prevPage > 1;
-
-                      return (
-                        <div key={page} className="flex items-center gap-1">
-                          {showEllipsis && (
-                            <span className="px-2 text-muted-foreground">
-                              ...
-                            </span>
-                          )}
-                          <Button
-                            variant={
-                              currentPage === page ? "default" : "outline"
-                            }
-                            size="sm"
-                            onClick={() => setCurrentPage(page)}
-                            className="min-w-[2.5rem]"
-                          >
-                            {page}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() =>
-                    setCurrentPage((p) => Math.min(totalPages, p + 1))
-                  }
-                  disabled={currentPage === totalPages}
-                >
-                  Próxima
-                </Button>
+            {/* Search and Filters */}
+            <div className="mb-6 space-y-3">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Pesquisar eventos..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
+
+              {/* Incomplete Events Filter */}
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="show-incomplete"
+                  checked={showIncompleteOnly}
+                  onChange={(e) => {
+                    setShowIncompleteOnly(e.target.checked);
+                    setCurrentPage(1); // Reset to first page when filter changes
+                  }}
+                  className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
+                />
+                <label
+                  htmlFor="show-incomplete"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  Mostrar apenas eventos com campos em falta
+                </label>
+              </div>
+            </div>
+
+            {/* Events List */}
+            {events.length === 0 ? (
+              <Card className="p-12 text-center">
+                <Calendar className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">
+                  {searchQuery ? "Nenhum evento encontrado" : "Sem eventos"}
+                </h3>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  {searchQuery
+                    ? "Tenta uma pesquisa diferente."
+                    : "Cria o primeiro evento para começar."}
+                </p>
+                {!searchQuery && (
+                  <Button
+                    onClick={() => setIsCreateOpen(true)}
+                    className="gap-2"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Criar Evento
+                  </Button>
+                )}
+              </Card>
+            ) : (
+              <>
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {events.map((event) => (
+                    <div key={event.id} className="group relative">
+                      <Link href={`/events/${event.slug}`}>
+                        <Card className="overflow-hidden transition-shadow hover:shadow-lg">
+                          <div className="relative h-40 w-full">
+                            <Image
+                              src={event.imageUrl || "/placeholder-event.jpg"}
+                              alt={event.title}
+                              fill
+                              className="object-cover"
+                            />
+                            <div className="absolute right-2 top-2 flex flex-wrap gap-1">
+                              {event.sportTypes.map((sport) => (
+                                <SportBadge
+                                  key={sport}
+                                  sportType={sport}
+                                  size="md"
+                                />
+                              ))}
+                            </div>
+                          </div>
+                          <CardContent className="p-4">
+                            <h3 className="mb-2 line-clamp-1 font-semibold">
+                              {event.title}
+                            </h3>
+                            <div className="space-y-1 text-sm text-muted-foreground">
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-3 w-3" />
+                                <span>
+                                  {formatDateShort(new Date(event.startDate))}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <MapPin className="h-3 w-3" />
+                                <span>
+                                  {event.city}, {event.country}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="mt-3">
+                              {(() => {
+                                const missingFields = getMissingFields(event);
+                                if (missingFields.length > 0) {
+                                  return (
+                                    <div className="space-y-1">
+                                      <div className="flex items-center gap-1.5 rounded-md bg-amber-100 px-2 py-1 text-xs font-medium text-amber-900 dark:bg-amber-900/20 dark:text-amber-400">
+                                        <span className="text-amber-600 dark:text-amber-400">
+                                          ⚠️
+                                        </span>
+                                        <span>Campos em falta</span>
+                                      </div>
+                                      <div className="flex flex-wrap gap-1">
+                                        {missingFields.map((field) => (
+                                          <span
+                                            key={field}
+                                            className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground"
+                                          >
+                                            {field}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  );
+                                }
+                                return (
+                                  <div className="flex items-center gap-1.5 rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-900 dark:bg-green-900/20 dark:text-green-400">
+                                    <span className="text-green-600 dark:text-green-400">
+                                      ✓
+                                    </span>
+                                    <span>Completo</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </Link>
+                      {/* Admin settings button */}
+                      <Link
+                        href={`/admin/events/${event.id}`}
+                        className="absolute bottom-2 right-2 z-10"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Button
+                          variant="secondary"
+                          size="icon"
+                          className="h-7 w-7 opacity-0 shadow-sm transition-opacity group-hover:opacity-100"
+                          title="Configurações admin"
+                        >
+                          <Settings2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="mt-8 flex items-center justify-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                    >
+                      Anterior
+                    </Button>
+                    <div className="flex items-center gap-1">
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((page) => {
+                          // Show first page, last page, current page, and pages around current
+                          return (
+                            page === 1 ||
+                            page === totalPages ||
+                            Math.abs(page - currentPage) <= 1
+                          );
+                        })
+                        .map((page, index, array) => {
+                          // Add ellipsis if there's a gap
+                          const prevPage = array[index - 1];
+                          const showEllipsis = prevPage && page - prevPage > 1;
+
+                          return (
+                            <div key={page} className="flex items-center gap-1">
+                              {showEllipsis && (
+                                <span className="px-2 text-muted-foreground">
+                                  ...
+                                </span>
+                              )}
+                              <Button
+                                variant={
+                                  currentPage === page ? "default" : "outline"
+                                }
+                                size="sm"
+                                onClick={() => setCurrentPage(page)}
+                                className="min-w-[2.5rem]"
+                              >
+                                {page}
+                              </Button>
+                            </div>
+                          );
+                        })}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                    >
+                      Próxima
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
-          </>
-        )}
+          </TabsContent>
+
+          <TabsContent value="suggestions">
+            <AdminEventSuggestions />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

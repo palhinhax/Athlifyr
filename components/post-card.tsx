@@ -65,7 +65,7 @@ interface SharedEventData {
 }
 
 interface PostCardProps {
-  post: {
+  readonly post: {
     id: string;
     content: string;
     imageUrl?: string | null;
@@ -87,11 +87,109 @@ interface PostCardProps {
     isLikedByUser: boolean;
     commentsCount?: number;
   };
-  currentUserId?: string;
-  isAdmin?: boolean;
-  onPostDeleted?: (postId: string) => void;
-  hideVenueBadge?: boolean; // Hide venue badge when inside venue feed
+  readonly currentUserId?: string;
+  readonly isAdmin?: boolean;
+  readonly onPostDeleted?: (postId: string) => void;
+  readonly hideVenueBadge?: boolean; // Hide venue badge when inside venue feed
 }
+
+function PostImage({
+  imageUrl,
+  imageError,
+  onImageError,
+}: {
+  readonly imageUrl: string;
+  readonly imageError: boolean;
+  readonly onImageError: () => void;
+}) {
+  if (imageError) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
+        <ImageOff className="h-12 w-12" />
+        <p className="text-sm">Imagem não disponível</p>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={imageUrl}
+      alt="Post image"
+      width={800}
+      height={800}
+      className="h-auto max-h-[850px] w-full object-cover"
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+      onError={onImageError}
+    />
+  );
+}
+
+function CommentsList({
+  comments,
+  currentUserId,
+  isAdmin,
+  onDeleteComment,
+}: {
+  readonly comments: Comment[];
+  readonly currentUserId?: string;
+  readonly isAdmin?: boolean;
+  readonly onDeleteComment: (commentId: string) => void;
+}) {
+  if (!comments || comments.length === 0) {
+    return (
+      <div className="py-4 text-center text-sm text-muted-foreground">
+        Ainda não há comentários. Sê o primeiro a comentar!
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-3">
+      {comments.map((comment) => (
+        <div key={comment.id} className="flex gap-2">
+          <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted">
+            {comment.user.image ? (
+              <Image
+                src={comment.user.image}
+                alt={comment.user.name || "User"}
+                fill
+                sizes="32px"
+                className="object-cover"
+              />
+            ) : (
+              <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
+                {comment.user.name?.[0]?.toUpperCase() || "U"}
+              </div>
+            )}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="rounded-lg bg-muted px-3 py-2">
+              <p className="text-sm font-semibold">{comment.user.name}</p>
+              <p className="whitespace-pre-wrap text-sm">{comment.content}</p>
+            </div>
+            <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+              <span>
+                {formatDistanceToNow(new Date(comment.createdAt), {
+                  addSuffix: true,
+                  locale: pt,
+                })}
+              </span>
+              {(currentUserId === comment.user.id || isAdmin) && (
+                <button
+                  onClick={() => onDeleteComment(comment.id)}
+                  className="text-destructive hover:underline"
+                >
+                  Apagar
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function PostCard({
   post,
   currentUserId,
@@ -135,24 +233,28 @@ export function PostCard({
     setIsLiked(!isLiked);
     setLikesCount((prev) => (isLiked ? prev - 1 : prev + 1));
 
+    // Store previous values for reverting on error
+    const prevIsLiked = isLiked;
+    const prevLikesCount = likesCount;
+
     try {
       const response = await fetch(`/api/posts/${post.id}/like`, {
         method: "POST",
       });
 
-      if (!response.ok) {
-        // Revert on error
-        setIsLiked(isLiked);
-        setLikesCount(likesCount);
-      } else {
+      if (response.ok) {
         const data = await response.json();
         setIsLiked(data.liked);
         setLikesCount(data.likesCount);
+      } else {
+        // Revert on error
+        setIsLiked(prevIsLiked);
+        setLikesCount(prevLikesCount);
       }
     } catch {
       // Revert on error
-      setIsLiked(isLiked);
-      setLikesCount(likesCount);
+      setIsLiked(prevIsLiked);
+      setLikesCount(prevLikesCount);
     } finally {
       setIsLiking(false);
     }
@@ -211,8 +313,7 @@ export function PostCard({
     setShowComments(!showComments);
   };
 
-  const handleSubmitComment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmitComment = async () => {
     if (!currentUserId) {
       router.push("/auth/signin");
       return;
@@ -230,7 +331,7 @@ export function PostCard({
       if (response.ok) {
         const comment = await response.json();
         // Validate that comment has required structure
-        if (comment && comment.user) {
+        if (comment?.user) {
           setComments((prev) => {
             // Ensure prev is always an array
             const currentComments = Array.isArray(prev) ? prev : [];
@@ -449,30 +550,21 @@ export function PostCard({
                   }
                 }}
               />
-            ) : !imageError ? (
-              <Image
-                src={post.imageUrl}
-                alt="Post image"
-                width={800}
-                height={800}
-                className="h-auto max-h-[850px] w-full object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                onError={() => {
+            ) : (
+              <PostImage
+                imageUrl={post.imageUrl}
+                imageError={imageError}
+                onImageError={() => {
                   console.error("Failed to load image:", post.imageUrl);
                   setImageError(true);
                 }}
               />
-            ) : (
-              <div className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-muted-foreground">
-                <ImageOff className="h-12 w-12" />
-                <p className="text-sm">Imagem não disponível</p>
-              </div>
             )}
           </div>
         )}
 
         {/* Shared Event Card - Show when post has full event data */}
-        {post.event && post.event.city && post.event.sportTypes && (
+        {post.event?.city && post.event?.sportTypes && (
           <div className="px-4 pb-3">
             <FeaturedEventCard
               event={{
@@ -508,7 +600,7 @@ export function PostCard({
               isLiked
                 ? "text-red-500"
                 : "text-muted-foreground hover:text-red-500"
-            } ${!currentUserId ? "cursor-not-allowed opacity-50" : ""}`}
+            } ${currentUserId ? "" : "cursor-not-allowed opacity-50"}`}
           >
             <Heart className={`h-5 w-5 ${isLiked ? "fill-current" : ""}`} />
             <span>{likesCount}</span>
@@ -527,7 +619,13 @@ export function PostCard({
           <div className="border-t px-4 py-3">
             {/* Comment Input */}
             {currentUserId && (
-              <form onSubmit={handleSubmitComment} className="mb-3 flex gap-2">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSubmitComment();
+                }}
+                className="mb-3 flex gap-2"
+              >
                 <Input
                   value={newComment}
                   onChange={(e) => setNewComment(e.target.value)}
@@ -550,58 +648,13 @@ export function PostCard({
               <div className="py-4 text-center text-sm text-muted-foreground">
                 A carregar comentários...
               </div>
-            ) : !comments || comments.length === 0 ? (
-              <div className="py-4 text-center text-sm text-muted-foreground">
-                Ainda não há comentários. Sê o primeiro a comentar!
-              </div>
             ) : (
-              <div className="space-y-3">
-                {comments.map((comment) => (
-                  <div key={comment.id} className="flex gap-2">
-                    <div className="relative h-8 w-8 flex-shrink-0 overflow-hidden rounded-full bg-muted">
-                      {comment.user.image ? (
-                        <Image
-                          src={comment.user.image}
-                          alt={comment.user.name || "User"}
-                          fill
-                          sizes="32px"
-                          className="object-cover"
-                        />
-                      ) : (
-                        <div className="flex h-full w-full items-center justify-center text-xs font-medium text-muted-foreground">
-                          {comment.user.name?.[0]?.toUpperCase() || "U"}
-                        </div>
-                      )}
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <div className="rounded-lg bg-muted px-3 py-2">
-                        <p className="text-sm font-semibold">
-                          {comment.user.name}
-                        </p>
-                        <p className="whitespace-pre-wrap text-sm">
-                          {comment.content}
-                        </p>
-                      </div>
-                      <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
-                        <span>
-                          {formatDistanceToNow(new Date(comment.createdAt), {
-                            addSuffix: true,
-                            locale: pt,
-                          })}
-                        </span>
-                        {(currentUserId === comment.user.id || isAdmin) && (
-                          <button
-                            onClick={() => handleDeleteComment(comment.id)}
-                            className="text-destructive hover:underline"
-                          >
-                            Apagar
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <CommentsList
+                comments={comments}
+                currentUserId={currentUserId}
+                isAdmin={isAdmin}
+                onDeleteComment={handleDeleteComment}
+              />
             )}
           </div>
         )}

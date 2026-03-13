@@ -17,6 +17,7 @@ import {
   Alert,
   ActivityIndicator,
   Share,
+  Image,
 } from "react-native";
 import { useLocalSearchParams, useRouter, Stack } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -98,10 +99,11 @@ export default function ActivityDetailScreen() {
       {
         text: t("common.delete"),
         style: "destructive",
-        onPress: async () => {
+        onPress: () => {
           if (activityId) {
-            await deleteActivity(activityId);
-            router.back();
+            deleteActivity(activityId).then(() => {
+              router.back();
+            });
           }
         },
       },
@@ -182,7 +184,12 @@ export default function ActivityDetailScreen() {
 
           {/* Date / time header */}
           <View style={styles.dateSection}>
-            <Text style={styles.dateTitle}>
+            {activity.title ? (
+              <Text style={styles.dateTitle}>{activity.title}</Text>
+            ) : null}
+            <Text
+              style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}
+            >
               {new Date(activity.startedAt).toLocaleDateString(undefined, {
                 weekday: "long",
                 year: "numeric",
@@ -250,6 +257,25 @@ export default function ActivityDetailScreen() {
             />
           </View>
 
+          {/* Photos */}
+          {activity.photos && activity.photos.length > 0 && (
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.photoStrip}
+              contentContainerStyle={styles.photoStripContent}
+            >
+              {activity.photos.map((uri) => (
+                <Image
+                  key={uri}
+                  source={{ uri }}
+                  style={styles.photoImage}
+                  alt=""
+                />
+              ))}
+            </ScrollView>
+          )}
+
           {/* Export GPX button */}
           <TouchableOpacity style={styles.exportBtn} onPress={handleExportGPX}>
             <Download size={18} color="#fff" />
@@ -269,11 +295,11 @@ function StatRow({
   icon,
   label,
   value,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   label: string;
   value: string;
-}) {
+}>) {
   return (
     <View style={styles.statRow}>
       <View style={styles.statRowLeft}>

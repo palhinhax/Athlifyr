@@ -55,7 +55,7 @@ export function FeaturedEventCard({
   linkToEvent = true,
   onViewEvent,
   className = "",
-}: FeaturedEventCardProps) {
+}: Readonly<FeaturedEventCardProps>) {
   const locale = useLocale();
   const t = useTranslations("events");
   const tCommon = useTranslations("common");

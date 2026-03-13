@@ -442,7 +442,14 @@
         "createError": "Fehler beim Erstellen des Gewinnspiels.",
         "updateError": "Fehler beim Aktualisieren des Gewinnspiels.",
         "drawError": "Fehler bei der Ziehung.",
-        "deleteError": "Fehler beim Löschen des Gewinnspiels."
+        "deleteError": "Fehler beim Löschen des Gewinnspiels.",
+        "participantAdded": "Teilnehmer hinzugefügt",
+        "participantAddedDesc": "Der Benutzer wurde erfolgreich zum Gewinnspiel hinzugefügt.",
+        "participantRemoved": "Teilnehmer entfernt",
+        "participantRemovedDesc": "Der Teilnehmer wurde aus dem Gewinnspiel entfernt.",
+        "addParticipantError": "Fehler beim Hinzufügen des Teilnehmers.",
+        "removeParticipantError": "Fehler beim Entfernen des Teilnehmers.",
+        "alreadyParticipates": "Dieser Benutzer nimmt bereits teil."
       },
       "platform": {
         "ALL": "Alle Plattformen",

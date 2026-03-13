@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { buildAuthResponse, bannedResponse } from "@/lib/mobile-auth-response";
+import {
+  buildAuthResponse,
+  bannedResponse,
+  type MobileAuthUser,
+} from "@/lib/mobile-auth-response";
 import * as jose from "jose";
 
 const APPLE_JWKS_URI = "https://appleid.apple.com/auth/keys";
@@ -11,6 +15,99 @@ interface AppleTokenPayload {
   email?: string;
   email_verified?: string | boolean;
   is_private_email?: string | boolean;
+}
+
+const USER_SELECT = {
+  id: true,
+  email: true,
+  name: true,
+  role: true,
+  image: true,
+  isBanned: true,
+} as const;
+
+/** Build display name from Apple fullName (only sent on first auth) */
+function buildDisplayName(
+  fullName: { givenName?: string; familyName?: string } | null
+): string | null {
+  if (!fullName?.givenName) return null;
+  return fullName.familyName
+    ? `${fullName.givenName} ${fullName.familyName}`
+    : fullName.givenName;
+}
+
+/** Handle returning user with existing Apple account */
+async function handleExistingAccount(
+  user: MobileAuthUser & { isBanned: boolean },
+  displayName: string | null
+) {
+  if (user.isBanned) return bannedResponse();
+
+  if (displayName && !user.name) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { name: displayName },
+    });
+    user.name = displayName;
+  }
+
+  return buildAuthResponse(user);
+}
+
+/** Link Apple account to existing user found by email */
+async function handleEmailLinking(email: string, appleUserId: string) {
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    select: USER_SELECT,
+  });
+
+  if (!existingUser) return null;
+  if (existingUser.isBanned) return bannedResponse();
+
+  await prisma.account.create({
+    data: {
+      userId: existingUser.id,
+      type: "oauth",
+      provider: "apple",
+      providerAccountId: appleUserId,
+    },
+  });
+
+  return buildAuthResponse(existingUser);
+}
+
+/** Create a brand-new user with Apple account */
+async function createNewUser(
+  email: string | undefined,
+  appleUserId: string,
+  displayName: string | null
+) {
+  const userEmail = email || `${appleUserId}@privaterelay.appleid.com`;
+  const userName = displayName || userEmail.split("@")[0];
+
+  const newUser = await prisma.user.create({
+    data: {
+      email: userEmail,
+      name: userName,
+      emailVerified: new Date(),
+      accounts: {
+        create: {
+          type: "oauth",
+          provider: "apple",
+          providerAccountId: appleUserId,
+        },
+      },
+    },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      image: true,
+    },
+  });
+
+  return buildAuthResponse(newUser);
 }
 
 /**
@@ -32,7 +129,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify the Apple identity token using Apple's JWKS
     const { payload } = await jose.jwtVerify(identityToken, appleJWKS, {
       issuer: "https://appleid.apple.com",
       audience: process.env.APPLE_BUNDLE_ID || "com.athlifyr.app",
@@ -48,24 +144,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Apple may not provide email on subsequent sign-ins — only on the first one.
-    // We use the providerAccountId (sub) to find existing users.
     const email = applePayload.email?.toLowerCase().trim();
-
-    // Build display name from fullName (Apple only sends this on first auth)
-    const displayName =
-      fullName?.givenName && fullName?.familyName
-        ? `${fullName.givenName} ${fullName.familyName}`
-        : fullName?.givenName || null;
-
-    const userSelect = {
-      id: true,
-      email: true,
-      name: true,
-      role: true,
-      image: true,
-      isBanned: true,
-    } as const;
+    const displayName = buildDisplayName(fullName);
 
     // 1. Check if an Apple account already exists for this user
     const existingAccount = await prisma.account.findUnique({
@@ -75,77 +155,21 @@ export async function POST(request: NextRequest) {
           providerAccountId: appleUserId,
         },
       },
-      include: { user: { select: userSelect } },
+      include: { user: { select: USER_SELECT } },
     });
 
     if (existingAccount) {
-      const user = existingAccount.user;
-      if (user.isBanned) return bannedResponse();
-
-      // Update name if it was provided and user has no name
-      if (displayName && !user.name) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { name: displayName },
-        });
-        user.name = displayName;
-      }
-
-      return buildAuthResponse(user);
+      return handleExistingAccount(existingAccount.user, displayName);
     }
 
     // 2. Check if a user with this email already exists (link accounts)
     if (email) {
-      const existingUser = await prisma.user.findFirst({
-        where: { email: { equals: email, mode: "insensitive" } },
-        select: userSelect,
-      });
-
-      if (existingUser) {
-        if (existingUser.isBanned) return bannedResponse();
-
-        // Link Apple account to existing user
-        await prisma.account.create({
-          data: {
-            userId: existingUser.id,
-            type: "oauth",
-            provider: "apple",
-            providerAccountId: appleUserId,
-          },
-        });
-
-        return buildAuthResponse(existingUser);
-      }
+      const linkResponse = await handleEmailLinking(email, appleUserId);
+      if (linkResponse) return linkResponse;
     }
 
     // 3. Create a new user with Apple account
-    // Apple may hide the real email (Private Relay) — we still need an email
-    const userEmail = email || `${appleUserId}@privaterelay.appleid.com`;
-    const userName = displayName || userEmail.split("@")[0];
-
-    const newUser = await prisma.user.create({
-      data: {
-        email: userEmail,
-        name: userName,
-        emailVerified: new Date(),
-        accounts: {
-          create: {
-            type: "oauth",
-            provider: "apple",
-            providerAccountId: appleUserId,
-          },
-        },
-      },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        role: true,
-        image: true,
-      },
-    });
-
-    return buildAuthResponse(newUser);
+    return createNewUser(email, appleUserId, displayName);
   } catch (error) {
     console.error("Apple mobile auth error:", error);
 

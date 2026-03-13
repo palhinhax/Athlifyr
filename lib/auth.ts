@@ -149,6 +149,45 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (account.provider === "google") {
           await syncGoogleImage(user, profile);
         }
+
+        // Auto-link OAuth account if user with same email already exists
+        // This prevents the OAuthAccountNotLinked error when a user
+        // signs in with a different provider using the same email
+        const email = (profile?.email ?? user.email ?? "").toLowerCase().trim();
+
+        if (email) {
+          const existingUser = await prisma.user.findFirst({
+            where: { email: { equals: email, mode: "insensitive" } },
+            include: { accounts: true },
+          });
+
+          if (existingUser) {
+            const alreadyLinked = existingUser.accounts.some(
+              (a) => a.provider === account.provider
+            );
+
+            if (!alreadyLinked) {
+              await prisma.account.create({
+                data: {
+                  userId: existingUser.id,
+                  type: account.type,
+                  provider: account.provider,
+                  providerAccountId: account.providerAccountId,
+                  refresh_token: account.refresh_token,
+                  access_token: account.access_token,
+                  expires_at: account.expires_at,
+                  token_type: account.token_type,
+                  scope: account.scope,
+                  id_token: account.id_token,
+                  session_state: account.session_state as string | null,
+                },
+              });
+
+              // Set user.id so NextAuth uses the existing user
+              user.id = existingUser.id;
+            }
+          }
+        }
       }
       return true;
     },

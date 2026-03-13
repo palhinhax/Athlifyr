@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
+import { buildAuthResponse, bannedResponse } from "@/lib/mobile-auth-response";
 import * as jose from "jose";
-import type { UserRole } from "@prisma/client";
 
 const APPLE_JWKS_URI = "https://appleid.apple.com/auth/keys";
 const appleJWKS = jose.createRemoteJWKSet(new URL(APPLE_JWKS_URI));
@@ -12,43 +11,6 @@ interface AppleTokenPayload {
   email?: string;
   email_verified?: string | boolean;
   is_private_email?: string | boolean;
-}
-
-interface AuthUser {
-  id: string;
-  email: string;
-  name: string | null;
-  role: UserRole;
-  image: string | null;
-}
-
-/** Build token pair + user JSON response for a successful auth */
-function buildAuthResponse(user: AuthUser) {
-  const token = generateAccessToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-  });
-  const refreshToken = generateRefreshToken({
-    userId: user.id,
-    email: user.email,
-    role: user.role,
-  });
-  return NextResponse.json({
-    token,
-    refreshToken,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      image: user.image,
-    },
-  });
-}
-
-function bannedResponse() {
-  return NextResponse.json({ error: "Account is banned" }, { status: 403 });
 }
 
 /**

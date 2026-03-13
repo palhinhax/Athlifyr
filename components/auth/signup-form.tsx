@@ -116,49 +116,32 @@ export function SignUpForm() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
-    // Track Google signup start
-    analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, {
-      method: "google",
-    });
-
+  const handleSocialSignIn = async (
+    authFn: (url: string) => Promise<void>,
+    method: string,
+    errorKey: string
+  ) => {
+    analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, { method });
     try {
-      await signInWithGoogle(callbackUrl);
+      await authFn(callbackUrl);
     } catch {
-      // Track Google signup failure
       analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
-        method: "google",
-        error: "google_signin_error",
+        method,
+        error: `${errorKey}_error`,
       });
-
       toast({
         title: t("errors.error"),
-        description: t("errors.googleSignIn"),
+        description: t(`errors.${errorKey}`),
         variant: "destructive",
       });
     }
   };
 
-  const handleAppleSignIn = async () => {
-    analyticsEvent(ANALYTICS_EVENTS.SIGNUP_START, {
-      method: "apple",
-    });
+  const handleGoogleSignIn = () =>
+    handleSocialSignIn(signInWithGoogle, "google", "googleSignIn");
 
-    try {
-      await signInWithApple(callbackUrl);
-    } catch {
-      analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
-        method: "apple",
-        error: "apple_signin_error",
-      });
-
-      toast({
-        title: t("errors.error"),
-        description: t("errors.appleSignIn"),
-        variant: "destructive",
-      });
-    }
-  };
+  const handleAppleSignIn = () =>
+    handleSocialSignIn(signInWithApple, "apple", "appleSignIn");
 
   return (
     <Card className="w-full max-w-md">

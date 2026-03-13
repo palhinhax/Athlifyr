@@ -150,29 +150,26 @@ export function SignInForm({
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  const handleSocialSignIn = async (
+    authFn: (url: string) => Promise<void>,
+    errorKey: string
+  ) => {
     try {
-      await signInWithGoogle(callbackUrl);
+      await authFn(callbackUrl);
     } catch {
       toast({
         title: t("errors.error"),
-        description: t("errors.googleSignIn"),
+        description: t(`errors.${errorKey}`),
         variant: "destructive",
       });
     }
   };
 
-  const handleAppleSignIn = async () => {
-    try {
-      await signInWithApple(callbackUrl);
-    } catch {
-      toast({
-        title: t("errors.error"),
-        description: t("errors.appleSignIn"),
-        variant: "destructive",
-      });
-    }
-  };
+  const handleGoogleSignIn = () =>
+    handleSocialSignIn(signInWithGoogle, "googleSignIn");
+
+  const handleAppleSignIn = () =>
+    handleSocialSignIn(signInWithApple, "appleSignIn");
 
   return (
     <Card className="w-full max-w-md">

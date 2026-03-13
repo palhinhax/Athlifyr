@@ -220,4 +220,58 @@ describe("SignUpForm", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("handles Apple sign-in error", async () => {
+    const user = userEvent.setup();
+    mockSignInWithApple.mockRejectedValueOnce(new Error("Apple error"));
+
+    render(<SignUpForm />);
+
+    const appleBtn = screen.getByRole("button", {
+      name: /continueWithApple/,
+    });
+    await user.click(appleBtn);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("calls signInWithApple on Apple button click", async () => {
+    const user = userEvent.setup();
+    mockSignInWithApple.mockResolvedValueOnce(undefined);
+
+    render(<SignUpForm />);
+
+    const appleBtn = screen.getByRole("button", {
+      name: /continueWithApple/,
+    });
+    await user.click(appleBtn);
+
+    await waitFor(() => {
+      expect(mockSignInWithApple).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("handles fetch throwing an exception on submit", async () => {
+    const user = userEvent.setup();
+    mockFetch.mockRejectedValueOnce(new Error("network error"));
+
+    render(<SignUpForm />);
+
+    await user.type(screen.getByLabelText("name"), "Test User");
+    await user.type(screen.getByLabelText("email"), "test@example.com");
+    await user.type(screen.getByLabelText("password"), "Test123!");
+
+    const submitBtn = screen.getByRole("button", { name: "title" });
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
 });

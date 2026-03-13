@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { OAuth2Client } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
-import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
+import { buildAuthResponse } from "@/lib/mobile-auth-response";
 import { requireIntegrity } from "@/lib/verify-integrity";
 
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
@@ -128,30 +128,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Generate JWT tokens for mobile auth
-    const token = generateAccessToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    const refreshToken = generateRefreshToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
-
-    return NextResponse.json({
-      token,
-      refreshToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        image: user.image,
-      },
-    });
+    return buildAuthResponse(user);
   } catch (error) {
     console.error("Google mobile auth error:", error);
 

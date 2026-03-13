@@ -56,8 +56,10 @@ interface SignInFormProps {
   showDemoUsers?: boolean;
 }
 
-export function SignInForm({ showDemoUsers = false }: SignInFormProps) {
-  const t = useTranslations("auth.signIn");
+export function SignInForm({
+  showDemoUsers = false,
+}: Readonly<SignInFormProps>) {
+  const t = useTranslations("signIn");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);

@@ -83,6 +83,11 @@ export function useAppleAuth() {
         image: user.image,
         role: user.role,
       });
+      useAuthStore.setState({
+        token,
+        isAuthenticated: true,
+        isLoading: false,
+      });
     } catch (e: unknown) {
       // User cancelled — not an error
       if (

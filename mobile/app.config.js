@@ -11,6 +11,7 @@ const config = ({ config }) => {
     },
     plugins: [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-location",
         {

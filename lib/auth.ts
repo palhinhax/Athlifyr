@@ -1,6 +1,7 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Adapter } from "next-auth/adapters";
 import { prisma } from "./prisma";
@@ -38,6 +39,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           response_type: "code",
         },
       },
+    }),
+    Apple({
+      clientId: process.env.APPLE_CLIENT_ID,
+      clientSecret: process.env.APPLE_CLIENT_SECRET!,
     }),
     Credentials({
       credentials: {
@@ -82,10 +87,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
+      if (account?.provider === "google" || account?.provider === "apple") {
         // Normalize email to lowercase to prevent case-sensitive duplicates
-        if (profile?.email) {
-          const normalizedEmail = profile.email.toLowerCase().trim();
+        const emailSource =
+          account.provider === "google"
+            ? profile?.email
+            : (profile?.email ?? user.email);
+
+        if (emailSource) {
+          const normalizedEmail = emailSource.toLowerCase().trim();
 
           // Check if a user with this email already exists (case-insensitive)
           const existingUser = await prisma.user.findFirst({
@@ -120,7 +130,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         }
 
         // Sync Google profile image on every sign-in (only if user already exists)
-        if (profile?.picture && user?.id) {
+        if (account.provider === "google" && profile?.picture && user?.id) {
           // Check if user exists before updating
           const existingUser = await prisma.user.findUnique({
             where: { id: user.id },

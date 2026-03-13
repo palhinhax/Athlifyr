@@ -14,9 +14,11 @@ import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock, User } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useAppleAuth } from "@/src/hooks/useAppleAuth";
 import { useToast } from "@/src/hooks/useToast";
 import { Toast } from "@/src/components/ui/Toast";
 import { isAxiosError } from "axios";
@@ -53,6 +55,11 @@ export default function RegisterScreen() {
     isReady: isGoogleReady,
     isLoading: isGoogleLoading,
   } = useGoogleAuth();
+  const {
+    signIn: appleSignIn,
+    isLoading: isAppleLoading,
+    isAvailable: isAppleAvailable,
+  } = useAppleAuth();
   const logout = useAuthStore((s) => s.logout);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { toast, showToast, hideToast } = useToast();
@@ -158,7 +165,17 @@ export default function RegisterScreen() {
     }
   };
 
-  const anyLoading = isLoading || isGoogleLoading;
+  const handleAppleSignIn = async () => {
+    if (isAppleLoading) return;
+    try {
+      await appleSignIn();
+      // Navigation happens via the isAuthenticated useEffect above
+    } catch {
+      showToast(t("login.appleError"), "error");
+    }
+  };
+
+  const anyLoading = isLoading || isGoogleLoading || isAppleLoading;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -208,6 +225,21 @@ export default function RegisterScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* Apple Sign In — iOS only, using official Apple button */}
+          {isAppleAvailable && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={
+                AppleAuthentication.AppleAuthenticationButtonType.SIGN_UP
+              }
+              buttonStyle={
+                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              }
+              cornerRadius={borderRadius.md}
+              style={styles.appleButton}
+              onPress={handleAppleSignIn}
+            />
+          )}
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -445,6 +477,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.medium,
     color: colors.text,
+  },
+  appleButton: {
+    width: "100%" as const,
+    height: 52,
+    marginTop: spacing.sm,
   },
   divider: {
     flexDirection: "row",

@@ -262,13 +262,15 @@
     "passwordPlaceholder": "Tu contraseña",
     "signInButton": "Iniciar Sesión",
     "continueWithGoogle": "Continuar con Google",
+    "continueWithApple": "Continuar con Apple",
     "orContinueWith": "o continúa con email",
     "forgotPassword": "¿Olvidaste tu contraseña?",
     "noAccount": "¿No tienes una cuenta?",
     "signUp": "Registrarse",
     "invalidCredentials": "Email o contraseña inválidos",
     "fieldRequired": "Este campo es obligatorio",
-    "googleError": "Error al iniciar sesión con Google"
+    "googleError": "Error al iniciar sesión con Google",
+    "appleError": "Error al iniciar sesión con Apple"
   },
   "register": {
     "title": "Crear Cuenta",
@@ -280,6 +282,7 @@
     "passwordPlaceholder": "Elige una contraseña",
     "createAccountButton": "Crear Cuenta",
     "continueWithGoogle": "Continuar con Google",
+    "continueWithApple": "Continuar con Apple",
     "orContinueWith": "o crea cuenta con email",
     "alreadyHaveAccount": "¿Ya tienes una cuenta?",
     "signIn": "Iniciar Sesión",

@@ -442,7 +442,14 @@
         "createError": "Error al crear el sorteo.",
         "updateError": "Error al actualizar el sorteo.",
         "drawError": "Error al realizar el sorteo.",
-        "deleteError": "Error al eliminar el sorteo."
+        "deleteError": "Error al eliminar el sorteo.",
+        "participantAdded": "Participante añadido",
+        "participantAddedDesc": "El usuario fue añadido al sorteo con éxito.",
+        "participantRemoved": "Participante eliminado",
+        "participantRemovedDesc": "El participante fue eliminado del sorteo.",
+        "addParticipantError": "Error al añadir participante.",
+        "removeParticipantError": "Error al eliminar participante.",
+        "alreadyParticipates": "Este usuario ya está participando."
       },
       "platform": {
         "ALL": "Todas las Plataformas",

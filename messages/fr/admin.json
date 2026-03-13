@@ -442,7 +442,14 @@
         "createError": "Échec de la création du tirage.",
         "updateError": "Échec de la mise à jour du tirage.",
         "drawError": "Échec du tirage.",
-        "deleteError": "Échec de la suppression du tirage."
+        "deleteError": "Échec de la suppression du tirage.",
+        "participantAdded": "Participant ajouté",
+        "participantAddedDesc": "L'utilisateur a été ajouté au tirage avec succès.",
+        "participantRemoved": "Participant supprimé",
+        "participantRemovedDesc": "Le participant a été retiré du tirage.",
+        "addParticipantError": "Échec de l'ajout du participant.",
+        "removeParticipantError": "Échec de la suppression du participant.",
+        "alreadyParticipates": "Cet utilisateur participe déjà."
       },
       "platform": {
         "ALL": "Toutes les Plateformes",

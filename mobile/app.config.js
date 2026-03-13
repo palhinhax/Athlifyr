@@ -27,9 +27,9 @@ const config = ({ config }) => {
         "expo-camera",
         {
           cameraPermission:
-            "Allow Athlifyr to access your camera to take photos and videos.",
+            "Athlifyr uses the camera to update your profile photo and record exercise videos for motion analysis. For example, you can film a lift to review your form.",
           microphonePermission:
-            "Allow Athlifyr to access your microphone for video recording.",
+            "Athlifyr uses the microphone to capture audio when you record exercise videos for motion analysis.",
           recordAudioAndroid: true,
         },
       ],

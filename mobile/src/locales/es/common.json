@@ -822,7 +822,7 @@
     "motionAnalysis": "Movimiento",
     "permissionRequired": "Permiso de Cámara Requerido",
     "permissionMessage": "Permite que Athlifyr acceda a tu cámara y micrófono para tomar fotos y grabar vídeos.",
-    "grantPermission": "Dar Permiso",
+    "grantPermission": "Continuar",
     "photoSaved": "Foto Guardada",
     "photoSavedMessage": "Tu foto ha sido guardada en la galería.",
     "videoSaved": "Vídeo Guardado",

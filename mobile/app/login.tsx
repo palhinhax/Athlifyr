@@ -14,8 +14,10 @@ import { useRouter, useFocusEffect } from "expo-router";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import * as AppleAuthentication from "expo-apple-authentication";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { useGoogleAuth } from "@/src/hooks/useGoogleAuth";
+import { useAppleAuth } from "@/src/hooks/useAppleAuth";
 import { useToast } from "@/src/hooks/useToast";
 import { Toast } from "@/src/components/ui/Toast";
 import { isAxiosError } from "axios";
@@ -38,6 +40,12 @@ export default function LoginScreen() {
     isLoading: isGoogleLoading,
     error: googleError,
   } = useGoogleAuth();
+  const {
+    signIn: appleSignIn,
+    isLoading: isAppleLoading,
+    isAvailable: isAppleAvailable,
+    error: appleError,
+  } = useAppleAuth();
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { toast, showToast, hideToast } = useToast();
 
@@ -110,6 +118,13 @@ export default function LoginScreen() {
     }
   }, [googleError, showToast, t]);
 
+  // Show toast on Apple auth error
+  useEffect(() => {
+    if (appleError) {
+      showToast(t("login.appleError"), "error");
+    }
+  }, [appleError, showToast, t]);
+
   const handleGoogleSignIn = async () => {
     if (!isGoogleReady || isGoogleLoading) return;
     try {
@@ -121,7 +136,17 @@ export default function LoginScreen() {
     }
   };
 
-  const anyLoading = isLoading || isGoogleLoading;
+  const handleAppleSignIn = async () => {
+    if (isAppleLoading) return;
+    try {
+      await appleSignIn();
+      // Navigation happens via the isAuthenticated useFocusEffect above.
+    } catch {
+      showToast(t("login.appleError"), "error");
+    }
+  };
+
+  const anyLoading = isLoading || isGoogleLoading || isAppleLoading;
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -171,6 +196,21 @@ export default function LoginScreen() {
               </>
             )}
           </TouchableOpacity>
+
+          {/* Apple Sign In — iOS only, using official Apple button */}
+          {isAppleAvailable && (
+            <AppleAuthentication.AppleAuthenticationButton
+              buttonType={
+                AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN
+              }
+              buttonStyle={
+                AppleAuthentication.AppleAuthenticationButtonStyle.BLACK
+              }
+              cornerRadius={borderRadius.md}
+              style={styles.appleButton}
+              onPress={handleAppleSignIn}
+            />
+          )}
 
           {/* Divider */}
           <View style={styles.divider}>
@@ -357,6 +397,11 @@ const styles = StyleSheet.create({
     fontSize: typography.fontSize.base,
     fontWeight: typography.fontWeight.medium,
     color: colors.text,
+  },
+  appleButton: {
+    width: "100%" as const,
+    height: 52,
+    marginTop: spacing.sm,
   },
   divider: {
     flexDirection: "row",

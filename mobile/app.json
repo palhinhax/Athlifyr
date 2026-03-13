@@ -2,7 +2,7 @@
   "expo": {
     "name": "Athlifyr",
     "slug": "athlifyr",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -16,10 +16,11 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.athlifyr.app",
-      "buildNumber": "23",
+      "buildNumber": "28",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "NSCameraUsageDescription": "A câmara é utilizada para atualizar a foto de perfil e partilhar momentos desportivos com a comunidade Athlifyr.",
+        "NSCameraUsageDescription": "O Athlifyr utiliza a câmara para atualizar a tua foto de perfil e gravar vídeos de exercícios para análise de movimento. Por exemplo, podes filmar um levantamento para rever a tua forma.",
         "NSPhotoLibraryUsageDescription": "O acesso à galeria é utilizado para selecionar e partilhar fotos com a comunidade Athlifyr.",
         "NSLocationWhenInUseUsageDescription": "O Athlifyr precisa da tua localização para registar o percurso da corrida.",
         "NSLocationAlwaysAndWhenInUseUsageDescription": "O Athlifyr precisa da tua localização em segundo plano para continuar a registar o percurso quando o ecrã está bloqueado.",
@@ -61,6 +62,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-location",
         {

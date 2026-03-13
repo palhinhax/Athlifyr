@@ -262,13 +262,15 @@
     "passwordPlaceholder": "Dein Passwort",
     "signInButton": "Anmelden",
     "continueWithGoogle": "Weiter mit Google",
+    "continueWithApple": "Weiter mit Apple",
     "orContinueWith": "oder weiter mit E-Mail",
     "forgotPassword": "Passwort vergessen?",
     "noAccount": "Noch kein Konto?",
     "signUp": "Registrieren",
     "invalidCredentials": "Ungültige E-Mail oder Passwort",
     "fieldRequired": "Dieses Feld ist erforderlich",
-    "googleError": "Fehler bei der Anmeldung mit Google"
+    "googleError": "Fehler bei der Anmeldung mit Google",
+    "appleError": "Fehler bei der Anmeldung mit Apple"
   },
   "register": {
     "title": "Konto erstellen",
@@ -280,6 +282,7 @@
     "passwordPlaceholder": "Wähle ein Passwort",
     "createAccountButton": "Konto erstellen",
     "continueWithGoogle": "Weiter mit Google",
+    "continueWithApple": "Weiter mit Apple",
     "orContinueWith": "oder erstelle ein Konto mit E-Mail",
     "alreadyHaveAccount": "Hast du schon ein Konto?",
     "signIn": "Anmelden",
@@ -819,7 +822,7 @@
     "motionAnalysis": "Bewegung",
     "permissionRequired": "Kamerazugriff Erforderlich",
     "permissionMessage": "Erlaube Athlifyr den Zugriff auf deine Kamera und dein Mikrofon, um Fotos aufzunehmen und Videos zu drehen.",
-    "grantPermission": "Zugriff Erlauben",
+    "grantPermission": "Weiter",
     "photoSaved": "Foto Gespeichert",
     "photoSavedMessage": "Dein Foto wurde in der Galerie gespeichert.",
     "videoSaved": "Video Gespeichert",

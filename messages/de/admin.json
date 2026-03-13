@@ -16,7 +16,8 @@
         "giveaways": "Gewinnspiele",
         "posts": "Beiträge",
         "notes": "Anfragen",
-        "conversations": "KI-Gespräche"
+        "conversations": "KI-Gespräche",
+        "appleSettings": "Apple"
       }
     },
     "contacts": {
@@ -521,6 +522,54 @@
         "system": "System"
       },
       "metadata": "Metadaten"
+    },
+    "appleSettings": {
+      "title": "Apple Sign In Einstellungen",
+      "description": "Erstelle und verwalte das Apple Client Secret JWT für Sign in with Apple im Web. Dieses Secret läuft alle 6 Monate ab und muss neu generiert werden.",
+      "info": {
+        "title": "Was ist das?",
+        "whatIsThis": "Sign in with Apple im Web erfordert ein Client Secret JWT, signiert mit deinem Apple Private Key (.p8-Datei).",
+        "whyNeeded": "Apple erzwingt eine maximale Laufzeit von 6 Monaten. Nach Ablauf können sich Benutzer nicht mehr mit Apple auf der Website anmelden, bis ein neues Secret generiert und bereitgestellt wird.",
+        "whereToFind": "Du findest die Key ID und den Private Key unter Apple Developer > Certificates, Identifiers & Profiles > Keys."
+      },
+      "security": {
+        "title": "Sicherheitswarnung",
+        "description": "Der Private Key wird nur serverseitig verarbeitet und nie gespeichert. Behandle die .p8-Datei dennoch als kritisches Geheimnis — teile sie nie und committe sie nie ins Repository."
+      },
+      "steps": {
+        "title": "Nach der Generierung:",
+        "step1": "Kopiere das generierte Secret unten",
+        "step2": "Aktualisiere APPLE_CLIENT_SECRET in deiner .env-Datei",
+        "step3": "Aktualisiere die Umgebungsvariable auf Vercel (Production + Preview)",
+        "step4": "Stelle die Anwendung erneut bereit",
+        "step5": "Setze eine Kalender-Erinnerung für 6 Monate zur Neugenerierung"
+      },
+      "form": {
+        "title": "Client Secret generieren",
+        "description": "Fülle die Felder aus und füge deinen .p8 Private Key ein, um ein neues JWT zu generieren.",
+        "keyId": "Key ID",
+        "keyIdHint": "Aus dem .p8-Dateinamen (z.B. AuthKey_M2MVUK46V5.p8)",
+        "teamId": "Team ID",
+        "teamIdHint": "Deine Apple Developer Team ID",
+        "clientId": "Services ID (Client ID)",
+        "clientIdHint": "Der Bezeichner deiner Services ID",
+        "expiresInDays": "Läuft ab in (Tagen)",
+        "expiresInDaysHint": "Maximal 180 Tage (6 Monate). Apple erlaubt nicht mehr.",
+        "privateKey": "Private Key (.p8)",
+        "privateKeyHint": "Füge den vollständigen Inhalt der AuthKey_XXXXX.p8-Datei ein, einschließlich der BEGIN/END-Zeilen.",
+        "generate": "Secret generieren",
+        "generating": "Generierung...",
+        "errors": {
+          "generic": "Secret-Generierung fehlgeschlagen. Überprüfe das Format des Private Keys."
+        }
+      },
+      "result": {
+        "title": "Secret erfolgreich generiert!",
+        "copy": "Kopieren",
+        "copied": "Kopiert!",
+        "expiresAt": "Läuft ab am:",
+        "nextSteps": "Kopiere diesen Wert und aktualisiere APPLE_CLIENT_SECRET in deiner .env und auf Vercel. Dann erneut bereitstellen."
+      }
     }
   }
 }

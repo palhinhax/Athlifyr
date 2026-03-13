@@ -52,7 +52,7 @@ interface GiveawayCardProps {
   eventId: string;
 }
 
-export function GiveawayCard({ eventId }: GiveawayCardProps) {
+export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
   const { data: session } = useSession();
   const locale = useLocale();
   const pathname = usePathname();
@@ -235,9 +235,9 @@ export function GiveawayCard({ eventId }: GiveawayCardProps) {
               disabled={giveaway.hasJoined || isJoining}
               variant={giveaway.hasJoined ? "outline" : "default"}
               className={
-                !giveaway.hasJoined
-                  ? "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
-                  : ""
+                giveaway.hasJoined
+                  ? ""
+                  : "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
               }
             >
               {isJoining && (

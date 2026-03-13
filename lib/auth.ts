@@ -1,11 +1,68 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import Google from "next-auth/providers/google";
+import Apple from "next-auth/providers/apple";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import type { Adapter } from "next-auth/adapters";
 import { prisma } from "./prisma";
 import bcrypt from "bcryptjs";
 import type { UserRole } from "@prisma/client";
+import type { User, Account, Profile } from "next-auth";
+
+/** Normalize OAuth email and update if casing differs */
+async function normalizeOAuthEmail(
+  user: User,
+  account: Account,
+  profile: Profile | undefined
+) {
+  const emailSource =
+    account.provider === "google"
+      ? profile?.email
+      : (profile?.email ?? user.email);
+
+  if (!emailSource) return;
+
+  const normalizedEmail = emailSource.toLowerCase().trim();
+
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: normalizedEmail, mode: "insensitive" } },
+  });
+
+  if (
+    existingUser &&
+    existingUser.email !== normalizedEmail &&
+    existingUser.id === user.id
+  ) {
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { email: normalizedEmail },
+    });
+  }
+
+  if (user.email) {
+    user.email = normalizedEmail;
+  }
+
+  if (existingUser && !user.id) {
+    user.id = existingUser.id;
+  }
+}
+
+/** Sync Google profile picture on sign-in */
+async function syncGoogleImage(user: User, profile: Profile | undefined) {
+  if (!profile?.picture || !user?.id) return;
+
+  const existingUser = await prisma.user.findUnique({
+    where: { id: user.id },
+  });
+
+  if (existingUser) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { image: profile.picture },
+    });
+  }
+}
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PrismaAdapter(prisma) as Adapter,
@@ -38,6 +95,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           response_type: "code",
         },
       },
+    }),
+    Apple({
+      clientId: process.env.APPLE_CLIENT_ID,
+      clientSecret: process.env.APPLE_CLIENT_SECRET!,
     }),
     Credentials({
       credentials: {
@@ -82,56 +143,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   callbacks: {
     async signIn({ user, account, profile }) {
-      if (account?.provider === "google") {
-        // Normalize email to lowercase to prevent case-sensitive duplicates
-        if (profile?.email) {
-          const normalizedEmail = profile.email.toLowerCase().trim();
+      if (account?.provider === "google" || account?.provider === "apple") {
+        await normalizeOAuthEmail(user, account, profile);
 
-          // Check if a user with this email already exists (case-insensitive)
-          const existingUser = await prisma.user.findFirst({
-            where: {
-              email: {
-                equals: normalizedEmail,
-                mode: "insensitive",
-              },
-            },
-          });
-
-          // If user exists but with different casing, update to normalized email
-          if (
-            existingUser &&
-            existingUser.email !== normalizedEmail &&
-            existingUser.id === user.id
-          ) {
-            await prisma.user.update({
-              where: { id: existingUser.id },
-              data: { email: normalizedEmail },
-            });
-          }
-
-          // For new users, ensure normalized email is used in account creation
-          if (user.email) {
-            user.email = normalizedEmail;
-          }
-          // For existing users, ensure profile has correct ID reference
-          if (existingUser && !user.id) {
-            user.id = existingUser.id;
-          }
-        }
-
-        // Sync Google profile image on every sign-in (only if user already exists)
-        if (profile?.picture && user?.id) {
-          // Check if user exists before updating
-          const existingUser = await prisma.user.findUnique({
-            where: { id: user.id },
-          });
-
-          if (existingUser) {
-            await prisma.user.update({
-              where: { id: user.id },
-              data: { image: profile.picture },
-            });
-          }
+        if (account.provider === "google") {
+          await syncGoogleImage(user, profile);
         }
       }
       return true;

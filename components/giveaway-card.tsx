@@ -19,11 +19,10 @@ import {
   ChevronDown,
   Ticket,
   LogIn,
-  Smartphone,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
-import { GiveawayStatus, GiveawayPlatform } from "@prisma/client";
+import { GiveawayStatus } from "@prisma/client";
 
 interface GiveawayTranslation {
   lang: string;
@@ -34,7 +33,6 @@ interface GiveawayTranslation {
 interface GiveawayData {
   id: string;
   status: GiveawayStatus;
-  platform: GiveawayPlatform;
   drawAt: string | null;
   drawnAt: string | null;
   prizeCount: number;
@@ -52,87 +50,6 @@ interface GiveawayData {
 
 interface GiveawayCardProps {
   eventId: string;
-}
-
-function GiveawayActions({
-  canJoin,
-  isMobileExclusive,
-  platformLabel,
-  giveaway,
-  isWinner,
-  isJoining,
-  session,
-  locale,
-  pathname,
-  handleJoin,
-  t,
-}: Readonly<{
-  canJoin: boolean;
-  isMobileExclusive: boolean;
-  platformLabel: string;
-  giveaway: GiveawayData;
-  isWinner: boolean;
-  isJoining: boolean;
-  session: ReturnType<typeof useSession>["data"];
-  locale: string;
-  pathname: string;
-  handleJoin: () => void;
-  t: ReturnType<typeof useTranslations>;
-}>) {
-  return (
-    <>
-      {/* Ticket badge */}
-      {giveaway.hasJoined && giveaway.ticketNumber !== null && (
-        <span
-          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${
-            isWinner
-              ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
-              : "border-border bg-background text-foreground"
-          }`}
-        >
-          <Ticket className="h-3 w-3" />#{giveaway.ticketNumber}
-        </span>
-      )}
-
-      {/* Mobile exclusive badge — replaces join buttons on web */}
-      {canJoin && isMobileExclusive && !giveaway.hasJoined && (
-        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 dark:border-blue-800 dark:bg-blue-950/30 dark:text-blue-300">
-          <Smartphone className="h-3.5 w-3.5" />
-          {platformLabel}
-        </span>
-      )}
-
-      {/* Join button or login link — only when NOT mobile exclusive */}
-      {canJoin && !isMobileExclusive && !session && (
-        <Button
-          size="sm"
-          asChild
-          className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
-        >
-          <Link href={`/${locale}/auth/signin?callbackUrl=${pathname}`}>
-            <LogIn className="mr-1.5 h-3.5 w-3.5" />
-            {t("loginToParticipate")}
-          </Link>
-        </Button>
-      )}
-      {canJoin && !isMobileExclusive && session && (
-        <Button
-          size="sm"
-          onClick={handleJoin}
-          disabled={giveaway.hasJoined || isJoining}
-          variant={giveaway.hasJoined ? "outline" : "default"}
-          className={
-            giveaway.hasJoined
-              ? ""
-              : "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
-          }
-        >
-          {isJoining && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
-          {giveaway.hasJoined ? t("alreadyParticipating") : t("participate")}
-        </Button>
-      )}
-    </>
-  );
 }
 
 export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
@@ -222,18 +139,6 @@ export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
 
   const isWinner = isDrawn && giveaway.isWinner;
 
-  const isMobileExclusive =
-    giveaway.platform === "MOBILE" ||
-    giveaway.platform === "ANDROID" ||
-    giveaway.platform === "IOS";
-
-  const getPlatformLabel = (): string => {
-    if (giveaway.platform === "ANDROID") return t("exclusiveAndroid");
-    if (giveaway.platform === "IOS") return t("exclusiveIOS");
-    return t("exclusiveMobile");
-  };
-  const platformLabel = getPlatformLabel();
-
   return (
     <div
       className={`overflow-hidden rounded-xl border shadow-sm ${
@@ -297,19 +202,52 @@ export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
 
         {/* Right: action / ticket */}
         <div className="flex shrink-0 items-center gap-2 sm:ml-4">
-          <GiveawayActions
-            canJoin={canJoin}
-            isMobileExclusive={isMobileExclusive}
-            platformLabel={platformLabel}
-            giveaway={giveaway}
-            isWinner={isWinner}
-            isJoining={isJoining}
-            session={session}
-            locale={locale}
-            pathname={pathname}
-            handleJoin={handleJoin}
-            t={t}
-          />
+          {/* Ticket badge */}
+          {giveaway.hasJoined && giveaway.ticketNumber !== null && (
+            <span
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-semibold ${
+                isWinner
+                  ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200"
+                  : "border-border bg-background text-foreground"
+              }`}
+            >
+              <Ticket className="h-3 w-3" />#{giveaway.ticketNumber}
+            </span>
+          )}
+
+          {/* Join button or login link */}
+          {canJoin && !session && (
+            <Button
+              size="sm"
+              asChild
+              className="bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
+            >
+              <Link href={`/${locale}/auth/signin?callbackUrl=${pathname}`}>
+                <LogIn className="mr-1.5 h-3.5 w-3.5" />
+                {t("loginToParticipate")}
+              </Link>
+            </Button>
+          )}
+          {canJoin && session && (
+            <Button
+              size="sm"
+              onClick={handleJoin}
+              disabled={giveaway.hasJoined || isJoining}
+              variant={giveaway.hasJoined ? "outline" : "default"}
+              className={
+                giveaway.hasJoined
+                  ? ""
+                  : "bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-sm hover:from-teal-700 hover:to-emerald-700 dark:from-teal-500 dark:to-emerald-500"
+              }
+            >
+              {isJoining && (
+                <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+              )}
+              {giveaway.hasJoined
+                ? t("alreadyParticipating")
+                : t("participate")}
+            </Button>
+          )}
         </div>
       </div>
 

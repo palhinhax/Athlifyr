@@ -71,7 +71,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       giveaway: {
         id: giveaway.id,
         status: giveaway.status,
-        platform: giveaway.platform,
         drawAt: giveaway.drawAt,
         drawnAt: giveaway.drawnAt,
         prizeCount: giveaway.prizeCount,

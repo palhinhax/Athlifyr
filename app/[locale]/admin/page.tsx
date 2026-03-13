@@ -20,6 +20,7 @@ import {
   Gift,
   MessageCircle,
   StickyNote,
+  Apple,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -40,6 +41,7 @@ const AdminGiveawaysContent = lazy(() => import("./giveaways/page"));
 const AdminPostsContent = lazy(() => import("./posts/page"));
 const AdminNotesContent = lazy(() => import("./notes/page"));
 const AdminConversationsContent = lazy(() => import("./conversations/page"));
+const AdminAppleSettingsContent = lazy(() => import("./apple-settings/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -194,6 +196,15 @@ function AdminContent() {
               <Bot className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">
                 {t("tabs.conversations")}
+              </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="apple-settings"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Apple className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">
+                {t("tabs.appleSettings")}
               </span>
             </TabsTrigger>
           </TabsList>
@@ -358,6 +369,18 @@ function AdminContent() {
             }
           >
             <AdminConversationsContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="apple-settings">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminAppleSettingsContent />
           </Suspense>
         </TabsContent>
       </Tabs>

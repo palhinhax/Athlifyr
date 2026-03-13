@@ -22,6 +22,7 @@ import {
   startBackgroundLocation,
   stopBackgroundLocation,
 } from "../lib/background-location";
+import { api } from "../lib/api";
 
 // ─── Types (re-exported for consumers) ──────────────────────────────────────
 
@@ -156,8 +157,22 @@ export function useFreeRun() {
 
     await saveActivity(activity);
 
-    // Server sync is deferred to the save-activity screen so metadata
-    // (title, description, effort, etc.) is included in the payload.
+    // Sync to server (fire & forget)
+    try {
+      await api.post("/profile/activities", {
+        startedAt: activity.startedAt,
+        finishedAt: activity.finishedAt,
+        durationMs: activity.durationMs,
+        distanceM: activity.distanceM,
+        avgPaceMinKm: activity.avgPaceMinKm,
+        maxSpeedKmh: activity.maxSpeedKmh,
+        elevationGainM: activity.elevationGainM,
+        elevationLossM: activity.elevationLossM,
+        track: activity.track,
+      });
+    } catch {
+      console.warn("Failed to sync activity to server");
+    }
 
     useFreeRunSession.getState().update({
       isFinished: true,

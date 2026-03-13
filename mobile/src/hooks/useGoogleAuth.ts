@@ -1,8 +1,7 @@
 ﻿import * as WebBrowser from "expo-web-browser";
 import { useEffect, useState, useRef } from "react";
 import { Platform } from "react-native";
-import { setSecureItem, deleteSecureItem } from "@/src/lib/token-storage";
-import { flushPendingActivities } from "@/src/lib/activity-sync-queue";
+import * as SecureStore from "expo-secure-store";
 import { api } from "@/src/lib/api";
 import { useAuthStore } from "@/src/lib/auth-store";
 import * as AuthSession from "expo-auth-session";
@@ -113,9 +112,12 @@ export function useGoogleAuth() {
       );
     }
     if (request?.codeVerifier) {
-      await setSecureItem("google-code-verifier", request.codeVerifier);
+      await SecureStore.setItemAsync(
+        "google-code-verifier",
+        request.codeVerifier
+      );
     }
-    await setSecureItem("google-redirect-uri", redirectUri);
+    await SecureStore.setItemAsync("google-redirect-uri", redirectUri);
     return promptAsync(options);
   };
 
@@ -152,11 +154,11 @@ export function useGoogleAuth() {
 
       authenticate()
         .then(async ({ token, refreshToken, user, expiresIn }) => {
-          await setSecureItem(TOKEN_KEY, token);
+          await SecureStore.setItemAsync(TOKEN_KEY, token);
           if (refreshToken)
-            await setSecureItem(REFRESH_TOKEN_KEY, refreshToken);
+            await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
           if (expiresIn) {
-            await setSecureItem(
+            await SecureStore.setItemAsync(
               TOKEN_EXPIRY_KEY,
               String(Date.now() + expiresIn * 1000)
             );
@@ -169,9 +171,6 @@ export function useGoogleAuth() {
             isLoading: false,
           });
           console.log("✅ Google auth OK, user:", user.id);
-
-          // Sync any activities recorded while logged out
-          flushPendingActivities().catch(() => {});
         })
         .catch((err: unknown) => {
           // Don't wipe tokens if authentication already succeeded elsewhere
@@ -180,9 +179,9 @@ export function useGoogleAuth() {
             err instanceof Error ? err.message : "Authentication failed";
           console.error("❌ Google auth error:", message);
           setError(message);
-          deleteSecureItem(TOKEN_KEY);
-          deleteSecureItem(REFRESH_TOKEN_KEY);
-          deleteSecureItem(TOKEN_EXPIRY_KEY);
+          SecureStore.deleteItemAsync(TOKEN_KEY);
+          SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+          SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
         })
         .finally(() => {
           setIsLoading(false);

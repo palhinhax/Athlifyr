@@ -389,10 +389,7 @@
         "verifyFormula": "SHA-256(\"{secret}|{rank}|{attempt}\") % {total} + 1 = #{winning}"
       },
       "winner": "Gewinner",
-      "youWon": "🎉 Herzlichen Glückwunsch, du hast die Verlosung gewonnen!",
-      "exclusiveMobile": "Exklusiv in der mobilen App",
-      "exclusiveAndroid": "Exklusiv für Android",
-      "exclusiveIOS": "Exklusiv für iOS"
+      "youWon": "🎉 Herzlichen Glückwunsch, du hast die Verlosung gewonnen!"
     }
   },
   "eventsPage": {

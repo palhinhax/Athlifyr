@@ -1,12 +1,8 @@
 import axios from "axios";
 import type { AxiosError, InternalAxiosRequestConfig } from "axios";
+import * as SecureStore from "expo-secure-store";
 import { Platform } from "react-native";
 import { getIntegrityToken } from "@/src/lib/integrity";
-import {
-  getSecureItem,
-  setSecureItem,
-  deleteSecureItem,
-} from "@/src/lib/token-storage";
 
 export const API_URL =
   process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
@@ -52,7 +48,7 @@ api.interceptors.request.use(
   async (config) => {
     try {
       // Add auth token
-      const token = await getSecureItem(TOKEN_KEY);
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
         console.log(
@@ -139,7 +135,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const refreshToken = await getSecureItem(REFRESH_TOKEN_KEY);
+        const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
 
         if (!refreshToken) {
           throw new Error("No refresh token available");
@@ -154,9 +150,9 @@ api.interceptors.response.use(
           response.data;
 
         // Store new tokens
-        await setSecureItem(TOKEN_KEY, newToken);
+        await SecureStore.setItemAsync(TOKEN_KEY, newToken);
         if (newRefreshToken) {
-          await setSecureItem(REFRESH_TOKEN_KEY, newRefreshToken);
+          await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, newRefreshToken);
         }
 
         // Retry the original request with new token
@@ -167,8 +163,8 @@ api.interceptors.response.use(
       } catch (refreshError) {
         // Refresh failed - clear tokens and logout
         processQueue(refreshError as Error, null);
-        await deleteSecureItem(TOKEN_KEY);
-        await deleteSecureItem(REFRESH_TOKEN_KEY);
+        await SecureStore.deleteItemAsync(TOKEN_KEY);
+        await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
         throw error;
       } finally {
         isRefreshing = false;

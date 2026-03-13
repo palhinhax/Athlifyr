@@ -16,7 +16,8 @@
         "giveaways": "Sorteggi",
         "posts": "Post",
         "notes": "Richieste",
-        "conversations": "Conversazioni IA"
+        "conversations": "Conversazioni IA",
+        "appleSettings": "Apple"
       }
     },
     "contacts": {
@@ -385,8 +386,7 @@
         "variant": "Variante (opzionale)",
         "variantPlaceholder": "Seleziona una variante",
         "variantAll": "Tutte le varianti",
-        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica.",
-        "platform": "Piattaforma"
+        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica."
       },
       "form": {
         "title": "Titolo",
@@ -518,6 +518,54 @@
         "system": "Sistema"
       },
       "metadata": "Metadati"
+    },
+    "appleSettings": {
+      "title": "Impostazioni Apple Sign In",
+      "description": "Genera e gestisci il client secret JWT di Apple per Sign in with Apple sul web. Questo secret scade ogni 6 mesi e deve essere rigenerato.",
+      "info": {
+        "title": "Cos'è questo?",
+        "whatIsThis": "Sign in with Apple sul web richiede un client secret JWT, firmato con la tua chiave privata Apple (file .p8).",
+        "whyNeeded": "Apple impone una scadenza massima di 6 mesi. Quando scade, gli utenti non possono accedere con Apple sul sito web fino a quando non viene generato e distribuito un nuovo secret.",
+        "whereToFind": "Puoi trovare il Key ID e la chiave privata in Apple Developer > Certificates, Identifiers & Profiles > Keys."
+      },
+      "security": {
+        "title": "Avviso di Sicurezza",
+        "description": "La chiave privata viene elaborata solo lato server e non viene mai archiviata. Tuttavia, tratta il file .p8 come un segreto critico — non condividerlo mai e non eseguire il commit nel repository."
+      },
+      "steps": {
+        "title": "Dopo la generazione:",
+        "step1": "Copia il secret generato qui sotto",
+        "step2": "Aggiorna APPLE_CLIENT_SECRET nel tuo file .env",
+        "step3": "Aggiorna la variabile d'ambiente su Vercel (Production + Preview)",
+        "step4": "Ridistribuisci l'applicazione",
+        "step5": "Imposta un promemoria nel calendario tra 6 mesi per rigenerare"
+      },
+      "form": {
+        "title": "Genera Client Secret",
+        "description": "Compila i campi e incolla la tua chiave privata .p8 per generare un nuovo JWT.",
+        "keyId": "Key ID",
+        "keyIdHint": "Dal nome del file .p8 (es: AuthKey_M2MVUK46V5.p8)",
+        "teamId": "Team ID",
+        "teamIdHint": "Il tuo Apple Developer Team ID",
+        "clientId": "Services ID (Client ID)",
+        "clientIdHint": "L'identificatore del tuo Services ID",
+        "expiresInDays": "Scade tra (giorni)",
+        "expiresInDaysHint": "Massimo 180 giorni (6 mesi). Apple non consente di più.",
+        "privateKey": "Chiave Privata (.p8)",
+        "privateKeyHint": "Incolla il contenuto completo del file AuthKey_XXXXX.p8, comprese le righe BEGIN/END.",
+        "generate": "Genera Secret",
+        "generating": "Generazione...",
+        "errors": {
+          "generic": "Generazione del secret fallita. Verifica il formato della chiave privata."
+        }
+      },
+      "result": {
+        "title": "Secret generato con successo!",
+        "copy": "Copia",
+        "copied": "Copiato!",
+        "expiresAt": "Scade il:",
+        "nextSteps": "Copia questo valore e aggiorna APPLE_CLIENT_SECRET nel tuo .env e su Vercel. Poi ridistribuisci."
+      }
     }
   }
 }

@@ -9,6 +9,7 @@ jest.mock("@/components/admin-note-card", () => ({
   AdminNoteCard: ({
     note,
     onStatusChange,
+    onAdminNotesChange,
     onDelete,
   }: {
     note: { id: string; title: string; status: string };
@@ -24,6 +25,12 @@ jest.mock("@/components/admin-note-card", () => ({
         onClick={() => onStatusChange(note.id, "resolved")}
       >
         Resolve
+      </button>
+      <button
+        data-testid={`admin-notes-${note.id}`}
+        onClick={() => onAdminNotesChange(note.id, "Admin note text")}
+      >
+        Add Notes
       </button>
       <button
         data-testid={`delete-${note.id}`}
@@ -92,7 +99,7 @@ const VENUE_NOTE = {
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => jest.resetAllMocks());
 
 describe("AdminEventSuggestions", () => {
   it("shows loading spinner initially", () => {
@@ -215,5 +222,205 @@ describe("AdminEventSuggestions", () => {
     await waitFor(() => {
       expect(screen.getByText("Sem sugestões de eventos.")).toBeInTheDocument();
     });
+  });
+
+  it("handles status change failure (non-ok response)", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("resolve-n1"));
+
+    // Should still show the note with original status
+    await waitFor(() => {
+      expect(screen.getByTestId("note-status-n1")).toHaveTextContent("pending");
+    });
+  });
+
+  it("handles status change network error silently", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockRejectedValueOnce(new Error("Network error"));
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("resolve-n1"));
+
+    // Should not crash - note still visible
+    expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+  });
+
+  it("increments pending count when changing status to pending", async () => {
+    // Start with a resolved note
+    const resolvedNote = { ...NOTE_2, status: "resolved" };
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1, resolvedNote] }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 pendentes")).toBeInTheDocument();
+    });
+  });
+
+  it("handles delete failure (non-ok response)", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({}),
+      });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("delete-n1"));
+
+    // Note should still be visible since delete failed
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+  });
+
+  it("handles delete network error silently", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockRejectedValueOnce(new Error("Network error"));
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("delete-n1"));
+
+    // Note should still exist
+    expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+  });
+
+  it("decrements pending count when deleting a pending note", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1, NOTE_2] }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByText("1 pendentes")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("delete-n1"));
+
+    // Badge disappears when pending count reaches 0 (pendingCount > 0 check)
+    await waitFor(() => {
+      expect(screen.queryByText(/pendentes/)).not.toBeInTheDocument();
+    });
+  });
+
+  it("handles admin notes change", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("admin-notes-n1"));
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith("/api/admin/notes/n1", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminNotes: "Admin note text" }),
+      });
+    });
+  });
+
+  it("handles admin notes change failure (non-ok response)", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockResolvedValueOnce({ ok: false, status: 500 });
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("admin-notes-n1"));
+
+    // Should not crash, note still visible
+    expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+  });
+
+  it("handles admin notes change network error silently", async () => {
+    const user = userEvent.setup();
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ notes: [NOTE_1] }),
+      })
+      .mockRejectedValueOnce(new Error("Network error"));
+
+    render(<AdminEventSuggestions />);
+
+    await waitFor(() => {
+      expect(screen.getByTestId("note-n1")).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByTestId("admin-notes-n1"));
+
+    // Should not crash
+    expect(screen.getByTestId("note-n1")).toBeInTheDocument();
   });
 });

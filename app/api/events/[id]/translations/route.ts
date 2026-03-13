@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
 
+type Language = "pt" | "en" | "es" | "fr" | "de" | "it";
+
 interface RouteParams {
   params: Promise<{
     id: string;
@@ -28,10 +30,8 @@ export async function GET(request: Request, { params }: RouteParams) {
     });
 
     // Create a map of variant translations by variant ID
-    const variantTranslations: Record<
-      string,
-      (typeof variants)[0]["translations"]
-    > = {};
+    type VariantTranslations = (typeof variants)[0]["translations"];
+    const variantTranslations: Record<string, VariantTranslations> = {};
     variants.forEach((variant) => {
       variantTranslations[variant.id] = variant.translations;
     });
@@ -96,7 +96,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             await prisma.eventTranslation.deleteMany({
               where: {
                 eventId: id,
-                language: t.language as "pt" | "en" | "es" | "fr" | "de" | "it",
+                language: t.language as Language,
               },
             });
             return null;
@@ -106,7 +106,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             where: {
               eventId_language: {
                 eventId: id,
-                language: t.language as "pt" | "en" | "es" | "fr" | "de" | "it",
+                language: t.language as Language,
               },
             },
             update: {

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useTranslations } from "next-intl";
+import { useTranslations, useLocale } from "next-intl";
 import { Search, Loader2, Calendar, MapPin } from "lucide-react";
 import {
   Dialog,
@@ -22,7 +22,6 @@ import {
 } from "@/components/featured-event-card";
 import { SportBadge } from "@/components/sport-badge";
 import { formatDateRange } from "@/lib/event-utils";
-import { useLocale } from "next-intl";
 import type { SportType, EventVariant } from "@prisma/client";
 import Image from "next/image";
 
@@ -56,7 +55,7 @@ export function ShareEventDialog({
   venueName,
   onEventShared,
   children,
-}: ShareEventDialogProps) {
+}: Readonly<ShareEventDialogProps>) {
   const t = useTranslations("venues.shareEvent");
   const locale = useLocale();
   const { toast } = useToast();

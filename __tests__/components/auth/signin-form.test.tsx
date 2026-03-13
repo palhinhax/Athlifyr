@@ -39,6 +39,14 @@ jest.mock("@/hooks/use-google-auth", () => ({
   }),
 }));
 
+const mockSignInWithApple = jest.fn();
+jest.mock("@/hooks/use-apple-auth", () => ({
+  useAppleAuth: () => ({
+    signInWithApple: mockSignInWithApple,
+    isLoading: false,
+  }),
+}));
+
 const mockToast = jest.fn();
 jest.mock("@/components/ui/use-toast", () => ({
   useToast: () => ({ toast: mockToast }),
@@ -212,5 +220,58 @@ describe("SignInForm", () => {
       await user.click(toggleBtn);
       expect(passwordInput).toHaveAttribute("type", "text");
     }
+  });
+
+  it("handles Apple sign-in error", async () => {
+    const user = userEvent.setup();
+    mockSignInWithApple.mockRejectedValueOnce(new Error("Apple error"));
+
+    render(<SignInForm />);
+
+    const appleBtn = screen.getByRole("button", {
+      name: /continueWithApple/,
+    });
+    await user.click(appleBtn);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("calls signInWithApple on Apple button click", async () => {
+    const user = userEvent.setup();
+    mockSignInWithApple.mockResolvedValueOnce(undefined);
+
+    render(<SignInForm />);
+
+    const appleBtn = screen.getByRole("button", {
+      name: /continueWithApple/,
+    });
+    await user.click(appleBtn);
+
+    await waitFor(() => {
+      expect(mockSignInWithApple).toHaveBeenCalledWith("/");
+    });
+  });
+
+  it("handles catch in handleSubmit", async () => {
+    const user = userEvent.setup();
+    mockSignIn.mockRejectedValueOnce(new Error("network error"));
+
+    render(<SignInForm />);
+
+    await user.type(screen.getByLabelText("email"), "test@example.com");
+    await user.type(screen.getByLabelText("password"), "Test123!");
+
+    const submitBtn = screen.getByRole("button", { name: /title|signIn/i });
+    await user.click(submitBtn);
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
   });
 });

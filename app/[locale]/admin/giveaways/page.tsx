@@ -44,14 +44,13 @@ import {
   Pencil,
   Trash2,
   Send,
-  Smartphone,
   Search,
   X,
   UserPlus,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
-import { GiveawayStatus, GiveawayPlatform, Language } from "@prisma/client";
+import { GiveawayStatus, Language } from "@prisma/client";
 import { formatDate } from "@/lib/event-utils";
 
 const LANGUAGES: Language[] = ["pt", "en", "es", "fr", "de", "it"];
@@ -74,7 +73,6 @@ interface Giveaway {
   id: string;
   eventId: string;
   status: GiveawayStatus;
-  platform: GiveawayPlatform;
   drawAt: string | null;
   prizeCount: number;
   secretHash: string | null;
@@ -83,13 +81,6 @@ interface Giveaway {
   translations: GiveawayTranslation[];
   _count: { participations: number; winners: number };
 }
-
-const PLATFORM_OPTIONS: GiveawayPlatform[] = [
-  "ALL",
-  "MOBILE",
-  "ANDROID",
-  "IOS",
-];
 
 interface Event {
   id: string;
@@ -174,7 +165,6 @@ export default function AdminGiveawaysPage() {
     eventId: "",
     drawAt: "",
     prizeCount: 1,
-    platform: "ALL" as GiveawayPlatform,
     translations: LANGUAGES.map((lang) => ({ lang, title: "", details: "" })),
   });
 
@@ -262,7 +252,6 @@ export default function AdminGiveawaysPage() {
         eventId: "",
         drawAt: "",
         prizeCount: 1,
-        platform: "ALL" as GiveawayPlatform,
         translations: LANGUAGES.map((lang) => ({
           lang,
           title: "",
@@ -484,7 +473,6 @@ export default function AdminGiveawaysPage() {
         ? new Date(giveaway.drawAt).toISOString().slice(0, 10)
         : "",
       prizeCount: giveaway.prizeCount,
-      platform: giveaway.platform ?? ("ALL" as GiveawayPlatform),
       translations: LANGUAGES.map((lang) => {
         const existing = giveaway.translations.find((t) => t.lang === lang);
         return {
@@ -604,14 +592,6 @@ export default function AdminGiveawaysPage() {
                       {t(`status.${giveaway.status}`)}
                     </Badge>
                   </div>
-                  {giveaway.platform && giveaway.platform !== "ALL" && (
-                    <div className="mb-1">
-                      <Badge variant="outline" className="gap-1 text-xs">
-                        <Smartphone className="h-3 w-3" />
-                        {t(`platform.${giveaway.platform}`)}
-                      </Badge>
-                    </div>
-                  )}
                   <p className="mb-3 font-medium">
                     {translation?.title || "—"}
                   </p>
@@ -650,7 +630,6 @@ export default function AdminGiveawaysPage() {
               eventId: "",
               drawAt: "",
               prizeCount: 1,
-              platform: "ALL" as GiveawayPlatform,
               translations: LANGUAGES.map((lang) => ({
                 lang,
                 title: "",
@@ -725,33 +704,6 @@ export default function AdminGiveawaysPage() {
                   }
                 />
               </div>
-            </div>
-            <div>
-              <Label>{t("fields.platform")}</Label>
-              <Select
-                value={formData.platform}
-                onValueChange={(v) =>
-                  setFormData((p) => ({
-                    ...p,
-                    platform: v as GiveawayPlatform,
-                  }))
-                }
-                disabled={
-                  editingOriginalStatus !== null &&
-                  editingOriginalStatus !== GiveawayStatus.DRAFT
-                }
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {PLATFORM_OPTIONS.map((p) => (
-                    <SelectItem key={p} value={p}>
-                      {t(`platform.${p}`)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
             {/* Secret and hash are now auto-generated on creation */}
             <div>

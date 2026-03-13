@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GiveawayStatus, GiveawayPlatform, Language } from "@prisma/client";
+import { GiveawayStatus, Language } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -65,7 +65,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       drawAt,
       prizeCount,
       status,
-      platform,
       translations,
       secretHash,
       secretRevealed,
@@ -73,7 +72,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       drawAt?: string | null;
       prizeCount?: number;
       status?: GiveawayStatus;
-      platform?: GiveawayPlatform;
       secretHash?: string | null;
       secretRevealed?: string | null;
       translations?: Array<{ lang: Language; title: string; details: string }>;
@@ -114,12 +112,10 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       }
     }
 
-    // Only DRAFT giveaways can have core fields edited (event, prizeCount, drawAt, platform)
+    // Only DRAFT giveaways can have core fields edited (event, prizeCount, drawAt)
     if (
       existing.status !== GiveawayStatus.DRAFT &&
-      (drawAt !== undefined ||
-        prizeCount !== undefined ||
-        platform !== undefined)
+      (drawAt !== undefined || prizeCount !== undefined)
     ) {
       return NextResponse.json(
         {
@@ -164,7 +160,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       drawAt?: Date | null;
       prizeCount?: number;
       status?: GiveawayStatus;
-      platform?: GiveawayPlatform;
       secretHash?: string | null;
       secretRevealed?: string | null;
     } = {};
@@ -172,7 +167,6 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       updateData.drawAt = drawAt ? new Date(drawAt) : null;
     if (prizeCount !== undefined) updateData.prizeCount = prizeCount;
     if (status !== undefined) updateData.status = status;
-    if (platform !== undefined) updateData.platform = platform;
     if (secretHash !== undefined) updateData.secretHash = secretHash;
     if (secretRevealed !== undefined)
       updateData.secretRevealed = secretRevealed;

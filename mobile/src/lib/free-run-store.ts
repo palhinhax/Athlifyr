@@ -6,8 +6,6 @@
 // ============================================================================
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { api } from "./api";
-import { enqueueActivity } from "./activity-sync-queue";
 
 const ACTIVITIES_KEY = "free-run-activities";
 const MAX_STORED_ACTIVITIES = 100;
@@ -23,9 +21,6 @@ export interface FreeRunGPSPoint {
   accuracy?: number;
 }
 
-export type PerceivedEffort = 1 | 2 | 3 | 4 | 5;
-export type ActivityVisibility = "everyone" | "only_me";
-
 export interface FreeRunActivity {
   id: string;
   startedAt: number;
@@ -37,13 +32,6 @@ export interface FreeRunActivity {
   elevationGainM: number;
   elevationLossM: number;
   track: FreeRunGPSPoint[];
-  // Metadata (editable via save screen)
-  title?: string;
-  description?: string;
-  perceivedEffort?: PerceivedEffort;
-  photos?: string[];
-  visibility?: ActivityVisibility;
-  muted?: boolean;
 }
 
 // ─── Storage API ────────────────────────────────────────────────────────────
@@ -75,18 +63,6 @@ export async function getActivity(
   return activities.find((a) => a.id === activityId) ?? null;
 }
 
-export async function updateActivity(
-  activityId: string,
-  updates: Partial<Omit<FreeRunActivity, "id">>
-): Promise<FreeRunActivity | null> {
-  const activities = await loadActivities();
-  const idx = activities.findIndex((a) => a.id === activityId);
-  if (idx === -1) return null;
-  activities[idx] = { ...activities[idx], ...updates };
-  await AsyncStorage.setItem(ACTIVITIES_KEY, JSON.stringify(activities));
-  return activities[idx];
-}
-
 /**
  * Export the track as a GPX XML string.
  */
@@ -110,35 +86,4 @@ ${points}
     </trkseg>
   </trk>
 </gpx>`;
-}
-
-/**
- * Sync a saved activity (with metadata) to the server.
- * Queues for retry if the network request fails.
- */
-export async function syncActivityToServer(
-  activity: FreeRunActivity
-): Promise<void> {
-  const syncPayload = {
-    startedAt: activity.startedAt,
-    finishedAt: activity.finishedAt,
-    durationMs: activity.durationMs,
-    distanceM: activity.distanceM,
-    avgPaceMinKm: activity.avgPaceMinKm,
-    maxSpeedKmh: activity.maxSpeedKmh,
-    elevationGainM: activity.elevationGainM,
-    elevationLossM: activity.elevationLossM,
-    track: activity.track,
-    title: activity.title,
-    description: activity.description,
-    perceivedEffort: activity.perceivedEffort,
-    visibility: activity.visibility,
-    muted: activity.muted,
-  };
-  try {
-    await api.post("/profile/activities", syncPayload);
-  } catch {
-    console.warn("Failed to sync activity — queued for retry after login");
-    await enqueueActivity(syncPayload);
-  }
 }

@@ -1,11 +1,6 @@
 import { create } from "zustand";
+import * as SecureStore from "expo-secure-store";
 import { api } from "./api";
-import { flushPendingActivities } from "./activity-sync-queue";
-import {
-  getSecureItem,
-  setSecureItem,
-  deleteSecureItem,
-} from "./token-storage";
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";
@@ -48,18 +43,18 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setToken: async (token) => {
     if (token) {
-      await setSecureItem(TOKEN_KEY, token);
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
     } else {
-      await deleteSecureItem(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
     }
     set({ token, isAuthenticated: !!token });
   },
 
   setPushToken: async (pushToken) => {
     if (pushToken) {
-      await setSecureItem(PUSH_TOKEN_KEY, pushToken);
+      await SecureStore.setItemAsync(PUSH_TOKEN_KEY, pushToken);
     } else {
-      await deleteSecureItem(PUSH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
     }
     set({ pushToken });
   },
@@ -69,9 +64,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       set({ isLoading: true });
 
       // Clear any previous session tokens before logging in
-      await deleteSecureItem(TOKEN_KEY);
-      await deleteSecureItem(REFRESH_TOKEN_KEY);
-      await deleteSecureItem(TOKEN_EXPIRY_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
 
       const response = await api.post("/auth/login", {
         email: email.toLowerCase().trim(),
@@ -80,9 +75,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { token, refreshToken, user } = response.data;
 
       // Store tokens
-      await setSecureItem(TOKEN_KEY, token);
+      await SecureStore.setItemAsync(TOKEN_KEY, token);
       if (refreshToken) {
-        await setSecureItem(REFRESH_TOKEN_KEY, refreshToken);
+        await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, refreshToken);
       }
 
       // Update state
@@ -92,9 +87,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         isAuthenticated: true,
         isLoading: false,
       });
-
-      // Sync any activities recorded while logged out
-      flushPendingActivities().catch(() => {});
     } catch (error) {
       set({ isLoading: false });
       throw error;
@@ -121,10 +113,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       console.error("Logout API error:", error);
     } finally {
       // Clear tokens
-      await deleteSecureItem(TOKEN_KEY);
-      await deleteSecureItem(REFRESH_TOKEN_KEY);
-      await deleteSecureItem(PUSH_TOKEN_KEY);
-      await deleteSecureItem(TOKEN_EXPIRY_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(PUSH_TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
 
       // Clear state
       set({
@@ -140,8 +132,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       set({ isLoading: true });
 
-      const token = await getSecureItem(TOKEN_KEY);
-      const storedPushToken = await getSecureItem(PUSH_TOKEN_KEY);
+      const token = await SecureStore.getItemAsync(TOKEN_KEY);
+      const storedPushToken = await SecureStore.getItemAsync(PUSH_TOKEN_KEY);
 
       if (token) {
         // Verify token with API
@@ -156,16 +148,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           isLoading: false,
           pushToken: storedPushToken,
         });
-
-        // Sync any activities recorded while logged out
-        flushPendingActivities().catch(() => {});
       } else {
         set({ isLoading: false });
       }
     } catch {
       // Token invalid or expired
-      await deleteSecureItem(TOKEN_KEY);
-      await deleteSecureItem(TOKEN_EXPIRY_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
       set({
         user: null,
         token: null,
@@ -177,7 +166,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   refreshToken: async () => {
     try {
-      const refreshToken = await getSecureItem(REFRESH_TOKEN_KEY);
+      const refreshToken = await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
 
       if (!refreshToken) {
         throw new Error("No refresh token available");
@@ -187,9 +176,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       const { token: newToken, refreshToken: newRefreshToken } = response.data;
 
       // Store new tokens
-      await setSecureItem(TOKEN_KEY, newToken);
+      await SecureStore.setItemAsync(TOKEN_KEY, newToken);
       if (newRefreshToken) {
-        await setSecureItem(REFRESH_TOKEN_KEY, newRefreshToken);
+        await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, newRefreshToken);
       }
 
       set({ token: newToken });

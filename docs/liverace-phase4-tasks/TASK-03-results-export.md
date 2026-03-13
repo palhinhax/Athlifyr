@@ -64,6 +64,7 @@ app/api/events/[id]/results/export/route.ts
 ### Reuse Existing Utilities
 
 From `lib/csv-export.ts`:
+
 - `escapeCSVField()` — RFC 4180 field escaping
 - `buildCSVRow()` — Row construction
 - `buildCSV()` — Full CSV with BOM

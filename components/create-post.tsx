@@ -24,11 +24,11 @@ interface PostWithDetails {
 }
 
 interface CreatePostProps {
-  eventId?: string;
-  venueId?: string;
-  onPostCreated?: (post?: PostWithDetails) => void;
-  userImage?: string | null;
-  userName?: string | null;
+  readonly eventId?: string;
+  readonly venueId?: string;
+  readonly onPostCreated?: (post?: PostWithDetails) => void;
+  readonly userImage?: string | null;
+  readonly userName?: string | null;
 }
 
 export function CreatePost({
@@ -56,6 +56,10 @@ export function CreatePost({
   // Use props if provided, otherwise fall back to session
   const displayImage = userImage ?? session?.user?.image;
   const displayName = userName ?? session?.user?.name;
+
+  // Determine placeholder text based on context
+  const placeholderText =
+    eventId || venueId ? t("sharePost") : t("sharePostFeed");
 
   const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -153,7 +157,7 @@ export function CreatePost({
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!content.trim()) {
@@ -265,13 +269,7 @@ export function CreatePost({
           <textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder={
-              eventId
-                ? t("sharePost")
-                : venueId
-                  ? t("sharePost")
-                  : t("sharePostFeed")
-            }
+            placeholder={placeholderText}
             className="min-h-[80px] flex-1 resize-none rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             disabled={isSubmitting || isUploading}
           />
@@ -285,7 +283,9 @@ export function CreatePost({
                 src={mediaPreview}
                 controls
                 className="h-auto max-h-[500px] w-full object-contain"
-              />
+              >
+                <track kind="captions" srcLang="en" label="English" />
+              </video>
             ) : (
               <Image
                 src={mediaPreview}

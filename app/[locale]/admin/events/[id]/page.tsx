@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import {
   Select,
   SelectContent,
@@ -24,10 +25,12 @@ import {
   Shield,
   UserPlus,
   Users,
+  Star,
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { SportType, EventOrganizerRole } from "@prisma/client";
 import { Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +44,7 @@ interface EventDetails {
   sportTypes: SportType[];
   hasRegistrations: boolean;
   hasLiveRace: boolean;
+  isFeatured: boolean;
   commissionPercent: number;
   refundDeadline: string | null;
   checkInOpensAt: string | null;
@@ -65,6 +69,7 @@ const ORGANIZER_ROLE_LABELS: Record<EventOrganizerRole, string> = {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function AdminEventSettingsPage() {
+  const t = useTranslations("admin.events");
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -77,6 +82,7 @@ export default function AdminEventSettingsPage() {
 
   const [settings, setSettings] = useState({
     hasLiveRace: false,
+    isFeatured: false,
     commissionPercent: 0.0,
     refundDeadline: "",
     checkInOpensAt: "",
@@ -105,6 +111,7 @@ export default function AdminEventSettingsPage() {
       setEvent(data);
       setSettings({
         hasLiveRace: data.hasLiveRace,
+        isFeatured: data.isFeatured,
         commissionPercent: data.commissionPercent,
         refundDeadline: data.refundDeadline
           ? new Date(data.refundDeadline).toISOString().slice(0, 16)
@@ -149,6 +156,7 @@ export default function AdminEventSettingsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           hasLiveRace: settings.hasLiveRace,
+          isFeatured: settings.isFeatured,
           commissionPercent: settings.commissionPercent,
           refundDeadline: settings.refundDeadline || null,
           checkInOpensAt: settings.checkInOpensAt || null,
@@ -241,6 +249,12 @@ export default function AdminEventSettingsPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {event.isFeatured && (
+              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300">
+                <Star className="mr-1 h-3 w-3" />
+                {t("featuredBadge")}
+              </Badge>
+            )}
             {event.hasLiveRace && (
               <Badge className="bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
                 <Shield className="mr-1 h-3 w-3" />
@@ -361,23 +375,29 @@ export default function AdminEventSettingsPage() {
                     Rastreamento GPS em tempo real e resultados ao vivo
                   </p>
                 </div>
-                <button
-                  onClick={() =>
-                    setSettings((prev) => ({
-                      ...prev,
-                      hasLiveRace: !prev.hasLiveRace,
-                    }))
+                <Switch
+                  checked={settings.hasLiveRace}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, hasLiveRace: checked }))
                   }
-                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                    settings.hasLiveRace ? "bg-purple-600" : "bg-muted"
-                  }`}
-                >
-                  <span
-                    className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${
-                      settings.hasLiveRace ? "translate-x-6" : "translate-x-1"
-                    }`}
-                  />
-                </button>
+                  className="data-[state=checked]:bg-purple-600"
+                />
+              </div>
+
+              <div className="flex items-center justify-between rounded-lg border p-4">
+                <div>
+                  <p className="font-medium">{t("featuredToggleTitle")}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {t("featuredToggleDescription")}
+                  </p>
+                </div>
+                <Switch
+                  checked={settings.isFeatured}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, isFeatured: checked }))
+                  }
+                  className="data-[state=checked]:bg-amber-500"
+                />
               </div>
 
               <div className="space-y-2">

@@ -72,7 +72,7 @@ app/api/events/[id]/results/[resultId]/route.ts
 interface AdjustPayload {
   action: "DSQ" | "DNF" | "REINSTATE" | "ADJUST_TIME" | "ADJUST_BIB";
   reason: string; // Required, non-empty
-  time?: string;  // Required for ADJUST_TIME (HH:MM:SS)
+  time?: string; // Required for ADJUST_TIME (HH:MM:SS)
   bibNumber?: string; // Required for ADJUST_BIB
 }
 ```

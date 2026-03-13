@@ -14,7 +14,9 @@ import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
 import { EventCard } from "@/src/components/EventCard";
 import { EventsMap } from "@/src/components/EventsMap";
-import { Search, LayoutGrid, Map } from "lucide-react-native";
+import { SuggestEventModal } from "@/src/components/SuggestEventModal";
+import { useAuthStore } from "@/src/lib/auth-store";
+import { Search, LayoutGrid, Map, Plus } from "lucide-react-native";
 import type { Event } from "@/src/types";
 
 interface EventsResponse {
@@ -30,7 +32,9 @@ interface EventsResponse {
 
 export default function EventsScreen() {
   const { t } = useTranslation();
+  const { isAuthenticated } = useAuthStore();
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
+  const [suggestModalVisible, setSuggestModalVisible] = useState(false);
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -210,6 +214,22 @@ export default function EventsScreen() {
           }
         />
       )}
+
+      {/* FAB - Suggest Event */}
+      {isAuthenticated && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => setSuggestModalVisible(true)}
+          activeOpacity={0.8}
+        >
+          <Plus size={24} color={theme.colors.white} strokeWidth={2.5} />
+        </TouchableOpacity>
+      )}
+
+      <SuggestEventModal
+        visible={suggestModalVisible}
+        onClose={() => setSuggestModalVisible(false)}
+      />
     </View>
   );
 }
@@ -291,5 +311,17 @@ const styles = StyleSheet.create({
     color: theme.colors.textSecondary,
     textAlign: "center",
     paddingHorizontal: theme.spacing.xl,
+  },
+  fab: {
+    position: "absolute",
+    bottom: theme.spacing.lg,
+    right: theme.spacing.lg,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: theme.colors.primary,
+    justifyContent: "center",
+    alignItems: "center",
+    ...theme.shadows.lg,
   },
 });

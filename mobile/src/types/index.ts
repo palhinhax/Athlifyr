@@ -36,6 +36,7 @@ export interface Event {
   externalUrl?: string | null;
   stravaRouteEmbed?: string | null;
   sportTypes: string[];
+  isFeatured?: boolean;
   cancelled?: boolean;
   cancellationReason?: string | null;
   hasRegistrations?: boolean;

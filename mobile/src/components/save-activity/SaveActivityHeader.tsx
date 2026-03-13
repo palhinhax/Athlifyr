@@ -8,7 +8,9 @@ interface SaveActivityHeaderProps {
   onBack: () => void;
 }
 
-export function SaveActivityHeader({ onBack }: Readonly<SaveActivityHeaderProps>) {
+export function SaveActivityHeader({
+  onBack,
+}: Readonly<SaveActivityHeaderProps>) {
   const { t } = useTranslation();
 
   return (

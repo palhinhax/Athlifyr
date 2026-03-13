@@ -26,7 +26,9 @@ export function VisibilitySection({
             <Lock size={18} color={theme.colors.textSecondary} />
           )}
           <View>
-            <Text style={styles.detailLabel}>{t("saveActivity.whoCanSee")}</Text>
+            <Text style={styles.detailLabel}>
+              {t("saveActivity.whoCanSee")}
+            </Text>
             <Text style={styles.visibilityValue}>
               {visibility === "everyone"
                 ? t("saveActivity.everyone")

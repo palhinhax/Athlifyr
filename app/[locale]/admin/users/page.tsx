@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Loader2,
   Search,
@@ -15,6 +15,7 @@ import {
   Mail,
   BellRing,
 } from "lucide-react";
+import { useDebounce } from "@/hooks/use-debounce";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -78,11 +79,14 @@ const LOCALE_FLAGS: Record<string, { flag: string; label: string }> = {
 export default function AdminUsersContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isFetching, setIsFetching] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const debouncedSearch = useDebounce(searchInput, 300);
   const [roleFilter, setRoleFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  const isInitialLoad = useRef(true);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [isRoleDialogOpen, setIsRoleDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -95,15 +99,26 @@ export default function AdminUsersContent() {
   useEffect(() => {
     fetchUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, searchTerm, roleFilter]);
+  }, [currentPage, debouncedSearch, roleFilter]);
 
-  const fetchUsers = async () => {
-    setIsLoading(true);
+  // Reset to page 1 when the debounced search term changes
+  useEffect(() => {
+    if (!isInitialLoad.current) {
+      setCurrentPage(1);
+    }
+  }, [debouncedSearch]);
+
+  const fetchUsers = useCallback(async () => {
+    if (isInitialLoad.current) {
+      setIsLoading(true);
+    } else {
+      setIsFetching(true);
+    }
     try {
       const params = new URLSearchParams({
         page: currentPage.toString(),
         limit: "20",
-        search: searchTerm,
+        search: debouncedSearch,
         role: roleFilter,
       });
       const response = await fetch(`/api/admin/users?${params}`);
@@ -122,13 +137,11 @@ export default function AdminUsersContent() {
       });
     } finally {
       setIsLoading(false);
+      setIsFetching(false);
+      isInitialLoad.current = false;
     }
-  };
-
-  const handleSearch = (value: string) => {
-    setSearchTerm(value);
-    setCurrentPage(1);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, debouncedSearch, roleFilter]);
 
   const handleRoleFilterChange = (value: string) => {
     setRoleFilter(value);
@@ -275,8 +288,8 @@ export default function AdminUsersContent() {
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Pesquisar por nome ou email..."
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -293,8 +306,17 @@ export default function AdminUsersContent() {
         </Select>
       </div>
 
+      {/* Loading indicator for refetch */}
+      {isFetching && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />A atualizar...
+        </div>
+      )}
+
       {/* Mobile Cards View */}
-      <div className="space-y-3 md:hidden">
+      <div
+        className={`space-y-3 md:hidden ${isFetching ? "pointer-events-none opacity-50" : ""}`}
+      >
         {users.length === 0 ? (
           <div className="rounded-lg border px-4 py-8 text-center text-muted-foreground">
             Nenhum utilizador encontrado
@@ -461,7 +483,9 @@ export default function AdminUsersContent() {
       </div>
 
       {/* Desktop Table View */}
-      <div className="hidden rounded-lg border md:block">
+      <div
+        className={`hidden rounded-lg border md:block ${isFetching ? "pointer-events-none opacity-50" : ""}`}
+      >
         <table className="w-full">
           <thead className="border-b bg-muted/50">
             <tr>

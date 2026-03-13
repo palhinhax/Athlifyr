@@ -743,6 +743,290 @@ describe("PATCH /api/events/[id]", () => {
     expect(notifyEventCancelled).not.toHaveBeenCalled();
   });
 
+  it("does NOT set slug when title is same as existing", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+
+    const res = await PATCH(
+      makePatchRequest({ title: EXISTING_EVENT.title }),
+      makeParams()
+    );
+
+    expect(res.status).toBe(200);
+    const call = (prisma.event.update as jest.Mock).mock.calls[0][0];
+    expect(call.data.title).toBe(EXISTING_EVENT.title);
+    expect(call.data).not.toHaveProperty("slug");
+    // generateUniqueSlug (event.findFirst) must NOT be called
+    expect(prisma.event.findFirst).not.toHaveBeenCalled();
+  });
+
+  it("skips deleting translation when no content and no previous record exists", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    // No existing translations at all
+    (prisma.eventTranslation.findMany as jest.Mock).mockResolvedValue([]);
+
+    const translations = [{ language: "es", title: "", description: "" }];
+
+    const res = await PATCH(makePatchRequest({ translations }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventTranslation.delete).not.toHaveBeenCalled();
+    expect(prisma.eventTranslation.upsert).not.toHaveBeenCalled();
+  });
+
+  it("returns updatedEvent as fallback when finalEvent re-fetch returns null", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    const updated = { ...EXISTING_EVENT, description: "updated-fallback" };
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT) // existing event
+      .mockResolvedValueOnce(null); // final re-fetch returns null
+    (prisma.event.update as jest.Mock).mockResolvedValue(updated);
+
+    const res = await PATCH(
+      makePatchRequest({ description: "updated-fallback" }),
+      makeParams()
+    );
+
+    const json = await res.json();
+    expect(res.status).toBe(200);
+    expect(json.description).toBe("updated-fallback");
+  });
+
+  it("skips upsert for variant not found in DB (id given but record missing)", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.eventVariant.findMany as jest.Mock).mockResolvedValue([]);
+    // Variant id provided but not found in DB
+    (prisma.eventVariant.findUnique as jest.Mock).mockResolvedValue(null);
+
+    const variants = [{ id: "v-ghost", name: "Ghost Variant" }];
+
+    const res = await PATCH(makePatchRequest({ variants }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("does not call deleteMany when all existing variants are kept", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.eventVariant.findMany as jest.Mock).mockResolvedValue([
+      { id: "v1" },
+    ]);
+    (prisma.eventVariant.findUnique as jest.Mock).mockResolvedValue({
+      id: "v1",
+      name: "Trail 10K Updated",
+      distanceKm: 10,
+      elevationGainM: null,
+      price: null,
+      maxParticipants: null,
+      teamSize: 1,
+      startDate: null,
+      startTime: null,
+    });
+    (prisma.eventVariant.update as jest.Mock).mockResolvedValue({ id: "v1" });
+
+    const variants = [{ id: "v1", name: "Trail 10K Updated", distanceKm: 10 }];
+
+    const res = await PATCH(makePatchRequest({ variants }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventVariant.deleteMany).not.toHaveBeenCalled();
+  });
+
+  it("does not update variant when data is unchanged", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.eventVariant.findMany as jest.Mock).mockResolvedValue([
+      { id: "v1" },
+    ]);
+    // Existing variant exactly matches the input
+    (prisma.eventVariant.findUnique as jest.Mock).mockResolvedValue({
+      id: "v1",
+      name: "Trail 10K",
+      distanceKm: 10,
+      elevationGainM: null,
+      price: null,
+      maxParticipants: null,
+      teamSize: 1,
+      startDate: null,
+      startTime: null,
+    });
+
+    const variants = [{ id: "v1", name: "Trail 10K", distanceKm: 10 }];
+
+    const res = await PATCH(makePatchRequest({ variants }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventVariant.update).not.toHaveBeenCalled();
+  });
+
+  it("skips variant translation with empty name and description", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ ...EXISTING_EVENT, variants: [] })
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.eventVariant.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.eventVariant.create as jest.Mock).mockResolvedValue({
+      id: "v-new",
+    });
+    (prisma.eventVariantTranslation.findMany as jest.Mock).mockResolvedValue(
+      []
+    );
+
+    const variants = [
+      {
+        name: "Trail 5K",
+        translations: [
+          { language: "pt", name: "", description: "" }, // empty → skip
+        ],
+      },
+    ];
+
+    const res = await PATCH(makePatchRequest({ variants }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventVariantTranslation.upsert).not.toHaveBeenCalled();
+  });
+
+  it("skips variant translation upsert when data is unchanged", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce({ ...EXISTING_EVENT, variants: [] })
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+    (prisma.eventVariant.findMany as jest.Mock).mockResolvedValue([]);
+    (prisma.eventVariant.create as jest.Mock).mockResolvedValue({
+      id: "v-new",
+    });
+    // Existing translation with the same data
+    (prisma.eventVariantTranslation.findMany as jest.Mock).mockResolvedValue([
+      {
+        language: "pt",
+        name: "Trail 5K",
+        description: "Uma corrida de 5km",
+      },
+    ]);
+
+    const variants = [
+      {
+        name: "Trail 5K",
+        translations: [
+          {
+            language: "pt",
+            name: "Trail 5K",
+            description: "Uma corrida de 5km",
+          },
+        ],
+      },
+    ];
+
+    const res = await PATCH(makePatchRequest({ variants }), makeParams());
+
+    expect(res.status).toBe(200);
+    expect(prisma.eventVariantTranslation.upsert).not.toHaveBeenCalled();
+  });
+
+  it("does not send date-change notification when existing startDate is null", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    const eventWithNullDate = { ...EXISTING_EVENT, startDate: null };
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(eventWithNullDate)
+      .mockResolvedValueOnce(eventWithNullDate);
+    (prisma.event.update as jest.Mock).mockResolvedValue({
+      ...eventWithNullDate,
+      title: "Trail Run 2026",
+      slug: "trail-run-2026",
+    });
+
+    const res = await PATCH(
+      makePatchRequest({ startDate: "2026-09-01" }),
+      makeParams()
+    );
+
+    expect(res.status).toBe(200);
+    expect(notifyEventDateChange).not.toHaveBeenCalled();
+  });
+
+  it("coerces null commissionPercent to 0 for admin", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+
+    const res = await PATCH(
+      makePatchRequest({ commissionPercent: null }),
+      makeParams()
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.event.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ commissionPercent: 0 }),
+      })
+    );
+  });
+
+  it("sets endDate to a Date when a non-null string is provided", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+
+    const res = await PATCH(
+      makePatchRequest({ endDate: "2026-06-03T00:00:00Z" }),
+      makeParams()
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.event.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          endDate: new Date("2026-06-03T00:00:00Z"),
+        }),
+      })
+    );
+  });
+
+  it("sets latitude and longitude when valid values are provided", async () => {
+    (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
+    (prisma.event.findUnique as jest.Mock)
+      .mockResolvedValueOnce(EXISTING_EVENT)
+      .mockResolvedValueOnce(EXISTING_EVENT);
+    (prisma.event.update as jest.Mock).mockResolvedValue(EXISTING_EVENT);
+
+    const res = await PATCH(
+      makePatchRequest({ latitude: 38.7, longitude: -9.1 }),
+      makeParams()
+    );
+
+    expect(res.status).toBe(200);
+    expect(prisma.event.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ latitude: 38.7, longitude: -9.1 }),
+      })
+    );
+  });
+
   it("returns finalEvent from re-fetch when available", async () => {
     (getAuthenticatedUser as jest.Mock).mockResolvedValue(ADMIN_USER);
     const updated = { ...EXISTING_EVENT, description: "updated" };

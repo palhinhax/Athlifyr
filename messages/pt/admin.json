@@ -385,7 +385,12 @@
         "prizeCount": "Número de Prémios",
         "status": "Estado",
         "participants": "Participantes",
-        "winners": "Vencedores"
+        "winners": "Vencedores",
+        "variant": "Variante (opcional)",
+        "variantPlaceholder": "Selecionar uma variante",
+        "variantAll": "Todas as variantes",
+        "variantHelp": "Limita a participação no sorteio aos inscritos nesta variante específica.",
+        "platform": "Plataforma"
       },
       "form": {
         "title": "Título",
@@ -437,7 +442,20 @@
         "createError": "Falha ao criar sorteio.",
         "updateError": "Falha ao atualizar sorteio.",
         "drawError": "Falha ao realizar sorteio.",
-        "deleteError": "Falha ao apagar sorteio."
+        "deleteError": "Falha ao apagar sorteio.",
+        "participantAdded": "Participante adicionado",
+        "participantAddedDesc": "O utilizador foi adicionado ao sorteio com sucesso.",
+        "participantRemoved": "Participante removido",
+        "participantRemovedDesc": "O participante foi removido do sorteio.",
+        "addParticipantError": "Falha ao adicionar participante.",
+        "removeParticipantError": "Falha ao remover participante.",
+        "alreadyParticipates": "Este utilizador já está a participar."
+      },
+      "platform": {
+        "ALL": "Todas as Plataformas",
+        "MOBILE": "App Móvel",
+        "ANDROID": "Apenas Android",
+        "IOS": "Apenas iOS"
       }
     },
     "notes": {

@@ -33,7 +33,7 @@ const calculatePasswordStrength = (password: string): number => {
 
 export function SignUpForm() {
   const locale = useLocale();
-  const t = useTranslations("auth.signUp");
+  const t = useTranslations("signUp");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

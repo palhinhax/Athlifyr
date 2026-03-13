@@ -437,7 +437,20 @@
         "createError": "Impossibile creare il sorteggio.",
         "updateError": "Impossibile aggiornare il sorteggio.",
         "drawError": "Impossibile eseguire il sorteggio.",
-        "deleteError": "Impossibile eliminare il sorteggio."
+        "deleteError": "Impossibile eliminare il sorteggio.",
+        "participantAdded": "Partecipante aggiunto",
+        "participantAddedDesc": "L'utente è stato aggiunto al sorteggio con successo.",
+        "participantRemoved": "Partecipante rimosso",
+        "participantRemovedDesc": "Il partecipante è stato rimosso dal sorteggio.",
+        "addParticipantError": "Impossibile aggiungere il partecipante.",
+        "removeParticipantError": "Impossibile rimuovere il partecipante.",
+        "alreadyParticipates": "Questo utente sta già partecipando."
+      },
+      "platform": {
+        "ALL": "Tutte le Piattaforme",
+        "MOBILE": "App Mobile",
+        "ANDROID": "Solo Android",
+        "IOS": "Solo iOS"
       }
     },
     "notes": {

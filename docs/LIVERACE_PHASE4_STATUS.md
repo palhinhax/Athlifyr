@@ -26,26 +26,26 @@ Several foundational pieces were already delivered as part of Phase 3:
 Phase 4 extends this foundation with organizer tools, athlete-facing features, and
 operational safeguards.
 
-| Area                                          | Status         |
-| --------------------------------------------- | -------------- |
-| Official time calculation (finishTimeMs)       | ✅ Complete    |
-| Result model integration (auto-persist)        | ✅ Complete    |
-| Event FINISHED blocks new sessions             | ✅ Complete    |
-| Idempotent result upsert (live server)         | ✅ Complete    |
-| Final leaderboard API (public)                 | ✅ Complete    |
-| Privacy mode (LiveRaceVisibility)              | ✅ Complete    |
-| Registration CSV export                        | ✅ Complete    |
-| Reprocessing (admin recalculate results)       | 🔲 Not started |
-| Leaderboard freeze per variant                 | 🔲 Not started |
-| Category rankings (gender / age group)         | 🔲 Not started |
-| Athlete profile — result history + badge       | 🔲 Not started |
-| Athlete route replay (basic map)               | 🔲 Not started |
-| Organizer results management screen            | 🔲 Not started |
-| Results CSV export endpoint                    | 🔲 Not started |
-| Paginated results API with filters             | 🔲 Not started |
-| DQ / Adjust manual actions                     | 🔲 Not started |
-| Audit trail for manual changes                 | 🔲 Not started |
-| Privacy enforcement in public results          | 🔲 Not started |
+| Area                                     | Status         |
+| ---------------------------------------- | -------------- |
+| Official time calculation (finishTimeMs) | ✅ Complete    |
+| Result model integration (auto-persist)  | ✅ Complete    |
+| Event FINISHED blocks new sessions       | ✅ Complete    |
+| Idempotent result upsert (live server)   | ✅ Complete    |
+| Final leaderboard API (public)           | ✅ Complete    |
+| Privacy mode (LiveRaceVisibility)        | ✅ Complete    |
+| Registration CSV export                  | ✅ Complete    |
+| Reprocessing (admin recalculate results) | 🔲 Not started |
+| Leaderboard freeze per variant           | 🔲 Not started |
+| Category rankings (gender / age group)   | 🔲 Not started |
+| Athlete profile — result history + badge | 🔲 Not started |
+| Athlete route replay (basic map)         | 🔲 Not started |
+| Organizer results management screen      | 🔲 Not started |
+| Results CSV export endpoint              | 🔲 Not started |
+| Paginated results API with filters       | 🔲 Not started |
+| DQ / Adjust manual actions               | 🔲 Not started |
+| Audit trail for manual changes           | 🔲 Not started |
+| Privacy enforcement in public results    | 🔲 Not started |
 
 ---
 
@@ -367,36 +367,36 @@ Phase 4 additions:
 
 ### Existing Files to Extend
 
-| File                                            | Change                                    |
-| ----------------------------------------------- | ----------------------------------------- |
-| `app/api/events/[id]/results/route.ts`          | Add organizer-level access for management |
-| `app/api/events/[id]/final-leaderboard/route.ts`| Add variant filter, category filter       |
-| `app/api/internal/live-results/route.ts`        | Sync privacy flag during persistence      |
-| `lib/csv-export.ts`                             | Add results export filename builder       |
+| File                                             | Change                                    |
+| ------------------------------------------------ | ----------------------------------------- |
+| `app/api/events/[id]/results/route.ts`           | Add organizer-level access for management |
+| `app/api/events/[id]/final-leaderboard/route.ts` | Add variant filter, category filter       |
+| `app/api/internal/live-results/route.ts`         | Sync privacy flag during persistence      |
+| `lib/csv-export.ts`                              | Add results export filename builder       |
 
 ### New Files to Create
 
-| File                                                                | Purpose                         |
-| ------------------------------------------------------------------- | ------------------------------- |
-| `app/api/events/[id]/results/recalculate/route.ts`                  | Admin recalculation endpoint    |
-| `app/api/events/[id]/results/export/route.ts`                       | Results CSV export              |
-| `app/api/events/[id]/results/public/route.ts`                       | Paginated public results        |
-| `app/[locale]/events/[slug]/manage/_components/tab-results.tsx`     | Organizer results management UI |
-| `prisma/migrations/xxxx_result_audit_log/migration.sql`             | Audit log table                 |
+| File                                                            | Purpose                         |
+| --------------------------------------------------------------- | ------------------------------- |
+| `app/api/events/[id]/results/recalculate/route.ts`              | Admin recalculation endpoint    |
+| `app/api/events/[id]/results/export/route.ts`                   | Results CSV export              |
+| `app/api/events/[id]/results/public/route.ts`                   | Paginated public results        |
+| `app/[locale]/events/[slug]/manage/_components/tab-results.tsx` | Organizer results management UI |
+| `prisma/migrations/xxxx_result_audit_log/migration.sql`         | Audit log table                 |
 
 ---
 
 ## 4. Acceptance Criteria (from Issue)
 
-| Criterion                                                  | Status         | Notes                                               |
-| ---------------------------------------------------------- | -------------- | --------------------------------------------------- |
-| ✔ Finish generates consistent official time                | ✅ Complete    | `finishTimeMs` from personalStartTime               |
-| ✔ Result (existing model) is auto-populated                | ✅ Complete    | Upsert via `/api/internal/live-results`              |
-| ✔ Final leaderboard per variant is correct and frozen      | 🔲 Partial     | Leaderboard exists; freeze + tie-breaking needed     |
-| ✔ Athlete sees result in profile/history                   | 🔲 Not started | Profile integration pending                          |
-| ✔ Organizer exports final CSV                              | 🔲 Not started | Registration export exists; results export needed    |
-| ✔ Idempotent reprocessing exists                           | 🔲 Not started | Live persistence is idempotent; admin recalc needed  |
-| ✔ Manual changes are audited                               | 🔲 Not started | No audit log model yet                               |
+| Criterion                                             | Status         | Notes                                               |
+| ----------------------------------------------------- | -------------- | --------------------------------------------------- |
+| ✔ Finish generates consistent official time           | ✅ Complete    | `finishTimeMs` from personalStartTime               |
+| ✔ Result (existing model) is auto-populated           | ✅ Complete    | Upsert via `/api/internal/live-results`             |
+| ✔ Final leaderboard per variant is correct and frozen | 🔲 Partial     | Leaderboard exists; freeze + tie-breaking needed    |
+| ✔ Athlete sees result in profile/history              | 🔲 Not started | Profile integration pending                         |
+| ✔ Organizer exports final CSV                         | 🔲 Not started | Registration export exists; results export needed   |
+| ✔ Idempotent reprocessing exists                      | 🔲 Not started | Live persistence is idempotent; admin recalc needed |
+| ✔ Manual changes are audited                          | 🔲 Not started | No audit log model yet                              |
 
 ---
 
@@ -405,20 +405,20 @@ Phase 4 additions:
 Each task below has a dedicated Azure DevOps-ready specification in
 `docs/liverace-phase4-tasks/`:
 
-| #  | Task                                         | File                    | Priority | Depends On |
-| -- | -------------------------------------------- | ----------------------- | -------- | ---------- |
-| 01 | Reprocessing — Recalculate Results           | `TASK-01-recalculate.md`| High     | —          |
-| 02 | Leaderboard Freeze per Variant               | `TASK-02-leaderboard-freeze.md` | High | 01   |
-| 03 | Results CSV Export                            | `TASK-03-results-export.md` | High | —          |
-| 04 | Paginated Public Results API                  | `TASK-04-public-results-api.md` | High | —      |
-| 05 | DQ / Adjust Manual Actions                   | `TASK-05-dq-adjust.md`  | High     | 01         |
-| 06 | Audit Trail for Manual Changes               | `TASK-06-audit-trail.md`| High     | 05         |
-| 07 | Privacy Enforcement in Public Results        | `TASK-07-privacy-results.md` | Medium | —       |
-| 08 | Organizer Results Management Screen          | `TASK-08-organizer-results-ui.md` | Medium | 03,04,05 |
-| 09 | Athlete Profile — Result History + Badge     | `TASK-09-athlete-profile.md` | Medium | —       |
-| 10 | Category Rankings (Gender / Age Group)       | `TASK-10-category-rankings.md` | Low | 01       |
-| 11 | Athlete Route Replay (Basic Map)             | `TASK-11-route-replay.md` | Low    | —          |
-| 12 | Social Sharing of Results                    | `TASK-12-social-sharing.md` | Low  | 09         |
+| #   | Task                                     | File                              | Priority | Depends On |
+| --- | ---------------------------------------- | --------------------------------- | -------- | ---------- |
+| 01  | Reprocessing — Recalculate Results       | `TASK-01-recalculate.md`          | High     | —          |
+| 02  | Leaderboard Freeze per Variant           | `TASK-02-leaderboard-freeze.md`   | High     | 01         |
+| 03  | Results CSV Export                       | `TASK-03-results-export.md`       | High     | —          |
+| 04  | Paginated Public Results API             | `TASK-04-public-results-api.md`   | High     | —          |
+| 05  | DQ / Adjust Manual Actions               | `TASK-05-dq-adjust.md`            | High     | 01         |
+| 06  | Audit Trail for Manual Changes           | `TASK-06-audit-trail.md`          | High     | 05         |
+| 07  | Privacy Enforcement in Public Results    | `TASK-07-privacy-results.md`      | Medium   | —          |
+| 08  | Organizer Results Management Screen      | `TASK-08-organizer-results-ui.md` | Medium   | 03,04,05   |
+| 09  | Athlete Profile — Result History + Badge | `TASK-09-athlete-profile.md`      | Medium   | —          |
+| 10  | Category Rankings (Gender / Age Group)   | `TASK-10-category-rankings.md`    | Low      | 01         |
+| 11  | Athlete Route Replay (Basic Map)         | `TASK-11-route-replay.md`         | Low      | —          |
+| 12  | Social Sharing of Results                | `TASK-12-social-sharing.md`       | Low      | 09         |
 
 ---
 
@@ -426,26 +426,26 @@ Each task below has a dedicated Azure DevOps-ready specification in
 
 ### Existing (Phase 3)
 
-| File                                              | Purpose                          |
-| ------------------------------------------------- | -------------------------------- |
-| `app/api/events/[id]/results/route.ts`            | Result CRUD (user-scoped)        |
-| `app/api/events/[id]/final-leaderboard/route.ts`  | Public final leaderboard         |
-| `app/api/internal/live-results/route.ts`           | Live server result persistence   |
-| `app/api/events/[id]/registrations/export/route.ts`| Registration CSV export         |
-| `lib/csv-export.ts`                               | CSV utilities (RFC 4180)         |
-| `live/src/modules/liverace/liverace.service.ts`   | Race engine + finish detection   |
-| `live/src/modules/liverace/liverace.api.ts`       | Live → Next.js HTTP client       |
+| File                                                | Purpose                        |
+| --------------------------------------------------- | ------------------------------ |
+| `app/api/events/[id]/results/route.ts`              | Result CRUD (user-scoped)      |
+| `app/api/events/[id]/final-leaderboard/route.ts`    | Public final leaderboard       |
+| `app/api/internal/live-results/route.ts`            | Live server result persistence |
+| `app/api/events/[id]/registrations/export/route.ts` | Registration CSV export        |
+| `lib/csv-export.ts`                                 | CSV utilities (RFC 4180)       |
+| `live/src/modules/liverace/liverace.service.ts`     | Race engine + finish detection |
+| `live/src/modules/liverace/liverace.api.ts`         | Live → Next.js HTTP client     |
 
 ### Prisma Schema
 
-| Model              | Phase 4 Relevance                      |
-| ------------------ | -------------------------------------- |
-| `Result`           | Core results model (already exists)    |
-| `Event`            | `liveStatus`, `hasLiveRace` flags      |
-| `Registration`     | `bibNumber`, `checkedInAt`             |
-| `EventVariant`     | Per-variant result grouping            |
-| `User`             | `gender`, `dateOfBirth` for categories |
-| `ResultAuditLog`   | **New** — audit trail (to create)      |
+| Model            | Phase 4 Relevance                      |
+| ---------------- | -------------------------------------- |
+| `Result`         | Core results model (already exists)    |
+| `Event`          | `liveStatus`, `hasLiveRace` flags      |
+| `Registration`   | `bibNumber`, `checkedInAt`             |
+| `EventVariant`   | Per-variant result grouping            |
+| `User`           | `gender`, `dateOfBirth` for categories |
+| `ResultAuditLog` | **New** — audit trail (to create)      |
 
 ---
 

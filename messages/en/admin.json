@@ -173,7 +173,10 @@
         "uploadImage": "Upload image",
         "saving": "Saving...",
         "saveChanges": "Save changes"
-      }
+      },
+      "featuredBadge": "Featured",
+      "featuredToggleTitle": "Featured event",
+      "featuredToggleDescription": "Appears at the top of the events list in the mobile app"
     },
     "posts": {
       "toast": {
@@ -412,7 +415,17 @@
         "noWinners": "No winners yet",
         "noParticipants": "No participants yet",
         "rank": "Rank",
-        "ticket": "Ticket"
+        "ticket": "Ticket",
+        "addParticipant": "Add Participant",
+        "searchUserDescription": "Search for a user by name or email to add them to the giveaway.",
+        "searchPlaceholder": "Search by name or email...",
+        "alreadyIn": "Already in",
+        "add": "Add",
+        "noUsersFound": "No users found",
+        "confirmRemoveTitle": "Remove participant",
+        "confirmRemoveDesc": "Are you sure you want to remove {name} from this giveaway?",
+        "confirmRemove": "Remove",
+        "cancel": "Cancel"
       },
       "toast": {
         "created": "Giveaway created",
@@ -429,7 +442,14 @@
         "createError": "Failed to create giveaway.",
         "updateError": "Failed to update giveaway.",
         "drawError": "Failed to perform draw.",
-        "deleteError": "Failed to delete giveaway."
+        "deleteError": "Failed to delete giveaway.",
+        "participantAdded": "Participant added",
+        "participantAddedDesc": "The user was successfully added to the giveaway.",
+        "participantRemoved": "Participant removed",
+        "participantRemovedDesc": "The participant was removed from the giveaway.",
+        "addParticipantError": "Failed to add participant.",
+        "removeParticipantError": "Failed to remove participant.",
+        "alreadyParticipates": "This user is already participating."
       },
       "platform": {
         "ALL": "All Platforms",

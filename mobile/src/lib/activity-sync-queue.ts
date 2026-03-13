@@ -48,9 +48,7 @@ export async function enqueueActivity(
   const pending = await loadPending();
   pending.push(activity);
   await savePending(pending);
-  console.log(
-    `📋 Activity queued for sync (${pending.length} pending total)`
-  );
+  console.log(`📋 Activity queued for sync (${pending.length} pending total)`);
 }
 
 /** Get the number of pending activities. */

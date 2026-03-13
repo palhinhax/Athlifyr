@@ -17,6 +17,7 @@ const customJestConfig = {
     "<rootDir>/tests/e2e/",
     "<rootDir>/live/",
     "integration\\.test\\.",
+    "/helpers/",
   ],
   collectCoverageFrom: [
     "app/api/**/*.{js,jsx,ts,tsx}",

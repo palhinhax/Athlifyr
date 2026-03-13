@@ -73,7 +73,9 @@ export function TabPagamentos({
     setIsStripeLoading(true);
     try {
       const res = await fetch(`/api/events/${event.id}/stripe/status`);
-      if (!res.ok) throw new Error();
+      if (!res.ok) {
+        throw new Error(`Failed to sync Stripe status: ${res.status}`);
+      }
       const refreshed = await fetch(`/api/events/${event.id}`);
       if (refreshed.ok) {
         const data = (await refreshed.json()) as EventDetails;

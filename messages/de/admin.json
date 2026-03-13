@@ -173,7 +173,10 @@
         "uploadImage": "Bild Hochladen",
         "saving": "Wird gespeichert...",
         "saveChanges": "Änderungen Speichern"
-      }
+      },
+      "featuredBadge": "Hervorgehoben",
+      "featuredToggleTitle": "Hervorgehobenes Event",
+      "featuredToggleDescription": "Erscheint oben in der Event-Liste in der mobilen App"
     },
     "posts": {
       "toast": {
@@ -412,7 +415,17 @@
         "noWinners": "Noch keine Gewinner",
         "noParticipants": "Noch keine Teilnehmer",
         "rank": "Rang",
-        "ticket": "Los"
+        "ticket": "Los",
+        "addParticipant": "Teilnehmer hinzufügen",
+        "searchUserDescription": "Suche einen Benutzer nach Name oder E-Mail, um ihn zum Gewinnspiel hinzuzufügen.",
+        "searchPlaceholder": "Nach Name oder E-Mail suchen...",
+        "alreadyIn": "Bereits dabei",
+        "add": "Hinzufügen",
+        "noUsersFound": "Keine Benutzer gefunden",
+        "confirmRemoveTitle": "Teilnehmer entfernen",
+        "confirmRemoveDesc": "Bist du sicher, dass du {name} aus diesem Gewinnspiel entfernen möchtest?",
+        "confirmRemove": "Entfernen",
+        "cancel": "Abbrechen"
       },
       "toast": {
         "created": "Gewinnspiel erstellt",

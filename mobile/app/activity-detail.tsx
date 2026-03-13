@@ -99,10 +99,11 @@ export default function ActivityDetailScreen() {
       {
         text: t("common.delete"),
         style: "destructive",
-        onPress: async () => {
+        onPress: () => {
           if (activityId) {
-            await deleteActivity(activityId);
-            router.back();
+            deleteActivity(activityId).then(() => {
+              router.back();
+            });
           }
         },
       },
@@ -186,7 +187,9 @@ export default function ActivityDetailScreen() {
             {activity.title ? (
               <Text style={styles.dateTitle}>{activity.title}</Text>
             ) : null}
-            <Text style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}>
+            <Text
+              style={[styles.dateSubtitle, !activity.title && styles.dateTitle]}
+            >
               {new Date(activity.startedAt).toLocaleDateString(undefined, {
                 weekday: "long",
                 year: "numeric",
@@ -270,6 +273,7 @@ export default function ActivityDetailScreen() {
                   key={uri}
                   source={{ uri }}
                   style={styles.photoImage}
+                  alt=""
                 />
               ))}
             </ScrollView>
@@ -294,11 +298,11 @@ function StatRow({
   icon,
   label,
   value,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   label: string;
   value: string;
-}) {
+}>) {
   return (
     <View style={styles.statRow}>
       <View style={styles.statRowLeft}>

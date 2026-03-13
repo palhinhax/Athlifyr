@@ -158,20 +158,26 @@ export default function SaveActivityScreen() {
   ]);
 
   const handleDiscard = useCallback(() => {
-    Alert.alert(t("saveActivity.discardTitle"), t("saveActivity.discardMessage"), [
-      { text: t("common.cancel"), style: "cancel" },
-      {
-        text: t("saveActivity.discardConfirm"),
-        style: "destructive",
-        onPress: () => {
-          if (activityId) {
-            deleteActivity(activityId).then(() => {
-              router.replace("/(tabs)");
-            }).catch(() => {});
-          }
+    Alert.alert(
+      t("saveActivity.discardTitle"),
+      t("saveActivity.discardMessage"),
+      [
+        { text: t("common.cancel"), style: "cancel" },
+        {
+          text: t("saveActivity.discardConfirm"),
+          style: "destructive",
+          onPress: () => {
+            if (activityId) {
+              deleteActivity(activityId)
+                .then(() => {
+                  router.replace("/(tabs)");
+                })
+                .catch(() => {});
+            }
+          },
         },
-      },
-    ]);
+      ]
+    );
   }, [activityId, router, t]);
 
   const toggleVisibility = useCallback(() => {

@@ -54,11 +54,13 @@ app/api/events/[id]/final-leaderboard/route.ts
 ### Changes
 
 1. **Add `variantId` query parameter**:
+
    ```typescript
    const variantId = request.nextUrl.searchParams.get("variantId");
    ```
 
 2. **Add variant filter to Prisma query**:
+
    ```typescript
    where: {
      eventId,
@@ -68,6 +70,7 @@ app/api/events/[id]/final-leaderboard/route.ts
    ```
 
 3. **Add `isFrozen` to response**:
+
    ```typescript
    return NextResponse.json({
      entries,

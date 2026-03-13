@@ -49,7 +49,7 @@ interface AssetDesignerProps {
  * Full designer mode: build promotional images with device mockup,
  * backgrounds, text overlays, then export to specific store dimensions.
  */
-export function AssetDesigner({ platform }: AssetDesignerProps) {
+export function AssetDesigner({ platform }: Readonly<AssetDesignerProps>) {
   const t = useTranslations("admin.appStoreAssets");
   const canvasRef = useRef<HTMLDivElement>(null);
   const bgInputRef = useRef<HTMLInputElement>(null);

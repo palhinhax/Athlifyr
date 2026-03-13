@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
 import * as jose from "jose";
+import type { UserRole } from "@prisma/client";
 
 const APPLE_JWKS_URI = "https://appleid.apple.com/auth/keys";
 const appleJWKS = jose.createRemoteJWKSet(new URL(APPLE_JWKS_URI));
@@ -11,6 +12,43 @@ interface AppleTokenPayload {
   email?: string;
   email_verified?: string | boolean;
   is_private_email?: string | boolean;
+}
+
+interface AuthUser {
+  id: string;
+  email: string;
+  name: string | null;
+  role: UserRole;
+  image: string | null;
+}
+
+/** Build token pair + user JSON response for a successful auth */
+function buildAuthResponse(user: AuthUser) {
+  const token = generateAccessToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  });
+  const refreshToken = generateRefreshToken({
+    userId: user.id,
+    email: user.email,
+    role: user.role,
+  });
+  return NextResponse.json({
+    token,
+    refreshToken,
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role,
+      image: user.image,
+    },
+  });
+}
+
+function bannedResponse() {
+  return NextResponse.json({ error: "Account is banned" }, { status: 403 });
 }
 
 /**
@@ -58,6 +96,15 @@ export async function POST(request: NextRequest) {
         ? `${fullName.givenName} ${fullName.familyName}`
         : fullName?.givenName || null;
 
+    const userSelect = {
+      id: true,
+      email: true,
+      name: true,
+      role: true,
+      image: true,
+      isBanned: true,
+    } as const;
+
     // 1. Check if an Apple account already exists for this user
     const existingAccount = await prisma.account.findUnique({
       where: {
@@ -66,29 +113,12 @@ export async function POST(request: NextRequest) {
           providerAccountId: appleUserId,
         },
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            role: true,
-            image: true,
-            isBanned: true,
-          },
-        },
-      },
+      include: { user: { select: userSelect } },
     });
 
     if (existingAccount) {
       const user = existingAccount.user;
-
-      if (user.isBanned) {
-        return NextResponse.json(
-          { error: "Account is banned" },
-          { status: 403 }
-        );
-      }
+      if (user.isBanned) return bannedResponse();
 
       // Update name if it was provided and user has no name
       if (displayName && !user.name) {
@@ -99,57 +129,18 @@ export async function POST(request: NextRequest) {
         user.name = displayName;
       }
 
-      const token = generateAccessToken({
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      });
-
-      const refreshToken = generateRefreshToken({
-        userId: user.id,
-        email: user.email,
-        role: user.role,
-      });
-
-      return NextResponse.json({
-        token,
-        refreshToken,
-        user: {
-          id: user.id,
-          email: user.email,
-          name: user.name,
-          role: user.role,
-          image: user.image,
-        },
-      });
+      return buildAuthResponse(user);
     }
 
     // 2. Check if a user with this email already exists (link accounts)
     if (email) {
       const existingUser = await prisma.user.findFirst({
-        where: {
-          email: {
-            equals: email,
-            mode: "insensitive",
-          },
-        },
-        select: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          image: true,
-          isBanned: true,
-        },
+        where: { email: { equals: email, mode: "insensitive" } },
+        select: userSelect,
       });
 
       if (existingUser) {
-        if (existingUser.isBanned) {
-          return NextResponse.json(
-            { error: "Account is banned" },
-            { status: 403 }
-          );
-        }
+        if (existingUser.isBanned) return bannedResponse();
 
         // Link Apple account to existing user
         await prisma.account.create({
@@ -161,29 +152,7 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        const token = generateAccessToken({
-          userId: existingUser.id,
-          email: existingUser.email,
-          role: existingUser.role,
-        });
-
-        const refreshToken = generateRefreshToken({
-          userId: existingUser.id,
-          email: existingUser.email,
-          role: existingUser.role,
-        });
-
-        return NextResponse.json({
-          token,
-          refreshToken,
-          user: {
-            id: existingUser.id,
-            email: existingUser.email,
-            name: existingUser.name,
-            role: existingUser.role,
-            image: existingUser.image,
-          },
-        });
+        return buildAuthResponse(existingUser);
       }
     }
 
@@ -214,29 +183,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const token = generateAccessToken({
-      userId: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-    });
-
-    const refreshToken = generateRefreshToken({
-      userId: newUser.id,
-      email: newUser.email,
-      role: newUser.role,
-    });
-
-    return NextResponse.json({
-      token,
-      refreshToken,
-      user: {
-        id: newUser.id,
-        email: newUser.email,
-        name: newUser.name,
-        role: newUser.role,
-        image: newUser.image,
-      },
-    });
+    return buildAuthResponse(newUser);
   } catch (error) {
     console.error("Apple mobile auth error:", error);
 

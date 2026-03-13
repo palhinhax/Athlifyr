@@ -39,6 +39,14 @@ jest.mock("@/hooks/use-google-auth", () => ({
   }),
 }));
 
+const mockSignInWithApple = jest.fn();
+jest.mock("@/hooks/use-apple-auth", () => ({
+  useAppleAuth: () => ({
+    signInWithApple: mockSignInWithApple,
+    isLoading: false,
+  }),
+}));
+
 const mockToast = jest.fn();
 jest.mock("@/components/ui/use-toast", () => ({
   useToast: () => ({ toast: mockToast }),

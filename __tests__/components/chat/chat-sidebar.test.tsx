@@ -459,12 +459,22 @@ describe("ChatSidebar", () => {
   });
 
   it("shows ? for user with no name", () => {
+    const conv = makeConversation({
+      otherUserName: "Other User",
+      lastMessage: "Hi",
+    });
     const conversations = [
-      makeConversation({ otherUserName: "Other User", lastMessage: "Hi" }),
+      {
+        ...conv,
+        participants: [
+          conv.participants[0],
+          {
+            ...conv.participants[1],
+            user: { ...conv.participants[1].user, name: null },
+          },
+        ],
+      },
     ];
-    // Override participant to have null name
-    (conversations[0].participants[1].user as { name: string | null }).name =
-      null;
 
     render(
       <ChatSidebar

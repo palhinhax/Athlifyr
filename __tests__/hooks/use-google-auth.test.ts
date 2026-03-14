@@ -54,7 +54,7 @@ describe("useGoogleAuth", () => {
     });
 
     it("sets isLoading to true during sign in", async () => {
-      let resolveSignIn: () => void;
+      let resolveSignIn: (() => void) | undefined;
       mockSignIn.mockReturnValue(
         new Promise<void>((resolve) => {
           resolveSignIn = resolve;
@@ -72,7 +72,7 @@ describe("useGoogleAuth", () => {
       expect(result.current.isLoading).toBe(true);
 
       await act(async () => {
-        resolveSignIn!();
+        resolveSignIn?.();
         await signInPromise!;
       });
     });

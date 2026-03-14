@@ -34,6 +34,47 @@ Portuguese (pt-PT), English (en), Spanish (es), French (fr), German (de), Italia
 
 Use `#` headers, `**bold**`, lists, emojis (🏔️🏃) for appealing descriptions
 
+### 3.1 Description Length (CRITICAL)
+
+**Descriptions MUST be CONCISE — max ~20-30 lines per language.** Do NOT duplicate data that already exists in structured fields (variants, pricing phases, FAQs).
+
+**Include in description:**
+
+- Brief intro paragraph about the event (what, when, where, organizer)
+- Available races listed briefly (name + distance, one line each)
+- Key highlights/circuits the event counts for
+- Closing call-to-action line
+
+**Do NOT include in description (already in structured data):**
+
+- ❌ Full schedule/timetable (put in FAQs)
+- ❌ Detailed "what's included" lists (put in FAQs)
+- ❌ Price tables (already in PricingPhases)
+- ❌ Group discount details (put in FAQs)
+- ❌ Registration deadlines (already in event.registrationDeadline)
+- ❌ Location/coordinates details (already in event fields)
+
+**Example concise description (PT):**
+
+```markdown
+# 🐱 XII Trilho dos Gatos 2026
+
+**O XII Trilho dos Gatos regressa a Gatões, Penalva do Castelo, nos dias 18 e 19 de abril de 2026!** Organizado pela GATÕES BTT, percorre trilhos, estradões, caminhos florestais e single tracks no distrito de Viseu.
+
+---
+
+## 🏔️ Provas
+
+- **Trail Curto** – 19 km · Circuito Nacional de Trail Sprint ATRP (série 100)
+- **Mini-Trail** – 12 km · Circuito Distrital Mini-Trail ADAC · Circuito Jovem ATRP (série 150)
+- **Caminhada** – 10 km · Aberta a todos
+- **Trail Kids** – ~2 km · Gratuito 🎉 (Sábado)
+
+---
+
+🐱 **Vem trilhar connosco em Gatões!** 🏔️
+```
+
 ### 4. Idempotency (NON-NEGOTIABLE)
 
 **Location:** `/prisma/seeds/<event-slug>.ts` (NOT `/prisma/` root)

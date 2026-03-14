@@ -22,7 +22,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
-import { GiveawayStatus } from "@prisma/client";
+import { GiveawayStatus, GiveawayPlatform } from "@prisma/client";
 
 interface GiveawayTranslation {
   lang: string;
@@ -33,6 +33,7 @@ interface GiveawayTranslation {
 interface GiveawayData {
   id: string;
   status: GiveawayStatus;
+  platform: GiveawayPlatform;
   drawAt: string | null;
   drawnAt: string | null;
   prizeCount: number;
@@ -121,9 +122,13 @@ export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
   const isPendingDraw =
     isScheduled && giveaway.drawAt && new Date(giveaway.drawAt) <= new Date();
 
+  // Platform restriction: web users cannot join mobile/android/ios-only giveaways
+  const isPlatformRestricted = giveaway.platform !== GiveawayPlatform.ALL;
+
   const canJoin =
     isScheduled &&
     !isPendingDraw &&
+    !isPlatformRestricted &&
     (!giveaway.drawAt || new Date(giveaway.drawAt) > new Date());
 
   const drawDate = giveaway.drawAt
@@ -177,6 +182,11 @@ export function GiveawayCard({ eventId }: Readonly<GiveawayCardProps>) {
               {isPendingDraw && (
                 <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 dark:bg-amber-900/30 dark:text-amber-400">
                   {t("drawPending")}
+                </span>
+              )}
+              {isPlatformRestricted && isScheduled && !isPendingDraw && (
+                <span className="inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
+                  {t(`platform.${giveaway.platform}`)}
                 </span>
               )}
             </div>

@@ -6,6 +6,7 @@
 // ============================================================================
 
 import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import type { Server } from "socket.io";
 import { authGuard, extractToken } from "../../plugins/auth.js";
 import {
   getUserConversations,
@@ -19,9 +20,34 @@ import {
   hideConversation,
   ApiError,
 } from "./chat.service.js";
-import type { JWTPayload } from "../../types/index.js";
+import type {
+  JWTPayload,
+  ServerToClientEvents,
+  ClientToServerEvents,
+  InterServerEvents,
+  SocketData,
+} from "../../types/index.js";
 
 type AuthRequest = FastifyRequest & { user: JWTPayload };
+
+/** Global IO reference — set during server bootstrap */
+let ioRef: Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+> | null = null;
+
+export function setChatIO(
+  io: Server<
+    ClientToServerEvents,
+    ServerToClientEvents,
+    InterServerEvents,
+    SocketData
+  >
+): void {
+  ioRef = io;
+}
 
 /** Get Bearer token from request for forwarding to Next.js API */
 function getToken(request: FastifyRequest): string {
@@ -139,8 +165,27 @@ export async function chatRoutes(app: FastifyInstance): Promise<void> {
             .send({ error: "Message too long (max 5000 characters)" });
         }
 
-        const message = await sendMessage(token, conversationId, content);
-        return reply.code(201).send({ message });
+        const { event: messageEvent, participantUserIds } = await sendMessage(
+          token,
+          conversationId,
+          content
+        );
+
+        // Broadcast via Socket.io so all connected clients see it in real-time
+        if (ioRef) {
+          // Emit to conversation room + participant user rooms in one call
+          // Socket.io deduplicates: a socket in both rooms receives the event once
+          const senderId = (request as AuthRequest).user.userId;
+          let target = ioRef.to(`conversation:${conversationId}`);
+          for (const uid of participantUserIds) {
+            if (uid !== senderId) {
+              target = target.to(`user:${uid}`);
+            }
+          }
+          target.emit("chat:message", messageEvent);
+        }
+
+        return reply.code(201).send({ message: messageEvent });
       } catch (err) {
         return handleApiError(err, reply);
       }

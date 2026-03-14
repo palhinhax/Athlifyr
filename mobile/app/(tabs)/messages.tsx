@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -16,12 +16,16 @@ import { useAuthStore } from "@/src/lib/auth-store";
 import { ConversationListItem } from "@/src/components/chat/ConversationListItem";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
 import { theme } from "@/src/constants/theme";
+import { useSocket } from "@/src/hooks/useSocket";
+import { useQueryClient } from "@tanstack/react-query";
 
 export default function MessagesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const { user, isAuthenticated } = useAuthStore();
   const [refreshing, setRefreshing] = useState(false);
+  const { socket, isConnected } = useSocket();
+  const queryClient = useQueryClient();
 
   const {
     data: conversations = [],
@@ -29,6 +33,21 @@ export default function MessagesScreen() {
     isError,
     refetch,
   } = useConversations(isAuthenticated);
+
+  // Listen for incoming messages to refresh conversations list in real-time
+  useEffect(() => {
+    if (!socket || !isConnected) return;
+
+    const handleMessage = () => {
+      queryClient.invalidateQueries({ queryKey: ["conversations"] });
+    };
+
+    socket.on("chat:message", handleMessage);
+
+    return () => {
+      socket.off("chat:message", handleMessage);
+    };
+  }, [socket, isConnected, queryClient]);
 
   const handleRefresh = async () => {
     setRefreshing(true);

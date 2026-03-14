@@ -1,10 +1,37 @@
 import { NextResponse, NextRequest } from "next/server";
 import { getAuthenticatedUser } from "@/lib/auth-helpers";
 import { prisma } from "@/lib/prisma";
-import { GiveawayStatus } from "@prisma/client";
+import { GiveawayStatus, GiveawayPlatform } from "@prisma/client";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
+}
+
+function getPlatformError(
+  platform: GiveawayPlatform,
+  clientPlatform: string | null
+): string | null {
+  if (platform === GiveawayPlatform.ALL) return null;
+
+  const isFromMobile = clientPlatform === "android" || clientPlatform === "ios";
+
+  const restrictions: Record<string, () => boolean> = {
+    [GiveawayPlatform.MOBILE]: () => isFromMobile,
+    [GiveawayPlatform.ANDROID]: () => clientPlatform === "android",
+    [GiveawayPlatform.IOS]: () => clientPlatform === "ios",
+  };
+
+  const isAllowed = restrictions[platform]?.();
+  if (isAllowed) return null;
+
+  const messages: Record<string, string> = {
+    [GiveawayPlatform.MOBILE]:
+      "This giveaway is only available on the mobile app",
+    [GiveawayPlatform.ANDROID]: "This giveaway is only available on Android",
+    [GiveawayPlatform.IOS]: "This giveaway is only available on iOS",
+  };
+
+  return messages[platform] ?? "Platform not allowed";
 }
 
 // POST - Join a giveaway (assigns a permanent sequential ticket number)
@@ -30,6 +57,15 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         { error: "Giveaway is not open for participation" },
         { status: 400 }
       );
+    }
+
+    // Platform restriction check
+    const platformError = getPlatformError(
+      giveaway.platform,
+      request.headers.get("x-client-platform")
+    );
+    if (platformError) {
+      return NextResponse.json({ error: platformError }, { status: 403 });
     }
 
     // Block participation after drawAt (deadline has passed)

@@ -47,17 +47,24 @@ export async function sendMessage(
   token: string,
   conversationId: string,
   content: string
-): Promise<ChatMessageEvent> {
-  const { message } = await apiSendMessage(token, conversationId, content);
+): Promise<{ event: ChatMessageEvent; participantUserIds: string[] }> {
+  const { message, participantUserIds } = await apiSendMessage(
+    token,
+    conversationId,
+    content
+  );
 
   return {
-    id: message.id,
-    conversationId: message.conversationId,
-    senderId: message.senderId,
-    senderName: message.sender.name,
-    senderImage: message.sender.image,
-    content: message.content,
-    createdAt: message.createdAt,
+    event: {
+      id: message.id,
+      conversationId: message.conversationId,
+      senderId: message.senderId,
+      senderName: message.sender.name,
+      senderImage: message.sender.image,
+      content: message.content,
+      createdAt: message.createdAt,
+    },
+    participantUserIds: participantUserIds ?? [],
   };
 }
 

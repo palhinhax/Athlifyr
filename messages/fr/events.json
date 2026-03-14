@@ -393,7 +393,13 @@
         "verifyFormula": "SHA-256(\"{secret}|{rank}|{attempt}\") % {total} + 1 = #{winning}"
       },
       "winner": "Gagnant",
-      "youWon": "🎉 Félicitations, tu as gagné le tirage !"
+      "youWon": "🎉 Félicitations, tu as gagné le tirage !",
+      "platform": {
+        "ALL": "Toutes les Plateformes",
+        "MOBILE": "App Mobile Uniquement",
+        "ANDROID": "Android Uniquement",
+        "IOS": "iOS Uniquement"
+      }
     }
   },
   "eventsPage": {

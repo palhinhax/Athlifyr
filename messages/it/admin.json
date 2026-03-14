@@ -386,7 +386,8 @@
         "variant": "Variante (opzionale)",
         "variantPlaceholder": "Seleziona una variante",
         "variantAll": "Tutte le varianti",
-        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica."
+        "variantHelp": "Limita la partecipazione all'estrazione agli iscritti a questa variante specifica.",
+        "platform": "Piattaforma"
       },
       "form": {
         "title": "Titolo",

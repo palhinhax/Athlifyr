@@ -48,6 +48,52 @@ async function normalizeOAuthEmail(
   }
 }
 
+/**
+ * Auto-link an OAuth account to an existing user with the same email.
+ * Prevents the OAuthAccountNotLinked error when signing in with a different
+ * provider that shares the same email address.
+ */
+export async function autoLinkOAuthAccount(
+  user: User,
+  account: Account,
+  profile: Profile | undefined
+): Promise<void> {
+  const email = (profile?.email ?? user.email ?? "").toLowerCase().trim();
+  if (!email) return;
+
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+    include: { accounts: true },
+  });
+
+  if (!existingUser) return;
+
+  const alreadyLinked = existingUser.accounts.some(
+    (a) => a.provider === account.provider
+  );
+
+  if (alreadyLinked) return;
+
+  await prisma.account.create({
+    data: {
+      userId: existingUser.id,
+      type: account.type,
+      provider: account.provider,
+      providerAccountId: account.providerAccountId,
+      refresh_token: account.refresh_token,
+      access_token: account.access_token,
+      expires_at: account.expires_at,
+      token_type: account.token_type,
+      scope: account.scope,
+      id_token: account.id_token,
+      session_state: account.session_state as string | null,
+    },
+  });
+
+  // Set user.id so NextAuth uses the existing user
+  user.id = existingUser.id;
+}
+
 /** Sync Google profile picture on sign-in */
 async function syncGoogleImage(user: User, profile: Profile | undefined) {
   if (!profile?.picture || !user?.id) return;
@@ -149,6 +195,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (account.provider === "google") {
           await syncGoogleImage(user, profile);
         }
+
+        await autoLinkOAuthAccount(user, account, profile);
       }
       return true;
     },

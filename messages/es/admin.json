@@ -390,7 +390,8 @@
         "variant": "Variante (opcional)",
         "variantPlaceholder": "Selecciona una variante",
         "variantAll": "Todas las variantes",
-        "variantHelp": "Limita la participación en el sorteo a los inscritos en esta variante específica."
+        "variantHelp": "Limita la participación en el sorteo a los inscritos en esta variante específica.",
+        "platform": "Plataforma"
       },
       "form": {
         "title": "Título",

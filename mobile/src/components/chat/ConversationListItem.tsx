@@ -23,6 +23,20 @@ export function ConversationListItem({
       ?.user;
   };
 
+  const isUnread = (): boolean => {
+    const lastMessage = conversation.messages[0];
+    if (!lastMessage) return false;
+    if (lastMessage.senderId === currentUserId) return false;
+    const myParticipant = conversation.participants.find(
+      (p) => p.user.id === currentUserId
+    );
+    if (!myParticipant?.lastSeenAt) return true;
+    return (
+      new Date(lastMessage.createdAt).getTime() >
+      new Date(myParticipant.lastSeenAt).getTime()
+    );
+  };
+
   const getInitials = (name: string | null) => {
     if (!name) return "?";
     return name
@@ -35,10 +49,15 @@ export function ConversationListItem({
 
   const otherUser = getOtherUser();
   const lastMessage = conversation.messages[0];
+  const unread = isUnread();
 
   return (
     <TouchableOpacity
-      style={[styles.container, isSelected && styles.containerSelected]}
+      style={[
+        styles.container,
+        isSelected && styles.containerSelected,
+        unread && !isSelected && styles.containerUnread,
+      ]}
       onPress={onPress}
     >
       {/* Avatar */}
@@ -57,16 +76,20 @@ export function ConversationListItem({
             </Text>
           </View>
         )}
+        {unread && <View style={styles.unreadDot} />}
       </View>
 
       {/* Content */}
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.userName} numberOfLines={1}>
+          <Text
+            style={[styles.userName, unread && styles.userNameUnread]}
+            numberOfLines={1}
+          >
             {otherUser?.name || "Unknown User"}
           </Text>
           {lastMessage && (
-            <Text style={styles.timestamp}>
+            <Text style={[styles.timestamp, unread && styles.timestampUnread]}>
               {formatDistanceToNow(new Date(lastMessage.createdAt), {
                 addSuffix: false,
               })}
@@ -74,7 +97,10 @@ export function ConversationListItem({
           )}
         </View>
         {lastMessage && (
-          <Text style={styles.lastMessage} numberOfLines={1}>
+          <Text
+            style={[styles.lastMessage, unread && styles.lastMessageUnread]}
+            numberOfLines={1}
+          >
             {lastMessage.senderId === currentUserId ? "You: " : ""}
             {lastMessage.content}
           </Text>
@@ -96,8 +122,12 @@ const styles = StyleSheet.create({
   containerSelected: {
     backgroundColor: theme.colors.muted,
   },
+  containerUnread: {
+    backgroundColor: `${theme.colors.primary}08`,
+  },
   avatarContainer: {
     marginRight: 12,
+    position: "relative",
   },
   avatar: {
     width: 48,
@@ -116,6 +146,17 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: theme.colors.text,
   },
+  unreadDot: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: theme.colors.primary,
+    borderWidth: 2,
+    borderColor: theme.colors.background,
+  },
   content: {
     flex: 1,
     justifyContent: "center",
@@ -133,12 +174,23 @@ const styles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
+  userNameUnread: {
+    fontWeight: "800",
+  },
   timestamp: {
     fontSize: theme.typography.fontSize.xs,
     color: theme.colors.textSecondary,
   },
+  timestampUnread: {
+    color: theme.colors.primary,
+    fontWeight: "600",
+  },
   lastMessage: {
     fontSize: theme.typography.fontSize.sm,
     color: theme.colors.textSecondary,
+  },
+  lastMessageUnread: {
+    color: theme.colors.text,
+    fontWeight: "600",
   },
 });

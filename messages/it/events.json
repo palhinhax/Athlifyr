@@ -389,7 +389,13 @@
         "verifyFormula": "SHA-256(\"{secret}|{rank}|{attempt}\") % {total} + 1 = #{winning}"
       },
       "winner": "Vincitore",
-      "youWon": "🎉 Complimenti, hai vinto il sorteggio!"
+      "youWon": "🎉 Complimenti, hai vinto il sorteggio!",
+      "platform": {
+        "ALL": "Tutte le Piattaforme",
+        "MOBILE": "Solo App Mobile",
+        "ANDROID": "Solo Android",
+        "IOS": "Solo iOS"
+      }
     }
   },
   "eventsPage": {

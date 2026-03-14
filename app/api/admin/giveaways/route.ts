@@ -1,7 +1,7 @@
 import { NextResponse, NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { GiveawayStatus, Language } from "@prisma/client";
+import { GiveawayStatus, GiveawayPlatform, Language } from "@prisma/client";
 import crypto from "crypto";
 
 /**
@@ -81,17 +81,19 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { eventId, drawAt, prizeCount, status, translations } = body as {
-      eventId: string;
-      drawAt?: string;
-      prizeCount?: number;
-      status?: GiveawayStatus;
-      translations?: Array<{
-        lang: Language;
-        title: string;
-        details: string;
-      }>;
-    };
+    const { eventId, drawAt, prizeCount, status, platform, translations } =
+      body as {
+        eventId: string;
+        drawAt?: string;
+        prizeCount?: number;
+        status?: GiveawayStatus;
+        platform?: GiveawayPlatform;
+        translations?: Array<{
+          lang: Language;
+          title: string;
+          details: string;
+        }>;
+      };
 
     if (!eventId) {
       return NextResponse.json(
@@ -118,6 +120,7 @@ export async function POST(request: NextRequest) {
         drawAt: drawAt ? new Date(drawAt) : undefined,
         prizeCount: prizeCount ?? 1,
         status: status ?? GiveawayStatus.DRAFT,
+        platform: platform ?? GiveawayPlatform.ALL,
         secret, // Store the secret privately (used in draw algorithm)
         secretHash: hash, // Store the hash publicly (proves transparency)
         translations: translations

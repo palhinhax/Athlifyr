@@ -24,18 +24,35 @@ export const LIVE_CHAT_BASE = `${LIVE_SERVER_URL.replace(/\/$/, "")}/api/chat`;
 export async function fetchLiveToken(): Promise<string | null> {
   try {
     const authToken = await SecureStore.getItemAsync(TOKEN_KEY);
-    if (!authToken) return null;
+    if (!authToken) {
+      console.warn(
+        "[LiveChat] No auth token in SecureStore — user not logged in?"
+      );
+      return null;
+    }
 
-    const res = await fetch(`${API_URL}/api/auth/live-token`, {
+    const url = `${API_URL}/api/auth/live-token`;
+    console.log("[LiveChat] Fetching live token from:", url);
+
+    const res = await fetch(url, {
       headers: {
         Authorization: `Bearer ${authToken}`,
       },
     });
 
-    if (!res.ok) return null;
+    if (!res.ok) {
+      const errorBody = await res.text().catch(() => "");
+      console.error(
+        `[LiveChat] live-token request failed: ${res.status} ${res.statusText}`,
+        errorBody
+      );
+      return null;
+    }
+
     const data = (await res.json()) as { token?: string };
     return data.token ?? null;
-  } catch {
+  } catch (error) {
+    console.error("[LiveChat] Failed to fetch live token:", error);
     return null;
   }
 }
@@ -59,15 +76,24 @@ export async function liveFetch<T>(
   }
 
   const url = `${LIVE_CHAT_BASE}${path}`;
+  console.log(`[LiveChat] ${options.method ?? "GET"} ${url}`);
 
-  const response = await fetch(url, {
-    method: options.method ?? "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      method: options.method ?? "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+  } catch (networkError) {
+    console.error(`[LiveChat] Network error calling ${url}:`, networkError);
+    throw new Error(
+      `Live chat network error: ${networkError instanceof Error ? networkError.message : String(networkError)}`
+    );
+  }
 
   if (!response.ok) {
     const errorBody = await response.text().catch(() => "");

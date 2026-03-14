@@ -47,6 +47,8 @@ import { useToast } from "@/components/ui/use-toast";
 interface Conversation {
   id: string;
   participants: Array<{
+    userId: string;
+    lastSeenAt: Date | string;
     user: {
       id: string;
       name: string | null;
@@ -139,6 +141,19 @@ export function ChatSidebar({
   const getOtherUser = (conversation: Conversation) => {
     return conversation.participants.find((p) => p.user.id !== currentUserId)
       ?.user;
+  };
+
+  const isUnread = (conversation: Conversation) => {
+    const myParticipant = conversation.participants.find(
+      (p) => p.user.id === currentUserId
+    );
+    if (!myParticipant) return false;
+    const lastMessage = conversation.messages[0];
+    if (!lastMessage) return false;
+    // Don't show unread for own messages
+    if ((lastMessage.sender?.id ?? lastMessage.senderId) === currentUserId)
+      return false;
+    return new Date(lastMessage.createdAt) > new Date(myParticipant.lastSeenAt);
   };
 
   const getInitials = (name: string | null) => {
@@ -445,32 +460,51 @@ export function ChatSidebar({
               const otherUser = getOtherUser(conversation);
               const lastMessage = conversation.messages[0];
               const isSelected = conversation.id === selectedConversationId;
+              const unread = isUnread(conversation);
 
               return (
                 <div
                   key={conversation.id}
                   className={cn(
                     "group relative flex w-full items-start gap-3 p-3 text-left transition-colors hover:bg-muted/50 sm:p-4",
-                    isSelected && "bg-muted hover:bg-muted"
+                    isSelected && "bg-muted hover:bg-muted",
+                    unread && !isSelected && "bg-primary/5"
                   )}
                 >
                   <button
                     onClick={() => onSelectConversation(conversation.id)}
                     className="flex flex-1 items-start gap-3"
                   >
-                    <Avatar className="h-10 w-10 shrink-0 border border-border sm:h-12 sm:w-12">
-                      <AvatarImage src={otherUser?.image || undefined} />
-                      <AvatarFallback>
-                        {getInitials(otherUser?.name || null)}
-                      </AvatarFallback>
-                    </Avatar>
+                    <div className="relative">
+                      <Avatar className="h-10 w-10 shrink-0 border border-border sm:h-12 sm:w-12">
+                        <AvatarImage src={otherUser?.image || undefined} />
+                        <AvatarFallback>
+                          {getInitials(otherUser?.name || null)}
+                        </AvatarFallback>
+                      </Avatar>
+                      {unread && (
+                        <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-background bg-primary" />
+                      )}
+                    </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className="truncate text-sm font-medium sm:text-base">
+                        <p
+                          className={cn(
+                            "truncate text-sm sm:text-base",
+                            unread ? "font-bold text-foreground" : "font-medium"
+                          )}
+                        >
                           {otherUser?.name || t("unknownUser")}
                         </p>
                         {lastMessage && (
-                          <span className="shrink-0 text-[10px] text-muted-foreground sm:text-xs">
+                          <span
+                            className={cn(
+                              "shrink-0 text-[10px] sm:text-xs",
+                              unread
+                                ? "font-semibold text-primary"
+                                : "text-muted-foreground"
+                            )}
+                          >
                             {formatDistanceToNow(
                               new Date(lastMessage.createdAt),
                               { addSuffix: false, locale: dateLocale }
@@ -479,7 +513,14 @@ export function ChatSidebar({
                         )}
                       </div>
                       {lastMessage && (
-                        <p className="mt-0.5 truncate text-xs text-muted-foreground sm:text-sm">
+                        <p
+                          className={cn(
+                            "mt-0.5 truncate text-xs sm:text-sm",
+                            unread
+                              ? "font-semibold text-foreground"
+                              : "text-muted-foreground"
+                          )}
+                        >
                           {(lastMessage.sender?.id ?? lastMessage.senderId) ===
                           currentUserId
                             ? "You: "

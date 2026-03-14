@@ -150,7 +150,7 @@ export async function apiSendMessage(
   token: string,
   conversationId: string,
   content: string
-): Promise<{ message: MessageInfo }> {
+): Promise<{ message: MessageInfo; participantUserIds?: string[] }> {
   return apiRequest(`/api/chat/conversations/${conversationId}/messages`, {
     method: "POST",
     token,

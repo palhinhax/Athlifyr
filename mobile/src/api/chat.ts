@@ -27,6 +27,8 @@ export interface Message {
 export interface Conversation {
   id: string;
   participants: Array<{
+    userId: string;
+    lastSeenAt: Date | string;
     user: {
       id: string;
       name: string | null;
@@ -137,4 +139,25 @@ export async function markConversationSeen(
   await liveFetch(`/conversations/${conversationId}/seen`, {
     method: "POST",
   });
+}
+
+export interface ChatNotificationsResponse {
+  notifications: Array<{
+    id: string;
+    conversationId: string;
+    senderId: string;
+    senderName: string | null;
+    senderImage: string | null;
+    content: string;
+    createdAt: string;
+    read: boolean;
+  }>;
+  unreadCount: number;
+}
+
+/**
+ * Fetch chat notifications / unread count (via live server)
+ */
+export async function fetchChatNotifications(): Promise<ChatNotificationsResponse> {
+  return liveFetch<ChatNotificationsResponse>("/notifications");
 }

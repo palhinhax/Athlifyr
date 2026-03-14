@@ -117,13 +117,21 @@ export function registerChatHandlers(io: LiveServer, socket: LiveSocket): void {
       }
 
       // Persist message via Next.js API
-      const messageEvent = await sendMessage(token, conversationId, content);
-
-      // Broadcast to all participants in the conversation room
-      io.to(conversationRoom(conversationId)).emit(
-        "chat:message",
-        messageEvent
+      const { event: messageEvent, participantUserIds } = await sendMessage(
+        token,
+        conversationId,
+        content
       );
+
+      // Broadcast to conversation room + participant user rooms in one emit
+      // Socket.io deduplicates: a socket in both rooms receives the event once
+      let target = io.to(conversationRoom(conversationId));
+      for (const uid of participantUserIds) {
+        if (uid !== userId) {
+          target = target.to(userRoom(uid));
+        }
+      }
+      target.emit("chat:message", messageEvent);
 
       // Clear typing indicator
       await setTyping(conversationId, userId, false);

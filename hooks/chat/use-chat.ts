@@ -23,6 +23,8 @@ export interface Message {
 interface Conversation {
   id: string;
   participants: Array<{
+    userId: string;
+    lastSeenAt: Date | string;
     user: {
       id: string;
       name: string | null;

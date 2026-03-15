@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { canManageVenue } from "@/lib/venues/authorization";
 
 // POST - Generate Stripe Connect onboarding link
 export async function POST(
@@ -17,41 +18,32 @@ export async function POST(
 
     const { id: venueId } = await params;
 
-    // Check if user is owner of the venue
-    const member = await prisma.venueMember.findUnique({
-      where: {
-        venueId_userId: {
-          venueId,
-          userId: session.user.id,
-        },
-      },
-      include: {
-        venue: true,
-      },
-    });
-
-    if (!member || member.role !== "OWNER") {
+    const authResult = await canManageVenue(session.user.id, venueId);
+    if (!authResult.authorized) {
       return NextResponse.json(
-        { error: "Only venue owner can manage Stripe Connect" },
+        { error: "Only venue owner/admin can manage Stripe Connect" },
         { status: 403 }
       );
     }
 
-    if (!member.venue.stripeAccountId) {
+    const venue = await prisma.venue.findUnique({ where: { id: venueId } });
+    if (!venue) {
+      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+    }
+
+    if (!venue.stripeAccountId) {
       return NextResponse.json(
         { error: "No Stripe account found. Create one first." },
         { status: 400 }
       );
     }
 
-    // Get the base URL from the request
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
-    // Create account link for onboarding
     const accountLink = await stripe.accountLinks.create({
-      account: member.venue.stripeAccountId,
-      refresh_url: `${baseUrl}/venues/${member.venue.slug}/settings?tab=payments`,
-      return_url: `${baseUrl}/venues/${member.venue.slug}/settings?tab=payments&stripe=success`,
+      account: venue.stripeAccountId,
+      refresh_url: `${baseUrl}/venues/${venue.slug}`,
+      return_url: `${baseUrl}/venues/${venue.slug}`,
       type: "account_onboarding",
     });
 

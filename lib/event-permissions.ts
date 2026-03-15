@@ -52,7 +52,11 @@ export function hasEventPermission(
       return isPlatformAdmin;
 
     case "manage_stripe":
-      return isPlatformAdmin || organizerRole === EventOrganizerRole.OWNER;
+      return (
+        isPlatformAdmin ||
+        organizerRole === EventOrganizerRole.OWNER ||
+        organizerRole === EventOrganizerRole.ADMIN
+      );
 
     case "manage_team":
       return (

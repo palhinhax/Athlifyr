@@ -416,7 +416,18 @@
       "sessionsUsed": "{used} von {total} Sitzungen verwendet",
       "resubscribe": "Erneut abonnieren",
       "crossVenueTitle": "Abonnements von anderen Standorten",
-      "fromVenue": "Plan von {venue}"
+      "fromVenue": "Plan von {venue}",
+      "perDay": "pro Tag",
+      "perWeek": "pro Woche",
+      "perQuarter": "pro Quartal",
+      "perYear": "pro Jahr",
+      "cancelSubscription": "Abonnement kündigen",
+      "subscriptionCancelled": "Abonnement gekündigt",
+      "subscriptionCancelledDescription": "Dein Abonnement wird am Ende des aktuellen Abrechnungszeitraums nicht verlängert.",
+      "errors": {
+        "subscribeFailed": "Abonnement fehlgeschlagen",
+        "cancelFailed": "Kündigung fehlgeschlagen"
+      }
     },
     "sessions": {
       "title": "Sitzungen",

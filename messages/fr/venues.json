@@ -416,7 +416,18 @@
       "sessionsUsed": "{used} sur {total} séances utilisées",
       "resubscribe": "Se réabonner",
       "crossVenueTitle": "Abonnements d'autres espaces",
-      "fromVenue": "Forfait de {venue}"
+      "fromVenue": "Forfait de {venue}",
+      "perDay": "par jour",
+      "perWeek": "par semaine",
+      "perQuarter": "par trimestre",
+      "perYear": "par an",
+      "cancelSubscription": "Annuler l'abonnement",
+      "subscriptionCancelled": "Abonnement Annulé",
+      "subscriptionCancelledDescription": "Votre abonnement ne sera pas renouvelé à la fin de la période de facturation en cours.",
+      "errors": {
+        "subscribeFailed": "Échec de l'abonnement",
+        "cancelFailed": "Échec de l'annulation"
+      }
     },
     "sessions": {
       "title": "Séances",

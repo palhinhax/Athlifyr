@@ -416,7 +416,18 @@
       "sessionsUsed": "{used} of {total} sessions used",
       "resubscribe": "Subscribe again",
       "crossVenueTitle": "Subscriptions from other venues",
-      "fromVenue": "Plan from {venue}"
+      "fromVenue": "Plan from {venue}",
+      "perDay": "per day",
+      "perWeek": "per week",
+      "perQuarter": "per quarter",
+      "perYear": "per year",
+      "cancelSubscription": "Cancel Subscription",
+      "subscriptionCancelled": "Subscription Cancelled",
+      "subscriptionCancelledDescription": "Your subscription will not renew at the end of the current billing period.",
+      "errors": {
+        "subscribeFailed": "Subscription Failed",
+        "cancelFailed": "Cancellation Failed"
+      }
     },
     "sessions": {
       "title": "Sessions",

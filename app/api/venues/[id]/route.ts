@@ -92,6 +92,7 @@ export async function GET(
                     startsAt: true,
                     endsAt: true,
                     createdAt: true,
+                    stripeSubscriptionId: true,
                   },
                   orderBy: { createdAt: "desc" },
                   take: 5, // Get active subscriptions (may include exhausted packs + new ones)

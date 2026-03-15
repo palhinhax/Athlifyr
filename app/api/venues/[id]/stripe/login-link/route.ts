@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { canManageVenue } from "@/lib/venues/authorization";
 
 // POST - Generate Stripe Express Dashboard login link
 export async function POST(
@@ -17,36 +18,28 @@ export async function POST(
 
     const { id: venueId } = await params;
 
-    // Check if user is owner of the venue
-    const member = await prisma.venueMember.findUnique({
-      where: {
-        venueId_userId: {
-          venueId,
-          userId: session.user.id,
-        },
-      },
-      include: {
-        venue: true,
-      },
-    });
-
-    if (!member || member.role !== "OWNER") {
+    const authResult = await canManageVenue(session.user.id, venueId);
+    if (!authResult.authorized) {
       return NextResponse.json(
-        { error: "Only venue owner can access Stripe dashboard" },
+        { error: "Only venue owner/admin can access Stripe dashboard" },
         { status: 403 }
       );
     }
 
-    if (!member.venue.stripeAccountId) {
+    const venue = await prisma.venue.findUnique({ where: { id: venueId } });
+    if (!venue) {
+      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+    }
+
+    if (!venue.stripeAccountId) {
       return NextResponse.json(
         { error: "No Stripe account found" },
         { status: 400 }
       );
     }
 
-    // Create login link for Express Dashboard
     const loginLink = await stripe.accounts.createLoginLink(
-      member.venue.stripeAccountId
+      venue.stripeAccountId
     );
 
     return NextResponse.json({ url: loginLink.url });

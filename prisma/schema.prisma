@@ -31,6 +31,7 @@ model User {
   nationality              String?
   emergencyContactName     String?
   emergencyContactPhone    String?
+  stripeCustomerId         String?                   @unique
   accounts                 Account[]
   comments                 Comment[]
   eventsPreferences        EventsPreferences?
@@ -109,6 +110,9 @@ model User {
 
   // Custom field responses (event registration extras)
   customFieldResponses    CustomFieldResponse[]
+
+  // Venue product purchases
+  venueProductPurchases  VenueProductPurchase[]
 
   // GPS-tracked run activities (Free Run, etc.)
   runActivities RunActivity[]
@@ -949,6 +953,10 @@ model Venue {
   trainingPlans TrainingPlan[]
   sessionPlans  VenueSessionPlan[]
 
+  // Products & purchases
+  products         VenueProduct[]
+  productPurchases VenueProductPurchase[]
+
   @@index([slug])
   @@index([type])
   @@index([city])
@@ -1083,32 +1091,37 @@ model VenuePlanVenue {
 }
 
 model VenueSubscription {
-  id                 String         @id @default(cuid())
-  venueId            String
-  userId             String
-  planId             String
-  status             String         @default("PENDING")
-  paymentStatus      PaymentStatus  @default(PENDING_PAYMENT)
-  activatedByUserId  String?
-  activatedAt        DateTime?
-  paymentMethod      String?
-  paymentAmount      Float?
-  paymentNote        String?
-  paymentConfirmedAt DateTime?
-  startsAt           DateTime       @default(now())
-  endsAt             DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  plan               VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue              Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  bookings           VenueBooking[]
+  id                       String         @id @default(cuid())
+  venueId                  String
+  userId                   String
+  planId                   String
+  status                   String         @default("PENDING")
+  paymentStatus            PaymentStatus  @default(PENDING_PAYMENT)
+  activatedByUserId        String?
+  activatedAt              DateTime?
+  paymentMethod            String?
+  paymentAmount            Float?
+  paymentNote              String?
+  paymentConfirmedAt       DateTime?
+  startsAt                 DateTime       @default(now())
+  endsAt                   DateTime?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  // Stripe Billing (recurring subscriptions)
+  stripeSubscriptionId     String?        @unique
+  stripePriceId            String?
+  stripeCurrentPeriodEnd   DateTime?
+  plan                     VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue                    Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings                 VenueBooking[]
 
   @@index([venueId])
   @@index([userId])
   @@index([planId])
   @@index([status])
   @@index([paymentStatus])
+  @@index([stripeSubscriptionId])
 }
 
 model VenueRecurringSession {
@@ -1228,6 +1241,53 @@ model PaymentIntent {
   @@index([planId])
   @@index([status])
   @@index([createdAt])
+  @@index([stripePaymentIntentId])
+}
+
+// ============================================================================
+// VENUE PRODUCTS (simple items like water, snacks, merchandise)
+// ============================================================================
+
+model VenueProduct {
+  id          String                 @id @default(cuid())
+  venueId     String
+  name        String
+  description String?
+  price       Float
+  currency    Currency               @default(EUR)
+  stock       Int?                   // null = unlimited
+  isActive    Boolean                @default(true)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  venue       Venue                  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  purchases   VenueProductPurchase[]
+
+  @@index([venueId])
+  @@index([isActive])
+}
+
+model VenueProductPurchase {
+  id                    String              @id @default(cuid())
+  venueId               String
+  productId             String
+  userId                String
+  quantity              Int                 @default(1)
+  unitPrice             Float
+  totalAmount           Float
+  currency              Currency            @default(EUR)
+  status                PaymentIntentStatus @default(CREATED)
+  stripePaymentIntentId String?             @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  confirmedAt           DateTime?
+  venue                 Venue               @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  product               VenueProduct        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
   @@index([stripePaymentIntentId])
 }
 
@@ -1608,6 +1668,7 @@ enum PaymentIntentStatus {
   CONFIRMED
   FAILED
   CANCELLED
+  REFUNDED
 }
 
 enum PaymentsProvider {

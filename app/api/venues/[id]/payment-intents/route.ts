@@ -34,6 +34,10 @@ export async function POST(
         name: true,
         isActive: true,
         paymentMode: true,
+        stripeAccountId: true,
+        stripeOnboardingStatus: true,
+        commissionType: true,
+        commissionValue: true,
       },
     });
 
@@ -81,10 +85,29 @@ export async function POST(
       );
     }
 
-    // Create Stripe Payment Intent
+    // Venue must have a fully onboarded Stripe Connect account
+    if (!venue.stripeAccountId || venue.stripeOnboardingStatus !== "COMPLETE") {
+      return NextResponse.json(
+        { error: "Venue Stripe account is not fully configured" },
+        { status: 400 }
+      );
+    }
+
+    // Calculate commission (application fee)
+    const amountCents = toStripeAmount(plan.price);
+    const commissionCents =
+      venue.commissionType === "FIXED"
+        ? venue.commissionValue // already in cents
+        : Math.round(amountCents * (venue.commissionValue / 100));
+
+    // Create Stripe Payment Intent with destination charge
     const stripePaymentIntent = await stripe.paymentIntents.create({
-      amount: toStripeAmount(plan.price),
+      amount: amountCents,
       currency: plan.currency.toLowerCase(),
+      application_fee_amount: commissionCents > 0 ? commissionCents : undefined,
+      transfer_data: {
+        destination: venue.stripeAccountId,
+      },
       metadata: {
         venueId,
         venueName: venue.name,

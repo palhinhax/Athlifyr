@@ -12,12 +12,14 @@ import { useTranslations } from "next-intl";
 
 interface CheckoutFormProps {
   paymentIntentId: string;
+  isRecurring?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 export function CheckoutForm({
   paymentIntentId,
+  isRecurring,
   onSuccess,
   onCancel,
 }: CheckoutFormProps) {
@@ -51,29 +53,35 @@ export function CheckoutForm({
         setErrorMessage(paymentError.message || "Payment failed");
         setIsProcessing(false);
       } else {
-        // Pagamento bem-sucedido - criar subscrição
-        try {
-          const confirmResponse = await fetch(
-            `/api/payment-intents/${paymentIntentId}/confirm`,
-            {
-              method: "POST",
-            }
-          );
-
-          if (!confirmResponse.ok) {
-            throw new Error("Failed to activate subscription");
-          }
-
-          // Tudo correu bem
+        if (isRecurring) {
+          // Recurring subscription: webhook handles activation
           if (onSuccess) {
             onSuccess();
           }
-        } catch (confirmError) {
-          console.error("Error confirming subscription:", confirmError);
-          setErrorMessage(
-            "Payment successful but subscription activation failed. Please contact support."
-          );
-          setIsProcessing(false);
+        } else {
+          // One-time payment: confirm subscription manually
+          try {
+            const confirmResponse = await fetch(
+              `/api/payment-intents/${paymentIntentId}/confirm`,
+              {
+                method: "POST",
+              }
+            );
+
+            if (!confirmResponse.ok) {
+              throw new Error("Failed to activate subscription");
+            }
+
+            if (onSuccess) {
+              onSuccess();
+            }
+          } catch (confirmError) {
+            console.error("Error confirming subscription:", confirmError);
+            setErrorMessage(
+              "Payment successful but subscription activation failed. Please contact support."
+            );
+            setIsProcessing(false);
+          }
         }
       }
     } catch (err) {

@@ -1,7 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2, CreditCard, CheckCircle, AlertTriangle } from "lucide-react";
+import {
+  Loader2,
+  CreditCard,
+  CheckCircle,
+  AlertTriangle,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -93,6 +99,26 @@ export function TabPagamentos({
     }
   };
 
+  const handleOpenDashboard = async () => {
+    setIsStripeLoading(true);
+    try {
+      const res = await fetch(`/api/events/${event.id}/stripe/login-link`, {
+        method: "POST",
+      });
+      if (!res.ok) throw new Error("Failed to get dashboard link");
+      const { url } = (await res.json()) as { url: string };
+      globalThis.open(url, "_blank");
+    } catch {
+      toast({
+        title: tErr("saveError"),
+        description: t("stripeError"),
+        variant: "destructive",
+      });
+    } finally {
+      setIsStripeLoading(false);
+    }
+  };
+
   return (
     <TabsContent value="payments" className="space-y-6">
       {/* Registration toggle */}
@@ -154,22 +180,35 @@ export function TabPagamentos({
           )}
 
           <div className="flex flex-wrap gap-3">
-            <Button
-              onClick={() => void handleStripeConnect()}
-              disabled={
-                isStripeLoading || event.stripeOnboardingStatus === "COMPLETE"
-              }
-              className="gap-2"
-            >
-              {isStripeLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <CreditCard className="h-4 w-4" />
-              )}
-              {event.stripeAccountId
-                ? t("continueOnboarding")
-                : t("setupStripe")}
-            </Button>
+            {event.stripeOnboardingStatus === "COMPLETE" ? (
+              <Button
+                onClick={() => void handleOpenDashboard()}
+                disabled={isStripeLoading}
+                className="gap-2"
+              >
+                {isStripeLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ExternalLink className="h-4 w-4" />
+                )}
+                {t("openDashboard")}
+              </Button>
+            ) : (
+              <Button
+                onClick={() => void handleStripeConnect()}
+                disabled={isStripeLoading}
+                className="gap-2"
+              >
+                {isStripeLoading ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <CreditCard className="h-4 w-4" />
+                )}
+                {event.stripeAccountId
+                  ? t("continueOnboarding")
+                  : t("setupStripe")}
+              </Button>
+            )}
 
             {event.stripeAccountId && (
               <Button

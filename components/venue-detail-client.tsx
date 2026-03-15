@@ -27,7 +27,7 @@ import { VenueTeamTab } from "@/components/venue-team-tab";
 import { VenueCheckoutDialog } from "@/components/venue-checkout-dialog";
 import { TrialBookingButton } from "@/components/trial-booking-button";
 import { Calendar, Home, Info, CreditCard, Users } from "lucide-react";
-import type { VenuePlanPolicy } from "@/types/venue-plan";
+import type { VenuePlanPolicy, PlanDuration } from "@/types/venue-plan";
 
 interface Venue {
   id: string;
@@ -164,7 +164,7 @@ export function VenueDetailClient({
     name: string;
     price: number;
     currency: string;
-    // paymentProvider removed - will use venue.paymentMode instead
+    duration?: PlanDuration;
   } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
@@ -225,7 +225,7 @@ export function VenueDetailClient({
     name: string;
     price: number | null;
     currency: string;
-    // paymentProvider removed - will use venue.paymentMode instead
+    duration?: PlanDuration;
   }) => {
     if (!plan.price) return;
     setSelectedPlan({
@@ -233,7 +233,7 @@ export function VenueDetailClient({
       name: plan.name,
       price: plan.price,
       currency: plan.currency,
-      // paymentProvider removed - checkout will use venue.paymentMode
+      duration: plan.duration,
     });
     setCheckoutOpen(true);
   };
@@ -301,6 +301,37 @@ export function VenueDetailClient({
     setCheckoutOpen(false);
     setSelectedPlan(null);
     setSelectedPaymentMethod(null); // Reset payment method selection for MIXED mode
+  };
+
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    if (!venue) return;
+    try {
+      const response = await fetch(
+        `/api/venues/${venue.id}/stripe-subscriptions/${subscriptionId}/cancel`,
+        { method: "POST" }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to cancel subscription");
+      }
+
+      toast({
+        title: tPlans("subscriptionCancelled"),
+        description: tPlans("subscriptionCancelledDescription"),
+        variant: "default",
+      });
+
+      fetchVenue();
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      toast({
+        title: tPlans("errors.cancelFailed"),
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleTogglePlanActiveClick = (planId: string) => {
@@ -623,10 +654,12 @@ export function VenueDetailClient({
               <VenuePlansTab
                 plans={venue.plans}
                 crossVenueSubscriptions={venue.crossVenueSubscriptions}
+                venueId={venue.id}
                 locale={locale}
                 userId={userId}
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 onSubscribeClick={handleSubscribeClick}
+                onCancelSubscription={handleCancelSubscription}
                 onCreatePlan={() => {
                   setEditingPlan(null);
                   setPlanModalOpen(true);

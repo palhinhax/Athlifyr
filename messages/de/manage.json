@@ -145,6 +145,7 @@
       "setupStripe": "Stripe einrichten",
       "continueOnboarding": "Onboarding fortsetzen",
       "verifyStatus": "Status prüfen",
+      "openDashboard": "Stripe-Dashboard öffnen",
       "statusUpdated": "Status aktualisiert",
       "stripeError": "Stripe konnte nicht gestartet werden.",
       "stripeVerifyError": "Stripe konnte nicht überprüft werden.",

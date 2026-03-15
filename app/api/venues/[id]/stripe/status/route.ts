@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import type { StripeOnboardingStatus } from "@prisma/client";
+import { canManageVenue } from "@/lib/venues/authorization";
 
 // GET - Get current Stripe account status
 export async function GET(
@@ -18,27 +19,20 @@ export async function GET(
 
     const { id: venueId } = await params;
 
-    // Check if user is owner/admin of the venue
-    const member = await prisma.venueMember.findUnique({
-      where: {
-        venueId_userId: {
-          venueId,
-          userId: session.user.id,
-        },
-      },
-      include: {
-        venue: true,
-      },
-    });
-
-    if (!member || !["OWNER", "ADMIN"].includes(member.role)) {
+    const authResult = await canManageVenue(session.user.id, venueId);
+    if (!authResult.authorized) {
       return NextResponse.json(
         { error: "Only venue owner/admin can view payment settings" },
         { status: 403 }
       );
     }
 
-    if (!member.venue.stripeAccountId) {
+    const venue = await prisma.venue.findUnique({ where: { id: venueId } });
+    if (!venue) {
+      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
+    }
+
+    if (!venue.stripeAccountId) {
       return NextResponse.json({
         accountId: null,
         onboardingStatus: "NOT_STARTED",
@@ -50,9 +44,33 @@ export async function GET(
     }
 
     // Fetch account details from Stripe
-    const account = await stripe.accounts.retrieve(
-      member.venue.stripeAccountId
-    );
+    let account;
+    try {
+      account = await stripe.accounts.retrieve(venue.stripeAccountId);
+    } catch {
+      // Account is invalid/revoked — reset to NOT_STARTED
+      console.warn(
+        `Stale Stripe account ${venue.stripeAccountId} for venue ${venueId}, resetting`
+      );
+      await prisma.venue.update({
+        where: { id: venueId },
+        data: {
+          stripeAccountId: null,
+          stripeOnboardingStatus: "NOT_STARTED",
+          stripeChargesEnabled: false,
+          stripePayoutsEnabled: false,
+          stripeDetailsSubmitted: false,
+        },
+      });
+      return NextResponse.json({
+        accountId: null,
+        onboardingStatus: "NOT_STARTED",
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        detailsSubmitted: false,
+        lastWebhookAt: null,
+      });
+    }
 
     // Determine onboarding status
     let onboardingStatus: StripeOnboardingStatus = "PENDING";
@@ -78,12 +96,12 @@ export async function GET(
     });
 
     return NextResponse.json({
-      accountId: member.venue.stripeAccountId,
+      accountId: venue.stripeAccountId,
       onboardingStatus,
       chargesEnabled: account.charges_enabled || false,
       payoutsEnabled: account.payouts_enabled || false,
       detailsSubmitted: account.details_submitted || false,
-      lastWebhookAt: member.venue.stripeLastWebhookAt,
+      lastWebhookAt: venue.stripeLastWebhookAt,
       requirements: account.requirements,
     });
   } catch (error) {

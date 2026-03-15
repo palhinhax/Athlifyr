@@ -116,9 +116,13 @@
   }
 
   /* Override react-remove-scroll's margin-right compensation —
-     scrollbar-gutter: stable already handles the space */
-  body[data-scroll-locked] {
-    margin-right: 0px !important;
+     scrollbar-gutter: stable already handles the space.
+     Using "html body[data-scroll-locked]" (specificity 0-1-2) beats the
+     library's "body[data-scroll-locked]" (specificity 0-1-1) even when
+     both use !important, because higher specificity wins within !important. */
+  html body[data-scroll-locked] {
+    margin-right: 0 !important;
+    padding-right: 0 !important;
   }
 }
 

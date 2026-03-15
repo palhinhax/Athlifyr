@@ -59,7 +59,7 @@ export function ChatWindow({
   isConnected,
   isLoading = false,
   onBack,
-}: ChatWindowProps) {
+}: Readonly<ChatWindowProps>) {
   const t = useTranslations("chat");
   const [messageText, setMessageText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);

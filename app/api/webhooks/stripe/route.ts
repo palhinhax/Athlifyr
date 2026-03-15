@@ -74,13 +74,13 @@ export async function POST(request: Request) {
     // Processar eventos do Stripe
     switch (event.type) {
       case "account.updated": {
-        const account = event.data.object as Stripe.Account;
+        const account = event.data.object;
         await handleAccountUpdated(account);
         break;
       }
 
       case "checkout.session.completed": {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session = event.data.object;
         // Only handle event registration checkouts (have eventId in metadata)
         if (session.metadata?.eventId && session.metadata?.userId) {
           await handleEventCheckoutCompleted(session);
@@ -89,7 +89,7 @@ export async function POST(request: Request) {
       }
 
       case "payment_intent.succeeded": {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntent = event.data.object;
         // Route to product handler if metadata indicates a product purchase
         if (paymentIntent.metadata?.type === "product_purchase") {
           await handleProductPurchaseSucceeded(paymentIntent);
@@ -100,44 +100,44 @@ export async function POST(request: Request) {
       }
 
       case "payment_intent.payment_failed": {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntent = event.data.object;
         await handlePaymentIntentFailed(paymentIntent);
         break;
       }
 
       case "payment_intent.canceled": {
-        const paymentIntent = event.data.object as Stripe.PaymentIntent;
+        const paymentIntent = event.data.object;
         await handlePaymentIntentCanceled(paymentIntent);
         break;
       }
 
       case "charge.refunded": {
-        const charge = event.data.object as Stripe.Charge;
+        const charge = event.data.object;
         await handleChargeRefunded(charge);
         break;
       }
 
       // ── Stripe Billing events (recurring subscriptions) ──────────────────
       case "invoice.paid": {
-        const inv = event.data.object as Stripe.Invoice;
+        const inv = event.data.object;
         await handleInvoicePaid(inv);
         break;
       }
 
       case "invoice.payment_failed": {
-        const inv = event.data.object as Stripe.Invoice;
+        const inv = event.data.object;
         await handleInvoicePaymentFailed(inv);
         break;
       }
 
       case "customer.subscription.updated": {
-        const sub = event.data.object as Stripe.Subscription;
+        const sub = event.data.object;
         await handleSubscriptionUpdated(sub);
         break;
       }
 
       case "customer.subscription.deleted": {
-        const sub = event.data.object as Stripe.Subscription;
+        const sub = event.data.object;
         await handleSubscriptionDeleted(sub);
         break;
       }
@@ -259,7 +259,7 @@ async function handleEventCheckoutCompleted(session: Stripe.Checkout.Session) {
         },
       },
     });
-    if (existing && existing.status === "CONFIRMED") {
+    if (existing?.status === "CONFIRMED") {
       console.log("Registration already confirmed, skipping:", existing.id);
       return;
     }

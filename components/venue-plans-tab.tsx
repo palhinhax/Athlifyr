@@ -9,7 +9,15 @@ import {
   Clock,
   AlertCircle,
 } from "lucide-react";
-import type { VenuePlanPolicy } from "@/types/venue-plan";
+import type { VenuePlanPolicy, PlanDuration } from "@/types/venue-plan";
+
+const BILLING_PERIOD_KEYS: Record<string, string> = {
+  DAILY: "perDay",
+  WEEKLY: "perWeek",
+  MONTHLY: "perMonth",
+  QUARTERLY: "perQuarter",
+  YEARLY: "perYear",
+};
 
 interface PlanSubscription {
   id: string;
@@ -19,6 +27,7 @@ interface PlanSubscription {
   endsAt: string | null;
   createdAt: string;
   totalBookingsUsed?: number;
+  stripeSubscriptionId?: string | null;
 }
 
 interface Plan {
@@ -69,6 +78,7 @@ interface CrossVenueSubscription {
 interface VenuePlansTabProps {
   plans: Plan[];
   crossVenueSubscriptions?: CrossVenueSubscription[];
+  venueId: string;
   locale: string;
   userId?: string;
   isOwnerOrAdmin: boolean;
@@ -77,7 +87,9 @@ interface VenuePlansTabProps {
     name: string;
     price: number | null;
     currency: string;
+    duration?: PlanDuration;
   }) => void;
+  onCancelSubscription: (subscriptionId: string) => void;
   onCreatePlan: () => void;
   onEditPlan: (plan: Plan) => void;
   onTogglePlanActive: (planId: string) => void;
@@ -86,10 +98,12 @@ interface VenuePlansTabProps {
 export function VenuePlansTab({
   plans,
   crossVenueSubscriptions,
+  venueId,
   locale,
   userId,
   isOwnerOrAdmin,
   onSubscribeClick,
+  onCancelSubscription,
   onCreatePlan,
   onEditPlan,
   onTogglePlanActive,
@@ -230,21 +244,28 @@ export function VenuePlansTab({
               {plan.price && (
                 <p className="mb-4 text-2xl font-bold">
                   {plan.price} {plan.currency}
-                  {plan.policy?.duration !== "ONE_TIME" && (
-                    <span className="text-sm font-normal text-muted-foreground">
-                      {" "}
-                      / {tPlans("perMonth")}
-                    </span>
-                  )}
+                  {plan.policy?.duration &&
+                    plan.policy.duration !== "ONE_TIME" && (
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {" "}
+                        /{" "}
+                        {tPlans(
+                          BILLING_PERIOD_KEYS[plan.policy.duration] ??
+                            "perMonth"
+                        )}
+                      </span>
+                    )}
                 </p>
               )}
 
               {/* Subscription Status */}
               <PlanSubscriptionStatus
                 plan={plan}
+                venueId={venueId}
                 locale={locale}
                 userId={userId}
                 onSubscribeClick={onSubscribeClick}
+                onCancelSubscription={onCancelSubscription}
                 tPlans={tPlans}
               />
             </div>
@@ -313,9 +334,11 @@ function PlanSubscriptionStatus({
   locale,
   userId,
   onSubscribeClick,
+  onCancelSubscription,
   tPlans,
 }: {
   plan: Plan;
+  venueId: string;
   locale: string;
   userId?: string;
   onSubscribeClick: (plan: {
@@ -323,14 +346,18 @@ function PlanSubscriptionStatus({
     name: string;
     price: number | null;
     currency: string;
+    duration?: PlanDuration;
   }) => void;
+  onCancelSubscription: (subscriptionId: string) => void;
   tPlans: ReturnType<typeof useTranslations>;
 }) {
   if (!plan.subscriptions || plan.subscriptions.length === 0) {
     return (
       <Button
         className="w-full"
-        onClick={() => onSubscribeClick(plan)}
+        onClick={() =>
+          onSubscribeClick({ ...plan, duration: plan.policy?.duration })
+        }
         disabled={!userId || !plan.price}
       >
         {tPlans("subscribe")}
@@ -388,7 +415,9 @@ function PlanSubscriptionStatus({
           </div>
           <Button
             className="w-full"
-            onClick={() => onSubscribeClick(plan)}
+            onClick={() =>
+              onSubscribeClick({ ...plan, duration: plan.policy?.duration })
+            }
             disabled={!userId || !plan.price}
           >
             {tPlans("resubscribe")}
@@ -399,10 +428,17 @@ function PlanSubscriptionStatus({
 
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          <CheckCircle className="h-5 w-5" />
-          <span className="font-medium">{tPlans("subscribed")}</span>
-        </div>
+        {activeSubscription.status === "CANCELLING" ? (
+          <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">{tPlans("subscriptionEnding")}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">{tPlans("subscribed")}</span>
+          </div>
+        )}
         {maxTotal && maxTotal > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>
@@ -426,6 +462,17 @@ function PlanSubscriptionStatus({
             </span>
           </div>
         )}
+        {activeSubscription.stripeSubscriptionId &&
+          activeSubscription.status !== "CANCELLING" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-destructive hover:text-destructive"
+              onClick={() => onCancelSubscription(activeSubscription.id)}
+            >
+              {tPlans("cancelSubscription")}
+            </Button>
+          )}
       </div>
     );
   }
@@ -459,7 +506,9 @@ function PlanSubscriptionStatus({
   return (
     <Button
       className="w-full"
-      onClick={() => onSubscribeClick(plan)}
+      onClick={() =>
+        onSubscribeClick({ ...plan, duration: plan.policy?.duration })
+      }
       disabled={!userId || !plan.price}
     >
       {tPlans("subscribe")}

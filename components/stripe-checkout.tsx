@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Elements } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe-client";
 import { CheckoutForm } from "@/components/checkout-form";
@@ -12,6 +13,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import type { PlanDuration } from "@/types/venue-plan";
+
+const RECURRING_DURATIONS: PlanDuration[] = [
+  "DAILY",
+  "WEEKLY",
+  "MONTHLY",
+  "QUARTERLY",
+  "YEARLY",
+];
 
 interface StripeCheckoutProps {
   venueId: string;
@@ -20,6 +30,7 @@ interface StripeCheckoutProps {
   planName: string;
   price: number;
   currency: string;
+  duration?: PlanDuration;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -31,49 +42,77 @@ export function StripeCheckout({
   planName,
   price,
   currency,
+  duration,
   onSuccess,
   onCancel,
 }: StripeCheckoutProps) {
+  const t = useTranslations("venues.plans.checkout");
   const [clientSecret, setClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
+  const [stripeSubscriptionId, setStripeSubscriptionId] = useState<string>("");
+  const [isRecurring, setIsRecurring] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Criar Payment Intent
-    const createPaymentIntent = async () => {
+    const recurring = !!duration && RECURRING_DURATIONS.includes(duration);
+    setIsRecurring(recurring);
+
+    const initializePayment = async () => {
       try {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/venues/${venueId}/payment-intents`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ planId }),
-        });
+        if (recurring) {
+          // Recurring plan → Stripe Billing subscription
+          const response = await fetch(
+            `/api/venues/${venueId}/stripe-subscriptions`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ planId }),
+            }
+          );
 
-        if (!response.ok) {
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || t("failedCreateSubscription"));
+          }
+
           const data = await response.json();
-          throw new Error(data.error || "Failed to create payment intent");
-        }
+          setClientSecret(data.clientSecret);
+          setStripeSubscriptionId(data.subscriptionId);
+          // No paymentIntentId needed — webhook handles activation
+        } else {
+          // One-time plan → PaymentIntent
+          const response = await fetch(
+            `/api/venues/${venueId}/payment-intents`,
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ planId }),
+            }
+          );
 
-        const data = await response.json();
-        setClientSecret(data.clientSecret);
-        setPaymentIntentId(data.paymentIntent.id); // Save payment intent ID
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.error || t("failedCreatePayment"));
+          }
+
+          const data = await response.json();
+          setClientSecret(data.clientSecret);
+          setPaymentIntentId(data.paymentIntent.id);
+        }
       } catch (err) {
-        console.error("Error creating payment intent:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to initialize payment"
-        );
+        console.error("Error initializing payment:", err);
+        setError(err instanceof Error ? err.message : t("failedInitPayment"));
       } finally {
         setLoading(false);
       }
     };
 
-    createPaymentIntent();
-  }, [venueId, planId]);
+    initializePayment();
+  }, [venueId, planId, duration]);
 
   const appearance = {
     theme: "stripe" as const,
@@ -102,7 +141,9 @@ export function StripeCheckout({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-destructive">Payment Error</CardTitle>
+          <CardTitle className="text-destructive">
+            {t("paymentError")}
+          </CardTitle>
           <CardDescription>{error}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -110,7 +151,7 @@ export function StripeCheckout({
             onClick={onCancel}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Go back
+            {t("goBack")}
           </button>
         </CardContent>
       </Card>
@@ -121,7 +162,7 @@ export function StripeCheckout({
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-12">
-          <p className="text-muted-foreground">Initializing payment...</p>
+          <p className="text-muted-foreground">{t("initializingPayment")}</p>
         </CardContent>
       </Card>
     );
@@ -137,7 +178,7 @@ export function StripeCheckout({
     >
       <Card>
         <CardHeader>
-          <CardTitle>Complete Payment</CardTitle>
+          <CardTitle>{t("completePayment")}</CardTitle>
           <CardDescription>
             {venueName} - {planName}
           </CardDescription>
@@ -147,7 +188,10 @@ export function StripeCheckout({
         </CardHeader>
         <CardContent>
           <CheckoutForm
+            venueId={venueId}
             paymentIntentId={paymentIntentId}
+            stripeSubscriptionId={stripeSubscriptionId}
+            isRecurring={isRecurring}
             onSuccess={onSuccess}
             onCancel={onCancel}
           />

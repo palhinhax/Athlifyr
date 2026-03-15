@@ -145,6 +145,7 @@
       "setupStripe": "Configurar Stripe",
       "continueOnboarding": "Continuar onboarding",
       "verifyStatus": "Verificar estado",
+      "openDashboard": "Abrir Dashboard Stripe",
       "statusUpdated": "Estado atualizado",
       "stripeError": "Não foi possível iniciar o Stripe.",
       "stripeVerifyError": "Não foi possível verificar o Stripe.",

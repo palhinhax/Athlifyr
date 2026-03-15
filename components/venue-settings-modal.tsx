@@ -20,6 +20,7 @@ import {
   GlobeIcon,
   SearchIcon,
   Settings2Icon,
+  ShoppingBagIcon,
   UsersIcon,
 } from "lucide-react";
 import { VenueStaffManager } from "@/components/venue/staff";
@@ -29,6 +30,7 @@ import { VenueSessionsSettings } from "@/components/venue-sessions-settings";
 import { VenueSEOSettings } from "@/components/venue-seo-settings";
 import { VenueVisibilitySettings } from "@/components/venue-visibility-settings";
 import { VenueDescriptionTranslations } from "@/components/venue-description-translations";
+import { VenueProductsSettings } from "@/components/venue-products-settings";
 
 interface VenueSettingsModalProps {
   venue: {
@@ -127,6 +129,11 @@ export function VenueSettingsModal({
               icon: <CreditCardIcon />,
             },
             {
+              value: "products",
+              label: t("settingsTabs.products"),
+              icon: <ShoppingBagIcon />,
+            },
+            {
               value: "advanced",
               label: t("settingsTabs.advanced"),
               icon: <Settings2Icon />,
@@ -183,6 +190,10 @@ export function VenueSettingsModal({
             currentPaymentMode={venue.paymentMode}
             externalPaymentInstructions={venue.externalPaymentInstructions}
           />
+        </ResponsiveTabsContent>
+
+        <ResponsiveTabsContent value="products" activeValue={activeTab}>
+          <VenueProductsSettings venueId={venue.id} />
         </ResponsiveTabsContent>
 
         <ResponsiveTabsContent value="advanced" activeValue={activeTab}>

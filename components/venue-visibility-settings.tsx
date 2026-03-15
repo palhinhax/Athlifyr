@@ -23,6 +23,7 @@ import {
   AlertCircle,
   Users,
   Receipt,
+  ShoppingBag,
 } from "lucide-react";
 
 // Available tabs that can be toggled for public view
@@ -34,6 +35,7 @@ const AVAILABLE_TABS = [
   { id: "plans", icon: CreditCard, isAdminOnly: false },
   { id: "sessions", icon: Calendar, isAdminOnly: false },
   { id: "team", icon: Users, isAdminOnly: false },
+  { id: "shop", icon: ShoppingBag, isAdminOnly: false },
   { id: "clients", icon: Users, isAdminOnly: true },
   { id: "subscriptions", icon: Receipt, isAdminOnly: true },
 ] as const;
@@ -46,6 +48,7 @@ const DEFAULT_VISIBLE_TABS = [
   "plans",
   "sessions",
   "team",
+  "shop",
   "clients",
   "subscriptions",
 ];

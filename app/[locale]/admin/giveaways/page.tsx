@@ -707,7 +707,7 @@ export default function AdminGiveawaysPage() {
                   onChange={(e) =>
                     setFormData((p) => ({
                       ...p,
-                      prizeCount: parseInt(e.target.value) || 1,
+                      prizeCount: Number.parseInt(e.target.value) || 1,
                     }))
                   }
                   disabled={

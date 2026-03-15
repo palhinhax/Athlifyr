@@ -68,6 +68,7 @@
       "sessions": "Sessioni e Servizi",
       "staff": "Personale",
       "payments": "Pagamenti",
+      "products": "Prodotti",
       "advanced": "Avanzate",
       "seo": "SEO",
       "translations": "Traduzioni"
@@ -359,6 +360,7 @@
       "title": "Piani",
       "subscribe": "Iscriviti",
       "subscribed": "Iscritto",
+      "subscriptionEnding": "Abbonamento in scadenza",
       "scheduled": "Programmato",
       "startsOn": "Inizia il",
       "validUntil": "Valido fino al",
@@ -416,7 +418,27 @@
       "sessionsUsed": "{used} di {total} sessioni utilizzate",
       "resubscribe": "Iscriviti di nuovo",
       "crossVenueTitle": "Abbonamenti da altri spazi",
-      "fromVenue": "Piano di {venue}"
+      "fromVenue": "Piano di {venue}",
+      "perDay": "al giorno",
+      "perWeek": "alla settimana",
+      "perQuarter": "al trimestre",
+      "perYear": "all'anno",
+      "cancelSubscription": "Annulla Abbonamento",
+      "subscriptionCancelled": "Abbonamento Annullato",
+      "subscriptionCancelledDescription": "Il tuo abbonamento non verrà rinnovato alla fine del periodo di fatturazione corrente.",
+      "checkout": {
+        "completePayment": "Completa il pagamento",
+        "paymentError": "Errore di pagamento",
+        "goBack": "Indietro",
+        "initializingPayment": "Inizializzazione del pagamento...",
+        "failedInitPayment": "Impossibile inizializzare il pagamento",
+        "failedCreateSubscription": "Impossibile creare l'abbonamento",
+        "failedCreatePayment": "Impossibile creare il pagamento"
+      },
+      "errors": {
+        "subscribeFailed": "Errore nell'abbonamento",
+        "cancelFailed": "Errore nell'annullamento"
+      }
     },
     "sessions": {
       "title": "Sessioni",
@@ -641,7 +663,10 @@
       "confirmBooking": "Conferma Prenotazione",
       "submitRequest": "Invia Richiesta",
       "requestSubmitted": "Richiesta Inviata",
-      "requestSubmittedDescription": "La tua richiesta di abbonamento è stata inviata. Il personale della struttura ti contatterà per confermare il pagamento."
+      "requestSubmittedDescription": "La tua richiesta di abbonamento è stata inviata. Il personale della struttura ti contatterà per confermare il pagamento.",
+      "paymentFailed": "Pagamento fallito",
+      "activationFailed": "Pagamento riuscito ma attivazione abbonamento fallita. Contatta il supporto.",
+      "unexpectedError": "Si è verificato un errore imprevisto"
     },
     "recommendations": {
       "recommendations": "Raccomandazioni",
@@ -661,6 +686,7 @@
       "plans": "Piani",
       "sessions": "Sessioni",
       "team": "Team",
+      "shop": "Negozio",
       "clients": "Clienti",
       "subscriptions": "Abbonamenti",
       "reviews": "Recensioni"
@@ -929,6 +955,7 @@
         "plansDescription": "Mostra i piani di abbonamento e i prezzi disponibili",
         "sessionsDescription": "Mostra il calendario delle sessioni e le prenotazioni",
         "teamDescription": "Mostra il team della struttura (proprietari, coach, admin)",
+        "shopDescription": "Mostra il negozio della struttura con i prodotti in vendita",
         "clientsDescription": "Mostra l'elenco dei membri e dei clienti della struttura",
         "subscriptionsDescription": "Mostra e gestisce gli abbonamenti attivi"
       }
@@ -1161,6 +1188,189 @@
         "sat": "Sab",
         "sun": "Dom"
       }
+    }
+  },
+  "shop": {
+    "title": "Negozio",
+    "empty": "Nessun prodotto disponibile",
+    "emptyDescription": "Questa sede non ha ancora aggiunto prodotti.",
+    "buy": "Acquista",
+    "outOfStock": "Esaurito",
+    "inStock": "{count, plural, =1 {1 disponibile} other {# disponibili}}",
+    "loginToBuy": "Accedi per acquistare",
+    "purchaseSuccess": "Acquisto completato!",
+    "purchaseSuccessDescription": "Il tuo acquisto è stato confermato.",
+    "checkout": {
+      "title": "Completa Acquisto",
+      "completePayment": "Completa Pagamento",
+      "paymentError": "Errore di Pagamento",
+      "goBack": "Torna indietro",
+      "failedCreatePayment": "Impossibile avviare il pagamento",
+      "pay": "Paga",
+      "cancel": "Annulla",
+      "processing": "Elaborazione...",
+      "paymentFailed": "Pagamento fallito",
+      "unexpectedError": "Si è verificato un errore imprevisto"
+    },
+    "success": {
+      "title": "Acquisto Confermato!",
+      "description": "Mostra questo schermo nella sede per ritirare il tuo prodotto.",
+      "elapsed": "Confermato da",
+      "close": "Chiudi"
+    },
+    "purchases": {
+      "title": "Vendite Recenti",
+      "empty": "Nessuna vendita ancora",
+      "refund": "Rimborsa",
+      "refundConfirmTitle": "Conferma Rimborso",
+      "refundConfirmDescription": "Sei sicuro di voler rimborsare questo acquisto? L'importo totale verrà restituito al cliente.",
+      "confirmRefund": "Sì, Rimborsa",
+      "cancel": "Annulla",
+      "refundSuccess": "Rimborso elaborato con successo",
+      "refundFailed": "Errore durante il rimborso",
+      "statusConfirmed": "Confermato",
+      "statusPending": "In attesa",
+      "statusRefunded": "Rimborsato",
+      "statusFailed": "Fallito",
+      "statusCancelled": "Annullato"
+    }
+  },
+  "products": {
+    "title": "Prodotti",
+    "description": "Gestisci i prodotti della tua sede in vendita (acqua, barrette proteiche, merchandise, ecc.)",
+    "addProduct": "Aggiungi Prodotto",
+    "editProduct": "Modifica Prodotto",
+    "name": "Nome",
+    "namePlaceholder": "es. Bottiglia d'Acqua, Barretta Proteica",
+    "price": "Prezzo",
+    "currency": "Valuta",
+    "descriptionLabel": "Descrizione",
+    "descriptionPlaceholder": "Breve descrizione del prodotto (facoltativa)",
+    "stock": "Scorte",
+    "stockPlaceholder": "Lascia vuoto per scorte illimitate",
+    "stockHelp": "Lascia vuoto per scorte illimitate. Imposta un numero per tracciare l'inventario.",
+    "stockCount": "{count, plural, =0 {0 unità} =1 {1 unità} other {# unità}}",
+    "save": "Salva",
+    "cancel": "Annulla",
+    "empty": "Nessun prodotto",
+    "emptyDescription": "Clicca su 'Aggiungi Prodotto' per creare il tuo primo prodotto.",
+    "inactive": "Inattivo",
+    "validationError": "Errore di Validazione",
+    "nameAndPriceRequired": "Nome e un prezzo valido sono obbligatori.",
+    "invalidStock": "Le scorte devono essere un numero non negativo.",
+    "saveFailed": "Impossibile salvare il prodotto",
+    "productCreated": "Prodotto creato con successo",
+    "productUpdated": "Prodotto aggiornato con successo",
+    "productDeactivated": "Prodotto disattivato",
+    "productReactivated": "Prodotto riattivato"
+  },
+  "analytics": {
+    "button": "Analisi",
+    "title": "Business Intelligence",
+    "loading": "Caricamento analisi...",
+    "fetchError": "Impossibile caricare i dati di analisi",
+    "retry": "Riprova",
+    "periods": {
+      "7days": "Ultimi 7 giorni",
+      "30days": "Ultimi 30 giorni",
+      "90days": "Ultimi 90 giorni",
+      "180days": "Ultimi 6 mesi",
+      "365days": "Ultimo anno"
+    },
+    "tabs": {
+      "overview": "Panoramica",
+      "members": "Membri",
+      "bookings": "Prenotazioni",
+      "revenue": "Ricavi",
+      "sessions": "Sessioni"
+    },
+    "kpi": {
+      "activeMembers": "Membri Attivi",
+      "activeSubscriptions": "Piani Attivi",
+      "totalBookings": "Prenotazioni",
+      "attendanceRate": "Presenza",
+      "productSales": "Vendite",
+      "totalRevenue": "Ricavi Totali",
+      "attended": "Presenti",
+      "noShow": "Assenti",
+      "trials": "Prenotazioni di Prova",
+      "subscriptionRevenue": "Ricavi dai Piani",
+      "productRevenue": "Ricavi dai Prodotti",
+      "totalSessions": "Sessioni",
+      "avgCapacity": "Capacità Media"
+    },
+    "charts": {
+      "revenueOverTime": "Ricavi nel Tempo",
+      "revenueOverTimeDesc": "Ricavi mensili da abbonamenti e prodotti (ultimi 12 mesi)",
+      "bookingsTrend": "Tendenza Prenotazioni",
+      "memberGrowth": "Nuovi Membri",
+      "membersByRole": "Membri per Ruolo",
+      "membersByRoleDesc": "Distribuzione dei membri attivi per ruolo",
+      "membersByStatus": "Membri per Stato",
+      "memberGrowthDetailed": "Crescita dei Membri",
+      "memberGrowthDetailedDesc": "Nuovi membri al mese (ultimi 12 mesi)",
+      "bookingsByStatus": "Prenotazioni per Stato",
+      "bookingsByDay": "Prenotazioni per Giorno",
+      "bookingsByDayDesc": "Quali giorni hanno più prenotazioni",
+      "weeklyBookingsTrend": "Tendenza Settimanale",
+      "weeklyBookingsTrendDesc": "Numero di prenotazioni a settimana (ultime 12 settimane)",
+      "monthlyRevenue": "Ricavi Mensili",
+      "monthlyRevenueDesc": "Ripartizione dei ricavi per fonte (ultimi 12 mesi)",
+      "topProducts": "Prodotti Più Venduti",
+      "popularSessions": "Sessioni Più Popolari",
+      "popularSessionsDesc": "Sessioni con più prenotazioni in questo periodo",
+      "subscriptions": "Abbonamenti",
+      "products": "Prodotti",
+      "weekOf": "Settimana del",
+      "bookingsLabel": "prenotazioni",
+      "newMembers": "nuovi membri",
+      "members": "membri",
+      "unitsSold": "unità vendute",
+      "sessionsLabel": "sessioni",
+      "avgCapacityLabel": "Capacità media"
+    },
+    "roles": {
+      "OWNER": "Proprietario",
+      "ADMIN": "Amministratore",
+      "COACH": "Allenatore",
+      "CLIENT": "Cliente"
+    },
+    "memberStatuses": {
+      "ACTIVE": "Attivo",
+      "PENDING": "In attesa",
+      "SUSPENDED": "Sospeso",
+      "LEFT": "Uscito"
+    },
+    "bookingStatuses": {
+      "BOOKED": "Prenotato",
+      "ATTENDED": "Presente",
+      "CANCELLED": "Annullato",
+      "NO_SHOW": "Assente",
+      "PENDING": "In attesa",
+      "REJECTED": "Rifiutato"
+    },
+    "days": {
+      "sunday": "Dom",
+      "monday": "Lun",
+      "tuesday": "Mar",
+      "wednesday": "Mer",
+      "thursday": "Gio",
+      "friday": "Ven",
+      "saturday": "Sab"
+    },
+    "months": {
+      "m1": "Gen",
+      "m2": "Feb",
+      "m3": "Mar",
+      "m4": "Apr",
+      "m5": "Mag",
+      "m6": "Giu",
+      "m7": "Lug",
+      "m8": "Ago",
+      "m9": "Set",
+      "m10": "Ott",
+      "m11": "Nov",
+      "m12": "Dic"
     }
   }
 }

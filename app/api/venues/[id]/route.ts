@@ -79,7 +79,7 @@ export async function GET(
               ? {
                   where: {
                     userId: currentUserId,
-                    status: "ACTIVE",
+                    status: { in: ["ACTIVE", "CANCELLING"] },
                     OR: [
                       { endsAt: null },
                       { endsAt: { gte: new Date() } }, // Must not have ended
@@ -92,6 +92,7 @@ export async function GET(
                     startsAt: true,
                     endsAt: true,
                     createdAt: true,
+                    stripeSubscriptionId: true,
                   },
                   orderBy: { createdAt: "desc" },
                   take: 5, // Get active subscriptions (may include exhausted packs + new ones)

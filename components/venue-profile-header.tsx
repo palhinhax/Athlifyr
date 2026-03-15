@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { MapPin, Settings } from "lucide-react";
+import { MapPin, Settings, BarChart3 } from "lucide-react";
+import { Link } from "@/i18n/routing";
 import { useTranslations } from "next-intl";
 import { VenueSettingsModal } from "@/components/venue-settings-modal";
 import { ShareButton } from "@/components/share-button";
@@ -148,9 +149,21 @@ export function VenueProfileHeader({
           </div>
         </div>
 
-        {/* Action buttons - Edit and Share */}
+        {/* Action buttons - Analytics, Edit, and Share */}
         <div className="container absolute left-0 right-0 top-0 px-4 py-4 sm:px-6">
           <div className="mx-auto flex items-center justify-end gap-2">
+            {isOwnerOrAdmin && (
+              <Link href={`/venues/${slug}/analytics`}>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"
+                >
+                  <BarChart3 className="mr-2 h-4 w-4" />
+                  {t("analytics.button")}
+                </Button>
+              </Link>
+            )}
             {isOwnerOrAdmin && (
               <Button
                 variant="secondary"

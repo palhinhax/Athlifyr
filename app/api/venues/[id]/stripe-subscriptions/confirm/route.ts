@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { calculatePlanEndDate, type VenuePlanPolicy } from "@/types/venue-plan";
 
 /**
  * POST /api/venues/[id]/stripe-subscriptions/confirm
@@ -71,18 +70,10 @@ export async function POST(
       );
     }
 
-    // Calculate end date from plan policy
+    // Derive start and end dates from Stripe's current billing period (on items in 2026+ API)
+    const itemPeriodEnd = stripeSub.items?.data?.[0]?.current_period_end;
     const startDate = new Date();
-    let endDate: Date | undefined;
-
-    if (subscription.plan?.policy) {
-      const policy = subscription.plan.policy as unknown as VenuePlanPolicy;
-      endDate = calculatePlanEndDate(
-        startDate,
-        policy.duration,
-        policy.durationValue
-      );
-    }
+    const endDate = itemPeriodEnd ? new Date(itemPeriodEnd * 1000) : undefined;
 
     // Activate the local subscription
     const updated = await prisma.venueSubscription.update({
@@ -93,6 +84,7 @@ export async function POST(
         paymentConfirmedAt: new Date(),
         startsAt: startDate,
         endsAt: endDate,
+        stripeCurrentPeriodEnd: endDate,
       },
     });
 

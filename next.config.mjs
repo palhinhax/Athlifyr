@@ -28,7 +28,7 @@ const ContentSecurityPolicy = `
   manifest-src 'self';
   ${process.env.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}
 `
-  .replace(/\s{2,}/g, " ")
+  .replaceAll(/\s{2,}/g, " ")
   .trim();
 
 // Security headers for all routes

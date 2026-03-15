@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { Currency } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
+
+const VALID_CURRENCIES = new Set<string>(Object.values(Currency));
 
 /**
  * PATCH  /api/venues/[id]/products/[productId] — Update product (owner/admin)
@@ -36,13 +39,40 @@ export async function PATCH(
     const { name, description, price, currency, stock, isActive } =
       await request.json();
 
+    if (
+      price !== undefined &&
+      (typeof price !== "number" || !Number.isFinite(price) || price <= 0)
+    ) {
+      return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+    }
+
+    if (currency !== undefined) {
+      const upper = typeof currency === "string" ? currency.toUpperCase() : "";
+      if (!VALID_CURRENCIES.has(upper)) {
+        return NextResponse.json(
+          { error: "Unsupported currency" },
+          { status: 400 }
+        );
+      }
+    }
+
+    if (
+      stock !== undefined &&
+      stock !== null &&
+      (typeof stock !== "number" || !Number.isInteger(stock) || stock < 0)
+    ) {
+      return NextResponse.json({ error: "Invalid stock" }, { status: 400 });
+    }
+
     const updated = await prisma.venueProduct.update({
       where: { id: productId },
       data: {
         ...(name !== undefined ? { name } : {}),
         ...(description !== undefined ? { description } : {}),
         ...(price !== undefined ? { price } : {}),
-        ...(currency !== undefined ? { currency } : {}),
+        ...(currency !== undefined
+          ? { currency: (currency as string).toUpperCase() as Currency }
+          : {}),
         ...(stock !== undefined ? { stock } : {}),
         ...(isActive !== undefined ? { isActive } : {}),
       },

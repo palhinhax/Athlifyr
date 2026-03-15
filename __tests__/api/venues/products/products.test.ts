@@ -289,6 +289,41 @@ describe("POST /api/venues/[id]/products", () => {
     expect(body.product).toEqual(createdProduct);
   });
 
+  it("returns 400 when currency is unsupported", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+
+    const res = await POST(
+      makeRequest({ name: "Test", price: 10, currency: "INVALID" }),
+      makeParams()
+    );
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Unsupported currency");
+    expect(prisma.venueProduct.create).not.toHaveBeenCalled();
+  });
+
+  it("normalizes currency to uppercase", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.create as jest.Mock).mockResolvedValue({
+      id: "p4",
+      currency: "USD",
+    });
+
+    await POST(
+      makeRequest({ name: "Test", price: 10, currency: "usd" }),
+      makeParams()
+    );
+
+    expect(prisma.venueProduct.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({ currency: "USD" }),
+      })
+    );
+  });
+
   it("uses EUR as default currency when not provided", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });

@@ -9,6 +9,10 @@ import {
   type VenuePlanPolicy,
   DEFAULT_PLAN_POLICY,
 } from "@/types/venue-plan";
+import type {
+  StripeOnboardingStatus,
+  EventStripeOnboardingStatus,
+} from "@prisma/client";
 
 // Desabilitar parsing do body para webhooks
 export const runtime = "nodejs";
@@ -69,6 +73,12 @@ export async function POST(request: Request) {
 
     // Processar eventos do Stripe
     switch (event.type) {
+      case "account.updated": {
+        const account = event.data.object as Stripe.Account;
+        await handleAccountUpdated(account);
+        break;
+      }
+
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         // Only handle event registration checkouts (have eventId in metadata)
@@ -149,6 +159,68 @@ export async function POST(request: Request) {
       { error: "Webhook processing failed" },
       { status: 500 }
     );
+  }
+}
+
+// Handler for Stripe Connect account onboarding status sync
+async function handleAccountUpdated(account: Stripe.Account) {
+  console.log(`Processing account.updated for ${account.id}`);
+
+  const statusStr =
+    account.charges_enabled && account.payouts_enabled
+      ? "COMPLETE"
+      : account.requirements?.disabled_reason
+        ? "RESTRICTED"
+        : account.details_submitted
+          ? "PENDING"
+          : "NOT_STARTED";
+
+  const stripeFields = {
+    stripeChargesEnabled: account.charges_enabled || false,
+    stripePayoutsEnabled: account.payouts_enabled || false,
+    stripeDetailsSubmitted: account.details_submitted || false,
+    stripeLastWebhookAt: new Date(),
+  };
+
+  let synced = false;
+
+  // Sync Venue (stripeAccountId is unique on Venue)
+  const venue = await prisma.venue.findUnique({
+    where: { stripeAccountId: account.id },
+  });
+
+  if (venue) {
+    await prisma.venue.update({
+      where: { id: venue.id },
+      data: {
+        ...stripeFields,
+        stripeOnboardingStatus: statusStr as StripeOnboardingStatus,
+      },
+    });
+    console.log(`Updated venue ${venue.id} Stripe status → ${statusStr}`);
+    synced = true;
+  }
+
+  // Sync Events (multiple events can share the same Stripe account)
+  const events = await prisma.event.findMany({
+    where: { stripeAccountId: account.id },
+  });
+
+  for (const evt of events) {
+    await prisma.event.update({
+      where: { id: evt.id },
+      data: {
+        ...stripeFields,
+        stripeOnboardingStatus: statusStr as EventStripeOnboardingStatus,
+        ...(statusStr === "COMPLETE" ? { hasRegistrations: true } : {}),
+      },
+    });
+    console.log(`Updated event ${evt.id} Stripe status → ${statusStr}`);
+    synced = true;
+  }
+
+  if (!synced) {
+    console.error(`No venue or event found for Stripe account ${account.id}`);
   }
 }
 
@@ -785,6 +857,11 @@ async function handleProductPurchaseSucceeded(
 
   if (!purchase) {
     console.error(`VenueProductPurchase not found: ${purchaseId}`);
+    return;
+  }
+
+  if (purchase.status === "CONFIRMED") {
+    console.log(`Purchase ${purchaseId} already confirmed, skipping`);
     return;
   }
 

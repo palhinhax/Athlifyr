@@ -137,6 +137,72 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
     });
   });
 
+  it("returns 400 when price is not a valid positive number", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
+      id: productId,
+      venueId,
+    });
+
+    const res = await PATCH(makeRequest({ price: -5 }), makeParams());
+    const body = await res.json();
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Invalid price");
+  });
+
+  it("returns 400 when price is zero", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
+      id: productId,
+      venueId,
+    });
+
+    const res = await PATCH(makeRequest({ price: 0 }), makeParams());
+    expect(res.status).toBe(400);
+  });
+
+  it("returns 400 when currency is invalid", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
+      id: productId,
+      venueId,
+    });
+
+    const res = await PATCH(makeRequest({ currency: "INVALID" }), makeParams());
+    const body = await res.json();
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Unsupported currency");
+  });
+
+  it("returns 400 when stock is negative", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
+      id: productId,
+      venueId,
+    });
+
+    const res = await PATCH(makeRequest({ stock: -1 }), makeParams());
+    const body = await res.json();
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Invalid stock");
+  });
+
+  it("returns 400 when stock is not an integer", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
+      id: productId,
+      venueId,
+    });
+
+    const res = await PATCH(makeRequest({ stock: 1.5 }), makeParams());
+    expect(res.status).toBe(400);
+  });
+
   it("does not include undefined fields in update data", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });

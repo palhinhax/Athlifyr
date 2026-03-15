@@ -113,6 +113,21 @@ describe("GET /api/venues/[id]/purchases", () => {
     );
   });
 
+  it("returns 400 for invalid status parameter", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockCanManageVenue.mockResolvedValue({ authorized: true });
+
+    const req = new Request(
+      `http://localhost/api/venues/${venueId}/purchases?status=INVALID`
+    );
+    const res = await GET(req, makeParams());
+    const body = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(body.error).toBe("Invalid status parameter");
+    expect(prisma.venueProductPurchase.findMany).not.toHaveBeenCalled();
+  });
+
   it("respects limit parameter (capped at 200)", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });

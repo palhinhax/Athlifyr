@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
+import { Currency } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canManageVenue } from "@/lib/venues/authorization";
+
+const VALID_CURRENCIES = new Set<string>(Object.values(Currency));
 
 /**
  * GET  /api/venues/[id]/products — List active products (public)
@@ -70,13 +73,25 @@ export async function POST(
       );
     }
 
+    let normalizedCurrency: Currency = Currency.EUR;
+    if (currency != null) {
+      const upper = typeof currency === "string" ? currency.toUpperCase() : "";
+      if (!VALID_CURRENCIES.has(upper)) {
+        return NextResponse.json(
+          { error: "Unsupported currency" },
+          { status: 400 }
+        );
+      }
+      normalizedCurrency = upper as Currency;
+    }
+
     const product = await prisma.venueProduct.create({
       data: {
         venueId,
         name,
         description: description || null,
         price,
-        currency: currency || "EUR",
+        currency: normalizedCurrency,
         stock: stock != null ? stock : null,
       },
     });

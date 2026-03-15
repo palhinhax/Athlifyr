@@ -26,7 +26,7 @@ export async function GET(
 
     const { searchParams } = new URL(request.url);
     const periodDays = Math.min(
-      parseInt(searchParams.get("days") || "30", 10),
+      Number.parseInt(searchParams.get("days") || "30", 10),
       365
     );
     const periodStart = new Date();

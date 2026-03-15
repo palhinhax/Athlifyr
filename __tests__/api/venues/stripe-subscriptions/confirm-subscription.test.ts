@@ -140,8 +140,10 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
         policy: { duration: "MONTHLY", durationValue: 1 },
       },
     });
+    const periodEnd = Math.floor(Date.now() / 1000) + 30 * 86400;
     (stripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
       status: "active",
+      items: { data: [{ current_period_end: periodEnd }] },
     });
     const updated = {
       id: "sub-local-1",
@@ -163,6 +165,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
         paymentConfirmedAt: expect.any(Date),
         startsAt: expect.any(Date),
         endsAt: expect.any(Date),
+        stripeCurrentPeriodEnd: expect.any(Date),
       },
     });
   });

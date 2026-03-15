@@ -28,14 +28,32 @@ export async function GET(
       parseInt(searchParams.get("limit") || "50", 10),
       200
     );
-    const status = searchParams.get("status"); // CREATED, CONFIRMED, REFUNDED
+    const ALLOWED_STATUSES = [
+      "CREATED",
+      "CONFIRMED",
+      "FAILED",
+      "CANCELLED",
+      "REFUNDED",
+    ] as const;
+    type PurchaseStatus = (typeof ALLOWED_STATUSES)[number];
+    const statusParam = searchParams.get("status");
+
+    if (
+      statusParam !== null &&
+      !ALLOWED_STATUSES.includes(statusParam as PurchaseStatus)
+    ) {
+      return NextResponse.json(
+        { error: "Invalid status parameter" },
+        { status: 400 }
+      );
+    }
+
+    const status = statusParam as PurchaseStatus | null;
 
     const purchases = await prisma.venueProductPurchase.findMany({
       where: {
         venueId,
-        ...(status
-          ? { status: status as "CREATED" | "CONFIRMED" | "REFUNDED" }
-          : {}),
+        ...(status ? { status } : {}),
       },
       include: {
         product: { select: { name: true } },

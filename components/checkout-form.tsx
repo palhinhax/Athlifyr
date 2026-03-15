@@ -9,9 +9,17 @@ import { useStripePaymentForm } from "@/hooks/use-stripe-payment-form";
 
 interface CheckoutFormProps {
   venueId?: string;
-  paymentIntentId: string;
+  paymentIntentId?: string;
   stripeSubscriptionId?: string;
   isRecurring?: boolean;
+  /** Custom confirmation endpoint (overrides default logic). POST is called after payment succeeds. */
+  confirmEndpoint?: string;
+  /** JSON body to send to confirmEndpoint (defaults to empty) */
+  confirmBody?: Record<string, unknown>;
+  /** If true, confirmation failure is silently ignored (webhook fallback) */
+  silentConfirm?: boolean;
+  /** i18n namespace override (default: "venues.payment") */
+  translationNamespace?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
@@ -21,10 +29,14 @@ export function CheckoutForm({
   paymentIntentId,
   stripeSubscriptionId,
   isRecurring,
+  confirmEndpoint,
+  confirmBody,
+  silentConfirm,
+  translationNamespace = "venues.payment",
   onSuccess,
   onCancel,
-}: CheckoutFormProps) {
-  const t = useTranslations("venues.payment");
+}: Readonly<CheckoutFormProps>) {
+  const t = useTranslations(translationNamespace);
   const {
     stripe,
     elements,
@@ -65,64 +77,63 @@ export function CheckoutForm({
       if (paymentError) {
         setErrorMessage(paymentError.message || t("paymentFailed"));
         setIsProcessing(false);
-      } else {
-        if (isRecurring && venueId && stripeSubscriptionId) {
-          // Recurring subscription: confirm and activate immediately
-          try {
-            const confirmResponse = await fetch(
-              `/api/venues/${venueId}/stripe-subscriptions/confirm`,
-              {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ stripeSubscriptionId }),
-              }
-            );
+        return;
+      }
 
-            if (!confirmResponse.ok) {
-              console.warn(
-                "Subscription confirm failed, webhook will handle activation"
-              );
-            }
-          } catch (confirmError) {
+      // Determine which confirmation endpoint to call
+      const endpoint =
+        confirmEndpoint ??
+        (isRecurring && venueId && stripeSubscriptionId
+          ? `/api/venues/${venueId}/stripe-subscriptions/confirm`
+          : !isRecurring && paymentIntentId
+            ? `/api/payment-intents/${paymentIntentId}/confirm`
+            : null);
+
+      const body =
+        confirmBody ??
+        (isRecurring && stripeSubscriptionId
+          ? { stripeSubscriptionId }
+          : undefined);
+
+      if (endpoint) {
+        try {
+          const confirmResponse = await fetch(endpoint, {
+            method: "POST",
+            ...(body
+              ? {
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify(body),
+                }
+              : {}),
+          });
+
+          if (!confirmResponse.ok && !silentConfirm) {
+            throw new Error(t("activationFailed"));
+          }
+        } catch (confirmError) {
+          if (silentConfirm) {
+            // Webhook will handle activation as fallback
+            console.warn("Confirm failed, webhook will handle:", confirmError);
+          } else if (isRecurring) {
             console.warn(
-              "Subscription confirm error, webhook will handle activation:",
+              "Subscription confirm failed, webhook will handle activation:",
               confirmError
             );
-          }
-
-          setIsProcessing(false);
-          if (onSuccess) {
-            onSuccess();
-          }
-        } else if (!isRecurring) {
-          // One-time payment: confirm subscription manually
-          try {
-            const confirmResponse = await fetch(
-              `/api/payment-intents/${paymentIntentId}/confirm`,
-              {
-                method: "POST",
-              }
-            );
-
-            if (!confirmResponse.ok) {
-              throw new Error(t("activationFailed"));
-            }
-
-            setIsProcessing(false);
-            if (onSuccess) {
-              onSuccess();
-            }
-          } catch (confirmError) {
-            console.error("Error confirming subscription:", confirmError);
+          } else {
+            console.error("Error confirming payment:", confirmError);
             setErrorMessage(
               confirmError instanceof Error
                 ? confirmError.message
                 : t("activationFailed")
             );
             setIsProcessing(false);
+            return;
           }
         }
       }
+
+      setIsProcessing(false);
+      onSuccess?.();
     } catch (err) {
       console.error("Payment error:", err);
       setErrorMessage(t("unexpectedError"));

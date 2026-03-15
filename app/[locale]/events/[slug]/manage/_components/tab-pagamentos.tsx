@@ -28,7 +28,7 @@ export function TabPagamentos({
   event,
   onSave,
   populateEvent,
-}: TabPagamentosProps) {
+}: Readonly<TabPagamentosProps>) {
   const t = useTranslations("manage.payments");
   const tErr = useTranslations("manage.errors");
 
@@ -64,7 +64,7 @@ export function TabPagamentos({
       );
       if (!linkRes.ok) throw new Error("Failed to get onboarding link");
       const { url } = (await linkRes.json()) as { url: string };
-      window.location.href = url;
+      globalThis.location.href = url;
     } catch {
       toast({
         title: tErr("saveError"),

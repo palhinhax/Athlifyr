@@ -79,7 +79,7 @@ export async function GET(
               ? {
                   where: {
                     userId: currentUserId,
-                    status: "ACTIVE",
+                    status: { in: ["ACTIVE", "CANCELLING"] },
                     OR: [
                       { endsAt: null },
                       { endsAt: { gte: new Date() } }, // Must not have ended

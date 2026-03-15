@@ -9,14 +9,28 @@ import { canManageVenue } from "@/lib/venues/authorization";
  */
 
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const venueId = (await params).id;
+    const { searchParams } = new URL(request.url);
+    const includeAll = searchParams.get("all") === "true";
+
+    // If requesting all products (including inactive), verify the caller can manage the venue
+    if (includeAll) {
+      const session = await auth();
+      if (!session?.user) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+      const allowed = await canManageVenue(session.user.id, venueId);
+      if (!allowed) {
+        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+      }
+    }
 
     const products = await prisma.venueProduct.findMany({
-      where: { venueId, isActive: true },
+      where: { venueId, ...(includeAll ? {} : { isActive: true }) },
       orderBy: { createdAt: "desc" },
     });
 

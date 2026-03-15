@@ -8,6 +8,7 @@ const VALID_TABS = [
   "plans",
   "sessions",
   "team",
+  "shop",
   "clients",
   "subscriptions",
 ];

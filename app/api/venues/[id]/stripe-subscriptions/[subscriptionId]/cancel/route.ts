@@ -44,11 +44,11 @@ export async function POST(
       cancel_at_period_end: true,
     });
 
-    // Update local record
+    // Update local record — keep active until period ends, just mark as cancelling
     await prisma.venueSubscription.update({
       where: { id: subscriptionId },
       data: {
-        status: "CANCELLED",
+        status: "CANCELLING",
       },
     });
 

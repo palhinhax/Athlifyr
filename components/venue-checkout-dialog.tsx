@@ -3,12 +3,12 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StripeCheckout } from "@/components/stripe-checkout";
 import type { PlanDuration } from "@/types/venue-plan";
 
@@ -57,11 +57,11 @@ export function VenueCheckoutDialog({
   const tPlans = useTranslations("venues.plans");
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{tPlans("subscribe")}</DialogTitle>
-          <DialogDescription>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="max-w-2xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{tPlans("subscribe")}</AlertDialogTitle>
+          <AlertDialogDescription>
             {selectedPlan && (
               <>
                 {tPlans("subscribeTo")} {selectedPlan.name} -{" "}
@@ -78,8 +78,8 @@ export function VenueCheckoutDialog({
                   )}
               </>
             )}
-          </DialogDescription>
-        </DialogHeader>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         {selectedPlan && (
           <>
             {/* EXTERNAL: On-site payment only */}
@@ -251,7 +251,7 @@ export function VenueCheckoutDialog({
             )}
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

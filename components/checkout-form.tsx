@@ -1,24 +1,29 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, useCallback, FormEvent } from "react";
 import {
   useStripe,
   useElements,
   PaymentElement,
 } from "@stripe/react-stripe-js";
+import type { StripePaymentElementChangeEvent } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useTranslations } from "next-intl";
 
 interface CheckoutFormProps {
+  venueId?: string;
   paymentIntentId: string;
+  stripeSubscriptionId?: string;
   isRecurring?: boolean;
   onSuccess?: () => void;
   onCancel?: () => void;
 }
 
 export function CheckoutForm({
+  venueId,
   paymentIntentId,
+  stripeSubscriptionId,
   isRecurring,
   onSuccess,
   onCancel,
@@ -29,11 +34,32 @@ export function CheckoutForm({
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [elementReady, setElementReady] = useState(false);
+  const [elementError, setElementError] = useState(false);
+
+  const handleElementReady = useCallback(() => {
+    setElementReady(true);
+    setElementError(false);
+  }, []);
+
+  const handleElementLoadError = useCallback(() => {
+    setElementError(true);
+    setErrorMessage(t("paymentFailed"));
+  }, [t]);
+
+  const handleElementChange = useCallback(
+    (event: StripePaymentElementChangeEvent) => {
+      if (event.complete) {
+        setErrorMessage(null);
+      }
+    },
+    []
+  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!stripe || !elements || !elementReady || elementError) {
       return;
     }
 
@@ -53,12 +79,35 @@ export function CheckoutForm({
         setErrorMessage(paymentError.message || "Payment failed");
         setIsProcessing(false);
       } else {
-        if (isRecurring) {
-          // Recurring subscription: webhook handles activation
+        if (isRecurring && venueId && stripeSubscriptionId) {
+          // Recurring subscription: confirm and activate immediately
+          try {
+            const confirmResponse = await fetch(
+              `/api/venues/${venueId}/stripe-subscriptions/confirm`,
+              {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ stripeSubscriptionId }),
+              }
+            );
+
+            if (!confirmResponse.ok) {
+              console.warn(
+                "Subscription confirm failed, webhook will handle activation"
+              );
+            }
+          } catch (confirmError) {
+            console.warn(
+              "Subscription confirm error, webhook will handle activation:",
+              confirmError
+            );
+          }
+
+          setIsProcessing(false);
           if (onSuccess) {
             onSuccess();
           }
-        } else {
+        } else if (!isRecurring) {
           // One-time payment: confirm subscription manually
           try {
             const confirmResponse = await fetch(
@@ -72,6 +121,7 @@ export function CheckoutForm({
               throw new Error("Failed to activate subscription");
             }
 
+            setIsProcessing(false);
             if (onSuccess) {
               onSuccess();
             }
@@ -93,7 +143,11 @@ export function CheckoutForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <PaymentElement />
+      <PaymentElement
+        onReady={handleElementReady}
+        onLoadError={handleElementLoadError}
+        onChange={handleElementChange}
+      />
 
       {errorMessage && (
         <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
@@ -115,7 +169,7 @@ export function CheckoutForm({
         )}
         <Button
           type="submit"
-          disabled={!stripe || isProcessing}
+          disabled={!stripe || !elementReady || elementError || isProcessing}
           className="flex-1"
         >
           {isProcessing ? (

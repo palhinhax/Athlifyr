@@ -24,9 +24,20 @@ import { VenueOwnershipClaimButton } from "@/components/venue-ownership-claim-bu
 import { VenueAboutTab } from "@/components/venue-about-tab";
 import { VenuePlansTab } from "@/components/venue-plans-tab";
 import { VenueTeamTab } from "@/components/venue-team-tab";
+import { VenueShopTab } from "@/components/venue-shop-tab";
+import { VenueShopPurchases } from "@/components/venue-shop-purchases";
 import { VenueCheckoutDialog } from "@/components/venue-checkout-dialog";
+import { ProductCheckoutDialog } from "@/components/product-checkout-dialog";
+import { PurchaseSuccessDialog } from "@/components/purchase-success-dialog";
 import { TrialBookingButton } from "@/components/trial-booking-button";
-import { Calendar, Home, Info, CreditCard, Users } from "lucide-react";
+import {
+  Calendar,
+  Home,
+  Info,
+  CreditCard,
+  Users,
+  ShoppingBag,
+} from "lucide-react";
 import type { VenuePlanPolicy, PlanDuration } from "@/types/venue-plan";
 
 interface Venue {
@@ -193,6 +204,22 @@ export function VenueDetailClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [productCheckoutOpen, setProductCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+  } | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [purchaseSuccessOpen, setPurchaseSuccessOpen] = useState(false);
+  const [purchasedProduct, setPurchasedProduct] = useState<{
+    name: string;
+    quantity: number;
+    totalAmount: number;
+    currency: string;
+  } | null>(null);
+  const [purchasedAt, setPurchasedAt] = useState<Date | null>(null);
 
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
@@ -334,6 +361,35 @@ export function VenueDetailClient({
     }
   };
 
+  const handlePurchaseClick = (
+    product: { id: string; name: string; price: number; currency: string },
+    quantity: number
+  ) => {
+    setSelectedProduct(product);
+    setSelectedQuantity(quantity);
+    setProductCheckoutOpen(true);
+  };
+
+  const handleProductCheckoutSuccess = () => {
+    setProductCheckoutOpen(false);
+    if (selectedProduct) {
+      setPurchasedProduct({
+        name: selectedProduct.name,
+        quantity: selectedQuantity,
+        totalAmount: selectedProduct.price * selectedQuantity,
+        currency: selectedProduct.currency,
+      });
+      setPurchasedAt(new Date());
+      setPurchaseSuccessOpen(true);
+    }
+    setSelectedProduct(null);
+  };
+
+  const handleProductCheckoutCancel = () => {
+    setProductCheckoutOpen(false);
+    setSelectedProduct(null);
+  };
+
   const handleTogglePlanActiveClick = (planId: string) => {
     setDeletePlanId(planId);
     setDeleteAlertOpen(true);
@@ -462,7 +518,14 @@ export function VenueDetailClient({
       }
 
       // For public tabs, check the visibleTabs configuration
-      const defaultTabs = ["feed", "about", "plans", "sessions", "team"];
+      const defaultTabs = [
+        "feed",
+        "about",
+        "plans",
+        "sessions",
+        "team",
+        "shop",
+      ];
       const visibleTabs = venue?.visibleTabs ?? [
         ...defaultTabs,
         ...ADMIN_ONLY_TABS,
@@ -474,7 +537,7 @@ export function VenueDetailClient({
 
   // Count visible tabs to hide TabsList when only 1 tab is visible
   const visibleTabsCount = useMemo(() => {
-    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const publicTabs = ["feed", "about", "plans", "sessions", "team", "shop"];
 
     let count = publicTabs.filter((tab) => isTabVisible(tab)).length;
 
@@ -488,7 +551,7 @@ export function VenueDetailClient({
 
   // Get the first visible tab as default
   const getDefaultTab = useCallback(() => {
-    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const publicTabs = ["feed", "about", "plans", "sessions", "team", "shop"];
 
     // Check public tabs first
     for (const tab of publicTabs) {
@@ -593,6 +656,15 @@ export function VenueDetailClient({
                   >
                     <Users className="h-4 w-4" />
                     <span className="hidden sm:inline">{t("tabs.team")}</span>
+                  </TabsTrigger>
+                )}
+                {isTabVisible("shop") && (
+                  <TabsTrigger
+                    value="shop"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("tabs.shop")}</span>
                   </TabsTrigger>
                 )}
                 {/* Admin tabs - ALWAYS visible for owners/admins */}
@@ -711,6 +783,19 @@ export function VenueDetailClient({
             </TabsContent>
           )}
 
+          {/* Shop Tab (Public - venue products for sale) */}
+          {isTabVisible("shop") && (
+            <TabsContent value="shop" className="space-y-6">
+              <VenueShopTab
+                venueId={venue.id}
+                userId={userId}
+                paymentMode={venue.paymentMode}
+                onPurchaseClick={handlePurchaseClick}
+              />
+              {isOwnerOrAdmin && <VenueShopPurchases venueId={venue.id} />}
+            </TabsContent>
+          )}
+
           {/* Clients Tab (Only for Owners/Admins - ALWAYS available) */}
           {isOwnerOrAdmin && (
             <TabsContent value="clients" className="space-y-4">
@@ -757,6 +842,31 @@ export function VenueDetailClient({
         onSuccess={handleCheckoutSuccess}
         onCancel={handleCheckoutCancel}
         onOnSiteRequest={handleOnSiteSubscriptionRequest}
+      />
+
+      {/* Product Checkout Dialog */}
+      <ProductCheckoutDialog
+        open={productCheckoutOpen}
+        onOpenChange={setProductCheckoutOpen}
+        venueId={venue.id}
+        venueName={venue.name}
+        product={selectedProduct}
+        quantity={selectedQuantity}
+        onSuccess={handleProductCheckoutSuccess}
+        onCancel={handleProductCheckoutCancel}
+      />
+
+      {/* Purchase Success Dialog */}
+      <PurchaseSuccessDialog
+        open={purchaseSuccessOpen}
+        onOpenChange={setPurchaseSuccessOpen}
+        venueName={venue.name}
+        venueLogo={venue.logo}
+        productName={purchasedProduct?.name ?? ""}
+        quantity={purchasedProduct?.quantity ?? 1}
+        totalAmount={purchasedProduct?.totalAmount ?? 0}
+        currency={purchasedProduct?.currency ?? "EUR"}
+        purchasedAt={purchasedAt}
       />
 
       {/* Plan Management Modal */}

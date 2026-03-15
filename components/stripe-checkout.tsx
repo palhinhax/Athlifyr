@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Elements } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe-client";
 import { CheckoutForm } from "@/components/checkout-form";
@@ -45,8 +46,10 @@ export function StripeCheckout({
   onSuccess,
   onCancel,
 }: StripeCheckoutProps) {
+  const t = useTranslations("venues.plans.checkout");
   const [clientSecret, setClientSecret] = useState<string>("");
   const [paymentIntentId, setPaymentIntentId] = useState<string>("");
+  const [stripeSubscriptionId, setStripeSubscriptionId] = useState<string>("");
   const [isRecurring, setIsRecurring] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -73,11 +76,12 @@ export function StripeCheckout({
 
           if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.error || "Failed to create subscription");
+            throw new Error(data.error || t("failedCreateSubscription"));
           }
 
           const data = await response.json();
           setClientSecret(data.clientSecret);
+          setStripeSubscriptionId(data.subscriptionId);
           // No paymentIntentId needed — webhook handles activation
         } else {
           // One-time plan → PaymentIntent
@@ -92,7 +96,7 @@ export function StripeCheckout({
 
           if (!response.ok) {
             const data = await response.json();
-            throw new Error(data.error || "Failed to create payment intent");
+            throw new Error(data.error || t("failedCreatePayment"));
           }
 
           const data = await response.json();
@@ -101,9 +105,7 @@ export function StripeCheckout({
         }
       } catch (err) {
         console.error("Error initializing payment:", err);
-        setError(
-          err instanceof Error ? err.message : "Failed to initialize payment"
-        );
+        setError(err instanceof Error ? err.message : t("failedInitPayment"));
       } finally {
         setLoading(false);
       }
@@ -139,7 +141,9 @@ export function StripeCheckout({
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="text-destructive">Payment Error</CardTitle>
+          <CardTitle className="text-destructive">
+            {t("paymentError")}
+          </CardTitle>
           <CardDescription>{error}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -147,7 +151,7 @@ export function StripeCheckout({
             onClick={onCancel}
             className="text-sm text-muted-foreground hover:text-foreground"
           >
-            Go back
+            {t("goBack")}
           </button>
         </CardContent>
       </Card>
@@ -158,7 +162,7 @@ export function StripeCheckout({
     return (
       <Card>
         <CardContent className="flex items-center justify-center p-12">
-          <p className="text-muted-foreground">Initializing payment...</p>
+          <p className="text-muted-foreground">{t("initializingPayment")}</p>
         </CardContent>
       </Card>
     );
@@ -174,7 +178,7 @@ export function StripeCheckout({
     >
       <Card>
         <CardHeader>
-          <CardTitle>Complete Payment</CardTitle>
+          <CardTitle>{t("completePayment")}</CardTitle>
           <CardDescription>
             {venueName} - {planName}
           </CardDescription>
@@ -184,7 +188,9 @@ export function StripeCheckout({
         </CardHeader>
         <CardContent>
           <CheckoutForm
+            venueId={venueId}
             paymentIntentId={paymentIntentId}
+            stripeSubscriptionId={stripeSubscriptionId}
             isRecurring={isRecurring}
             onSuccess={onSuccess}
             onCancel={onCancel}

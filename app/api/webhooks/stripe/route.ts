@@ -561,6 +561,33 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
     console.log(`PaymentIntent ${paymentIntent.id} marked as REFUNDED`);
   }
 
+  // ── 3. Venue product purchases ──────────────────────────────────────────
+  if (isFullRefund) {
+    const productPurchase = await prisma.venueProductPurchase.findFirst({
+      where: { stripePaymentIntentId, status: "CONFIRMED" },
+      include: { product: { select: { stock: true } } },
+    });
+
+    if (productPurchase) {
+      await prisma.venueProductPurchase.update({
+        where: { id: productPurchase.id },
+        data: { status: "REFUNDED" },
+      });
+
+      // Restore stock if tracked
+      if (productPurchase.product.stock !== null) {
+        await prisma.venueProduct.update({
+          where: { id: productPurchase.productId },
+          data: { stock: { increment: productPurchase.quantity } },
+        });
+      }
+
+      console.log(
+        `Product purchase ${productPurchase.id} refunded for PI ${stripePaymentIntentId}`
+      );
+    }
+  }
+
   if (registrations.length === 0 && !paymentIntent) {
     console.warn(
       `charge.refunded: no registration or PaymentIntent found for PI ${stripePaymentIntentId}`
@@ -688,7 +715,14 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
     paused: "SUSPENDED",
   };
 
-  const newStatus = statusMap[subscription.status] ?? sub.status;
+  let newStatus = statusMap[subscription.status] ?? sub.status;
+
+  // Preserve CANCELLING: when cancel_at_period_end is true and Stripe still
+  // reports the subscription as active, keep the local CANCELLING status so
+  // the UI shows "subscription ending" until it actually expires.
+  if (subscription.cancel_at_period_end && newStatus === "ACTIVE") {
+    newStatus = "CANCELLING";
+  }
   const itemPeriodEnd = subscription.items?.data?.[0]?.current_period_end;
   const periodEnd = itemPeriodEnd ? new Date(itemPeriodEnd * 1000) : undefined;
 

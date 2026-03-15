@@ -188,14 +188,15 @@ export async function POST(
         planId,
         userId: session.user.id,
       },
-      expand: ["latest_invoice.payment_intent"],
     });
 
-    // Extract client secret from the first invoice's PaymentIntent
-    const invoice = subscription.latest_invoice as {
-      payment_intent?: { client_secret?: string | null };
-    } | null;
-    const clientSecret = invoice?.payment_intent?.client_secret;
+    // In Stripe API 2026-01-28.clover, the payment_intent field was removed
+    // from the Invoice object. Retrieve the auto-created PaymentIntent via list.
+    const paymentIntents = await stripe.paymentIntents.list({
+      customer: customerId,
+      limit: 1,
+    });
+    const clientSecret = paymentIntents.data[0]?.client_secret;
 
     if (!clientSecret) {
       // Clean up the subscription if we can't get the client secret

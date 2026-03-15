@@ -428,10 +428,17 @@ function PlanSubscriptionStatus({
 
     return (
       <div className="space-y-3">
-        <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
-          <CheckCircle className="h-5 w-5" />
-          <span className="font-medium">{tPlans("subscribed")}</span>
-        </div>
+        {activeSubscription.status === "CANCELLING" ? (
+          <div className="flex items-center gap-2 rounded-lg bg-amber-50 p-3 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400">
+            <AlertCircle className="h-5 w-5" />
+            <span className="font-medium">{tPlans("subscriptionEnding")}</span>
+          </div>
+        ) : (
+          <div className="flex items-center gap-2 rounded-lg bg-green-50 p-3 text-green-700 dark:bg-green-900/20 dark:text-green-400">
+            <CheckCircle className="h-5 w-5" />
+            <span className="font-medium">{tPlans("subscribed")}</span>
+          </div>
+        )}
         {maxTotal && maxTotal > 0 && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>
@@ -455,16 +462,17 @@ function PlanSubscriptionStatus({
             </span>
           </div>
         )}
-        {activeSubscription.stripeSubscriptionId && (
-          <Button
-            variant="outline"
-            size="sm"
-            className="w-full text-destructive hover:text-destructive"
-            onClick={() => onCancelSubscription(activeSubscription.id)}
-          >
-            {tPlans("cancelSubscription")}
-          </Button>
-        )}
+        {activeSubscription.stripeSubscriptionId &&
+          activeSubscription.status !== "CANCELLING" && (
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-destructive hover:text-destructive"
+              onClick={() => onCancelSubscription(activeSubscription.id)}
+            >
+              {tPlans("cancelSubscription")}
+            </Button>
+          )}
       </div>
     );
   }

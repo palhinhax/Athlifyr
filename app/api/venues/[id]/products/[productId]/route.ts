@@ -21,7 +21,7 @@ export async function PATCH(
     const { id: venueId, productId } = await params;
 
     const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed) {
+    if (!allowed.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
@@ -71,7 +71,7 @@ export async function DELETE(
     const { id: venueId, productId } = await params;
 
     const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed) {
+    if (!allowed.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

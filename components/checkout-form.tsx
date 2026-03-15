@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useCallback, FormEvent } from "react";
-import {
-  useStripe,
-  useElements,
-  PaymentElement,
-} from "@stripe/react-stripe-js";
-import type { StripePaymentElementChangeEvent } from "@stripe/stripe-js";
+import { useCallback, FormEvent } from "react";
+import { PaymentElement } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useTranslations } from "next-intl";
+import { useStripePaymentForm } from "@/hooks/use-stripe-payment-form";
 
 interface CheckoutFormProps {
   venueId?: string;
@@ -28,33 +24,24 @@ export function CheckoutForm({
   onSuccess,
   onCancel,
 }: CheckoutFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
   const t = useTranslations("venues.payment");
+  const {
+    stripe,
+    elements,
+    isProcessing,
+    errorMessage,
+    elementReady,
+    elementError,
+    setIsProcessing,
+    setErrorMessage,
+    handleElementReady,
+    handleElementLoadError,
+    handleElementChange,
+  } = useStripePaymentForm();
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [elementReady, setElementReady] = useState(false);
-  const [elementError, setElementError] = useState(false);
-
-  const handleElementReady = useCallback(() => {
-    setElementReady(true);
-    setElementError(false);
-  }, []);
-
-  const handleElementLoadError = useCallback(() => {
-    setElementError(true);
-    setErrorMessage(t("paymentFailed"));
-  }, [t]);
-
-  const handleElementChange = useCallback(
-    (event: StripePaymentElementChangeEvent) => {
-      if (event.complete) {
-        setErrorMessage(null);
-      }
-    },
-    []
-  );
+  const handlePaymentElementLoadError = useCallback(() => {
+    handleElementLoadError(t("paymentFailed"));
+  }, [handleElementLoadError, t]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -76,7 +63,7 @@ export function CheckoutForm({
       });
 
       if (paymentError) {
-        setErrorMessage(paymentError.message || "Payment failed");
+        setErrorMessage(paymentError.message || t("paymentFailed"));
         setIsProcessing(false);
       } else {
         if (isRecurring && venueId && stripeSubscriptionId) {
@@ -118,7 +105,7 @@ export function CheckoutForm({
             );
 
             if (!confirmResponse.ok) {
-              throw new Error("Failed to activate subscription");
+              throw new Error(t("activationFailed"));
             }
 
             setIsProcessing(false);
@@ -128,7 +115,9 @@ export function CheckoutForm({
           } catch (confirmError) {
             console.error("Error confirming subscription:", confirmError);
             setErrorMessage(
-              "Payment successful but subscription activation failed. Please contact support."
+              confirmError instanceof Error
+                ? confirmError.message
+                : t("activationFailed")
             );
             setIsProcessing(false);
           }
@@ -136,7 +125,7 @@ export function CheckoutForm({
       }
     } catch (err) {
       console.error("Payment error:", err);
-      setErrorMessage("An unexpected error occurred");
+      setErrorMessage(t("unexpectedError"));
       setIsProcessing(false);
     }
   };
@@ -145,7 +134,7 @@ export function CheckoutForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement
         onReady={handleElementReady}
-        onLoadError={handleElementLoadError}
+        onLoadError={handlePaymentElementLoadError}
         onChange={handleElementChange}
       />
 

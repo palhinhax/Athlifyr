@@ -701,7 +701,10 @@
       "confirmBooking": "Confirm Booking",
       "submitRequest": "Submit Request",
       "requestSubmitted": "Request Submitted",
-      "requestSubmittedDescription": "Your subscription request has been submitted. You will be contacted by the venue staff to confirm payment."
+      "requestSubmittedDescription": "Your subscription request has been submitted. You will be contacted by the venue staff to confirm payment.",
+      "paymentFailed": "Payment failed",
+      "activationFailed": "Payment successful but subscription activation failed. Please contact support.",
+      "unexpectedError": "An unexpected error occurred"
     },
     "recommendations": {
       "recommendations": "Recommendations",

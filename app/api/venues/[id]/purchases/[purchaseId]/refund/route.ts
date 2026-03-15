@@ -20,7 +20,7 @@ export async function POST(
     const { id: venueId, purchaseId } = await params;
 
     const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed) {
+    if (!allowed.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

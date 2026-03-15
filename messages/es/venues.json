@@ -663,7 +663,10 @@
       "confirmBooking": "Confirmar Reserva",
       "submitRequest": "Enviar Solicitud",
       "requestSubmitted": "Solicitud Enviada",
-      "requestSubmittedDescription": "Tu solicitud de suscripción ha sido enviada. El personal del local te contactará para confirmar el pago."
+      "requestSubmittedDescription": "Tu solicitud de suscripción ha sido enviada. El personal del local te contactará para confirmar el pago.",
+      "paymentFailed": "Pago fallido",
+      "activationFailed": "Pago exitoso pero falló la activación de la suscripción. Por favor contacta con soporte.",
+      "unexpectedError": "Ocurrió un error inesperado"
     },
     "recommendations": {
       "recommendations": "Recomendaciones",

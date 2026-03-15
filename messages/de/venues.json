@@ -663,7 +663,10 @@
       "confirmBooking": "Buchung Bestätigen",
       "submitRequest": "Anfrage Senden",
       "requestSubmitted": "Anfrage Gesendet",
-      "requestSubmittedDescription": "Deine Abonnementanfrage wurde gesendet. Das Personal des Standorts wird dich kontaktieren, um die Zahlung zu bestätigen."
+      "requestSubmittedDescription": "Deine Abonnementanfrage wurde gesendet. Das Personal des Standorts wird dich kontaktieren, um die Zahlung zu bestätigen.",
+      "paymentFailed": "Zahlung fehlgeschlagen",
+      "activationFailed": "Zahlung erfolgreich, aber Abonnementaktivierung fehlgeschlagen. Bitte kontaktiere den Support.",
+      "unexpectedError": "Ein unerwarteter Fehler ist aufgetreten"
     },
     "recommendations": {
       "recommendations": "Empfehlungen",

@@ -24,7 +24,7 @@ export async function GET(
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
       }
       const allowed = await canManageVenue(session.user.id, venueId);
-      if (!allowed) {
+      if (!allowed.authorized) {
         return NextResponse.json({ error: "Forbidden" }, { status: 403 });
       }
     }
@@ -57,7 +57,7 @@ export async function POST(
     const venueId = (await params).id;
 
     const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed) {
+    if (!allowed.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

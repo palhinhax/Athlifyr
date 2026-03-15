@@ -19,7 +19,7 @@ export async function GET(
     const venueId = (await params).id;
 
     const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed) {
+    if (!allowed.authorized) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

@@ -1,15 +1,11 @@
 "use client";
 
-import { useState, useCallback, FormEvent } from "react";
-import {
-  useStripe,
-  useElements,
-  PaymentElement,
-} from "@stripe/react-stripe-js";
-import type { StripePaymentElementChangeEvent } from "@stripe/stripe-js";
+import { useCallback, FormEvent } from "react";
+import { PaymentElement } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useTranslations } from "next-intl";
+import { useStripePaymentForm } from "@/hooks/use-stripe-payment-form";
 
 interface ProductCheckoutFormProps {
   venueId: string;
@@ -24,33 +20,24 @@ export function ProductCheckoutForm({
   onSuccess,
   onCancel,
 }: ProductCheckoutFormProps) {
-  const stripe = useStripe();
-  const elements = useElements();
   const t = useTranslations("venues.shop.checkout");
+  const {
+    stripe,
+    elements,
+    isProcessing,
+    errorMessage,
+    elementReady,
+    elementError,
+    setIsProcessing,
+    setErrorMessage,
+    handleElementReady,
+    handleElementLoadError,
+    handleElementChange,
+  } = useStripePaymentForm();
 
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [elementReady, setElementReady] = useState(false);
-  const [elementError, setElementError] = useState(false);
-
-  const handleElementReady = useCallback(() => {
-    setElementReady(true);
-    setElementError(false);
-  }, []);
-
-  const handleElementLoadError = useCallback(() => {
-    setElementError(true);
-    setErrorMessage(t("failedCreatePayment"));
-  }, [t]);
-
-  const handleElementChange = useCallback(
-    (event: StripePaymentElementChangeEvent) => {
-      if (event.complete) {
-        setErrorMessage(null);
-      }
-    },
-    []
-  );
+  const handlePaymentElementLoadError = useCallback(() => {
+    handleElementLoadError(t("failedCreatePayment"));
+  }, [handleElementLoadError, t]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -96,7 +83,7 @@ export function ProductCheckoutForm({
     <form onSubmit={handleSubmit} className="space-y-6">
       <PaymentElement
         onReady={handleElementReady}
-        onLoadError={handleElementLoadError}
+        onLoadError={handlePaymentElementLoadError}
         onChange={handleElementChange}
       />
 

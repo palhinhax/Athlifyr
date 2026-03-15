@@ -701,7 +701,10 @@
       "confirmBooking": "Confirmar Reserva",
       "submitRequest": "Submeter Pedido",
       "requestSubmitted": "Pedido Submetido",
-      "requestSubmittedDescription": "O teu pedido de subscrição foi submetido. Serás contactado pelo staff do local para confirmar o pagamento."
+      "requestSubmittedDescription": "O teu pedido de subscrição foi submetido. Serás contactado pelo staff do local para confirmar o pagamento.",
+      "paymentFailed": "Pagamento falhou",
+      "activationFailed": "Pagamento bem-sucedido, mas a ativação da subscrição falhou. Por favor contacta o suporte.",
+      "unexpectedError": "Ocorreu um erro inesperado"
     },
     "recommendations": {
       "recommendations": "Recomendações",

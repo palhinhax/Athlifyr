@@ -663,7 +663,10 @@
       "confirmBooking": "Conferma Prenotazione",
       "submitRequest": "Invia Richiesta",
       "requestSubmitted": "Richiesta Inviata",
-      "requestSubmittedDescription": "La tua richiesta di abbonamento è stata inviata. Il personale della struttura ti contatterà per confermare il pagamento."
+      "requestSubmittedDescription": "La tua richiesta di abbonamento è stata inviata. Il personale della struttura ti contatterà per confermare il pagamento.",
+      "paymentFailed": "Pagamento fallito",
+      "activationFailed": "Pagamento riuscito ma attivazione abbonamento fallita. Contatta il supporto.",
+      "unexpectedError": "Si è verificato un errore imprevisto"
     },
     "recommendations": {
       "recommendations": "Raccomandazioni",

@@ -663,7 +663,10 @@
       "confirmBooking": "Confirmer la Réservation",
       "submitRequest": "Soumettre la Demande",
       "requestSubmitted": "Demande Soumise",
-      "requestSubmittedDescription": "Votre demande d'abonnement a été soumise. Le personnel du lieu vous contactera pour confirmer le paiement."
+      "requestSubmittedDescription": "Votre demande d'abonnement a été soumise. Le personnel du lieu vous contactera pour confirmer le paiement.",
+      "paymentFailed": "Paiement échoué",
+      "activationFailed": "Paiement réussi mais l'activation de l'abonnement a échoué. Veuillez contacter le support.",
+      "unexpectedError": "Une erreur inattendue s'est produite"
     },
     "recommendations": {
       "recommendations": "Recommandations",

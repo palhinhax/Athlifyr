@@ -24,12 +24,37 @@ import { toast } from "@/components/ui/use-toast";
 
 type VenueType =
   | "CROSSFIT_BOX"
+  | "CROSSTRAINING_BOX"
   | "GYM"
   | "PT_STUDIO"
   | "MASSAGE"
   | "PHYSIO"
   | "NUTRITION"
   | "OTHER";
+
+interface VenueFormData {
+  name: string;
+  slug: string;
+  type: VenueType;
+  description: string;
+  address: string;
+  city: string;
+  country: string;
+  latitude: string;
+  longitude: string;
+}
+
+const INITIAL_FORM_DATA: VenueFormData = {
+  name: "",
+  slug: "",
+  type: "CROSSFIT_BOX",
+  description: "",
+  address: "",
+  city: "",
+  country: "Portugal",
+  latitude: "",
+  longitude: "",
+};
 
 interface AdminVenueCreateDialogProps {
   open: boolean;
@@ -43,27 +68,7 @@ export function AdminVenueCreateDialog({
   onSuccess,
 }: AdminVenueCreateDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState<{
-    name: string;
-    slug: string;
-    type: VenueType;
-    description: string;
-    address: string;
-    city: string;
-    country: string;
-    latitude: string;
-    longitude: string;
-  }>({
-    name: "",
-    slug: "",
-    type: "CROSSFIT_BOX",
-    description: "",
-    address: "",
-    city: "",
-    country: "Portugal",
-    latitude: "",
-    longitude: "",
-  });
+  const [formData, setFormData] = useState<VenueFormData>(INITIAL_FORM_DATA);
 
   const generateSlug = (name: string) => {
     return name
@@ -83,17 +88,7 @@ export function AdminVenueCreateDialog({
   };
 
   const resetForm = () => {
-    setFormData({
-      name: "",
-      slug: "",
-      type: "CROSSFIT_BOX",
-      description: "",
-      address: "",
-      city: "",
-      country: "Portugal",
-      latitude: "",
-      longitude: "",
-    });
+    setFormData(INITIAL_FORM_DATA);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -127,7 +122,6 @@ export function AdminVenueCreateDialog({
       resetForm();
       onSuccess();
     } catch (error) {
-      console.error("Error creating venue:", error);
       toast({
         title: "Erro",
         description:

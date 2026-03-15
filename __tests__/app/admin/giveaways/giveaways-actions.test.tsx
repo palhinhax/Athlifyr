@@ -2,7 +2,6 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
 // Import setup (runs all mocks)
-import "./helpers/giveaways-setup";
 import {
   mockToast,
   MOCK_GIVEAWAY,
@@ -61,6 +60,28 @@ async function renderAndWait(giveaways = [MOCK_GIVEAWAY]) {
   });
 }
 
+async function openDetailDialog(
+  user: ReturnType<typeof userEvent.setup>,
+  giveaway = MOCK_GIVEAWAY
+) {
+  mockFetch
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ participations: [] }),
+    })
+    .mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        giveaway: { ...giveaway, winners: [], winningTicketNumbers: [] },
+      }),
+    });
+
+  const giveawayCard = screen
+    .getAllByTestId("card")
+    .find((c) => c.textContent?.includes("Win a Prize!"));
+  if (giveawayCard) await user.click(giveawayCard);
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("AdminGiveawaysPage – Actions", () => {
@@ -83,27 +104,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches (participants + detail)
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const cards = screen.getAllByTestId("card");
-    // Click the giveaway card (not the wrapper card)
-    const giveawayCard = cards.find((c) =>
-      c.textContent?.includes("Win a Prize!")
-    );
-    if (giveawayCard) {
-      await user.click(giveawayCard);
-    }
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByTestId("dialog-footer")).toBeInTheDocument();
@@ -119,23 +120,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByText("detail.drawNow")).toBeInTheDocument();
@@ -171,23 +156,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByText("detail.deleteGiveaway")).toBeInTheDocument();
@@ -223,23 +192,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByText("detail.publish")).toBeInTheDocument();
@@ -275,27 +228,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: {
-            ...MOCK_SCHEDULED_GIVEAWAY,
-            winners: [],
-            winningTicketNumbers: [],
-          },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user, MOCK_SCHEDULED_GIVEAWAY);
 
     await waitFor(() => {
       expect(screen.getByText("detail.cancelGiveaway")).toBeInTheDocument();
@@ -312,23 +245,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByText("detail.drawNow")).toBeInTheDocument();
@@ -355,23 +272,7 @@ describe("AdminGiveawaysPage – Actions", () => {
       expect(screen.getByText("Win a Prize!")).toBeInTheDocument();
     });
 
-    // Mock detail fetches
-    mockFetch
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ participations: [] }),
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({
-          giveaway: { ...MOCK_GIVEAWAY, winners: [], winningTicketNumbers: [] },
-        }),
-      });
-
-    const giveawayCard = screen
-      .getAllByTestId("card")
-      .find((c) => c.textContent?.includes("Win a Prize!"));
-    if (giveawayCard) await user.click(giveawayCard);
+    await openDetailDialog(user);
 
     await waitFor(() => {
       expect(screen.getByText("detail.deleteGiveaway")).toBeInTheDocument();

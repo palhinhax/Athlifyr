@@ -72,14 +72,14 @@ describe("POST /api/venues/[id]/payment-intents", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("returns 400 when planId is missing", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
-    const res = await POST(makeRequest({}), makeParams());
+    const res = (await POST(makeRequest({}), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Plan ID is required" });
   });
@@ -88,7 +88,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Venue not found" });
   });
@@ -100,7 +100,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       isActive: false,
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
   });
 
@@ -109,7 +109,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     (prisma.venuePlan.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Plan not found" });
   });
@@ -122,7 +122,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       price: 0,
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Plan must have a valid price",
@@ -137,7 +137,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     });
     (prisma.venuePlan.findFirst as jest.Mock).mockResolvedValue(mockPlan);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue does not support IN_APP payments",
@@ -152,7 +152,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     });
     (prisma.venuePlan.findFirst as jest.Mock).mockResolvedValue(mockPlan);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue Stripe account is not fully configured",
@@ -173,7 +173,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       id: "local-pi",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -222,7 +222,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       id: "local-pi",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
@@ -249,7 +249,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       id: "local-pi",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
@@ -276,7 +276,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       id: "local-pi",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
   });
 
@@ -286,7 +286,7 @@ describe("POST /api/venues/[id]/payment-intents", () => {
       new Error("DB crash")
     );
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({
       error: "Failed to create payment intent",

@@ -70,10 +70,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(401);
   });
 
@@ -81,10 +81,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(403);
   });
 
@@ -93,10 +93,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
     mockCanManageVenue.mockResolvedValue({ authorized: true });
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(404);
   });
 
@@ -108,10 +108,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
       id: "acct_123",
     });
 
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -131,10 +131,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
     });
     (prisma.venue.update as jest.Mock).mockResolvedValue({});
 
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -163,10 +163,10 @@ describe("POST /api/venues/[id]/stripe/connect", () => {
       id: "acct_replacement",
     });
 
-    const res = await ConnectPOST(
+    const res = (await ConnectPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/connect`),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -182,12 +182,12 @@ describe("POST /api/venues/[id]/stripe/onboarding-link", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await OnboardingPOST(
+    const res = (await OnboardingPOST(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/onboarding-link`
       ),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(401);
   });
 
@@ -195,12 +195,12 @@ describe("POST /api/venues/[id]/stripe/onboarding-link", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await OnboardingPOST(
+    const res = (await OnboardingPOST(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/onboarding-link`
       ),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(403);
   });
 
@@ -212,12 +212,12 @@ describe("POST /api/venues/[id]/stripe/onboarding-link", () => {
       stripeAccountId: null,
     });
 
-    const res = await OnboardingPOST(
+    const res = (await OnboardingPOST(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/onboarding-link`
       ),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(400);
   });
 
@@ -229,12 +229,12 @@ describe("POST /api/venues/[id]/stripe/onboarding-link", () => {
       url: "https://stripe.com/onboarding",
     });
 
-    const res = await OnboardingPOST(
+    const res = (await OnboardingPOST(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/onboarding-link`
       ),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -248,10 +248,10 @@ describe("POST /api/venues/[id]/stripe/login-link", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await LoginLinkPOST(
+    const res = (await LoginLinkPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/login-link`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(401);
   });
 
@@ -259,10 +259,10 @@ describe("POST /api/venues/[id]/stripe/login-link", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await LoginLinkPOST(
+    const res = (await LoginLinkPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/login-link`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(403);
   });
 
@@ -274,10 +274,10 @@ describe("POST /api/venues/[id]/stripe/login-link", () => {
       stripeAccountId: null,
     });
 
-    const res = await LoginLinkPOST(
+    const res = (await LoginLinkPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/login-link`),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(400);
   });
 
@@ -289,10 +289,10 @@ describe("POST /api/venues/[id]/stripe/login-link", () => {
       url: "https://stripe.com/dashboard",
     });
 
-    const res = await LoginLinkPOST(
+    const res = (await LoginLinkPOST(
       makeRequest(`http://localhost/api/venues/${venueId}/stripe/login-link`),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -306,13 +306,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(401);
   });
 
@@ -320,13 +320,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     expect(res.status).toBe(403);
   });
 
@@ -338,13 +338,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
       stripeAccountId: null,
     });
 
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -364,13 +364,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
     });
     (prisma.venue.update as jest.Mock).mockResolvedValue({});
 
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -391,13 +391,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
     });
     (prisma.venue.update as jest.Mock).mockResolvedValue({});
 
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -413,13 +413,13 @@ describe("GET /api/venues/[id]/stripe/status", () => {
     );
     (prisma.venue.update as jest.Mock).mockResolvedValue({});
 
-    const res = await StatusGET(
+    const res = (await StatusGET(
       makeRequest(
         `http://localhost/api/venues/${venueId}/stripe/status`,
         "GET"
       ),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);

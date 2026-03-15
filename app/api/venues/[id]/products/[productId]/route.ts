@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import { Currency } from "@prisma/client";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { authenticateVenueManager } from "@/lib/venues/stripe-route-helpers";
 
 const VALID_CURRENCIES = new Set<string>(Object.values(Currency));
 
@@ -11,30 +10,32 @@ const VALID_CURRENCIES = new Set<string>(Object.values(Currency));
  * DELETE /api/venues/[id]/products/[productId] — Soft-delete product (owner/admin)
  */
 
+async function getAuthorizedProduct(venueId: string, productId: string) {
+  const ctx = await authenticateVenueManager(venueId);
+  if ("error" in ctx) return { error: ctx.error } as const;
+
+  const product = await prisma.venueProduct.findFirst({
+    where: { id: productId, venueId },
+  });
+
+  if (!product) {
+    return {
+      error: NextResponse.json({ error: "Product not found" }, { status: 404 }),
+    } as const;
+  }
+
+  return { product } as const;
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; productId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: venueId, productId } = await params;
 
-    const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed.authorized) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const product = await prisma.venueProduct.findFirst({
-      where: { id: productId, venueId },
-    });
-
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    const ctx = await getAuthorizedProduct(venueId, productId);
+    if ("error" in ctx) return ctx.error;
 
     const { name, description, price, currency, stock, isActive } =
       await request.json();
@@ -93,25 +94,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string; productId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: venueId, productId } = await params;
 
-    const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed.authorized) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-
-    const product = await prisma.venueProduct.findFirst({
-      where: { id: productId, venueId },
-    });
-
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    const ctx = await getAuthorizedProduct(venueId, productId);
+    if ("error" in ctx) return ctx.error;
 
     // Soft delete: mark as inactive
     await prisma.venueProduct.update({

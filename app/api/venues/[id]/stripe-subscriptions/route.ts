@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe, toStripeAmount } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
+import { getVenuePaymentContext } from "@/lib/venues/stripe-route-helpers";
 
 /**
  * POST /api/venues/[id]/stripe-subscriptions
@@ -19,11 +19,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const venueId = (await params).id;
     const { planId } = await request.json();
 
@@ -34,38 +29,10 @@ export async function POST(
       );
     }
 
-    // ── Fetch venue + plan ──────────────────────────────────────────────────
-    const venue = await prisma.venue.findUnique({
-      where: { id: venueId },
-      select: {
-        id: true,
-        name: true,
-        isActive: true,
-        paymentMode: true,
-        stripeAccountId: true,
-        stripeOnboardingStatus: true,
-        commissionType: true,
-        commissionValue: true,
-      },
-    });
+    const ctx = await getVenuePaymentContext(venueId);
+    if ("error" in ctx) return ctx.error;
 
-    if (!venue || !venue.isActive) {
-      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
-    }
-
-    if (venue.paymentMode !== "IN_APP" && venue.paymentMode !== "MIXED") {
-      return NextResponse.json(
-        { error: "Venue does not support IN_APP payments" },
-        { status: 400 }
-      );
-    }
-
-    if (!venue.stripeAccountId || venue.stripeOnboardingStatus !== "COMPLETE") {
-      return NextResponse.json(
-        { error: "Venue Stripe account is not fully configured" },
-        { status: 400 }
-      );
-    }
+    const { session, venue } = ctx;
 
     const plan = await prisma.venuePlan.findFirst({
       where: { id: planId, venueId, isActive: true },
@@ -181,7 +148,7 @@ export async function POST(
       application_fee_percent:
         commissionPercent > 0 ? commissionPercent : undefined,
       transfer_data: {
-        destination: venue.stripeAccountId,
+        destination: venue.stripeAccountId!,
       },
       metadata: {
         venueId,

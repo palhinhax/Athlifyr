@@ -7,9 +7,6 @@ import {
   Bar,
   LineChart,
   Line,
-  PieChart,
-  Pie,
-  Cell,
   XAxis,
   YAxis,
   CartesianGrid,
@@ -18,6 +15,15 @@ import {
   Area,
   AreaChart,
 } from "recharts";
+import {
+  ChartTooltipWrapper,
+  ChartGradient,
+  AXIS_TICK_STYLE,
+  AXIS_TICK_STYLE_SM,
+  CLEAN_AXIS_PROPS,
+  GRID_PROPS,
+} from "@/components/charts/chart-helpers";
+import { DonutChart } from "@/components/charts/donut-chart";
 import {
   Card,
   CardContent,
@@ -336,86 +342,49 @@ export function VenueAnalyticsDashboard({
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={data.revenue.monthly}>
                     <defs>
-                      <linearGradient
+                      <ChartGradient
                         id="subGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="hsl(var(--chart-1))"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="hsl(var(--chart-1))"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
-                      <linearGradient
+                        color="hsl(var(--chart-1))"
+                        startOpacity={0.3}
+                      />
+                      <ChartGradient
                         id="prodGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="hsl(var(--chart-2))"
-                          stopOpacity={0.3}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="hsl(var(--chart-2))"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
+                        color="hsl(var(--chart-2))"
+                        startOpacity={0.3}
+                      />
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <CartesianGrid {...GRID_PROPS} />
                     <XAxis
                       dataKey="month"
                       tickFormatter={formatMonth}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                     />
                     <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                       tickFormatter={(v: number) => `€${v}`}
                     />
                     <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        return (
-                          <div className="rounded-lg border bg-background p-3 shadow-md">
-                            <p className="mb-1 font-medium">
-                              {formatMonth(String(label ?? ""))}
+                      content={({ active, payload, label }) => (
+                        <ChartTooltipWrapper active={active} payload={payload}>
+                          <p className="mb-1 font-medium">
+                            {formatMonth(String(label ?? ""))}
+                          </p>
+                          {payload?.map((entry) => (
+                            <p
+                              key={entry.name}
+                              className="text-sm"
+                              style={{ color: entry.color as string }}
+                            >
+                              {entry.name === "subscriptions"
+                                ? t("charts.subscriptions")
+                                : t("charts.products")}
+                              : €{Number(entry.value).toFixed(2)}
                             </p>
-                            {payload.map((entry) => (
-                              <p
-                                key={entry.name}
-                                className="text-sm"
-                                style={{ color: entry.color }}
-                              >
-                                {entry.name === "subscriptions"
-                                  ? t("charts.subscriptions")
-                                  : t("charts.products")}
-                                : €{Number(entry.value).toFixed(2)}
-                              </p>
-                            ))}
-                          </div>
-                        );
-                      }}
+                          ))}
+                        </ChartTooltipWrapper>
+                      )}
                     />
                     <Area
                       type="monotone"
@@ -450,43 +419,38 @@ export function VenueAnalyticsDashboard({
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <LineChart data={data.bookings.trend}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <CartesianGrid {...GRID_PROPS} />
                       <XAxis
                         dataKey="week"
                         tickFormatter={(v: string) => {
                           const d = new Date(v);
                           return `${d.getDate()}/${d.getMonth() + 1}`;
                         }}
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                       />
                       <YAxis
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                         allowDecimals={false}
                       />
                       <Tooltip
                         content={({ active, payload, label }) => {
-                          if (!active || !payload?.length) return null;
                           const d = new Date(String(label));
                           return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
+                            <ChartTooltipWrapper
+                              active={active}
+                              payload={payload}
+                            >
                               <p className="mb-1 text-sm font-medium">
                                 {t("charts.weekOf")} {d.getDate()}/
                                 {d.getMonth() + 1}
                               </p>
                               <p className="text-sm text-purple-500">
-                                {payload[0].value} {t("charts.bookingsLabel")}
+                                {payload?.[0]?.value}{" "}
+                                {t("charts.bookingsLabel")}
                               </p>
-                            </div>
+                            </ChartTooltipWrapper>
                           );
                         }}
                       />
@@ -514,40 +478,32 @@ export function VenueAnalyticsDashboard({
                 <div className="h-56">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={data.members.growth}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <CartesianGrid {...GRID_PROPS} />
                       <XAxis
                         dataKey="month"
                         tickFormatter={formatMonth}
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                       />
                       <YAxis
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                         allowDecimals={false}
                       />
                       <Tooltip
-                        content={({ active, payload, label }) => {
-                          if (!active || !payload?.length) return null;
-                          return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
-                              <p className="mb-1 text-sm font-medium">
-                                {formatMonth(String(label ?? ""))}
-                              </p>
-                              <p className="text-sm text-blue-500">
-                                {payload[0].value} {t("charts.newMembers")}
-                              </p>
-                            </div>
-                          );
-                        }}
+                        content={({ active, payload, label }) => (
+                          <ChartTooltipWrapper
+                            active={active}
+                            payload={payload}
+                          >
+                            <p className="mb-1 text-sm font-medium">
+                              {formatMonth(String(label ?? ""))}
+                            </p>
+                            <p className="text-sm text-blue-500">
+                              {payload?.[0]?.value} {t("charts.newMembers")}
+                            </p>
+                          </ChartTooltipWrapper>
+                        )}
                       />
                       <Bar
                         dataKey="count"
@@ -575,40 +531,11 @@ export function VenueAnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <PieChart>
-                      <Pie
-                        data={memberRoleData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={4}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}`}
-                      >
-                        {memberRoleData.map((_entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={CHART_COLORS[index % CHART_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
-                              <p className="font-medium">{payload[0].name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {payload[0].value} {t("charts.members")}
-                              </p>
-                            </div>
-                          );
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <DonutChart
+                    data={memberRoleData}
+                    colors={CHART_COLORS}
+                    unitLabel={t("charts.members")}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -665,59 +592,34 @@ export function VenueAnalyticsDashboard({
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={data.members.growth}>
                     <defs>
-                      <linearGradient
+                      <ChartGradient
                         id="memberGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="hsl(var(--chart-1))"
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="hsl(var(--chart-1))"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
+                        color="hsl(var(--chart-1))"
+                      />
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <CartesianGrid {...GRID_PROPS} />
                     <XAxis
                       dataKey="month"
                       tickFormatter={formatMonth}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                     />
                     <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                       allowDecimals={false}
                     />
                     <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        return (
-                          <div className="rounded-lg border bg-background p-3 shadow-md">
-                            <p className="mb-1 font-medium">
-                              {formatMonth(String(label ?? ""))}
-                            </p>
-                            <p className="text-sm text-blue-500">
-                              {payload[0].value} {t("charts.newMembers")}
-                            </p>
-                          </div>
-                        );
-                      }}
+                      content={({ active, payload, label }) => (
+                        <ChartTooltipWrapper active={active} payload={payload}>
+                          <p className="mb-1 font-medium">
+                            {formatMonth(String(label ?? ""))}
+                          </p>
+                          <p className="text-sm text-blue-500">
+                            {payload?.[0]?.value} {t("charts.newMembers")}
+                          </p>
+                        </ChartTooltipWrapper>
+                      )}
                     />
                     <Area
                       type="monotone"
@@ -771,40 +673,11 @@ export function VenueAnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="h-64">
-                  <ResponsiveContainer width="100%" height="100%" minWidth={0}>
-                    <PieChart>
-                      <Pie
-                        data={bookingStatusData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={90}
-                        paddingAngle={4}
-                        dataKey="value"
-                        label={({ name, value }) => `${name}: ${value}`}
-                      >
-                        {bookingStatusData.map((_entry, index) => (
-                          <Cell
-                            key={`cell-${index}`}
-                            fill={CHART_COLORS[index % CHART_COLORS.length]}
-                          />
-                        ))}
-                      </Pie>
-                      <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
-                              <p className="font-medium">{payload[0].name}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {payload[0].value} {t("charts.bookingsLabel")}
-                              </p>
-                            </div>
-                          );
-                        }}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <DonutChart
+                    data={bookingStatusData}
+                    colors={CHART_COLORS}
+                    unitLabel={t("charts.bookingsLabel")}
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -821,39 +694,38 @@ export function VenueAnalyticsDashboard({
                 <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={dayOfWeekData}>
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <CartesianGrid {...GRID_PROPS} />
                       <XAxis
                         dataKey="name"
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                       />
                       <YAxis
-                        tick={{
-                          fontSize: 11,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE_SM}
+                        {...CLEAN_AXIS_PROPS}
                         allowDecimals={false}
                       />
                       <Tooltip
-                        content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
-                              <p className="font-medium">
-                                {payload[0].payload.name}
-                              </p>
-                              <p className="text-sm text-muted-foreground">
-                                {payload[0].value} {t("charts.bookingsLabel")}
-                              </p>
-                            </div>
-                          );
-                        }}
+                        content={({ active, payload }) => (
+                          <ChartTooltipWrapper
+                            active={active}
+                            payload={payload}
+                          >
+                            <p className="font-medium">
+                              {
+                                (
+                                  payload?.[0]?.payload as Record<
+                                    string,
+                                    unknown
+                                  >
+                                )?.name as string
+                              }
+                            </p>
+                            <p className="text-sm text-muted-foreground">
+                              {payload?.[0]?.value} {t("charts.bookingsLabel")}
+                            </p>
+                          </ChartTooltipWrapper>
+                        )}
                       />
                       <Bar
                         dataKey="bookings"
@@ -880,54 +752,34 @@ export function VenueAnalyticsDashboard({
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <AreaChart data={data.bookings.trend}>
                     <defs>
-                      <linearGradient
+                      <ChartGradient
                         id="bookingGradient"
-                        x1="0"
-                        y1="0"
-                        x2="0"
-                        y2="1"
-                      >
-                        <stop
-                          offset="5%"
-                          stopColor="hsl(var(--chart-3))"
-                          stopOpacity={0.4}
-                        />
-                        <stop
-                          offset="95%"
-                          stopColor="hsl(var(--chart-3))"
-                          stopOpacity={0}
-                        />
-                      </linearGradient>
+                        color="hsl(var(--chart-3))"
+                      />
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <CartesianGrid {...GRID_PROPS} />
                     <XAxis
                       dataKey="week"
                       tickFormatter={(v: string) => {
                         const d = new Date(v);
                         return `${d.getDate()}/${d.getMonth() + 1}`;
                       }}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                     />
                     <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                       allowDecimals={false}
                     />
                     <Tooltip
                       content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
                         const d = new Date(String(label));
                         return (
-                          <div className="rounded-lg border bg-background p-3 shadow-md">
+                          <ChartTooltipWrapper
+                            active={active}
+                            payload={payload}
+                          >
                             <p className="mb-1 text-sm font-medium">
                               {t("charts.weekOf")} {d.getDate()}/
                               {d.getMonth() + 1}
@@ -936,9 +788,9 @@ export function VenueAnalyticsDashboard({
                               className="text-sm"
                               style={{ color: "hsl(var(--chart-3))" }}
                             >
-                              {payload[0].value} {t("charts.bookingsLabel")}
+                              {payload?.[0]?.value} {t("charts.bookingsLabel")}
                             </p>
-                          </div>
+                          </ChartTooltipWrapper>
                         );
                       }}
                     />
@@ -995,58 +847,47 @@ export function VenueAnalyticsDashboard({
               <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                   <BarChart data={data.revenue.monthly}>
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                    <CartesianGrid {...GRID_PROPS} />
                     <XAxis
                       dataKey="month"
                       tickFormatter={formatMonth}
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                     />
                     <YAxis
-                      tick={{
-                        fontSize: 12,
-                        fill: "hsl(var(--muted-foreground))",
-                      }}
-                      tickLine={false}
-                      axisLine={false}
+                      tick={AXIS_TICK_STYLE}
+                      {...CLEAN_AXIS_PROPS}
                       tickFormatter={(v: number) => `€${v}`}
                     />
                     <Tooltip
-                      content={({ active, payload, label }) => {
-                        if (!active || !payload?.length) return null;
-                        return (
-                          <div className="rounded-lg border bg-background p-3 shadow-md">
-                            <p className="mb-2 font-medium">
-                              {formatMonth(String(label ?? ""))}
-                            </p>
-                            <p
-                              className="text-sm"
-                              style={{ color: "hsl(var(--chart-1))" }}
-                            >
-                              {t("charts.subscriptions")}: €
-                              {Number(payload[0]?.value || 0).toFixed(2)}
-                            </p>
-                            <p
-                              className="text-sm"
-                              style={{ color: "hsl(var(--chart-2))" }}
-                            >
-                              {t("charts.products")}: €
-                              {Number(payload[1]?.value || 0).toFixed(2)}
-                            </p>
-                            <p className="mt-1 border-t pt-1 text-sm font-medium">
-                              Total: €
-                              {(
-                                Number(payload[0]?.value || 0) +
-                                Number(payload[1]?.value || 0)
-                              ).toFixed(2)}
-                            </p>
-                          </div>
-                        );
-                      }}
+                      content={({ active, payload, label }) => (
+                        <ChartTooltipWrapper active={active} payload={payload}>
+                          <p className="mb-2 font-medium">
+                            {formatMonth(String(label ?? ""))}
+                          </p>
+                          <p
+                            className="text-sm"
+                            style={{ color: "hsl(var(--chart-1))" }}
+                          >
+                            {t("charts.subscriptions")}: €
+                            {Number(payload?.[0]?.value || 0).toFixed(2)}
+                          </p>
+                          <p
+                            className="text-sm"
+                            style={{ color: "hsl(var(--chart-2))" }}
+                          >
+                            {t("charts.products")}: €
+                            {Number(payload?.[1]?.value || 0).toFixed(2)}
+                          </p>
+                          <p className="mt-1 border-t pt-1 text-sm font-medium">
+                            Total: €
+                            {(
+                              Number(payload?.[0]?.value || 0) +
+                              Number(payload?.[1]?.value || 0)
+                            ).toFixed(2)}
+                          </p>
+                        </ChartTooltipWrapper>
+                      )}
                     />
                     <Bar
                       dataKey="subscriptions"
@@ -1144,46 +985,46 @@ export function VenueAnalyticsDashboard({
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%" minWidth={0}>
                     <BarChart data={data.sessions.popular} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
+                      <CartesianGrid {...GRID_PROPS} />
                       <XAxis
                         type="number"
-                        tick={{
-                          fontSize: 12,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE}
+                        {...CLEAN_AXIS_PROPS}
                         allowDecimals={false}
                       />
                       <YAxis
                         type="category"
                         dataKey="title"
                         width={140}
-                        tick={{
-                          fontSize: 12,
-                          fill: "hsl(var(--muted-foreground))",
-                        }}
-                        tickLine={false}
-                        axisLine={false}
+                        tick={AXIS_TICK_STYLE}
+                        {...CLEAN_AXIS_PROPS}
                       />
                       <Tooltip
                         content={({ active, payload }) => {
-                          if (!active || !payload?.length) return null;
-                          const d = payload[0].payload;
+                          const d = payload?.[0]?.payload as
+                            | Record<string, unknown>
+                            | undefined;
                           return (
-                            <div className="rounded-lg border bg-background p-3 shadow-md">
-                              <p className="mb-1 font-medium">{d.title}</p>
-                              <p className="text-sm text-muted-foreground">
-                                {d.total_bookings} {t("charts.bookingsLabel")} /{" "}
-                                {d.session_count} {t("charts.sessionsLabel")}
+                            <ChartTooltipWrapper
+                              active={active}
+                              payload={payload}
+                            >
+                              <p className="mb-1 font-medium">
+                                {d?.title as string}
                               </p>
-                              {d.avg_capacity && (
+                              <p className="text-sm text-muted-foreground">
+                                {d?.total_bookings as number}{" "}
+                                {t("charts.bookingsLabel")} /{" "}
+                                {d?.session_count as number}{" "}
+                                {t("charts.sessionsLabel")}
+                              </p>
+                              {d?.avg_capacity != null && (
                                 <p className="text-sm text-muted-foreground">
                                   {t("charts.avgCapacityLabel")}:{" "}
-                                  {Math.round(d.avg_capacity)}
+                                  {Math.round(d.avg_capacity as number)}
                                 </p>
                               )}
-                            </div>
+                            </ChartTooltipWrapper>
                           );
                         }}
                       />

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, FormEvent } from "react";
+import { useCallback } from "react";
 import { PaymentElement } from "@stripe/react-stripe-js";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -22,6 +22,97 @@ interface CheckoutFormProps {
   translationNamespace?: string;
   onSuccess?: () => void;
   onCancel?: () => void;
+}
+
+/**
+ * Resolve the confirmation endpoint URL based on the payment type.
+ */
+function resolveConfirmEndpoint(
+  props: Pick<
+    CheckoutFormProps,
+    | "confirmEndpoint"
+    | "isRecurring"
+    | "venueId"
+    | "stripeSubscriptionId"
+    | "paymentIntentId"
+  >
+): string | null {
+  if (props.confirmEndpoint) return props.confirmEndpoint;
+
+  if (props.isRecurring && props.venueId && props.stripeSubscriptionId) {
+    return `/api/venues/${props.venueId}/stripe-subscriptions/confirm`;
+  }
+
+  if (!props.isRecurring && props.paymentIntentId) {
+    return `/api/payment-intents/${props.paymentIntentId}/confirm`;
+  }
+
+  return null;
+}
+
+/**
+ * Build the JSON body to send to the confirmation endpoint.
+ */
+function resolveConfirmBody(
+  props: Pick<
+    CheckoutFormProps,
+    "confirmBody" | "isRecurring" | "stripeSubscriptionId"
+  >
+): Record<string, unknown> | undefined {
+  if (props.confirmBody) return props.confirmBody;
+
+  if (props.isRecurring && props.stripeSubscriptionId) {
+    return { stripeSubscriptionId: props.stripeSubscriptionId };
+  }
+
+  return undefined;
+}
+
+/**
+ * Call the server-side confirmation endpoint after Stripe payment succeeds.
+ * Returns an error message string on failure, or null on success / silent handling.
+ */
+async function callConfirmEndpoint(
+  endpoint: string,
+  body: Record<string, unknown> | undefined,
+  opts: { silentConfirm?: boolean; isRecurring?: boolean },
+  t: (key: string) => string
+): Promise<string | null> {
+  try {
+    const confirmResponse = await fetch(endpoint, {
+      method: "POST",
+      ...(body
+        ? {
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }
+        : {}),
+    });
+
+    if (!confirmResponse.ok && !opts.silentConfirm) {
+      throw new Error(t("activationFailed"));
+    }
+
+    return null;
+  } catch (confirmError) {
+    if (opts.silentConfirm) {
+      console.warn("Confirm failed, webhook will handle:", confirmError);
+      return null;
+    }
+
+    if (opts.isRecurring) {
+      console.warn(
+        "Subscription confirm failed, webhook will handle activation:",
+        confirmError
+      );
+      return null;
+    }
+
+    console.error("Error confirming payment:", confirmError);
+    return confirmError instanceof Error
+      ? confirmError.message
+      : t("activationFailed");
+  }
 }
 
 export function CheckoutForm({
@@ -55,7 +146,7 @@ export function CheckoutForm({
     handleElementLoadError(t("paymentFailed"));
   }, [handleElementLoadError, t]);
 
-  const handleSubmit = async (e: FormEvent) => {
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!stripe || !elements || !elementReady || elementError) {
@@ -69,7 +160,7 @@ export function CheckoutForm({
       const { error: paymentError } = await stripe.confirmPayment({
         elements,
         confirmParams: {
-          return_url: `${window.location.origin}/payment-success`,
+          return_url: `${globalThis.location.origin}/payment-success`,
         },
         redirect: "if_required",
       });
@@ -80,55 +171,32 @@ export function CheckoutForm({
         return;
       }
 
-      // Determine which confirmation endpoint to call
-      const endpoint =
-        confirmEndpoint ??
-        (isRecurring && venueId && stripeSubscriptionId
-          ? `/api/venues/${venueId}/stripe-subscriptions/confirm`
-          : !isRecurring && paymentIntentId
-            ? `/api/payment-intents/${paymentIntentId}/confirm`
-            : null);
+      const endpoint = resolveConfirmEndpoint({
+        confirmEndpoint,
+        isRecurring,
+        venueId,
+        stripeSubscriptionId,
+        paymentIntentId,
+      });
 
-      const body =
-        confirmBody ??
-        (isRecurring && stripeSubscriptionId
-          ? { stripeSubscriptionId }
-          : undefined);
+      const body = resolveConfirmBody({
+        confirmBody,
+        isRecurring,
+        stripeSubscriptionId,
+      });
 
       if (endpoint) {
-        try {
-          const confirmResponse = await fetch(endpoint, {
-            method: "POST",
-            ...(body
-              ? {
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify(body),
-                }
-              : {}),
-          });
+        const errorMsg = await callConfirmEndpoint(
+          endpoint,
+          body,
+          { silentConfirm, isRecurring },
+          t
+        );
 
-          if (!confirmResponse.ok && !silentConfirm) {
-            throw new Error(t("activationFailed"));
-          }
-        } catch (confirmError) {
-          if (silentConfirm) {
-            // Webhook will handle activation as fallback
-            console.warn("Confirm failed, webhook will handle:", confirmError);
-          } else if (isRecurring) {
-            console.warn(
-              "Subscription confirm failed, webhook will handle activation:",
-              confirmError
-            );
-          } else {
-            console.error("Error confirming payment:", confirmError);
-            setErrorMessage(
-              confirmError instanceof Error
-                ? confirmError.message
-                : t("activationFailed")
-            );
-            setIsProcessing(false);
-            return;
-          }
+        if (errorMsg) {
+          setErrorMessage(errorMsg);
+          setIsProcessing(false);
+          return;
         }
       }
 

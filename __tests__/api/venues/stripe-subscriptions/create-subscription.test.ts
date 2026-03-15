@@ -83,14 +83,14 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("returns 400 when planId is missing", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
-    const res = await POST(makeRequest({}), makeParams());
+    const res = (await POST(makeRequest({}), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Plan ID is required" });
   });
@@ -99,7 +99,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Venue not found" });
   });
@@ -111,7 +111,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       isActive: false,
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Venue not found" });
   });
@@ -123,7 +123,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       paymentMode: "EXTERNAL",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue does not support IN_APP payments",
@@ -137,7 +137,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       stripeOnboardingStatus: "PENDING",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue Stripe account is not fully configured",
@@ -151,7 +151,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       stripeAccountId: null,
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue Stripe account is not fully configured",
@@ -163,7 +163,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     (prisma.venuePlan.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({
       error: "Plan not found or has no valid price",
@@ -178,7 +178,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       price: 0,
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({
       error: "Plan not found or has no valid price",
@@ -193,7 +193,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       id: "sub-existing",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(409);
     expect(await res.json()).toEqual({
       error: "You already have an active subscription to this plan",
@@ -209,7 +209,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     });
     (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain("does not support recurring billing");
@@ -238,7 +238,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       id: "local-sub",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -297,7 +297,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       id: "local-sub",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
     expect(stripe.products.create).not.toHaveBeenCalled();
     expect(stripe.prices.create).toHaveBeenCalledWith(
@@ -321,7 +321,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     });
     (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({ data: [] });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(500);
     expect(stripe.subscriptions.cancel).toHaveBeenCalledWith("sub_orphan");
   });
@@ -349,7 +349,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       id: "local-sub",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
     // 300 / 3000 * 100 = 10%
@@ -413,7 +413,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       id: "local-sub",
     });
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
   });
 
@@ -423,7 +423,7 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       new Error("DB crash")
     );
 
-    const res = await POST(makeRequest({ planId }), makeParams());
+    const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({
       error: "Failed to create subscription",

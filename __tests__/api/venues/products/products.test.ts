@@ -45,7 +45,7 @@ describe("GET /api/venues/[id]/products", () => {
     (prisma.venueProduct.findMany as jest.Mock).mockResolvedValue(products);
 
     const req = new Request("http://localhost/api/venues/venue-1/products");
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -62,7 +62,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -77,7 +77,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -98,7 +98,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -115,7 +115,7 @@ describe("GET /api/venues/[id]/products", () => {
     );
 
     const req = new Request("http://localhost/api/venues/venue-1/products");
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(500);
@@ -144,10 +144,10 @@ describe("POST /api/venues/[id]/products", () => {
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: 10 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -158,10 +158,10 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: 10 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -173,7 +173,7 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });
 
-    const res = await POST(makeRequest({ price: 10 }), makeParams());
+    const res = (await POST(makeRequest({ price: 10 }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -185,10 +185,10 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: "invalid" }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -199,10 +199,10 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: 0 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -213,10 +213,10 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: -5 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -238,10 +238,10 @@ describe("POST /api/venues/[id]/products", () => {
     };
     (prisma.venueProduct.create as jest.Mock).mockResolvedValue(createdProduct);
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Protein Bar", price: 5 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -273,7 +273,7 @@ describe("POST /api/venues/[id]/products", () => {
     };
     (prisma.venueProduct.create as jest.Mock).mockResolvedValue(createdProduct);
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({
         name: "Water Bottle",
         description: "500ml",
@@ -282,7 +282,7 @@ describe("POST /api/venues/[id]/products", () => {
         stock: 100,
       }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -293,10 +293,10 @@ describe("POST /api/venues/[id]/products", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: true });
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: 10, currency: "INVALID" }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -348,10 +348,10 @@ describe("POST /api/venues/[id]/products", () => {
       new Error("DB error")
     );
 
-    const res = await POST(
+    const res = (await POST(
       makeRequest({ name: "Test", price: 10 }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(500);

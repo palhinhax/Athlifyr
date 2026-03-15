@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe, toStripeAmount } from "@/lib/stripe";
+import {
+  getVenuePaymentContext,
+  calculateCommission,
+} from "@/lib/venues/stripe-route-helpers";
 
 // POST - Create payment intent for IN_APP payment with Stripe
 export async function POST(
@@ -9,12 +12,6 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const venueId = (await params).id;
     const body = await request.json();
     const { planId } = body;
@@ -26,24 +23,10 @@ export async function POST(
       );
     }
 
-    // Get venue and plan
-    const venue = await prisma.venue.findUnique({
-      where: { id: venueId },
-      select: {
-        id: true,
-        name: true,
-        isActive: true,
-        paymentMode: true,
-        stripeAccountId: true,
-        stripeOnboardingStatus: true,
-        commissionType: true,
-        commissionValue: true,
-      },
-    });
+    const ctx = await getVenuePaymentContext(venueId);
+    if ("error" in ctx) return ctx.error;
 
-    if (!venue || !venue.isActive) {
-      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
-    }
+    const { session, venue } = ctx;
 
     const plan = await prisma.venuePlan.findFirst({
       where: {
@@ -64,6 +47,7 @@ export async function POST(
       );
     }
 
+    // Check if venue supports IN_APP payments (payment mode at venue level)
     // Debug log to help diagnose payment mode
     console.log("Payment Intent Debug:", {
       planId,
@@ -72,33 +56,9 @@ export async function POST(
       venueId: venue.id,
     });
 
-    // Check if venue supports IN_APP payments (payment mode at venue level)
-    if (venue.paymentMode !== "IN_APP" && venue.paymentMode !== "MIXED") {
-      console.error("Payment mode validation failed:", {
-        planId,
-        venuePaymentMode: venue.paymentMode,
-        expected: "IN_APP or MIXED",
-      });
-      return NextResponse.json(
-        { error: "Venue does not support IN_APP payments" },
-        { status: 400 }
-      );
-    }
-
-    // Venue must have a fully onboarded Stripe Connect account
-    if (!venue.stripeAccountId || venue.stripeOnboardingStatus !== "COMPLETE") {
-      return NextResponse.json(
-        { error: "Venue Stripe account is not fully configured" },
-        { status: 400 }
-      );
-    }
-
     // Calculate commission (application fee)
     const amountCents = toStripeAmount(plan.price);
-    const commissionCents =
-      venue.commissionType === "FIXED"
-        ? venue.commissionValue // already in cents
-        : Math.round(amountCents * (venue.commissionValue / 100));
+    const commissionCents = calculateCommission(venue, amountCents);
 
     // Create Stripe Payment Intent with destination charge
     const stripePaymentIntent = await stripe.paymentIntents.create({
@@ -106,7 +66,7 @@ export async function POST(
       currency: plan.currency.toLowerCase(),
       application_fee_amount: commissionCents > 0 ? commissionCents : undefined,
       transfer_data: {
-        destination: venue.stripeAccountId,
+        destination: venue.stripeAccountId!,
       },
       metadata: {
         venueId,

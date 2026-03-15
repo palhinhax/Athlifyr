@@ -76,14 +76,14 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
 
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(401);
     expect(await res.json()).toEqual({ error: "Unauthorized" });
   });
 
   it("returns 400 when quantity is zero", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
-    const res = await POST(makeRequest({ quantity: 0 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: 0 }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Quantity must be a positive integer",
@@ -92,13 +92,13 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
 
   it("returns 400 when quantity is negative", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
-    const res = await POST(makeRequest({ quantity: -1 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: -1 }), makeParams()))!;
     expect(res.status).toBe(400);
   });
 
   it("returns 400 when quantity is not an integer", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
-    const res = await POST(makeRequest({ quantity: 1.5 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: 1.5 }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Quantity must be a positive integer",
@@ -121,7 +121,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     });
     (stripe.paymentIntents.update as jest.Mock).mockResolvedValue({});
 
-    const res = await POST(makeRequest({}), makeParams());
+    const res = (await POST(makeRequest({}), makeParams()))!;
     expect(res.status).toBe(201);
 
     // quantity defaults to 1, so totalAmount = 5 * 1 = 5
@@ -138,7 +138,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Venue not found" });
   });
@@ -150,7 +150,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
       isActive: false,
     });
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(404);
   });
 
@@ -161,7 +161,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
       paymentMode: "EXTERNAL",
     });
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue does not support IN_APP payments",
@@ -175,7 +175,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
       stripeAccountId: null,
     });
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
       error: "Venue Stripe account is not fully configured",
@@ -187,7 +187,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(404);
     expect(await res.json()).toEqual({ error: "Product not found" });
   });
@@ -200,7 +200,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
       stock: 2,
     });
 
-    const res = await POST(makeRequest({ quantity: 5 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: 5 }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({ error: "Insufficient stock" });
   });
@@ -224,7 +224,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     });
     (stripe.paymentIntents.update as jest.Mock).mockResolvedValue({});
 
-    const res = await POST(makeRequest({ quantity: 100 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: 100 }), makeParams()))!;
     expect(res.status).toBe(201);
   });
 
@@ -244,7 +244,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     });
     (stripe.paymentIntents.update as jest.Mock).mockResolvedValue({});
 
-    const res = await POST(makeRequest({ quantity: 3 }), makeParams());
+    const res = (await POST(makeRequest({ quantity: 3 }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(201);
@@ -301,7 +301,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     });
     (stripe.paymentIntents.update as jest.Mock).mockResolvedValue({});
 
-    const res = await POST(makeRequest({}), makeParams());
+    const res = (await POST(makeRequest({}), makeParams()))!;
     expect(res.status).toBe(201);
 
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
@@ -317,7 +317,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
       new Error("DB crash")
     );
 
-    const res = await POST(makeRequest(), makeParams());
+    const res = (await POST(makeRequest(), makeParams()))!;
     expect(res.status).toBe(500);
     expect(await res.json()).toEqual({
       error: "Failed to create purchase",

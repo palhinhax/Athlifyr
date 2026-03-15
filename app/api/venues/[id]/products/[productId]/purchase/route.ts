@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe, toStripeAmount } from "@/lib/stripe";
+import {
+  getVenuePaymentContext,
+  calculateCommission,
+} from "@/lib/venues/stripe-route-helpers";
 
 /**
  * POST /api/venues/[id]/products/[productId]/purchase
@@ -14,12 +17,13 @@ export async function POST(
   { params }: { params: Promise<{ id: string; productId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: venueId, productId } = await params;
+
+    const ctx = await getVenuePaymentContext(venueId);
+    if ("error" in ctx) return ctx.error;
+
+    const { session, venue } = ctx;
+
     const body = await request.json();
     const quantity: number = body.quantity ?? 1;
 
@@ -30,39 +34,7 @@ export async function POST(
       );
     }
 
-    // ── Fetch venue + product ──────────────────────────────────────────────
-    const venue = await prisma.venue.findUnique({
-      where: { id: venueId },
-      select: {
-        id: true,
-        name: true,
-        isActive: true,
-        paymentMode: true,
-        stripeAccountId: true,
-        stripeOnboardingStatus: true,
-        commissionType: true,
-        commissionValue: true,
-      },
-    });
-
-    if (!venue || !venue.isActive) {
-      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
-    }
-
-    if (venue.paymentMode !== "IN_APP" && venue.paymentMode !== "MIXED") {
-      return NextResponse.json(
-        { error: "Venue does not support IN_APP payments" },
-        { status: 400 }
-      );
-    }
-
-    if (!venue.stripeAccountId || venue.stripeOnboardingStatus !== "COMPLETE") {
-      return NextResponse.json(
-        { error: "Venue Stripe account is not fully configured" },
-        { status: 400 }
-      );
-    }
-
+    // ── Fetch product ───────────────────────────────────────────────────────
     const product = await prisma.venueProduct.findFirst({
       where: { id: productId, venueId, isActive: true },
     });
@@ -82,10 +54,7 @@ export async function POST(
     // ── Calculate amounts ──────────────────────────────────────────────────
     const totalAmount = product.price * quantity;
     const amountCents = toStripeAmount(totalAmount);
-    const commissionCents =
-      venue.commissionType === "FIXED"
-        ? venue.commissionValue
-        : Math.round(amountCents * (venue.commissionValue / 100));
+    const commissionCents = calculateCommission(venue, amountCents);
 
     // ── Create Stripe PaymentIntent ────────────────────────────────────────
     const stripePaymentIntent = await stripe.paymentIntents.create({
@@ -93,7 +62,7 @@ export async function POST(
       currency: product.currency.toLowerCase(),
       application_fee_amount: commissionCents > 0 ? commissionCents : undefined,
       transfer_data: {
-        destination: venue.stripeAccountId,
+        destination: venue.stripeAccountId!,
       },
       metadata: {
         type: "product_purchase",

@@ -59,7 +59,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
 
-    const res = await PATCH(makeRequest({ name: "Updated" }), makeParams());
+    const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -70,7 +70,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await PATCH(makeRequest({ name: "Updated" }), makeParams());
+    const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -83,7 +83,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
     mockCanManageVenue.mockResolvedValue({ authorized: true });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await PATCH(makeRequest({ name: "Updated" }), makeParams());
+    const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(404);
@@ -102,7 +102,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
     const updated = { id: productId, name: "New Name", venueId };
     (prisma.venueProduct.update as jest.Mock).mockResolvedValue(updated);
 
-    const res = await PATCH(makeRequest({ name: "New Name" }), makeParams());
+    const res = (await PATCH(makeRequest({ name: "New Name" }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -123,10 +123,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
     const updated = { id: productId, price: 15, stock: 50, isActive: false };
     (prisma.venueProduct.update as jest.Mock).mockResolvedValue(updated);
 
-    const res = await PATCH(
+    const res = (await PATCH(
       makeRequest({ price: 15, stock: 50, isActive: false }),
       makeParams()
-    );
+    ))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -145,7 +145,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       venueId,
     });
 
-    const res = await PATCH(makeRequest({ price: -5 }), makeParams());
+    const res = (await PATCH(makeRequest({ price: -5 }), makeParams()))!;
     const body = await res.json();
     expect(res.status).toBe(400);
     expect(body.error).toBe("Invalid price");
@@ -159,7 +159,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       venueId,
     });
 
-    const res = await PATCH(makeRequest({ price: 0 }), makeParams());
+    const res = (await PATCH(makeRequest({ price: 0 }), makeParams()))!;
     expect(res.status).toBe(400);
   });
 
@@ -171,7 +171,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       venueId,
     });
 
-    const res = await PATCH(makeRequest({ currency: "INVALID" }), makeParams());
+    const res = (await PATCH(
+      makeRequest({ currency: "INVALID" }),
+      makeParams()
+    ))!;
     const body = await res.json();
     expect(res.status).toBe(400);
     expect(body.error).toBe("Unsupported currency");
@@ -185,7 +188,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       venueId,
     });
 
-    const res = await PATCH(makeRequest({ stock: -1 }), makeParams());
+    const res = (await PATCH(makeRequest({ stock: -1 }), makeParams()))!;
     const body = await res.json();
     expect(res.status).toBe(400);
     expect(body.error).toBe("Invalid stock");
@@ -199,7 +202,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       venueId,
     });
 
-    const res = await PATCH(makeRequest({ stock: 1.5 }), makeParams());
+    const res = (await PATCH(makeRequest({ stock: 1.5 }), makeParams()))!;
     expect(res.status).toBe(400);
   });
 
@@ -229,7 +232,7 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
       new Error("DB error")
     );
 
-    const res = await PATCH(makeRequest({ name: "Test" }), makeParams());
+    const res = (await PATCH(makeRequest({ name: "Test" }), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(500);
@@ -251,7 +254,7 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   it("returns 401 when unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
 
-    const res = await DELETE(makeRequest(), makeParams());
+    const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -262,7 +265,7 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
-    const res = await DELETE(makeRequest(), makeParams());
+    const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -275,7 +278,7 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
     mockCanManageVenue.mockResolvedValue({ authorized: true });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await DELETE(makeRequest(), makeParams());
+    const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(404);
@@ -297,7 +300,7 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
       isActive: false,
     });
 
-    const res = await DELETE(makeRequest(), makeParams());
+    const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -315,7 +318,7 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
       new Error("DB error")
     );
 
-    const res = await DELETE(makeRequest(), makeParams());
+    const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(500);

@@ -1,35 +1,20 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { authenticateVenueManager } from "@/lib/venues/stripe-route-helpers";
 
 // POST - Create or get Stripe Connect account for venue
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: venueId } = await params;
 
-    const authResult = await canManageVenue(session.user.id, venueId);
-    if (!authResult.authorized) {
-      return NextResponse.json(
-        { error: "Only venue owner/admin can manage Stripe Connect" },
-        { status: 403 }
-      );
-    }
+    const ctx = await authenticateVenueManager(venueId);
+    if ("error" in ctx) return ctx.error;
 
-    const venue = await prisma.venue.findUnique({ where: { id: venueId } });
-    if (!venue) {
-      return NextResponse.json({ error: "Venue not found" }, { status: 404 });
-    }
+    const { venue, session } = ctx;
 
     // If venue already has a Stripe account, validate it still exists in Stripe
     if (venue.stripeAccountId) {

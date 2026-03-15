@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { canManageVenue } from "@/lib/venues/authorization";
+import { authenticateVenueManager } from "@/lib/venues/stripe-route-helpers";
 
 /**
  * GET /api/venues/[id]/purchases — List recent product purchases (staff only)
@@ -11,17 +10,10 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { id: venueId } = await params;
 
-    const venueId = (await params).id;
-
-    const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed.authorized) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const ctx = await authenticateVenueManager(venueId);
+    if ("error" in ctx) return ctx.error;
 
     const { searchParams } = new URL(request.url);
     const limit = Math.min(

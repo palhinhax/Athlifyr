@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { Currency } from "@prisma/client";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authenticateVenueManager } from "@/lib/venues/stripe-route-helpers";
 import { canManageVenue } from "@/lib/venues/authorization";
 
 const VALID_CURRENCIES = new Set<string>(Object.values(Currency));
@@ -52,17 +53,10 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const { id: venueId } = await params;
 
-    const venueId = (await params).id;
-
-    const allowed = await canManageVenue(session.user.id, venueId);
-    if (!allowed.authorized) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const ctx = await authenticateVenueManager(venueId);
+    if ("error" in ctx) return ctx.error;
 
     const { name, description, price, currency, stock } = await request.json();
 

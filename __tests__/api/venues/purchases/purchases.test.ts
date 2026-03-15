@@ -43,7 +43,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     mockAuth.mockResolvedValue(null);
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -56,7 +56,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     mockCanManageVenue.mockResolvedValue({ authorized: false });
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -82,7 +82,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     );
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -103,7 +103,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     const req = new Request(
       `http://localhost/api/venues/${venueId}/purchases?status=REFUNDED`
     );
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
 
     expect(res.status).toBe(200);
     expect(prisma.venueProductPurchase.findMany).toHaveBeenCalledWith(
@@ -120,7 +120,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     const req = new Request(
       `http://localhost/api/venues/${venueId}/purchases?status=INVALID`
     );
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(400);
@@ -166,7 +166,7 @@ describe("GET /api/venues/[id]/purchases", () => {
     );
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
-    const res = await GET(req, makeParams());
+    const res = (await GET(req, makeParams()))!;
     const body = await res.json();
 
     expect(res.status).toBe(500);

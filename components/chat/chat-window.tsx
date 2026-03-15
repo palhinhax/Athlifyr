@@ -73,8 +73,7 @@ export function ChatWindow({
     scrollToBottom();
   }, [messages]);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!messageText.trim() || !isConnected) return;
 
     onSendMessage(messageText.trim());
@@ -145,18 +144,20 @@ export function ChatWindow({
         ref={messagesContainerRef}
         className="flex-1 overflow-y-auto overscroll-contain px-3 py-4 sm:px-4"
       >
-        {isLoading ? (
+        {isLoading && (
           <div className="flex h-full items-center justify-center">
             <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
-        ) : messages.length === 0 ? (
+        )}
+        {!isLoading && messages.length === 0 && (
           <div className="flex h-full flex-col items-center justify-center gap-2 text-center text-muted-foreground">
             <div className="rounded-full bg-muted p-4">
               <SendIcon className="h-6 w-6" />
             </div>
             <p className="text-sm sm:text-base">{t("noMessages")}</p>
           </div>
-        ) : (
+        )}
+        {!isLoading && messages.length > 0 && (
           <div className="space-y-3 sm:space-y-4">
             {messages.map((message) => {
               const isOwnMessage = message.senderId === currentUserId;
@@ -216,7 +217,12 @@ export function ChatWindow({
 
       {/* Input Area - Sticky bottom */}
       <footer className="sticky bottom-0 shrink-0 border-t bg-background p-3 sm:p-4">
-        <form onSubmit={handleSubmit}>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleSubmit();
+          }}
+        >
           <div className="flex items-center gap-2">
             <Input
               value={messageText}

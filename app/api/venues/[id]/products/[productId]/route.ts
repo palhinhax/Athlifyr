@@ -27,6 +27,60 @@ async function getAuthorizedProduct(venueId: string, productId: string) {
   return { product } as const;
 }
 
+function validateProductFields(fields: {
+  price: unknown;
+  currency: unknown;
+  stock: unknown;
+}): NextResponse | null {
+  const { price, currency, stock } = fields;
+
+  if (
+    price !== undefined &&
+    (typeof price !== "number" || !Number.isFinite(price) || price <= 0)
+  ) {
+    return NextResponse.json({ error: "Invalid price" }, { status: 400 });
+  }
+
+  if (currency !== undefined) {
+    const upper = typeof currency === "string" ? currency.toUpperCase() : "";
+    if (!VALID_CURRENCIES.has(upper)) {
+      return NextResponse.json(
+        { error: "Unsupported currency" },
+        { status: 400 }
+      );
+    }
+  }
+
+  if (
+    stock !== undefined &&
+    stock !== null &&
+    (typeof stock !== "number" || !Number.isInteger(stock) || stock < 0)
+  ) {
+    return NextResponse.json({ error: "Invalid stock" }, { status: 400 });
+  }
+
+  return null;
+}
+
+function buildProductUpdate(fields: {
+  name: unknown;
+  description: unknown;
+  price: unknown;
+  currency: unknown;
+  stock: unknown;
+  isActive: unknown;
+}) {
+  const data: Record<string, unknown> = {};
+  if (fields.name !== undefined) data.name = fields.name;
+  if (fields.description !== undefined) data.description = fields.description;
+  if (fields.price !== undefined) data.price = fields.price;
+  if (fields.currency !== undefined)
+    data.currency = (fields.currency as string).toUpperCase();
+  if (fields.stock !== undefined) data.stock = fields.stock;
+  if (fields.isActive !== undefined) data.isActive = fields.isActive;
+  return data;
+}
+
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string; productId: string }> }
@@ -40,43 +94,19 @@ export async function PATCH(
     const { name, description, price, currency, stock, isActive } =
       await request.json();
 
-    if (
-      price !== undefined &&
-      (typeof price !== "number" || !Number.isFinite(price) || price <= 0)
-    ) {
-      return NextResponse.json({ error: "Invalid price" }, { status: 400 });
-    }
-
-    if (currency !== undefined) {
-      const upper = typeof currency === "string" ? currency.toUpperCase() : "";
-      if (!VALID_CURRENCIES.has(upper)) {
-        return NextResponse.json(
-          { error: "Unsupported currency" },
-          { status: 400 }
-        );
-      }
-    }
-
-    if (
-      stock !== undefined &&
-      stock !== null &&
-      (typeof stock !== "number" || !Number.isInteger(stock) || stock < 0)
-    ) {
-      return NextResponse.json({ error: "Invalid stock" }, { status: 400 });
-    }
+    const validationError = validateProductFields({ price, currency, stock });
+    if (validationError) return validationError;
 
     const updated = await prisma.venueProduct.update({
       where: { id: productId },
-      data: {
-        ...(name !== undefined ? { name } : {}),
-        ...(description !== undefined ? { description } : {}),
-        ...(price !== undefined ? { price } : {}),
-        ...(currency !== undefined
-          ? { currency: (currency as string).toUpperCase() as Currency }
-          : {}),
-        ...(stock !== undefined ? { stock } : {}),
-        ...(isActive !== undefined ? { isActive } : {}),
-      },
+      data: buildProductUpdate({
+        name,
+        description,
+        price,
+        currency,
+        stock,
+        isActive,
+      }),
     });
 
     return NextResponse.json({ product: updated });

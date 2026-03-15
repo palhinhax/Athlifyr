@@ -302,7 +302,7 @@ async function main() {
     startDate: new Date("2026-04-05T08:00:00Z"),
     startTime: "08:00",
     cutoffTimeHours: 9,
-    price: 10.0,
+    price: 10,
     currency: Currency.EUR,
     maxParticipants: 300,
     atrpGrade: null,
@@ -319,7 +319,7 @@ async function main() {
   await findOrCreatePricingPhase("Passeio GPS - Inscrição", {
     startDate: new Date("2026-01-01T00:00:00Z"),
     endDate: new Date("2026-04-04T23:59:59Z"),
-    price: 10.0,
+    price: 10,
     currency: Currency.EUR,
     note: "Inclui seguro de acidentes pessoais, frontal e tracks GPS",
   });
@@ -650,11 +650,11 @@ async function main() {
   `);
 }
 
-main()
-  .catch((e) => {
-    console.error("❌ Seed failed:", e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+try {
+  await main();
+} catch (e) {
+  console.error("❌ Seed failed:", e);
+  process.exit(1);
+} finally {
+  await prisma.$disconnect();
+}

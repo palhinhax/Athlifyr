@@ -27,7 +27,8 @@ jest.mock("@/lib/stripe", () => ({
     products: { search: jest.fn(), create: jest.fn() },
     prices: { create: jest.fn() },
     subscriptions: { create: jest.fn(), cancel: jest.fn() },
-    paymentIntents: { list: jest.fn() },
+    invoicePayments: { list: jest.fn() },
+    paymentIntents: { retrieve: jest.fn() },
   },
   toStripeAmount: (n: number) => Math.round(n * 100),
 }));
@@ -230,9 +231,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_new",
+      latest_invoice: "inv_new",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({
-      data: [{ client_secret: "cs_secret" }],
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [{ payment: { payment_intent: "pi_new" } }],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      client_secret: "cs_secret",
     });
     (prisma.venueSubscription.create as jest.Mock).mockResolvedValue({
       id: "local-sub",
@@ -253,11 +258,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
       })
     );
 
-    // Verify subscription was created with commission
+    // Verify subscription was created with commission + Stripe fee
+    // Commission 10% of 3000=300, Stripe fee ceil(3000*0.015+25)=70, total=370
+    // As percent of 3000: round((370/3000)*10000)/100 = 12.33
     expect(stripe.subscriptions.create).toHaveBeenCalledWith(
       expect.objectContaining({
         customer: "cus_123",
-        application_fee_percent: 10,
+        application_fee_percent: 12.33,
         transfer_data: { destination: "acct_123" },
       })
     );
@@ -289,9 +296,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_new",
+      latest_invoice: "inv_new",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({
-      data: [{ client_secret: "cs_secret" }],
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [{ payment: { payment_intent: "pi_new" } }],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      client_secret: "cs_secret",
     });
     (prisma.venueSubscription.create as jest.Mock).mockResolvedValue({
       id: "local-sub",
@@ -318,8 +329,9 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     (stripe.prices.create as jest.Mock).mockResolvedValue({ id: "price_1" });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_orphan",
+      latest_invoice: "inv_orphan",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({ data: [] });
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({ data: [] });
 
     const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(500);
@@ -341,9 +353,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     (stripe.prices.create as jest.Mock).mockResolvedValue({ id: "price_1" });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_1",
+      latest_invoice: "inv_1",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({
-      data: [{ client_secret: "cs_secret" }],
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [{ payment: { payment_intent: "pi_1" } }],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      client_secret: "cs_secret",
     });
     (prisma.venueSubscription.create as jest.Mock).mockResolvedValue({
       id: "local-sub",
@@ -352,10 +368,10 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
-    // 300 / 3000 * 100 = 10%
+    // FIXED 300 + Stripe fee 70 = 370, as percent: round((370/3000)*10000)/100 = 12.33
     expect(stripe.subscriptions.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        application_fee_percent: 10,
+        application_fee_percent: 12.33,
       })
     );
   });
@@ -374,9 +390,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     (stripe.prices.create as jest.Mock).mockResolvedValue({ id: "price_1" });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_1",
+      latest_invoice: "inv_1",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({
-      data: [{ client_secret: "cs_secret" }],
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [{ payment: { payment_intent: "pi_1" } }],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      client_secret: "cs_secret",
     });
     (prisma.venueSubscription.create as jest.Mock).mockResolvedValue({
       id: "local-sub",
@@ -405,9 +425,13 @@ describe("POST /api/venues/[id]/stripe-subscriptions", () => {
     (stripe.prices.create as jest.Mock).mockResolvedValue({ id: "price_1" });
     (stripe.subscriptions.create as jest.Mock).mockResolvedValue({
       id: "sub_1",
+      latest_invoice: "inv_1",
     });
-    (stripe.paymentIntents.list as jest.Mock).mockResolvedValue({
-      data: [{ client_secret: "cs_secret" }],
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [{ payment: { payment_intent: "pi_1" } }],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      client_secret: "cs_secret",
     });
     (prisma.venueSubscription.create as jest.Mock).mockResolvedValue({
       id: "local-sub",

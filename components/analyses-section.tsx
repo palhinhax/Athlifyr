@@ -2076,7 +2076,7 @@ export function AnalysesSection() {
         />
 
         <div className="mt-12">
-          <h2 className="mb-6 flex items-center justify-between gap-2 text-2xl font-bold">
+          <h2 className="mb-6 flex flex-col gap-3 text-2xl font-bold sm:flex-row sm:items-center sm:justify-between sm:gap-2">
             <span className="flex items-center gap-2">
               <Activity className="h-6 w-6 text-primary" />
               {t("analyses.title")}
@@ -2086,17 +2086,25 @@ export function AnalysesSection() {
                 size="sm"
                 variant="outline"
                 onClick={() => handleSetUploadType("motion")}
+                className="flex-1 sm:flex-initial"
               >
-                <Plus className="mr-1.5 h-4 w-4" />
-                Nova Análise Movimento
+                <Activity className="mr-1.5 h-4 w-4 sm:mr-1.5" />
+                <span className="sm:hidden">{t("analyses.motionTab")}</span>
+                <span className="hidden sm:inline">
+                  {t("analyses.newMotionAnalysis")}
+                </span>
               </Button>
               <Button
                 size="sm"
                 variant="outline"
                 onClick={() => handleSetUploadType("lift")}
+                className="flex-1 sm:flex-initial"
               >
-                <Plus className="mr-1.5 h-4 w-4" />
-                Nova Análise Levantamento
+                <Dumbbell className="mr-1.5 h-4 w-4 sm:mr-1.5" />
+                <span className="sm:hidden">{t("analyses.liftTab")}</span>
+                <span className="hidden sm:inline">
+                  {t("analyses.newLiftAnalysis")}
+                </span>
               </Button>
             </div>
           </h2>
@@ -2109,17 +2117,17 @@ export function AnalysesSection() {
             <p className="mt-2 text-sm text-muted-foreground">
               {t("analyses.noAnalysesDesc")}
             </p>
-            <div className="mt-6 flex justify-center gap-3">
+            <div className="mt-6 flex flex-col justify-center gap-3 sm:flex-row">
               <Button onClick={() => handleSetUploadType("motion")}>
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Análise Movimento
+                {t("analyses.createMotionAnalysis")}
               </Button>
               <Button
                 variant="outline"
                 onClick={() => handleSetUploadType("lift")}
               >
                 <Plus className="mr-2 h-4 w-4" />
-                Criar Análise Levantamento
+                {t("analyses.createLiftAnalysis")}
               </Button>
             </div>
           </div>
@@ -2173,8 +2181,10 @@ export function AnalysesSection() {
               className="flex-1 sm:flex-initial"
             >
               <Activity className="mr-1.5 h-4 w-4 sm:mr-1.5" />
-              <span className="sm:hidden">Movimento</span>
-              <span className="hidden sm:inline">Nova Análise Movimento</span>
+              <span className="sm:hidden">{t("analyses.motionTab")}</span>
+              <span className="hidden sm:inline">
+                {t("analyses.newMotionAnalysis")}
+              </span>
             </Button>
             <Button
               size="sm"
@@ -2183,9 +2193,9 @@ export function AnalysesSection() {
               className="flex-1 sm:flex-initial"
             >
               <Dumbbell className="mr-1.5 h-4 w-4 sm:mr-1.5" />
-              <span className="sm:hidden">Levantamento</span>
+              <span className="sm:hidden">{t("analyses.liftTab")}</span>
               <span className="hidden sm:inline">
-                Nova Análise Levantamento
+                {t("analyses.newLiftAnalysis")}
               </span>
             </Button>
           </div>

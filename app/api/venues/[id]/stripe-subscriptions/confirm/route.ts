@@ -64,10 +64,47 @@ export async function POST(
     const stripeSub = await stripe.subscriptions.retrieve(stripeSubscriptionId);
 
     if (stripeSub.status !== "active" && stripeSub.status !== "trialing") {
-      return NextResponse.json(
-        { error: "Stripe subscription is not active yet" },
-        { status: 400 }
-      );
+      // The subscription may still be "incomplete" even though the payment
+      // succeeded (race condition). Fall back to checking the PaymentIntent
+      // status directly — it transitions to "succeeded" before the subscription
+      // or invoice payment objects are updated by Stripe.
+      const latestInvoiceId =
+        typeof stripeSub.latest_invoice === "string"
+          ? stripeSub.latest_invoice
+          : stripeSub.latest_invoice?.id;
+
+      let paymentSucceeded = false;
+
+      if (latestInvoiceId) {
+        const invoicePayments = await stripe.invoicePayments.list({
+          invoice: latestInvoiceId,
+        });
+
+        for (const ip of invoicePayments.data) {
+          if (ip.status === "paid") {
+            paymentSucceeded = true;
+            break;
+          }
+
+          // Check the underlying PaymentIntent directly
+          const piRef = ip.payment?.payment_intent;
+          if (piRef) {
+            const piId = typeof piRef === "string" ? piRef : piRef.id;
+            const pi = await stripe.paymentIntents.retrieve(piId);
+            if (pi.status === "succeeded") {
+              paymentSucceeded = true;
+              break;
+            }
+          }
+        }
+      }
+
+      if (!paymentSucceeded) {
+        return NextResponse.json(
+          { error: "Stripe subscription is not active yet" },
+          { status: 400 }
+        );
+      }
     }
 
     // Derive start and end dates from Stripe's current billing period (on items in 2026+ API)
@@ -87,6 +124,32 @@ export async function POST(
         stripeCurrentPeriodEnd: endDate,
       },
     });
+
+    // Ensure the user is an active venue member (same logic as invoice.paid webhook)
+    const member = await prisma.venueMember.findUnique({
+      where: {
+        venueId_userId: { venueId, userId: session.user.id },
+      },
+    });
+
+    if (!member) {
+      await prisma.venueMember.create({
+        data: {
+          venueId,
+          userId: session.user.id,
+          role: "CLIENT",
+          status: "ACTIVE",
+          joinedAt: new Date(),
+        },
+      });
+    } else if (member.status !== "ACTIVE") {
+      await prisma.venueMember.update({
+        where: {
+          venueId_userId: { venueId, userId: session.user.id },
+        },
+        data: { status: "ACTIVE" },
+      });
+    }
 
     console.log(
       `Subscription ${subscription.id} activated via confirm endpoint`

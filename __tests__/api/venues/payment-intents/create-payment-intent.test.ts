@@ -180,12 +180,12 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     expect(body.clientSecret).toBe("pi_secret");
     expect(body.paymentIntent.id).toBe("local-pi");
 
-    // Commission: 10% of 1500 cents = 150 cents
+    // Commission: 10% of 1500=150, Stripe fee: ceil(1500*0.015+25)=48, total=198
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
       expect.objectContaining({
         amount: 1500,
         currency: "eur",
-        application_fee_amount: 150,
+        application_fee_amount: 198,
         transfer_data: { destination: "acct_123" },
       })
     );
@@ -225,9 +225,10 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
+    // FIXED 200 + Stripe fee 48 = 248
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        application_fee_amount: 200,
+        application_fee_amount: 248,
       })
     );
   });
@@ -252,9 +253,10 @@ describe("POST /api/venues/[id]/payment-intents", () => {
     const res = (await POST(makeRequest({ planId }), makeParams()))!;
     expect(res.status).toBe(201);
 
+    // Zero commission but Stripe fee still applies: ceil(1500*0.015+25)=48
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        application_fee_amount: undefined,
+        application_fee_amount: 48,
       })
     );
   });

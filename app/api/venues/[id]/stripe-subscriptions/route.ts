@@ -3,7 +3,10 @@ import { prisma } from "@/lib/prisma";
 import { stripe, toStripeAmount } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import type { VenuePlanPolicy } from "@/types/venue-plan";
-import { getVenuePaymentContext } from "@/lib/venues/stripe-route-helpers";
+import {
+  getVenuePaymentContext,
+  calculateApplicationFeePercent,
+} from "@/lib/venues/stripe-route-helpers";
 
 /**
  * POST /api/venues/[id]/stripe-subscriptions
@@ -96,18 +99,12 @@ export async function POST(
     const customerId = await getOrCreateStripeCustomer(session.user.id);
     const amountCents = toStripeAmount(plan.price);
 
-    // Commission: Stripe Billing only supports application_fee_percent (not fixed amount).
-    // For FIXED commissions, convert to an equivalent percentage of the plan price.
-    let commissionPercent: number;
-    if (venue.commissionType === "PERCENT") {
-      commissionPercent = venue.commissionValue;
-    } else {
-      // FIXED: commissionValue is in cents, amountCents is the plan price in cents
-      commissionPercent =
-        amountCents > 0
-          ? Math.round((venue.commissionValue / amountCents) * 10000) / 100
-          : 0;
-    }
+    // Application fee = platform commission + Stripe processing fee.
+    // Expressed as a percentage for Stripe Billing (which only supports percent).
+    const applicationFeePercent = calculateApplicationFeePercent(
+      venue,
+      amountCents
+    );
 
     // Create a Stripe Product for this plan (idempotent via metadata lookup)
     const existingProducts = await stripe.products.search({
@@ -146,7 +143,7 @@ export async function POST(
         save_default_payment_method: "on_subscription",
       },
       application_fee_percent:
-        commissionPercent > 0 ? commissionPercent : undefined,
+        applicationFeePercent > 0 ? applicationFeePercent : undefined,
       transfer_data: {
         destination: venue.stripeAccountId!,
       },
@@ -158,12 +155,28 @@ export async function POST(
     });
 
     // In Stripe API 2026-01-28.clover, the payment_intent field was removed
-    // from the Invoice object. Retrieve the auto-created PaymentIntent via list.
-    const paymentIntents = await stripe.paymentIntents.list({
-      customer: customerId,
-      limit: 1,
-    });
-    const clientSecret = paymentIntents.data[0]?.client_secret;
+    // from the Invoice object. Use the Invoice Payments API to find the
+    // PaymentIntent that belongs to this subscription's first invoice.
+    const latestInvoiceId =
+      typeof subscription.latest_invoice === "string"
+        ? subscription.latest_invoice
+        : subscription.latest_invoice?.id;
+
+    let clientSecret: string | null = null;
+
+    if (latestInvoiceId) {
+      const invoicePayments = await stripe.invoicePayments.list({
+        invoice: latestInvoiceId,
+      });
+
+      const piRef = invoicePayments.data[0]?.payment?.payment_intent;
+      const paymentIntentId = typeof piRef === "string" ? piRef : piRef?.id;
+
+      if (paymentIntentId) {
+        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+        clientSecret = pi.client_secret;
+      }
+    }
 
     if (!clientSecret) {
       // Clean up the subscription if we can't get the client secret

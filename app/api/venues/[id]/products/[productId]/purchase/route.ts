@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { stripe, toStripeAmount } from "@/lib/stripe";
 import {
   getVenuePaymentContext,
-  calculateCommission,
+  createVenuePaymentIntent,
 } from "@/lib/venues/stripe-route-helpers";
 
 /**
@@ -54,16 +54,13 @@ export async function POST(
     // ── Calculate amounts ──────────────────────────────────────────────────
     const totalAmount = product.price * quantity;
     const amountCents = toStripeAmount(totalAmount);
-    const commissionCents = calculateCommission(venue, amountCents);
 
     // ── Create Stripe PaymentIntent ────────────────────────────────────────
-    const stripePaymentIntent = await stripe.paymentIntents.create({
-      amount: amountCents,
-      currency: product.currency.toLowerCase(),
-      application_fee_amount: commissionCents > 0 ? commissionCents : undefined,
-      transfer_data: {
-        destination: venue.stripeAccountId!,
-      },
+    const stripePaymentIntent = await createVenuePaymentIntent({
+      amountCents,
+      currency: product.currency,
+      venue,
+      description: `${venue.name} – ${product.name} x${quantity}`,
       metadata: {
         type: "product_purchase",
         venueId,
@@ -73,8 +70,6 @@ export async function POST(
         userId: session.user.id,
         userEmail: session.user.email || "",
       },
-      description: `${venue.name} – ${product.name} x${quantity}`,
-      automatic_payment_methods: { enabled: true },
     });
 
     // ── Save purchase record ───────────────────────────────────────────────

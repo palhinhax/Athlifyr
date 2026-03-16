@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { stripe, toStripeAmount } from "@/lib/stripe";
+import { toStripeAmount } from "@/lib/stripe";
 import {
   getVenuePaymentContext,
-  calculateCommission,
+  createVenuePaymentIntent,
 } from "@/lib/venues/stripe-route-helpers";
 
 // POST - Create payment intent for IN_APP payment with Stripe
@@ -58,16 +58,13 @@ export async function POST(
 
     // Calculate commission (application fee)
     const amountCents = toStripeAmount(plan.price);
-    const commissionCents = calculateCommission(venue, amountCents);
 
     // Create Stripe Payment Intent with destination charge
-    const stripePaymentIntent = await stripe.paymentIntents.create({
-      amount: amountCents,
-      currency: plan.currency.toLowerCase(),
-      application_fee_amount: commissionCents > 0 ? commissionCents : undefined,
-      transfer_data: {
-        destination: venue.stripeAccountId!,
-      },
+    const stripePaymentIntent = await createVenuePaymentIntent({
+      amountCents,
+      currency: plan.currency,
+      venue,
+      description: `${venue.name} - ${plan.name}`,
       metadata: {
         venueId,
         venueName: venue.name,
@@ -76,10 +73,6 @@ export async function POST(
         userId: session.user.id,
         userEmail: session.user.email || "",
         userName: session.user.name || "",
-      },
-      description: `${venue.name} - ${plan.name}`,
-      automatic_payment_methods: {
-        enabled: true,
       },
     });
 

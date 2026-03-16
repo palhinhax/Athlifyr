@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import type { Stripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { assignBibNumbers } from "@/lib/bib-number";
+import { completeTopUp, failTopUp, cancelTopUp } from "@/lib/credits";
 import {
   calculatePlanEndDate,
   type VenuePlanPolicy,
@@ -90,8 +91,10 @@ export async function POST(request: Request) {
 
       case "payment_intent.succeeded": {
         const paymentIntent = event.data.object;
-        // Route to product handler if metadata indicates a product purchase
-        if (paymentIntent.metadata?.type === "product_purchase") {
+        // Route to credit top-up handler
+        if (paymentIntent.metadata?.type === "credit_top_up") {
+          await completeTopUp(paymentIntent.id);
+        } else if (paymentIntent.metadata?.type === "product_purchase") {
           await handleProductPurchaseSucceeded(paymentIntent);
         } else {
           await handlePaymentIntentSucceeded(paymentIntent);
@@ -101,12 +104,23 @@ export async function POST(request: Request) {
 
       case "payment_intent.payment_failed": {
         const paymentIntent = event.data.object;
+        // Handle credit top-up failure
+        if (paymentIntent.metadata?.type === "credit_top_up") {
+          await failTopUp(
+            paymentIntent.id,
+            paymentIntent.last_payment_error?.message
+          );
+        }
         await handlePaymentIntentFailed(paymentIntent);
         break;
       }
 
       case "payment_intent.canceled": {
         const paymentIntent = event.data.object;
+        // Handle credit top-up cancellation
+        if (paymentIntent.metadata?.type === "credit_top_up") {
+          await cancelTopUp(paymentIntent.id);
+        }
         await handlePaymentIntentCanceled(paymentIntent);
         break;
       }

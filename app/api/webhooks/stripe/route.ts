@@ -166,14 +166,16 @@ export async function POST(request: Request) {
 async function handleAccountUpdated(account: Stripe.Account) {
   console.log(`Processing account.updated for ${account.id}`);
 
-  const statusStr =
-    account.charges_enabled && account.payouts_enabled
-      ? "COMPLETE"
-      : account.requirements?.disabled_reason
-        ? "RESTRICTED"
-        : account.details_submitted
-          ? "PENDING"
-          : "NOT_STARTED";
+  let statusStr: string;
+  if (account.charges_enabled && account.payouts_enabled) {
+    statusStr = "COMPLETE";
+  } else if (account.requirements?.disabled_reason) {
+    statusStr = "RESTRICTED";
+  } else if (account.details_submitted) {
+    statusStr = "PENDING";
+  } else {
+    statusStr = "NOT_STARTED";
+  }
 
   const stripeFields = {
     stripeChargesEnabled: account.charges_enabled || false,
@@ -557,39 +559,17 @@ async function handlePaymentIntentCanceled(
   }
 }
 
-// Handler for charge refunds
-async function handleChargeRefunded(charge: Stripe.Charge) {
-  const stripePaymentIntentId =
-    typeof charge.payment_intent === "string"
-      ? charge.payment_intent
-      : charge.payment_intent?.id;
+// Extracted helpers for handleChargeRefunded to keep cognitive complexity low
 
-  if (!stripePaymentIntentId) {
-    console.error(`charge.refunded: no payment_intent on charge ${charge.id}`);
-    return;
-  }
-
-  const isFullRefund = charge.refunded;
-  console.log(
-    `Processing charge.refunded: ${charge.id} (PI: ${stripePaymentIntentId}, full: ${isFullRefund})`
-  );
-
-  await handleRegistrationRefund(stripePaymentIntentId, isFullRefund);
-  await handleVenuePaymentRefund(stripePaymentIntentId, isFullRefund);
-  await handleProductPurchaseRefund(stripePaymentIntentId, isFullRefund);
-}
-
-async function handleRegistrationRefund(
+async function refundEventRegistrations(
   stripePaymentIntentId: string,
   isFullRefund: boolean
-) {
+): Promise<number> {
   const registrations = await prisma.registration.findMany({
     where: { stripePaymentIntentId },
   });
 
-  if (registrations.length === 0) return;
-
-  if (isFullRefund) {
+  if (registrations.length > 0 && isFullRefund) {
     await prisma.registration.updateMany({
       where: { stripePaymentIntentId },
       data: { status: "REFUNDED" },
@@ -597,22 +577,24 @@ async function handleRegistrationRefund(
     console.log(
       `Refunded ${registrations.length} registration(s) for PI ${stripePaymentIntentId}`
     );
-  } else {
+  } else if (registrations.length > 0) {
     console.log(
       `Partial refund on PI ${stripePaymentIntentId} — registrations unchanged`
     );
   }
+
+  return registrations.length;
 }
 
-async function handleVenuePaymentRefund(
+async function refundVenuePaymentIntent(
   stripePaymentIntentId: string,
   isFullRefund: boolean
-) {
+): Promise<boolean> {
   const paymentIntent = await prisma.paymentIntent.findFirst({
     where: { stripePaymentIntentId },
   });
 
-  if (!paymentIntent) return;
+  if (!paymentIntent) return false;
 
   await prisma.paymentIntent.update({
     where: { id: paymentIntent.id },
@@ -632,10 +614,7 @@ async function handleVenuePaymentRefund(
     if (subscription) {
       await prisma.venueSubscription.update({
         where: { id: subscription.id },
-        data: {
-          status: "CANCELLED",
-          paymentStatus: "PENDING_PAYMENT",
-        },
+        data: { status: "CANCELLED", paymentStatus: "PENDING_PAYMENT" },
       });
       console.log(
         `Cancelled subscription ${subscription.id} due to full refund`
@@ -644,14 +623,12 @@ async function handleVenuePaymentRefund(
   }
 
   console.log(`PaymentIntent ${paymentIntent.id} marked as REFUNDED`);
+  return true;
 }
 
-async function handleProductPurchaseRefund(
-  stripePaymentIntentId: string,
-  isFullRefund: boolean
-) {
-  if (!isFullRefund) return;
-
+async function refundProductPurchase(
+  stripePaymentIntentId: string
+): Promise<void> {
   const productPurchase = await prisma.venueProductPurchase.findFirst({
     where: { stripePaymentIntentId, status: "CONFIRMED" },
     include: { product: { select: { stock: true } } },
@@ -674,6 +651,43 @@ async function handleProductPurchaseRefund(
   console.log(
     `Product purchase ${productPurchase.id} refunded for PI ${stripePaymentIntentId}`
   );
+}
+
+// Handler for charge refunds
+async function handleChargeRefunded(charge: Stripe.Charge) {
+  const stripePaymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id;
+
+  if (!stripePaymentIntentId) {
+    console.error(`charge.refunded: no payment_intent on charge ${charge.id}`);
+    return;
+  }
+
+  const isFullRefund = charge.refunded;
+  console.log(
+    `Processing charge.refunded: ${charge.id} (PI: ${stripePaymentIntentId}, full: ${isFullRefund})`
+  );
+
+  const registrationCount = await refundEventRegistrations(
+    stripePaymentIntentId,
+    isFullRefund
+  );
+  const paymentIntentFound = await refundVenuePaymentIntent(
+    stripePaymentIntentId,
+    isFullRefund
+  );
+
+  if (isFullRefund) {
+    await refundProductPurchase(stripePaymentIntentId);
+  }
+
+  if (registrationCount === 0 && !paymentIntentFound) {
+    console.warn(
+      `charge.refunded: no registration or PaymentIntent found for PI ${stripePaymentIntentId}`
+    );
+  }
 }
 
 // ============================================================================

@@ -200,11 +200,11 @@ export function BulkWorkoutAssignDialog({
   };
 
   const selectAllSessions = () => {
-    if (selectedSessionIds.length === sessions.length) {
-      setSelectedSessionIds([]);
-    } else {
-      setSelectedSessionIds(sessions.map((s) => s.id));
-    }
+    setSelectedSessionIds(
+      selectedSessionIds.length === sessions.length
+        ? []
+        : sessions.map((s) => s.id)
+    );
   };
 
   // Navigate days

@@ -77,8 +77,8 @@ export function FavoriteSportsSelector({
   };
 
   const hasChanges =
-    JSON.stringify([...selectedSports].sort()) !==
-    JSON.stringify([...initialFavorites].sort());
+    JSON.stringify([...selectedSports].sort((a, b) => a.localeCompare(b))) !==
+    JSON.stringify([...initialFavorites].sort((a, b) => a.localeCompare(b)));
 
   return (
     <div className="space-y-4">

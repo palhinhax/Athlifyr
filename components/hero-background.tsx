@@ -44,6 +44,13 @@ export function HeroBackground({
     dark: "bg-black/70",
   };
 
+  const cursorClass = clickable ? "cursor-pointer" : "";
+  const imageTransitionClass = isLCP
+    ? ""
+    : "transition-transform duration-300 hover:scale-105";
+  const imageLoading = isLCP ? "eager" : "lazy";
+  const imageFetchPriority = isLCP ? "high" : "auto";
+
   return (
     <section
       className={`relative overflow-hidden ${height === "custom" ? "" : heightClasses[height]} ${className}`}
@@ -56,19 +63,19 @@ export function HeroBackground({
       {image ? (
         <>
           <div
-            className={`absolute inset-0 z-0 ${clickable ? "cursor-pointer" : ""}`}
+            className={`absolute inset-0 z-0 ${cursorClass}`}
             onClick={clickable && onImageClick ? onImageClick : undefined}
           >
             <Image
               src={image}
               alt={title || "Hero background"}
               fill
-              className={`object-cover object-center ${isLCP ? "" : "transition-transform duration-300 hover:scale-105"}`}
+              className={`object-cover object-center ${imageTransitionClass}`}
               priority={isLCP}
-              loading={isLCP ? "eager" : "lazy"}
+              loading={imageLoading}
               quality={imageQuality}
               sizes="100vw"
-              fetchPriority={isLCP ? "high" : "auto"}
+              fetchPriority={imageFetchPriority}
             />
             <div
               className={`absolute inset-0 ${overlayClasses[overlayOpacity]}`}

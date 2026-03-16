@@ -187,6 +187,25 @@ export function VideoAnalysisUpload({
     ? "Faça upload de um vídeo de perfil do levantamento. Será pedido para clicar no disco/peso."
     : "Faça upload de um vídeo do movimento. A análise de pose será feita automaticamente.";
 
+  const setReadyState = useCallback(
+    (videoUrl: string, video: HTMLVideoElement, fileName: string) => {
+      if (isLift) {
+        setUploadStateSynced({
+          status: "selecting-seed",
+          videoUrl,
+          videoElement: video,
+        });
+      } else {
+        setUploadStateSynced({
+          status: "selected",
+          videoUrl,
+          fileName,
+        });
+      }
+    },
+    [isLift, setUploadStateSynced]
+  );
+
   const handleFileSelect = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
@@ -260,19 +279,10 @@ export function VideoAnalysisUpload({
 
         if (isLift) {
           console.log(`[VideoUpload] → selecting-seed`);
-          setUploadStateSynced({
-            status: "selecting-seed",
-            videoUrl,
-            videoElement: video,
-          });
         } else {
           console.log(`[VideoUpload] → selected (motion, ready to submit)`);
-          setUploadStateSynced({
-            status: "selected",
-            videoUrl,
-            fileName: file.name,
-          });
         }
+        setReadyState(videoUrl, video, file.name);
       };
 
       video.onerror = () => {
@@ -295,19 +305,10 @@ export function VideoAnalysisUpload({
         }
         if (isLift) {
           console.log(`[VideoUpload] onerror → selecting-seed (no metadata)`);
-          setUploadStateSynced({
-            status: "selecting-seed",
-            videoUrl,
-            videoElement: video,
-          });
         } else {
           console.log(`[VideoUpload] onerror → selected (no metadata)`);
-          setUploadStateSynced({
-            status: "selected",
-            videoUrl,
-            fileName: file.name,
-          });
         }
+        setReadyState(videoUrl, video, file.name);
       };
     },
     [isLift]

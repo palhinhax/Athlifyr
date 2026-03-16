@@ -10,6 +10,55 @@ import { NextResponse } from "next/server";
 import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 
+interface PlanUpdateInput {
+  name?: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  duration?: string | null;
+  difficulty?: string | null;
+  tags?: string[];
+  isTemplate?: boolean;
+  isPublic?: boolean;
+  isPremium?: boolean;
+  category?: string | null;
+  targetAudience?: string | null;
+  goals?: string[];
+  requirements?: string[];
+}
+
+function buildPlanUpdateData(body: PlanUpdateInput) {
+  const data: Record<string, unknown> = {};
+
+  if (body.name !== undefined) data.name = body.name.trim();
+  if (body.description !== undefined)
+    data.description = body.description?.trim() || null;
+
+  const nullableFields = [
+    "imageUrl",
+    "duration",
+    "difficulty",
+    "category",
+    "targetAudience",
+  ] as const;
+  for (const field of nullableFields) {
+    if (body[field] !== undefined) data[field] = body[field] || null;
+  }
+
+  const directFields = [
+    "tags",
+    "isTemplate",
+    "isPublic",
+    "isPremium",
+    "goals",
+    "requirements",
+  ] as const;
+  for (const field of directFields) {
+    if (body[field] !== undefined) data[field] = body[field];
+  }
+
+  return data;
+}
+
 // GET /api/training-plans/[id] - Get plan details
 export async function GET(
   request: Request,
@@ -123,43 +172,9 @@ export async function PATCH(
       );
     }
 
-    const {
-      name,
-      description,
-      imageUrl,
-      duration,
-      difficulty,
-      tags,
-      isTemplate,
-      isPublic,
-      isPremium,
-      category,
-      targetAudience,
-      goals,
-      requirements,
-    } = body;
-
     const plan = await prisma.trainingPlan.update({
       where: { id },
-      data: {
-        ...(name !== undefined && { name: name.trim() }),
-        ...(description !== undefined && {
-          description: description?.trim() || null,
-        }),
-        ...(imageUrl !== undefined && { imageUrl: imageUrl || null }),
-        ...(duration !== undefined && { duration: duration || null }),
-        ...(difficulty !== undefined && { difficulty: difficulty || null }),
-        ...(tags !== undefined && { tags }),
-        ...(isTemplate !== undefined && { isTemplate }),
-        ...(isPublic !== undefined && { isPublic }),
-        ...(isPremium !== undefined && { isPremium }),
-        ...(category !== undefined && { category: category || null }),
-        ...(targetAudience !== undefined && {
-          targetAudience: targetAudience || null,
-        }),
-        ...(goals !== undefined && { goals }),
-        ...(requirements !== undefined && { requirements }),
-      },
+      data: buildPlanUpdateData(body as PlanUpdateInput),
       include: {
         createdBy: {
           select: { id: true, name: true, image: true },

@@ -74,7 +74,7 @@ function useTabataTimer(isVisible: boolean) {
               setStatus("done");
               return 0;
             } else {
-              setCurrentRound((r) => r + 1);
+              setCurrentRound(currentRound + 1);
               setPhase("work");
               return workTime;
             }

@@ -148,6 +148,339 @@ interface ExternalAIAnalysis {
   safety_flags: string[];
 }
 
+// ── Helpers ────────────────────────────────────────────────────────────────
+
+const ALLOWED_VIDEO_TYPES = [
+  "video/mp4",
+  "video/quicktime",
+  "video/x-msvideo",
+  "video/x-matroska",
+  "video/webm",
+];
+
+const MAX_VIDEO_BYTES = 500 * 1024 * 1024; // 500 MB
+
+function validateVideoFile(
+  formData: FormData
+): NextResponse | { videoFile: File; seedX: string; seedY: string } {
+  const videoFile = formData.get("video");
+  if (!videoFile || !(videoFile instanceof File)) {
+    return NextResponse.json(
+      { error: "video file is required" },
+      { status: 400 }
+    );
+  }
+
+  if (!ALLOWED_VIDEO_TYPES.includes(videoFile.type)) {
+    return NextResponse.json(
+      { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
+      { status: 400 }
+    );
+  }
+
+  if (videoFile.size > MAX_VIDEO_BYTES) {
+    return NextResponse.json(
+      { error: "Video exceeds 500 MB limit" },
+      { status: 400 }
+    );
+  }
+
+  const seedX = formData.get("seed_x");
+  const seedY = formData.get("seed_y");
+  if (!seedX || !seedY) {
+    return NextResponse.json(
+      { error: "seed_x and seed_y are required" },
+      { status: 400 }
+    );
+  }
+
+  const seedXNum = Number(seedX);
+  const seedYNum = Number(seedY);
+  if (!Number.isFinite(seedXNum) || !Number.isFinite(seedYNum)) {
+    return NextResponse.json(
+      { error: "seed_x and seed_y must be valid numbers" },
+      { status: 400 }
+    );
+  }
+
+  return { videoFile, seedX: seedX.toString(), seedY: seedY.toString() };
+}
+
+async function trimAndTranscodeVideo(
+  videoFile: File,
+  formData: FormData
+): Promise<NextResponse | File> {
+  let finalVideoFile: File = videoFile;
+  const baseType = videoFile.type.split(";")[0].trim();
+
+  const trimStartRaw = formData.get("trim_start_sec");
+  const trimEndRaw = formData.get("trim_end_sec");
+  const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
+  const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
+
+  let didTrim = false;
+
+  if (
+    trimStartSec !== null &&
+    trimEndSec !== null &&
+    Number.isFinite(trimStartSec) &&
+    Number.isFinite(trimEndSec) &&
+    trimEndSec > trimStartSec
+  ) {
+    try {
+      const ext =
+        baseType === "video/webm"
+          ? ".webm"
+          : baseType === "video/quicktime"
+            ? ".mov"
+            : ".mp4";
+      console.log(
+        `[LiftAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
+      );
+      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+      const trimmedBuffer = await trimVideoStreamCopy(
+        inputBuffer,
+        trimStartSec,
+        trimEndSec,
+        ext
+      );
+      finalVideoFile = new File(
+        [new Uint8Array(trimmedBuffer)],
+        finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
+        { type: "video/mp4" }
+      );
+      didTrim = true;
+      console.log(
+        `[LiftAnalysis] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes (H.264 MP4)`
+      );
+    } catch (err) {
+      console.error("[LiftAnalysis] Trim failed:", err);
+    }
+  }
+
+  if (!didTrim && baseType === "video/webm") {
+    try {
+      console.log("[LiftAnalysis] WebM detected — transcoding to H.264 MP4...");
+      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+      const mp4Buffer = await transcodeToH264(inputBuffer);
+      finalVideoFile = new File(
+        [new Uint8Array(mp4Buffer)],
+        videoFile.name.replace(/\.[^.]+$/, ".mp4"),
+        { type: "video/mp4" }
+      );
+      console.log(
+        `[LiftAnalysis] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
+      );
+    } catch (err) {
+      const errMsg = err instanceof Error ? err.message : String(err);
+      console.error("[LiftAnalysis] Transcode failed:", errMsg);
+      const isOom =
+        errMsg.includes("OOM") ||
+        errMsg.includes("-9") ||
+        errMsg.includes("137");
+      return NextResponse.json(
+        {
+          error: isOom
+            ? "Video resolution is too high to process. Please record in 1080p or lower."
+            : "Failed to convert video. Please try uploading an MP4 file.",
+        },
+        { status: 400 }
+      );
+    }
+  }
+
+  return finalVideoFile;
+}
+
+async function resolveAiPermission(
+  formData: FormData,
+  externalFormData: FormData
+): Promise<boolean> {
+  const enableAi = formData.get("enable_ai");
+  if (enableAi?.toString() !== "true") return false;
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    console.log("[LiftAnalysis] AI requested but user not authenticated");
+    return false;
+  }
+
+  const rateCheck = await checkAiRateLimit(session.user.id);
+  if (!rateCheck.allowed) {
+    console.log(
+      `[LiftAnalysis] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`
+    );
+    return false;
+  }
+
+  externalFormData.append("enable_ai", "true");
+  console.log(`[LiftAnalysis] AI enabled for user ${session.user.id}`);
+  return true;
+}
+
+async function callRailwayWithRetry(
+  url: string,
+  body: FormData | string,
+  maxRetries: number,
+  headers?: Record<string, string>
+): Promise<NextResponse | Response> {
+  let response: Response | null = null;
+  let lastError: unknown = null;
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 270_000);
+
+    try {
+      console.log(`[LiftAnalysis] Attempt ${attempt}/${maxRetries} → ${url}`);
+      response = await fetch(url, {
+        method: "POST",
+        body,
+        signal: controller.signal,
+        ...(headers ? { headers } : {}),
+      });
+      clearTimeout(timeout);
+      break;
+    } catch (error) {
+      clearTimeout(timeout);
+      lastError = error;
+
+      if (error instanceof Error && error.name === "AbortError") {
+        return NextResponse.json(
+          { error: "Request timeout. Video processing took too long." },
+          { status: 504 }
+        );
+      }
+
+      const isConnReset =
+        error instanceof Error &&
+        ("cause" in error
+          ? (error.cause as NodeJS.ErrnoException)?.code === "ECONNRESET"
+          : error.message.includes("ECONNRESET"));
+
+      console.error(
+        `[LiftAnalysis] External API request failed (attempt ${attempt}/${maxRetries}):`,
+        error
+      );
+
+      if (!isConnReset || attempt === maxRetries) break;
+      await new Promise((resolve) => setTimeout(resolve, 2_000 * attempt));
+    }
+  }
+
+  if (!response) {
+    console.error("[LiftAnalysis] All attempts failed:", lastError);
+    return NextResponse.json(
+      { error: "Failed to connect to video processing service" },
+      { status: 503 }
+    );
+  }
+
+  return response;
+}
+
+function parseRailwayErrorResponse(
+  errorText: string,
+  status: number
+): NextResponse {
+  try {
+    const errorJson = JSON.parse(errorText);
+    let errorMessage: string;
+    if (Array.isArray(errorJson.detail)) {
+      errorMessage = errorJson.detail
+        .map((e: { msg?: string; loc?: string[] }) =>
+          e.loc
+            ? `${e.loc.join(".")} — ${e.msg}`
+            : (e.msg ?? "Validation error")
+        )
+        .join("; ");
+    } else {
+      errorMessage =
+        typeof errorJson.detail === "string"
+          ? errorJson.detail
+          : errorJson.error || "Processing failed";
+    }
+    return NextResponse.json({ error: errorMessage }, { status });
+  } catch {
+    return NextResponse.json(
+      { error: `Processing failed: ${errorText}` },
+      { status }
+    );
+  }
+}
+
+function transformSkeletonFrames(frames: ExternalSkeletonFrame[]) {
+  return frames.map((frame) => ({
+    frameWidth: frame.frame_width,
+    frameHeight: frame.frame_height,
+    landmarks: frame.landmarks.map((lm) => ({
+      name: lm.name,
+      index: lm.index,
+      x: lm.x,
+      y: lm.y,
+      z: lm.z,
+      visibility: lm.visibility,
+      pixelX: lm.pixel_x,
+      pixelY: lm.pixel_y,
+      worldX: lm.world_x,
+      worldY: lm.world_y,
+      worldZ: lm.world_z,
+    })),
+    bones: frame.bones.map((bone) => ({
+      startIndex: bone.start_index,
+      endIndex: bone.end_index,
+      startName: bone.start_name,
+      endName: bone.end_name,
+    })),
+  }));
+}
+
+function transformAiAnalysis(ai: ExternalAIAnalysis | null | undefined) {
+  if (!ai) return null;
+  return {
+    exercise: ai.exercise ?? null,
+    exerciseEn: ai.exercise_en ?? null,
+    confidence: ai.confidence ?? null,
+    totalReps: ai.total_reps ?? null,
+    durationSec: ai.duration_sec ?? null,
+    tempoAvgSec: ai.tempo_avg_sec ?? null,
+    overallScore: ai.overall_score ?? null,
+    overallNotes: ai.overall_notes ?? null,
+    reps: (ai.reps ?? []).map((rep) => ({
+      repNumber: rep.rep_number,
+      startFrame: rep.start_frame ?? null,
+      endFrame: rep.end_frame ?? null,
+      phaseEccentricFrames: rep.phase_eccentric_frames ?? null,
+      phaseConcentricFrames: rep.phase_concentric_frames ?? null,
+      minKneeAngle: rep.min_knee_angle ?? null,
+      minHipAngle: rep.min_hip_angle ?? null,
+      romDegrees: rep.rom_degrees ?? null,
+      formScore: rep.form_score ?? null,
+      notes: rep.notes ?? [],
+    })),
+    strengths: ai.strengths ?? [],
+    improvements: ai.improvements ?? [],
+    safetyFlags: ai.safety_flags ?? [],
+  };
+}
+
+function transformAverageAngles(angles: PoseAngles | undefined) {
+  if (!angles) return null;
+  return {
+    leftKnee: angles.left_knee ?? null,
+    rightKnee: angles.right_knee ?? null,
+    leftHip: angles.left_hip ?? null,
+    rightHip: angles.right_hip ?? null,
+    leftElbow: angles.left_elbow ?? null,
+    rightElbow: angles.right_elbow ?? null,
+    leftShoulder: angles.left_shoulder ?? null,
+    rightShoulder: angles.right_shoulder ?? null,
+    leftAnkle: angles.left_ankle ?? null,
+    rightAnkle: angles.right_ankle ?? null,
+    torsoInclination: angles.torso_inclination ?? angles.back_angle ?? null,
+  };
+}
+
 export async function POST(request: Request) {
   try {
     // ── Debug: Log incoming request details ─────────────────────────────────
@@ -179,14 +512,10 @@ export async function POST(request: Request) {
       );
     }
 
-    // ── Validate video file ────────────────────────────────────────────────
-    const videoFile = formData.get("video");
-    if (!videoFile || !(videoFile instanceof File)) {
-      return NextResponse.json(
-        { error: "video file is required" },
-        { status: 400 }
-      );
-    }
+    // ── Validate video file and seed coordinates ──────────────────────────
+    const validation = validateVideoFile(formData);
+    if (validation instanceof NextResponse) return validation;
+    const { videoFile, seedX, seedY } = validation;
 
     console.log("[LiftAnalysis] Received file:", {
       name: videoFile.name,
@@ -194,160 +523,18 @@ export async function POST(request: Request) {
       sizeMB: (videoFile.size / (1024 * 1024)).toFixed(2) + " MB",
     });
 
-    const allowedTypes = [
-      "video/mp4",
-      "video/quicktime",
-      "video/x-msvideo",
-      "video/x-matroska",
-      "video/webm",
-    ];
-    if (!allowedTypes.includes(videoFile.type)) {
-      return NextResponse.json(
-        { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
-        { status: 400 }
-      );
-    }
-
-    const maxBytes = 500 * 1024 * 1024; // 500 MB
-    if (videoFile.size > maxBytes) {
-      return NextResponse.json(
-        { error: "Video exceeds 500 MB limit" },
-        { status: 400 }
-      );
-    }
-
-    // ── Validate required parameters ───────────────────────────────────────
-    const seedX = formData.get("seed_x");
-    const seedY = formData.get("seed_y");
-
-    if (!seedX || !seedY) {
-      return NextResponse.json(
-        { error: "seed_x and seed_y are required" },
-        { status: 400 }
-      );
-    }
-
-    // Validate that seed coordinates are numbers
-    const seedXNum = Number(seedX);
-    const seedYNum = Number(seedY);
-    if (!Number.isFinite(seedXNum) || !Number.isFinite(seedYNum)) {
-      return NextResponse.json(
-        { error: "seed_x and seed_y must be valid numbers" },
-        { status: 400 }
-      );
-    }
-
-    // ── Transcode WebM → MP4 if needed ────────────────────────────────────
-    // MediaRecorder (client-side trim) always produces WebM/VP9. Railway's
-    // ffmpeg cannot reliably process canvas-captured WebM streams, so we
-    // transcode to H.264 MP4 on the server before forwarding.
-    let finalVideoFile: File = videoFile;
-    const baseType = videoFile.type.split(";")[0].trim();
-
-    // ── Server-side trim (optional) ───────────────────────────────────────
-    // Mobile clients send trim_start_sec + trim_end_sec so the server crops
-    // the clip before forwarding to Railway.
-    //
-    // trimVideoStreamCopy now does a frame-accurate re-encode with libx264
-    // (ultrafast) so the output always starts on a clean intra-frame and is
-    // already H.264 MP4 — no further transcode step needed after trimming.
-    const trimStartRaw = formData.get("trim_start_sec");
-    const trimEndRaw = formData.get("trim_end_sec");
-    const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
-    const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
-
-    let didTrim = false;
-
-    if (
-      trimStartSec !== null &&
-      trimEndSec !== null &&
-      Number.isFinite(trimStartSec) &&
-      Number.isFinite(trimEndSec) &&
-      trimEndSec > trimStartSec
-    ) {
-      try {
-        const ext =
-          baseType === "video/webm"
-            ? ".webm"
-            : baseType === "video/quicktime"
-              ? ".mov"
-              : ".mp4";
-        console.log(
-          `[LiftAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
-        );
-        const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
-        const trimmedBuffer = await trimVideoStreamCopy(
-          inputBuffer,
-          trimStartSec,
-          trimEndSec,
-          ext
-        );
-        // trimVideoStreamCopy now always outputs H.264 MP4
-        finalVideoFile = new File(
-          [new Uint8Array(trimmedBuffer)],
-          finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
-          { type: "video/mp4" }
-        );
-        didTrim = true;
-        console.log(
-          `[LiftAnalysis] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes (H.264 MP4)`
-        );
-      } catch (err) {
-        console.error("[LiftAnalysis] Trim failed:", err);
-        // Continue with untrimmed video — Railway will handle max_duration_sec
-      }
-    }
-
-    // ── Transcode WebM → MP4 if needed (only when no trim was done) ───────
-    // MediaRecorder (client-side) always produces WebM/VP9. If the clip was
-    // already trimmed above it is already H.264 MP4 — skip this block.
-    if (!didTrim && baseType === "video/webm") {
-      try {
-        console.log(
-          "[LiftAnalysis] WebM detected — transcoding to H.264 MP4..."
-        );
-        const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
-        const mp4Buffer = await transcodeToH264(inputBuffer);
-        finalVideoFile = new File(
-          [new Uint8Array(mp4Buffer)],
-          videoFile.name.replace(/\.[^.]+$/, ".mp4"),
-          { type: "video/mp4" }
-        );
-        console.log(
-          `[LiftAnalysis] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
-        );
-      } catch (err) {
-        const errMsg = err instanceof Error ? err.message : String(err);
-        console.error("[LiftAnalysis] Transcode failed:", errMsg);
-        const isOom =
-          errMsg.includes("OOM") ||
-          errMsg.includes("-9") ||
-          errMsg.includes("137");
-        return NextResponse.json(
-          {
-            error: isOom
-              ? "Video resolution is too high to process. Please record in 1080p or lower."
-              : "Failed to convert video. Please try uploading an MP4 file.",
-          },
-          { status: 400 }
-        );
-      }
-    }
+    // ── Trim and/or transcode video ───────────────────────────────────────
+    const videoResult = await trimAndTranscodeVideo(videoFile, formData);
+    if (videoResult instanceof NextResponse) return videoResult;
+    const finalVideoFile = videoResult;
 
     // ── Prepare form data for external API ────────────────────────────────
     const externalFormData = new FormData();
-
-    // Add video file — always supply an explicit filename so the multipart
-    // Content-Disposition header includes `filename=...`, which FastAPI
-    // requires to accept the upload (missing filename → 422).
     const safeFilename = finalVideoFile.name || "video.mp4";
     externalFormData.append("video", finalVideoFile, safeFilename);
+    externalFormData.append("seed_x", seedX);
+    externalFormData.append("seed_y", seedY);
 
-    // Add required parameters
-    externalFormData.append("seed_x", seedX.toString());
-    externalFormData.append("seed_y", seedY.toString());
-
-    // Add optional parameters with defaults
     const seedFrame = formData.get("seed_frame") || "0";
     const showAngles = formData.get("show_angles") || "true";
     const showBody = formData.get("show_body") || "true";
@@ -361,28 +548,9 @@ export async function POST(request: Request) {
     externalFormData.append("max_duration_sec", maxDurationSec.toString());
     externalFormData.append("auto_detect", autoDetect.toString());
 
-    // Forward AI parameters — enforce server-side rate limit (1 per 24h)
-    const enableAi = formData.get("enable_ai");
+    // ── AI rate limiting ──────────────────────────────────────────────────
+    const aiAllowed = await resolveAiPermission(formData, externalFormData);
     const language = formData.get("language");
-    let aiAllowed = false;
-
-    if (enableAi?.toString() === "true") {
-      const session = await auth();
-      if (session?.user?.id) {
-        const rateCheck = await checkAiRateLimit(session.user.id);
-        if (rateCheck.allowed) {
-          aiAllowed = true;
-          externalFormData.append("enable_ai", "true");
-          console.log(`[LiftAnalysis] AI enabled for user ${session.user.id}`);
-        } else {
-          console.log(
-            `[LiftAnalysis] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`
-          );
-        }
-      } else {
-        console.log("[LiftAnalysis] AI requested but user not authenticated");
-      }
-    }
     if (language) {
       externalFormData.append("language", language.toString());
     }
@@ -399,128 +567,34 @@ export async function POST(request: Request) {
     });
 
     // ── Call external API (with retry on ECONNRESET) ──────────────────────
-    const MAX_RETRIES = 2;
-    let response: Response | null = null;
-    let lastError: unknown = null;
-
-    // Debug: Log the size of the external form data being sent to Railway
-    console.log("[LiftAnalysis] External FormData prepared:", {
-      finalVideoSizeMB:
-        (finalVideoFile.size / (1024 * 1024)).toFixed(2) + " MB",
-      finalVideoSizeBytes: finalVideoFile.size,
-      finalVideoType: finalVideoFile.type,
-      finalVideoName: safeFilename,
-      targetUrl: `${BARBELL_API_URL}/analyze/full`,
-    });
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-      const controller = new AbortController();
-      // 4.5 minute timeout (slightly less than maxDuration)
-      const timeout = setTimeout(() => controller.abort(), 270_000);
-
-      try {
-        console.log(
-          `[LiftAnalysis] Attempt ${attempt}/${MAX_RETRIES} → ${BARBELL_API_URL}/analyze/full`
-        );
-        response = await fetch(`${BARBELL_API_URL}/analyze/full`, {
-          method: "POST",
-          body: externalFormData,
-          signal: controller.signal,
-        });
-        clearTimeout(timeout);
-        break; // success — exit retry loop
-      } catch (error) {
-        clearTimeout(timeout);
-        lastError = error;
-
-        const isConnReset =
-          error instanceof Error &&
-          ("cause" in error
-            ? (error.cause as NodeJS.ErrnoException)?.code === "ECONNRESET"
-            : error.message.includes("ECONNRESET"));
-
-        const isAbort = error instanceof Error && error.name === "AbortError";
-
-        if (isAbort) {
-          console.error("[LiftAnalysis] Request timed out on attempt", attempt);
-          return NextResponse.json(
-            { error: "Request timeout. Video processing took too long." },
-            { status: 504 }
-          );
-        }
-
-        console.error(
-          `[LiftAnalysis] External API request failed (attempt ${attempt}/${MAX_RETRIES}):`,
-          error
-        );
-
-        if (!isConnReset || attempt === MAX_RETRIES) {
-          break; // non-retryable error or max retries reached
-        }
-
-        // Brief back-off before retrying
-        await new Promise((resolve) => setTimeout(resolve, 2_000 * attempt));
-      }
-    }
-
-    if (!response) {
-      console.error("[LiftAnalysis] All attempts failed:", lastError);
-      return NextResponse.json(
-        { error: "Failed to connect to video processing service" },
-        { status: 503 }
-      );
-    }
+    const railwayResponse = await callRailwayWithRetry(
+      `${BARBELL_API_URL}/analyze/full`,
+      externalFormData,
+      2
+    );
+    if (railwayResponse instanceof NextResponse) return railwayResponse;
 
     // ── Parse response ─────────────────────────────────────────────────────
     console.log("[LiftAnalysis] ── Railway response ──", {
-      status: response.status,
-      statusText: response.statusText,
-      contentType: response.headers.get("content-type"),
-      contentLength: response.headers.get("content-length"),
-      server: response.headers.get("server"),
+      status: railwayResponse.status,
+      statusText: railwayResponse.statusText,
+      contentType: railwayResponse.headers.get("content-type"),
+      contentLength: railwayResponse.headers.get("content-length"),
+      server: railwayResponse.headers.get("server"),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
+    if (!railwayResponse.ok) {
+      const errorText = await railwayResponse.text();
       console.error(
         "[LiftAnalysis] External API error:",
-        response.status,
+        railwayResponse.status,
         errorText.substring(0, 500)
       );
-
-      try {
-        const errorJson = JSON.parse(errorText);
-        // FastAPI 422 returns { detail: [{ loc, msg, type }] } — flatten to a readable string
-        let errorMessage: string;
-        if (Array.isArray(errorJson.detail)) {
-          errorMessage = errorJson.detail
-            .map((e: { msg?: string; loc?: string[] }) =>
-              e.loc
-                ? `${e.loc.join(".")} — ${e.msg}`
-                : (e.msg ?? "Validation error")
-            )
-            .join("; ");
-        } else {
-          errorMessage =
-            typeof errorJson.detail === "string"
-              ? errorJson.detail
-              : errorJson.error || "Processing failed";
-        }
-        return NextResponse.json(
-          { error: errorMessage },
-          { status: response.status }
-        );
-      } catch {
-        return NextResponse.json(
-          { error: `Processing failed: ${errorText}` },
-          { status: response.status }
-        );
-      }
+      return parseRailwayErrorResponse(errorText, railwayResponse.status);
     }
 
-    const result: ExternalApiResponse = await response.json();
+    const result: ExternalApiResponse = await railwayResponse.json();
 
-    // ── Transform and return response ──────────────────────────────────────
     if (!result.success) {
       return NextResponse.json(
         { error: result.error || result.message || "Processing failed" },
@@ -528,72 +602,23 @@ export async function POST(request: Request) {
       );
     }
 
-    // Build full video URL if available
+    // ── Transform and return response ──────────────────────────────────────
     const videoUrl = result.video_url
       ? `${BARBELL_API_URL}${result.video_url}`
       : null;
 
-    // Transform skeleton_frames from snake_case to camelCase
-    const skeletonFrames = (result.skeleton_frames ?? []).map((frame) => ({
-      frameWidth: frame.frame_width,
-      frameHeight: frame.frame_height,
-      landmarks: frame.landmarks.map((lm) => ({
-        name: lm.name,
-        index: lm.index,
-        x: lm.x,
-        y: lm.y,
-        z: lm.z,
-        visibility: lm.visibility,
-        pixelX: lm.pixel_x,
-        pixelY: lm.pixel_y,
-        worldX: lm.world_x,
-        worldY: lm.world_y,
-        worldZ: lm.world_z,
-      })),
-      bones: frame.bones.map((bone) => ({
-        startIndex: bone.start_index,
-        endIndex: bone.end_index,
-        startName: bone.start_name,
-        endName: bone.end_name,
-      })),
-    }));
+    const skeletonFrames = transformSkeletonFrames(
+      result.skeleton_frames ?? []
+    );
+    const aiAnalysis = transformAiAnalysis(result.ai_analysis);
 
-    // Transform ai_analysis from snake_case to camelCase
     console.log("[LiftAnalysis] AI analysis from Railway:", {
-      hasAiAnalysis: !!result.ai_analysis,
+      hasAiAnalysis: !!aiAnalysis,
       exercise: result.ai_analysis?.exercise ?? null,
       overallScore: result.ai_analysis?.overall_score ?? null,
       totalReps: result.ai_analysis?.total_reps ?? null,
       repsCount: result.ai_analysis?.reps?.length ?? 0,
     });
-
-    const aiAnalysis = result.ai_analysis
-      ? {
-          exercise: result.ai_analysis.exercise ?? null,
-          exerciseEn: result.ai_analysis.exercise_en ?? null,
-          confidence: result.ai_analysis.confidence ?? null,
-          totalReps: result.ai_analysis.total_reps ?? null,
-          durationSec: result.ai_analysis.duration_sec ?? null,
-          tempoAvgSec: result.ai_analysis.tempo_avg_sec ?? null,
-          overallScore: result.ai_analysis.overall_score ?? null,
-          overallNotes: result.ai_analysis.overall_notes ?? null,
-          reps: (result.ai_analysis.reps ?? []).map((rep) => ({
-            repNumber: rep.rep_number,
-            startFrame: rep.start_frame ?? null,
-            endFrame: rep.end_frame ?? null,
-            phaseEccentricFrames: rep.phase_eccentric_frames ?? null,
-            phaseConcentricFrames: rep.phase_concentric_frames ?? null,
-            minKneeAngle: rep.min_knee_angle ?? null,
-            minHipAngle: rep.min_hip_angle ?? null,
-            romDegrees: rep.rom_degrees ?? null,
-            formScore: rep.form_score ?? null,
-            notes: rep.notes ?? [],
-          })),
-          strengths: result.ai_analysis.strengths ?? [],
-          improvements: result.ai_analysis.improvements ?? [],
-          safetyFlags: result.ai_analysis.safety_flags ?? [],
-        }
-      : null;
 
     // Record AI usage if AI was actually returned
     if (aiAnalysis && aiAllowed) {
@@ -627,24 +652,7 @@ export async function POST(request: Request) {
           framesWithPose: result.frames_with_pose,
           detectionRate: result.pose_detection_rate,
           durationSec: result.duration_sec,
-          averageAngles: result.average_angles
-            ? {
-                leftKnee: result.average_angles.left_knee ?? null,
-                rightKnee: result.average_angles.right_knee ?? null,
-                leftHip: result.average_angles.left_hip ?? null,
-                rightHip: result.average_angles.right_hip ?? null,
-                leftElbow: result.average_angles.left_elbow ?? null,
-                rightElbow: result.average_angles.right_elbow ?? null,
-                leftShoulder: result.average_angles.left_shoulder ?? null,
-                rightShoulder: result.average_angles.right_shoulder ?? null,
-                leftAnkle: result.average_angles.left_ankle ?? null,
-                rightAnkle: result.average_angles.right_ankle ?? null,
-                torsoInclination:
-                  result.average_angles.torso_inclination ??
-                  result.average_angles.back_angle ??
-                  null,
-              }
-            : null,
+          averageAngles: transformAverageAngles(result.average_angles),
         },
         skeletonFrames,
         aiAnalysis,

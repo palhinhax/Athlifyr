@@ -18,7 +18,7 @@ interface PageProps {
 }
 
 export async function generateMetadata({ params }: PageProps) {
-  const { slug, locale } = await params;
+  const { slug, locale } = params;
   const t = await getTranslations({ locale, namespace: "events.registration" });
 
   const event = await prisma.event.findUnique({
@@ -43,8 +43,8 @@ export default async function RegisterPage({
   params,
   searchParams,
 }: PageProps) {
-  const { slug, locale } = await params;
-  const { variant: variantId } = await searchParams;
+  const { slug, locale } = params;
+  const { variant: variantId } = searchParams;
   const session = await auth();
 
   if (!session?.user?.id) {

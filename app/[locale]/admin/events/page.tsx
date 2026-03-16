@@ -60,6 +60,7 @@ interface TriathlonSegment {
 }
 
 interface EventVariantForm {
+  id: string;
   name: string;
   distanceKm: string;
   startDate: string;
@@ -160,7 +161,13 @@ export default function AdminEventsPage() {
   });
 
   const [variants, setVariants] = useState<EventVariantForm[]>([
-    { name: "", distanceKm: "", startDate: "", startTime: "" },
+    {
+      id: crypto.randomUUID(),
+      name: "",
+      distanceKm: "",
+      startDate: "",
+      startTime: "",
+    },
   ]);
 
   // Check if user is admin
@@ -360,7 +367,13 @@ export default function AdminEventsPage() {
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
-      { name: "", distanceKm: "", startDate: "", startTime: "" },
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        distanceKm: "",
+        startDate: "",
+        startTime: "",
+      },
     ]);
   };
 
@@ -381,7 +394,15 @@ export default function AdminEventsPage() {
       externalUrl: "",
       stravaRouteEmbed: "",
     });
-    setVariants([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
+    setVariants([
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        distanceKm: "",
+        startDate: "",
+        startTime: "",
+      },
+    ]);
   };
 
   const handleCreate = async () => {

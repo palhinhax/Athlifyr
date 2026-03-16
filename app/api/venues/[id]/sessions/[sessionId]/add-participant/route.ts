@@ -3,6 +3,59 @@ import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { canManageSessions } from "@/lib/venues/authorization";
 
+async function createOrReactivateUserBooking(
+  sessionId: string,
+  venueId: string,
+  userId: string,
+  currentUserId: string
+): Promise<NextResponse> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, name: true, email: true },
+  });
+
+  if (!user) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  const existingBooking = await prisma.venueBooking.findFirst({
+    where: { sessionId, userId },
+  });
+
+  if (existingBooking?.status === "BOOKED") {
+    return NextResponse.json(
+      { error: "User already booked", reason: "ALREADY_BOOKED" },
+      { status: 400 }
+    );
+  }
+
+  if (existingBooking) {
+    const booking = await prisma.venueBooking.update({
+      where: { id: existingBooking.id },
+      data: {
+        status: "BOOKED",
+        addedByStaff: true,
+        addedByUserId: currentUserId,
+      },
+      include: { user: { select: { id: true, name: true, image: true } } },
+    });
+    return NextResponse.json(booking);
+  }
+
+  const booking = await prisma.venueBooking.create({
+    data: {
+      venueId,
+      sessionId,
+      userId,
+      status: "BOOKED",
+      addedByStaff: true,
+      addedByUserId: currentUserId,
+    },
+    include: { user: { select: { id: true, name: true, image: true } } },
+  });
+  return NextResponse.json(booking);
+}
+
 // POST - Add participant to session (owner/admin/coach only)
 export async function POST(
   request: Request,
@@ -69,67 +122,12 @@ export async function POST(
 
     // If userId provided, verify user exists and check for existing booking
     if (userId) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { id: true, name: true, email: true },
-      });
-
-      if (!user) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
-      }
-
-      // Check for existing booking
-      const existingBooking = await prisma.venueBooking.findFirst({
-        where: {
-          sessionId,
-          userId,
-        },
-      });
-
-      if (existingBooking) {
-        if (existingBooking.status === "BOOKED") {
-          return NextResponse.json(
-            { error: "User already booked", reason: "ALREADY_BOOKED" },
-            { status: 400 }
-          );
-        }
-
-        // Reactivate cancelled booking
-        const booking = await prisma.venueBooking.update({
-          where: { id: existingBooking.id },
-          data: {
-            status: "BOOKED",
-            addedByStaff: true,
-            addedByUserId: currentUserId,
-          },
-          include: {
-            user: {
-              select: { id: true, name: true, image: true },
-            },
-          },
-        });
-
-        return NextResponse.json(booking);
-      }
-
-      // Create new booking for existing user
-      const booking = await prisma.venueBooking.create({
-        data: {
-          venueId,
-          sessionId,
-          userId,
-          status: "BOOKED",
-          addedByStaff: true,
-          addedByUserId: currentUserId,
-        },
-        include: {
-          user: {
-            select: { id: true, name: true, image: true },
-          },
-        },
-      });
-
-      return NextResponse.json(booking);
+      return createOrReactivateUserBooking(
+        sessionId,
+        venueId,
+        userId,
+        currentUserId
+      );
     }
 
     // Guest booking (no user account)

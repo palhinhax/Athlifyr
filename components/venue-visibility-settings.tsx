@@ -133,8 +133,12 @@ export function VenueVisibilitySettings({
   };
 
   const hasChanges =
-    JSON.stringify(visibleTabs.sort()) !==
-    JSON.stringify((initialVisibleTabs || DEFAULT_VISIBLE_TABS).sort());
+    JSON.stringify([...visibleTabs].sort((a, b) => a.localeCompare(b))) !==
+    JSON.stringify(
+      [...(initialVisibleTabs || DEFAULT_VISIBLE_TABS)].sort((a, b) =>
+        a.localeCompare(b)
+      )
+    );
 
   // Allow owners and app admins to manage visibility settings
   const canManageVisibility = isOwner || isAppAdmin;

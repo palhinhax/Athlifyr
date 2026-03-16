@@ -781,6 +781,14 @@ export interface UserAnalysesParams {
   limit?: number;
 }
 
+function buildMotionAverageAngles(json: MotionAnalysisJsonSummary) {
+  if (!json.pose?.averageAngles && !json.metrics) return null;
+  return {
+    kneeFlexion: json.metrics?.kneeFlexionDeg ?? null,
+    torsoRange: json.metrics?.torsoRangeDeg ?? null,
+  };
+}
+
 export async function getUserAnalyses(
   userId: string,
   params: UserAnalysesParams
@@ -839,13 +847,7 @@ export async function getUserAnalyses(
         improvements: ai?.improvements ?? [],
         safetyFlags: ai?.safetyFlags ?? [],
         overallNotes: ai?.overallNotes ?? null,
-        averageAngles:
-          (json.pose?.averageAngles ?? json.metrics)
-            ? {
-                kneeFlexion: json.metrics?.kneeFlexionDeg ?? null,
-                torsoRange: json.metrics?.torsoRangeDeg ?? null,
-              }
-            : null,
+        averageAngles: buildMotionAverageAngles(json),
       });
     }
   }
@@ -923,21 +925,25 @@ const FEELING_LABELS: Record<number, string> = {
   5: "🤩 Excellent",
 };
 
-export async function getUserWorkoutHistory(
-  userId: string,
-  params: WorkoutHistoryParams
-): Promise<string> {
-  const period = params.period;
-  const limit = params.limit || 20;
+const PERIOD_LABELS: Record<string, string> = {
+  week: "this week",
+  last_week: "last week",
+  month: "this month",
+  last_month: "last month",
+  year: "this year",
+  all: "all time",
+};
 
-  // Calculate date range based on period
+function calculateDateRange(period: string | undefined): {
+  fromDate: Date | undefined;
+  toDate: Date | undefined;
+} {
   const now = new Date();
   let fromDate: Date | undefined;
   let toDate: Date | undefined;
 
   switch (period) {
     case "week": {
-      // Start of current week (Monday)
       const dayOfWeek = now.getDay();
       const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       fromDate = new Date(now);
@@ -946,17 +952,13 @@ export async function getUserWorkoutHistory(
       break;
     }
     case "last_week": {
-      // Previous week: Monday to Sunday
       const dayOfWeek = now.getDay();
       const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-      // This Monday
       const thisMonday = new Date(now);
       thisMonday.setDate(now.getDate() - diffToMonday);
       thisMonday.setHours(0, 0, 0, 0);
-      // Last Monday
       fromDate = new Date(thisMonday);
       fromDate.setDate(thisMonday.getDate() - 7);
-      // End of last week (this Monday 00:00 exclusive)
       toDate = thisMonday;
       break;
     }
@@ -973,17 +975,70 @@ export async function getUserWorkoutHistory(
       fromDate = new Date(now.getFullYear(), 0, 1);
       break;
     }
-    case "all": {
-      // No date filter — return stats only
-      fromDate = undefined;
-      break;
-    }
     default: {
-      // No period specified — return recent logs
       fromDate = undefined;
       break;
     }
   }
+
+  return { fromDate, toDate };
+}
+
+interface ExerciseResultSummary {
+  exercise: { name: string };
+  sets: Array<{
+    reps: number;
+    weight: number;
+    weightUnit: string | null;
+    isPR: boolean;
+  }>;
+  actualReps: number | null;
+  actualWeight: number | null;
+  actualWeightUnit: string | null;
+  actualDistance: number | null;
+  actualDistanceUnit: string | null;
+  actualTime: number | null;
+  actualCalories: number | null;
+  isPR: boolean;
+}
+
+function formatExerciseDetail(er: ExerciseResultSummary): string {
+  let detail = er.exercise.name;
+  const parts: string[] = [];
+  if (er.sets.length > 0) {
+    const setsSummary = er.sets
+      .map((s) => `${s.reps}×${s.weight}${s.weightUnit || "KG"}`)
+      .join(", ");
+    parts.push(setsSummary);
+  } else {
+    if (er.actualReps) parts.push(`${er.actualReps} reps`);
+    if (er.actualWeight)
+      parts.push(`${er.actualWeight}${er.actualWeightUnit || "KG"}`);
+    if (er.actualDistance)
+      parts.push(`${er.actualDistance}${er.actualDistanceUnit || "KM"}`);
+    if (er.actualTime) {
+      const mins = Math.floor(er.actualTime / 60);
+      const secs = er.actualTime % 60;
+      parts.push(
+        mins > 0 ? `${mins}m${secs > 0 ? `${secs}s` : ""}` : `${secs}s`
+      );
+    }
+    if (er.actualCalories) parts.push(`${er.actualCalories} cal`);
+  }
+  if (er.isPR) parts.push("🏆 PR!");
+  if (parts.length > 0) detail += ` (${parts.join(", ")})`;
+  return detail;
+}
+
+export async function getUserWorkoutHistory(
+  userId: string,
+  params: WorkoutHistoryParams
+): Promise<string> {
+  const period = params.period;
+  const limit = params.limit || 20;
+
+  // Calculate date range based on period
+  const { fromDate, toDate } = calculateDateRange(period);
 
   const dateFilter: Record<string, unknown> = {};
   if (fromDate || toDate) {
@@ -1071,18 +1126,7 @@ export async function getUserWorkoutHistory(
   });
 
   if (totalCount === 0) {
-    const periodLabel =
-      period === "week"
-        ? "this week"
-        : period === "last_week"
-          ? "last week"
-          : period === "month"
-            ? "this month"
-            : period === "last_month"
-              ? "last month"
-              : period === "year"
-                ? "this year"
-                : "";
+    const periodLabel = PERIOD_LABELS[period ?? ""] ?? "";
     return `No workout logs found${periodLabel ? ` for ${periodLabel}` : ""}. The user hasn't logged any workouts${periodLabel ? ` ${periodLabel}` : " yet"}.`;
   }
 
@@ -1133,31 +1177,7 @@ export async function getUserWorkoutHistory(
     const exercisesList: string[] = [];
     for (const br of log.blockResults) {
       for (const er of br.exerciseResults) {
-        let detail = er.exercise.name;
-        const parts: string[] = [];
-        if (er.sets.length > 0) {
-          const setsSummary = er.sets
-            .map((s) => `${s.reps}×${s.weight}${s.weightUnit || "KG"}`)
-            .join(", ");
-          parts.push(setsSummary);
-        } else {
-          if (er.actualReps) parts.push(`${er.actualReps} reps`);
-          if (er.actualWeight)
-            parts.push(`${er.actualWeight}${er.actualWeightUnit || "KG"}`);
-          if (er.actualDistance)
-            parts.push(`${er.actualDistance}${er.actualDistanceUnit || "KM"}`);
-          if (er.actualTime) {
-            const mins = Math.floor(er.actualTime / 60);
-            const secs = er.actualTime % 60;
-            parts.push(
-              mins > 0 ? `${mins}m${secs > 0 ? `${secs}s` : ""}` : `${secs}s`
-            );
-          }
-          if (er.actualCalories) parts.push(`${er.actualCalories} cal`);
-        }
-        if (er.isPR) parts.push("🏆 PR!");
-        if (parts.length > 0) detail += ` (${parts.join(", ")})`;
-        exercisesList.push(detail);
+        exercisesList.push(formatExerciseDetail(er));
       }
     }
 
@@ -1176,20 +1196,7 @@ export async function getUserWorkoutHistory(
     };
   });
 
-  const periodLabel =
-    period === "week"
-      ? "this week"
-      : period === "last_week"
-        ? "last week"
-        : period === "month"
-          ? "this month"
-          : period === "last_month"
-            ? "last month"
-            : period === "year"
-              ? "this year"
-              : period === "all"
-                ? "all time"
-                : "recent";
+  const periodLabel = PERIOD_LABELS[period ?? ""] ?? "recent";
 
   return JSON.stringify({
     period: periodLabel,
@@ -1506,6 +1513,21 @@ export async function getUserBookings(
 // User Performance / Personal Records (PRs)
 // ============================================================================
 
+/**
+ * Format total seconds into a human-readable duration string.
+ * Returns null if the input is null or 0.
+ */
+function formatSecondsToTime(totalSeconds: number | null): string | null {
+  if (!totalSeconds) return null;
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  if (hours > 0) {
+    return `${hours}h${String(minutes).padStart(2, "0")}m${String(seconds).padStart(2, "0")}s`;
+  }
+  return `${minutes}m${String(seconds).padStart(2, "0")}s`;
+}
+
 export interface UserPRsParams {
   exerciseName?: string;
   category?: string;
@@ -1551,17 +1573,7 @@ export async function getUserPRs(
     }
 
     const formatted = runEntries.map((e) => {
-      const hours = e.timeSeconds ? Math.floor(e.timeSeconds / 3600) : null;
-      const minutes = e.timeSeconds
-        ? Math.floor((e.timeSeconds % 3600) / 60)
-        : null;
-      const seconds = e.timeSeconds ? e.timeSeconds % 60 : null;
-      const timeFormatted =
-        hours != null && minutes != null && seconds != null
-          ? hours > 0
-            ? `${hours}h${String(minutes).padStart(2, "0")}m${String(seconds).padStart(2, "0")}s`
-            : `${minutes}m${String(seconds).padStart(2, "0")}s`
-          : null;
+      const timeFormatted = formatSecondsToTime(e.timeSeconds);
 
       const pacePerKm =
         e.distanceKm && e.timeSeconds
@@ -1634,19 +1646,9 @@ export async function getUserPRs(
     }
 
     const formatted = hyroxEntries.map((e) => {
-      const hours = e.timeSeconds ? Math.floor(e.timeSeconds / 3600) : null;
-      const minutes = e.timeSeconds
-        ? Math.floor((e.timeSeconds % 3600) / 60)
-        : null;
-      const seconds = e.timeSeconds ? e.timeSeconds % 60 : null;
-      const timeFormatted =
-        hours != null && minutes != null && seconds != null
-          ? `${hours}h${String(minutes).padStart(2, "0")}m${String(seconds).padStart(2, "0")}s`
-          : null;
-
       return {
         date: e.performedAt.toISOString().split("T")[0],
-        time: timeFormatted,
+        time: formatSecondsToTime(e.timeSeconds),
         timeSeconds: e.timeSeconds,
         category: e.hyroxCategory,
         eventName: e.eventName,
@@ -1843,29 +1845,15 @@ export async function getUserPRs(
     take: 10,
   });
 
-  const runRecords = runEntries.map((e) => {
-    const hours = e.timeSeconds ? Math.floor(e.timeSeconds / 3600) : null;
-    const minutes = e.timeSeconds
-      ? Math.floor((e.timeSeconds % 3600) / 60)
-      : null;
-    const seconds = e.timeSeconds ? e.timeSeconds % 60 : null;
-    const timeFormatted =
-      hours != null && minutes != null && seconds != null
-        ? hours > 0
-          ? `${hours}h${String(minutes).padStart(2, "0")}m${String(seconds).padStart(2, "0")}s`
-          : `${minutes}m${String(seconds).padStart(2, "0")}s`
-        : null;
-
-    return {
-      type: e.type,
-      date: e.performedAt.toISOString().split("T")[0],
-      distanceKm: e.distanceKm,
-      time: timeFormatted,
-      elevationGainM: e.elevationGainM,
-      eventName: e.eventName,
-      location: e.location,
-    };
-  });
+  const runRecords = runEntries.map((e) => ({
+    type: e.type,
+    date: e.performedAt.toISOString().split("T")[0],
+    distanceKm: e.distanceKm,
+    time: formatSecondsToTime(e.timeSeconds),
+    elevationGainM: e.elevationGainM,
+    eventName: e.eventName,
+    location: e.location,
+  }));
 
   // Get HYROX entries
   const hyroxEntries = await prisma.userPerformanceEntry.findMany({
@@ -1877,25 +1865,13 @@ export async function getUserPRs(
     take: 5,
   });
 
-  const hyroxRecords = hyroxEntries.map((e) => {
-    const hours = e.timeSeconds ? Math.floor(e.timeSeconds / 3600) : null;
-    const minutes = e.timeSeconds
-      ? Math.floor((e.timeSeconds % 3600) / 60)
-      : null;
-    const seconds = e.timeSeconds ? e.timeSeconds % 60 : null;
-    const timeFormatted =
-      hours != null && minutes != null && seconds != null
-        ? `${hours}h${String(minutes).padStart(2, "0")}m${String(seconds).padStart(2, "0")}s`
-        : null;
-
-    return {
-      date: e.performedAt.toISOString().split("T")[0],
-      time: timeFormatted,
-      category: e.hyroxCategory,
-      eventName: e.eventName,
-      location: e.location,
-    };
-  });
+  const hyroxRecords = hyroxEntries.map((e) => ({
+    date: e.performedAt.toISOString().split("T")[0],
+    time: formatSecondsToTime(e.timeSeconds),
+    category: e.hyroxCategory,
+    eventName: e.eventName,
+    location: e.location,
+  }));
 
   if (
     strengthPRs.length === 0 &&
@@ -1941,6 +1917,97 @@ export interface LogPerformanceParams {
   date?: string; // ISO date string, defaults to now
 }
 
+async function logStrengthEntry(
+  userId: string,
+  params: LogPerformanceParams,
+  performedAt: Date
+): Promise<string> {
+  if (!params.exerciseName) {
+    return JSON.stringify({
+      error: true,
+      message:
+        "Exercise name is required for STRENGTH entries. Please specify the exercise (e.g. 'Deadlift', 'Back Squat', 'Bench Press').",
+    });
+  }
+  if (!params.weightKg || params.weightKg <= 0) {
+    return JSON.stringify({
+      error: true,
+      message:
+        "Weight in kg is required for STRENGTH entries. Please specify the weight (e.g. 100).",
+    });
+  }
+
+  const exercise = await prisma.exercise.findFirst({
+    where: {
+      OR: [
+        { name: { equals: params.exerciseName, mode: "insensitive" } },
+        { aliases: { has: params.exerciseName } },
+        {
+          aliases: {
+            has: params.exerciseName.toLowerCase(),
+          },
+        },
+      ],
+    },
+  });
+
+  if (!exercise) {
+    return JSON.stringify({
+      error: true,
+      message: `Exercise "${params.exerciseName}" not found. Try common names like "Deadlift", "Back Squat", "Bench Press", "Overhead Press", "Clean", "Snatch", etc.`,
+    });
+  }
+
+  const bestEntry = await prisma.userPerformanceEntry.findFirst({
+    where: {
+      userId,
+      type: "STRENGTH",
+      exerciseId: exercise.id,
+      weightKg: { not: null },
+    },
+    orderBy: { weightKg: "desc" },
+  });
+
+  const currentBestE1rm = bestEntry
+    ? (bestEntry.weightKg ?? 0) * (1 + (bestEntry.reps ?? 1) / 30)
+    : 0;
+  const newE1rm = params.weightKg * (1 + (params.reps ?? 1) / 30);
+  const isNewPR = newE1rm > currentBestE1rm;
+
+  const entry = await prisma.userPerformanceEntry.create({
+    data: {
+      userId,
+      type: "STRENGTH",
+      exerciseId: exercise.id,
+      weightKg: params.weightKg,
+      reps: params.reps ?? 1,
+      performedAt,
+      qualityScore: 0.5,
+      predictionWeight: 0.5,
+    },
+  });
+
+  return JSON.stringify({
+    success: true,
+    entryId: entry.id,
+    exercise: exercise.name,
+    weightKg: params.weightKg,
+    reps: params.reps ?? 1,
+    isNewPR,
+    previousBest: bestEntry
+      ? {
+          weightKg: bestEntry.weightKg,
+          reps: bestEntry.reps,
+          date: bestEntry.performedAt.toISOString().split("T")[0],
+        }
+      : null,
+    date: performedAt.toISOString().split("T")[0],
+    message: isNewPR
+      ? `🏆 NEW PR! ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps!`
+      : `✅ Recorded ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps.`,
+  });
+}
+
 /**
  * Log a performance entry (strength PR, run time, trail time) directly.
  * This allows users to say "I just did 100kg deadlift for 3 reps" and have it
@@ -1956,93 +2023,7 @@ export async function logPerformanceEntry(
 
   // ── STRENGTH ──────────────────────────────────────────────────────────
   if (type === "STRENGTH") {
-    if (!params.exerciseName) {
-      return JSON.stringify({
-        error: true,
-        message:
-          "Exercise name is required for STRENGTH entries. Please specify the exercise (e.g. 'Deadlift', 'Back Squat', 'Bench Press').",
-      });
-    }
-    if (!params.weightKg || params.weightKg <= 0) {
-      return JSON.stringify({
-        error: true,
-        message:
-          "Weight in kg is required for STRENGTH entries. Please specify the weight (e.g. 100).",
-      });
-    }
-
-    // Find the exercise by name (case-insensitive, also check aliases)
-    const exercise = await prisma.exercise.findFirst({
-      where: {
-        OR: [
-          { name: { equals: params.exerciseName, mode: "insensitive" } },
-          { aliases: { has: params.exerciseName } },
-          {
-            aliases: {
-              has: params.exerciseName.toLowerCase(),
-            },
-          },
-        ],
-      },
-    });
-
-    if (!exercise) {
-      return JSON.stringify({
-        error: true,
-        message: `Exercise "${params.exerciseName}" not found. Try common names like "Deadlift", "Back Squat", "Bench Press", "Overhead Press", "Clean", "Snatch", etc.`,
-      });
-    }
-
-    // Check if this beats the current PR
-    const bestEntry = await prisma.userPerformanceEntry.findFirst({
-      where: {
-        userId,
-        type: "STRENGTH",
-        exerciseId: exercise.id,
-        weightKg: { not: null },
-      },
-      orderBy: { weightKg: "desc" },
-    });
-
-    const currentBestE1rm = bestEntry
-      ? (bestEntry.weightKg ?? 0) * (1 + (bestEntry.reps ?? 1) / 30)
-      : 0;
-    const newE1rm = params.weightKg * (1 + (params.reps ?? 1) / 30);
-    const isNewPR = newE1rm > currentBestE1rm;
-
-    // Create the entry
-    const entry = await prisma.userPerformanceEntry.create({
-      data: {
-        userId,
-        type: "STRENGTH",
-        exerciseId: exercise.id,
-        weightKg: params.weightKg,
-        reps: params.reps ?? 1,
-        performedAt,
-        qualityScore: 0.5,
-        predictionWeight: 0.5,
-      },
-    });
-
-    return JSON.stringify({
-      success: true,
-      entryId: entry.id,
-      exercise: exercise.name,
-      weightKg: params.weightKg,
-      reps: params.reps ?? 1,
-      isNewPR,
-      previousBest: bestEntry
-        ? {
-            weightKg: bestEntry.weightKg,
-            reps: bestEntry.reps,
-            date: bestEntry.performedAt.toISOString().split("T")[0],
-          }
-        : null,
-      date: performedAt.toISOString().split("T")[0],
-      message: isNewPR
-        ? `🏆 NEW PR! ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps!`
-        : `✅ Recorded ${exercise.name}: ${params.weightKg}kg × ${params.reps ?? 1} reps.`,
-    });
+    return logStrengthEntry(userId, params, performedAt);
   }
 
   // ── RUN / TRAIL ───────────────────────────────────────────────────────
@@ -2071,17 +2052,7 @@ export async function logPerformanceEntry(
       },
     });
 
-    // Format time nicely
-    let timeStr = "";
-    if (params.timeSeconds) {
-      const h = Math.floor(params.timeSeconds / 3600);
-      const m = Math.floor((params.timeSeconds % 3600) / 60);
-      const s = params.timeSeconds % 60;
-      timeStr =
-        h > 0
-          ? `${h}h${m.toString().padStart(2, "0")}m${s.toString().padStart(2, "0")}s`
-          : `${m}m${s.toString().padStart(2, "0")}s`;
-    }
+    const timeStr = formatSecondsToTime(params.timeSeconds ?? null) ?? "";
 
     return JSON.stringify({
       success: true,
@@ -2687,6 +2658,91 @@ function mapBlockType(
   return mapping[type.toUpperCase()] || "FOR_TIME";
 }
 
+function resolveWeightUnit(
+  exInput: PlanExerciseInput
+): "LB" | "KG" | undefined {
+  if (exInput.weightUnit === "LB") return "LB";
+  return exInput.weight ? "KG" : undefined;
+}
+
+function resolveDistanceUnit(
+  exInput: PlanExerciseInput
+): "MI" | "M" | "KM" | undefined {
+  if (exInput.distanceUnit === "MI") return "MI";
+  if (exInput.distanceUnit === "M") return "M";
+  return exInput.distance ? "KM" : undefined;
+}
+
+async function resolveAndCreateBlock(
+  workoutId: string,
+  blockInput: PlanBlockInput,
+  startOrderIndex: number
+): Promise<{ created: boolean; exerciseCount: number }> {
+  const resolvedExercises: Array<{
+    input: PlanExerciseInput;
+    exerciseId: string;
+  }> = [];
+
+  for (const exInput of blockInput.exercises) {
+    const exerciseId = await findExercise(exInput.name);
+
+    if (!exerciseId) {
+      console.warn(
+        `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
+      );
+      continue;
+    }
+
+    resolvedExercises.push({ input: exInput, exerciseId });
+  }
+
+  if (
+    resolvedExercises.length === 0 &&
+    blockInput.type.toUpperCase() !== "REST"
+  ) {
+    console.warn(
+      `[Athli] Skipping empty block "${blockInput.name || blockInput.type}" — no exercises matched`
+    );
+    return { created: false, exerciseCount: 0 };
+  }
+
+  const block = await prisma.workoutBlock.create({
+    data: {
+      workoutId,
+      type: mapBlockType(blockInput.type),
+      name: blockInput.name,
+      orderIndex: startOrderIndex,
+      rounds: blockInput.rounds,
+      timeCap: blockInput.timeCap,
+      workTime: blockInput.workTime,
+      notes: blockInput.notes,
+    },
+  });
+
+  for (let ei = 0; ei < resolvedExercises.length; ei++) {
+    const { input: exInput, exerciseId } = resolvedExercises[ei];
+
+    await prisma.workoutBlockExercise.create({
+      data: {
+        blockId: block.id,
+        exerciseId,
+        orderIndex: ei,
+        prescribedReps: exInput.reps,
+        prescribedWeight: exInput.weight,
+        prescribedWeightUnit: resolveWeightUnit(exInput),
+        prescribedDistance: exInput.distance,
+        prescribedDistanceUnit: resolveDistanceUnit(exInput),
+        prescribedTime: exInput.time,
+        prescribedCalories: exInput.calories,
+        prescribedSets: exInput.sets,
+        notes: exInput.notes,
+      },
+    });
+  }
+
+  return { created: true, exerciseCount: resolvedExercises.length };
+}
+
 export async function saveTrainingPlan(
   params: SaveTrainingPlanParams,
   userId: string
@@ -2742,83 +2798,13 @@ export async function saveTrainingPlan(
       // 4. Create blocks for this workout
       let blockOrderIndex = 0;
       for (let bi = 0; bi < workoutInput.blocks.length; bi++) {
-        const blockInput = workoutInput.blocks[bi];
-
-        // Pre-resolve exercises before creating the block
-        const resolvedExercises: Array<{
-          input: PlanExerciseInput;
-          exerciseId: string;
-        }> = [];
-
-        for (const exInput of blockInput.exercises) {
-          const exerciseId = await findExercise(exInput.name);
-
-          if (!exerciseId) {
-            console.warn(
-              `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
-            );
-            continue;
-          }
-
-          resolvedExercises.push({ input: exInput, exerciseId });
-        }
-
-        // Skip block if no exercises were resolved (REST blocks are kept)
-        if (
-          resolvedExercises.length === 0 &&
-          blockInput.type.toUpperCase() !== "REST"
-        ) {
-          console.warn(
-            `[Athli] Skipping empty block "${blockInput.name || blockInput.type}" — no exercises matched`
-          );
-          continue;
-        }
-
-        const block = await prisma.workoutBlock.create({
-          data: {
-            workoutId: workout.id,
-            type: mapBlockType(blockInput.type),
-            name: blockInput.name,
-            orderIndex: blockOrderIndex++,
-            rounds: blockInput.rounds,
-            timeCap: blockInput.timeCap,
-            workTime: blockInput.workTime,
-            notes: blockInput.notes,
-          },
-        });
-
-        // 5. Create exercises for this block
-        for (let ei = 0; ei < resolvedExercises.length; ei++) {
-          const { input: exInput, exerciseId } = resolvedExercises[ei];
-
-          await prisma.workoutBlockExercise.create({
-            data: {
-              blockId: block.id,
-              exerciseId,
-              orderIndex: ei,
-              prescribedReps: exInput.reps,
-              prescribedWeight: exInput.weight,
-              prescribedWeightUnit:
-                exInput.weightUnit === "LB"
-                  ? "LB"
-                  : exInput.weight
-                    ? "KG"
-                    : undefined,
-              prescribedDistance: exInput.distance,
-              prescribedDistanceUnit:
-                exInput.distanceUnit === "MI"
-                  ? "MI"
-                  : exInput.distanceUnit === "M"
-                    ? "M"
-                    : exInput.distance
-                      ? "KM"
-                      : undefined,
-              prescribedTime: exInput.time,
-              prescribedCalories: exInput.calories,
-              prescribedSets: exInput.sets,
-              notes: exInput.notes,
-            },
-          });
+        const result = await resolveAndCreateBlock(
+          workout.id,
+          workoutInput.blocks[bi],
+          blockOrderIndex
+        );
+        if (result.created) {
+          blockOrderIndex++;
         }
       }
 
@@ -2910,86 +2896,15 @@ export async function saveWorkout(
   let blockOrderIndex = 0;
 
   for (let bi = 0; bi < params.blocks.length; bi++) {
-    const blockInput = params.blocks[bi];
-
-    // Pre-resolve exercises before creating the block
-    const resolvedExercises: Array<{
-      input: PlanExerciseInput;
-      exerciseId: string;
-    }> = [];
-
-    for (const exInput of blockInput.exercises) {
-      const exerciseId = await findExercise(exInput.name);
-
-      if (!exerciseId) {
-        console.warn(
-          `[Athli] Skipping unknown exercise: "${exInput.name}" — not found in database`
-        );
-        continue;
-      }
-
-      resolvedExercises.push({ input: exInput, exerciseId });
+    const result = await resolveAndCreateBlock(
+      workout.id,
+      params.blocks[bi],
+      blockOrderIndex
+    );
+    if (result.created) {
+      blockOrderIndex++;
     }
-
-    // Skip block if no exercises were resolved (REST blocks are kept)
-    if (
-      resolvedExercises.length === 0 &&
-      blockInput.type.toUpperCase() !== "REST"
-    ) {
-      console.warn(
-        `[Athli] Skipping empty block "${blockInput.name || blockInput.type}" — no exercises matched`
-      );
-      continue;
-    }
-
-    const block = await prisma.workoutBlock.create({
-      data: {
-        workoutId: workout.id,
-        type: mapBlockType(blockInput.type),
-        name: blockInput.name,
-        orderIndex: blockOrderIndex++,
-        rounds: blockInput.rounds,
-        timeCap: blockInput.timeCap,
-        workTime: blockInput.workTime,
-        notes: blockInput.notes,
-      },
-    });
-
-    // 3. Create exercises for this block
-    for (let ei = 0; ei < resolvedExercises.length; ei++) {
-      const { input: exInput, exerciseId } = resolvedExercises[ei];
-
-      await prisma.workoutBlockExercise.create({
-        data: {
-          blockId: block.id,
-          exerciseId,
-          orderIndex: ei,
-          prescribedReps: exInput.reps,
-          prescribedWeight: exInput.weight,
-          prescribedWeightUnit:
-            exInput.weightUnit === "LB"
-              ? "LB"
-              : exInput.weight
-                ? "KG"
-                : undefined,
-          prescribedDistance: exInput.distance,
-          prescribedDistanceUnit:
-            exInput.distanceUnit === "MI"
-              ? "MI"
-              : exInput.distanceUnit === "M"
-                ? "M"
-                : exInput.distance
-                  ? "KM"
-                  : undefined,
-          prescribedTime: exInput.time,
-          prescribedCalories: exInput.calories,
-          prescribedSets: exInput.sets,
-          notes: exInput.notes,
-        },
-      });
-    }
-
-    totalExercises += resolvedExercises.length;
+    totalExercises += result.exerciseCount;
   }
 
   // If no exercises were added and no blocks were created, clean up and return error.

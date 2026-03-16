@@ -7,6 +7,80 @@ interface RouteParams {
   params: Promise<{ id: string }>;
 }
 
+interface GiveawayPatchBody {
+  drawAt?: string | null;
+  prizeCount?: number;
+  status?: GiveawayStatus;
+  platform?: GiveawayPlatform;
+  secretHash?: string | null;
+  secretRevealed?: string | null;
+  translations?: Array<{ lang: Language; title: string; details: string }>;
+}
+
+const VALID_TRANSITIONS: Record<GiveawayStatus, GiveawayStatus[]> = {
+  DRAFT: [GiveawayStatus.SCHEDULED, GiveawayStatus.CANCELLED],
+  SCHEDULED: [GiveawayStatus.DRAWING, GiveawayStatus.CANCELLED],
+  DRAWING: [GiveawayStatus.DRAWN],
+  DRAWN: [],
+  CANCELLED: [],
+};
+
+function validateGiveawayPatch(
+  existing: { status: GiveawayStatus },
+  body: GiveawayPatchBody
+): string | null {
+  const { drawAt, prizeCount, status, platform, secretHash } = body;
+
+  // Validate status transition
+  if (status !== undefined && status !== existing.status) {
+    const allowed = VALID_TRANSITIONS[existing.status] ?? [];
+    if (!allowed.includes(status)) {
+      return `Invalid status transition: ${existing.status} → ${status}`;
+    }
+  }
+
+  // Only DRAFT giveaways can have core fields edited
+  if (
+    existing.status !== GiveawayStatus.DRAFT &&
+    (drawAt !== undefined || prizeCount !== undefined || platform !== undefined)
+  ) {
+    return "Cannot edit core fields after the giveaway leaves DRAFT status";
+  }
+
+  // Terminal states
+  if (existing.status === GiveawayStatus.CANCELLED) {
+    return "Cannot modify a cancelled giveaway";
+  }
+
+  if (
+    existing.status === GiveawayStatus.DRAWN &&
+    (drawAt !== undefined ||
+      prizeCount !== undefined ||
+      secretHash !== undefined)
+  ) {
+    return "Cannot edit core fields after DRAWN";
+  }
+
+  if (prizeCount !== undefined && prizeCount < 1) {
+    return "prizeCount must be at least 1";
+  }
+
+  return null;
+}
+
+function buildGiveawayUpdateData(body: GiveawayPatchBody) {
+  const data: Record<string, unknown> = {};
+  if (body.drawAt !== undefined)
+    data.drawAt = body.drawAt ? new Date(body.drawAt) : null;
+  if (body.prizeCount !== undefined) data.prizeCount = body.prizeCount;
+  if (body.status !== undefined) data.status = body.status;
+  if (body.platform !== undefined) data.platform = body.platform;
+  if (body.secretHash !== undefined) data.secretHash = body.secretHash;
+  if (body.secretRevealed !== undefined)
+    data.secretRevealed = body.secretRevealed;
+  return data;
+}
+
 // GET - Get giveaway detail
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
@@ -60,24 +134,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     }
 
     const { id } = await params;
-    const body = await request.json();
-    const {
-      drawAt,
-      prizeCount,
-      status,
-      platform,
-      translations,
-      secretHash,
-      secretRevealed,
-    } = body as {
-      drawAt?: string | null;
-      prizeCount?: number;
-      status?: GiveawayStatus;
-      platform?: GiveawayPlatform;
-      secretHash?: string | null;
-      secretRevealed?: string | null;
-      translations?: Array<{ lang: Language; title: string; details: string }>;
-    };
+    const body = (await request.json()) as GiveawayPatchBody;
 
     const existing = await prisma.giveaway.findUnique({ where: { id } });
     if (!existing) {
@@ -87,99 +144,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // ── State transition validation ──
-    // Valid transitions:
-    //   DRAFT     → SCHEDULED, CANCELLED
-    //   SCHEDULED → DRAWING, CANCELLED
-    //   DRAWING   → DRAWN
-    //   DRAWN     → (no status change allowed)
-    //   CANCELLED → (terminal state)
-    const VALID_TRANSITIONS: Record<GiveawayStatus, GiveawayStatus[]> = {
-      DRAFT: [GiveawayStatus.SCHEDULED, GiveawayStatus.CANCELLED],
-      SCHEDULED: [GiveawayStatus.DRAWING, GiveawayStatus.CANCELLED],
-      DRAWING: [GiveawayStatus.DRAWN],
-      DRAWN: [],
-      CANCELLED: [],
-    };
-
-    if (status !== undefined && status !== existing.status) {
-      const allowed = VALID_TRANSITIONS[existing.status] ?? [];
-      if (!allowed.includes(status)) {
-        return NextResponse.json(
-          {
-            error: `Invalid status transition: ${existing.status} → ${status}`,
-          },
-          { status: 400 }
-        );
-      }
+    const validationError = validateGiveawayPatch(existing, body);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
-
-    // Only DRAFT giveaways can have core fields edited (event, prizeCount, drawAt, platform)
-    if (
-      existing.status !== GiveawayStatus.DRAFT &&
-      (drawAt !== undefined ||
-        prizeCount !== undefined ||
-        platform !== undefined)
-    ) {
-      return NextResponse.json(
-        {
-          error:
-            "Cannot edit core fields after the giveaway leaves DRAFT status",
-        },
-        { status: 400 }
-      );
-    }
-
-    // CANCELLED and DRAWN are terminal — only allow secretRevealed on DRAWN
-    if (existing.status === GiveawayStatus.CANCELLED) {
-      return NextResponse.json(
-        { error: "Cannot modify a cancelled giveaway" },
-        { status: 400 }
-      );
-    }
-
-    if (existing.status === GiveawayStatus.DRAWN) {
-      // Only allow revealing the secret and updating translations
-      if (
-        drawAt !== undefined ||
-        prizeCount !== undefined ||
-        secretHash !== undefined
-      ) {
-        return NextResponse.json(
-          { error: "Cannot edit core fields after DRAWN" },
-          { status: 400 }
-        );
-      }
-    }
-
-    if (prizeCount !== undefined && prizeCount < 1) {
-      return NextResponse.json(
-        { error: "prizeCount must be at least 1" },
-        { status: 400 }
-      );
-    }
-
-    // Update giveaway fields
-    const updateData: {
-      drawAt?: Date | null;
-      prizeCount?: number;
-      status?: GiveawayStatus;
-      platform?: GiveawayPlatform;
-      secretHash?: string | null;
-      secretRevealed?: string | null;
-    } = {};
-    if (drawAt !== undefined)
-      updateData.drawAt = drawAt ? new Date(drawAt) : null;
-    if (prizeCount !== undefined) updateData.prizeCount = prizeCount;
-    if (status !== undefined) updateData.status = status;
-    if (platform !== undefined) updateData.platform = platform;
-    if (secretHash !== undefined) updateData.secretHash = secretHash;
-    if (secretRevealed !== undefined)
-      updateData.secretRevealed = secretRevealed;
 
     const giveaway = await prisma.giveaway.update({
       where: { id },
-      data: updateData,
+      data: buildGiveawayUpdateData(body),
       include: {
         translations: true,
         event: { select: { id: true, title: true, slug: true } },
@@ -188,9 +160,9 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     });
 
     // Upsert translations if provided
-    if (translations && translations.length > 0) {
+    if (body.translations && body.translations.length > 0) {
       await Promise.all(
-        translations.map((t) =>
+        body.translations.map((t) =>
           prisma.giveawayTranslation.upsert({
             where: { giveawayId_lang: { giveawayId: id, lang: t.lang } },
             update: { title: t.title, details: t.details },

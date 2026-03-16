@@ -10,6 +10,30 @@ interface RouteParams {
 /** Roles allowed to perform manual check-in from the dashboard. */
 const CHECKIN_ALLOWED_ORGANIZER_ROLES = new Set(["OWNER", "ADMIN"]);
 
+/** Returns a 422 response if the check-in window is not active, or null if OK */
+function enforceCheckInWindow(event: {
+  checkInOpensAt: Date | null;
+  checkInClosesAt: Date | null;
+}): NextResponse | null {
+  const windowStatus = getCheckInWindowStatus(
+    event.checkInOpensAt,
+    event.checkInClosesAt
+  );
+  if (windowStatus === "NOT_OPEN_YET") {
+    return NextResponse.json(
+      { error: "Check-in window has not opened yet" },
+      { status: 422 }
+    );
+  }
+  if (windowStatus === "CLOSED") {
+    return NextResponse.json(
+      { error: "Check-in window is closed" },
+      { status: 422 }
+    );
+  }
+  return null;
+}
+
 // PATCH /api/events/[id]/registrations/[registrationId]/checkin
 // Toggle check-in for a registration (set or unset checkedInAt).
 // Body: { checkedIn: boolean }
@@ -97,22 +121,8 @@ export async function PATCH(req: NextRequest, { params }: RouteParams) {
   // Enforce the check-in window for non-admin users (staff must respect the window).
   // Platform admins and organizers (OWNER/ADMIN) can override the window.
   if (body.checkedIn && !isPlatformAdmin && !isAllowedOrganizer) {
-    const windowStatus = getCheckInWindowStatus(
-      event.checkInOpensAt,
-      event.checkInClosesAt
-    );
-    if (windowStatus === "NOT_OPEN_YET") {
-      return NextResponse.json(
-        { error: "Check-in window has not opened yet" },
-        { status: 422 }
-      );
-    }
-    if (windowStatus === "CLOSED") {
-      return NextResponse.json(
-        { error: "Check-in window is closed" },
-        { status: 422 }
-      );
-    }
+    const windowError = enforceCheckInWindow(event);
+    if (windowError) return windowError;
   }
 
   // Prevent double check-in (idempotent: return success if already in desired state)

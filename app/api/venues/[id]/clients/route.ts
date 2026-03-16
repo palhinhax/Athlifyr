@@ -51,12 +51,13 @@ export async function GET(
     const isOwner = venue.createdByUserId === session.user.id;
     const isAppAdmin = session.user.role === "ADMIN";
     const memberRole = venue.members[0]?.role;
-    const isVenueStaff =
-      memberRole === "OWNER" ||
-      memberRole === "ADMIN" ||
-      memberRole === "COACH";
+    const STAFF_ROLES = new Set(["OWNER", "ADMIN", "COACH"]);
 
-    if (!isOwner && !isAppAdmin && !isVenueStaff) {
+    if (
+      !isOwner &&
+      !isAppAdmin &&
+      !(memberRole && STAFF_ROLES.has(memberRole))
+    ) {
       return NextResponse.json(
         { error: "Not authorized to view clients" },
         { status: 403 }

@@ -119,32 +119,35 @@ async function sendEmailNotification(
   return { sent: false, error: err.error };
 }
 
+function formatPushPart(pushResult: PushResult, audience: Audience): string {
+  if (audience === "single") {
+    return `Push: ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`;
+  }
+  return `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""}`;
+}
+
+function formatEmailPart(
+  emailSendResult: EmailResult,
+  audience: Audience
+): string {
+  if (audience === "single") return "Email enviado";
+  const emailsSent =
+    (emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0;
+  return `Emails: ${emailsSent} enviado${emailsSent !== 1 ? "s" : ""}`;
+}
+
 function buildToastParts(
   pushResult: PushResult | null,
   emailSendResult: EmailResult | null,
   audience: Audience
 ): string[] {
   const parts: string[] = [];
-
   if (pushResult && pushResult.sent > 0) {
-    parts.push(
-      audience === "single"
-        ? `Push: ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`
-        : `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""}`
-    );
+    parts.push(formatPushPart(pushResult, audience));
   }
-
   if (emailSendResult?.sent) {
-    const emailsSent =
-      (emailSendResult as EmailResult & { emailsSent?: number }).emailsSent ||
-      0;
-    parts.push(
-      audience === "single"
-        ? "Email enviado"
-        : `Emails: ${emailsSent} enviado${emailsSent !== 1 ? "s" : ""}`
-    );
+    parts.push(formatEmailPart(emailSendResult, audience));
   }
-
   return parts;
 }
 

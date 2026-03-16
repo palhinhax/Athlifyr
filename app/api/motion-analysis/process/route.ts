@@ -167,6 +167,27 @@ function validateVideoFile(
   return { videoFile };
 }
 
+function getVideoExtension(mimeType: string): string {
+  if (mimeType === "video/webm") return ".webm";
+  if (mimeType === "video/quicktime") return ".mov";
+  return ".mp4";
+}
+
+function buildTranscodeErrorResponse(err: unknown, tag: string): NextResponse {
+  const errMsg = err instanceof Error ? err.message : String(err);
+  console.error(`[${tag}] Transcode failed:`, errMsg);
+  const isOom =
+    errMsg.includes("OOM") || errMsg.includes("-9") || errMsg.includes("137");
+  return NextResponse.json(
+    {
+      error: isOom
+        ? "Video resolution is too high to process. Please record in 1080p or lower."
+        : "Failed to convert video. Please try uploading an MP4 file.",
+    },
+    { status: 400 }
+  );
+}
+
 async function trimAndTranscodeVideo(
   videoFile: File,
   formData: FormData
@@ -187,12 +208,7 @@ async function trimAndTranscodeVideo(
     trimEndSec > trimStartSec
   ) {
     try {
-      const ext =
-        baseType === "video/webm"
-          ? ".webm"
-          : baseType === "video/quicktime"
-            ? ".mov"
-            : ".mp4";
+      const ext = getVideoExtension(baseType);
       console.log(
         `[MotionAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
       );
@@ -232,20 +248,7 @@ async function trimAndTranscodeVideo(
         `[MotionAnalysis] Transcoded ${(inputBuffer.length / (1024 * 1024)).toFixed(2)} MB → ${(mp4Buffer.length / (1024 * 1024)).toFixed(2)} MB`
       );
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      console.error("[MotionAnalysis] Transcode failed:", errMsg);
-      const isOom =
-        errMsg.includes("OOM") ||
-        errMsg.includes("-9") ||
-        errMsg.includes("137");
-      return NextResponse.json(
-        {
-          error: isOom
-            ? "Video resolution is too high to process. Please record in 1080p or lower."
-            : "Failed to convert video. Please try uploading an MP4 file.",
-        },
-        { status: 400 }
-      );
+      return buildTranscodeErrorResponse(err, "MotionAnalysis");
     }
   }
 

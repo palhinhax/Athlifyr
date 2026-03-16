@@ -206,6 +206,27 @@ function validateVideoFile(
   return { videoFile, seedX: seedX.toString(), seedY: seedY.toString() };
 }
 
+function getVideoExtension(mimeType: string): string {
+  if (mimeType === "video/webm") return ".webm";
+  if (mimeType === "video/quicktime") return ".mov";
+  return ".mp4";
+}
+
+function buildTranscodeErrorResponse(err: unknown, tag: string): NextResponse {
+  const errMsg = err instanceof Error ? err.message : String(err);
+  console.error(`[${tag}] Transcode failed:`, errMsg);
+  const isOom =
+    errMsg.includes("OOM") || errMsg.includes("-9") || errMsg.includes("137");
+  return NextResponse.json(
+    {
+      error: isOom
+        ? "Video resolution is too high to process. Please record in 1080p or lower."
+        : "Failed to convert video. Please try uploading an MP4 file.",
+    },
+    { status: 400 }
+  );
+}
+
 async function trimAndTranscodeVideo(
   videoFile: File,
   formData: FormData
@@ -228,12 +249,7 @@ async function trimAndTranscodeVideo(
     trimEndSec > trimStartSec
   ) {
     try {
-      const ext =
-        baseType === "video/webm"
-          ? ".webm"
-          : baseType === "video/quicktime"
-            ? ".mov"
-            : ".mp4";
+      const ext = getVideoExtension(baseType);
       console.log(
         `[LiftAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
       );
@@ -272,20 +288,7 @@ async function trimAndTranscodeVideo(
         `[LiftAnalysis] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
       );
     } catch (err) {
-      const errMsg = err instanceof Error ? err.message : String(err);
-      console.error("[LiftAnalysis] Transcode failed:", errMsg);
-      const isOom =
-        errMsg.includes("OOM") ||
-        errMsg.includes("-9") ||
-        errMsg.includes("137");
-      return NextResponse.json(
-        {
-          error: isOom
-            ? "Video resolution is too high to process. Please record in 1080p or lower."
-            : "Failed to convert video. Please try uploading an MP4 file.",
-        },
-        { status: 400 }
-      );
+      return buildTranscodeErrorResponse(err, "LiftAnalysis");
     }
   }
 
@@ -316,6 +319,14 @@ async function resolveAiPermission(
   externalFormData.append("enable_ai", "true");
   console.log(`[LiftAnalysis] AI enabled for user ${session.user.id}`);
   return true;
+}
+
+function isConnectionResetError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+  if ("cause" in error) {
+    return (error.cause as NodeJS.ErrnoException)?.code === "ECONNRESET";
+  }
+  return error.message.includes("ECONNRESET");
 }
 
 async function callRailwayWithRetry(
@@ -352,11 +363,7 @@ async function callRailwayWithRetry(
         );
       }
 
-      const isConnReset =
-        error instanceof Error &&
-        ("cause" in error
-          ? (error.cause as NodeJS.ErrnoException)?.code === "ECONNRESET"
-          : error.message.includes("ECONNRESET"));
+      const isConnReset = isConnectionResetError(error);
 
       console.error(
         `[LiftAnalysis] External API request failed (attempt ${attempt}/${maxRetries}):`,

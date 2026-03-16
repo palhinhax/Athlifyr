@@ -1002,6 +1002,26 @@ interface ExerciseResultSummary {
   isPR: boolean;
 }
 
+function formatDuration(totalSeconds: number): string {
+  const mins = Math.floor(totalSeconds / 60);
+  const secs = totalSeconds % 60;
+  if (mins > 0 && secs > 0) return `${mins}m${secs}s`;
+  if (mins > 0) return `${mins}m`;
+  return `${secs}s`;
+}
+
+function formatMetricParts(er: ExerciseResultSummary): string[] {
+  const parts: string[] = [];
+  if (er.actualReps) parts.push(`${er.actualReps} reps`);
+  if (er.actualWeight)
+    parts.push(`${er.actualWeight}${er.actualWeightUnit || "KG"}`);
+  if (er.actualDistance)
+    parts.push(`${er.actualDistance}${er.actualDistanceUnit || "KM"}`);
+  if (er.actualTime) parts.push(formatDuration(er.actualTime));
+  if (er.actualCalories) parts.push(`${er.actualCalories} cal`);
+  return parts;
+}
+
 function formatExerciseDetail(er: ExerciseResultSummary): string {
   let detail = er.exercise.name;
   const parts: string[] = [];
@@ -1011,19 +1031,7 @@ function formatExerciseDetail(er: ExerciseResultSummary): string {
       .join(", ");
     parts.push(setsSummary);
   } else {
-    if (er.actualReps) parts.push(`${er.actualReps} reps`);
-    if (er.actualWeight)
-      parts.push(`${er.actualWeight}${er.actualWeightUnit || "KG"}`);
-    if (er.actualDistance)
-      parts.push(`${er.actualDistance}${er.actualDistanceUnit || "KM"}`);
-    if (er.actualTime) {
-      const mins = Math.floor(er.actualTime / 60);
-      const secs = er.actualTime % 60;
-      parts.push(
-        mins > 0 ? `${mins}m${secs > 0 ? `${secs}s` : ""}` : `${secs}s`
-      );
-    }
-    if (er.actualCalories) parts.push(`${er.actualCalories} cal`);
+    parts.push(...formatMetricParts(er));
   }
   if (er.isPR) parts.push("🏆 PR!");
   if (parts.length > 0) detail += ` (${parts.join(", ")})`;

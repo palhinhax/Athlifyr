@@ -280,6 +280,23 @@ function validatePolicyConstraints(
   return null;
 }
 
+async function executeCountChecks(
+  countChecks: Array<{
+    type: string;
+    promise: Promise<number>;
+    limit: number;
+  }>
+): Promise<BookingValidationResult | null> {
+  if (countChecks.length === 0) return null;
+  const results = await Promise.all(countChecks.map((check) => check.promise));
+  for (let i = 0; i < countChecks.length; i++) {
+    if (results[i] >= countChecks[i].limit) {
+      return { allowed: false, reason: countChecks[i].type };
+    }
+  }
+  return null;
+}
+
 /** Validate all booking count limits + total bookings + advance booking. */
 async function validateBookingLimits(
   policy: PlanPolicy,
@@ -370,16 +387,8 @@ async function validateBookingLimits(
     });
   }
 
-  if (countChecks.length > 0) {
-    const results = await Promise.all(
-      countChecks.map((check) => check.promise)
-    );
-    for (let i = 0; i < countChecks.length; i++) {
-      if (results[i] >= countChecks[i].limit) {
-        return { allowed: false, reason: countChecks[i].type };
-      }
-    }
-  }
+  const countResult = await executeCountChecks(countChecks);
+  if (countResult) return countResult;
 
   if (policy.maxTotalBookings) {
     const includedVenues = await prisma.venuePlanVenue.findMany({

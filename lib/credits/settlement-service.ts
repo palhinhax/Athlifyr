@@ -78,10 +78,12 @@ export async function executeWeeklySettlement(): Promise<{
   const periodEnd = now;
   const periodStart = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
 
-  // Find all venues with pending ledger entries
+  // Find all venues with PENDING ledger entries (normal case) plus venues whose
+  // entries are stuck in PROCESSING (crash-recovery: process died between Phase 1
+  // and Phase 3 of a previous run).
   const venuesWithPending = await prisma.venueLedgerEntry.groupBy({
     by: ["venueId"],
-    where: { status: "PENDING" },
+    where: { status: { in: ["PENDING", "PROCESSING"] } },
     _sum: { amountCents: true },
     _count: { id: true },
   });
@@ -170,9 +172,11 @@ async function settleVenue(params: {
     return;
   }
 
-  await prisma.$transaction(async (tx) => {
-    // Create or get settlement batch
-    const batch = existing
+  // Phase 1: Create/mark batch + mark entries as PROCESSING in a short transaction.
+  // Committing before the Stripe call prevents holding DB locks during the network
+  // request and ensures entries cannot be double-settled by a concurrent run.
+  const batch = await prisma.$transaction(async (tx) => {
+    const b = existing
       ? await tx.venueSettlementBatch.update({
           where: { id: existing.id },
           data: {
@@ -192,9 +196,9 @@ async function settleVenue(params: {
           },
         });
 
-    if (batch.retryCount > SETTLEMENT_MAX_RETRIES) {
+    if (b.retryCount > SETTLEMENT_MAX_RETRIES) {
       await tx.venueSettlementBatch.update({
-        where: { id: batch.id },
+        where: { id: b.id },
         data: {
           status: "FAILED",
           failedAt: new Date(),
@@ -204,52 +208,51 @@ async function settleVenue(params: {
       throw new Error("Max settlement retries exceeded");
     }
 
-    try {
-      // Execute Stripe Transfer to connected account
-      const transfer = await stripe.transfers.create(
-        {
-          amount: totalAmountCents,
-          currency: "eur",
-          destination: venue.stripeAccountId!,
-          description: `Athlifyr Credits settlement: ${venue.name} (${periodStart.toISOString().split("T")[0]} → ${periodEnd.toISOString().split("T")[0]})`,
-          metadata: {
-            type: "credit_settlement",
-            venueId,
-            batchId: batch.id,
-            periodStart: periodStart.toISOString(),
-            periodEnd: periodEnd.toISOString(),
-          },
-        },
-        { idempotencyKey: `stripe_transfer_${batch.id}` }
-      );
+    // Mark PENDING entries as PROCESSING so concurrent runs skip them
+    await tx.venueLedgerEntry.updateMany({
+      where: { venueId, status: "PENDING" },
+      data: { status: "PROCESSING" },
+    });
 
-      // Mark all pending entries as settled
-      await tx.venueLedgerEntry.updateMany({
-        where: {
+    return b;
+  });
+
+  // Phase 2: Execute Stripe transfer outside any DB transaction.
+  // Using the batch ID as idempotency key means a Stripe-succeeded / DB-failed
+  // scenario is safely recovered on the next retry (Stripe returns the same
+  // transfer object).
+  let stripeTransferId: string;
+  try {
+    const transfer = await stripe.transfers.create(
+      {
+        amount: totalAmountCents,
+        currency: "eur",
+        destination: venue.stripeAccountId!,
+        description: `Athlifyr Credits settlement: ${venue.name} (${periodStart.toISOString().split("T")[0]} → ${periodEnd.toISOString().split("T")[0]})`,
+        metadata: {
+          type: "credit_settlement",
           venueId,
-          status: "PENDING",
+          batchId: batch.id,
+          periodStart: periodStart.toISOString(),
+          periodEnd: periodEnd.toISOString(),
         },
-        data: {
-          status: "SETTLED",
-          settlementBatchId: batch.id,
-        },
-      });
+      },
+      { idempotencyKey: `stripe_transfer_${batch.id}` }
+    );
+    stripeTransferId = transfer.id;
+  } catch (stripeError) {
+    // Phase 3 (failure): revert entries to PENDING and mark batch FAILED so
+    // the next scheduled run or manual retry can pick them up again.
+    const errorMessage =
+      stripeError instanceof Error
+        ? stripeError.message
+        : "Stripe transfer failed";
 
-      // Mark batch as completed
-      await tx.venueSettlementBatch.update({
-        where: { id: batch.id },
-        data: {
-          status: "COMPLETED",
-          stripeTransferId: transfer.id,
-          processedAt: new Date(),
-        },
+    await prisma.$transaction(async (tx) => {
+      await tx.venueLedgerEntry.updateMany({
+        where: { venueId, status: "PROCESSING" },
+        data: { status: "PENDING" },
       });
-    } catch (stripeError) {
-      const errorMessage =
-        stripeError instanceof Error
-          ? stripeError.message
-          : "Stripe transfer failed";
-
       await tx.venueSettlementBatch.update({
         where: { id: batch.id },
         data: {
@@ -258,10 +261,46 @@ async function settleVenue(params: {
           failureReason: errorMessage,
         },
       });
+    });
 
-      throw stripeError;
-    }
-  });
+    throw stripeError;
+  }
+
+  // Phase 3 (success): mark entries SETTLED and batch COMPLETED in a second
+  // short transaction.  If this commit fails the batch stays PROCESSING;
+  // the next retry reuses the same Stripe idempotency key and will complete
+  // Phase 3 successfully without issuing a duplicate transfer.
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.venueLedgerEntry.updateMany({
+        where: { venueId, status: "PROCESSING" },
+        data: {
+          status: "SETTLED",
+          settlementBatchId: batch.id,
+        },
+      });
+      await tx.venueSettlementBatch.update({
+        where: { id: batch.id },
+        data: {
+          status: "COMPLETED",
+          stripeTransferId,
+          processedAt: new Date(),
+        },
+      });
+    });
+  } catch (dbError) {
+    // Stripe transfer succeeded but the DB commit failed.  The batch and
+    // entries remain in PROCESSING state.  The next scheduled run or a manual
+    // retry will call Stripe with the same idempotency key (returning the
+    // existing transfer) and reattempt this commit.  Log the partial failure
+    // so on-call engineers can monitor and intervene if retries keep failing.
+    console.error(
+      `Settlement Phase 3 DB commit failed for venue ${venueId} (batch ${batch.id}, stripeTransferId ${stripeTransferId}). ` +
+        `Stripe transfer succeeded but ledger is still PROCESSING. Will self-heal on next retry.`,
+      dbError
+    );
+    throw dbError;
+  }
 }
 
 /**

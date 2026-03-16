@@ -52,6 +52,47 @@ interface Event {
   externalUrl: string | null;
 }
 
+interface TriathlonSegment {
+  segmentType: "SWIM" | "BIKE" | "RUN";
+  distanceKm: string;
+  terrainType: "POOL" | "OPEN_WATER" | "ROAD" | "TRAIL" | "MIXED";
+  order: number;
+}
+
+interface EventVariantForm {
+  name: string;
+  distanceKm: string;
+  startDate: string;
+  startTime: string;
+  triathlonSegments?: TriathlonSegment[];
+}
+
+function removeSegmentFromVariant(
+  variant: EventVariantForm,
+  segmentIndex: number
+): EventVariantForm {
+  return {
+    ...variant,
+    triathlonSegments: variant.triathlonSegments?.filter(
+      (_, si) => si !== segmentIndex
+    ),
+  };
+}
+
+function updateSegmentInVariant(
+  variant: EventVariantForm,
+  segmentIndex: number,
+  field: "segmentType" | "distanceKm" | "terrainType",
+  value: string
+): EventVariantForm {
+  return {
+    ...variant,
+    triathlonSegments: variant.triathlonSegments?.map((seg, si) =>
+      si === segmentIndex ? { ...seg, [field]: value } : seg
+    ),
+  };
+}
+
 // Helper function to check missing fields
 function getMissingFields(event: Event): string[] {
   const missing: string[] = [];
@@ -118,20 +159,9 @@ export default function AdminEventsPage() {
     stravaRouteEmbed: "",
   });
 
-  const [variants, setVariants] = useState<
-    {
-      name: string;
-      distanceKm: string;
-      startDate: string;
-      startTime: string;
-      triathlonSegments?: Array<{
-        segmentType: "SWIM" | "BIKE" | "RUN";
-        distanceKm: string;
-        terrainType: "POOL" | "OPEN_WATER" | "ROAD" | "TRAIL" | "MIXED";
-        order: number;
-      }>;
-    }[]
-  >([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
+  const [variants, setVariants] = useState<EventVariantForm[]>([
+    { name: "", distanceKm: "", startDate: "", startTime: "" },
+  ]);
 
   // Check if user is admin
   useEffect(() => {
@@ -307,14 +337,7 @@ export default function AdminEventsPage() {
   ) => {
     setVariants((prev) =>
       prev.map((v, i) =>
-        i === variantIndex
-          ? {
-              ...v,
-              triathlonSegments: v.triathlonSegments?.filter(
-                (_, si) => si !== segmentIndex
-              ),
-            }
-          : v
+        i === variantIndex ? removeSegmentFromVariant(v, segmentIndex) : v
       )
     );
   };
@@ -328,12 +351,7 @@ export default function AdminEventsPage() {
     setVariants((prev) =>
       prev.map((v, i) =>
         i === variantIndex
-          ? {
-              ...v,
-              triathlonSegments: v.triathlonSegments?.map((seg, si) =>
-                si === segmentIndex ? { ...seg, [field]: value } : seg
-              ),
-            }
+          ? updateSegmentInVariant(v, segmentIndex, field, value)
           : v
       )
     );
@@ -387,14 +405,14 @@ export default function AdminEventsPage() {
             .filter((v) => v.name.trim())
             .map((v) => ({
               name: v.name,
-              distanceKm: v.distanceKm ? parseFloat(v.distanceKm) : null,
+              distanceKm: v.distanceKm ? Number.parseFloat(v.distanceKm) : null,
               startDate: v.startDate || null,
               startTime: v.startTime || null,
               triathlonSegments: v.triathlonSegments
                 ?.filter((seg) => seg.distanceKm.trim())
                 .map((seg) => ({
                   segmentType: seg.segmentType,
-                  distanceKm: parseFloat(seg.distanceKm),
+                  distanceKm: Number.parseFloat(seg.distanceKm),
                   terrainType: seg.terrainType,
                   order: seg.order,
                 })),
@@ -686,7 +704,10 @@ export default function AdminEventsPage() {
                       </div>
                       <div className="space-y-3">
                         {variants.map((variant, index) => (
-                          <div key={index} className="rounded-lg border p-3">
+                          <div
+                            key={`variant-${variant.name}-${index}`}
+                            className="rounded-lg border p-3"
+                          >
                             <div className="flex items-center gap-2">
                               <Input
                                 placeholder="Nome (ex: 21km, Singles Pro)"
@@ -784,7 +805,7 @@ export default function AdminEventsPage() {
                                       {variant.triathlonSegments.map(
                                         (segment, segIndex) => (
                                           <div
-                                            key={segIndex}
+                                            key={`seg-${segment.segmentType}-${segment.order}-${segIndex}`}
                                             className="flex items-center gap-2 rounded border bg-muted/50 p-2"
                                           >
                                             <select

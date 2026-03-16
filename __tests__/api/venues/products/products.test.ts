@@ -45,7 +45,7 @@ describe("GET /api/venues/[id]/products", () => {
     (prisma.venueProduct.findMany as jest.Mock).mockResolvedValue(products);
 
     const req = new Request("http://localhost/api/venues/venue-1/products");
-    const res = (await GET(req, makeParams()))!;
+    const res = await GET(req, makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -62,7 +62,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = (await GET(req, makeParams()))!;
+    const res = await GET(req, makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(401);
@@ -77,7 +77,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = (await GET(req, makeParams()))!;
+    const res = await GET(req, makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(403);
@@ -98,7 +98,7 @@ describe("GET /api/venues/[id]/products", () => {
     const req = new Request(
       "http://localhost/api/venues/venue-1/products?all=true"
     );
-    const res = (await GET(req, makeParams()))!;
+    const res = await GET(req, makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(200);
@@ -115,7 +115,7 @@ describe("GET /api/venues/[id]/products", () => {
     );
 
     const req = new Request("http://localhost/api/venues/venue-1/products");
-    const res = (await GET(req, makeParams()))!;
+    const res = await GET(req, makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(500);

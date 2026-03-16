@@ -11,8 +11,8 @@ import { prisma } from "@/lib/prisma";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
+jest.mock("@/lib/prisma", () => {
+  const mockPrisma = {
     creditWallet: {
       findUnique: jest.fn(),
       create: jest.fn(),
@@ -23,8 +23,15 @@ jest.mock("@/lib/prisma", () => ({
       findMany: jest.fn(),
       create: jest.fn(),
     },
-  },
-}));
+    $transaction: jest.fn(),
+  };
+  // Execute the callback with mockPrisma as the tx client so inner calls
+  // hit the same jest.fn() mocks already configured by each test.
+  mockPrisma.$transaction.mockImplementation(
+    async (fn: (tx: typeof mockPrisma) => unknown) => fn(mockPrisma)
+  );
+  return { prisma: mockPrisma };
+});
 
 const mockFindWallet = prisma.creditWallet.findUnique as jest.Mock;
 const mockCreateWallet = prisma.creditWallet.create as jest.Mock;
@@ -226,7 +233,7 @@ describe("creditWallet", () => {
       expect.objectContaining({
         where: { userId: "u1" },
         data: expect.objectContaining({
-          balanceCents: 2000,
+          balanceCents: { increment: 1000 },
           totalTopUpCents: { increment: 1040 },
         }),
       })
@@ -244,7 +251,7 @@ describe("creditWallet", () => {
     expect(mockUpdateWallet).toHaveBeenCalledWith(
       expect.objectContaining({
         data: expect.objectContaining({
-          balanceCents: 1500, // 1000 + 500
+          balanceCents: { increment: 500 },
           totalRewardedCents: { increment: 500 },
         }),
       })
@@ -340,7 +347,7 @@ describe("debitWallet", () => {
       expect.objectContaining({
         where: { userId: "u1" },
         data: {
-          balanceCents: 3000,
+          balanceCents: { decrement: 2000 },
           totalSpentCents: { increment: 2000 },
         },
       })

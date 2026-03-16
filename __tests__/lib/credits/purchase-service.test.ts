@@ -57,10 +57,13 @@ describe("requiresCreditsOnly", () => {
     expect(requiresCreditsOnly(0)).toBe(true);
   });
 
-  it("returns false for amounts at or above threshold", () => {
-    expect(requiresCreditsOnly(500)).toBe(false);
+  it("returns false for amounts above threshold", () => {
     expect(requiresCreditsOnly(501)).toBe(false);
     expect(requiresCreditsOnly(10000)).toBe(false);
+  });
+
+  it("returns true for amounts at the threshold (500 cents)", () => {
+    expect(requiresCreditsOnly(500)).toBe(true);
   });
 });
 
@@ -117,6 +120,40 @@ describe("purchaseWithCredits", () => {
       price: 5.0,
       currency: "EUR",
       stock: 1,
+    });
+
+    mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
+      const txClient = {
+        creditWallet: {
+          findUnique: jest.fn().mockResolvedValue({
+            id: "w1",
+            userId: "u1",
+            balanceCents: 99999,
+            totalTopUpCents: 99999,
+            totalSpentCents: 0,
+            totalRewardedCents: 0,
+          }),
+          update: jest.fn().mockResolvedValue({ balanceCents: 97499 }),
+          create: jest.fn(),
+        },
+        creditTransaction: {
+          findUnique: jest.fn().mockResolvedValue(null),
+          create: jest
+            .fn()
+            .mockResolvedValue({ id: "tx_stock", balanceAfterCents: 97499 }),
+          update: jest.fn(),
+        },
+        venueProductPurchase: {
+          create: jest.fn().mockResolvedValue({ id: "pur_stock" }),
+        },
+        venueLedgerEntry: {
+          create: jest.fn(),
+        },
+        venueProduct: {
+          updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+        },
+      };
+      return fn(txClient);
     });
 
     await expect(
@@ -224,6 +261,7 @@ describe("purchaseWithCredits", () => {
         },
         venueProduct: {
           update: jest.fn(),
+          updateMany: jest.fn().mockResolvedValue({ count: 1 }),
         },
       };
       return fn(txClient);

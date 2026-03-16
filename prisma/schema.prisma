@@ -2729,6 +2729,7 @@ enum CreditTopUpStatus {
 
 enum VenueLedgerEntryStatus {
   PENDING
+  PROCESSING
   SETTLED
   REVERSED
   FAILED

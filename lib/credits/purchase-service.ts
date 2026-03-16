@@ -44,11 +44,6 @@ export async function purchaseWithCredits(params: {
     throw new Error("Invalid product price");
   }
 
-  // Check stock availability
-  if (product.stock !== null && product.stock < quantity) {
-    throw new Error("Insufficient stock");
-  }
-
   const idempotencyKey = `purchase_${userId}_${productId}_${randomUUID()}`;
 
   const result = await prisma.$transaction(async (tx) => {
@@ -98,12 +93,20 @@ export async function purchaseWithCredits(params: {
       },
     });
 
-    // 5. Decrease stock if tracked
+    // 5. Decrease stock if tracked — updateMany with a conditional WHERE performs an
+    //    atomic check-and-decrement in a single statement, preventing overselling under
+    //    concurrent requests. `update` cannot express extra WHERE conditions in Prisma,
+    //    so updateMany (returning affected row count) is the idiomatic approach here.
     if (product.stock !== null) {
-      await tx.venueProduct.update({
-        where: { id: productId },
+      const updated = await tx.venueProduct.updateMany({
+        where: { id: productId, stock: { gte: quantity } },
         data: { stock: { decrement: quantity } },
       });
+      if (updated.count === 0) {
+        throw new Error(
+          `Insufficient stock for "${product.name}" (requested: ${quantity})`
+        );
+      }
     }
 
     return {

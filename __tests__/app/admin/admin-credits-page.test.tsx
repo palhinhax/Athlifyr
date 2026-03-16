@@ -246,6 +246,213 @@ describe("AdminCreditsUserView (via page)", () => {
 
     jest.useRealTimers();
   });
+
+  it("displays search results and selects a user", async () => {
+    jest.useFakeTimers();
+
+    // First call: user search
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { id: "u1", name: "John Doe", email: "john@test.com", image: null },
+      ],
+    });
+
+    render(<AdminCreditsPage />);
+    const input = screen.getByPlaceholderText("searchUser");
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: "john" } });
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(350);
+    });
+
+    jest.useRealTimers();
+
+    await waitFor(() => {
+      expect(screen.getByText("John Doe")).toBeInTheDocument();
+    });
+
+    // Select user → triggers fetchUser
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: { id: "u1", name: "John Doe", email: "john@test.com" },
+        wallet: { balanceCents: 2500, createdAt: "2024-01-01T00:00:00Z" },
+        recentTransactions: [
+          {
+            id: "tx1",
+            type: "TOP_UP",
+            amountCents: 1000,
+            balanceAfterCents: 1000,
+            description: "Top-up 10€",
+            createdAt: "2024-01-01T00:00:00Z",
+          },
+        ],
+        topUps: [
+          {
+            id: "tu1",
+            grossAmountCents: 1100,
+            feeCents: 100,
+            netCreditsCents: 1000,
+            feeAmountCents: 100,
+            status: "COMPLETED",
+          },
+        ],
+      }),
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("John Doe"));
+    });
+
+    await waitFor(() => {
+      // User card shows balance
+      expect(screen.getByText(/25\.00/)).toBeInTheDocument();
+      // Transaction history
+      expect(screen.getByText("Top-up 10€")).toBeInTheDocument();
+      // Top-ups section
+      expect(screen.getByText("COMPLETED")).toBeInTheDocument();
+    });
+  });
+
+  it("shows error when fetching user fails", async () => {
+    jest.useFakeTimers();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { id: "u1", name: "Unknown", email: "x@test.com", image: null },
+      ],
+    });
+
+    render(<AdminCreditsPage />);
+    const input = screen.getByPlaceholderText("searchUser");
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: "unk" } });
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(350);
+    });
+
+    jest.useRealTimers();
+
+    await waitFor(() => {
+      expect(screen.getByText("Unknown")).toBeInTheDocument();
+    });
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "User not found" }),
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Unknown"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("User not found")).toBeInTheDocument();
+    });
+  });
+
+  it("opens adjust credits dialog and submits adjustment", async () => {
+    jest.useFakeTimers();
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => [
+        { id: "u1", name: "Jane", email: "jane@test.com", image: "http://img" },
+      ],
+    });
+
+    render(<AdminCreditsPage />);
+    const input = screen.getByPlaceholderText("searchUser");
+
+    await act(async () => {
+      fireEvent.change(input, { target: { value: "jane" } });
+    });
+
+    await act(async () => {
+      jest.advanceTimersByTime(350);
+    });
+
+    jest.useRealTimers();
+
+    await waitFor(() => {
+      expect(screen.getByText("Jane")).toBeInTheDocument();
+    });
+
+    // Select user
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: { id: "u1", name: "Jane", email: "jane@test.com" },
+        wallet: { balanceCents: 1000, createdAt: "2024-01-01T00:00:00Z" },
+        recentTransactions: [],
+        topUps: [],
+      }),
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("Jane"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("adjustCredits")).toBeInTheDocument();
+    });
+
+    // Click adjust button → opens dialog
+    await act(async () => {
+      fireEvent.click(screen.getByText("adjustCredits"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dialog")).toBeInTheDocument();
+    });
+
+    // Fill in adjustment
+    const amountInput = screen.getByPlaceholderText("e.g. 5.00 or -2.50");
+    const noteInput = screen.getByPlaceholderText("Reason for adjustment");
+
+    await act(async () => {
+      fireEvent.change(amountInput, { target: { value: "5.00" } });
+      fireEvent.change(noteInput, { target: { value: "Bonus" } });
+    });
+
+    // Submit → POST to API + re-fetch user
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        user: { id: "u1", name: "Jane", email: "jane@test.com" },
+        wallet: { balanceCents: 1500, createdAt: "2024-01-01T00:00:00Z" },
+        recentTransactions: [],
+        topUps: [],
+      }),
+    });
+
+    // Find the submit button (inside dialog, the second "adjustCredits" button)
+    const dialogButtons = screen.getAllByText("adjustCredits");
+    const submitButton = dialogButtons[dialogButtons.length - 1];
+
+    await act(async () => {
+      fireEvent.click(submitButton);
+    });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/admin/credits/u1",
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+  });
 });
 
 // ── Settlements View ──────────────────────────────────────────────────────────
@@ -394,6 +601,175 @@ describe("AdminCreditsSettlementsView (via page)", () => {
 
     await waitFor(() => {
       expect(screen.getByText("refresh")).toBeInTheDocument();
+    });
+  });
+
+  it("calls retry API when clicking retry on failed batch", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        overview: [],
+        recentSettlements: [
+          {
+            id: "b_fail",
+            venueId: "v1",
+            totalAmountCents: 5000,
+            currency: "EUR",
+            status: "FAILED",
+            entriesCount: 2,
+            periodStart: "2024-01-01T00:00:00Z",
+            periodEnd: "2024-01-07T00:00:00Z",
+            processedAt: null,
+            failedAt: "2024-01-08T00:00:00Z",
+            failureReason: "Transfer failed",
+            stripeTransferId: null,
+            createdAt: "2024-01-08T00:00:00Z",
+            venue: { id: "v1", name: "Failed Gym", slug: "failed" },
+          },
+        ],
+      }),
+    });
+
+    render(<AdminCreditsPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("settlements"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("retry")).toBeInTheDocument();
+    });
+
+    // Mock retry + refetch
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ overview: [], recentSettlements: [] }),
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("retry"));
+    });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/admin/credits/settlements",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ batchId: "b_fail" }),
+        })
+      );
+    });
+  });
+
+  it("shows settle now button for eligible venues and confirms", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        overview: [
+          {
+            venueId: "v1",
+            venue: {
+              id: "v1",
+              name: "Settle Gym",
+              slug: "settle-gym",
+              stripeAccountId: "acct_123",
+              stripePayoutsEnabled: true,
+            },
+            pendingAmountCents: 20000,
+            pendingEntriesCount: 10,
+          },
+        ],
+        recentSettlements: [],
+      }),
+    });
+
+    render(<AdminCreditsPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("settlements"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("settleNow")).toBeInTheDocument();
+    });
+
+    // Click settle now → opens confirmation dialog
+    await act(async () => {
+      fireEvent.click(screen.getByText("settleNow"));
+    });
+
+    await waitFor(() => {
+      // Alert dialog is open (Settle Gym appears in both card + dialog)
+      expect(screen.getByTestId("alert-dialog")).toBeInTheDocument();
+      expect(screen.getAllByText("Settle Gym").length).toBeGreaterThanOrEqual(
+        2
+      );
+    });
+
+    // Confirm settlement (settle button inside alert dialog)
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ success: true }),
+    });
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ overview: [], recentSettlements: [] }),
+    });
+
+    const settleButtons = screen.getAllByText("settleNow");
+    // The last one is the confirm button inside the dialog
+    const confirmButton = settleButtons[settleButtons.length - 1];
+
+    await act(async () => {
+      fireEvent.click(confirmButton);
+    });
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith(
+        "/api/admin/credits/settlements",
+        expect.objectContaining({
+          method: "POST",
+          body: JSON.stringify({ action: "settle", venueId: "v1" }),
+        })
+      );
+    });
+  });
+
+  it("shows stripe badges for venue status", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        overview: [
+          {
+            venueId: "v1",
+            venue: {
+              id: "v1",
+              name: "No Stripe Gym",
+              slug: "no-stripe",
+              stripeAccountId: null,
+              stripePayoutsEnabled: false,
+            },
+            pendingAmountCents: 5000,
+            pendingEntriesCount: 2,
+          },
+        ],
+        recentSettlements: [],
+      }),
+    });
+
+    render(<AdminCreditsPage />);
+
+    await act(async () => {
+      fireEvent.click(screen.getByText("settlements"));
+    });
+
+    await waitFor(() => {
+      expect(screen.getByText("stripeNotConnected")).toBeInTheDocument();
+      expect(screen.getByText("payoutsDisabled")).toBeInTheDocument();
     });
   });
 });

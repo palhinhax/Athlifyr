@@ -16,11 +16,21 @@ jest.mock("@/components/ui/dialog", () => ({
   Dialog: ({
     children,
     open,
+    onOpenChange,
   }: {
     children: React.ReactNode;
     open: boolean;
     onOpenChange?: (open: boolean) => void;
-  }) => (open ? <div data-testid="dialog">{children}</div> : null),
+  }) =>
+    open ? (
+      <div data-testid="dialog">
+        <button
+          data-testid="dialog-close"
+          onClick={() => onOpenChange?.(false)}
+        />
+        {children}
+      </div>
+    ) : null,
   DialogContent: ({
     children,
   }: {
@@ -59,9 +69,15 @@ jest.mock("@stripe/react-stripe-js", () => ({
     <div>{children}</div>
   ),
   PaymentElement: () => <div data-testid="payment-element" />,
-  useStripe: () => null,
-  useElements: () => null,
+  useStripe: jest.fn(() => null),
+  useElements: jest.fn(() => null),
 }));
+
+const {
+  useStripe: mockUseStripe,
+  useElements: mockUseElements,
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+} = require("@stripe/react-stripe-js");
 
 jest.mock("@/lib/stripe-client", () => ({
   getStripe: () => Promise.resolve(null),
@@ -172,5 +188,181 @@ describe("TopUpDialog", () => {
     await waitFor(() => {
       expect(screen.getByRole("button", { name: /topUp/ })).toBeInTheDocument();
     });
+  });
+
+  it("resets to select step when clicking retry in error state", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Failed" }),
+    });
+
+    render(<TopUpDialog {...defaultProps} />);
+    await userEvent.click(screen.getByText("5.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /topUp/ })).toBeInTheDocument();
+    });
+
+    // Click retry button → should go back to select step
+    await userEvent.click(screen.getByRole("button", { name: /topUp/ }));
+
+    // Should show the original amount buttons again
+    expect(screen.getByText("5.00€")).toBeInTheDocument();
+  });
+
+  it("shows payment step with stripe elements on successful API call", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ clientSecret: "cs_test_123" }),
+    });
+
+    render(<TopUpDialog {...defaultProps} />);
+    await userEvent.click(screen.getByText("10.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-element")).toBeInTheDocument();
+    });
+
+    // Should show "you pay" and "you receive" info
+    expect(screen.getByText(/10.00€/)).toBeInTheDocument();
+    expect(screen.getByText(/9\.50/)).toBeInTheDocument();
+  });
+
+  it("resets state when dialog is closed and reopened", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      json: async () => ({ error: "Error shown" }),
+    });
+
+    const onOpenChange = jest.fn();
+    const { rerender } = render(
+      <TopUpDialog {...defaultProps} onOpenChange={onOpenChange} />
+    );
+
+    // Trigger error state
+    await userEvent.click(screen.getByText("5.00€"));
+    await waitFor(() => {
+      expect(screen.getByText("Error shown")).toBeInTheDocument();
+    });
+
+    // Simulate dialog close via the handleClose callback
+    await userEvent.click(screen.getByTestId("dialog-close"));
+    expect(onOpenChange).toHaveBeenCalledWith(false);
+
+    // Parent closes dialog
+    rerender(
+      <TopUpDialog {...defaultProps} open={false} onOpenChange={onOpenChange} />
+    );
+
+    // Reopen
+    rerender(
+      <TopUpDialog {...defaultProps} open={true} onOpenChange={onOpenChange} />
+    );
+
+    // After handleClose reset + reopen, should show select step
+    expect(screen.getByText("5.00€")).toBeInTheDocument();
+  });
+
+  it("shows loading spinner while creating top-up", async () => {
+    // Make fetch hang to observe loading state
+    mockFetch.mockImplementationOnce(
+      () => new Promise(() => {}) // never resolves
+    );
+
+    render(<TopUpDialog {...defaultProps} />);
+    await userEvent.click(screen.getByText("5.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("spinner")).toBeInTheDocument();
+    });
+  });
+
+  it("handles network error on amount selection", async () => {
+    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+
+    render(<TopUpDialog {...defaultProps} />);
+    await userEvent.click(screen.getByText("5.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByText("Network error")).toBeInTheDocument();
+    });
+  });
+
+  it("submits payment via stripe and shows success step", async () => {
+    const onSuccess = jest.fn();
+    const mockConfirmPayment = jest
+      .fn()
+      .mockResolvedValue({ paymentIntent: { id: "pi_test" } });
+
+    mockUseStripe.mockReturnValue({ confirmPayment: mockConfirmPayment });
+    mockUseElements.mockReturnValue({});
+
+    // Get to payment step
+    mockFetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ clientSecret: "cs_stripe" }),
+      })
+      // confirm endpoint call
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+
+    render(<TopUpDialog {...defaultProps} onSuccess={onSuccess} />);
+    await userEvent.click(screen.getByText("5.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-element")).toBeInTheDocument();
+    });
+
+    // Submit the payment form
+    const submitButton = screen.getByRole("button", { name: /confirmTopUp/ });
+    await userEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(mockConfirmPayment).toHaveBeenCalledWith({
+        elements: {},
+        redirect: "if_required",
+      });
+    });
+
+    // Should transition to success step
+    await waitFor(() => {
+      expect(screen.getByText("topUpSuccess")).toBeInTheDocument();
+    });
+
+    // Restore mocks
+    mockUseStripe.mockReturnValue(null);
+    mockUseElements.mockReturnValue(null);
+  });
+
+  it("shows error when stripe payment fails", async () => {
+    const mockConfirmPayment = jest.fn().mockResolvedValue({
+      error: { message: "Card declined" },
+    });
+
+    mockUseStripe.mockReturnValue({ confirmPayment: mockConfirmPayment });
+    mockUseElements.mockReturnValue({});
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ clientSecret: "cs_stripe" }),
+    });
+
+    render(<TopUpDialog {...defaultProps} />);
+    await userEvent.click(screen.getByText("5.00€"));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("payment-element")).toBeInTheDocument();
+    });
+
+    const submitButton = screen.getByRole("button", { name: /confirmTopUp/ });
+    await userEvent.click(submitButton);
+
+    await waitFor(() => {
+      expect(screen.getByText("Card declined")).toBeInTheDocument();
+    });
+
+    // Restore mocks
+    mockUseStripe.mockReturnValue(null);
+    mockUseElements.mockReturnValue(null);
   });
 });

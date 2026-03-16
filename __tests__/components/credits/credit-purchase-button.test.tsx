@@ -114,6 +114,23 @@ describe("CreditPurchaseButton", () => {
     expect(buttons[0]).toBeDisabled();
   });
 
+  it("calls onInsufficientCredits when clicked with insufficient balance (non-credits-only)", async () => {
+    const onInsufficientCredits = jest.fn();
+    // amountCents > 500 → not credits-only → button not disabled
+    render(
+      <CreditPurchaseButton
+        {...defaultProps}
+        amountCents={1000}
+        userBalanceCents={100}
+        onInsufficientCredits={onInsufficientCredits}
+      />
+    );
+    await userEvent.click(
+      screen.getByRole("button", { name: /purchase\.insufficientCredits/ })
+    );
+    expect(onInsufficientCredits).toHaveBeenCalled();
+  });
+
   it("opens confirmation dialog when clicked with sufficient balance", async () => {
     render(<CreditPurchaseButton {...defaultProps} />);
     await userEvent.click(
@@ -131,34 +148,41 @@ describe("CreditPurchaseButton", () => {
   });
 
   it("calls API and onSuccess on successful purchase", async () => {
+    const onSuccess = jest.fn();
     mockFetch.mockResolvedValueOnce({
       ok: true,
       status: 201,
       json: async () => ({ purchaseId: "p1" }),
     });
 
-    render(<CreditPurchaseButton {...defaultProps} />);
+    render(<CreditPurchaseButton {...defaultProps} onSuccess={onSuccess} />);
     await userEvent.click(
       screen.getByRole("button", { name: /purchase\.payWithCredits/ })
     );
 
-    // Click confirm button in dialog
+    // Click confirm button in dialog (the one WITHOUT the amount span)
+    await waitFor(() => {
+      expect(screen.getByTestId("dialog")).toBeInTheDocument();
+    });
+
     const buttons = screen.getAllByRole("button");
     const confirmButton = buttons.find(
       (b) =>
         b.textContent?.includes("purchase.payWithCredits") &&
         !b.textContent?.includes("(")
     );
-    if (confirmButton) {
-      await userEvent.click(confirmButton);
-    }
+    expect(confirmButton).toBeDefined();
+    await userEvent.click(confirmButton!);
 
+    // Wait for the success callback (response processed)
     await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledWith(
-        "/api/credits/purchase",
-        expect.objectContaining({ method: "POST" })
-      );
+      expect(onSuccess).toHaveBeenCalled();
     });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      "/api/credits/purchase",
+      expect.objectContaining({ method: "POST" })
+    );
   });
 
   it("handles 402 response (insufficient credits)", async () => {
@@ -182,6 +206,10 @@ describe("CreditPurchaseButton", () => {
       screen.getByRole("button", { name: /purchase\.payWithCredits/ })
     );
 
+    await waitFor(() => {
+      expect(screen.getByTestId("dialog")).toBeInTheDocument();
+    });
+
     // Click confirm in dialog
     const buttons = screen.getAllByRole("button");
     const confirmButton = buttons.find(
@@ -189,9 +217,8 @@ describe("CreditPurchaseButton", () => {
         b.textContent?.includes("purchase.payWithCredits") &&
         !b.textContent?.includes("(")
     );
-    if (confirmButton) {
-      await userEvent.click(confirmButton);
-    }
+    expect(confirmButton).toBeDefined();
+    await userEvent.click(confirmButton!);
 
     await waitFor(() => {
       expect(onInsufficientCredits).toHaveBeenCalled();
@@ -207,6 +234,36 @@ describe("CreditPurchaseButton", () => {
       />
     );
     expect(screen.getByText("purchase.creditsOnly")).toBeInTheDocument();
+  });
+
+  it("shows error message on purchase failure", async () => {
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      json: async () => ({ error: "Server error" }),
+    });
+
+    render(<CreditPurchaseButton {...defaultProps} />);
+    await userEvent.click(
+      screen.getByRole("button", { name: /purchase\.payWithCredits/ })
+    );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("dialog")).toBeInTheDocument();
+    });
+
+    const buttons = screen.getAllByRole("button");
+    const confirmButton = buttons.find(
+      (b) =>
+        b.textContent?.includes("purchase.payWithCredits") &&
+        !b.textContent?.includes("(")
+    );
+    expect(confirmButton).toBeDefined();
+    await userEvent.click(confirmButton!);
+
+    await waitFor(() => {
+      expect(screen.getByText("Server error")).toBeInTheDocument();
+    });
   });
 
   it("shows credits-or-card message for larger amounts without enough balance", () => {

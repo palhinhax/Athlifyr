@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { CREDITS_ONLY_THRESHOLD_CENTS } from "@/lib/credits/constants";
+import { requiresCreditsOnly } from "@/lib/credits/purchase-service";
 
 interface CreditPurchaseButtonProps {
   itemId: string;
@@ -42,7 +42,7 @@ export function CreditPurchaseButton({
   const [result, setResult] = useState<"success" | "error" | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const isCreditsOnly = amountCents <= CREDITS_ONLY_THRESHOLD_CENTS;
+  const isCreditsOnly = requiresCreditsOnly(amountCents);
   const hasEnoughCredits = userBalanceCents >= amountCents;
 
   const handleClick = useCallback(() => {

@@ -89,15 +89,14 @@ export async function creditWallet(
   },
   tx?: PrismaTransactionClient
 ): Promise<{ transactionId: string; newBalanceCents: number }> {
-  const client = tx || prisma;
-
   if (params.amountCents <= 0) {
     throw new Error("Credit amount must be positive");
   }
 
-  // Idempotency check
+  // Idempotency check (outside transaction – early-return optimisation)
   if (params.idempotencyKey) {
-    const existing = await client.creditTransaction.findUnique({
+    const readClient = tx || prisma;
+    const existing = await readClient.creditTransaction.findUnique({
       where: { idempotencyKey: params.idempotencyKey },
     });
     if (existing) {
@@ -108,56 +107,60 @@ export async function creditWallet(
     }
   }
 
-  const wallet = await getOrCreateWallet(params.userId, client);
+  const execute = async (
+    innerTx: PrismaTransactionClient
+  ): Promise<{ transactionId: string; newBalanceCents: number }> => {
+    await getOrCreateWallet(params.userId, innerTx);
 
-  const newBalance = wallet.balanceCents + params.amountCents;
+    // Atomic increment – avoids read-modify-write race condition
+    const updatedWallet = await innerTx.creditWallet.update({
+      where: { userId: params.userId },
+      data: {
+        balanceCents: { increment: params.amountCents },
+        ...(params.type === "TOP_UP" && {
+          totalTopUpCents: {
+            increment: params.grossAmountCents ?? params.amountCents,
+          },
+        }),
+        ...(params.type === "REWARD" && {
+          totalRewardedCents: { increment: params.amountCents },
+        }),
+      },
+    });
 
-  // Update wallet balance
-  const updatedWallet = await client.creditWallet.update({
-    where: { userId: params.userId },
-    data: {
-      balanceCents: newBalance,
-      ...(params.type === "TOP_UP" && {
-        totalTopUpCents: {
-          increment: params.grossAmountCents ?? params.amountCents,
-        },
-      }),
-      ...(params.type === "REWARD" && {
-        totalRewardedCents: { increment: params.amountCents },
-      }),
-    },
-  });
+    // Create ledger entry in the same transaction
+    const transaction = await innerTx.creditTransaction.create({
+      data: {
+        userId: params.userId,
+        type: params.type,
+        source: params.source as Prisma.CreditTransactionCreateInput["source"],
+        amountCents: params.amountCents,
+        balanceAfterCents: updatedWallet.balanceCents,
+        description: params.description,
+        grossAmountCents: params.grossAmountCents,
+        platformFeeCents: params.platformFeeCents,
+        netCreditedCents: params.netCreditedCents,
+        stripePaymentIntentId: params.stripePaymentIntentId,
+        stripeCheckoutSessionId: params.stripeCheckoutSessionId,
+        rewardCampaignId: params.rewardCampaignId,
+        challengeId: params.challengeId,
+        giveawayId: params.giveawayId,
+        referralId: params.referralId,
+        refundedTransactionId: params.refundedTransactionId,
+        adminUserId: params.adminUserId,
+        adminNote: params.adminNote,
+        expiresAt: params.expiresAt,
+        idempotencyKey: params.idempotencyKey,
+      },
+    });
 
-  // Create transaction record
-  const transaction = await client.creditTransaction.create({
-    data: {
-      userId: params.userId,
-      type: params.type,
-      source: params.source as Prisma.CreditTransactionCreateInput["source"],
-      amountCents: params.amountCents,
-      balanceAfterCents: updatedWallet.balanceCents,
-      description: params.description,
-      grossAmountCents: params.grossAmountCents,
-      platformFeeCents: params.platformFeeCents,
-      netCreditedCents: params.netCreditedCents,
-      stripePaymentIntentId: params.stripePaymentIntentId,
-      stripeCheckoutSessionId: params.stripeCheckoutSessionId,
-      rewardCampaignId: params.rewardCampaignId,
-      challengeId: params.challengeId,
-      giveawayId: params.giveawayId,
-      referralId: params.referralId,
-      refundedTransactionId: params.refundedTransactionId,
-      adminUserId: params.adminUserId,
-      adminNote: params.adminNote,
-      expiresAt: params.expiresAt,
-      idempotencyKey: params.idempotencyKey,
-    },
-  });
-
-  return {
-    transactionId: transaction.id,
-    newBalanceCents: updatedWallet.balanceCents,
+    return {
+      transactionId: transaction.id,
+      newBalanceCents: updatedWallet.balanceCents,
+    };
   };
+
+  return tx ? execute(tx) : prisma.$transaction(execute);
 }
 
 /**
@@ -176,15 +179,14 @@ export async function debitWallet(
   },
   tx?: PrismaTransactionClient
 ): Promise<{ transactionId: string; newBalanceCents: number }> {
-  const client = tx || prisma;
-
   if (params.amountCents <= 0) {
     throw new Error("Debit amount must be positive");
   }
 
-  // Idempotency check
+  // Idempotency check (outside transaction – early-return optimisation)
   if (params.idempotencyKey) {
-    const existing = await client.creditTransaction.findUnique({
+    const readClient = tx || prisma;
+    const existing = await readClient.creditTransaction.findUnique({
       where: { idempotencyKey: params.idempotencyKey },
     });
     if (existing) {
@@ -195,43 +197,69 @@ export async function debitWallet(
     }
   }
 
-  const wallet = await getOrCreateWallet(params.userId, client);
+  const execute = async (
+    innerTx: PrismaTransactionClient
+  ): Promise<{ transactionId: string; newBalanceCents: number }> => {
+    // Ensure wallet exists before attempting the conditional update
+    await getOrCreateWallet(params.userId, innerTx);
 
-  if (wallet.balanceCents < params.amountCents) {
-    throw new InsufficientCreditsError(wallet.balanceCents, params.amountCents);
-  }
+    // Atomic conditional decrement – prevents race condition and negative balance.
+    // updateMany returns count=0 when balanceCents < amountCents, which means
+    // either the balance was already too low or a concurrent debit won the race.
+    const result = await innerTx.creditWallet.updateMany({
+      where: {
+        userId: params.userId,
+        balanceCents: { gte: params.amountCents },
+      },
+      data: {
+        balanceCents: { decrement: params.amountCents },
+        totalSpentCents: { increment: params.amountCents },
+      },
+    });
 
-  const newBalance = wallet.balanceCents - params.amountCents;
+    if (result.count === 0) {
+      const wallet = await innerTx.creditWallet.findUnique({
+        where: { userId: params.userId },
+        select: { balanceCents: true },
+      });
+      throw new InsufficientCreditsError(
+        wallet?.balanceCents ?? 0,
+        params.amountCents
+      );
+    }
 
-  // Update wallet balance
-  const updatedWallet = await client.creditWallet.update({
-    where: { userId: params.userId },
-    data: {
-      balanceCents: newBalance,
-      totalSpentCents: { increment: params.amountCents },
-    },
-  });
+    const updatedWallet = await innerTx.creditWallet.findUnique({
+      where: { userId: params.userId },
+      select: { balanceCents: true },
+    });
 
-  // Create transaction record
-  const transaction = await client.creditTransaction.create({
-    data: {
-      userId: params.userId,
-      type: "PURCHASE",
-      source: "PURCHASE_CONSUMPTION",
-      amountCents: -params.amountCents, // Negative for debits
-      balanceAfterCents: updatedWallet.balanceCents,
-      description: params.description,
-      venueId: params.venueId,
-      venueProductId: params.venueProductId,
-      venueProductPurchaseId: params.venueProductPurchaseId,
-      idempotencyKey: params.idempotencyKey,
-    },
-  });
+    if (!updatedWallet) {
+      throw new Error("Wallet not found after update");
+    }
 
-  return {
-    transactionId: transaction.id,
-    newBalanceCents: updatedWallet.balanceCents,
+    // Create ledger entry in the same transaction
+    const transaction = await innerTx.creditTransaction.create({
+      data: {
+        userId: params.userId,
+        type: "PURCHASE",
+        source: "PURCHASE_CONSUMPTION",
+        amountCents: -params.amountCents, // Negative for debits
+        balanceAfterCents: updatedWallet.balanceCents,
+        description: params.description,
+        venueId: params.venueId,
+        venueProductId: params.venueProductId,
+        venueProductPurchaseId: params.venueProductPurchaseId,
+        idempotencyKey: params.idempotencyKey,
+      },
+    });
+
+    return {
+      transactionId: transaction.id,
+      newBalanceCents: updatedWallet.balanceCents,
+    };
   };
+
+  return tx ? execute(tx) : prisma.$transaction(execute);
 }
 
 /**

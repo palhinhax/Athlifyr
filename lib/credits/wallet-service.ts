@@ -89,75 +89,82 @@ export async function creditWallet(
   },
   tx?: PrismaTransactionClient
 ): Promise<{ transactionId: string; newBalanceCents: number }> {
-  const client = tx || prisma;
-
   if (params.amountCents <= 0) {
     throw new Error("Credit amount must be positive");
   }
 
-  // Idempotency check
-  if (params.idempotencyKey) {
-    const existing = await client.creditTransaction.findUnique({
-      where: { idempotencyKey: params.idempotencyKey },
-    });
-    if (existing) {
-      return {
-        transactionId: existing.id,
-        newBalanceCents: existing.balanceAfterCents,
-      };
+  const execute = async (txClient: PrismaTransactionClient) => {
+    // Idempotency check
+    if (params.idempotencyKey) {
+      const existing = await txClient.creditTransaction.findUnique({
+        where: { idempotencyKey: params.idempotencyKey },
+      });
+      if (existing) {
+        return {
+          transactionId: existing.id,
+          newBalanceCents: existing.balanceAfterCents,
+        };
+      }
     }
-  }
 
-  const wallet = await getOrCreateWallet(params.userId, client);
+    // Ensure wallet exists before updating
+    await getOrCreateWallet(params.userId, txClient);
 
-  const newBalance = wallet.balanceCents + params.amountCents;
+    // Atomically increment balance using DB-level increment
+    const updatedWallet = await txClient.creditWallet.update({
+      where: { userId: params.userId },
+      data: {
+        balanceCents: { increment: params.amountCents },
+        ...(params.type === "TOP_UP" && {
+          totalTopUpCents: {
+            increment: params.grossAmountCents ?? params.amountCents,
+          },
+        }),
+        ...(params.type === "REWARD" && {
+          totalRewardedCents: { increment: params.amountCents },
+        }),
+      },
+    });
 
-  // Update wallet balance
-  const updatedWallet = await client.creditWallet.update({
-    where: { userId: params.userId },
-    data: {
-      balanceCents: newBalance,
-      ...(params.type === "TOP_UP" && {
-        totalTopUpCents: {
-          increment: params.grossAmountCents ?? params.amountCents,
-        },
-      }),
-      ...(params.type === "REWARD" && {
-        totalRewardedCents: { increment: params.amountCents },
-      }),
-    },
-  });
+    // Create transaction record within the same DB transaction
+    const transaction = await txClient.creditTransaction.create({
+      data: {
+        userId: params.userId,
+        type: params.type,
+        source: params.source as Prisma.CreditTransactionCreateInput["source"],
+        amountCents: params.amountCents,
+        balanceAfterCents: updatedWallet.balanceCents,
+        description: params.description,
+        grossAmountCents: params.grossAmountCents,
+        platformFeeCents: params.platformFeeCents,
+        netCreditedCents: params.netCreditedCents,
+        stripePaymentIntentId: params.stripePaymentIntentId,
+        stripeCheckoutSessionId: params.stripeCheckoutSessionId,
+        rewardCampaignId: params.rewardCampaignId,
+        challengeId: params.challengeId,
+        giveawayId: params.giveawayId,
+        referralId: params.referralId,
+        refundedTransactionId: params.refundedTransactionId,
+        adminUserId: params.adminUserId,
+        adminNote: params.adminNote,
+        expiresAt: params.expiresAt,
+        idempotencyKey: params.idempotencyKey,
+      },
+    });
 
-  // Create transaction record
-  const transaction = await client.creditTransaction.create({
-    data: {
-      userId: params.userId,
-      type: params.type,
-      source: params.source as Prisma.CreditTransactionCreateInput["source"],
-      amountCents: params.amountCents,
-      balanceAfterCents: updatedWallet.balanceCents,
-      description: params.description,
-      grossAmountCents: params.grossAmountCents,
-      platformFeeCents: params.platformFeeCents,
-      netCreditedCents: params.netCreditedCents,
-      stripePaymentIntentId: params.stripePaymentIntentId,
-      stripeCheckoutSessionId: params.stripeCheckoutSessionId,
-      rewardCampaignId: params.rewardCampaignId,
-      challengeId: params.challengeId,
-      giveawayId: params.giveawayId,
-      referralId: params.referralId,
-      refundedTransactionId: params.refundedTransactionId,
-      adminUserId: params.adminUserId,
-      adminNote: params.adminNote,
-      expiresAt: params.expiresAt,
-      idempotencyKey: params.idempotencyKey,
-    },
-  });
-
-  return {
-    transactionId: transaction.id,
-    newBalanceCents: updatedWallet.balanceCents,
+    return {
+      transactionId: transaction.id,
+      newBalanceCents: updatedWallet.balanceCents,
+    };
   };
+
+  // If caller provided a transaction client, use it directly to avoid nesting;
+  // otherwise start a new transaction so the wallet update and transaction record
+  // are written atomically in a single DB round-trip.
+  if (tx) {
+    return execute(tx);
+  }
+  return prisma.$transaction(execute);
 }
 
 /**
@@ -176,62 +183,72 @@ export async function debitWallet(
   },
   tx?: PrismaTransactionClient
 ): Promise<{ transactionId: string; newBalanceCents: number }> {
-  const client = tx || prisma;
-
   if (params.amountCents <= 0) {
     throw new Error("Debit amount must be positive");
   }
 
-  // Idempotency check
-  if (params.idempotencyKey) {
-    const existing = await client.creditTransaction.findUnique({
-      where: { idempotencyKey: params.idempotencyKey },
-    });
-    if (existing) {
-      return {
-        transactionId: existing.id,
-        newBalanceCents: existing.balanceAfterCents,
-      };
+  const execute = async (txClient: PrismaTransactionClient) => {
+    // Idempotency check
+    if (params.idempotencyKey) {
+      const existing = await txClient.creditTransaction.findUnique({
+        where: { idempotencyKey: params.idempotencyKey },
+      });
+      if (existing) {
+        return {
+          transactionId: existing.id,
+          newBalanceCents: existing.balanceAfterCents,
+        };
+      }
     }
-  }
 
-  const wallet = await getOrCreateWallet(params.userId, client);
+    // Read current balance inside the transaction to check sufficiency
+    const wallet = await getOrCreateWallet(params.userId, txClient);
 
-  if (wallet.balanceCents < params.amountCents) {
-    throw new InsufficientCreditsError(wallet.balanceCents, params.amountCents);
-  }
+    if (wallet.balanceCents < params.amountCents) {
+      throw new InsufficientCreditsError(
+        wallet.balanceCents,
+        params.amountCents
+      );
+    }
 
-  const newBalance = wallet.balanceCents - params.amountCents;
+    // Atomically decrement balance using DB-level decrement
+    const updatedWallet = await txClient.creditWallet.update({
+      where: { userId: params.userId },
+      data: {
+        balanceCents: { decrement: params.amountCents },
+        totalSpentCents: { increment: params.amountCents },
+      },
+    });
 
-  // Update wallet balance
-  const updatedWallet = await client.creditWallet.update({
-    where: { userId: params.userId },
-    data: {
-      balanceCents: newBalance,
-      totalSpentCents: { increment: params.amountCents },
-    },
-  });
+    // Create transaction record within the same DB transaction
+    const transaction = await txClient.creditTransaction.create({
+      data: {
+        userId: params.userId,
+        type: "PURCHASE",
+        source: "PURCHASE_CONSUMPTION",
+        amountCents: -params.amountCents, // Negative for debits
+        balanceAfterCents: updatedWallet.balanceCents,
+        description: params.description,
+        venueId: params.venueId,
+        venueProductId: params.venueProductId,
+        venueProductPurchaseId: params.venueProductPurchaseId,
+        idempotencyKey: params.idempotencyKey,
+      },
+    });
 
-  // Create transaction record
-  const transaction = await client.creditTransaction.create({
-    data: {
-      userId: params.userId,
-      type: "PURCHASE",
-      source: "PURCHASE_CONSUMPTION",
-      amountCents: -params.amountCents, // Negative for debits
-      balanceAfterCents: updatedWallet.balanceCents,
-      description: params.description,
-      venueId: params.venueId,
-      venueProductId: params.venueProductId,
-      venueProductPurchaseId: params.venueProductPurchaseId,
-      idempotencyKey: params.idempotencyKey,
-    },
-  });
-
-  return {
-    transactionId: transaction.id,
-    newBalanceCents: updatedWallet.balanceCents,
+    return {
+      transactionId: transaction.id,
+      newBalanceCents: updatedWallet.balanceCents,
+    };
   };
+
+  // If caller provided a transaction client, use it directly to avoid nesting;
+  // otherwise start a new transaction so the balance check, wallet update, and
+  // transaction record are written atomically in a single DB round-trip.
+  if (tx) {
+    return execute(tx);
+  }
+  return prisma.$transaction(execute);
 }
 
 /**

@@ -85,6 +85,47 @@ type StepId =
   | `team-${number}`
   | "review";
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+function shouldChargeCustomField(
+  answer: CustomFieldAnswer,
+  field: CustomField
+): boolean {
+  if (field.priceCents <= 0) return false;
+  return field.type === "BOOLEAN"
+    ? answer.value === "true"
+    : answer.value.trim().length > 0;
+}
+
+interface PriceItem {
+  label: string;
+  amount: number;
+  qty: number;
+}
+
+function getCustomFieldExtraItems(
+  answersMap: Record<number, CustomFieldAnswer[]>,
+  customFields: CustomField[],
+  getParticipantLabel: (idx: number) => string
+): PriceItem[] {
+  const items: PriceItem[] = [];
+
+  for (const [idxStr, answers] of Object.entries(answersMap)) {
+    const idx = Number(idxStr);
+    for (const answer of answers) {
+      const field = customFields.find((f) => f.id === answer.customFieldId);
+      if (!field) continue;
+      if (!shouldChargeCustomField(answer, field)) continue;
+
+      const who = getParticipantLabel(idx);
+      const label = who ? `${field.label} — ${who}` : field.label;
+      items.push({ label, amount: field.priceCents / 100, qty: 1 });
+    }
+  }
+
+  return items;
+}
+
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export function RegistrationFlow({
@@ -271,53 +312,41 @@ export function RegistrationFlow({
     answers.map((a) => ({ ...a, participantIndex: Number(idx) }))
   );
 
+  // ── Participant label helper ────────────────────────────────────────────────
+  const getParticipantLabel = (idx: number): string => {
+    if (teamSize <= 1) return "";
+    return idx === 0
+      ? tc("participantYou").replace(/ \(.*\)/, "")
+      : tc("teamMemberTitle", { number: idx + 1 });
+  };
+
   // ── Price calculation ─────────────────────────────────────────────────────
   const calculateTotals = () => {
     if (!activePrice) return { items: [], total: 0, currency: "EUR" };
 
     const currency = activePrice.currency;
     const pricePerPerson = activePrice.price;
-    const items: { label: string; amount: number; qty: number }[] = [];
+    const items: PriceItem[] = [];
 
     // Base registration × teamSize
+    const variantName = selectedVariant?.name ?? "";
     for (let i = 0; i < teamSize; i++) {
       const label =
         teamSize > 1
           ? i === 0
-            ? `${selectedVariant?.name ?? ""} — ${tc("participantYou").replace(/ \(.*\)/, "")}`
-            : `${selectedVariant?.name ?? ""} — ${tc("teamMemberTitle", { number: i + 1 })}`
-          : (selectedVariant?.name ?? eventTitle);
+            ? `${variantName} — ${tc("participantYou").replace(/ \(.*\)/, "")}`
+            : `${variantName} — ${tc("teamMemberTitle", { number: i + 1 })}`
+          : variantName || eventTitle;
       items.push({ label, amount: pricePerPerson, qty: 1 });
     }
 
     // Custom field extras per participant
-    for (const [idxStr, answers] of Object.entries(customFieldAnswersMap)) {
-      const idx = Number(idxStr);
-      for (const answer of answers) {
-        const field = customFields.find((f) => f.id === answer.customFieldId);
-        if (!field || field.priceCents <= 0) continue;
-
-        const shouldCharge =
-          field.type === "BOOLEAN"
-            ? answer.value === "true"
-            : answer.value.trim().length > 0;
-
-        if (shouldCharge) {
-          const who =
-            teamSize > 1
-              ? idx === 0
-                ? tc("participantYou").replace(/ \(.*\)/, "")
-                : tc("teamMemberTitle", { number: idx + 1 })
-              : "";
-          const label = who ? `${field.label} — ${who}` : field.label;
-          items.push({
-            label,
-            amount: field.priceCents / 100,
-            qty: 1,
-          });
-        }
-      }
-    }
+    const extraItems = getCustomFieldExtraItems(
+      customFieldAnswersMap,
+      customFields,
+      getParticipantLabel
+    );
+    items.push(...extraItems);
 
     const total = items.reduce((sum, item) => sum + item.amount * item.qty, 0);
     return { items, total, currency };

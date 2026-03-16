@@ -83,7 +83,7 @@ function useTabataTimer(isVisible: boolean) {
               return 0;
             } else {
               // Next round
-              setCurrentRound((r) => r + 1);
+              setCurrentRound(currentRound + 1);
               setPhase("work");
               return workTime;
             }

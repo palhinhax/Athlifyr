@@ -303,6 +303,68 @@ function findClosestFrame(
   return frames[bestIdx];
 }
 
+function renderMotionFrameOverlay(
+  poseFrames: PoseFrameData[],
+  frameTimeMs: number,
+  w: number,
+  h: number
+): string {
+  const closestFrame = findClosestFrame(poseFrames, frameTimeMs);
+  if (closestFrame) {
+    return renderMotionOverlaySvg(closestFrame, w, h);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}"></svg>`;
+}
+
+function buildFfmpegComposeArgs(
+  outputFps: number,
+  composedDir: string,
+  hasAudio: boolean,
+  inputPath: string,
+  segmentStartMs: number,
+  segmentDurationMs: number,
+  outputPath: string
+): string[] {
+  const args = [
+    "-y",
+    "-framerate",
+    String(outputFps),
+    "-i",
+    path.join(composedDir, "frame_%05d.png"),
+  ];
+
+  if (hasAudio) {
+    args.push(
+      "-ss",
+      String(segmentStartMs / 1000),
+      "-t",
+      String(segmentDurationMs / 1000),
+      "-i",
+      inputPath
+    );
+  }
+
+  args.push("-filter_complex", "[0:v]format=yuv420p[v]", "-map", "[v]");
+
+  if (hasAudio) {
+    args.push("-map", "1:a?");
+  }
+
+  args.push(
+    "-c:v",
+    "libx264",
+    "-crf",
+    "20",
+    "-preset",
+    "fast",
+    "-movflags",
+    "+faststart",
+    outputPath
+  );
+
+  return args;
+}
+
 /**
  * processExportJob
  *
@@ -371,7 +433,7 @@ export async function processExportJob(
     // List extracted frames
     const frameFiles = (await fs.readdir(framesDir))
       .filter((f) => f.startsWith("frame_") && f.endsWith(".png"))
-      .sort();
+      .sort((a, b) => a.localeCompare(b));
 
     if (frameFiles.length === 0) {
       throw new Error("ffmpeg extracted 0 frames from the video");
@@ -407,27 +469,20 @@ export async function processExportJob(
       const frameTimeMs = Math.round((i / outputFps) * 1000);
 
       // Generate overlay SVG
-      let overlaySvg: string;
-
-      if (overlay.type === "motion") {
-        const closestFrame = findClosestFrame(overlay.poseFrames, frameTimeMs);
-        if (closestFrame) {
-          overlaySvg = renderMotionOverlaySvg(
-            closestFrame,
-            frameWidth,
-            frameHeight
-          );
-        } else {
-          overlaySvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${frameWidth}" height="${frameHeight}"></svg>`;
-        }
-      } else {
-        overlaySvg = renderLiftOverlaySvg(
-          overlay.barPath,
-          frameTimeMs,
-          frameWidth,
-          frameHeight
-        );
-      }
+      const overlaySvg =
+        overlay.type === "motion"
+          ? renderMotionFrameOverlay(
+              overlay.poseFrames,
+              frameTimeMs,
+              frameWidth,
+              frameHeight
+            )
+          : renderLiftOverlaySvg(
+              overlay.barPath,
+              frameTimeMs,
+              frameWidth,
+              frameHeight
+            );
 
       const overlayBuffer = Buffer.from(overlaySvg);
 
@@ -455,45 +510,13 @@ export async function processExportJob(
     // Get audio from original video for the segment
     const hasAudio = await videoHasAudio(inputPath);
 
-    const ffmpegArgs = [
-      "-y",
-      "-framerate",
-      String(outputFps),
-      "-i",
-      path.join(composedDir, "frame_%05d.png"),
-    ];
-
-    if (hasAudio) {
-      ffmpegArgs.push(
-        "-ss",
-        String(segmentStartMs / 1000),
-        "-t",
-        String(segmentDurationMs / 1000),
-        "-i",
-        inputPath
-      );
-    }
-
-    ffmpegArgs.push(
-      "-filter_complex",
-      hasAudio ? "[0:v]format=yuv420p[v]" : "[0:v]format=yuv420p[v]",
-      "-map",
-      "[v]"
-    );
-
-    if (hasAudio) {
-      ffmpegArgs.push("-map", "1:a?");
-    }
-
-    ffmpegArgs.push(
-      "-c:v",
-      "libx264",
-      "-crf",
-      "20",
-      "-preset",
-      "fast",
-      "-movflags",
-      "+faststart",
+    const ffmpegArgs = buildFfmpegComposeArgs(
+      outputFps,
+      composedDir,
+      hasAudio,
+      inputPath,
+      segmentStartMs,
+      segmentDurationMs,
       outputPath
     );
 

@@ -574,97 +574,106 @@ async function handleChargeRefunded(charge: Stripe.Charge) {
     `Processing charge.refunded: ${charge.id} (PI: ${stripePaymentIntentId}, full: ${isFullRefund})`
   );
 
-  // ── 1. Event registrations ──────────────────────────────────────────────
+  await handleRegistrationRefund(stripePaymentIntentId, isFullRefund);
+  await handleVenuePaymentRefund(stripePaymentIntentId, isFullRefund);
+  await handleProductPurchaseRefund(stripePaymentIntentId, isFullRefund);
+}
+
+async function handleRegistrationRefund(
+  stripePaymentIntentId: string,
+  isFullRefund: boolean
+) {
   const registrations = await prisma.registration.findMany({
     where: { stripePaymentIntentId },
   });
 
-  if (registrations.length > 0) {
-    if (isFullRefund) {
-      await prisma.registration.updateMany({
-        where: { stripePaymentIntentId },
-        data: { status: "REFUNDED" },
-      });
-      console.log(
-        `Refunded ${registrations.length} registration(s) for PI ${stripePaymentIntentId}`
-      );
-    } else {
-      console.log(
-        `Partial refund on PI ${stripePaymentIntentId} — registrations unchanged`
-      );
-    }
-  }
+  if (registrations.length === 0) return;
 
-  // ── 2. Venue PaymentIntent + Subscription ───────────────────────────────
+  if (isFullRefund) {
+    await prisma.registration.updateMany({
+      where: { stripePaymentIntentId },
+      data: { status: "REFUNDED" },
+    });
+    console.log(
+      `Refunded ${registrations.length} registration(s) for PI ${stripePaymentIntentId}`
+    );
+  } else {
+    console.log(
+      `Partial refund on PI ${stripePaymentIntentId} — registrations unchanged`
+    );
+  }
+}
+
+async function handleVenuePaymentRefund(
+  stripePaymentIntentId: string,
+  isFullRefund: boolean
+) {
   const paymentIntent = await prisma.paymentIntent.findFirst({
     where: { stripePaymentIntentId },
   });
 
-  if (paymentIntent) {
-    await prisma.paymentIntent.update({
-      where: { id: paymentIntent.id },
-      data: { status: "REFUNDED" },
+  if (!paymentIntent) return;
+
+  await prisma.paymentIntent.update({
+    where: { id: paymentIntent.id },
+    data: { status: "REFUNDED" },
+  });
+
+  if (isFullRefund) {
+    const subscription = await prisma.venueSubscription.findFirst({
+      where: {
+        venueId: paymentIntent.venueId,
+        userId: paymentIntent.userId,
+        planId: paymentIntent.planId,
+        status: "ACTIVE",
+      },
     });
 
-    if (isFullRefund) {
-      const subscription = await prisma.venueSubscription.findFirst({
-        where: {
-          venueId: paymentIntent.venueId,
-          userId: paymentIntent.userId,
-          planId: paymentIntent.planId,
-          status: "ACTIVE",
+    if (subscription) {
+      await prisma.venueSubscription.update({
+        where: { id: subscription.id },
+        data: {
+          status: "CANCELLED",
+          paymentStatus: "PENDING_PAYMENT",
         },
       });
-
-      if (subscription) {
-        await prisma.venueSubscription.update({
-          where: { id: subscription.id },
-          data: {
-            status: "CANCELLED",
-            paymentStatus: "PENDING_PAYMENT",
-          },
-        });
-        console.log(
-          `Cancelled subscription ${subscription.id} due to full refund`
-        );
-      }
-    }
-
-    console.log(`PaymentIntent ${paymentIntent.id} marked as REFUNDED`);
-  }
-
-  // ── 3. Venue product purchases ──────────────────────────────────────────
-  if (isFullRefund) {
-    const productPurchase = await prisma.venueProductPurchase.findFirst({
-      where: { stripePaymentIntentId, status: "CONFIRMED" },
-      include: { product: { select: { stock: true } } },
-    });
-
-    if (productPurchase) {
-      await prisma.venueProductPurchase.update({
-        where: { id: productPurchase.id },
-        data: { status: "REFUNDED" },
-      });
-
-      // Restore stock if tracked
-      if (productPurchase.product.stock !== null) {
-        await prisma.venueProduct.update({
-          where: { id: productPurchase.productId },
-          data: { stock: { increment: productPurchase.quantity } },
-        });
-      }
-
       console.log(
-        `Product purchase ${productPurchase.id} refunded for PI ${stripePaymentIntentId}`
+        `Cancelled subscription ${subscription.id} due to full refund`
       );
     }
   }
 
-  if (registrations.length === 0 && !paymentIntent) {
-    console.warn(
-      `charge.refunded: no registration or PaymentIntent found for PI ${stripePaymentIntentId}`
-    );
+  console.log(`PaymentIntent ${paymentIntent.id} marked as REFUNDED`);
+}
+
+async function handleProductPurchaseRefund(
+  stripePaymentIntentId: string,
+  isFullRefund: boolean
+) {
+  if (!isFullRefund) return;
+
+  const productPurchase = await prisma.venueProductPurchase.findFirst({
+    where: { stripePaymentIntentId, status: "CONFIRMED" },
+    include: { product: { select: { stock: true } } },
+  });
+
+  if (!productPurchase) return;
+
+  await prisma.venueProductPurchase.update({
+    where: { id: productPurchase.id },
+    data: { status: "REFUNDED" },
+  });
+
+  if (productPurchase.product.stock !== null) {
+    await prisma.venueProduct.update({
+      where: { id: productPurchase.productId },
+      data: { stock: { increment: productPurchase.quantity } },
+    });
   }
+
+  console.log(
+    `Product purchase ${productPurchase.id} refunded for PI ${stripePaymentIntentId}`
+  );
 }
 
 // ============================================================================

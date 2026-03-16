@@ -837,6 +837,15 @@ function AIAnalysisPanel({ ai }: { ai: AIAnalysis }) {
 
 type ViewMode = "video" | "skeleton" | "split";
 
+function computeDurationMs(
+  segment: { startMs: number; endMs: number } | undefined,
+  newPose: { durationSec?: number } | undefined
+): number | null {
+  if (segment) return segment.endMs - segment.startMs;
+  if (newPose?.durationSec) return newPose.durationSec * 1000;
+  return null;
+}
+
 function MotionVideoModal({
   record,
   onClose,
@@ -872,11 +881,7 @@ function MotionVideoModal({
   const frameCount = hasSkeletonData
     ? skeletonFrames.length
     : poseFrames.length;
-  const durationMs = json?.segment
-    ? json.segment.endMs - json.segment.startMs
-    : newPose?.durationSec
-      ? newPose.durationSec * 1000
-      : null;
+  const durationMs = computeDurationMs(json?.segment, newPose);
 
   // Count frames with actual skeleton data
   const framesWithData = useMemo(
@@ -885,6 +890,7 @@ function MotionVideoModal({
   );
 
   // Use the server-side video proxy to avoid CORS/range-request issues with B2
+  // Cleanup blob URLs on unmount or record change
   useEffect(() => {
     if (!record?.videoUrl) {
       setVideoBlobUrl(null);
@@ -895,16 +901,13 @@ function MotionVideoModal({
     const proxyUrl = `/api/video-proxy?url=${encodeURIComponent(record.videoUrl)}`;
     setVideoBlobUrl(proxyUrl);
     setVideoLoading(false);
-  }, [record?.videoUrl]);
 
-  // Cleanup blob URL on unmount or record change
-  useEffect(() => {
     return () => {
-      if (videoBlobUrl && videoBlobUrl.startsWith("blob:")) {
-        URL.revokeObjectURL(videoBlobUrl);
+      if (proxyUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(proxyUrl);
       }
     };
-  }, [videoBlobUrl]);
+  }, [record?.videoUrl]);
 
   // Reset on open
   useEffect(() => {

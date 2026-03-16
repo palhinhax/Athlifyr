@@ -47,14 +47,16 @@ export async function PATCH(
       return NextResponse.json({ error: "Invalid price" }, { status: 400 });
     }
 
-    if (currency !== undefined) {
-      const upper = typeof currency === "string" ? currency.toUpperCase() : "";
-      if (!VALID_CURRENCIES.has(upper)) {
-        return NextResponse.json(
-          { error: "Unsupported currency" },
-          { status: 400 }
-        );
-      }
+    if (
+      currency !== undefined &&
+      !VALID_CURRENCIES.has(
+        typeof currency === "string" ? currency.toUpperCase() : ""
+      )
+    ) {
+      return NextResponse.json(
+        { error: "Unsupported currency" },
+        { status: 400 }
+      );
     }
 
     if (

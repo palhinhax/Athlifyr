@@ -120,6 +120,7 @@ export default function AdminEventsPage() {
 
   const [variants, setVariants] = useState<
     {
+      id: string;
       name: string;
       distanceKm: string;
       startDate: string;
@@ -131,7 +132,15 @@ export default function AdminEventsPage() {
         order: number;
       }>;
     }[]
-  >([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
+  >([
+    {
+      id: crypto.randomUUID(),
+      name: "",
+      distanceKm: "",
+      startDate: "",
+      startTime: "",
+    },
+  ]);
 
   // Check if user is admin
   useEffect(() => {
@@ -305,18 +314,16 @@ export default function AdminEventsPage() {
     variantIndex: number,
     segmentIndex: number
   ) => {
-    setVariants((prev) =>
-      prev.map((v, i) =>
-        i === variantIndex
-          ? {
-              ...v,
-              triathlonSegments: v.triathlonSegments?.filter(
-                (_, si) => si !== segmentIndex
-              ),
-            }
-          : v
-      )
-    );
+    const updated = variants.map((v, i) => {
+      if (i !== variantIndex) return v;
+      return {
+        ...v,
+        triathlonSegments: v.triathlonSegments?.filter(
+          (_, si) => si !== segmentIndex
+        ),
+      };
+    });
+    setVariants(updated);
   };
 
   const updateTriathlonSegment = (
@@ -325,24 +332,28 @@ export default function AdminEventsPage() {
     field: "segmentType" | "distanceKm" | "terrainType",
     value: string
   ) => {
-    setVariants((prev) =>
-      prev.map((v, i) =>
-        i === variantIndex
-          ? {
-              ...v,
-              triathlonSegments: v.triathlonSegments?.map((seg, si) =>
-                si === segmentIndex ? { ...seg, [field]: value } : seg
-              ),
-            }
-          : v
-      )
-    );
+    const updated = variants.map((v, i) => {
+      if (i !== variantIndex) return v;
+      return {
+        ...v,
+        triathlonSegments: v.triathlonSegments?.map((seg, si) =>
+          si === segmentIndex ? { ...seg, [field]: value } : seg
+        ),
+      };
+    });
+    setVariants(updated);
   };
 
   const addVariant = () => {
     setVariants((prev) => [
       ...prev,
-      { name: "", distanceKm: "", startDate: "", startTime: "" },
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        distanceKm: "",
+        startDate: "",
+        startTime: "",
+      },
     ]);
   };
 
@@ -363,7 +374,15 @@ export default function AdminEventsPage() {
       externalUrl: "",
       stravaRouteEmbed: "",
     });
-    setVariants([{ name: "", distanceKm: "", startDate: "", startTime: "" }]);
+    setVariants([
+      {
+        id: crypto.randomUUID(),
+        name: "",
+        distanceKm: "",
+        startDate: "",
+        startTime: "",
+      },
+    ]);
   };
 
   const handleCreate = async () => {
@@ -686,7 +705,10 @@ export default function AdminEventsPage() {
                       </div>
                       <div className="space-y-3">
                         {variants.map((variant, index) => (
-                          <div key={index} className="rounded-lg border p-3">
+                          <div
+                            key={variant.id}
+                            className="rounded-lg border p-3"
+                          >
                             <div className="flex items-center gap-2">
                               <Input
                                 placeholder="Nome (ex: 21km, Singles Pro)"

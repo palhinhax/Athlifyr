@@ -12,6 +12,22 @@ interface CustomFieldAnswer {
   participantIndex?: number; // 0 = main, 1+ = team members
 }
 
+/** Returns the first missing-field error message, or null when all OK */
+function findMissingRequiredField(
+  requiredFields: { id: string; label: string }[],
+  answersByParticipant: Map<number, CustomFieldAnswer[]>
+): string | null {
+  for (const [participantIdx, participantAnswers] of answersByParticipant) {
+    for (const rf of requiredFields) {
+      const answer = participantAnswers.find((a) => a.customFieldId === rf.id);
+      if (!answer || !answer.value.trim()) {
+        return `Required field "${rf.label}" is missing for participant ${participantIdx + 1}`;
+      }
+    }
+  }
+  return null;
+}
+
 // POST /api/events/[id]/custom-field-responses
 // Save custom field responses for a registration or participation
 export async function POST(request: NextRequest, { params }: RouteParams) {
@@ -56,20 +72,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     // Validate required fields have values for each participant
     const requiredFields = fields.filter((f) => f.required);
-    for (const [participantIdx, participantAnswers] of answersByParticipant) {
-      for (const rf of requiredFields) {
-        const answer = participantAnswers.find(
-          (a) => a.customFieldId === rf.id
-        );
-        if (!answer || !answer.value.trim()) {
-          return NextResponse.json(
-            {
-              error: `Required field "${rf.label}" is missing for participant ${participantIdx + 1}`,
-            },
-            { status: 400 }
-          );
-        }
-      }
+    const missingField = findMissingRequiredField(
+      requiredFields,
+      answersByParticipant
+    );
+    if (missingField) {
+      return NextResponse.json({ error: missingField }, { status: 400 });
     }
 
     // Upsert responses

@@ -434,6 +434,34 @@ function formatExercisePrescription(
   return parts.join(" · ");
 }
 
+/** Format a single workout block as text lines */
+function formatBlockAsText(
+  block: WorkoutWithBlocks["blocks"][0],
+  t: (key: string) => string
+): string[] {
+  const lines: string[] = [];
+  const info = BLOCK_TYPE_INFO[block.type];
+  const header = block.name
+    ? `${info.icon} ${t(`blocks.types.${block.type}`)} — ${block.name}`
+    : `${info.icon} ${t(`blocks.types.${block.type}`)}`;
+
+  const meta: string[] = [];
+  if (block.rounds) meta.push(`${block.rounds}x`);
+  if (block.timeCap) meta.push(`${Math.floor(block.timeCap / 60)}'`);
+
+  lines.push(`${header}${meta.length ? ` (${meta.join(", ")})` : ""}`);
+
+  for (const exercise of block.exercises) {
+    const prescription = formatExercisePrescription(exercise);
+    lines.push(
+      `  • ${exercise.exercise.name}${prescription ? ` — ${prescription}` : ""}`
+    );
+  }
+
+  lines.push("");
+  return lines;
+}
+
 function formatWorkoutAsText(
   workout: WorkoutWithBlocks,
   t: (key: string) => string
@@ -454,25 +482,7 @@ function formatWorkoutAsText(
   lines.push("");
 
   for (const block of workout.blocks) {
-    const info = BLOCK_TYPE_INFO[block.type];
-    const header = block.name
-      ? `${info.icon} ${t(`blocks.types.${block.type}`)} — ${block.name}`
-      : `${info.icon} ${t(`blocks.types.${block.type}`)}`;
-
-    const meta: string[] = [];
-    if (block.rounds) meta.push(`${block.rounds}x`);
-    if (block.timeCap) meta.push(`${Math.floor(block.timeCap / 60)}'`);
-
-    lines.push(`${header}${meta.length ? ` (${meta.join(", ")})` : ""}`);
-
-    for (const exercise of block.exercises) {
-      const prescription = formatExercisePrescription(exercise);
-      lines.push(
-        `  • ${exercise.exercise.name}${prescription ? ` — ${prescription}` : ""}`
-      );
-    }
-
-    lines.push("");
+    lines.push(...formatBlockAsText(block, t));
   }
 
   if (workout.tags && workout.tags.length > 0) {

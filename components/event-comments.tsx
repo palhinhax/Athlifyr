@@ -87,39 +87,29 @@ export function EventComments({
   };
 
   const handleReply = (parentId: string, replyContent: string) => {
-    // Update the comments state to include the new reply
-    setComments((prevComments) => {
-      const updateComments = (commentsList: Comment[]): Comment[] => {
-        return commentsList.map((comment) => {
-          if (comment.id === parentId) {
-            return {
-              ...comment,
-              replies: [
-                {
-                  id: `temp-${Date.now()}`,
-                  content: replyContent,
-                  createdAt: new Date().toISOString(),
-                  user: {
-                    name: session?.user?.name || null,
-                    image: session?.user?.image || null,
-                  },
-                  replies: [],
-                },
-                ...comment.replies,
-              ],
-            };
-          }
-          if (comment.replies.length > 0) {
-            return {
-              ...comment,
-              replies: updateComments(comment.replies),
-            };
-          }
-          return comment;
-        });
-      };
-      return updateComments(prevComments);
-    });
+    const newReply: Comment = {
+      id: `temp-${Date.now()}`,
+      content: replyContent,
+      createdAt: new Date().toISOString(),
+      user: {
+        name: session?.user?.name || null,
+        image: session?.user?.image || null,
+      },
+      replies: [],
+    };
+
+    const insertReply = (commentsList: Comment[]): Comment[] =>
+      commentsList.map((comment) => {
+        if (comment.id === parentId) {
+          return { ...comment, replies: [newReply, ...comment.replies] };
+        }
+        if (comment.replies.length > 0) {
+          return { ...comment, replies: insertReply(comment.replies) };
+        }
+        return comment;
+      });
+
+    setComments((prev) => insertReply(prev));
   };
 
   return (

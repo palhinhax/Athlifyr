@@ -52,6 +52,31 @@ interface PaginationInfo {
   hasMore: boolean;
 }
 
+function filterByDistance(
+  events: EventWithVariants[],
+  filters: EventsFiltersType
+): EventWithVariants[] {
+  if (
+    !filters.locationEnabled ||
+    !filters.userLat ||
+    !filters.userLng ||
+    !filters.distanceRadius ||
+    filters.searchQuery
+  ) {
+    return events;
+  }
+  return events.filter((event) => {
+    if (!event.latitude || !event.longitude) return false;
+    const distance = calculateDistance(
+      filters.userLat!,
+      filters.userLng!,
+      event.latitude,
+      event.longitude
+    );
+    return distance <= filters.distanceRadius!;
+  });
+}
+
 export function EventsPageClient({ userId }: EventsPageClientProps) {
   const t = useTranslations("events");
   const locale = useLocale();
@@ -173,26 +198,8 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         let fetchedEvents = data.events;
 
         // Filter by distance if location is enabled (but not when searching or in map mode)
-        if (
-          viewMode === "list" &&
-          filters.locationEnabled &&
-          filters.userLat &&
-          filters.userLng &&
-          filters.distanceRadius &&
-          !filters.searchQuery
-        ) {
-          fetchedEvents = fetchedEvents.filter((event) => {
-            if (!event.latitude || !event.longitude) return false;
-
-            const distance = calculateDistance(
-              filters.userLat!,
-              filters.userLng!,
-              event.latitude,
-              event.longitude
-            );
-
-            return distance <= filters.distanceRadius!;
-          });
+        if (viewMode === "list") {
+          fetchedEvents = filterByDistance(fetchedEvents, filters);
         }
 
         // Append or replace events
@@ -273,6 +280,104 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
     };
   }, [pagination, loading, loadingMore, viewMode, fetchEvents]);
 
+  function renderMainContent() {
+    if (loading) {
+      return (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
+        </div>
+      );
+    }
+
+    if (error) {
+      return (
+        <div className="py-12 text-center text-destructive">
+          <p>{error}</p>
+        </div>
+      );
+    }
+
+    if (events.length === 0) {
+      return (
+        <div className="py-12 text-center text-muted-foreground">
+          <p className="text-lg">{t("noEvents")}</p>
+          <p className="mt-2">
+            {filters.sports.length > 0 ||
+            filters.searchQuery ||
+            filters.locationEnabled
+              ? t("filters.noResults")
+              : t("noEventsDescription")}
+          </p>
+        </div>
+      );
+    }
+
+    if (viewMode === "map") {
+      return (
+        <div className="space-y-4">
+          <div className="rounded-lg border bg-card p-4">
+            <DateRangeSlider
+              minDate={today}
+              maxDate={sliderMaxDate}
+              startDate={mapDateStart}
+              endDate={mapDateEnd}
+              onChange={handleMapDateRangeChange}
+              locale={locale}
+              label={t("filters.dateRange")}
+            />
+          </div>
+          <div className="h-[600px] overflow-hidden rounded-lg border">
+            <EventsMapClient
+              filters={{
+                sports: filters.sports,
+                dateRange: null,
+                startDate: mapDateStart.toISOString(),
+                endDate: mapDateEnd.toISOString(),
+              }}
+            />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className="mb-4 text-sm text-muted-foreground">
+          {t("filters.resultsCount", { count: pagination.totalCount })}
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              isParticipating={participatingEventIds.has(event.id)}
+            />
+          ))}
+        </div>
+
+        {pagination.hasMore && (
+          <div
+            ref={observerTarget}
+            className="mt-8 flex items-center justify-center py-8"
+          >
+            {loadingMore && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                <span>{t("loadingMore")}</span>
+              </div>
+            )}
+          </div>
+        )}
+
+        {!pagination.hasMore && events.length > 0 && (
+          <div className="mt-8 py-8 text-center text-sm text-muted-foreground">
+            {t("allEventsLoaded")}
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen">
       <HeroBackground
@@ -343,91 +448,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           </div>
         </div>
 
-        <div className="mt-8">
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-accent" />
-            </div>
-          ) : error ? (
-            <div className="py-12 text-center text-destructive">
-              <p>{error}</p>
-            </div>
-          ) : events.length === 0 ? (
-            <div className="py-12 text-center text-muted-foreground">
-              <p className="text-lg">{t("noEvents")}</p>
-              <p className="mt-2">
-                {filters.sports.length > 0 ||
-                filters.searchQuery ||
-                filters.locationEnabled
-                  ? t("filters.noResults")
-                  : t("noEventsDescription")}
-              </p>
-            </div>
-          ) : viewMode === "map" ? (
-            <div className="space-y-4">
-              {/* Date Range Slider */}
-              <div className="rounded-lg border bg-card p-4">
-                <DateRangeSlider
-                  minDate={today}
-                  maxDate={sliderMaxDate}
-                  startDate={mapDateStart}
-                  endDate={mapDateEnd}
-                  onChange={handleMapDateRangeChange}
-                  locale={locale}
-                  label={t("filters.dateRange")}
-                />
-              </div>
-              {/* Map */}
-              <div className="h-[600px] overflow-hidden rounded-lg border">
-                <EventsMapClient
-                  filters={{
-                    sports: filters.sports,
-                    dateRange: null,
-                    startDate: mapDateStart.toISOString(),
-                    endDate: mapDateEnd.toISOString(),
-                  }}
-                />
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="mb-4 text-sm text-muted-foreground">
-                {t("filters.resultsCount", { count: pagination.totalCount })}
-              </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {events.map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    isParticipating={participatingEventIds.has(event.id)}
-                  />
-                ))}
-              </div>
-
-              {/* Infinite scroll trigger */}
-              {pagination.hasMore && (
-                <div
-                  ref={observerTarget}
-                  className="mt-8 flex items-center justify-center py-8"
-                >
-                  {loadingMore && (
-                    <div className="flex items-center gap-2 text-muted-foreground">
-                      <Loader2 className="h-5 w-5 animate-spin" />
-                      <span>{t("loadingMore")}</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* End of results message */}
-              {!pagination.hasMore && events.length > 0 && (
-                <div className="mt-8 py-8 text-center text-sm text-muted-foreground">
-                  {t("allEventsLoaded")}
-                </div>
-              )}
-            </>
-          )}
-        </div>
+        <div className="mt-8">{renderMainContent()}</div>
       </section>
 
       <SuggestEventDialog

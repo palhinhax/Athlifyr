@@ -76,6 +76,31 @@ const LOCALE_FLAGS: Record<string, { flag: string; label: string }> = {
   it: { flag: "🇮🇹", label: "IT" },
 };
 
+const ROLE_BADGE_CLASS: Record<string, string> = {
+  ADMIN: "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400",
+  MOD: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
+};
+const DEFAULT_ROLE_BADGE_CLASS =
+  "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400";
+
+function getNotificationTitle(user: User): string {
+  const emailStatus =
+    user.emailNotifications && user.emailVerified
+      ? "Email ativo"
+      : !user.emailVerified
+        ? "Email não verificado"
+        : "Email desativado";
+
+  const pushStatus =
+    user.pushNotificationsEnabled && user.devices && user.devices.total > 0
+      ? `Push ativo (${user.devices.total} dispositivo${user.devices.total !== 1 ? "s" : ""})`
+      : !user.pushNotificationsEnabled
+        ? "Push desativado"
+        : "Sem dispositivos registados";
+
+  return `${emailStatus} | ${pushStatus}`;
+}
+
 export default function AdminUsersContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -561,13 +586,7 @@ export default function AdminUsersContent() {
                   </td>
                   <td className="px-4 py-3">
                     <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                        user.role === "ADMIN"
-                          ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                          : user.role === "MOD"
-                            ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-                      }`}
+                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASS[user.role] || DEFAULT_ROLE_BADGE_CLASS}`}
                     >
                       {user.role}
                     </span>
@@ -607,13 +626,7 @@ export default function AdminUsersContent() {
                             ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
                             : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
                         }`}
-                        title={
-                          user.emailNotifications && user.emailVerified
-                            ? "Email ativo"
-                            : !user.emailVerified
-                              ? "Email não verificado"
-                              : "Email desativado"
-                        }
+                        title={getNotificationTitle(user).split(" | ")[0]}
                       >
                         <Mail className="h-3 w-3" />
                       </span>
@@ -625,15 +638,7 @@ export default function AdminUsersContent() {
                             ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
                             : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
                         }`}
-                        title={
-                          user.pushNotificationsEnabled &&
-                          user.devices &&
-                          user.devices.total > 0
-                            ? `Push ativo (${user.devices.total} dispositivo${user.devices.total !== 1 ? "s" : ""})`
-                            : !user.pushNotificationsEnabled
-                              ? "Push desativado"
-                              : "Sem dispositivos registados"
-                        }
+                        title={getNotificationTitle(user).split(" | ")[1]}
                       >
                         <BellRing className="h-3 w-3" />
                       </span>

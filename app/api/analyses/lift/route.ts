@@ -41,6 +41,178 @@ import { MAX_FILE_BYTES } from "@/lib/video-limits";
 export const dynamic = "force-dynamic";
 export const maxDuration = 120;
 
+interface VideoResult {
+  url: string;
+  b2Key: string | null;
+}
+
+async function resolveVideoFromUrl(
+  videoUrl: string,
+  localId: string
+): Promise<VideoResult | NextResponse> {
+  const isAlreadyOnB2 = videoUrl.includes("backblazeb2.com/file/");
+
+  if (isAlreadyOnB2) {
+    const fileMatch = videoUrl.match(/\/file\/[^/]+\/(.+)$/);
+    console.log(
+      `[LiftAnalysis] Video already on B2, skipping download: ${videoUrl}`
+    );
+    return { url: videoUrl, b2Key: fileMatch ? fileMatch[1] : videoUrl };
+  }
+
+  try {
+    console.log(`[LiftAnalysis] Downloading video from: ${videoUrl}`);
+    const videoResponse = await fetch(videoUrl);
+    if (!videoResponse.ok) {
+      return NextResponse.json(
+        { error: `Failed to download video: ${videoResponse.status}` },
+        { status: 400 }
+      );
+    }
+    const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
+    console.log(
+      `[LiftAnalysis] Downloaded ${videoBuffer.length} bytes, applying faststart...`
+    );
+
+    let uploadBuffer: Buffer = videoBuffer;
+    try {
+      uploadBuffer = await remuxMp4Faststart(videoBuffer);
+    } catch (remuxErr) {
+      console.warn(
+        "[LiftAnalysis] ffmpeg remux failed, uploading original:",
+        remuxErr
+      );
+    }
+
+    const uploadResult = await uploadToB2({
+      file: uploadBuffer,
+      fileName: `lift_${localId}.mp4`,
+      contentType: "video/mp4",
+      folder: "analyses",
+    });
+
+    console.log(`[LiftAnalysis] Uploaded to B2: ${uploadResult.url}`);
+    return { url: uploadResult.url, b2Key: uploadResult.fileName };
+  } catch (error) {
+    console.error("[LiftAnalysis] Error downloading/uploading video:", error);
+    return NextResponse.json(
+      { error: "Failed to download and store processed video" },
+      { status: 500 }
+    );
+  }
+}
+
+async function resolveVideoFromFile(
+  videoFile: File,
+  localId: string
+): Promise<VideoResult | NextResponse> {
+  const baseType = videoFile.type.split(";")[0].trim();
+  const allowedTypes = [
+    "video/mp4",
+    "video/quicktime",
+    "video/webm",
+    "video/x-msvideo",
+    "video/x-matroska",
+  ];
+  if (!allowedTypes.includes(baseType)) {
+    return NextResponse.json(
+      { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
+      { status: 400 }
+    );
+  }
+
+  if (videoFile.size > MAX_FILE_BYTES) {
+    return NextResponse.json(
+      { error: "Video exceeds 100 MB limit" },
+      { status: 400 }
+    );
+  }
+
+  const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
+
+  let uploadBuffer: Buffer = videoBuffer;
+  try {
+    uploadBuffer = await remuxMp4Faststart(videoBuffer);
+  } catch (remuxErr) {
+    console.warn(
+      "[LiftAnalysis] ffmpeg remux failed on direct upload, using original:",
+      remuxErr
+    );
+  }
+
+  const uploadResult = await uploadToB2({
+    file: uploadBuffer,
+    fileName: `lift_${localId}.mp4`,
+    contentType: videoFile.type || "video/mp4",
+    folder: "analyses",
+  });
+
+  return { url: uploadResult.url, b2Key: uploadResult.fileName };
+}
+
+function parseAnalysisJson(
+  formData: FormData
+): Prisma.InputJsonValue | NextResponse {
+  const analysisDataRaw = formData.get("analysisData");
+
+  if (analysisDataRaw && typeof analysisDataRaw === "string") {
+    try {
+      return JSON.parse(analysisDataRaw) as Prisma.InputJsonValue;
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON in analysisData" },
+        { status: 400 }
+      );
+    }
+  }
+
+  const durationMsRaw = formData.get("durationMs");
+  const fpsSampleRaw = formData.get("fpsSample");
+  const seedPointRaw = formData.get("seedPoint");
+  const barPathRaw = formData.get("barPath");
+  const metricsRaw = formData.get("metrics");
+
+  for (const [key, value] of [
+    ["durationMs", durationMsRaw],
+    ["fpsSample", fpsSampleRaw],
+    ["seedPoint", seedPointRaw],
+    ["barPath", barPathRaw],
+    ["metrics", metricsRaw],
+  ] as [string, FormDataEntryValue | null][]) {
+    if (!value) {
+      return NextResponse.json(
+        { error: `${key} is required` },
+        { status: 400 }
+      );
+    }
+  }
+
+  let seedPoint: Prisma.InputJsonValue,
+    barPath: Prisma.InputJsonValue,
+    metrics: Prisma.InputJsonValue;
+  try {
+    seedPoint = JSON.parse(seedPointRaw as string) as Prisma.InputJsonValue;
+    barPath = JSON.parse(barPathRaw as string) as Prisma.InputJsonValue;
+    metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON in one of the fields" },
+      { status: 400 }
+    );
+  }
+
+  const durationMs = Number(durationMsRaw);
+  const fpsSample = Number(fpsSampleRaw);
+  if (!Number.isFinite(durationMs) || !Number.isFinite(fpsSample)) {
+    return NextResponse.json(
+      { error: "Invalid durationMs or fpsSample" },
+      { status: 400 }
+    );
+  }
+
+  return { durationMs, fpsSample, seedPoint, barPath, metrics };
+}
+
 export async function POST(request: Request) {
   // ── Auth ──────────────────────────────────────────────────────────────────
   const user = await getAuthUser(request);
@@ -77,125 +249,16 @@ export async function POST(request: Request) {
   const videoFile = formData.get("video");
   const videoUrlParam = formData.get("videoUrl");
 
-  let finalVideoUrl: string;
-  let videoB2Key: string | null = null;
+  let videoResult: VideoResult | NextResponse;
 
   if (
     videoUrlParam &&
     typeof videoUrlParam === "string" &&
     videoUrlParam.startsWith("http")
   ) {
-    // Check if the video is already on B2 (uploaded directly by Railway)
-    const isAlreadyOnB2 = videoUrlParam.includes("backblazeb2.com/file/");
-
-    if (isAlreadyOnB2) {
-      // Video was uploaded directly to B2 by Railway — no need to download
-      // and re-upload. Just use the URL as-is.
-      finalVideoUrl = videoUrlParam;
-      // Extract the B2 key from the URL:
-      // e.g. "https://f005.backblazeb2.com/file/athlifyr-videos/results/userId/uuid.mp4"
-      // → "results/userId/uuid.mp4"
-      const fileMatch = videoUrlParam.match(/\/file\/[^/]+\/(.+)$/);
-      videoB2Key = fileMatch ? fileMatch[1] : videoUrlParam;
-      console.log(
-        `[LiftAnalysis] Video already on B2, skipping download: ${finalVideoUrl}`
-      );
-    } else {
-      // Legacy flow: Download video from external URL (Railway) and upload to B2
-      try {
-        console.log(`[LiftAnalysis] Downloading video from: ${videoUrlParam}`);
-        const videoResponse = await fetch(videoUrlParam);
-        if (!videoResponse.ok) {
-          return NextResponse.json(
-            { error: `Failed to download video: ${videoResponse.status}` },
-            { status: 400 }
-          );
-        }
-        const videoBuffer = Buffer.from(await videoResponse.arrayBuffer());
-        console.log(
-          `[LiftAnalysis] Downloaded ${videoBuffer.length} bytes, applying faststart...`
-        );
-
-        // API already returns H.264 — just remux to move moov atom to start
-        // so browsers can determine duration instantly without buffering the whole file.
-        let uploadBuffer: Buffer = videoBuffer;
-        try {
-          uploadBuffer = await remuxMp4Faststart(videoBuffer);
-        } catch (remuxErr) {
-          console.warn(
-            "[LiftAnalysis] ffmpeg remux failed, uploading original:",
-            remuxErr
-          );
-        }
-
-        const uploadResult = await uploadToB2({
-          file: uploadBuffer,
-          fileName: `lift_${localId}.mp4`,
-          contentType: "video/mp4",
-          folder: "analyses",
-        });
-
-        finalVideoUrl = uploadResult.url;
-        videoB2Key = uploadResult.fileName;
-        console.log(`[LiftAnalysis] Uploaded to B2: ${finalVideoUrl}`);
-      } catch (error) {
-        console.error(
-          "[LiftAnalysis] Error downloading/uploading video:",
-          error
-        );
-        return NextResponse.json(
-          { error: "Failed to download and store processed video" },
-          { status: 500 }
-        );
-      }
-    }
+    videoResult = await resolveVideoFromUrl(videoUrlParam, localId);
   } else if (videoFile && videoFile instanceof File) {
-    // Upload video file to B2
-    // Match on the base MIME type (before any codec params like "video/webm;codecs=vp9")
-    const baseType = videoFile.type.split(";")[0].trim();
-    const allowedTypes = [
-      "video/mp4",
-      "video/quicktime",
-      "video/webm",
-      "video/x-msvideo",
-      "video/x-matroska",
-    ];
-    if (!allowedTypes.includes(baseType)) {
-      return NextResponse.json(
-        { error: "Only mp4, mov, avi, mkv, and webm videos are supported" },
-        { status: 400 }
-      );
-    }
-
-    const maxBytes = MAX_FILE_BYTES; // 100 MB
-    if (videoFile.size > maxBytes) {
-      return NextResponse.json(
-        { error: "Video exceeds 100 MB limit" },
-        { status: 400 }
-      );
-    }
-
-    const videoBuffer = Buffer.from(await videoFile.arrayBuffer());
-
-    // Remux to ensure moov atom is at start for instant browser playback
-    let uploadBuffer: Buffer = videoBuffer;
-    try {
-      uploadBuffer = await remuxMp4Faststart(videoBuffer);
-    } catch (remuxErr) {
-      console.warn(
-        "[LiftAnalysis] ffmpeg remux failed on direct upload, using original:",
-        remuxErr
-      );
-    }
-    const uploadResult = await uploadToB2({
-      file: uploadBuffer,
-      fileName: `lift_${localId}.mp4`,
-      contentType: videoFile.type || "video/mp4",
-      folder: "analyses",
-    });
-
-    finalVideoUrl = uploadResult.url;
-    videoB2Key = uploadResult.fileName;
+    videoResult = await resolveVideoFromFile(videoFile, localId);
   } else {
     return NextResponse.json(
       { error: "Either video file or videoUrl is required" },
@@ -203,73 +266,12 @@ export async function POST(request: Request) {
     );
   }
 
+  if (videoResult instanceof NextResponse) return videoResult;
+
   // ── Parse JSON fields ──────────────────────────────────────────────────────
   const label = formData.get("label");
-
-  // Support two modes:
-  // 1. `analysisData` — full proxy response JSON (used by web upload)
-  // 2. Individual fields — legacy format (used by mobile)
-  const analysisDataRaw = formData.get("analysisData");
-  let analysisJson: Prisma.InputJsonValue;
-
-  if (analysisDataRaw && typeof analysisDataRaw === "string") {
-    // ── Mode 1: Full analysis response ────────────────────────────────────
-    try {
-      analysisJson = JSON.parse(analysisDataRaw) as Prisma.InputJsonValue;
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON in analysisData" },
-        { status: 400 }
-      );
-    }
-  } else {
-    // ── Mode 2: Individual fields (backward compatible) ──────────────────
-    const durationMsRaw = formData.get("durationMs");
-    const fpsSampleRaw = formData.get("fpsSample");
-    const seedPointRaw = formData.get("seedPoint");
-    const barPathRaw = formData.get("barPath");
-    const metricsRaw = formData.get("metrics");
-
-    for (const [key, value] of [
-      ["durationMs", durationMsRaw],
-      ["fpsSample", fpsSampleRaw],
-      ["seedPoint", seedPointRaw],
-      ["barPath", barPathRaw],
-      ["metrics", metricsRaw],
-    ] as [string, FormDataEntryValue | null][]) {
-      if (!value) {
-        return NextResponse.json(
-          { error: `${key} is required` },
-          { status: 400 }
-        );
-      }
-    }
-
-    let seedPoint: Prisma.InputJsonValue,
-      barPath: Prisma.InputJsonValue,
-      metrics: Prisma.InputJsonValue;
-    try {
-      seedPoint = JSON.parse(seedPointRaw as string) as Prisma.InputJsonValue;
-      barPath = JSON.parse(barPathRaw as string) as Prisma.InputJsonValue;
-      metrics = JSON.parse(metricsRaw as string) as Prisma.InputJsonValue;
-    } catch {
-      return NextResponse.json(
-        { error: "Invalid JSON in one of the fields" },
-        { status: 400 }
-      );
-    }
-
-    const durationMs = Number(durationMsRaw);
-    const fpsSample = Number(fpsSampleRaw);
-    if (!Number.isFinite(durationMs) || !Number.isFinite(fpsSample)) {
-      return NextResponse.json(
-        { error: "Invalid durationMs or fpsSample" },
-        { status: 400 }
-      );
-    }
-
-    analysisJson = { durationMs, fpsSample, seedPoint, barPath, metrics };
-  }
+  const analysisJson = parseAnalysisJson(formData);
+  if (analysisJson instanceof NextResponse) return analysisJson;
 
   // ── Save to DB ────────────────────────────────────────────────────────────
   const record = await prisma.liftAnalysisRecord.create({
@@ -277,8 +279,8 @@ export async function POST(request: Request) {
       userId: user.id,
       localId,
       label: typeof label === "string" && label.trim() ? label.trim() : null,
-      videoUrl: finalVideoUrl,
-      videoB2Key: videoB2Key,
+      videoUrl: videoResult.url,
+      videoB2Key: videoResult.b2Key ?? "",
       analysisJson,
     },
     select: { id: true, videoUrl: true, createdAt: true },

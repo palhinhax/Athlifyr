@@ -24,6 +24,72 @@ interface ForecastResponse {
   list: OpenWeatherResponse[];
 }
 
+interface WeatherEvent {
+  id: string;
+  title: string;
+  startDate: Date;
+  endDate: Date | null;
+  latitude: number | null;
+  longitude: number | null;
+}
+
+async function fetchAndSaveWeatherForEvent(event: WeatherEvent): Promise<void> {
+  const eventDays = getEventDays(event.startDate, event.endDate);
+
+  console.log(
+    `🌤️  Fetching weather for "${event.title}" (${eventDays.length} day${eventDays.length > 1 ? "s" : ""})`
+  );
+
+  const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${event.latitude}&lon=${event.longitude}&appid=${OPENWEATHER_API_KEY}&units=metric`;
+
+  const response = await fetch(forecastUrl);
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 200)}`);
+  }
+
+  const forecastData: ForecastResponse = await response.json();
+
+  for (const eventDay of eventDays) {
+    const targetTime = new Date(eventDay);
+    targetTime.setHours(12, 0, 0, 0);
+
+    const closestForecast = findClosestForecast(forecastData.list, targetTime);
+
+    if (!closestForecast) {
+      console.warn(`⚠️  No forecast found for ${eventDay.toISOString()}`);
+      continue;
+    }
+
+    await prisma.eventWeather.upsert({
+      where: {
+        eventId_date: { eventId: event.id, date: eventDay },
+      },
+      update: {
+        temperature: closestForecast.main.temp,
+        condition: closestForecast.weather[0].main,
+        humidity: closestForecast.main.humidity,
+        windSpeed: closestForecast.wind.speed,
+        icon: closestForecast.weather[0].icon,
+      },
+      create: {
+        eventId: event.id,
+        date: eventDay,
+        temperature: closestForecast.main.temp,
+        condition: closestForecast.weather[0].main,
+        humidity: closestForecast.main.humidity,
+        windSpeed: closestForecast.wind.speed,
+        icon: closestForecast.weather[0].icon,
+      },
+    });
+
+    console.log(
+      `   ✅ ${eventDay.toISOString().split("T")[0]}: ${closestForecast.main.temp}°C, ${closestForecast.weather[0].main}`
+    );
+  }
+}
+
 /**
  * Update weather forecasts for all events in the next 6 days
  * Called daily by GitHub Actions
@@ -78,77 +144,7 @@ export async function POST(request: Request) {
 
     for (const event of upcomingEvents) {
       try {
-        // For events spanning multiple days, fetch weather for each day
-        const eventDays = getEventDays(event.startDate, event.endDate);
-
-        console.log(
-          `🌤️  Fetching weather for "${event.title}" (${eventDays.length} day${eventDays.length > 1 ? "s" : ""})`
-        );
-
-        // Fetch 5-day forecast from OpenWeather
-        const forecastUrl = `https://api.openweathermap.org/data/2.5/forecast?lat=${event.latitude}&lon=${event.longitude}&appid=${OPENWEATHER_API_KEY}&units=metric`;
-
-        const response = await fetch(forecastUrl);
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          const errorMsg = `HTTP ${response.status}: ${errorText.substring(0, 200)}`;
-          console.error(
-            `❌ Failed to fetch weather for ${event.title}: ${response.status} - ${errorText}`
-          );
-          errors.push({ event: event.title, error: errorMsg });
-          errorCount++;
-          continue;
-        }
-
-        const forecastData: ForecastResponse = await response.json();
-
-        // Process each day of the event
-        for (const eventDay of eventDays) {
-          // Find the forecast closest to noon on this day
-          const targetTime = new Date(eventDay);
-          targetTime.setHours(12, 0, 0, 0);
-
-          const closestForecast = findClosestForecast(
-            forecastData.list,
-            targetTime
-          );
-
-          if (!closestForecast) {
-            console.warn(`⚠️  No forecast found for ${eventDay.toISOString()}`);
-            continue;
-          }
-
-          // Upsert weather data
-          await prisma.eventWeather.upsert({
-            where: {
-              eventId_date: {
-                eventId: event.id,
-                date: eventDay,
-              },
-            },
-            update: {
-              temperature: closestForecast.main.temp,
-              condition: closestForecast.weather[0].main,
-              humidity: closestForecast.main.humidity,
-              windSpeed: closestForecast.wind.speed,
-              icon: closestForecast.weather[0].icon,
-            },
-            create: {
-              eventId: event.id,
-              date: eventDay,
-              temperature: closestForecast.main.temp,
-              condition: closestForecast.weather[0].main,
-              humidity: closestForecast.main.humidity,
-              windSpeed: closestForecast.wind.speed,
-              icon: closestForecast.weather[0].icon,
-            },
-          });
-
-          console.log(
-            `   ✅ ${eventDay.toISOString().split("T")[0]}: ${closestForecast.main.temp}°C, ${closestForecast.weather[0].main}`
-          );
-        }
+        await fetchAndSaveWeatherForEvent(event);
 
         successCount++;
         processed.push({ event: event.title, status: "success" });

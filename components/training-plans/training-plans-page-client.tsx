@@ -122,16 +122,16 @@ export function TrainingPlansPageClient({
         body: JSON.stringify(data),
       });
 
-      if (response.ok) {
-        const { plan } = await response.json();
-        toast({
-          title: t("success.created"),
-        });
-        setIsCreateOpen(false);
-        router.push(`/workouts/plans/${plan.id}`);
-      } else {
+      if (!response.ok) {
         throw new Error("Failed to create plan");
       }
+
+      const { plan } = await response.json();
+      toast({
+        title: t("success.created"),
+      });
+      setIsCreateOpen(false);
+      router.push(`/workouts/plans/${plan.id}`);
     } catch {
       toast({
         title: t("errors.saveFailed"),

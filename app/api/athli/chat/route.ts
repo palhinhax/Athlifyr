@@ -86,6 +86,113 @@ export async function GET(request: Request) {
   }
 }
 
+async function getOrCreateConversation(
+  conversationId: string | undefined,
+  userId: string,
+  message: string
+) {
+  if (conversationId) {
+    return prisma.athliConversation.findFirst({
+      where: { id: conversationId, userId },
+      include: {
+        messages: { orderBy: { createdAt: "asc" }, take: 50 },
+      },
+    });
+  }
+  return prisma.athliConversation.create({
+    data: { userId, title: message.substring(0, 100) },
+    include: { messages: true },
+  });
+}
+
+function validatePageContext(
+  pageContext: unknown
+): { type: "event" | "venue"; slug: string } | null {
+  if (
+    pageContext &&
+    typeof pageContext === "object" &&
+    "type" in pageContext &&
+    "slug" in pageContext &&
+    ((pageContext as Record<string, unknown>).type === "event" ||
+      (pageContext as Record<string, unknown>).type === "venue") &&
+    typeof (pageContext as Record<string, unknown>).slug === "string"
+  ) {
+    return {
+      type: (pageContext as Record<string, string>).type as "event" | "venue",
+      slug: (pageContext as Record<string, string>).slug,
+    };
+  }
+  return null;
+}
+
+async function executeToolCall(
+  name: string,
+  args: Record<string, unknown>,
+  userId: string,
+  userLocale: string
+): Promise<string> {
+  switch (name) {
+    case "search_events":
+      return searchEvents(args as EventSearchParams, userLocale);
+    case "get_my_events":
+      return getUserEvents(
+        userId,
+        userLocale,
+        args.upcoming as boolean | undefined
+      );
+    case "get_my_bookings":
+      return getUserBookings(
+        userId,
+        userLocale,
+        args.period as "today" | "week" | "upcoming" | "past" | undefined
+      );
+    case "search_venues":
+      return searchVenues(args as VenueSearchParams, userLocale);
+    case "get_venue_details":
+      return getVenueDetails(args.venueId as string, userLocale);
+    case "get_available_sessions":
+      return getAvailableSessions(
+        args as AvailableSessionsParams,
+        userId,
+        userLocale
+      );
+    case "book_session":
+      return bookSession(args.sessionId as string, userId, userLocale);
+    case "get_session_details":
+      return getSessionDetails(args.sessionId as string, userLocale);
+    case "search_giveaways":
+      return searchGiveaways(userLocale, args.status as string | undefined);
+    case "get_my_prs":
+      return getUserPRs(userId, args as UserPRsParams);
+    case "log_performance_entry":
+      return logPerformanceEntry(
+        userId,
+        args as unknown as LogPerformanceParams
+      );
+    case "get_my_analyses":
+      return getUserAnalyses(userId, args as UserAnalysesParams);
+    case "get_my_workout_history":
+      return getUserWorkoutHistory(userId, args as WorkoutHistoryParams);
+    case "get_event_details":
+      return getEventDetails(args.eventId as string, userLocale);
+    case "list_available_exercises":
+      return listAvailableExercises(args.category as string | undefined);
+    case "save_training_plan":
+      return saveTrainingPlan(
+        args as unknown as SaveTrainingPlanParams,
+        userId
+      );
+    case "save_workout":
+      return saveWorkout(args as unknown as SaveWorkoutParams, userId);
+    case "submit_admin_note":
+      return submitAdminNote(args as unknown as SubmitAdminNoteParams, userId);
+    case "get_platform_info":
+      return getPlatformInfo(args as PlatformInfoParams, userLocale);
+    default:
+      return "Unknown tool";
+  }
+}
+
 // POST /api/athli/chat - Send message and get AI response
 export async function POST(request: Request) {
   try {
@@ -124,34 +231,17 @@ export async function POST(request: Request) {
     const userLocale = locale || "pt";
 
     // Get or create conversation
-    let conversation;
-    if (conversationId) {
-      conversation = await prisma.athliConversation.findFirst({
-        where: { id: conversationId, userId: user.id },
-        include: {
-          messages: {
-            orderBy: { createdAt: "asc" },
-            take: 50, // Last 50 messages for context
-          },
-        },
-      });
+    const conversation = await getOrCreateConversation(
+      conversationId,
+      user.id,
+      message
+    );
 
-      if (!conversation) {
-        return NextResponse.json(
-          { error: "Conversation not found" },
-          { status: 404 }
-        );
-      }
-    } else {
-      conversation = await prisma.athliConversation.create({
-        data: {
-          userId: user.id,
-          title: message.substring(0, 100),
-        },
-        include: {
-          messages: true,
-        },
-      });
+    if (!conversation) {
+      return NextResponse.json(
+        { error: "Conversation not found" },
+        { status: 404 }
+      );
     }
 
     // Save user message
@@ -164,16 +254,7 @@ export async function POST(request: Request) {
     });
 
     // Build message history for OpenAI
-    const validatedPageContext =
-      pageContext &&
-      typeof pageContext === "object" &&
-      (pageContext.type === "event" || pageContext.type === "venue") &&
-      typeof pageContext.slug === "string"
-        ? {
-            type: pageContext.type as "event" | "venue",
-            slug: pageContext.slug as string,
-          }
-        : null;
+    const validatedPageContext = validatePageContext(pageContext);
     const systemPrompt = getSystemPrompt(
       userLocale,
       user.name,
@@ -234,123 +315,12 @@ export async function POST(request: Request) {
           function: { name: string; arguments: string };
         };
         const args = JSON.parse(fnCall.function.arguments);
-        let toolResult: string;
-
-        switch (fnCall.function.name) {
-          case "search_events":
-            toolResult = await searchEvents(
-              args as EventSearchParams,
-              userLocale
-            );
-            break;
-          case "get_my_events":
-            toolResult = await getUserEvents(
-              user.id,
-              userLocale,
-              args.upcoming as boolean | undefined
-            );
-            break;
-          case "get_my_bookings":
-            toolResult = await getUserBookings(
-              user.id,
-              userLocale,
-              args.period as "today" | "week" | "upcoming" | "past" | undefined
-            );
-            break;
-          case "search_venues":
-            toolResult = await searchVenues(
-              args as VenueSearchParams,
-              userLocale
-            );
-            break;
-          case "get_venue_details":
-            toolResult = await getVenueDetails(
-              args.venueId as string,
-              userLocale
-            );
-            break;
-          case "get_available_sessions":
-            toolResult = await getAvailableSessions(
-              args as AvailableSessionsParams,
-              user.id,
-              userLocale
-            );
-            break;
-          case "book_session":
-            toolResult = await bookSession(
-              args.sessionId as string,
-              user.id,
-              userLocale
-            );
-            break;
-          case "get_session_details":
-            toolResult = await getSessionDetails(
-              args.sessionId as string,
-              userLocale
-            );
-            break;
-          case "search_giveaways":
-            toolResult = await searchGiveaways(
-              userLocale,
-              args.status as string | undefined
-            );
-            break;
-          case "get_my_prs":
-            toolResult = await getUserPRs(user.id, args as UserPRsParams);
-            break;
-          case "log_performance_entry":
-            toolResult = await logPerformanceEntry(
-              user.id,
-              args as LogPerformanceParams
-            );
-            break;
-          case "get_my_analyses":
-            toolResult = await getUserAnalyses(
-              user.id,
-              args as UserAnalysesParams
-            );
-            break;
-          case "get_my_workout_history":
-            toolResult = await getUserWorkoutHistory(
-              user.id,
-              args as WorkoutHistoryParams
-            );
-            break;
-          case "get_event_details":
-            toolResult = await getEventDetails(
-              args.eventId as string,
-              userLocale
-            );
-            break;
-          case "list_available_exercises":
-            toolResult = await listAvailableExercises(
-              args.category as string | undefined
-            );
-            break;
-          case "save_training_plan":
-            toolResult = await saveTrainingPlan(
-              args as SaveTrainingPlanParams,
-              user.id
-            );
-            break;
-          case "save_workout":
-            toolResult = await saveWorkout(args as SaveWorkoutParams, user.id);
-            break;
-          case "submit_admin_note":
-            toolResult = await submitAdminNote(
-              args as SubmitAdminNoteParams,
-              user.id
-            );
-            break;
-          case "get_platform_info":
-            toolResult = await getPlatformInfo(
-              args as PlatformInfoParams,
-              userLocale
-            );
-            break;
-          default:
-            toolResult = "Unknown tool";
-        }
+        const toolResult = await executeToolCall(
+          fnCall.function.name,
+          args,
+          user.id,
+          userLocale
+        );
 
         chatMessages.push({
           role: "tool",

@@ -44,6 +44,26 @@ type WeatherTranslationKey =
   | "haze"
   | "thunderstorm";
 
+/** Ordered lookup: first matching keyword(s) → translation key */
+const WEATHER_TRANSLATION_LOOKUP: [string[], WeatherTranslationKey][] = [
+  [["clear", "sun"], "clear"],
+  [["few clouds"], "fewClouds"],
+  [["scattered clouds"], "scatteredClouds"],
+  [["broken clouds"], "brokenClouds"],
+  [["overcast"], "overcast"],
+  [["cloud"], "clouds"],
+  [["drizzle"], "drizzle"],
+  [["light rain"], "lightRain"],
+  [["moderate rain"], "moderateRain"],
+  [["heavy rain"], "heavyRain"],
+  [["rain"], "rain"],
+  [["snow"], "snow"],
+  [["mist"], "mist"],
+  [["fog"], "fog"],
+  [["haze"], "haze"],
+  [["thunder", "storm"], "thunderstorm"],
+];
+
 /**
  * Get translation key for weather condition
  */
@@ -51,58 +71,10 @@ function getWeatherTranslationKey(
   condition: string
 ): WeatherTranslationKey | null {
   const conditionLower = condition.toLowerCase();
-
-  if (conditionLower.includes("clear") || conditionLower.includes("sun")) {
-    return "clear";
-  }
-  if (conditionLower.includes("few clouds")) {
-    return "fewClouds";
-  }
-  if (conditionLower.includes("scattered clouds")) {
-    return "scatteredClouds";
-  }
-  if (conditionLower.includes("broken clouds")) {
-    return "brokenClouds";
-  }
-  if (conditionLower.includes("overcast")) {
-    return "overcast";
-  }
-  if (conditionLower.includes("cloud")) {
-    return "clouds";
-  }
-  if (conditionLower.includes("drizzle")) {
-    return "drizzle";
-  }
-  if (conditionLower.includes("light rain")) {
-    return "lightRain";
-  }
-  if (conditionLower.includes("moderate rain")) {
-    return "moderateRain";
-  }
-  if (conditionLower.includes("heavy rain")) {
-    return "heavyRain";
-  }
-  if (conditionLower.includes("rain")) {
-    return "rain";
-  }
-  if (conditionLower.includes("snow")) {
-    return "snow";
-  }
-  if (conditionLower.includes("mist")) {
-    return "mist";
-  }
-  if (conditionLower.includes("fog")) {
-    return "fog";
-  }
-  if (conditionLower.includes("haze")) {
-    return "haze";
-  }
-  if (conditionLower.includes("thunder") || conditionLower.includes("storm")) {
-    return "thunderstorm";
-  }
-
-  // Return null if no match
-  return null;
+  const match = WEATHER_TRANSLATION_LOOKUP.find(([keys]) =>
+    keys.some((key) => conditionLower.includes(key))
+  );
+  return match?.[1] ?? null;
 }
 
 /**

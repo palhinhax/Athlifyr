@@ -237,5 +237,5 @@ export async function refundCreditPurchase(params: {
  * Check if a purchase amount requires credits-only payment.
  */
 export function requiresCreditsOnly(amountCents: number): boolean {
-  return amountCents < CREDITS_ONLY_THRESHOLD_CENTS;
+  return amountCents <= CREDITS_ONLY_THRESHOLD_CENTS;
 }

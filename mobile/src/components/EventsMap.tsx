@@ -1,10 +1,6 @@
-import {
-  View,
-  Text,
-  StyleSheet,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { MapPin } from "lucide-react-native";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
@@ -53,6 +49,7 @@ interface EventsMapProps {
 }
 
 export function EventsMap({ searchQuery }: EventsMapProps) {
+  const { t } = useTranslation();
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
@@ -223,16 +220,13 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
       {/* Event count badge */}
       <View style={styles.eventCountBadge}>
         <Text style={styles.eventCountText}>
-          {events.length} {events.length === 1 ? "evento" : "eventos"}
+          {t("events.mapFilters.eventsCount", { count: events.length })}
         </Text>
       </View>
 
       {/* Event preview card */}
       {selectedEvent && (
-        <MapEventPreview
-          event={selectedEvent}
-          onClose={handleClosePreview}
-        />
+        <MapEventPreview event={selectedEvent} onClose={handleClosePreview} />
       )}
     </View>
   );

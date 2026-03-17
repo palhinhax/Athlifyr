@@ -112,7 +112,8 @@
       "title": "Filtros",
       "sports": "Deportes",
       "applyFilters": "Aplicar Filtros",
-      "clearFilters": "Borrar Filtros"
+      "clearFilters": "Borrar Filtros",
+      "eventsCount": "{{count}} eventos"
     },
     "featured": "Destacado",
     "giveaway": {

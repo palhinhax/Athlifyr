@@ -112,7 +112,8 @@
       "title": "Filters",
       "sports": "Sports",
       "applyFilters": "Apply Filters",
-      "clearFilters": "Clear Filters"
+      "clearFilters": "Clear Filters",
+      "eventsCount": "{{count}} events"
     },
     "featured": "Featured",
     "giveaway": {

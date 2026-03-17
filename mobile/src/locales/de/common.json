@@ -71,7 +71,8 @@
       "title": "Filter",
       "sports": "Sportarten",
       "applyFilters": "Filter anwenden",
-      "clearFilters": "Filter löschen"
+      "clearFilters": "Filter löschen",
+      "eventsCount": "{{count}} Events"
     },
     "registration": {
       "willYouGo": "Nimmst du teil?",

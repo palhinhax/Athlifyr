@@ -1,24 +1,73 @@
 /**
  * Sport type icons (emoji) - universal, don't require translation
+ * Aligned with web: lib/sport-config.ts
  */
 export const sportTypeIcons: Record<string, string> = {
   RUNNING: "🏃",
-  TRAIL: "⛰️",
+  TRAIL: "🥾",
   WALKING: "🚶",
   HYROX: "💪",
   CROSSFIT: "🏋️",
-  OCR: "🧗",
+  OCR: "🤸",
   BTT: "🚵",
   CYCLING: "🚴",
   SURF: "🏄",
-  TRIATHLON: "🏊",
+  TRIATHLON: "🏊‍♂️",
   SWIMMING: "🏊",
-  OTHER: "🎯",
+  OTHER: "📍",
 };
 
 export function getSportIcon(sportType: string): string {
   return sportTypeIcons[sportType] || sportTypeIcons.OTHER;
 }
+
+/**
+ * Sport type colors - aligned with web: lib/sport-config.ts
+ */
+export const sportTypeColors: Record<string, string> = {
+  RUNNING: "#3B82F6",
+  TRAIL: "#10B981",
+  CYCLING: "#F59E0B",
+  BTT: "#84CC16",
+  SWIMMING: "#06B6D4",
+  TRIATHLON: "#8B5CF6",
+  HYROX: "#EF4444",
+  CROSSFIT: "#F97316",
+  OCR: "#A855F7",
+  WALKING: "#14B8A6",
+  SURF: "#0EA5E9",
+  OTHER: "#FE8818",
+};
+
+export function getSportColor(sportType: string): string {
+  return sportTypeColors[sportType] || sportTypeColors.OTHER;
+}
+
+/**
+ * Get primary sport from array of sport types
+ * Aligned with web: lib/sport-config.ts
+ */
+export function getPrimarySport(sportTypes: string[]): string {
+  return sportTypes[0] || "OTHER";
+}
+
+/**
+ * All sport types available for filtering
+ */
+export const SPORT_TYPES = [
+  "RUNNING",
+  "TRAIL",
+  "WALKING",
+  "HYROX",
+  "CROSSFIT",
+  "OCR",
+  "BTT",
+  "CYCLING",
+  "SURF",
+  "TRIATHLON",
+  "SWIMMING",
+  "OTHER",
+] as const;
 
 export function formatDate(date: Date, locale: string = "en"): string {
   return new Intl.DateTimeFormat(locale, {

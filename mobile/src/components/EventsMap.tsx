@@ -1,9 +1,20 @@
-import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { MapPin } from "lucide-react-native";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
+import {
+  getSportIcon,
+  getSportColor,
+  getPrimarySport,
+} from "@/src/lib/event-utils";
+import { MapEventPreview } from "@/src/components/MapEventPreview";
+import { MapSportFilter } from "@/src/components/MapSportFilter";
 
 // Try to import Mapbox
 let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
@@ -42,9 +53,16 @@ interface EventsMapProps {
 }
 
 export function EventsMap({ searchQuery }: EventsMapProps) {
-  const router = useRouter();
   const [events, setEvents] = useState<MapEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
+  const [selectedSports, setSelectedSports] = useState<string[]>([]);
+  const selectedSportsRef = useRef<string[]>([]);
+
+  // Keep ref in sync
+  useEffect(() => {
+    selectedSportsRef.current = selectedSports;
+  }, [selectedSports]);
 
   const fetchMapEvents = useCallback(async () => {
     try {
@@ -56,6 +74,12 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
       const endDate = new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000);
       params.append("startDate", now.toISOString());
       params.append("endDate", endDate.toISOString());
+
+      // Apply sport type filters
+      const currentSports = selectedSportsRef.current;
+      if (currentSports.length > 0) {
+        params.append("sportTypes", currentSports.join(","));
+      }
 
       const response = await api.get<{ events: MapEvent[] }>(
         `/events/map?${params.toString()}`
@@ -85,9 +109,34 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
     fetchMapEvents();
   }, [fetchMapEvents]);
 
-  const handleEventPress = (slug: string) => {
-    router.push(`/events/${slug}`);
-  };
+  // Re-fetch when sport filters change
+  const handleSportsChange = useCallback(
+    (sports: string[]) => {
+      setSelectedSports(sports);
+      // Close any open preview when filters change
+      setSelectedEvent(null);
+      // Update the ref before fetching
+      selectedSportsRef.current = sports;
+      fetchMapEvents();
+    },
+    [fetchMapEvents]
+  );
+
+  const handleMarkerPress = useCallback(
+    (event: MapEvent) => {
+      // If tapping the same event, deselect it
+      if (selectedEvent?.id === event.id) {
+        setSelectedEvent(null);
+      } else {
+        setSelectedEvent(event);
+      }
+    },
+    [selectedEvent]
+  );
+
+  const handleClosePreview = useCallback(() => {
+    setSelectedEvent(null);
+  }, []);
 
   const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
@@ -122,28 +171,69 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
         scaleBarEnabled={false}
         attributionEnabled={false}
         logoEnabled={false}
+        onPress={() => setSelectedEvent(null)}
       >
         <Mapbox.Camera
           centerCoordinate={[-8.0, 39.5]}
           zoomLevel={6}
           animationMode="flyTo"
         />
-        {events.map((event) => (
-          <Mapbox.PointAnnotation
-            key={event.id}
-            id={`event-${event.id}`}
-            coordinate={[event.longitude, event.latitude]}
-            onSelected={() => handleEventPress(event.slug)}
-          >
-            <View style={styles.markerContainer}>
-              <View style={styles.marker}>
-                <MapPin size={16} color={theme.colors.white} />
+        {events.map((event) => {
+          const primarySport = getPrimarySport(event.sportTypes);
+          const sportColor = getSportColor(primarySport);
+          const sportIcon = getSportIcon(primarySport);
+          const isSelected = selectedEvent?.id === event.id;
+
+          return (
+            <Mapbox.PointAnnotation
+              key={event.id}
+              id={`event-${event.id}`}
+              coordinate={[event.longitude, event.latitude]}
+              onSelected={() => handleMarkerPress(event)}
+            >
+              <View style={styles.markerContainer}>
+                <View
+                  style={[
+                    styles.markerTeardrop,
+                    {
+                      backgroundColor: sportColor,
+                      borderColor: isSelected
+                        ? theme.colors.text
+                        : theme.colors.white,
+                      borderWidth: isSelected ? 3 : 2,
+                    },
+                  ]}
+                >
+                  <Text style={styles.markerIcon}>{sportIcon}</Text>
+                </View>
               </View>
-            </View>
-            <Mapbox.Callout title={event.title} />
-          </Mapbox.PointAnnotation>
-        ))}
+              {/* Empty callout to prevent default behavior */}
+              <Mapbox.Callout title="" />
+            </Mapbox.PointAnnotation>
+          );
+        })}
       </Mapbox.MapView>
+
+      {/* Sport filters */}
+      <MapSportFilter
+        selectedSports={selectedSports}
+        onSportsChange={handleSportsChange}
+      />
+
+      {/* Event count badge */}
+      <View style={styles.eventCountBadge}>
+        <Text style={styles.eventCountText}>
+          {events.length} {events.length === 1 ? "evento" : "eventos"}
+        </Text>
+      </View>
+
+      {/* Event preview card */}
+      {selectedEvent && (
+        <MapEventPreview
+          event={selectedEvent}
+          onClose={handleClosePreview}
+        />
+      )}
     </View>
   );
 }
@@ -183,15 +273,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  marker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+  markerTeardrop: {
+    width: 36,
+    height: 36,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 4,
+    transform: [{ rotate: "-45deg" }],
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: theme.colors.white,
     ...theme.shadows.md,
+  },
+  markerIcon: {
+    fontSize: 16,
+    lineHeight: 20,
+    transform: [{ rotate: "45deg" }],
+  },
+  eventCountBadge: {
+    position: "absolute",
+    bottom: 16,
+    left: 12,
+    zIndex: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.md,
+  },
+  eventCountText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.text,
   },
 });

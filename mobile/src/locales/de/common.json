@@ -13,6 +13,7 @@
     "RUNNING": "Laufen",
     "TRAIL": "Trail",
     "WALKING": "Gehen",
+    "HYROX": "Hyrox",
     "Hybrid": "HYBRID",
     "CROSSFIT": "Cross Training",
     "OCR": "OCR",
@@ -65,6 +66,12 @@
       "noResults": "Keine Events entsprechen deinen Filtern. Versuche deine Suche anzupassen.",
       "resultsCount": "{{count}} Events gefunden",
       "dateRange": "Datumsbereich"
+    },
+    "mapFilters": {
+      "title": "Filter",
+      "sports": "Sportarten",
+      "applyFilters": "Filter anwenden",
+      "clearFilters": "Filter löschen"
     },
     "registration": {
       "willYouGo": "Nimmst du teil?",

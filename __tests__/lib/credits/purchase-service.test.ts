@@ -512,13 +512,11 @@ describe("refundCreditPurchase", () => {
         update: jest.fn(),
       },
       venueLedgerEntry: {
-        findFirst: jest
-          .fn()
-          .mockResolvedValue({
-            id: "le_1",
-            status: "SETTLED",
-            amountCents: 700,
-          }),
+        findFirst: jest.fn().mockResolvedValue({
+          id: "le_1",
+          status: "SETTLED",
+          amountCents: 700,
+        }),
         update: jest.fn(),
       },
       venueProduct: {
@@ -619,13 +617,11 @@ describe("refundCreditPurchase", () => {
         update: jest.fn(),
       },
       venueLedgerEntry: {
-        findFirst: jest
-          .fn()
-          .mockResolvedValue({
-            id: "le_1",
-            status: "PENDING",
-            amountCents: 700,
-          }),
+        findFirst: jest.fn().mockResolvedValue({
+          id: "le_1",
+          status: "PENDING",
+          amountCents: 700,
+        }),
         update: jest.fn(),
       },
       venueProduct: {

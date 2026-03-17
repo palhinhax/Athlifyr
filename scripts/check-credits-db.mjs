@@ -14,10 +14,14 @@ try {
   console.log(`Found ${pendingTopUps.length} pending top-ups\n`);
 
   for (const topUp of pendingTopUps) {
-    console.log(`Processing top-up ${topUp.id} (PI: ${topUp.stripePaymentIntentId})`);
+    console.log(
+      `Processing top-up ${topUp.id} (PI: ${topUp.stripePaymentIntentId})`
+    );
 
     // Check status on Stripe
-    const pi = await stripe.paymentIntents.retrieve(topUp.stripePaymentIntentId);
+    const pi = await stripe.paymentIntents.retrieve(
+      topUp.stripePaymentIntentId
+    );
     console.log(`  Stripe status: ${pi.status}`);
 
     if (pi.status === "succeeded" && topUp.status === "PENDING") {

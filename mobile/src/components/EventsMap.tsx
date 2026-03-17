@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { MapPin } from "lucide-react-native";
 import { api } from "@/src/lib/api";
@@ -54,12 +54,6 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState<MapEvent | null>(null);
   const [selectedSports, setSelectedSports] = useState<string[]>([]);
-  const selectedSportsRef = useRef<string[]>([]);
-
-  // Keep ref in sync
-  useEffect(() => {
-    selectedSportsRef.current = selectedSports;
-  }, [selectedSports]);
 
   const fetchMapEvents = useCallback(async () => {
     try {
@@ -73,9 +67,8 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
       params.append("endDate", endDate.toISOString());
 
       // Apply sport type filters
-      const currentSports = selectedSportsRef.current;
-      if (currentSports.length > 0) {
-        params.append("sportTypes", currentSports.join(","));
+      if (selectedSports.length > 0) {
+        params.append("sportTypes", selectedSports.join(","));
       }
 
       const response = await api.get<{ events: MapEvent[] }>(
@@ -100,23 +93,18 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedSports]);
 
   useEffect(() => {
     fetchMapEvents();
   }, [fetchMapEvents]);
 
-  // Re-fetch when sport filters change
   const handleSportsChange = useCallback(
     (sports: string[]) => {
       setSelectedSports(sports);
-      // Close any open preview when filters change
       setSelectedEvent(null);
-      // Update the ref before fetching
-      selectedSportsRef.current = sports;
-      fetchMapEvents();
     },
-    [fetchMapEvents]
+    []
   );
 
   const handleMarkerPress = useCallback(
@@ -168,7 +156,7 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
         scaleBarEnabled={false}
         attributionEnabled={false}
         logoEnabled={false}
-        onPress={() => setSelectedEvent(null)}
+        onPress={handleClosePreview}
       >
         <Mapbox.Camera
           centerCoordinate={[-8.0, 39.5]}

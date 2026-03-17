@@ -157,7 +157,7 @@ const styles = StyleSheet.create({
     fontWeight: "700",
     color: theme.colors.text,
     lineHeight: 20,
-    paddingRight: 24,
+    paddingRight: theme.spacing.lg,
   },
   sportBadges: {
     flexDirection: "row",

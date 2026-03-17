@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { requireIntegrity } from "@/lib/verify-integrity";
+import { registerLimiter } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -15,6 +16,24 @@ export async function POST(req: NextRequest) {
   try {
     const integrityError = await requireIntegrity(req);
     if (integrityError) return integrityError;
+
+    // Rate limit by IP
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const rateLimit = registerLimiter.check(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+            ),
+          },
+        }
+      );
+    }
 
     const body = await req.json();
     const { name, email: rawEmail, password } = registerSchema.parse(body);

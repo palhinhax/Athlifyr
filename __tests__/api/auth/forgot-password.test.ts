@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/auth/forgot-password/route";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -29,10 +30,20 @@ jest.mock("@/lib/email-templates", () => ({
   getPasswordResetEmailText: jest.fn().mockReturnValue("reset link"),
 }));
 
+jest.mock("@/lib/rate-limit", () => ({
+  forgotPasswordLimiter: {
+    check: jest.fn().mockReturnValue({
+      allowed: true,
+      remaining: 2,
+      resetAt: Date.now() + 900000,
+    }),
+  },
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeRequest(body: Record<string, unknown>) {
-  return new Request("http://localhost/api/auth/forgot-password", {
+  return new NextRequest("http://localhost/api/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },

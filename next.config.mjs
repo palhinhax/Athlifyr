@@ -154,6 +154,14 @@ const nextConfig = {
   },
   // Security headers for all routes
   async headers() {
+    // CORS origin: use an explicit allowlist in production, fall back to * for development.
+    // ALLOWED_ORIGINS accepts a comma-separated list of origins.
+    const allowedOrigins =
+      process.env.ALLOWED_ORIGINS ||
+      (process.env.NEXT_PUBLIC_BASE_URL
+        ? process.env.NEXT_PUBLIC_BASE_URL
+        : "*");
+
     return [
       {
         // CORS headers for API routes — allows mobile app (Expo) to call Next.js APIs
@@ -161,7 +169,7 @@ const nextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "*",
+            value: allowedOrigins,
           },
           {
             key: "Access-Control-Allow-Methods",

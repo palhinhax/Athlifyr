@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, type FormEvent } from "react";
+import React, { useState, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import {
   Dialog,
@@ -216,7 +216,7 @@ function TopUpPaymentForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = useCallback(
-    async (e: FormEvent<HTMLFormElement>) => {
+    async (e: React.SyntheticEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!stripe || !elements) return;
 

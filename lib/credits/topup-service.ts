@@ -179,7 +179,7 @@ export async function cancelTopUp(
     where: { stripePaymentIntentId },
   });
 
-  if (!topUp || topUp.status !== "PENDING") {
+  if (topUp?.status !== "PENDING") {
     return;
   }
 

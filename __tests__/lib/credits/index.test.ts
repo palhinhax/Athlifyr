@@ -8,12 +8,16 @@ import * as credits from "@/lib/credits";
 describe("lib/credits barrel export", () => {
   it("exports constants", () => {
     expect(credits.TOPUP_FEE_PERCENTAGE).toBeDefined();
+    expect(credits.CONSUMPTION_FEE_PERCENTAGE).toBeDefined();
+    expect(credits.MIN_CONSUMPTION_FEE_CENTS).toBeDefined();
     expect(credits.CREDITS_ONLY_THRESHOLD_CENTS).toBeDefined();
     expect(credits.TOPUP_AMOUNTS_CENTS).toBeDefined();
     expect(credits.MIN_TOPUP_AMOUNT_CENTS).toBeDefined();
     expect(credits.MAX_TOPUP_AMOUNT_CENTS).toBeDefined();
     expect(credits.calculateTopUpFee).toBeInstanceOf(Function);
     expect(credits.calculateNetCredits).toBeInstanceOf(Function);
+    expect(credits.calculateConsumptionFee).toBeInstanceOf(Function);
+    expect(credits.calculatePurchaseTotal).toBeInstanceOf(Function);
   });
 
   it("exports wallet-service functions", () => {

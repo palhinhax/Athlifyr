@@ -123,6 +123,7 @@ describe("purchaseWithCredits", () => {
       stock: 1,
     });
 
+    // 5.00 * 5 = 2500 cents product, fee = 125, total = 2625
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
       const txClient = {
         creditWallet: {
@@ -134,14 +135,14 @@ describe("purchaseWithCredits", () => {
             totalSpentCents: 0,
             totalRewardedCents: 0,
           }),
-          update: jest.fn().mockResolvedValue({ balanceCents: 97499 }),
+          update: jest.fn().mockResolvedValue({ balanceCents: 97374 }),
           create: jest.fn(),
         },
         creditTransaction: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest
             .fn()
-            .mockResolvedValue({ id: "tx_stock", balanceAfterCents: 97499 }),
+            .mockResolvedValue({ id: "tx_stock", balanceAfterCents: 97374 }),
           update: jest.fn(),
         },
         venueProductPurchase: {
@@ -167,7 +168,7 @@ describe("purchaseWithCredits", () => {
     ).rejects.toThrow("Insufficient stock");
   });
 
-  it("executes transaction for valid purchase", async () => {
+  it("executes transaction for valid purchase with consumption fee", async () => {
     mockFindProduct.mockResolvedValue({
       id: "p1",
       name: "Protein Bar",
@@ -176,11 +177,14 @@ describe("purchaseWithCredits", () => {
       stock: 10,
     });
 
+    // 3.50 * 2 = 700 cents product price, 5% fee = 35 cents, total = 735
     const mockResult = {
       purchaseId: "pur_1",
       transactionId: "tx_1",
-      newBalanceCents: 6300,
-      totalAmountCents: 700, // 3.50 * 2 * 100
+      newBalanceCents: 6265,
+      totalAmountCents: 735,
+      productPriceCents: 700,
+      platformFeeCents: 35,
     };
 
     mockTransaction.mockResolvedValue(mockResult);
@@ -193,6 +197,9 @@ describe("purchaseWithCredits", () => {
     });
 
     expect(result).toEqual(mockResult);
+    expect(result.totalAmountCents).toBe(735);
+    expect(result.productPriceCents).toBe(700);
+    expect(result.platformFeeCents).toBe(35);
     expect(mockTransaction).toHaveBeenCalledTimes(1);
   });
 
@@ -205,11 +212,14 @@ describe("purchaseWithCredits", () => {
       stock: null, // unlimited
     });
 
+    // 10.00€ = 1000 cents, 5% fee = 50, total = 1050
     mockTransaction.mockResolvedValue({
       purchaseId: "pur_2",
       transactionId: "tx_2",
       newBalanceCents: 0,
-      totalAmountCents: 1000,
+      totalAmountCents: 1050,
+      productPriceCents: 1000,
+      platformFeeCents: 50,
     });
 
     const result = await purchaseWithCredits({
@@ -219,10 +229,12 @@ describe("purchaseWithCredits", () => {
       quantity: 1,
     });
 
-    expect(result.totalAmountCents).toBe(1000);
+    expect(result.totalAmountCents).toBe(1050);
+    expect(result.productPriceCents).toBe(1000);
+    expect(result.platformFeeCents).toBe(50);
   });
 
-  it("calculates correct total for quantity > 1", async () => {
+  it("calculates correct total with fee for quantity > 1", async () => {
     mockFindProduct.mockResolvedValue({
       id: "p1",
       name: "Water Bottle",
@@ -231,9 +243,8 @@ describe("purchaseWithCredits", () => {
       stock: 50,
     });
 
+    // 1.50 * 3 = 4.50 = 450 cents, fee = max(450*0.05=22.5→23, 5) = 23, total = 473
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
-      // The function creates the transaction — we just verify it's called
-      // with proper amount (1.50 * 3 = 4.50 = 450 cents)
       const txClient = {
         creditWallet: {
           findUnique: jest.fn().mockResolvedValue({
@@ -244,14 +255,14 @@ describe("purchaseWithCredits", () => {
             totalSpentCents: 0,
             totalRewardedCents: 0,
           }),
-          update: jest.fn().mockResolvedValue({ balanceCents: 4550 }),
+          update: jest.fn().mockResolvedValue({ balanceCents: 4527 }),
           create: jest.fn(),
         },
         creditTransaction: {
           findUnique: jest.fn().mockResolvedValue(null),
           create: jest
             .fn()
-            .mockResolvedValue({ id: "tx_3", balanceAfterCents: 4550 }),
+            .mockResolvedValue({ id: "tx_3", balanceAfterCents: 4527 }),
           update: jest.fn(),
         },
         venueProductPurchase: {
@@ -275,8 +286,10 @@ describe("purchaseWithCredits", () => {
       quantity: 3,
     });
 
-    expect(result.totalAmountCents).toBe(450);
-    expect(result.newBalanceCents).toBe(4550);
+    expect(result.totalAmountCents).toBe(473); // 450 + 23 fee
+    expect(result.productPriceCents).toBe(450);
+    expect(result.platformFeeCents).toBe(23);
+    expect(result.newBalanceCents).toBe(4527);
   });
 });
 

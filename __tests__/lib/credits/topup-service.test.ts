@@ -76,7 +76,7 @@ describe("createTopUpPaymentIntent", () => {
   it("throws for amount below minimum", async () => {
     await expect(
       createTopUpPaymentIntent({ userId: "u1", amountCents: 100 })
-    ).rejects.toThrow("Minimum top-up amount is 500 cents");
+    ).rejects.toThrow("Minimum top-up amount is 1000 cents");
   });
 
   it("throws for amount above maximum", async () => {
@@ -96,8 +96,8 @@ describe("createTopUpPaymentIntent", () => {
       paymentIntentId: "pi_test_abc",
       topUpId: "topup_1",
       grossAmountCents: 1000,
-      platformFeeCents: 40, // 4% of 1000
-      netCreditedCents: 960, // 1000 - 40
+      platformFeeCents: 0, // No fee on top-up
+      netCreditedCents: 1000, // Full amount credited
     });
 
     expect(mockGetCustomer).toHaveBeenCalledWith("u1");
@@ -106,9 +106,9 @@ describe("createTopUpPaymentIntent", () => {
       data: expect.objectContaining({
         userId: "u1",
         grossAmountCents: 1000,
-        platformFeeCents: 40,
-        netCreditedCents: 960,
-        feePercentage: 4,
+        platformFeeCents: 0,
+        netCreditedCents: 1000,
+        feePercentage: 0,
         status: "PENDING",
         stripeCustomerId: "cus_test_123",
       }),
@@ -133,14 +133,14 @@ describe("createTopUpPaymentIntent", () => {
     });
   });
 
-  it("calculates correct fee for 5000 cents", async () => {
+  it("returns zero fee for 5000 cents (no fee on top-up)", async () => {
     const result = await createTopUpPaymentIntent({
       userId: "u1",
       amountCents: 5000,
     });
 
-    expect(result.platformFeeCents).toBe(200);
-    expect(result.netCreditedCents).toBe(4800);
+    expect(result.platformFeeCents).toBe(0);
+    expect(result.netCreditedCents).toBe(5000);
   });
 });
 
@@ -160,7 +160,8 @@ describe("completeTopUp", () => {
       id: "topup_1",
       status: "COMPLETED",
       userId: "u1",
-      netCreditedCents: 960,
+      grossAmountCents: 1000,
+      netCreditedCents: 1000,
     });
 
     await completeTopUp("pi_test");
@@ -174,8 +175,8 @@ describe("completeTopUp", () => {
       status: "PENDING",
       userId: "u1",
       grossAmountCents: 1000,
-      platformFeeCents: 40,
-      netCreditedCents: 960,
+      platformFeeCents: 0,
+      netCreditedCents: 1000,
     });
 
     mockTransaction.mockImplementation(async (fn: (tx: unknown) => unknown) => {
@@ -189,7 +190,7 @@ describe("completeTopUp", () => {
             totalSpentCents: 0,
             totalRewardedCents: 0,
           }),
-          update: jest.fn().mockResolvedValue({ balanceCents: 960 }),
+          update: jest.fn().mockResolvedValue({ balanceCents: 1000 }),
           create: jest.fn(),
         },
         creditTransaction: {

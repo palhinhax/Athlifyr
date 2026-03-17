@@ -191,6 +191,8 @@ export async function debitWallet(
     venueProductId?: string;
     venueProductPurchaseId?: string;
     idempotencyKey?: string;
+    grossAmountCents?: number;
+    platformFeeCents?: number;
   },
   tx?: PrismaTransactionClient
 ): Promise<{ transactionId: string; newBalanceCents: number }> {
@@ -230,6 +232,8 @@ export async function debitWallet(
         amountCents: -params.amountCents, // Negative for debits
         balanceAfterCents: updatedWallet.balanceCents,
         description: params.description,
+        grossAmountCents: params.grossAmountCents,
+        platformFeeCents: params.platformFeeCents,
         venueId: params.venueId,
         venueProductId: params.venueProductId,
         venueProductPurchaseId: params.venueProductPurchaseId,

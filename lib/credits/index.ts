@@ -1,11 +1,15 @@
 export {
   TOPUP_FEE_PERCENTAGE,
+  CONSUMPTION_FEE_PERCENTAGE,
+  MIN_CONSUMPTION_FEE_CENTS,
   CREDITS_ONLY_THRESHOLD_CENTS,
   TOPUP_AMOUNTS_CENTS,
   MIN_TOPUP_AMOUNT_CENTS,
   MAX_TOPUP_AMOUNT_CENTS,
   calculateTopUpFee,
   calculateNetCredits,
+  calculateConsumptionFee,
+  calculatePurchaseTotal,
 } from "./constants";
 export {
   getOrCreateWallet,

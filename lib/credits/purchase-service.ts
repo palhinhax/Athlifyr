@@ -1,6 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { debitWallet, creditWallet } from "./wallet-service";
-import { CREDITS_ONLY_THRESHOLD_CENTS } from "./constants";
+import {
+  CREDITS_ONLY_THRESHOLD_CENTS,
+  calculateConsumptionFee,
+} from "./constants";
 import { randomUUID } from "node:crypto";
 
 /**
@@ -17,6 +20,8 @@ export async function purchaseWithCredits(params: {
   transactionId: string;
   newBalanceCents: number;
   totalAmountCents: number;
+  productPriceCents: number;
+  platformFeeCents: number;
 }> {
   const { userId, venueId, productId, quantity } = params;
 
@@ -38,16 +43,20 @@ export async function purchaseWithCredits(params: {
 
   // Convert float price to cents
   const unitPriceCents = Math.round(product.price * 100);
-  const totalAmountCents = unitPriceCents * quantity;
+  const productPriceCents = unitPriceCents * quantity;
 
-  if (totalAmountCents <= 0) {
+  if (productPriceCents <= 0) {
     throw new Error("Invalid product price");
   }
+
+  // Calculate consumption fee: max(5% of product price, 0.05€)
+  const platformFeeCents = calculateConsumptionFee(productPriceCents);
+  const totalAmountCents = productPriceCents + platformFeeCents;
 
   const idempotencyKey = `purchase_${userId}_${productId}_${randomUUID()}`;
 
   const result = await prisma.$transaction(async (tx) => {
-    // 1. Debit user wallet
+    // 1. Debit user wallet (product price + platform fee)
     const debitResult = await debitWallet(
       {
         userId,
@@ -56,11 +65,13 @@ export async function purchaseWithCredits(params: {
         venueId,
         venueProductId: productId,
         idempotencyKey,
+        grossAmountCents: productPriceCents,
+        platformFeeCents,
       },
       tx
     );
 
-    // 2. Create product purchase record
+    // 2. Create product purchase record (records the product price, not the fee)
     const purchase = await tx.venueProductPurchase.create({
       data: {
         venueId,
@@ -68,7 +79,7 @@ export async function purchaseWithCredits(params: {
         userId,
         quantity,
         unitPrice: product.price,
-        totalAmount: totalAmountCents / 100,
+        totalAmount: productPriceCents / 100,
         currency: product.currency,
         status: "CONFIRMED",
         confirmedAt: new Date(),
@@ -81,12 +92,12 @@ export async function purchaseWithCredits(params: {
       data: { venueProductPurchaseId: purchase.id },
     });
 
-    // 4. Create venue ledger entry (money owed to venue)
+    // 4. Create venue ledger entry — venue receives ONLY the product price (no fee)
     await tx.venueLedgerEntry.create({
       data: {
         venueId,
         creditTransactionId: debitResult.transactionId,
-        amountCents: totalAmountCents,
+        amountCents: productPriceCents, // Venue gets product price only
         currency: product.currency,
         status: "PENDING",
         description: `${product.name} x${quantity} - Credit purchase`,
@@ -114,6 +125,8 @@ export async function purchaseWithCredits(params: {
       transactionId: debitResult.transactionId,
       newBalanceCents: debitResult.newBalanceCents,
       totalAmountCents,
+      productPriceCents,
+      platformFeeCents,
     };
   });
 

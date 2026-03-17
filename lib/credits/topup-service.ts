@@ -1,13 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
-import {
-  TOPUP_FEE_PERCENTAGE,
-  calculateTopUpFee,
-  calculateNetCredits,
-  MIN_TOPUP_AMOUNT_CENTS,
-  MAX_TOPUP_AMOUNT_CENTS,
-} from "./constants";
+import { MIN_TOPUP_AMOUNT_CENTS, MAX_TOPUP_AMOUNT_CENTS } from "./constants";
 import { creditWallet } from "./wallet-service";
 import { randomUUID } from "node:crypto";
 
@@ -35,8 +29,9 @@ export async function createTopUpPaymentIntent(params: {
     throw new Error(`Maximum top-up amount is ${MAX_TOPUP_AMOUNT_CENTS} cents`);
   }
 
-  const platformFeeCents = calculateTopUpFee(amountCents);
-  const netCreditedCents = calculateNetCredits(amountCents);
+  // No fee on top-up — user receives full credits (1€ = 1 credit)
+  const platformFeeCents = 0;
+  const netCreditedCents = amountCents;
   const stripeCustomerId = await getOrCreateStripeCustomer(userId);
   const idempotencyKey = `topup_${userId}_${amountCents}_${randomUUID()}`;
 
@@ -47,7 +42,7 @@ export async function createTopUpPaymentIntent(params: {
       grossAmountCents: amountCents,
       platformFeeCents,
       netCreditedCents,
-      feePercentage: TOPUP_FEE_PERCENTAGE,
+      feePercentage: 0, // No fee on top-up
       status: "PENDING",
       stripeCustomerId,
       idempotencyKey,
@@ -112,17 +107,17 @@ export async function completeTopUp(
   const idempotencyKey = `topup_credit_${topUp.id}`;
 
   await prisma.$transaction(async (tx) => {
-    // Credit the user's wallet
+    // Credit the user's wallet with the full amount (no fee on top-up)
     await creditWallet(
       {
         userId: topUp.userId,
-        amountCents: topUp.netCreditedCents,
+        amountCents: topUp.grossAmountCents, // Full amount credited
         type: "TOP_UP",
         source: "STRIPE_TOP_UP",
-        description: `Top-up: ${(topUp.grossAmountCents / 100).toFixed(2)}€ → ${(topUp.netCreditedCents / 100).toFixed(2)} credits`,
+        description: `Top-up: ${(topUp.grossAmountCents / 100).toFixed(2)}€ → ${(topUp.grossAmountCents / 100).toFixed(2)} credits`,
         grossAmountCents: topUp.grossAmountCents,
-        platformFeeCents: topUp.platformFeeCents,
-        netCreditedCents: topUp.netCreditedCents,
+        platformFeeCents: 0,
+        netCreditedCents: topUp.grossAmountCents,
         stripePaymentIntentId,
         idempotencyKey,
       },
@@ -140,7 +135,7 @@ export async function completeTopUp(
   });
 
   console.log(
-    `Top-up ${topUp.id} completed: ${topUp.netCreditedCents} cents credited to user ${topUp.userId}`
+    `Top-up ${topUp.id} completed: ${topUp.grossAmountCents} cents credited to user ${topUp.userId}`
   );
 }
 

@@ -11,8 +11,12 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
-import { Elements, PaymentElement } from "@stripe/react-stripe-js";
-import { useStripe, useElements } from "@stripe/react-stripe-js";
+import {
+  Elements,
+  PaymentElement,
+  useStripe,
+  useElements,
+} from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe-client";
 import { TOPUP_FEE_PERCENTAGE } from "@/lib/credits/constants";
 
@@ -36,7 +40,7 @@ export function TopUpDialog({
   onOpenChange,
   topUpOptions,
   onSuccess,
-}: TopUpDialogProps) {
+}: Readonly<TopUpDialogProps>) {
   const t = useTranslations("credits");
   const [step, setStep] = useState<TopUpStep>("select");
   const [selectedAmount, setSelectedAmount] = useState<TopUpOption | null>(
@@ -204,7 +208,7 @@ export function TopUpDialog({
   );
 }
 
-function TopUpPaymentForm({ onSuccess }: { onSuccess: () => void }) {
+function TopUpPaymentForm({ onSuccess }: Readonly<{ onSuccess: () => void }>) {
   const t = useTranslations("credits");
   const stripe = useStripe();
   const elements = useElements();
@@ -212,7 +216,7 @@ function TopUpPaymentForm({ onSuccess }: { onSuccess: () => void }) {
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
+    async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
       if (!stripe || !elements) return;
 

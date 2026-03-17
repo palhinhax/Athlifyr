@@ -19,6 +19,100 @@ import type {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/** Dispatch a Stripe event to the appropriate handler. */
+async function dispatchStripeEvent(event: Stripe.Event): Promise<void> {
+  switch (event.type) {
+    case "account.updated": {
+      const account = event.data.object;
+      await handleAccountUpdated(account);
+      break;
+    }
+
+    case "checkout.session.completed": {
+      const session = event.data.object;
+      // Only handle event registration checkouts (have eventId in metadata)
+      if (session.metadata?.eventId && session.metadata?.userId) {
+        await handleEventCheckoutCompleted(session);
+      }
+      break;
+    }
+
+    case "payment_intent.succeeded": {
+      const paymentIntent = event.data.object;
+      await dispatchPaymentIntentSucceeded(paymentIntent);
+      break;
+    }
+
+    case "payment_intent.payment_failed": {
+      const paymentIntent = event.data.object;
+      if (paymentIntent.metadata?.type === "credit_top_up") {
+        await failTopUp(
+          paymentIntent.id,
+          paymentIntent.last_payment_error?.message
+        );
+      }
+      await handlePaymentIntentFailed(paymentIntent);
+      break;
+    }
+
+    case "payment_intent.canceled": {
+      const paymentIntent = event.data.object;
+      if (paymentIntent.metadata?.type === "credit_top_up") {
+        await cancelTopUp(paymentIntent.id);
+      }
+      await handlePaymentIntentCanceled(paymentIntent);
+      break;
+    }
+
+    case "charge.refunded": {
+      const charge = event.data.object;
+      await handleChargeRefunded(charge);
+      break;
+    }
+
+    // ── Stripe Billing events (recurring subscriptions) ──────────────────
+    case "invoice.paid": {
+      const inv = event.data.object;
+      await handleInvoicePaid(inv);
+      break;
+    }
+
+    case "invoice.payment_failed": {
+      const inv = event.data.object;
+      await handleInvoicePaymentFailed(inv);
+      break;
+    }
+
+    case "customer.subscription.updated": {
+      const sub = event.data.object;
+      await handleSubscriptionUpdated(sub);
+      break;
+    }
+
+    case "customer.subscription.deleted": {
+      const sub = event.data.object;
+      await handleSubscriptionDeleted(sub);
+      break;
+    }
+
+    default:
+      console.log(`Unhandled event type: ${event.type}`);
+  }
+}
+
+/** Route payment_intent.succeeded to the correct handler based on metadata. */
+async function dispatchPaymentIntentSucceeded(
+  paymentIntent: Stripe.PaymentIntent
+): Promise<void> {
+  if (paymentIntent.metadata?.type === "credit_top_up") {
+    await completeTopUp(paymentIntent.id);
+  } else if (paymentIntent.metadata?.type === "product_purchase") {
+    await handleProductPurchaseSucceeded(paymentIntent);
+  } else {
+    await handlePaymentIntentSucceeded(paymentIntent);
+  }
+}
+
 // POST - Webhook do Stripe
 export async function POST(request: Request) {
   try {
@@ -73,92 +167,7 @@ export async function POST(request: Request) {
     });
 
     // Processar eventos do Stripe
-    switch (event.type) {
-      case "account.updated": {
-        const account = event.data.object;
-        await handleAccountUpdated(account);
-        break;
-      }
-
-      case "checkout.session.completed": {
-        const session = event.data.object;
-        // Only handle event registration checkouts (have eventId in metadata)
-        if (session.metadata?.eventId && session.metadata?.userId) {
-          await handleEventCheckoutCompleted(session);
-        }
-        break;
-      }
-
-      case "payment_intent.succeeded": {
-        const paymentIntent = event.data.object;
-        // Route to credit top-up handler
-        if (paymentIntent.metadata?.type === "credit_top_up") {
-          await completeTopUp(paymentIntent.id);
-        } else if (paymentIntent.metadata?.type === "product_purchase") {
-          await handleProductPurchaseSucceeded(paymentIntent);
-        } else {
-          await handlePaymentIntentSucceeded(paymentIntent);
-        }
-        break;
-      }
-
-      case "payment_intent.payment_failed": {
-        const paymentIntent = event.data.object;
-        // Handle credit top-up failure
-        if (paymentIntent.metadata?.type === "credit_top_up") {
-          await failTopUp(
-            paymentIntent.id,
-            paymentIntent.last_payment_error?.message
-          );
-        }
-        await handlePaymentIntentFailed(paymentIntent);
-        break;
-      }
-
-      case "payment_intent.canceled": {
-        const paymentIntent = event.data.object;
-        // Handle credit top-up cancellation
-        if (paymentIntent.metadata?.type === "credit_top_up") {
-          await cancelTopUp(paymentIntent.id);
-        }
-        await handlePaymentIntentCanceled(paymentIntent);
-        break;
-      }
-
-      case "charge.refunded": {
-        const charge = event.data.object;
-        await handleChargeRefunded(charge);
-        break;
-      }
-
-      // ── Stripe Billing events (recurring subscriptions) ──────────────────
-      case "invoice.paid": {
-        const inv = event.data.object;
-        await handleInvoicePaid(inv);
-        break;
-      }
-
-      case "invoice.payment_failed": {
-        const inv = event.data.object;
-        await handleInvoicePaymentFailed(inv);
-        break;
-      }
-
-      case "customer.subscription.updated": {
-        const sub = event.data.object;
-        await handleSubscriptionUpdated(sub);
-        break;
-      }
-
-      case "customer.subscription.deleted": {
-        const sub = event.data.object;
-        await handleSubscriptionDeleted(sub);
-        break;
-      }
-
-      default:
-        console.log(`Unhandled event type: ${event.type}`);
-    }
+    await dispatchStripeEvent(event);
 
     // ── Mark event as processed ───────────────────────────────────────────
     await prisma.stripeWebhookEvent.update({

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { debitWallet, creditWallet } from "./wallet-service";
 import { CREDITS_ONLY_THRESHOLD_CENTS } from "./constants";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 
 /**
  * Purchase a venue product using Athlifyr Credits.
@@ -201,7 +201,7 @@ export async function refundCreditPurchase(params: {
       where: { creditTransactionId: originalTransaction.id },
     });
 
-    if (ledgerEntry && ledgerEntry.status === "PENDING") {
+    if (ledgerEntry?.status === "PENDING") {
       if (isFullRefund) {
         await tx.venueLedgerEntry.update({
           where: { id: ledgerEntry.id },

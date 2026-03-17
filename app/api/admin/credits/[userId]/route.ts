@@ -33,7 +33,7 @@ async function resolveUserId(input: string): Promise<string | null> {
 
 async function requireAdminAndResolveUser(params: Promise<{ userId: string }>) {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (session?.user?.role !== "ADMIN") {
     return {
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };

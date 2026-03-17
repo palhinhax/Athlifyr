@@ -21,7 +21,7 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const cursor = searchParams.get("cursor") || undefined;
     const limit = searchParams.get("limit")
-      ? parseInt(searchParams.get("limit")!, 10)
+      ? Number.parseInt(searchParams.get("limit")!, 10)
       : undefined;
 
     const history = await getTopUpHistory(user.id, { cursor, limit });

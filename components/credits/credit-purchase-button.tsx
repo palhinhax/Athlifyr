@@ -35,7 +35,7 @@ export function CreditPurchaseButton({
   onSuccess,
   onInsufficientCredits,
   className,
-}: CreditPurchaseButtonProps) {
+}: Readonly<CreditPurchaseButtonProps>) {
   const t = useTranslations("credits");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);

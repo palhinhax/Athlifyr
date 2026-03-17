@@ -9,7 +9,7 @@ import {
   MAX_TOPUP_AMOUNT_CENTS,
 } from "./constants";
 import { creditWallet } from "./wallet-service";
-import { randomUUID } from "crypto";
+import { randomUUID } from "node:crypto";
 
 /**
  * Create a Stripe PaymentIntent for a credit top-up.

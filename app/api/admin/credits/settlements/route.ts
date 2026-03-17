@@ -10,7 +10,7 @@ import {
 
 async function requireAdminSession() {
   const session = await auth();
-  if (!session?.user || session.user.role !== "ADMIN") {
+  if (session?.user?.role !== "ADMIN") {
     return {
       error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
     };

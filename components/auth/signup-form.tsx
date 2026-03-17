@@ -91,7 +91,7 @@ export function SignUpForm() {
         const errorCodeMap: Record<string, string> = {
           EMAIL_ALREADY_IN_USE: "errors.emailAlreadyInUse",
           NAME_TOO_SHORT: "errors.nameTooShort",
-          PASSWORD_TOO_SHORT: "errors.passwordTooShort",
+          PASSWORD_TOO_SHORT: "errors.passwordTooShort", // NOSONAR — error code mapping, not a credential
           EMAIL_INVALID: "errors.emailInvalid",
           VALIDATION_ERROR: "errors.validationError",
         };

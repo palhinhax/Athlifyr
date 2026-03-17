@@ -858,7 +858,7 @@ function AnalysisModalHeader({
   viewMode,
   setViewMode,
   record,
-}: {
+}: Readonly<{
   icon: LucideIcon;
   splitIcon: LucideIcon;
   title: string;
@@ -867,7 +867,7 @@ function AnalysisModalHeader({
   viewMode: "video" | "split" | "skeleton";
   setViewMode: (mode: "video" | "split" | "skeleton") => void;
   record: AnalysisRecord | null;
-}) {
+}>) {
   return (
     <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">

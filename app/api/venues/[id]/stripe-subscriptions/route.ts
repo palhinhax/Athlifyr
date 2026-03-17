@@ -8,6 +8,52 @@ import {
   calculateApplicationFeePercent,
 } from "@/lib/venues/stripe-route-helpers";
 
+/** Find or create a Stripe Product for a venue plan. */
+async function getOrCreateStripeProduct(
+  planId: string,
+  venueId: string,
+  venueName: string,
+  planName: string
+): Promise<string> {
+  const existingProducts = await stripe.products.search({
+    query: `metadata["athlifyrPlanId"]:"${planId}"`,
+  });
+
+  if (existingProducts.data.length > 0) {
+    return existingProducts.data[0].id;
+  }
+
+  const product = await stripe.products.create({
+    name: `${venueName} – ${planName}`,
+    metadata: { athlifyrPlanId: planId, venueId },
+  });
+  return product.id;
+}
+
+/** Extract the client secret from a subscription's first invoice payment. */
+async function extractClientSecret(subscription: {
+  latest_invoice: string | { id: string } | null;
+}): Promise<string | null> {
+  const latestInvoiceId =
+    typeof subscription.latest_invoice === "string"
+      ? subscription.latest_invoice
+      : subscription.latest_invoice?.id;
+
+  if (!latestInvoiceId) return null;
+
+  const invoicePayments = await stripe.invoicePayments.list({
+    invoice: latestInvoiceId,
+  });
+
+  const piRef = invoicePayments.data[0]?.payment?.payment_intent;
+  const paymentIntentId = typeof piRef === "string" ? piRef : piRef?.id;
+
+  if (!paymentIntentId) return null;
+
+  const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
+  return pi.client_secret;
+}
+
 /**
  * POST /api/venues/[id]/stripe-subscriptions
  *
@@ -107,20 +153,12 @@ export async function POST(
     );
 
     // Create a Stripe Product for this plan (idempotent via metadata lookup)
-    const existingProducts = await stripe.products.search({
-      query: `metadata["athlifyrPlanId"]:"${planId}"`,
-    });
-
-    let productId: string;
-    if (existingProducts.data.length > 0) {
-      productId = existingProducts.data[0].id;
-    } else {
-      const product = await stripe.products.create({
-        name: `${venue.name} – ${plan.name}`,
-        metadata: { athlifyrPlanId: planId, venueId },
-      });
-      productId = product.id;
-    }
+    const productId = await getOrCreateStripeProduct(
+      planId,
+      venueId,
+      venue.name,
+      plan.name
+    );
 
     // Create a recurring price
     const price = await stripe.prices.create({
@@ -157,26 +195,7 @@ export async function POST(
     // In Stripe API 2026-01-28.clover, the payment_intent field was removed
     // from the Invoice object. Use the Invoice Payments API to find the
     // PaymentIntent that belongs to this subscription's first invoice.
-    const latestInvoiceId =
-      typeof subscription.latest_invoice === "string"
-        ? subscription.latest_invoice
-        : subscription.latest_invoice?.id;
-
-    let clientSecret: string | null = null;
-
-    if (latestInvoiceId) {
-      const invoicePayments = await stripe.invoicePayments.list({
-        invoice: latestInvoiceId,
-      });
-
-      const piRef = invoicePayments.data[0]?.payment?.payment_intent;
-      const paymentIntentId = typeof piRef === "string" ? piRef : piRef?.id;
-
-      if (paymentIntentId) {
-        const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
-        clientSecret = pi.client_secret;
-      }
-    }
+    const clientSecret = await extractClientSecret(subscription);
 
     if (!clientSecret) {
       // Clean up the subscription if we can't get the client secret

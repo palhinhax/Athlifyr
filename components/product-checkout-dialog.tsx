@@ -307,7 +307,7 @@ export function ProductCheckoutDialog({
                         className="mt-1 h-auto p-0 text-amber-600"
                         onClick={() => {
                           handleOpenChange(false);
-                          window.location.href = "/credits";
+                          globalThis.location.href = "/credits";
                         }}
                       >
                         {tc("topUpFirst")}

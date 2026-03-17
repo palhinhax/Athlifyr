@@ -165,7 +165,7 @@ async function settleVenue(params: {
     where: { idempotencyKey },
   });
 
-  if (existing && existing.status === "COMPLETED") {
+  if (existing?.status === "COMPLETED") {
     console.log(
       `Settlement ${existing.id} already completed for venue ${venueId}`
     );

@@ -23,7 +23,7 @@ export function WalletBalanceCard({
   totalSpentCents,
   totalRewardedCents,
   onTopUp,
-}: WalletBalanceCardProps) {
+}: Readonly<WalletBalanceCardProps>) {
   const t = useTranslations("credits");
 
   return (

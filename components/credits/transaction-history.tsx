@@ -51,7 +51,7 @@ export function TransactionHistory({
   isLoadingMore,
   hasMore,
   onLoadMore,
-}: TransactionHistoryProps) {
+}: Readonly<TransactionHistoryProps>) {
   const t = useTranslations("credits");
 
   return (

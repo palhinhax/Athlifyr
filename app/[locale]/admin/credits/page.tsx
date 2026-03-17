@@ -98,6 +98,15 @@ interface SettlementData {
   recentSettlements: SettlementBatch[];
 }
 
+function getStatusBadgeVariant(
+  status: string,
+  matchValue: string,
+  matchVariant: "default" | "secondary" | "destructive" | "outline",
+  fallbackVariant: "default" | "secondary" | "destructive" | "outline"
+) {
+  return status === matchValue ? matchVariant : fallbackVariant;
+}
+
 export default function AdminCreditsPage() {
   const t = useTranslations("credits.admin");
   const [activeView, setActiveView] = useState<"users" | "settlements">(
@@ -222,8 +231,8 @@ function AdminCreditsUserView() {
   );
 
   const handleAdjust = useCallback(async () => {
-    const cents = Math.round(parseFloat(adjustAmount) * 100);
-    if (isNaN(cents) || cents === 0) return;
+    const cents = Math.round(Number.parseFloat(adjustAmount) * 100);
+    if (Number.isNaN(cents) || cents === 0) return;
 
     setIsAdjusting(true);
     try {
@@ -426,13 +435,14 @@ function AdminCreditsUserView() {
                         </p>
                       </div>
                       <Badge
-                        variant={
-                          topUp.status === "COMPLETED"
-                            ? "default"
-                            : topUp.status === "PENDING"
-                              ? "secondary"
-                              : "destructive"
-                        }
+                        variant={getStatusBadgeVariant(
+                          topUp.status,
+                          "COMPLETED",
+                          "default",
+                          topUp.status === "PENDING"
+                            ? "secondary"
+                            : "destructive"
+                        )}
                       >
                         {topUp.status}
                       </Badge>
@@ -743,13 +753,12 @@ function AdminCreditsSettlementsView() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge
-                      variant={
-                        batch.status === "COMPLETED"
-                          ? "default"
-                          : batch.status === "FAILED"
-                            ? "destructive"
-                            : "secondary"
-                      }
+                      variant={getStatusBadgeVariant(
+                        batch.status,
+                        "COMPLETED",
+                        "default",
+                        batch.status === "FAILED" ? "destructive" : "secondary"
+                      )}
                     >
                       {batch.status}
                     </Badge>

@@ -121,9 +121,9 @@ async function sendEmailNotification(
 
 function formatPushPart(pushResult: PushResult, audience: Audience): string {
   if (audience === "single") {
-    return `Push: ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`;
+    return `Push: ${pushResult.sent} dispositivo${pushResult.sent === 1 ? "" : "s"}`;
   }
-  return `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""}`;
+  return `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted === 1 ? "" : "es"}`;
 }
 
 function formatEmailPart(
@@ -133,7 +133,7 @@ function formatEmailPart(
   if (audience === "single") return "Email enviado";
   const emailsSent =
     (emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0;
-  return `Emails: ${emailsSent} enviado${emailsSent !== 1 ? "s" : ""}`;
+  return `Emails: ${emailsSent} enviado${emailsSent === 1 ? "" : "s"}`;
 }
 
 function buildToastParts(

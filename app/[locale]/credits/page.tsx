@@ -21,9 +21,9 @@ export const dynamic = "force-dynamic";
 
 export default async function WalletPage({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ locale: string }>;
-}) {
+}>) {
   const session = await auth();
   const { locale } = await params;
 

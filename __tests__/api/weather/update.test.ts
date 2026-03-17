@@ -10,15 +10,6 @@
 
 export {};
 
-// ── Mocks ─────────────────────────────────────────────────────────────────────
-
-jest.mock("@/lib/prisma", () => ({
-  prisma: {
-    event: { findMany: jest.fn().mockResolvedValue([]) },
-    eventWeather: { upsert: jest.fn() },
-  },
-}));
-
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeRequest(authHeader?: string): Request {
@@ -34,14 +25,22 @@ function makeRequest(authHeader?: string): Request {
   });
 }
 
+/** Re-import the route after resetting modules so module-level env vars are re-read. */
+async function importRoute() {
+  jest.resetModules();
+  jest.doMock("@/lib/prisma", () => ({
+    prisma: {
+      event: { findMany: jest.fn().mockResolvedValue([]) },
+      eventWeather: { upsert: jest.fn() },
+    },
+  }));
+  return import("@/app/api/weather/update/route");
+}
+
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
 describe("POST /api/weather/update", () => {
   const originalSecret = process.env.WEATHER_UPDATE_SECRET;
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
 
   afterEach(() => {
     if (originalSecret !== undefined) {
@@ -53,15 +52,7 @@ describe("POST /api/weather/update", () => {
 
   it("returns 401 when WEATHER_UPDATE_SECRET is not configured", async () => {
     delete process.env.WEATHER_UPDATE_SECRET;
-
-    jest.resetModules();
-    jest.mock("@/lib/prisma", () => ({
-      prisma: {
-        event: { findMany: jest.fn().mockResolvedValue([]) },
-        eventWeather: { upsert: jest.fn() },
-      },
-    }));
-    const { POST } = await import("@/app/api/weather/update/route");
+    const { POST } = await importRoute();
 
     const res = await POST(makeRequest("Bearer anything"));
 
@@ -70,15 +61,7 @@ describe("POST /api/weather/update", () => {
 
   it("returns 401 when authorization header is missing", async () => {
     process.env.WEATHER_UPDATE_SECRET = "test-secret";
-
-    jest.resetModules();
-    jest.mock("@/lib/prisma", () => ({
-      prisma: {
-        event: { findMany: jest.fn().mockResolvedValue([]) },
-        eventWeather: { upsert: jest.fn() },
-      },
-    }));
-    const { POST } = await import("@/app/api/weather/update/route");
+    const { POST } = await importRoute();
 
     const res = await POST(makeRequest());
 
@@ -87,15 +70,7 @@ describe("POST /api/weather/update", () => {
 
   it("returns 401 when secret is wrong", async () => {
     process.env.WEATHER_UPDATE_SECRET = "test-secret";
-
-    jest.resetModules();
-    jest.mock("@/lib/prisma", () => ({
-      prisma: {
-        event: { findMany: jest.fn().mockResolvedValue([]) },
-        eventWeather: { upsert: jest.fn() },
-      },
-    }));
-    const { POST } = await import("@/app/api/weather/update/route");
+    const { POST } = await importRoute();
 
     const res = await POST(makeRequest("Bearer wrong-secret"));
 
@@ -105,15 +80,7 @@ describe("POST /api/weather/update", () => {
   it("returns 500 when OPENWEATHER_API_KEY is not configured", async () => {
     process.env.WEATHER_UPDATE_SECRET = "test-secret";
     delete process.env.OPENWEATHER_API_KEY;
-
-    jest.resetModules();
-    jest.mock("@/lib/prisma", () => ({
-      prisma: {
-        event: { findMany: jest.fn().mockResolvedValue([]) },
-        eventWeather: { upsert: jest.fn() },
-      },
-    }));
-    const { POST } = await import("@/app/api/weather/update/route");
+    const { POST } = await importRoute();
 
     const res = await POST(makeRequest("Bearer test-secret"));
 
@@ -123,15 +90,7 @@ describe("POST /api/weather/update", () => {
   it("succeeds with valid secret and API key", async () => {
     process.env.WEATHER_UPDATE_SECRET = "test-secret";
     process.env.OPENWEATHER_API_KEY = "fake-api-key";
-
-    jest.resetModules();
-    jest.mock("@/lib/prisma", () => ({
-      prisma: {
-        event: { findMany: jest.fn().mockResolvedValue([]) },
-        eventWeather: { upsert: jest.fn() },
-      },
-    }));
-    const { POST } = await import("@/app/api/weather/update/route");
+    const { POST } = await importRoute();
 
     const res = await POST(makeRequest("Bearer test-secret"));
 

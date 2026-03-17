@@ -26,15 +26,15 @@ function makeRequest(authHeader?: string): Request {
 }
 
 function setupMocks() {
-  jest.mock("@/lib/prisma", () => ({
+  jest.doMock("@/lib/prisma", () => ({
     prisma: {
       giveaway: { findMany: jest.fn().mockResolvedValue([]) },
     },
   }));
-  jest.mock("@/lib/notifications", () => ({
+  jest.doMock("@/lib/notifications", () => ({
     notifyGiveawayWinners: jest.fn().mockResolvedValue(undefined),
   }));
-  jest.mock("@prisma/client", () => ({
+  jest.doMock("@prisma/client", () => ({
     GiveawayStatus: {
       SCHEDULED: "SCHEDULED",
       DRAWN: "DRAWN",

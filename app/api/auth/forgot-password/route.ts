@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 import crypto from "node:crypto";
@@ -6,6 +6,7 @@ import {
   getPasswordResetEmailHtml,
   getPasswordResetEmailText,
 } from "@/lib/email-templates";
+import { forgotPasswordLimiter } from "@/lib/rate-limit";
 
 // Initialize Resend lazily to avoid build-time errors when API key is missing
 const getResend = () => {
@@ -18,13 +19,40 @@ const getResend = () => {
   return new Resend(process.env.RESEND_API_KEY);
 };
 
-export async function POST(request: Request) {
+/** Minimum response time (ms) to prevent timing-based email enumeration. */
+const MIN_RESPONSE_TIME_MS = 800;
+
+export async function POST(request: NextRequest) {
+  const startTime = Date.now();
+
   try {
     const { email } = await request.json();
 
     if (!email) {
       return NextResponse.json({ code: "EMAIL_REQUIRED" }, { status: 400 });
     }
+
+    // Rate limit by IP
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+    const rateLimit = forgotPasswordLimiter.check(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+            ),
+          },
+        }
+      );
+    }
+
+    const successMessage =
+      "Se o email existir, receberás instruções para recuperar a password";
 
     // Check if user exists
     const user = await prisma.user.findUnique({
@@ -33,10 +61,12 @@ export async function POST(request: Request) {
 
     // Always return success to prevent email enumeration
     if (!user) {
-      return NextResponse.json({
-        message:
-          "Se o email existir, receberás instruções para recuperar a password",
-      });
+      // Wait to ensure consistent response time regardless of user existence
+      const elapsed = Date.now() - startTime;
+      if (elapsed < MIN_RESPONSE_TIME_MS) {
+        await new Promise((r) => setTimeout(r, MIN_RESPONSE_TIME_MS - elapsed));
+      }
+      return NextResponse.json({ message: successMessage });
     }
 
     // Delete any existing reset tokens for this email
@@ -76,8 +106,7 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json({
-      message:
-        "Se o email existir, receberás instruções para recuperar a password",
+      message: successMessage,
     });
   } catch (error) {
     console.error("Error in forgot-password:", error);

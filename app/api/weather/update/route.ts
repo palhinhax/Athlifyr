@@ -98,7 +98,11 @@ export async function POST(request: Request) {
   try {
     // Verify secret token for security
     const authHeader = request.headers.get("authorization");
-    if (!authHeader || authHeader !== `Bearer ${WEATHER_UPDATE_SECRET}`) {
+    if (
+      !WEATHER_UPDATE_SECRET ||
+      !authHeader ||
+      authHeader !== `Bearer ${WEATHER_UPDATE_SECRET}`
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

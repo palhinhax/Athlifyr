@@ -41,11 +41,18 @@ function getSessionGenerationStart(
  */
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security (optional but recommended)
+    // Verify cron secret for security
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+      console.error(
+        "[Security] CRON_SECRET is not configured. Rejecting cron request."
+      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

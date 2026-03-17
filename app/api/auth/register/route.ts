@@ -12,6 +12,18 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
+function mapZodErrorCode(issue: z.ZodIssue): string {
+  const field = issue.path[0];
+  if (issue.code === "too_small") {
+    if (field === "name") return "NAME_TOO_SHORT";
+    if (field === "password") return "PASSWORD_TOO_SHORT";
+  }
+  if (issue.code === "invalid_format" && field === "email") {
+    return "EMAIL_INVALID";
+  }
+  return "VALIDATION_ERROR";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const integrityError = await requireIntegrity(req);
@@ -92,19 +104,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issue = error.issues[0];
-      const codeMap: Record<string, string> = {
-        too_small:
-          issue.path[0] === "name"
-            ? "NAME_TOO_SHORT"
-            : issue.path[0] === "password"
-              ? "PASSWORD_TOO_SHORT"
-              : "VALIDATION_ERROR",
-        invalid_string:
-          issue.path[0] === "email" ? "EMAIL_INVALID" : "VALIDATION_ERROR",
-      };
       return NextResponse.json(
-        { code: codeMap[issue.code] ?? "VALIDATION_ERROR" },
+        { code: mapZodErrorCode(error.issues[0]) },
         { status: 400 }
       );
     }

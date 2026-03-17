@@ -12,7 +12,7 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
-function mapZodErrorCode(issue: z.ZodIssue): string {
+function mapZodErrorCode(issue: z.core.$ZodIssue): string {
   const field = issue.path[0];
   if (issue.code === "too_small") {
     if (field === "name") return "NAME_TOO_SHORT";

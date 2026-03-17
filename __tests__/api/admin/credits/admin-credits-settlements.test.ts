@@ -52,13 +52,13 @@ const makePostReq = (body: object) =>
 describe("GET /api/admin/credits/settlements", () => {
   it("returns 401 for unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await GET(makeGetReq());
+    const res = (await GET(makeGetReq()))!;
     expect(res.status).toBe(401);
   });
 
   it("returns 401 for non-admin", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1", role: "USER" } });
-    const res = await GET(makeGetReq());
+    const res = (await GET(makeGetReq()))!;
     expect(res.status).toBe(401);
   });
 
@@ -67,7 +67,7 @@ describe("GET /api/admin/credits/settlements", () => {
     mockGetPending.mockResolvedValue(5000);
     mockGetHistory.mockResolvedValue([{ id: "batch1" }]);
 
-    const res = await GET(makeGetReq("venueId=v1"));
+    const res = (await GET(makeGetReq("venueId=v1")))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.pending).toBe(5000);
@@ -100,7 +100,7 @@ describe("GET /api/admin/credits/settlements", () => {
     ]);
     (prisma.venueSettlementBatch.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeGetReq());
+    const res = (await GET(makeGetReq()))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.overview).toHaveLength(2);
@@ -117,7 +117,7 @@ describe("GET /api/admin/credits/settlements", () => {
     (prisma.venue.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.venueSettlementBatch.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeGetReq());
+    const res = (await GET(makeGetReq()))!;
     const body = await res.json();
     expect(body.overview[0].pendingAmountCents).toBe(0);
   });
@@ -128,7 +128,7 @@ describe("GET /api/admin/credits/settlements", () => {
       new Error("DB error")
     );
 
-    const res = await GET(makeGetReq());
+    const res = (await GET(makeGetReq()))!;
     expect(res.status).toBe(500);
   });
 });
@@ -138,7 +138,7 @@ describe("GET /api/admin/credits/settlements", () => {
 describe("POST /api/admin/credits/settlements", () => {
   it("returns 401 for unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await POST(makePostReq({ batchId: "b1" }));
+    const res = (await POST(makePostReq({ batchId: "b1" })))!;
     expect(res.status).toBe(401);
   });
 
@@ -146,7 +146,7 @@ describe("POST /api/admin/credits/settlements", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockSettle.mockResolvedValue(undefined);
 
-    const res = await POST(makePostReq({ action: "settle", venueId: "v1" }));
+    const res = (await POST(makePostReq({ action: "settle", venueId: "v1" })))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
@@ -155,7 +155,7 @@ describe("POST /api/admin/credits/settlements", () => {
 
   it("returns 400 when batchId is missing for retry", async () => {
     mockAuth.mockResolvedValue(adminSession);
-    const res = await POST(makePostReq({}));
+    const res = (await POST(makePostReq({})))!;
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain("batchId");
@@ -165,7 +165,7 @@ describe("POST /api/admin/credits/settlements", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockRetry.mockResolvedValue(undefined);
 
-    const res = await POST(makePostReq({ batchId: "batch1" }));
+    const res = (await POST(makePostReq({ batchId: "batch1" })))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.success).toBe(true);
@@ -176,7 +176,7 @@ describe("POST /api/admin/credits/settlements", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockRetry.mockRejectedValue(new Error("Transfer failed"));
 
-    const res = await POST(makePostReq({ batchId: "batch1" }));
+    const res = (await POST(makePostReq({ batchId: "batch1" })))!;
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Transfer failed");
@@ -186,7 +186,7 @@ describe("POST /api/admin/credits/settlements", () => {
     mockAuth.mockResolvedValue(adminSession);
     mockRetry.mockRejectedValue("unknown");
 
-    const res = await POST(makePostReq({ batchId: "batch1" }));
+    const res = (await POST(makePostReq({ batchId: "batch1" })))!;
     expect(res.status).toBe(500);
     const body = await res.json();
     expect(body.error).toBe("Failed to retry settlement");

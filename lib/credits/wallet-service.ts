@@ -6,6 +6,33 @@ type PrismaTransactionClient = Omit<
   "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends"
 >;
 
+type WalletResult = { transactionId: string; newBalanceCents: number };
+
+async function checkIdempotency(
+  txClient: PrismaTransactionClient,
+  idempotencyKey: string | undefined
+): Promise<WalletResult | null> {
+  if (!idempotencyKey) return null;
+  const existing = await txClient.creditTransaction.findUnique({
+    where: { idempotencyKey },
+  });
+  if (existing) {
+    return {
+      transactionId: existing.id,
+      newBalanceCents: existing.balanceAfterCents,
+    };
+  }
+  return null;
+}
+
+function runInTransaction(
+  execute: (txClient: PrismaTransactionClient) => Promise<WalletResult>,
+  tx?: PrismaTransactionClient
+): Promise<WalletResult> {
+  if (tx) return execute(tx);
+  return prisma.$transaction(execute);
+}
+
 /**
  * Get or create a credit wallet for a user.
  * Always returns a wallet - creates one with 0 balance if none exists.
@@ -94,18 +121,8 @@ export async function creditWallet(
   }
 
   const execute = async (txClient: PrismaTransactionClient) => {
-    // Idempotency check
-    if (params.idempotencyKey) {
-      const existing = await txClient.creditTransaction.findUnique({
-        where: { idempotencyKey: params.idempotencyKey },
-      });
-      if (existing) {
-        return {
-          transactionId: existing.id,
-          newBalanceCents: existing.balanceAfterCents,
-        };
-      }
-    }
+    const idempotent = await checkIdempotency(txClient, params.idempotencyKey);
+    if (idempotent) return idempotent;
 
     // Ensure wallet exists before updating
     await getOrCreateWallet(params.userId, txClient);
@@ -158,13 +175,7 @@ export async function creditWallet(
     };
   };
 
-  // If caller provided a transaction client, use it directly to avoid nesting;
-  // otherwise start a new transaction so the wallet update and transaction record
-  // are written atomically in a single DB round-trip.
-  if (tx) {
-    return execute(tx);
-  }
-  return prisma.$transaction(execute);
+  return runInTransaction(execute, tx);
 }
 
 /**
@@ -188,18 +199,8 @@ export async function debitWallet(
   }
 
   const execute = async (txClient: PrismaTransactionClient) => {
-    // Idempotency check
-    if (params.idempotencyKey) {
-      const existing = await txClient.creditTransaction.findUnique({
-        where: { idempotencyKey: params.idempotencyKey },
-      });
-      if (existing) {
-        return {
-          transactionId: existing.id,
-          newBalanceCents: existing.balanceAfterCents,
-        };
-      }
-    }
+    const idempotent = await checkIdempotency(txClient, params.idempotencyKey);
+    if (idempotent) return idempotent;
 
     // Read current balance inside the transaction to check sufficiency
     const wallet = await getOrCreateWallet(params.userId, txClient);
@@ -242,13 +243,7 @@ export async function debitWallet(
     };
   };
 
-  // If caller provided a transaction client, use it directly to avoid nesting;
-  // otherwise start a new transaction so the balance check, wallet update, and
-  // transaction record are written atomically in a single DB round-trip.
-  if (tx) {
-    return execute(tx);
-  }
-  return prisma.$transaction(execute);
+  return runInTransaction(execute, tx);
 }
 
 /**

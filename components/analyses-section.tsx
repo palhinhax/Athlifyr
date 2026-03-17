@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
+import type { LucideIcon } from "lucide-react";
 import {
   Activity,
   Dumbbell,
@@ -846,6 +847,80 @@ function computeDurationMs(
   return null;
 }
 
+// ── Shared modal header for both Motion and Lift modals ────────────────────
+
+function AnalysisModalHeader({
+  icon: Icon,
+  splitIcon: SplitIcon,
+  title,
+  metaContent,
+  hasSkeletonData,
+  viewMode,
+  setViewMode,
+  record,
+}: {
+  icon: LucideIcon;
+  splitIcon: LucideIcon;
+  title: string;
+  metaContent: React.ReactNode;
+  hasSkeletonData: boolean;
+  viewMode: "video" | "split" | "skeleton";
+  setViewMode: (mode: "video" | "split" | "skeleton") => void;
+  record: AnalysisRecord | null;
+}) {
+  return (
+    <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">
+        <Icon className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
+      </div>
+      <DialogHeader className="min-w-0 flex-1 space-y-0.5 text-left">
+        <DialogTitle className="truncate text-sm text-white sm:text-base">
+          {title}
+        </DialogTitle>
+        <DialogDescription className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 sm:gap-1.5 sm:text-xs">
+          {metaContent}
+        </DialogDescription>
+      </DialogHeader>
+
+      {hasSkeletonData && (
+        <div className="flex gap-0.5 rounded-lg border border-white/20 bg-white/5 p-0.5 sm:gap-1">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${viewMode === "video" ? "bg-white/20" : "hover:bg-white/10"}`}
+            onClick={() => setViewMode("video")}
+            title="Vídeo"
+          >
+            <Video className="h-3.5 w-3.5 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${viewMode === "split" ? "bg-white/20" : "hover:bg-white/10"}`}
+            onClick={() => setViewMode("split")}
+            title="Vídeo + 3D"
+          >
+            <SplitIcon className="h-3.5 w-3.5 text-white" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`h-7 w-7 p-0 ${viewMode === "skeleton" ? "bg-white/20" : "hover:bg-white/10"}`}
+            onClick={() => setViewMode("skeleton")}
+            title="Esqueleto 3D"
+          >
+            <Box className="h-3.5 w-3.5 text-white" />
+          </Button>
+        </div>
+      )}
+
+      <div className="shrink-0 pr-6">
+        {record && <ExportButton videoUrl={record.videoUrl} />}
+      </div>
+    </div>
+  );
+}
+
 function MotionVideoModal({
   record,
   onClose,
@@ -1035,15 +1110,12 @@ function MotionVideoModal({
         }`}
       >
         {/* Dark header */}
-        <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">
-            <Activity className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-          </div>
-          <DialogHeader className="min-w-0 flex-1 space-y-0.5 text-left">
-            <DialogTitle className="truncate text-sm text-white sm:text-base">
-              {title}
-            </DialogTitle>
-            <DialogDescription className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 sm:gap-1.5 sm:text-xs">
+        <AnalysisModalHeader
+          icon={Activity}
+          splitIcon={Activity}
+          title={title}
+          metaContent={
+            <>
               <CalendarDays className="h-3 w-3" />
               {createdAt}
               {durationMs !== null && (
@@ -1065,46 +1137,13 @@ function MotionVideoModal({
                   {newPose.detectionRate.toFixed(0)}% deteção
                 </>
               )}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* View mode toggle - only show if 3D data available */}
-          {hasSkeletonData && (
-            <div className="flex gap-0.5 rounded-lg border border-white/20 bg-white/5 p-0.5 sm:gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "video" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("video")}
-                title="Vídeo"
-              >
-                <Video className="h-3.5 w-3.5 text-white" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "split" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("split")}
-                title="Vídeo + 3D"
-              >
-                <Activity className="h-3.5 w-3.5 text-white" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "skeleton" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("skeleton")}
-                title="Esqueleto 3D"
-              >
-                <Box className="h-3.5 w-3.5 text-white" />
-              </Button>
-            </div>
-          )}
-
-          <div className="shrink-0 pr-6">
-            {record && <ExportButton videoUrl={record.videoUrl} />}
-          </div>
-        </div>
+            </>
+          }
+          hasSkeletonData={hasSkeletonData}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          record={record}
+        />
 
         {/* Main content area */}
         <div
@@ -1419,15 +1458,12 @@ function LiftVideoModal({
         }`}
       >
         {/* Dark header */}
-        <div className="sticky top-0 z-10 flex items-start gap-2 bg-black px-3 py-3 sm:gap-3 sm:px-5 sm:py-4">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/20 sm:h-9 sm:w-9">
-            <Dumbbell className="h-4 w-4 text-primary sm:h-5 sm:w-5" />
-          </div>
-          <DialogHeader className="min-w-0 flex-1 space-y-0.5 text-left">
-            <DialogTitle className="truncate text-sm text-white sm:text-base">
-              {title}
-            </DialogTitle>
-            <DialogDescription className="flex flex-wrap items-center gap-1 text-[10px] text-white/50 sm:gap-1.5 sm:text-xs">
+        <AnalysisModalHeader
+          icon={Dumbbell}
+          splitIcon={Dumbbell}
+          title={title}
+          metaContent={
+            <>
               <CalendarDays className="h-3 w-3" />
               {createdAt}
               {durationMs !== undefined && (
@@ -1445,46 +1481,13 @@ function LiftVideoModal({
                   {poseData.detectionRate.toFixed(0)}% deteção
                 </>
               )}
-            </DialogDescription>
-          </DialogHeader>
-
-          {/* View mode toggle - only show if 3D data available */}
-          {hasSkeletonData && (
-            <div className="flex gap-0.5 rounded-lg border border-white/20 bg-white/5 p-0.5 sm:gap-1">
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "video" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("video")}
-                title="Vídeo"
-              >
-                <Video className="h-3.5 w-3.5 text-white" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "split" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("split")}
-                title="Vídeo + 3D"
-              >
-                <Dumbbell className="h-3.5 w-3.5 text-white" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={`h-7 w-7 p-0 ${viewMode === "skeleton" ? "bg-white/20" : "hover:bg-white/10"}`}
-                onClick={() => setViewMode("skeleton")}
-                title="Esqueleto 3D"
-              >
-                <Box className="h-3.5 w-3.5 text-white" />
-              </Button>
-            </div>
-          )}
-
-          <div className="shrink-0 pr-6">
-            {record && <ExportButton videoUrl={record.videoUrl} />}
-          </div>
-        </div>
+            </>
+          }
+          hasSkeletonData={hasSkeletonData}
+          viewMode={viewMode}
+          setViewMode={setViewMode}
+          record={record}
+        />
 
         {/* Main content area */}
         <div

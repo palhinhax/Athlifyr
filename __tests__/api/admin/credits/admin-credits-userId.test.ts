@@ -45,13 +45,13 @@ const adminSession = { user: { id: "admin1", role: "ADMIN" } };
 describe("GET /api/admin/credits/[userId]", () => {
   it("returns 401 for unauthenticated", async () => {
     mockAuth.mockResolvedValue(null);
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(401);
   });
 
   it("returns 401 for non-admin", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1", role: "USER" } });
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(401);
   });
 
@@ -60,7 +60,7 @@ describe("GET /api/admin/credits/[userId]", () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(404);
   });
 
@@ -84,7 +84,7 @@ describe("GET /api/admin/credits/[userId]", () => {
     (prisma.creditTransaction.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.creditTopUp.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.user.id).toBe("user1");
@@ -105,7 +105,7 @@ describe("GET /api/admin/credits/[userId]", () => {
     (prisma.creditTransaction.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.creditTopUp.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     const body = await res.json();
     expect(body.wallet.balanceCents).toBe(0);
   });
@@ -125,7 +125,7 @@ describe("GET /api/admin/credits/[userId]", () => {
     (prisma.creditTransaction.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.creditTopUp.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(200);
   });
 
@@ -145,7 +145,7 @@ describe("GET /api/admin/credits/[userId]", () => {
     (prisma.creditTransaction.findMany as jest.Mock).mockResolvedValue([]);
     (prisma.creditTopUp.findMany as jest.Mock).mockResolvedValue([]);
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(200);
   });
 
@@ -155,7 +155,7 @@ describe("GET /api/admin/credits/[userId]", () => {
       new Error("DB down")
     );
 
-    const res = await GET(makeReq("GET"), { params });
+    const res = (await GET(makeReq("GET"), { params }))!;
     expect(res.status).toBe(500);
   });
 });
@@ -165,7 +165,9 @@ describe("GET /api/admin/credits/[userId]", () => {
 describe("POST /api/admin/credits/[userId]", () => {
   it("returns 401 for non-admin", async () => {
     mockAuth.mockResolvedValue({ user: { id: "u1", role: "USER" } });
-    const res = await POST(makeReq("POST", { amountCents: 500 }), { params });
+    const res = (await POST(makeReq("POST", { amountCents: 500 }), {
+      params,
+    }))!;
     expect(res.status).toBe(401);
   });
 
@@ -174,7 +176,9 @@ describe("POST /api/admin/credits/[userId]", () => {
     (prisma.user.findUnique as jest.Mock).mockResolvedValue(null);
     (prisma.user.findFirst as jest.Mock).mockResolvedValue(null);
 
-    const res = await POST(makeReq("POST", { amountCents: 500 }), { params });
+    const res = (await POST(makeReq("POST", { amountCents: 500 }), {
+      params,
+    }))!;
     expect(res.status).toBe(404);
   });
 
@@ -184,7 +188,9 @@ describe("POST /api/admin/credits/[userId]", () => {
       id: "user1",
     });
 
-    const res = await POST(makeReq("POST", { amountCents: 5.5 }), { params });
+    const res = (await POST(makeReq("POST", { amountCents: 5.5 }), {
+      params,
+    }))!;
     expect(res.status).toBe(400);
   });
 
@@ -194,7 +200,7 @@ describe("POST /api/admin/credits/[userId]", () => {
       id: "user1",
     });
 
-    const res = await POST(makeReq("POST", { amountCents: 0 }), { params });
+    const res = (await POST(makeReq("POST", { amountCents: 0 }), { params }))!;
     expect(res.status).toBe(400);
   });
 
@@ -204,7 +210,7 @@ describe("POST /api/admin/credits/[userId]", () => {
       id: "user1",
     });
 
-    const res = await POST(makeReq("POST", { note: "test" }), { params });
+    const res = (await POST(makeReq("POST", { note: "test" }), { params }))!;
     expect(res.status).toBe(400);
   });
 
@@ -218,10 +224,10 @@ describe("POST /api/admin/credits/[userId]", () => {
       newBalanceCents: 1500,
     });
 
-    const res = await POST(
+    const res = (await POST(
       makeReq("POST", { amountCents: 500, note: "Bonus" }),
       { params }
-    );
+    ))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.action).toBe("credit");
@@ -255,10 +261,10 @@ describe("POST /api/admin/credits/[userId]", () => {
       return fn(tx);
     });
 
-    const res = await POST(
+    const res = (await POST(
       makeReq("POST", { amountCents: -500, note: "Deduction" }),
       { params }
-    );
+    ))!;
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.action).toBe("debit");
@@ -273,9 +279,9 @@ describe("POST /api/admin/credits/[userId]", () => {
       balanceCents: 100,
     });
 
-    const res = await POST(makeReq("POST", { amountCents: -500 }), {
+    const res = (await POST(makeReq("POST", { amountCents: -500 }), {
       params,
-    });
+    }))!;
     expect(res.status).toBe(400);
     const body = await res.json();
     expect(body.error).toContain("Insufficient");
@@ -306,7 +312,9 @@ describe("POST /api/admin/credits/[userId]", () => {
       new Error("DB err")
     );
 
-    const res = await POST(makeReq("POST", { amountCents: 500 }), { params });
+    const res = (await POST(makeReq("POST", { amountCents: 500 }), {
+      params,
+    }))!;
     expect(res.status).toBe(500);
   });
 });

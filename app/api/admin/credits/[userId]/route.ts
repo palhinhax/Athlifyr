@@ -31,22 +31,32 @@ async function resolveUserId(input: string): Promise<string | null> {
   return null;
 }
 
+async function requireAdminAndResolveUser(params: Promise<{ userId: string }>) {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+  const { userId: input } = await params;
+  const userId = await resolveUserId(input);
+  if (!userId) {
+    return {
+      error: NextResponse.json({ error: "User not found" }, { status: 404 }),
+    };
+  }
+  return { session, userId };
+}
+
 // GET - Get credits info for a specific user (admin)
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { userId: input } = await params;
-    const userId = await resolveUserId(input);
-    if (!userId) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    const result = await requireAdminAndResolveUser(params);
+    if ("error" in result) return result.error;
+    const { userId } = result;
 
     const user = await prisma.user.findUnique({
       where: { id: userId },
@@ -95,16 +105,9 @@ export async function POST(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { userId: input } = await params;
-    const userId = await resolveUserId(input);
-    if (!userId) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
+    const result = await requireAdminAndResolveUser(params);
+    if ("error" in result) return result.error;
+    const { session, userId } = result;
     const body = await request.json();
     const { amountCents, note, source } = body;
 

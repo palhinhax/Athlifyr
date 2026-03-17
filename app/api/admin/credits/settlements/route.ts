@@ -8,13 +8,21 @@ import {
   settleVenueManually,
 } from "@/lib/credits";
 
+async function requireAdminSession() {
+  const session = await auth();
+  if (!session?.user || session.user.role !== "ADMIN") {
+    return {
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    };
+  }
+  return { session };
+}
+
 // GET - Admin: Get venue settlement overview or single venue details
 export async function GET(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const result = await requireAdminSession();
+    if ("error" in result) return result.error;
 
     const { searchParams } = new URL(request.url);
     const venueId = searchParams.get("venueId");
@@ -80,10 +88,8 @@ export async function GET(request: Request) {
 // POST - Admin: Retry a failed settlement
 export async function POST(request: Request) {
   try {
-    const session = await auth();
-    if (!session?.user || session.user.role !== "ADMIN") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const result = await requireAdminSession();
+    if ("error" in result) return result.error;
 
     const body = await request.json();
     const { batchId, venueId, action } = body;

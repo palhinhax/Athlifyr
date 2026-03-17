@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslations } from "next-intl";
 import { Elements } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe-client";
@@ -53,8 +53,16 @@ export function StripeCheckout({
   const [isRecurring, setIsRecurring] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const initializedRef = useRef(false);
 
   useEffect(() => {
+    // Prevent double-fire from React Strict Mode re-mounting.
+    // The first call creates a Stripe subscription; a second call would create
+    // a duplicate whose subscriptionId overwrites the state while <Elements>
+    // still holds the first clientSecret — causing a mismatch.
+    if (initializedRef.current) return;
+    initializedRef.current = true;
+
     const recurring = !!duration && RECURRING_DURATIONS.includes(duration);
     setIsRecurring(recurring);
 

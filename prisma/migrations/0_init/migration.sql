@@ -1,12 +1,3 @@
-﻿node.exe : npm warn Unknown project config "approve-builds". This will stop 
-working in the next major version of npm.
-At C:\Program Files\nodejs\npx.ps1:29 char:3
-+   & $NODE_EXE $NPX_CLI_JS $args
-+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    + CategoryInfo          : NotSpecified: (npm warn Unknow...version of npm. 
-   :String) [], RemoteException
-    + FullyQualifiedErrorId : NativeCommandError
- 
 -- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "pg_trgm";
 

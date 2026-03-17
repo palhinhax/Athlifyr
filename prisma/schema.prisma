@@ -117,6 +117,10 @@ model User {
   // GPS-tracked run activities (Free Run, etc.)
   runActivities RunActivity[]
 
+  // Athlifyr Credits (wallet)
+  creditWallet          CreditWallet?
+  creditTransactions    CreditTransaction[]
+
   @@index([email])
   @@index([name])
 }
@@ -956,6 +960,10 @@ model Venue {
   // Products & purchases
   products         VenueProduct[]
   productPurchases VenueProductPurchase[]
+
+  // Athlifyr Credits (venue ledger)
+  venueLedgerEntries   VenueLedgerEntry[]
+  venueSettlementBatches VenueSettlementBatch[]
 
   @@index([slug])
   @@index([type])
@@ -2685,4 +2693,201 @@ model PlatformKnowledge {
   @@index([category])
   @@index([language])
   @@index([isActive])
+}
+
+// ============================================================================
+// ATHLIFYR CREDITS (WALLET) SYSTEM
+// ============================================================================
+
+enum CreditTransactionType {
+  TOP_UP
+  PURCHASE
+  REFUND
+  REWARD
+  MANUAL_ADJUSTMENT
+  SETTLEMENT
+  SETTLEMENT_REVERSAL
+}
+
+enum CreditTransactionSource {
+  STRIPE_TOP_UP
+  CHALLENGE_REWARD
+  GIVEAWAY_REWARD
+  ADMIN_BONUS
+  REFERRAL_BONUS
+  PURCHASE_CONSUMPTION
+  REFUND_RETURN
+  MANUAL
+}
+
+enum CreditTopUpStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum VenueLedgerEntryStatus {
+  PENDING
+  PROCESSING
+  SETTLED
+  REVERSED
+  FAILED
+}
+
+enum VenueSettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIALLY_FAILED
+}
+
+// User's credit wallet (1 per user)
+model CreditWallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  balanceCents  Int      @default(0) // Current balance in cents (960 = 9.60 credits)
+  totalTopUpCents    Int  @default(0) // Lifetime top-up amount (gross)
+  totalSpentCents    Int  @default(0) // Lifetime spent
+  totalRewardedCents Int  @default(0) // Lifetime rewards received
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Individual credit transaction (ledger entry for user wallet)
+model CreditTransaction {
+  id                     String                  @id @default(cuid())
+  userId                 String
+  type                   CreditTransactionType
+  source                 CreditTransactionSource
+  amountCents            Int                     // Positive for credits in, negative for credits out
+  balanceAfterCents      Int                     // Running balance after this transaction
+  description            String?
+  // Top-up specific fields
+  grossAmountCents       Int?                    // Amount user paid (before fee)
+  platformFeeCents       Int?                    // Platform fee deducted
+  netCreditedCents       Int?                    // Amount actually credited
+  stripePaymentIntentId  String?
+  stripeCheckoutSessionId String?
+  // Purchase specific fields
+  venueId                String?
+  venueProductId         String?
+  venueProductPurchaseId String?
+  // Reward/gamification fields
+  rewardCampaignId       String?
+  challengeId            String?
+  giveawayId             String?
+  referralId             String?
+  // Refund fields
+  refundedTransactionId  String?
+  // Settlement reference
+  settlementBatchId      String?
+  // Admin fields
+  adminUserId            String?
+  adminNote              String?
+  // Expiration (future)
+  expiresAt              DateTime?
+  // Audit
+  idempotencyKey         String?                @unique
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venueLedgerEntry       VenueLedgerEntry?
+
+  @@index([userId])
+  @@index([type])
+  @@index([source])
+  @@index([venueId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+// Credit top-up record (tracks the full Stripe top-up lifecycle)
+model CreditTopUp {
+  id                      String            @id @default(cuid())
+  userId                  String
+  grossAmountCents        Int               // What the user paid (e.g. 1000 = 10€)
+  platformFeeCents        Int               // Platform fee (e.g. 40 = 0.40€)
+  netCreditedCents        Int               // What was credited (e.g. 960 = 9.60 credits)
+  feePercentage           Int               @default(4) // Fee percent applied (4 = 4%)
+  currency                Currency          @default(EUR)
+  status                  CreditTopUpStatus @default(PENDING)
+  stripePaymentIntentId   String?           @unique
+  stripeCheckoutSessionId String?           @unique
+  stripeCustomerId        String?
+  completedAt             DateTime?
+  failedAt                DateTime?
+  failureReason           String?
+  idempotencyKey          String?           @unique
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+}
+
+// Venue ledger entry (tracks money owed to a venue from credit purchases)
+model VenueLedgerEntry {
+  id                   String                  @id @default(cuid())
+  venueId              String
+  creditTransactionId  String                  @unique
+  amountCents          Int                     // Amount owed to venue (positive)
+  currency             Currency                @default(EUR)
+  status               VenueLedgerEntryStatus  @default(PENDING)
+  settlementBatchId    String?
+  description          String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  creditTransaction    CreditTransaction       @relation(fields: [creditTransactionId], references: [id], onDelete: Cascade)
+  settlementBatch      VenueSettlementBatch?   @relation(fields: [settlementBatchId], references: [id])
+
+  @@index([venueId])
+  @@index([status])
+  @@index([settlementBatchId])
+  @@index([createdAt])
+}
+
+// Settlement batch (groups payouts to a venue)
+model VenueSettlementBatch {
+  id                   String                  @id @default(cuid())
+  venueId              String
+  totalAmountCents     Int                     // Total payout amount
+  currency             Currency                @default(EUR)
+  status               VenueSettlementStatus   @default(PENDING)
+  entriesCount         Int                     @default(0)
+  stripeTransferId     String?                 @unique
+  stripePayoutId       String?
+  periodStart          DateTime                // Start of settlement period
+  periodEnd            DateTime                // End of settlement period
+  processedAt          DateTime?
+  failedAt             DateTime?
+  failureReason        String?
+  retryCount           Int                     @default(0)
+  idempotencyKey       String                  @unique
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  entries              VenueLedgerEntry[]
+
+  @@index([venueId])
+  @@index([status])
+  @@index([stripeTransferId])
+  @@index([periodStart, periodEnd])
+  @@index([idempotencyKey])
+  @@index([createdAt])
 }

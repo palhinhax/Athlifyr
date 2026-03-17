@@ -58,7 +58,13 @@ jest.mock("@/components/ui/alert-dialog", () => ({
     onOpenChange?: (v: boolean) => void;
   }) =>
     open ? (
-      <div data-testid="alert-dialog" onClick={() => onOpenChange?.(false)}>
+      <div
+        data-testid="alert-dialog"
+        onClick={(e) => {
+          // Only trigger close when clicking the backdrop (the div itself), not children
+          if (e.target === e.currentTarget) onOpenChange?.(false);
+        }}
+      >
         {children}
       </div>
     ) : null,
@@ -100,11 +106,31 @@ jest.mock("@/components/ui/card", () => ({
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const mockFetch = jest.fn();
+const mockPurchaseFetch = jest.fn();
+let walletBalanceCents = 0;
+
 beforeEach(() => {
   jest.clearAllMocks();
-  globalThis.fetch = mockFetch;
+  walletBalanceCents = 0;
+  // Route-based fetch mock: wallet endpoint handled automatically,
+  // everything else delegated to mockPurchaseFetch
+  globalThis.fetch = jest.fn((url: string, ...args: unknown[]) => {
+    if (url === "/api/credits/wallet") {
+      return Promise.resolve({
+        ok: true,
+        json: async () => ({ wallet: { balanceCents: walletBalanceCents } }),
+      });
+    }
+    return mockPurchaseFetch(url, ...args);
+  }) as jest.Mock;
 });
+
+// Helper: wait for method selection to appear, then click Stripe option.
+// Must be called with a userEvent instance created BEFORE render.
+async function selectStripeMethod(user: ReturnType<typeof userEvent.setup>) {
+  await waitFor(() => expect(screen.getByText("pay")).toBeInTheDocument());
+  await user.click(screen.getByText("pay").closest("button")!);
+}
 
 const PRODUCT = {
   id: "prod-1",
@@ -137,13 +163,6 @@ describe("ProductCheckoutDialog", () => {
   });
 
   it("renders dialog when open=true", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        clientSecret: "cs_test",
-        purchase: { id: "pur-1" },
-      }),
-    });
     render(<ProductCheckoutDialog {...defaultProps} />);
     expect(screen.getByTestId("alert-dialog")).toBeInTheDocument();
   });
@@ -151,63 +170,33 @@ describe("ProductCheckoutDialog", () => {
   // ── Title and description ──────────────────────────────────────────────────
 
   it("shows the dialog title translation key", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        clientSecret: "cs_x",
-        purchase: { id: "p1" },
-      }),
-    });
     render(<ProductCheckoutDialog {...defaultProps} />);
     expect(screen.getByText("title")).toBeInTheDocument();
   });
 
   it("shows venue name and product name in description", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
-    });
     render(<ProductCheckoutDialog {...defaultProps} />);
     expect(screen.getByText(/Iron Gym/)).toBeInTheDocument();
     expect(screen.getByText(/Protein Shake/)).toBeInTheDocument();
   });
 
   it("shows x{quantity} in description when quantity > 1", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
-    });
     render(<ProductCheckoutDialog {...defaultProps} quantity={3} />);
     expect(screen.getByText(/x3/)).toBeInTheDocument();
   });
 
   // ── Loading state ───────────────────────────────────────────────────────────
 
-  it("shows spinner while fetching clientSecret", async () => {
-    let resolvePromise!: (v: unknown) => void;
-    mockFetch.mockReturnValueOnce(
-      new Promise((r) => {
-        resolvePromise = r;
-      })
-    );
-
+  it("shows spinner while wallet is loading", async () => {
     render(<ProductCheckoutDialog {...defaultProps} />);
     expect(screen.getByTestId("spinner")).toBeInTheDocument();
-
-    // Resolve to avoid dangling promises
-    resolvePromise({
-      ok: true,
-      json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
-    });
-    await waitFor(() =>
-      expect(screen.queryByTestId("spinner")).not.toBeInTheDocument()
-    );
   });
 
   // ── Success flow ────────────────────────────────────────────────────────────
 
-  it("shows the payment form once clientSecret is received", async () => {
-    mockFetch.mockResolvedValueOnce({
+  it("shows the payment form once clientSecret is received via Stripe", async () => {
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({
         clientSecret: "cs_live",
@@ -216,35 +205,23 @@ describe("ProductCheckoutDialog", () => {
     });
 
     render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
     );
   });
 
-  it("shows total amount once payment form is visible", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({
-        clientSecret: "cs_live",
-        purchase: { id: "pur-3" },
-      }),
-    });
-
+  it("shows total amount in method selection", async () => {
     render(<ProductCheckoutDialog {...defaultProps} quantity={2} />);
 
     await waitFor(() => {
-      // 12.5 * 2 = 25.00
-      expect(screen.getByText("25.00 EUR")).toBeInTheDocument();
+      // 12.5 * 2 = 25.00 — appears in both summary card and stripe option
+      expect(screen.getAllByText("25.00 EUR").length).toBeGreaterThanOrEqual(1);
     });
   });
 
-  it("shows x{quantity} in payment card description when quantity > 1", async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ clientSecret: "cs_live", purchase: { id: "p4" } }),
-    });
-
+  it("shows x{quantity} in description when quantity > 1", async () => {
     render(<ProductCheckoutDialog {...defaultProps} quantity={4} />);
 
     await waitFor(() => {
@@ -253,43 +230,46 @@ describe("ProductCheckoutDialog", () => {
   });
 
   it("calls onSuccess when payment form reports success", async () => {
+    const user = userEvent.setup();
     const onSuccess = jest.fn();
-    mockFetch.mockResolvedValueOnce({
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ clientSecret: "cs_s", purchase: { id: "p1" } }),
     });
 
     render(<ProductCheckoutDialog {...defaultProps} onSuccess={onSuccess} />);
+    await selectStripeMethod(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
     );
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("triggerSuccess"));
     expect(onSuccess).toHaveBeenCalledTimes(1);
   });
 
   it("calls onCancel when payment form cancel is triggered", async () => {
+    const user = userEvent.setup();
     const onCancel = jest.fn();
-    mockFetch.mockResolvedValueOnce({
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ clientSecret: "cs_s", purchase: { id: "p1" } }),
     });
 
     render(<ProductCheckoutDialog {...defaultProps} onCancel={onCancel} />);
+    await selectStripeMethod(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
     );
 
-    const user = userEvent.setup();
     await user.click(screen.getByText("triggerCancel"));
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
   it("POSTs to the correct purchase endpoint", async () => {
-    mockFetch.mockResolvedValueOnce({
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: true,
       json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
     });
@@ -302,12 +282,13 @@ describe("ProductCheckoutDialog", () => {
         quantity={2}
       />
     );
+    await selectStripeMethod(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
     );
 
-    expect(mockFetch).toHaveBeenCalledWith(
+    expect(mockPurchaseFetch).toHaveBeenCalledWith(
       "/api/venues/venue-99/products/prod-42/purchase",
       expect.objectContaining({
         method: "POST",
@@ -318,13 +299,15 @@ describe("ProductCheckoutDialog", () => {
 
   // ── Error state ─────────────────────────────────────────────────────────────
 
-  it("shows error card when fetch returns non-ok", async () => {
-    mockFetch.mockResolvedValueOnce({
+  it("shows error card when Stripe init returns non-ok", async () => {
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "Out of stock" }),
     });
 
     render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() => {
       expect(screen.getByText("paymentError")).toBeInTheDocument();
@@ -333,12 +316,14 @@ describe("ProductCheckoutDialog", () => {
   });
 
   it("shows fallback error message when API error has no message", async () => {
-    mockFetch.mockResolvedValueOnce({
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({}),
     });
 
     render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() => {
       expect(screen.getByText("failedCreatePayment")).toBeInTheDocument();
@@ -346,12 +331,14 @@ describe("ProductCheckoutDialog", () => {
   });
 
   it("shows goBack button in error state", async () => {
-    mockFetch.mockResolvedValueOnce({
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "Error" }),
     });
 
     render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() => {
       expect(screen.getByText("goBack")).toBeInTheDocument();
@@ -359,14 +346,15 @@ describe("ProductCheckoutDialog", () => {
   });
 
   it("calls onCancel when goBack is clicked in error state", async () => {
+    const user = userEvent.setup();
     const onCancel = jest.fn();
-    mockFetch.mockResolvedValueOnce({
+    mockPurchaseFetch.mockResolvedValueOnce({
       ok: false,
       json: async () => ({ error: "Error" }),
     });
 
-    const user = userEvent.setup();
     render(<ProductCheckoutDialog {...defaultProps} onCancel={onCancel} />);
+    await selectStripeMethod(user);
 
     await waitFor(() => expect(screen.getByText("goBack")).toBeInTheDocument());
 
@@ -374,10 +362,12 @@ describe("ProductCheckoutDialog", () => {
     expect(onCancel).toHaveBeenCalledTimes(1);
   });
 
-  it("shows error message when fetch throws", async () => {
-    mockFetch.mockRejectedValueOnce(new Error("Network error"));
+  it("shows error message when Stripe init throws", async () => {
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockRejectedValueOnce(new Error("Network error"));
 
     render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() => {
       expect(screen.getByText("Network error")).toBeInTheDocument();
@@ -388,18 +378,13 @@ describe("ProductCheckoutDialog", () => {
 
   it("resets state and calls onOpenChange when dialog is closed via interaction", async () => {
     const onOpenChange = jest.fn();
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
-    });
 
     render(
       <ProductCheckoutDialog {...defaultProps} onOpenChange={onOpenChange} />
     );
 
-    await waitFor(() =>
-      expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
-    );
+    // Wait for wallet to load and method selection to appear
+    await waitFor(() => expect(screen.getByText("pay")).toBeInTheDocument());
 
     // Clicking the alert-dialog div triggers onOpenChange(false) via mock
     const user = userEvent.setup();
@@ -410,30 +395,502 @@ describe("ProductCheckoutDialog", () => {
 
   // ── Idempotency ─────────────────────────────────────────────────────────────
 
-  it("does not call fetch again on re-render once initialized", async () => {
-    mockFetch.mockResolvedValue({
+  it("does not call purchase fetch again on re-render once initialized", async () => {
+    const user = userEvent.setup();
+    mockPurchaseFetch.mockResolvedValue({
       ok: true,
       json: async () => ({ clientSecret: "cs_x", purchase: { id: "p1" } }),
     });
 
     const { rerender } = render(<ProductCheckoutDialog {...defaultProps} />);
+    await selectStripeMethod(user);
 
     await waitFor(() =>
       expect(screen.getByTestId("product-checkout-form")).toBeInTheDocument()
     );
 
-    const callsBefore = mockFetch.mock.calls.length;
+    const callsBefore = mockPurchaseFetch.mock.calls.length;
 
     rerender(<ProductCheckoutDialog {...defaultProps} />);
 
     // Should not have fetched again
-    expect(mockFetch.mock.calls.length).toBe(callsBefore);
+    expect(mockPurchaseFetch.mock.calls.length).toBe(callsBefore);
   });
 
   // ── No product ─────────────────────────────────────────────────────────────
 
   it("does not call fetch when product is null", () => {
     render(<ProductCheckoutDialog {...defaultProps} product={null} />);
-    expect(mockFetch).not.toHaveBeenCalled();
+    expect(mockPurchaseFetch).not.toHaveBeenCalled();
+  });
+
+  // ── Credits Flow ────────────────────────────────────────────────────────────
+
+  describe("credits payment flow", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("fetches wallet balance when dialog opens", async () => {
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() =>
+        expect(globalThis.fetch).toHaveBeenCalledWith("/api/credits/wallet")
+      );
+    });
+
+    it("shows payment method selection after wallet loads with enough credits", async () => {
+      walletBalanceCents = 50000;
+
+      render(<ProductCheckoutDialog {...defaultProps} />);
+
+      await waitFor(() => {
+        expect(screen.getByText("payWithCredits")).toBeInTheDocument();
+      });
+    });
+
+    it("shows credits-only warning when insufficient credits for small product", async () => {
+      walletBalanceCents = 10;
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+
+    it("completes credits purchase successfully", async () => {
+      walletBalanceCents = 50000;
+      const onSuccess = jest.fn();
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog
+          {...defaultProps}
+          product={SMALL_PRODUCT}
+          onSuccess={onSuccess}
+        />
+      );
+
+      // Wait for auto-select to fire: confirmation screen has a button with exact name "payWithCredits"
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Mock the credits purchase API
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(mockPurchaseFetch).toHaveBeenCalledWith(
+          "/api/credits/purchase",
+          expect.objectContaining({ method: "POST" })
+        );
+      });
+    });
+
+    it("shows error when credits purchase returns 402", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      // Wait for auto-select to fire: confirmation screen button
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Mock 402 response
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 402,
+        json: async () => ({
+          requiredAmountCents: 250,
+          currentBalanceCents: 100,
+        }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByText(/insufficientCreditsDescription/)
+        ).toBeInTheDocument();
+      });
+    });
+
+    it("shows stripe option for larger amounts", async () => {
+      walletBalanceCents = 50000;
+
+      render(<ProductCheckoutDialog {...defaultProps} />);
+
+      await waitFor(() => {
+        // Product is 12.50 > 5.00 threshold, so stripe option should appear
+        expect(screen.getByText("pay")).toBeInTheDocument();
+      });
+    });
+  });
+
+  // ── Additional coverage ────────────────────────────────────────────────────
+
+  describe("credits success view", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("shows success view and calls onSuccess after delay", async () => {
+      jest.useFakeTimers();
+      const user = userEvent.setup({
+        advanceTimers: jest.advanceTimersByTime,
+      });
+      walletBalanceCents = 50000;
+      const onSuccess = jest.fn();
+
+      render(
+        <ProductCheckoutDialog
+          {...defaultProps}
+          product={SMALL_PRODUCT}
+          onSuccess={onSuccess}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseSuccess")).toBeInTheDocument();
+      });
+
+      expect(onSuccess).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1200);
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+
+      jest.useRealTimers();
+    });
+  });
+
+  describe("wallet fetch edge cases", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("handles wallet fetch network error gracefully", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.reject(new Error("Network error"));
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      // After error, walletBalance = 0, credits-only + insufficient → shows warning
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+
+    it("handles wallet fetch non-ok response", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.resolve({
+              ok: false,
+              json: async () => ({}),
+            });
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+
+    it("handles wallet response without wallet property", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.resolve({
+              ok: true,
+              json: async () => ({ data: {} }),
+            });
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits purchase error handling", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("shows error on credits purchase generic failure (non-402)", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Server error" }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Server error")).toBeInTheDocument();
+      });
+    });
+
+    it("shows fallback error on credits purchase network failure", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockRejectedValueOnce(new Error("Connection refused"));
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Connection refused")).toBeInTheDocument();
+      });
+    });
+
+    it("shows fallback message when error is not an Error instance", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockRejectedValueOnce("string error");
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseFailed")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits flow cancel and spinner", () => {
+    it("cancel button in credits flow returns to method selection", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      // Use regular PRODUCT (non-credits-only), so no auto-select
+      render(<ProductCheckoutDialog {...defaultProps} />);
+
+      // Wait for method selection (both credits and stripe visible)
+      await waitFor(() => {
+        expect(screen.getByText("payWithCredits")).toBeInTheDocument();
+        expect(screen.getByText("pay")).toBeInTheDocument();
+      });
+
+      // Select credits method
+      await user.click(screen.getByText("payWithCredits"));
+
+      // Now in credits flow - confirm button appears
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Click cancel to go back
+      await user.click(screen.getByText("cancel"));
+
+      // Should be back at method selection with stripe option
+      await waitFor(() => {
+        expect(screen.getByText("pay")).toBeInTheDocument();
+      });
+    });
+
+    it("shows spinner during credits purchase and disables buttons", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Make purchase pending
+      let resolvePurchase!: (v: unknown) => void;
+      mockPurchaseFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolvePurchase = resolve;
+        })
+      );
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      // Spinner should appear during purchase
+      await waitFor(() => {
+        expect(screen.getByTestId("spinner")).toBeInTheDocument();
+      });
+
+      // Resolve the purchase
+      resolvePurchase({ ok: true, json: async () => ({ success: true }) });
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseSuccess")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits-only insufficient credits", () => {
+    it("shows topUpFirst link when credits-only and insufficient balance", async () => {
+      walletBalanceCents = 10;
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+        expect(screen.getByText("topUpFirst")).toBeInTheDocument();
+      });
+    });
+
+    it("clicking topUpFirst calls onOpenChange(false)", async () => {
+      walletBalanceCents = 10;
+      const onOpenChange = jest.fn();
+      const user = userEvent.setup();
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog
+          {...defaultProps}
+          product={SMALL_PRODUCT}
+          onOpenChange={onOpenChange}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("topUpFirst")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("topUpFirst"));
+
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
   });
 });

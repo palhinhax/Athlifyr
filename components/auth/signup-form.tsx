@@ -84,9 +84,19 @@ export function SignUpForm() {
         // Track signup failure
         analyticsEvent(ANALYTICS_EVENTS.SIGNUP_FAILED, {
           method: "email",
-          error: data.error || "unknown",
+          error: data.code || "unknown",
         });
-        throw new Error(data.error || t("errors.createAccount"));
+
+        // Map API error codes to translation keys
+        const errorCodeMap: Record<string, string> = {
+          EMAIL_ALREADY_IN_USE: "errors.emailAlreadyInUse",
+          NAME_TOO_SHORT: "errors.nameTooShort",
+          PASSWORD_TOO_SHORT: "errors.passwordTooShort", // NOSONAR — error code mapping, not a credential
+          EMAIL_INVALID: "errors.emailInvalid",
+          VALIDATION_ERROR: "errors.validationError",
+        };
+        const errorKey = errorCodeMap[data.code];
+        throw new Error(errorKey ? t(errorKey) : t("errors.createAccount"));
       }
 
       // Track successful signup

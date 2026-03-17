@@ -285,6 +285,12 @@ export default async function ProfilePage({ params }: PageProps) {
     : [];
   const confirmedTicketEventIds = confirmedRegistrations.map((r) => r.eventId);
 
+  // Fetch wallet balance
+  const wallet = await prisma.creditWallet.findUnique({
+    where: { userId: session.user.id },
+    select: { balanceCents: true },
+  });
+
   return (
     <PageContainer size="lg" maxWidth="max-w-6xl">
       {/* Profile Header */}
@@ -298,6 +304,7 @@ export default async function ProfilePage({ params }: PageProps) {
           upcomingEvents: allUpcomingEvents.length,
           pastEvents: allPastEvents.length,
           friendsCount,
+          creditBalanceCents: wallet?.balanceCents ?? 0,
         }}
         participations={user.participations.map((p) => ({
           id: p.id,

@@ -19,6 +19,11 @@ jest.mock("@/lib/prisma", () => ({
       findFirst: jest.fn(),
       update: jest.fn(),
     },
+    venueMember: {
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+    },
   },
 }));
 
@@ -26,6 +31,12 @@ jest.mock("@/lib/prisma", () => ({
 jest.mock("@/lib/stripe", () => ({
   stripe: {
     subscriptions: {
+      retrieve: jest.fn(),
+    },
+    invoicePayments: {
+      list: jest.fn(),
+    },
+    paymentIntents: {
       retrieve: jest.fn(),
     },
   },
@@ -119,6 +130,18 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
     });
     (stripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
       status: "incomplete",
+      latest_invoice: "inv_1",
+    });
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          status: "open",
+          payment: { payment_intent: "pi_pending" },
+        },
+      ],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      status: "requires_payment_method",
     });
 
     const res = await POST(makeRequest(), makeParams());
@@ -127,6 +150,61 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
     expect(res.status).toBe(400);
     expect(body.error).toBe("Stripe subscription is not active yet");
     expect(prisma.venueSubscription.update).not.toHaveBeenCalled();
+  });
+
+  it("activates when subscription is incomplete but PaymentIntent succeeded", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
+      id: "sub-local-1",
+      status: "PENDING",
+      plan: { id: "plan-1", name: "Monthly", policy: null },
+    });
+    const periodEnd = Math.floor(Date.now() / 1000) + 30 * 86400;
+    (stripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+      status: "incomplete",
+      latest_invoice: "inv_1",
+      items: { data: [{ current_period_end: periodEnd }] },
+    });
+    (stripe.invoicePayments.list as jest.Mock).mockResolvedValue({
+      data: [
+        {
+          status: "open",
+          payment: { payment_intent: "pi_done" },
+        },
+      ],
+    });
+    (stripe.paymentIntents.retrieve as jest.Mock).mockResolvedValue({
+      status: "succeeded",
+    });
+    const updated = {
+      id: "sub-local-1",
+      status: "ACTIVE",
+      paymentStatus: "PAID",
+    };
+    (prisma.venueSubscription.update as jest.Mock).mockResolvedValue(updated);
+    (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.venueMember.create as jest.Mock).mockResolvedValue({});
+
+    const res = await POST(makeRequest(), makeParams());
+    const body = await res.json();
+
+    expect(res.status).toBe(200);
+    expect(body.subscription).toEqual(updated);
+    expect(prisma.venueMember.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        venueId,
+        userId,
+        role: "CLIENT",
+        status: "ACTIVE",
+      }),
+    });
+    expect(prisma.venueSubscription.update).toHaveBeenCalledWith({
+      where: { id: "sub-local-1" },
+      data: expect.objectContaining({
+        status: "ACTIVE",
+        paymentStatus: "PAID",
+      }),
+    });
   });
 
   it("activates subscription when Stripe subscription is active", async () => {
@@ -151,6 +229,8 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
       paymentStatus: "PAID",
     };
     (prisma.venueSubscription.update as jest.Mock).mockResolvedValue(updated);
+    (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue(null);
+    (prisma.venueMember.create as jest.Mock).mockResolvedValue({});
 
     const res = await POST(makeRequest(), makeParams());
     const body = await res.json();
@@ -168,6 +248,45 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
         stripeCurrentPeriodEnd: expect.any(Date),
       },
     });
+    // Verify membership was created
+    expect(prisma.venueMember.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        venueId,
+        userId,
+        role: "CLIENT",
+        status: "ACTIVE",
+      }),
+    });
+  });
+
+  it("reactivates inactive member on subscription activation", async () => {
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    (prisma.venueSubscription.findFirst as jest.Mock).mockResolvedValue({
+      id: "sub-local-1",
+      status: "PENDING",
+      plan: { id: "plan-1", name: "Monthly", policy: null },
+    });
+    (stripe.subscriptions.retrieve as jest.Mock).mockResolvedValue({
+      status: "active",
+      items: { data: [] },
+    });
+    const updated = { id: "sub-local-1", status: "ACTIVE" };
+    (prisma.venueSubscription.update as jest.Mock).mockResolvedValue(updated);
+    (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
+      venueId,
+      userId,
+      role: "CLIENT",
+      status: "INACTIVE",
+    });
+    (prisma.venueMember.update as jest.Mock).mockResolvedValue({});
+
+    const res = await POST(makeRequest(), makeParams());
+    expect(res.status).toBe(200);
+    expect(prisma.venueMember.update).toHaveBeenCalledWith({
+      where: { venueId_userId: { venueId, userId } },
+      data: { status: "ACTIVE" },
+    });
+    expect(prisma.venueMember.create).not.toHaveBeenCalled();
   });
 
   it("activates subscription when Stripe subscription is trialing", async () => {
@@ -185,12 +304,21 @@ describe("POST /api/venues/[id]/stripe-subscriptions/confirm", () => {
       status: "ACTIVE",
     };
     (prisma.venueSubscription.update as jest.Mock).mockResolvedValue(updated);
+    (prisma.venueMember.findUnique as jest.Mock).mockResolvedValue({
+      venueId,
+      userId,
+      role: "CLIENT",
+      status: "ACTIVE",
+    });
 
     const res = await POST(makeRequest(), makeParams());
     const body = await res.json();
 
     expect(res.status).toBe(200);
     expect(body.subscription).toEqual(updated);
+    // Should not create or update member if already active
+    expect(prisma.venueMember.create).not.toHaveBeenCalled();
+    expect(prisma.venueMember.update).not.toHaveBeenCalled();
   });
 
   it("returns 500 on database error", async () => {

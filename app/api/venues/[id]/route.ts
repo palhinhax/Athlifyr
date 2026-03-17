@@ -404,7 +404,18 @@ export async function GET(
     const venueWithUniqueCount = {
       ...venue,
       crossVenueSubscriptions,
-      userSubscriptionStatus, // Add centralized subscription validation
+      userSubscriptionStatus,
+      isCurrentUserMember: currentUserId
+        ? Boolean(
+            await prisma.venueMember.findUnique({
+              where: {
+                venueId_userId: { venueId: venue.id, userId: currentUserId },
+                status: "ACTIVE",
+              },
+              select: { userId: true },
+            })
+          )
+        : false,
       _count: {
         ...(venue as { _count?: { sessions: number; bookings: number } })
           ._count,

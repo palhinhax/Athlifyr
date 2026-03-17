@@ -96,7 +96,13 @@ describe("VenuePlansTab", () => {
 
   it("calls onCreatePlan when button clicked", async () => {
     const onCreatePlan = jest.fn();
-    render(<VenuePlansTab {...baseProps} isOwnerOrAdmin onCreatePlan={onCreatePlan} />);
+    render(
+      <VenuePlansTab
+        {...baseProps}
+        isOwnerOrAdmin
+        onCreatePlan={onCreatePlan}
+      />
+    );
     const user = userEvent.setup();
     await user.click(screen.getByText("createPlan"));
     expect(onCreatePlan).toHaveBeenCalledTimes(1);
@@ -116,7 +122,12 @@ describe("VenuePlansTab", () => {
   });
 
   it("shows inactive badge when plan is inactive", () => {
-    render(<VenuePlansTab {...baseProps} plans={[{ ...basePlan, isActive: false }]} />);
+    render(
+      <VenuePlansTab
+        {...baseProps}
+        plans={[{ ...basePlan, isActive: false }]}
+      />
+    );
     expect(screen.getByText("Inactive")).toBeInTheDocument();
   });
 
@@ -128,7 +139,12 @@ describe("VenuePlansTab", () => {
   it("calls onEditPlan when edit button clicked", async () => {
     const onEditPlan = jest.fn();
     render(
-      <VenuePlansTab {...baseProps} plans={[basePlan]} isOwnerOrAdmin onEditPlan={onEditPlan} />
+      <VenuePlansTab
+        {...baseProps}
+        plans={[basePlan]}
+        isOwnerOrAdmin
+        onEditPlan={onEditPlan}
+      />
     );
     const user = userEvent.setup();
     await user.click(screen.getByText("edit"));
@@ -172,7 +188,11 @@ describe("VenuePlansTab", () => {
   it("calls onSubscribeClick when subscribe button clicked", async () => {
     const onSubscribeClick = jest.fn();
     render(
-      <VenuePlansTab {...baseProps} plans={[basePlan]} onSubscribeClick={onSubscribeClick} />
+      <VenuePlansTab
+        {...baseProps}
+        plans={[basePlan]}
+        onSubscribeClick={onSubscribeClick}
+      />
     );
     const user = userEvent.setup();
     await user.click(screen.getByText("subscribe"));
@@ -182,7 +202,9 @@ describe("VenuePlansTab", () => {
   });
 
   it("subscribe button is disabled when no userId", () => {
-    render(<VenuePlansTab {...baseProps} plans={[basePlan]} userId={undefined} />);
+    render(
+      <VenuePlansTab {...baseProps} plans={[basePlan]} userId={undefined} />
+    );
     expect(screen.getByText("subscribe")).toBeDisabled();
   });
 
@@ -372,7 +394,13 @@ describe("VenuePlansTab", () => {
         description: null,
         price: 100,
         currency: "EUR",
-        venue: { id: "v2", name: "Another Gym", slug: "another-gym", city: null, logo: null },
+        venue: {
+          id: "v2",
+          name: "Another Gym",
+          slug: "another-gym",
+          city: null,
+          logo: null,
+        },
       },
     };
     render(
@@ -398,7 +426,13 @@ describe("VenuePlansTab", () => {
         price: 100,
         currency: "EUR",
         policy: { maxTotalBookings: 10, duration: "ONE_TIME" as const },
-        venue: { id: "v2", name: "Other Gym", slug: "other-gym", city: null, logo: null },
+        venue: {
+          id: "v2",
+          name: "Other Gym",
+          slug: "other-gym",
+          city: null,
+          logo: null,
+        },
       },
     };
     render(
@@ -417,7 +451,9 @@ describe("VenuePlansTab", () => {
           id: "sub-1",
           status: "ACTIVE",
           paymentStatus: "PAID",
-          startsAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 60).toISOString(),
+          startsAt: new Date(
+            Date.now() - 1000 * 60 * 60 * 24 * 60
+          ).toISOString(),
           endsAt: PAST,
           createdAt: PAST,
         },

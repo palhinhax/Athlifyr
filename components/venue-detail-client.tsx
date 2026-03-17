@@ -68,6 +68,12 @@ interface Venue {
   externalPaymentInstructions: string | null;
   enableTrialBooking: boolean;
   visibleTabs?: string[];
+  isCurrentUserMember?: boolean;
+  userSubscriptionStatus?: {
+    hasSubscription: boolean;
+    reason: string;
+    subscriptionCount: number;
+  } | null;
   members: Array<{
     id: string;
     role: string;
@@ -242,9 +248,12 @@ export function VenueDetailClient({
       ))
   );
 
-  // Check if user is a member (any role)
+  // Check if user is a member or has an active subscription
   const isMember = Boolean(
-    userId && venue?.members.some((m) => m.user.id === userId)
+    userId &&
+    (venue?.isCurrentUserMember ||
+      venue?.userSubscriptionStatus?.hasSubscription ||
+      venue?.members.some((m) => m.user.id === userId))
   );
 
   const handleSubscribeClick = (plan: {

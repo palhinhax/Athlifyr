@@ -551,4 +551,346 @@ describe("ProductCheckoutDialog", () => {
       });
     });
   });
+
+  // ── Additional coverage ────────────────────────────────────────────────────
+
+  describe("credits success view", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("shows success view and calls onSuccess after delay", async () => {
+      jest.useFakeTimers();
+      const user = userEvent.setup({
+        advanceTimers: jest.advanceTimersByTime,
+      });
+      walletBalanceCents = 50000;
+      const onSuccess = jest.fn();
+
+      render(
+        <ProductCheckoutDialog
+          {...defaultProps}
+          product={SMALL_PRODUCT}
+          onSuccess={onSuccess}
+        />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ success: true }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseSuccess")).toBeInTheDocument();
+      });
+
+      expect(onSuccess).not.toHaveBeenCalled();
+      jest.advanceTimersByTime(1200);
+      expect(onSuccess).toHaveBeenCalledTimes(1);
+
+      jest.useRealTimers();
+    });
+  });
+
+  describe("wallet fetch edge cases", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("handles wallet fetch network error gracefully", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.reject(new Error("Network error"));
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      // After error, walletBalance = 0, credits-only + insufficient → shows warning
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+
+    it("handles wallet fetch non-ok response", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.resolve({
+              ok: false,
+              json: async () => ({}),
+            });
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+
+    it("handles wallet response without wallet property", async () => {
+      (globalThis.fetch as jest.Mock).mockImplementation(
+        (url: string, ...args: unknown[]) => {
+          if (url === "/api/credits/wallet") {
+            return Promise.resolve({
+              ok: true,
+              json: async () => ({ data: {} }),
+            });
+          }
+          return mockPurchaseFetch(url, ...args);
+        }
+      );
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits purchase error handling", () => {
+    const SMALL_PRODUCT = {
+      id: "prod-s",
+      name: "Water Bottle",
+      price: 2.5,
+      currency: "EUR",
+    };
+
+    it("shows error on credits purchase generic failure (non-402)", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        json: async () => ({ error: "Server error" }),
+      });
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Server error")).toBeInTheDocument();
+      });
+    });
+
+    it("shows fallback error on credits purchase network failure", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockRejectedValueOnce(new Error("Connection refused"));
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("Connection refused")).toBeInTheDocument();
+      });
+    });
+
+    it("shows fallback message when error is not an Error instance", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      mockPurchaseFetch.mockRejectedValueOnce("string error");
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseFailed")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits flow cancel and spinner", () => {
+    it("cancel button in credits flow returns to method selection", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+
+      // Use regular PRODUCT (non-credits-only), so no auto-select
+      render(<ProductCheckoutDialog {...defaultProps} />);
+
+      // Wait for method selection (both credits and stripe visible)
+      await waitFor(() => {
+        expect(screen.getByText("payWithCredits")).toBeInTheDocument();
+        expect(screen.getByText("pay")).toBeInTheDocument();
+      });
+
+      // Select credits method
+      await user.click(screen.getByText("payWithCredits"));
+
+      // Now in credits flow - confirm button appears
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Click cancel to go back
+      await user.click(screen.getByText("cancel"));
+
+      // Should be back at method selection with stripe option
+      await waitFor(() => {
+        expect(screen.getByText("pay")).toBeInTheDocument();
+      });
+    });
+
+    it("shows spinner during credits purchase and disables buttons", async () => {
+      walletBalanceCents = 50000;
+      const user = userEvent.setup();
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(
+          screen.getByRole("button", { name: /^payWithCredits$/ })
+        ).toBeInTheDocument();
+      });
+
+      // Make purchase pending
+      let resolvePurchase!: (v: unknown) => void;
+      mockPurchaseFetch.mockReturnValueOnce(
+        new Promise((resolve) => {
+          resolvePurchase = resolve;
+        })
+      );
+
+      await user.click(
+        screen.getByRole("button", { name: /^payWithCredits$/ })
+      );
+
+      // Spinner should appear during purchase
+      await waitFor(() => {
+        expect(screen.getByTestId("spinner")).toBeInTheDocument();
+      });
+
+      // Resolve the purchase
+      resolvePurchase({ ok: true, json: async () => ({ success: true }) });
+
+      await waitFor(() => {
+        expect(screen.getByText("purchaseSuccess")).toBeInTheDocument();
+      });
+    });
+  });
+
+  describe("credits-only insufficient credits", () => {
+    it("shows topUpFirst link when credits-only and insufficient balance", async () => {
+      walletBalanceCents = 10;
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog {...defaultProps} product={SMALL_PRODUCT} />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("creditsOnly")).toBeInTheDocument();
+        expect(screen.getByText("topUpFirst")).toBeInTheDocument();
+      });
+    });
+
+    it("clicking topUpFirst calls onOpenChange(false)", async () => {
+      walletBalanceCents = 10;
+      const onOpenChange = jest.fn();
+      const user = userEvent.setup();
+      const SMALL_PRODUCT = {
+        id: "prod-s",
+        name: "Water Bottle",
+        price: 2.5,
+        currency: "EUR",
+      };
+
+      render(
+        <ProductCheckoutDialog
+          {...defaultProps}
+          product={SMALL_PRODUCT}
+          onOpenChange={onOpenChange}
+        />
+      );
+
+      await waitFor(() => {
+        expect(screen.getByText("topUpFirst")).toBeInTheDocument();
+      });
+
+      await user.click(screen.getByText("topUpFirst"));
+
+      expect(onOpenChange).toHaveBeenCalledWith(false);
+    });
+  });
 });

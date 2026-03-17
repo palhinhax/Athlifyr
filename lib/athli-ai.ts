@@ -984,7 +984,7 @@ function calculateDateRange(period: string | undefined): {
   return { fromDate, toDate };
 }
 
-interface ExerciseResultSummary {
+export interface ExerciseResultSummary {
   exercise: { name: string };
   sets: Array<{
     reps: number;
@@ -1002,7 +1002,7 @@ interface ExerciseResultSummary {
   isPR: boolean;
 }
 
-function formatDuration(totalSeconds: number): string {
+export function formatDuration(totalSeconds: number): string {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
   if (mins > 0 && secs > 0) return `${mins}m${secs}s`;
@@ -1010,7 +1010,7 @@ function formatDuration(totalSeconds: number): string {
   return `${secs}s`;
 }
 
-function formatMetricParts(er: ExerciseResultSummary): string[] {
+export function formatMetricParts(er: ExerciseResultSummary): string[] {
   const parts: string[] = [];
   if (er.actualReps) parts.push(`${er.actualReps} reps`);
   if (er.actualWeight)
@@ -1022,7 +1022,7 @@ function formatMetricParts(er: ExerciseResultSummary): string[] {
   return parts;
 }
 
-function formatExerciseDetail(er: ExerciseResultSummary): string {
+export function formatExerciseDetail(er: ExerciseResultSummary): string {
   let detail = er.exercise.name;
   const parts: string[] = [];
   if (er.sets.length > 0) {

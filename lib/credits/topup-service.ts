@@ -202,10 +202,7 @@ export async function getTopUpHistory(
     where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit + 1,
-    ...(params.cursor && {
-      cursor: { id: params.cursor },
-      skip: 1,
-    }),
+    ...(params.cursor ? { cursor: { id: params.cursor }, skip: 1 } : {}),
     select: {
       id: true,
       grossAmountCents: true,

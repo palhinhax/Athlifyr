@@ -17,7 +17,15 @@
  *   context.
  */
 
-import { saveWorkout, saveTrainingPlan, getSystemPrompt } from "@/lib/athli-ai";
+import {
+  saveWorkout,
+  saveTrainingPlan,
+  getSystemPrompt,
+  formatDuration,
+  formatMetricParts,
+  formatExerciseDetail,
+} from "@/lib/athli-ai";
+import type { ExerciseResultSummary } from "@/lib/athli-ai";
 import { prisma } from "@/lib/prisma";
 
 // ── Prisma mock ───────────────────────────────────────────────────────────────
@@ -696,5 +704,176 @@ describe("getSystemPrompt", () => {
   it("omits page context section when pageContext is undefined", () => {
     const prompt = getSystemPrompt("en", null);
     expect(prompt).not.toContain("Current Page Context");
+  });
+});
+
+// ============================================================================
+// formatDuration
+// ============================================================================
+
+describe("formatDuration", () => {
+  it("formats minutes and seconds", () => {
+    expect(formatDuration(125)).toBe("2m5s");
+  });
+
+  it("formats minutes only when seconds are zero", () => {
+    expect(formatDuration(120)).toBe("2m");
+  });
+
+  it("formats seconds only when under a minute", () => {
+    expect(formatDuration(45)).toBe("45s");
+  });
+
+  it("returns 0s for zero", () => {
+    expect(formatDuration(0)).toBe("0s");
+  });
+});
+
+// ============================================================================
+// formatMetricParts
+// ============================================================================
+
+describe("formatMetricParts", () => {
+  const baseResult: ExerciseResultSummary = {
+    exercise: { name: "Test" },
+    sets: [],
+    actualReps: null,
+    actualWeight: null,
+    actualWeightUnit: null,
+    actualDistance: null,
+    actualDistanceUnit: null,
+    actualTime: null,
+    actualCalories: null,
+    isPR: false,
+  };
+
+  it("returns empty array when no metrics", () => {
+    expect(formatMetricParts(baseResult)).toEqual([]);
+  });
+
+  it("includes reps", () => {
+    expect(formatMetricParts({ ...baseResult, actualReps: 12 })).toContain(
+      "12 reps"
+    );
+  });
+
+  it("includes weight with default unit", () => {
+    expect(formatMetricParts({ ...baseResult, actualWeight: 80 })).toContain(
+      "80KG"
+    );
+  });
+
+  it("includes weight with custom unit", () => {
+    expect(
+      formatMetricParts({
+        ...baseResult,
+        actualWeight: 176,
+        actualWeightUnit: "LB",
+      })
+    ).toContain("176LB");
+  });
+
+  it("includes distance with default unit", () => {
+    expect(formatMetricParts({ ...baseResult, actualDistance: 5.2 })).toContain(
+      "5.2KM"
+    );
+  });
+
+  it("includes distance with custom unit", () => {
+    expect(
+      formatMetricParts({
+        ...baseResult,
+        actualDistance: 3.1,
+        actualDistanceUnit: "MI",
+      })
+    ).toContain("3.1MI");
+  });
+
+  it("includes formatted time", () => {
+    const parts = formatMetricParts({ ...baseResult, actualTime: 125 });
+    expect(parts).toContain("2m5s");
+  });
+
+  it("includes calories", () => {
+    expect(formatMetricParts({ ...baseResult, actualCalories: 350 })).toContain(
+      "350 cal"
+    );
+  });
+
+  it("includes all metrics when present", () => {
+    const parts = formatMetricParts({
+      ...baseResult,
+      actualReps: 10,
+      actualWeight: 60,
+      actualDistance: 1,
+      actualTime: 30,
+      actualCalories: 100,
+    });
+    expect(parts).toHaveLength(5);
+  });
+});
+
+// ============================================================================
+// formatExerciseDetail
+// ============================================================================
+
+describe("formatExerciseDetail", () => {
+  const baseResult: ExerciseResultSummary = {
+    exercise: { name: "Bench Press" },
+    sets: [],
+    actualReps: null,
+    actualWeight: null,
+    actualWeightUnit: null,
+    actualDistance: null,
+    actualDistanceUnit: null,
+    actualTime: null,
+    actualCalories: null,
+    isPR: false,
+  };
+
+  it("returns exercise name when no sets and no metrics", () => {
+    expect(formatExerciseDetail(baseResult)).toBe("Bench Press");
+  });
+
+  it("formats sets summary", () => {
+    const result = formatExerciseDetail({
+      ...baseResult,
+      sets: [
+        { reps: 10, weight: 60, weightUnit: "KG", isPR: false },
+        { reps: 8, weight: 70, weightUnit: "KG", isPR: false },
+      ],
+    });
+    expect(result).toBe("Bench Press (10×60KG, 8×70KG)");
+  });
+
+  it("uses default KG unit for sets", () => {
+    const result = formatExerciseDetail({
+      ...baseResult,
+      sets: [{ reps: 5, weight: 100, weightUnit: null, isPR: false }],
+    });
+    expect(result).toContain("5×100KG");
+  });
+
+  it("uses metric parts when no sets", () => {
+    const result = formatExerciseDetail({
+      ...baseResult,
+      actualReps: 15,
+      actualWeight: 50,
+    });
+    expect(result).toBe("Bench Press (15 reps, 50KG)");
+  });
+
+  it("appends PR marker", () => {
+    const result = formatExerciseDetail({
+      ...baseResult,
+      isPR: true,
+      actualReps: 10,
+    });
+    expect(result).toContain("🏆 PR!");
+  });
+
+  it("shows only PR when no sets or metrics", () => {
+    const result = formatExerciseDetail({ ...baseResult, isPR: true });
+    expect(result).toBe("Bench Press (🏆 PR!)");
   });
 });

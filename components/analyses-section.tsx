@@ -151,7 +151,7 @@ interface LiftAnalysisJson {
   aiAnalysis?: AIAnalysis | null;
 }
 
-interface AnalysisRecord {
+export interface AnalysisRecord {
   id: string;
   localId: string;
   label: string | null;
@@ -849,7 +849,7 @@ function computeDurationMs(
 
 // ── Shared modal header for both Motion and Lift modals ────────────────────
 
-function AnalysisModalHeader({
+export function AnalysisModalHeader({
   icon: Icon,
   splitIcon: SplitIcon,
   title,

@@ -119,14 +119,17 @@ async function sendEmailNotification(
   return { sent: false, error: err.error };
 }
 
-function formatPushPart(pushResult: PushResult, audience: Audience): string {
+export function formatPushPart(
+  pushResult: PushResult,
+  audience: Audience
+): string {
   if (audience === "single") {
     return `Push: ${pushResult.sent} dispositivo${pushResult.sent === 1 ? "" : "s"}`;
   }
   return `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted === 1 ? "" : "es"}`;
 }
 
-function formatEmailPart(
+export function formatEmailPart(
   emailSendResult: EmailResult,
   audience: Audience
 ): string {
@@ -136,7 +139,7 @@ function formatEmailPart(
   return `Emails: ${emailsSent} enviado${emailsSent === 1 ? "" : "s"}`;
 }
 
-function buildToastParts(
+export function buildToastParts(
   pushResult: PushResult | null,
   emailSendResult: EmailResult | null,
   audience: Audience

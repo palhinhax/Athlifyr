@@ -17,7 +17,7 @@
  *   context.
  */
 
-import { saveWorkout, saveTrainingPlan } from "@/lib/athli-ai";
+import { saveWorkout, saveTrainingPlan, getSystemPrompt } from "@/lib/athli-ai";
 import { prisma } from "@/lib/prisma";
 
 // ── Prisma mock ───────────────────────────────────────────────────────────────
@@ -603,5 +603,98 @@ describe("saveTrainingPlan", () => {
         data: expect.objectContaining({ userId, planId: "plan-1" }),
       })
     );
+  });
+});
+
+// ============================================================================
+// getSystemPrompt
+// ============================================================================
+
+describe("getSystemPrompt", () => {
+  it("responds in English by default", () => {
+    const prompt = getSystemPrompt("en", null);
+    expect(prompt).toContain("respond in English");
+    expect(prompt).not.toContain("European Portuguese");
+  });
+
+  it("includes European Portuguese rules for pt locale", () => {
+    const prompt = getSystemPrompt("pt", null);
+    expect(prompt).toContain("respond in European Portuguese (pt-PT)");
+    expect(prompt).toContain("NEVER Brazilian Portuguese");
+    expect(prompt).toContain('"tu" instead of "você"');
+  });
+
+  it("maps all supported locales", () => {
+    expect(getSystemPrompt("es", null)).toContain("respond in Spanish");
+    expect(getSystemPrompt("fr", null)).toContain("respond in French");
+    expect(getSystemPrompt("de", null)).toContain("respond in German");
+    expect(getSystemPrompt("it", null)).toContain("respond in Italian");
+  });
+
+  it("falls back to English for unknown locale", () => {
+    const prompt = getSystemPrompt("ja", null);
+    expect(prompt).toContain("respond in English");
+  });
+
+  it("includes userName when provided", () => {
+    const prompt = getSystemPrompt("en", "João");
+    expect(prompt).toContain("The user's name is João");
+  });
+
+  it("omits userName block when null", () => {
+    const prompt = getSystemPrompt("en", null);
+    expect(prompt).not.toContain("The user's name is");
+  });
+
+  it("includes current date and day of week", () => {
+    const prompt = getSystemPrompt("en", null);
+    const todayISO = new Date().toISOString().split("T")[0];
+    expect(prompt).toContain(todayISO);
+    // Must contain one of the days of the week
+    const days = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    expect(days.some((d) => prompt.includes(d))).toBe(true);
+  });
+
+  it("includes next weekend dates", () => {
+    const prompt = getSystemPrompt("en", null);
+    expect(prompt).toMatch(/Next weekend: Saturday \d{4}-\d{2}-\d{2}/);
+  });
+
+  it("includes event page context when provided", () => {
+    const prompt = getSystemPrompt("en", null, {
+      type: "event",
+      slug: "trail-manuelino-2026",
+    });
+    expect(prompt).toContain("Current Page Context");
+    expect(prompt).toContain("EVENT");
+    expect(prompt).toContain("trail-manuelino-2026");
+  });
+
+  it("includes venue page context when provided", () => {
+    const prompt = getSystemPrompt("en", null, {
+      type: "venue",
+      slug: "iron-gym-lisbon",
+    });
+    expect(prompt).toContain("Current Page Context");
+    expect(prompt).toContain("VENUE");
+    expect(prompt).toContain("iron-gym-lisbon");
+  });
+
+  it("omits page context section when pageContext is null", () => {
+    const prompt = getSystemPrompt("en", null, null);
+    expect(prompt).not.toContain("Current Page Context");
+  });
+
+  it("omits page context section when pageContext is undefined", () => {
+    const prompt = getSystemPrompt("en", null);
+    expect(prompt).not.toContain("Current Page Context");
   });
 });

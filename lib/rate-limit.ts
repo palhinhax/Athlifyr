@@ -82,8 +82,12 @@ export function createRateLimiter(
 
   return {
     check(key: string): RateLimitResult {
-      const store = stores.get(namespace)!;
       const now = Date.now();
+      const store = stores.get(namespace);
+      if (!store) {
+        // Should never happen, but fail open defensively.
+        return { allowed: true, remaining: config.maxAttempts, resetAt: now };
+      }
 
       let entry = store.get(key);
       if (!entry) {

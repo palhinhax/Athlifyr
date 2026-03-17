@@ -18,7 +18,6 @@ import {
   useElements,
 } from "@stripe/react-stripe-js";
 import { getStripe } from "@/lib/stripe-client";
-import { TOPUP_FEE_PERCENTAGE } from "@/lib/credits/constants";
 
 interface TopUpOption {
   amountCents: number;
@@ -131,18 +130,11 @@ export function TopUpDialog({
                     {(option.amountCents / 100).toFixed(2)}€
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {t("youReceive")}{" "}
-                    <span className="font-medium text-green-600">
-                      {(option.netCreditsCents / 100).toFixed(2)}
-                    </span>{" "}
-                    {t("credits")}
+                    = {(option.amountCents / 100).toFixed(2)} {t("credits")}
                   </p>
                 </button>
               ))}
             </div>
-            <p className="text-center text-xs text-muted-foreground">
-              {t("processingFeeNote", { percentage: TOPUP_FEE_PERCENTAGE })}
-            </p>
             {isCreating && (
               <div className="flex justify-center py-4">
                 <Spinner className="h-6 w-6" />
@@ -163,12 +155,8 @@ export function TopUpDialog({
               <p className="text-sm">
                 {t("youReceive")}:{" "}
                 <span className="font-bold text-green-600">
-                  {(selectedAmount.netCreditsCents / 100).toFixed(2)}{" "}
-                  {t("credits")}
+                  {(selectedAmount.amountCents / 100).toFixed(2)} {t("credits")}
                 </span>
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {t("processingFee")}
               </p>
             </div>
 

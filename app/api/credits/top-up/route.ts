@@ -6,8 +6,6 @@ import {
   MIN_TOPUP_AMOUNT_CENTS,
   MAX_TOPUP_AMOUNT_CENTS,
   TOPUP_AMOUNTS_CENTS,
-  calculateTopUpFee,
-  calculateNetCredits,
 } from "@/lib/credits";
 
 // GET - Get top-up history and available amounts
@@ -26,11 +24,11 @@ export async function GET(request: Request) {
 
     const history = await getTopUpHistory(user.id, { cursor, limit });
 
-    // Also return available top-up options with fee calculations
+    // Also return available top-up options — no fee on top-up (1€ = 1 credit)
     const topUpOptions = TOPUP_AMOUNTS_CENTS.map((amountCents) => ({
       amountCents,
-      feeCents: calculateTopUpFee(amountCents),
-      netCreditsCents: calculateNetCredits(amountCents),
+      feeCents: 0,
+      netCreditsCents: amountCents,
     }));
 
     return NextResponse.json({

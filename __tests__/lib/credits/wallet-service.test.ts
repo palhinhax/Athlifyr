@@ -221,7 +221,7 @@ describe("creditWallet", () => {
       amountCents: 1000,
       type: "TOP_UP",
       source: "STRIPE_TOP_UP",
-      grossAmountCents: 1040,
+      grossAmountCents: 1000, // Full amount (no fee on top-up)
     });
 
     expect(result).toEqual({
@@ -234,7 +234,7 @@ describe("creditWallet", () => {
         where: { userId: "u1" },
         data: expect.objectContaining({
           balanceCents: { increment: 1000 },
-          totalTopUpCents: { increment: 1040 },
+          totalTopUpCents: { increment: 1000 },
         }),
       })
     );

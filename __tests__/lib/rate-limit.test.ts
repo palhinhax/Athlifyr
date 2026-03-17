@@ -130,6 +130,37 @@ describe("createRateLimiter", () => {
   });
 });
 
+describe("cleanup interval", () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() => {
+    jest.useRealTimers();
+  });
+
+  it("purges stale entries when the cleanup interval fires", () => {
+    const limiter = createRateLimiter("test:cleanup", {
+      maxAttempts: 1,
+      windowMs: 1000, // 1 second window
+    });
+
+    // Record an attempt so the store has an entry
+    const r1 = limiter.check("stale-key");
+    expect(r1.allowed).toBe(true);
+
+    // Advance past the window so the entry becomes stale
+    jest.advanceTimersByTime(2000);
+
+    // Trigger the cleanup interval (5 minutes)
+    jest.advanceTimersByTime(5 * 60 * 1000);
+
+    // The stale entry should have been purged; a new check should be allowed
+    const r2 = limiter.check("stale-key");
+    expect(r2.allowed).toBe(true);
+  });
+});
+
 describe("pre-configured auth limiters", () => {
   it("exports loginLimiter with correct limits", () => {
     // eslint-disable-next-line @typescript-eslint/no-require-imports

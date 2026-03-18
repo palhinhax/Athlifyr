@@ -19,3 +19,10 @@ export function isOfficialAthlifyrAccount(
   if (!email) return false;
   return email.toLowerCase() === ATHLIFYR_OFFICIAL_EMAIL.toLowerCase();
 }
+
+/**
+ * App store download URLs
+ */
+export const APP_STORE_URL = "https://apps.apple.com/app/athlifyr/id6738646498";
+export const GOOGLE_PLAY_URL =
+  "https://play.google.com/store/apps/details?id=com.athlifyr.app";

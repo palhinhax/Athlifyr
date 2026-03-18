@@ -11,6 +11,7 @@ import {
   HomeNoEventsCta,
 } from "@/components/home-client-tracking";
 import { HomeAnalysisShortcut } from "@/components/home-analysis-shortcut";
+import { AppDownloadSection } from "@/components/app-download-section";
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -129,6 +130,9 @@ export default async function Home({
           </div>
         )}
       </section>
+
+      {/* App Download Section */}
+      <AppDownloadSection />
 
       {/* CTA Section */}
       <HomeCtaSection

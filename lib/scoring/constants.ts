@@ -114,7 +114,7 @@ export const NORMALIZATION_REFS = {
   endurancePaceSecPerKmRef: 300,
 
   /** Reference work-units in an engine block for ~700/1000.
-   *  Work-units = Σ(reps × effortMultiplier), optionally adjusted by density. */
+   *  Work-units = Σ(reps × effortMultiplier), scaled by density when time data is available. */
   engineWorkUnitsRef: 150,
 
   /** Reference volume load (reps × weight in kg) for volume bonus calculation. */

@@ -91,6 +91,7 @@ export function calculateWorkoutScore(
     if (blockHint === null) continue;
 
     const isEngineBlock = blockHint === "engine";
+    let blockEngineWorkUnits = 0;
 
     for (const ex of block.exerciseResults) {
       const effort = effortMultiplier(ex.effortScore);
@@ -99,8 +100,7 @@ export function calculateWorkoutScore(
       if (hasStrengthData(ex)) {
         const e1rm = bestE1rmFromResult(ex);
         if (e1rm > 0) {
-          const cappedE1rm = Math.min(e1rm, MAX_E1RM_KG_CAP);
-          const norm = normalizeStrength(cappedE1rm);
+          const norm = normalizeStrength(e1rm);
           strengthAcc.weightedSum += norm * effort;
           strengthAcc.totalWeight += effort;
         }
@@ -119,8 +119,7 @@ export function calculateWorkoutScore(
       if (isEngineBlock) {
         const reps = effectiveReps(ex);
         const cappedReps = Math.min(reps, MAX_ENGINE_REPS_PER_EXERCISE);
-        engineWorkUnits += cappedReps * effort;
-        hasEngineData = true;
+        blockEngineWorkUnits += cappedReps * effort;
       }
 
       // ── Volume load (from any scored block) ──────────────────────
@@ -130,15 +129,17 @@ export function calculateWorkoutScore(
       prCount += countPRs(ex);
     }
 
-    // ── Engine density: if block has time context, reward faster work ──
-    if (isEngineBlock && hasEngineData) {
+    // ── Engine density: apply per-block, then add to cumulative total ──
+    if (isEngineBlock && blockEngineWorkUnits > 0) {
       const blockTime = block.completedTime ?? block.timeCap ?? null;
       if (blockTime != null && blockTime > 0) {
         const minutes = blockTime / 60;
         const density = ENGINE_DENSITY_REF_MINUTES / Math.max(minutes, 1);
         const cappedDensity = Math.min(density, ENGINE_MAX_DENSITY_FACTOR);
-        engineWorkUnits *= cappedDensity;
+        blockEngineWorkUnits *= cappedDensity;
       }
+      engineWorkUnits += blockEngineWorkUnits;
+      hasEngineData = true;
     }
   }
 
@@ -224,7 +225,6 @@ function hasEnduranceData(ex: ExerciseResultInput): boolean {
 
 /**
  * Best e1RM from either individual sets or the summary result.
- * Capped at MAX_E1RM_KG_CAP to protect against data-entry errors.
  */
 function bestE1rmFromResult(ex: ExerciseResultInput): number {
   let best = 0;
@@ -245,6 +245,7 @@ function bestE1rmFromResult(ex: ExerciseResultInput): number {
     best = calculateE1rm(ex.actualWeightKg, ex.actualReps);
   }
 
+  // Cap at MAX_E1RM_KG_CAP to protect against data-entry errors
   return Math.min(best, MAX_E1RM_KG_CAP);
 }
 

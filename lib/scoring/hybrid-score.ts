@@ -35,7 +35,7 @@ import type {
   ScoreConfidence,
   WorkoutScoreHistoryEntry,
 } from "./types";
-import { SCORE_VERSION } from "./types";
+import { HYBRID_SCORE_VERSION } from "./constants";
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
@@ -89,7 +89,7 @@ export function calculateHybridScore(
   const confidence = deriveConfidence(dataPoints);
 
   return {
-    version: SCORE_VERSION,
+    version: HYBRID_SCORE_VERSION,
     totalScore,
     breakdown: {
       strength: strengthScore,

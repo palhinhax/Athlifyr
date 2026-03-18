@@ -10,8 +10,16 @@
 /** Minimum possible score for any pillar or total. */
 export const SCORE_MIN = 0;
 
-/** Maximum possible score for any pillar or total. */
-export const SCORE_MAX = 100;
+/** Maximum possible score for any pillar or total (0-1000 scale). */
+export const SCORE_MAX = 1000;
+
+// ─── Score Versions ─────────────────────────────────────────────────────────
+
+/** Current Workout Score algorithm version.  Bump when the formula changes. */
+export const WORKOUT_SCORE_VERSION = 1;
+
+/** Current Hybrid Score algorithm version.  Bump when the formula changes. */
+export const HYBRID_SCORE_VERSION = 1;
 
 // ─── Pillar Weights — Workout Score ────────────────────────────────────────
 
@@ -25,14 +33,14 @@ export const WORKOUT_PILLAR_WEIGHTS = {
   engine: 0.3,
 } as const;
 
-/** Maximum volume bonus added on top of pillars (absolute points). */
-export const MAX_VOLUME_BONUS = 20;
+/** Maximum volume bonus added on top of pillars (absolute points, ~5% of max). */
+export const MAX_VOLUME_BONUS = 50;
 
-/** Maximum PR bonus added on top of pillars (absolute points). */
-export const MAX_PR_BONUS = 10;
+/** Maximum PR bonus added on top of pillars (absolute points, ~3% of max). */
+export const MAX_PR_BONUS = 30;
 
 /** Points per PR detected in the workout. */
-export const PR_BONUS_PER_PR = 5;
+export const PR_BONUS_PER_PR = 15;
 
 // ─── Pillar Weights — Hybrid Score ─────────────────────────────────────────
 
@@ -57,11 +65,18 @@ export const HYBRID_MIN_WORKOUTS_MEDIUM = 5;
 /** Minimum workouts required for HIGH confidence. */
 export const HYBRID_MIN_WORKOUTS_HIGH = 15;
 
-// ─── Block Type → Pillar Mapping ───────────────────────────────────────────
+// ─── Block Type → Default Pillar Hint ──────────────────────────────────────
 
 /**
- * Which pillar each WorkoutBlockType primarily contributes to.
- * REST, WARMUP, COOLDOWN do not contribute score.
+ * Default pillar hint per block type.
+ *
+ * This is a **hint**, not the final truth.  Exercises within a block
+ * contribute to pillars based on their actual metrics:
+ *   - weight data → strength
+ *   - distance / calorie data → endurance
+ *   - reps in engine-type blocks → engine
+ *
+ * Blocks mapped to `null` are not scored at all.
  */
 export const BLOCK_TYPE_PILLAR: Record<
   string,
@@ -79,45 +94,59 @@ export const BLOCK_TYPE_PILLAR: Record<
   SKILL: null,
 };
 
-// ─── Exercise Category → Pillar Mapping ────────────────────────────────────
-
-/**
- * How exercise categories map to scoring pillars.
- * Used within engine blocks to distinguish strength-like vs cardio-like exercises.
- */
-export const CATEGORY_PILLAR: Record<string, "strength" | "endurance"> = {
-  CROSSFIT: "strength",
-  GYM: "strength",
-  WEIGHTLIFTING: "strength",
-  BODYWEIGHT: "strength",
-  CARDIO: "endurance",
-  OTHER: "strength",
-};
-
 // ─── Normalization Reference Points ────────────────────────────────────────
 
 /**
- * Reference values used to normalise raw metrics into 0-100 scores.
- * These represent what we consider a "good" (score ≈ 70) performance
+ * Reference values used to normalise raw metrics into 0-1000 scores.
+ * These represent what we consider a "good" (score ≈ 700) performance
  * for an average recreational athlete.
+ *
+ * Strength reference is a **global default**.  Callers can override it
+ * per-exercise or per-exercise-family via the optional `ref` parameter
+ * on `normalizeStrength`.
  */
 export const NORMALIZATION_REFS = {
-  /** Reference e1RM in kg that corresponds to ~70/100 strength score. */
+  /** Default reference e1RM in kg that corresponds to ~700/1000. */
   strengthE1rmKgRef: 100,
 
-  /** Reference run pace in sec/km that corresponds to ~70/100 endurance score.
+  /** Reference run pace in sec/km that corresponds to ~700/1000.
    *  5:00/km = 300 s/km. */
   endurancePaceSecPerKmRef: 300,
 
-  /** Reference total reps in an engine block for ~70/100 engine score. */
-  engineTotalRepsRef: 100,
-
-  /** Effort score at which an exercise earns full normalised credit (1-10 scale). */
-  effortScoreFullCredit: 7,
+  /** Reference work-units in an engine block for ~700/1000.
+   *  Work-units = Σ(reps × effortMultiplier), optionally adjusted by density. */
+  engineWorkUnitsRef: 150,
 
   /** Reference volume load (reps × weight in kg) for volume bonus calculation. */
   volumeLoadRef: 5000,
 } as const;
+
+// ─── Anti-Outlier Caps ─────────────────────────────────────────────────────
+
+/** Maximum e1RM (kg) that will be considered.  Protects against data-entry errors. */
+export const MAX_E1RM_KG_CAP = 500;
+
+/** Maximum reps credited per exercise for engine scoring. */
+export const MAX_ENGINE_REPS_PER_EXERCISE = 500;
+
+/**
+ * Reference duration (minutes) for engine density calculation.
+ * When a block has a known completion time, work-units are scaled by
+ * `densityRefMinutes / actualMinutes` to reward faster work.
+ */
+export const ENGINE_DENSITY_REF_MINUTES = 15;
+
+/** Maximum density multiplier to prevent extremely fast completions from exploding. */
+export const ENGINE_MAX_DENSITY_FACTOR = 2.0;
+
+// ─── Effort Modifier ───────────────────────────────────────────────────────
+
+/**
+ * Effort multiplier range.  `effortScore` (1-10) is mapped linearly to
+ * this range, making it a **light modifier** rather than a primary scoring driver.
+ */
+export const EFFORT_MULTIPLIER_MIN = 0.8;
+export const EFFORT_MULTIPLIER_MAX = 1.2;
 
 // ─── Recency Decay ─────────────────────────────────────────────────────────
 

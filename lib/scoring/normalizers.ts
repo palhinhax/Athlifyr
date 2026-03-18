@@ -2,11 +2,17 @@
  * Workout Score & Hybrid Score — Normalization Utilities
  *
  * Functions that convert raw performance metrics (kg, pace, reps, etc.)
- * into a 0-100 normalised score.  All normalizers are pure functions
+ * into a 0-1000 normalised score.  All normalizers are pure functions
  * with no side effects.
  */
 
-import { NORMALIZATION_REFS, SCORE_MAX, SCORE_MIN } from "./constants";
+import {
+  EFFORT_MULTIPLIER_MAX,
+  EFFORT_MULTIPLIER_MIN,
+  NORMALIZATION_REFS,
+  SCORE_MAX,
+  SCORE_MIN,
+} from "./constants";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -18,24 +24,26 @@ export function clamp(value: number, min: number, max: number): number {
 // ─── Strength Normalization ─────────────────────────────────────────────────
 
 /**
- * Normalise a strength result to 0-100.
+ * Normalise a strength result to 0-1000.
  *
  * Uses a diminishing-returns curve so that:
  * - 0 kg   → 0
- * - ref kg → ~70
- * - 2×ref  → ~90
+ * - ref kg → ~700
+ * - 2×ref  → ~900
  *
- * Formula: score = 100 × (1 − e^(−k × e1rm))
- * where k = −ln(1 − 0.70) / ref  (so that ref maps to 70).
+ * Formula: score = 1000 × (1 − e^(−k × e1rm))
+ * where k = −ln(1 − 0.70) / ref  (so that ref maps to 700).
  *
- * @param e1rmKg Estimated 1-rep max in kilograms.
+ * @param e1rmKg  Estimated 1-rep max in kilograms.
+ * @param ref     Optional custom reference e1RM (defaults to global constant).
+ *                Allows per-exercise or per-exercise-family calibration.
  */
-export function normalizeStrength(e1rmKg: number): number {
+export function normalizeStrength(e1rmKg: number, ref?: number): number {
   if (e1rmKg <= 0) return SCORE_MIN;
 
-  const ref = NORMALIZATION_REFS.strengthE1rmKgRef;
-  const k = -Math.log(1 - 0.7) / ref; // ≈ 1.204 / ref
-  const raw = 100 * (1 - Math.exp(-k * e1rmKg));
+  const effectiveRef = ref ?? NORMALIZATION_REFS.strengthE1rmKgRef;
+  const k = -Math.log(1 - 0.7) / effectiveRef;
+  const raw = SCORE_MAX * (1 - Math.exp(-k * e1rmKg));
   return clamp(Math.round(raw * 10) / 10, SCORE_MIN, SCORE_MAX);
 }
 
@@ -54,17 +62,17 @@ export function calculateE1rm(weightKg: number, reps: number): number {
 // ─── Endurance Normalization ────────────────────────────────────────────────
 
 /**
- * Normalise a running/cardio result to 0-100.
+ * Normalise a running/cardio result to 0-1000.
  *
  * Faster pace → higher score.  Uses the inverse of pace so that
  * lower sec/km yields a higher score.
  *
- * - ref pace (e.g. 300 s/km) → ~70
- * - 240 s/km (4:00)          → ~85
- * - 360 s/km (6:00)          → ~55
+ * - ref pace (e.g. 300 s/km) → ~700
+ * - 240 s/km (4:00)          → ~850
+ * - 360 s/km (6:00)          → ~550
  *
- * Formula: score = 100 × (1 − e^(−k × (ref / pace)))
- * where k = −ln(1 − 0.70)  (so that pace = ref maps to 70).
+ * Formula: score = 1000 × (1 − e^(−k × (ref / pace)))
+ * where k = −ln(1 − 0.70)  (so that pace = ref maps to 700).
  *
  * @param paceSecPerKm  Pace in seconds per kilometre.
  */
@@ -74,7 +82,7 @@ export function normalizeEndurance(paceSecPerKm: number): number {
   const ref = NORMALIZATION_REFS.endurancePaceSecPerKmRef;
   const ratio = ref / paceSecPerKm; // > 1 means faster than ref
   const k = -Math.log(1 - 0.7); // ≈ 1.204
-  const raw = 100 * (1 - Math.exp(-k * ratio));
+  const raw = SCORE_MAX * (1 - Math.exp(-k * ratio));
   return clamp(Math.round(raw * 10) / 10, SCORE_MIN, SCORE_MAX);
 }
 
@@ -91,62 +99,66 @@ export function normalizeEnduranceByCalories(
 ): number {
   if (calories <= 0 || timeSeconds <= 0) return SCORE_MIN;
 
-  // ~10 cal/min = decent effort ≈ 70 score
+  // ~10 cal/min = decent effort ≈ 700 score
   const calPerMin = (calories / timeSeconds) * 60;
   const ref = 10; // cal/min reference
   const k = -Math.log(1 - 0.7) / ref;
-  const raw = 100 * (1 - Math.exp(-k * calPerMin));
+  const raw = SCORE_MAX * (1 - Math.exp(-k * calPerMin));
   return clamp(Math.round(raw * 10) / 10, SCORE_MIN, SCORE_MAX);
 }
 
 // ─── Engine Normalization ───────────────────────────────────────────────────
 
 /**
- * Normalise engine/conditioning output to 0-100.
+ * Normalise engine/conditioning output to 0-1000.
  *
- * Engine score is derived from total work (weighted reps) performed
- * in conditioning blocks (AMRAP, EMOM, FOR_TIME, TABATA, CHIPPER).
+ * Engine score is derived from **work-units** performed in conditioning
+ * blocks (AMRAP, EMOM, FOR_TIME, TABATA, CHIPPER).  Work-units combine
+ * effort-weighted reps with an optional density factor (reps/time).
  *
- * @param weightedReps  Sum of (reps × effort multiplier) across all exercises
- *                      in engine blocks.
+ * @param workUnits  Σ(reps × effortMultiplier [× densityFactor]) across
+ *                   exercises in engine blocks.
  */
-export function normalizeEngine(weightedReps: number): number {
-  if (weightedReps <= 0) return SCORE_MIN;
+export function normalizeEngine(workUnits: number): number {
+  if (workUnits <= 0) return SCORE_MIN;
 
-  const ref = NORMALIZATION_REFS.engineTotalRepsRef;
+  const ref = NORMALIZATION_REFS.engineWorkUnitsRef;
   const k = -Math.log(1 - 0.7) / ref;
-  const raw = 100 * (1 - Math.exp(-k * weightedReps));
+  const raw = SCORE_MAX * (1 - Math.exp(-k * workUnits));
   return clamp(Math.round(raw * 10) / 10, SCORE_MIN, SCORE_MAX);
 }
 
 // ─── Effort Multiplier ──────────────────────────────────────────────────────
 
 /**
- * Convert an exercise effort score (1-10) to a multiplier (0-2).
- * A higher effort score means the exercise is more demanding and
- * its reps/weight contribute more to the overall score.
+ * Convert an exercise effort score (1-10) to a **light** multiplier.
  *
- * Linear mapping: effortScore 1 → 0.2,  5 → 1.0,  10 → 2.0
+ * The multiplier tilts contributions slightly without being a primary
+ * scoring driver:
+ *   effortScore 1  → 0.8
+ *   effortScore 5  → 1.0
+ *   effortScore 10 → 1.2
  */
 export function effortMultiplier(effortScore: number): number {
   const clamped = clamp(effortScore, 1, 10);
-  return 0.2 + ((clamped - 1) / 9) * 1.8;
+  const range = EFFORT_MULTIPLIER_MAX - EFFORT_MULTIPLIER_MIN;
+  return EFFORT_MULTIPLIER_MIN + ((clamped - 1) / 9) * range;
 }
 
 // ─── Volume Normalization ───────────────────────────────────────────────────
 
 /**
- * Normalise total volume load to a bonus score (0-20).
+ * Normalise total volume load to a bonus score (0-maxBonus).
  *
  * Volume load = Σ (reps × weight in kg) across all sets.
- * Returns a bonus between 0 and MAX_VOLUME_BONUS.
+ * Returns a bonus between 0 and maxBonus.
  *
  * @param volumeLoadKg  Total volume load in kg.
- * @param maxBonus  Maximum bonus points (default 20).
+ * @param maxBonus  Maximum bonus points (default 50).
  */
 export function normalizeVolumeBonus(
   volumeLoadKg: number,
-  maxBonus: number = 20
+  maxBonus: number = 50
 ): number {
   if (volumeLoadKg <= 0) return 0;
 

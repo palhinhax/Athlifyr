@@ -4,7 +4,7 @@ import type {
   ExerciseResultInput,
   WorkoutLogInput,
 } from "@/lib/scoring/types";
-import { SCORE_VERSION } from "@/lib/scoring/types";
+import { WORKOUT_SCORE_VERSION } from "@/lib/scoring/constants";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -49,7 +49,7 @@ function makeLog(overrides: Partial<WorkoutLogInput> = {}): WorkoutLogInput {
 describe("calculateWorkoutScore — output shape", () => {
   it("returns correct version", () => {
     const result = calculateWorkoutScore(makeLog());
-    expect(result.version).toBe(SCORE_VERSION);
+    expect(result.version).toBe(WORKOUT_SCORE_VERSION);
   });
 
   it("returns all breakdown fields", () => {
@@ -117,7 +117,7 @@ describe("calculateWorkoutScore — edge cases", () => {
 });
 
 // ============================================================================
-// Strength scoring
+// Strength scoring — metric-driven, no category dependency
 // ============================================================================
 
 describe("calculateWorkoutScore — strength", () => {
@@ -211,10 +211,79 @@ describe("calculateWorkoutScore — strength", () => {
     );
     expect(result.breakdown.strength).toBeGreaterThan(0);
   });
+
+  it("weighted exercise in engine block contributes to strength", () => {
+    const result = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "CROSSFIT",
+                effortScore: 7,
+                hasWeight: true,
+                sets: [{ reps: 5, weightKg: 60, isPR: false }],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+    // Weighted exercise in AMRAP should still contribute to strength pillar
+    expect(result.breakdown.strength).toBeGreaterThan(0);
+    // And also to engine (since it's in an engine block)
+    expect(result.breakdown.engine).toBeGreaterThan(0);
+  });
+
+  it("caps e1RM at anti-outlier limit", () => {
+    const normal = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "STRENGTH",
+            exerciseResults: [
+              makeExercise({
+                category: "WEIGHTLIFTING",
+                effortScore: 7,
+                hasWeight: true,
+                sets: [{ reps: 1, weightKg: 400, isPR: false }],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Even an absurdly heavy e1RM should not produce wildly different results
+    // because the cap at 500 kg and diminishing returns both constrain it
+    const absurd = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "STRENGTH",
+            exerciseResults: [
+              makeExercise({
+                category: "WEIGHTLIFTING",
+                effortScore: 7,
+                hasWeight: true,
+                sets: [{ reps: 10, weightKg: 5000, isPR: false }],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // The gap should be small due to cap + diminishing returns
+    expect(absurd.breakdown.strength - normal.breakdown.strength).toBeLessThan(
+      50
+    );
+  });
 });
 
 // ============================================================================
-// Endurance scoring
+// Endurance scoring — metric-driven
 // ============================================================================
 
 describe("calculateWorkoutScore — endurance", () => {
@@ -266,7 +335,7 @@ describe("calculateWorkoutScore — endurance", () => {
 });
 
 // ============================================================================
-// Engine scoring
+// Engine scoring — work-units with density
 // ============================================================================
 
 describe("calculateWorkoutScore — engine", () => {
@@ -342,6 +411,88 @@ describe("calculateWorkoutScore — engine", () => {
     );
     expect(result.breakdown.engine).toBeGreaterThan(0);
   });
+
+  it("rewards faster FOR_TIME completion via density", () => {
+    const slow = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 1200, // 20 min
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    const fast = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 300, // 5 min
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    expect(fast.breakdown.engine).toBeGreaterThan(slow.breakdown.engine);
+  });
+
+  it("caps per-exercise engine reps", () => {
+    const normal = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 400,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    const extreme = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 50000,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Extreme reps should be capped at MAX_ENGINE_REPS_PER_EXERCISE (500)
+    // so the difference should be modest
+    expect(extreme.breakdown.engine - normal.breakdown.engine).toBeLessThan(
+      100
+    );
+  });
 });
 
 // ============================================================================
@@ -392,7 +543,7 @@ describe("calculateWorkoutScore — PR bonus", () => {
         ],
       })
     );
-    expect(result.breakdown.prBonus).toBeLessThanOrEqual(10);
+    expect(result.breakdown.prBonus).toBeLessThanOrEqual(30);
   });
 });
 
@@ -450,7 +601,7 @@ describe("calculateWorkoutScore — volume bonus", () => {
         ],
       })
     );
-    expect(result.breakdown.volumeBonus).toBeLessThanOrEqual(20);
+    expect(result.breakdown.volumeBonus).toBeLessThanOrEqual(50);
   });
 });
 
@@ -520,7 +671,7 @@ describe("calculateWorkoutScore — mixed workout", () => {
 // ============================================================================
 
 describe("calculateWorkoutScore — total capping", () => {
-  it("never exceeds 100", () => {
+  it("never exceeds 1000", () => {
     const result = calculateWorkoutScore(
       makeLog({
         blockResults: [
@@ -553,7 +704,7 @@ describe("calculateWorkoutScore — total capping", () => {
         ],
       })
     );
-    expect(result.totalScore).toBeLessThanOrEqual(100);
+    expect(result.totalScore).toBeLessThanOrEqual(1000);
   });
 });
 

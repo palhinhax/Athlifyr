@@ -4,12 +4,9 @@
  * These types define the product-facing scoring system.
  * They are intentionally separate from the internal scoring types
  * (qualityScore, predictionWeight) in lib/performance/scoring.ts.
+ *
+ * Score scale: 0-1000 for granularity in rankings and progression.
  */
-
-// ─── Score Version ──────────────────────────────────────────────────────────
-
-/** Current scoring algorithm version. Bump when the formula changes. */
-export const SCORE_VERSION = 1;
 
 // ─── Confidence ─────────────────────────────────────────────────────────────
 
@@ -19,15 +16,15 @@ export type ScoreConfidence = "LOW" | "MEDIUM" | "HIGH";
 
 /** Breakdown of a single workout's score by pillar. */
 export interface WorkoutScoreBreakdown {
-  /** Points from strength-oriented exercises (0-100). */
+  /** Points from strength-oriented exercises (0-1000). */
   strength: number;
-  /** Points from endurance/cardio exercises (0-100). */
+  /** Points from endurance/cardio exercises (0-1000). */
   endurance: number;
-  /** Points from mixed/engine work like EMOM, AMRAP, FOR_TIME (0-100). */
+  /** Points from mixed/engine work like EMOM, AMRAP, FOR_TIME (0-1000). */
   engine: number;
-  /** Extra credit for high total volume (0-20). */
+  /** Extra credit for high total volume (0-50). */
   volumeBonus: number;
-  /** Extra credit for achieving a personal record (0-10). */
+  /** Extra credit for achieving a personal record (0-30). */
   prBonus: number;
 }
 
@@ -35,7 +32,7 @@ export interface WorkoutScoreBreakdown {
 export interface WorkoutScoreResult {
   /** Algorithm version that produced this score. */
   version: number;
-  /** Final composite workout score (0-100). */
+  /** Final composite workout score (0-1000). */
   totalScore: number;
   /** Per-pillar breakdown. */
   breakdown: WorkoutScoreBreakdown;
@@ -49,11 +46,11 @@ export interface WorkoutScoreResult {
 
 /** Breakdown of a user's Hybrid Score by pillar. */
 export interface HybridScoreBreakdown {
-  /** Strength pillar (0-100). */
+  /** Strength pillar (0-1000). */
   strength: number;
-  /** Endurance pillar (0-100). */
+  /** Endurance pillar (0-1000). */
   endurance: number;
-  /** Engine / conditioning pillar (0-100). */
+  /** Engine / conditioning pillar (0-1000). */
   engine: number;
 }
 
@@ -61,7 +58,7 @@ export interface HybridScoreBreakdown {
 export interface HybridScoreResult {
   /** Algorithm version that produced this score. */
   version: number;
-  /** Final composite hybrid score (0-100). */
+  /** Final composite hybrid score (0-1000). */
   totalScore: number;
   /** Per-pillar breakdown. */
   breakdown: HybridScoreBreakdown;
@@ -144,6 +141,9 @@ export interface BlockResultInput {
   extraReps?: number | null;
   /** For FOR_TIME — time in seconds. */
   completedTime?: number | null;
+  /** Time cap in seconds (e.g. AMRAP cap, EMOM total).
+   *  Used for engine density calculation when completedTime is absent. */
+  timeCap?: number | null;
   /** Exercise results within this block. */
   exerciseResults: ExerciseResultInput[];
 }

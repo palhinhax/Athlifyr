@@ -1,7 +1,8 @@
 # Workout Score & Hybrid Score — Technical Design v2
 
 > **Status**: Foundation implemented (Phase 1)
-> **Score Version**: 1
+> **Workout Score Version**: 1
+> **Hybrid Score Version**: 1
 > **Last updated**: 2026-03-18
 
 ---
@@ -19,6 +20,15 @@ It introduces two new score concepts:
 These scores are **separate** from the existing internal scoring system
 (`qualityScore`, `predictionWeight`) which remains in use for prediction
 features (e1RM, half-marathon prediction, PR detection).
+
+### Why 0-1000?
+
+The score scale is **0-1000** (not 0-100) for greater granularity:
+
+- Fine-grained progression tracking (a +5 improvement is visible)
+- Better differentiation for rankings and leaderboards
+- Future challenge/achievement thresholds can use meaningful bands
+- Avoids the "everything looks like a school grade" problem
 
 ---
 
@@ -43,12 +53,12 @@ They continue to power:
 
 ### New product-facing scores
 
-| Concept                     | Output Range               | Stored In                      |
-| --------------------------- | -------------------------- | ------------------------------ |
-| **Workout Score**           | 0 – 100                    | `WorkoutScore` model           |
-| **Workout Score Breakdown** | Per-pillar 0-100 + bonuses | `WorkoutScore` model fields    |
-| **Hybrid Score**            | 0 – 100                    | `UserHybridScore` model        |
-| **Hybrid Score Breakdown**  | Per-pillar 0-100           | `UserHybridScore` model fields |
+| Concept                     | Output Range                | Stored In                      |
+| --------------------------- | --------------------------- | ------------------------------ |
+| **Workout Score**           | 0 – 1000                    | `WorkoutScore` model           |
+| **Workout Score Breakdown** | Per-pillar 0-1000 + bonuses | `WorkoutScore` model fields    |
+| **Hybrid Score**            | 0 – 1000                    | `UserHybridScore` model        |
+| **Hybrid Score Breakdown**  | Per-pillar 0-1000           | `UserHybridScore` model fields |
 
 ---
 
@@ -68,68 +78,100 @@ logged workout session. It is:
 
 The score is composed of three pillars plus two bonuses:
 
-| Pillar        | Weight    | Source                                                  |
-| ------------- | --------- | ------------------------------------------------------- |
-| **Strength**  | 35%       | Normalised e1RM from strength exercises                 |
-| **Endurance** | 35%       | Normalised pace or cal/min from cardio exercises        |
-| **Engine**    | 30%       | Normalised total weighted-reps from conditioning blocks |
-| Volume Bonus  | +0-20 pts | Total volume load (reps × weight)                       |
-| PR Bonus      | +0-10 pts | 5 pts per PR, capped at 10                              |
+| Pillar        | Weight    | Source                                                     |
+| ------------- | --------- | ---------------------------------------------------------- |
+| **Strength**  | 35%       | Normalised e1RM from exercises with weight data            |
+| **Endurance** | 35%       | Normalised pace or cal/min from exercises with cardio data |
+| **Engine**    | 30%       | Normalised work-units from conditioning blocks             |
+| Volume Bonus  | +0-50 pts | Total volume load (reps × weight), ~5% of max              |
+| PR Bonus      | +0-30 pts | 15 pts per PR, capped at 30, ~3% of max                    |
 
-**Total Score** = `(Strength × 0.35) + (Endurance × 0.35) + (Engine × 0.30) + volumeBonus + prBonus`, capped at 100.
+**Total Score** = `(Strength × 0.35) + (Endurance × 0.35) + (Engine × 0.30) + volumeBonus + prBonus`, capped at 1000.
 
-### 3.3 Block-type to pillar mapping
+### 3.3 Pillar determination — metric-driven, not category-driven
 
-| Block Type                                       | Primary Pillar |
-| ------------------------------------------------ | -------------- |
-| `STRENGTH`                                       | strength       |
-| `AMRAP`, `EMOM`, `FOR_TIME`, `TABATA`, `CHIPPER` | engine         |
-| `WARMUP`, `COOLDOWN`, `REST`, `SKILL`            | not scored     |
+Pillar contribution is determined by **exercise metrics**, not by
+exercise category. This avoids rigid assumptions about categories like
+CROSSFIT, BODYWEIGHT or OTHER:
 
-Within engine blocks, exercises also contribute to strength or endurance
-if they have weight/distance metrics.
+| Exercise has…             | Contributes to | Regardless of block type |
+| ------------------------- | -------------- | ------------------------ |
+| Weight data (`hasWeight`) | **Strength**   | ✅                       |
+| Distance / calories data  | **Endurance**  | ✅                       |
+| Reps in an engine block   | **Engine**     | Engine blocks only       |
+
+Block type serves as a **hint**:
+
+- `WARMUP`, `REST`, `COOLDOWN`, `SKILL` → not scored
+- `STRENGTH` → scored, but exercises contribute to their natural pillar
+- `AMRAP`, `EMOM`, `FOR_TIME`, `TABATA`, `CHIPPER` → engine blocks
+
+This means a weighted exercise in an AMRAP block contributes to **both**
+strength (via e1RM) and engine (via work-units).
 
 ### 3.4 Normalization
 
-All raw values are normalised to 0-100 using a **diminishing-returns
+All raw values are normalised to 0-1000 using a **diminishing-returns
 exponential curve**:
 
 ```
-score = 100 × (1 − e^(−k × x))
+score = 1000 × (1 − e^(−k × x))
 ```
 
-where `k` is calibrated so that the reference value maps to score ≈ 70.
+where `k` is calibrated so that the reference value maps to score ≈ 700.
 
-| Metric                 | Reference value (≈ 70 score) |
-| ---------------------- | ---------------------------- |
-| Strength (e1RM)        | 100 kg                       |
-| Endurance (pace)       | 300 s/km (5:00/km)           |
-| Engine (weighted reps) | 100                          |
-| Volume load            | 5 000 kg                     |
-| Endurance (cal/min)    | 10 cal/min                   |
+| Metric              | Reference value (≈ 700 score) | Note                                     |
+| ------------------- | ----------------------------- | ---------------------------------------- |
+| Strength (e1RM)     | 100 kg                        | Global default; per-exercise overridable |
+| Endurance (pace)    | 300 s/km (5:00/km)            |                                          |
+| Engine (work-units) | 150                           | = Σ(reps × effortMultiplier × density)   |
+| Volume load         | 5 000 kg                      |                                          |
+| Endurance (cal/min) | 10 cal/min                    |                                          |
 
-This approach:
+`normalizeStrength` accepts an optional `ref` parameter so that
+per-exercise or per-exercise-family references can be used in future.
 
-- Rewards improvement at all levels
-- Prevents extreme values from dominating
-- Is maintainable via a constants file (`lib/scoring/constants.ts`)
-
-### 3.5 Effort multiplier
+### 3.5 Effort multiplier — light modifier
 
 Each exercise has an `effortScore` (1-10). This is converted to a
-multiplier (0.2 – 2.0) that scales how much the exercise contributes to
-its pillar. Higher-effort exercises (e.g. heavy deadlifts) earn more
-credit than low-effort ones (e.g. bicep curls).
+**light** multiplier (0.8 – 1.2) that tilts how much the exercise
+contributes without being a primary scoring driver:
 
-### 3.6 Highlights
+- effort 1 → 0.8 (80% of raw contribution)
+- effort 5 → 1.0 (neutral)
+- effort 10 → 1.2 (120% of raw contribution)
+
+### 3.6 Engine — work-units with density
+
+Engine scoring uses **work-units** instead of raw reps:
+
+```
+work_units = Σ(min(reps, 500) × effortMultiplier) × densityFactor
+```
+
+- **Per-exercise rep cap** (500): prevents a single exercise from dominating
+- **Density factor**: if the block has a `completedTime` or `timeCap`,
+  work-units are scaled by `(refMinutes / actualMinutes)`, capped at 2.0.
+  This rewards faster completion of conditioning blocks.
+
+### 3.7 Anti-outlier protections
+
+| Protection                   | Value  | Purpose                             |
+| ---------------------------- | ------ | ----------------------------------- |
+| e1RM cap (`MAX_E1RM_KG_CAP`) | 500 kg | Protects against data-entry errors  |
+| Per-exercise engine rep cap  | 500    | Prevents single exercise domination |
+| Density factor cap           | 2.0    | Prevents fast-time explosion        |
+| Diminishing returns curve    | —      | Naturally caps extreme raw values   |
+
+### 3.8 Highlights
 
 The score result includes an array of human-readable highlights:
 
-- "High strength contribution" (strength ≥ 70)
-- "Strong endurance performance" (endurance ≥ 70)
-- "Great engine output" (engine ≥ 70)
+- "High strength contribution" (strength ≥ 700)
+- "Strong endurance performance" (endurance ≥ 700)
+- "Great engine output" (engine ≥ 700)
 - "PR bonus applied (+N)"
-- "High volume session" (volume bonus ≥ 10)
+- "High volume session" (volume bonus ≥ 25)
 - "No scored exercises recorded" (total = 0)
 
 ---
@@ -194,9 +236,30 @@ is independently calculated and weighted.
 
 ---
 
-## 5. Data Model
+## 5. Score Versioning
 
-### 5.1 WorkoutScore (new model)
+Workout Score and Hybrid Score have **independent** version numbers:
+
+| Score         | Version constant        | Current |
+| ------------- | ----------------------- | ------- |
+| Workout Score | `WORKOUT_SCORE_VERSION` | 1       |
+| Hybrid Score  | `HYBRID_SCORE_VERSION`  | 1       |
+
+When either formula changes:
+
+1. Bump the corresponding version constant in `lib/scoring/constants.ts`
+2. The new version is stored with newly calculated scores
+3. Existing scores retain their old version
+4. A migration script can optionally recalculate old scores
+
+Posts use **score snapshots** that are frozen at creation time, so they
+are not affected by formula changes.
+
+---
+
+## 6. Data Model
+
+### 6.1 WorkoutScore (new model)
 
 Stores the computed score for each workout log.
 
@@ -205,19 +268,17 @@ Stores the computed score for each workout log.
 | `id`             | String (cuid)   | Primary key                   |
 | `workoutLogId`   | String (unique) | FK to `WorkoutLog`            |
 | `userId`         | String          | FK to `User`                  |
-| `totalScore`     | Int             | 0-100                         |
-| `strengthScore`  | Int             | 0-100                         |
-| `enduranceScore` | Int             | 0-100                         |
-| `engineScore`    | Int             | 0-100                         |
-| `volumeBonus`    | Int             | 0-20                          |
-| `prBonus`        | Int             | 0-10                          |
+| `totalScore`     | Int             | 0-1000                        |
+| `strengthScore`  | Int             | 0-1000                        |
+| `enduranceScore` | Int             | 0-1000                        |
+| `engineScore`    | Int             | 0-1000                        |
+| `volumeBonus`    | Int             | 0-50                          |
+| `prBonus`        | Int             | 0-30                          |
 | `scoreVersion`   | Int             | Algorithm version             |
 | `highlights`     | String[]        | Human-readable explanations   |
 | `calculatedAt`   | DateTime        | When the score was calculated |
 
-Relationship: `WorkoutLog` 1:1 `WorkoutScore`.
-
-### 5.2 UserHybridScore (new model)
+### 6.2 UserHybridScore (new model)
 
 Stores the latest hybrid score for a user.
 
@@ -225,17 +286,15 @@ Stores the latest hybrid score for a user.
 | ---------------- | --------------- | ---------------------- |
 | `id`             | String (cuid)   | Primary key            |
 | `userId`         | String (unique) | FK to `User`           |
-| `totalScore`     | Int             | 0-100                  |
-| `strengthScore`  | Int             | 0-100                  |
-| `enduranceScore` | Int             | 0-100                  |
-| `engineScore`    | Int             | 0-100                  |
+| `totalScore`     | Int             | 0-1000                 |
+| `strengthScore`  | Int             | 0-1000                 |
+| `enduranceScore` | Int             | 0-1000                 |
+| `engineScore`    | Int             | 0-1000                 |
 | `confidence`     | String          | LOW / MEDIUM / HIGH    |
 | `scoreVersion`   | Int             | Algorithm version      |
 | `calculatedAt`   | DateTime        | When last recalculated |
 
-Relationship: `User` 1:1 `UserHybridScore`.
-
-### 5.3 Post extensions
+### 6.3 Post extensions
 
 Three new fields on the `Post` model:
 
@@ -250,7 +309,7 @@ scoring algorithm changes in a future version.
 
 ---
 
-## 6. What Is Reused from Existing Code
+## 7. What Is Reused from Existing Code
 
 ### Reused as-is
 
@@ -259,10 +318,14 @@ scoring algorithm changes in a future version.
 | `calculateE1rm` (Epley formula) | `lib/performance/scoring.ts` | Re-implemented in `lib/scoring/normalizers.ts` for independence |
 | `isPR` detection                | Workout log creation         | Used to count PRs for PR bonus                                  |
 | Exercise measurement flags      | `Exercise` model             | `hasReps`, `hasWeight`, `hasDistance`, etc.                     |
-| `effortScore` per exercise      | `Exercise` model             | Powers the effort multiplier                                    |
-| `ExerciseCategory` enum         | Prisma schema                | Maps exercises to strength/endurance                            |
-| `WorkoutBlockType` enum         | Prisma schema                | Maps blocks to scoring pillars                                  |
+| `WorkoutBlockType` enum         | Prisma schema                | Maps blocks to scoring contexts (engine vs non-engine)          |
 | Unit conversion utilities       | `types/workout.ts`           | `convertWeight`, `convertDistance`                              |
+
+### Reused as light modifier
+
+| Item          | Change                                                     |
+| ------------- | ---------------------------------------------------------- |
+| `effortScore` | Used as a 0.8-1.2 multiplier, not a primary scoring driver |
 
 ### Reused with small changes
 
@@ -278,15 +341,21 @@ scoring algorithm changes in a future version.
 | `qualityScore`     | Internal plausibility metric, not meaningful to users   |
 | `predictionWeight` | Internal prediction confidence, not meaningful to users |
 
+### NOT used for pillar determination
+
+| Item               | Reason                                                                        |
+| ------------------ | ----------------------------------------------------------------------------- |
+| `ExerciseCategory` | Too rigid — CROSSFIT, BODYWEIGHT, OTHER cannot always be mapped to one pillar |
+
 ---
 
-## 7. Code Organisation
+## 8. Code Organisation
 
 ```
 lib/scoring/
 ├── index.ts          # Barrel export
 ├── types.ts          # Type definitions
-├── constants.ts      # Tunable constants and reference values
+├── constants.ts      # Tunable constants, version numbers, anti-outlier caps
 ├── normalizers.ts    # Pure normalisation functions
 ├── workout-score.ts  # Workout Score calculator
 └── hybrid-score.ts   # Hybrid Score calculator
@@ -302,7 +371,7 @@ the calculators. This keeps the scoring layer:
 
 ---
 
-## 8. API Surface (Planned)
+## 9. API Surface (Planned)
 
 These APIs are **designed** but not yet implemented. They describe the
 intended contract for frontend consumption.
@@ -338,26 +407,10 @@ POST /api/posts
   workoutLogId: "...",
   content: "...",
   imageUrl: "...",
-  scoreSnapshot: 78,
-  scoreBreakdown: { strength: 80, endurance: 60, engine: 85, volumeBonus: 12, prBonus: 5 }
+  scoreSnapshot: 780,
+  scoreBreakdown: { strength: 820, endurance: 600, engine: 850, volumeBonus: 30, prBonus: 15 }
 }
 ```
-
----
-
-## 9. Score Versioning Strategy
-
-Every score output includes a `version` field (currently `1`).
-
-When the formula changes:
-
-1. Bump `SCORE_VERSION` in `lib/scoring/types.ts`
-2. The new version is stored with newly calculated scores
-3. Existing scores retain their old version
-4. A migration script can optionally recalculate old scores
-
-Posts use **score snapshots** that are frozen at creation time, so they
-are not affected by formula changes.
 
 ---
 
@@ -366,12 +419,19 @@ are not affected by formula changes.
 ### Phase 1 (this implementation)
 
 - ✅ Score architecture and type system
+- ✅ 0-1000 scale for granularity
+- ✅ Metric-driven pillar determination (no category rigidity)
+- ✅ Light effort multiplier (0.8-1.2)
+- ✅ Engine work-units with density and per-exercise caps
+- ✅ Anti-outlier protections (e1RM cap, rep cap, density cap)
+- ✅ Per-exercise overridable strength reference
+- ✅ Separate version constants for workout and hybrid scores
 - ✅ Normalization with reference-based curves
 - ✅ Workout Score calculation (pure functions)
 - ✅ Hybrid Score calculation (pure functions)
 - ✅ Prisma models for persistence
 - ✅ Post model extended for score snapshots
-- ✅ 84 unit tests
+- ✅ 90 unit tests
 - ✅ Design documentation
 
 ### Phase 2 (future)
@@ -379,6 +439,7 @@ are not affected by formula changes.
 - API route implementation
 - Score computation on workout log save
 - Hybrid Score recalculation (cron or on-demand)
+- Per-exercise or per-exercise-family strength references
 - Frontend score display components
 - Feed integration with score cards
 - Score label / badge system
@@ -390,13 +451,13 @@ are not affected by formula changes.
 - Rankings / leaderboards
 - Challenge system
 - Per-sport scoring variants
+- Gender/age-adjusted normalization
 
 ### Known limitations
 
-- Reference values are sensible defaults but not data-driven yet
-- Engine pillar uses weighted reps; future versions may use work capacity models
-- Normalization curves are the same for all users; future versions may support gender/age adjustments
+- Strength reference is a global default (100 kg); per-exercise refs are supported in the API but need reference tables
 - Imperial unit conversion should happen before calling the calculators (the API layer is responsible)
+- Engine density uses reference time of 15 minutes; may need sport-specific tuning
 
 ---
 

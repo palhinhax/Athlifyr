@@ -1,9 +1,17 @@
 /**
  * Workout Score Calculator
  *
- * Computes a product-facing score (0-100) for a single logged workout.
+ * Computes a product-facing score (0-1000) for a single logged workout.
  * The score has three pillars — Strength, Endurance, Engine — plus
  * bonus points for volume and personal records.
+ *
+ * Pillar determination is **metric-driven**:
+ *   - Exercises with weight data → strength
+ *   - Exercises with distance/calorie data → endurance
+ *   - Exercises with reps in engine-type blocks → engine
+ *
+ * Block type is a default hint (not final truth) used to identify
+ * engine/conditioning blocks and to skip non-scoring blocks.
  *
  * This module is a pure function layer with no database dependencies.
  * Data should be mapped to the input types before calling `calculateWorkoutScore`.
@@ -11,13 +19,17 @@
 
 import {
   BLOCK_TYPE_PILLAR,
-  CATEGORY_PILLAR,
+  ENGINE_DENSITY_REF_MINUTES,
+  ENGINE_MAX_DENSITY_FACTOR,
+  MAX_E1RM_KG_CAP,
+  MAX_ENGINE_REPS_PER_EXERCISE,
   MAX_PR_BONUS,
   MAX_VOLUME_BONUS,
   PR_BONUS_PER_PR,
   SCORE_MAX,
   SCORE_MIN,
   WORKOUT_PILLAR_WEIGHTS,
+  WORKOUT_SCORE_VERSION,
 } from "./constants";
 import {
   calculateE1rm,
@@ -34,7 +46,6 @@ import type {
   WorkoutLogInput,
   WorkoutScoreResult,
 } from "./types";
-import { SCORE_VERSION } from "./types";
 
 // ─── Internal Accumulators ──────────────────────────────────────────────────
 
@@ -68,31 +79,35 @@ export function calculateWorkoutScore(
   const highlights: string[] = [];
   const strengthAcc = emptyAccumulator();
   const enduranceAcc = emptyAccumulator();
-  const engineAcc = emptyAccumulator();
+  let engineWorkUnits = 0;
+  let hasEngineData = false;
   let totalVolumeLoad = 0;
   let prCount = 0;
 
   for (const block of input.blockResults) {
-    const pillar = BLOCK_TYPE_PILLAR[block.blockType] ?? null;
+    const blockHint = BLOCK_TYPE_PILLAR[block.blockType] ?? null;
 
     // Skip non-scoring blocks
-    if (pillar === null) continue;
+    if (blockHint === null) continue;
+
+    const isEngineBlock = blockHint === "engine";
 
     for (const ex of block.exerciseResults) {
       const effort = effortMultiplier(ex.effortScore);
 
-      // ── Strength contribution ────────────────────────────────────
-      if (pillar === "strength" || isStrengthExercise(ex)) {
+      // ── Strength: any exercise with weight data ──────────────────
+      if (hasStrengthData(ex)) {
         const e1rm = bestE1rmFromResult(ex);
         if (e1rm > 0) {
-          const norm = normalizeStrength(e1rm);
+          const cappedE1rm = Math.min(e1rm, MAX_E1RM_KG_CAP);
+          const norm = normalizeStrength(cappedE1rm);
           strengthAcc.weightedSum += norm * effort;
           strengthAcc.totalWeight += effort;
         }
       }
 
-      // ── Endurance contribution ───────────────────────────────────
-      if (isEnduranceExercise(ex)) {
+      // ── Endurance: any exercise with distance/calorie data ───────
+      if (hasEnduranceData(ex)) {
         const endScore = scoreEnduranceExercise(ex);
         if (endScore > 0) {
           enduranceAcc.weightedSum += endScore * effort;
@@ -100,29 +115,37 @@ export function calculateWorkoutScore(
         }
       }
 
-      // ── Engine contribution (from engine blocks) ─────────────────
-      if (pillar === "engine") {
+      // ── Engine: reps from exercises in engine blocks ─────────────
+      if (isEngineBlock) {
         const reps = effectiveReps(ex);
-        const weighted = reps * effort;
-        engineAcc.weightedSum += weighted;
-        // For engine we accumulate raw weighted reps, then normalise once
-        engineAcc.totalWeight = 1; // sentinel to indicate data present
+        const cappedReps = Math.min(reps, MAX_ENGINE_REPS_PER_EXERCISE);
+        engineWorkUnits += cappedReps * effort;
+        hasEngineData = true;
       }
 
-      // ── Volume load ──────────────────────────────────────────────
+      // ── Volume load (from any scored block) ──────────────────────
       totalVolumeLoad += volumeLoad(ex);
 
       // ── PR counting ──────────────────────────────────────────────
       prCount += countPRs(ex);
     }
+
+    // ── Engine density: if block has time context, reward faster work ──
+    if (isEngineBlock && hasEngineData) {
+      const blockTime = block.completedTime ?? block.timeCap ?? null;
+      if (blockTime != null && blockTime > 0) {
+        const minutes = blockTime / 60;
+        const density = ENGINE_DENSITY_REF_MINUTES / Math.max(minutes, 1);
+        const cappedDensity = Math.min(density, ENGINE_MAX_DENSITY_FACTOR);
+        engineWorkUnits *= cappedDensity;
+      }
+    }
   }
 
   // ── Normalise engine pillar ────────────────────────────────────────────
-  // Engine accumulator holds raw weighted reps; normalise them now.
-  const engineRawScore =
-    engineAcc.totalWeight > 0 ? normalizeEngine(engineAcc.weightedSum) : 0;
+  const engineRawScore = hasEngineData ? normalizeEngine(engineWorkUnits) : 0;
 
-  // ── Pillar averages (0-100) ────────────────────────────────────────────
+  // ── Pillar averages (0-1000) ───────────────────────────────────────────
   const strengthScore = clamp(
     Math.round(pillarAverage(strengthAcc) * 10) / 10,
     SCORE_MIN,
@@ -149,8 +172,8 @@ export function calculateWorkoutScore(
     enduranceScore * WORKOUT_PILLAR_WEIGHTS.endurance +
     engineScore * WORKOUT_PILLAR_WEIGHTS.engine;
 
-  // Pillar total is 0-100 (since each pillar is 0-100 and weights sum to 1).
-  // Add bonuses on top, then cap at 100.
+  // Pillar total is 0-1000 (since each pillar is 0-1000 and weights sum to 1).
+  // Add bonuses on top, then cap at 1000.
   const rawTotal = pillarTotal + volumeBonus + prBonus;
   const totalScore = clamp(
     Math.round(rawTotal * 10) / 10,
@@ -159,15 +182,15 @@ export function calculateWorkoutScore(
   );
 
   // ── Highlights ─────────────────────────────────────────────────────────
-  if (strengthScore >= 70) highlights.push("High strength contribution");
-  if (enduranceScore >= 70) highlights.push("Strong endurance performance");
-  if (engineScore >= 70) highlights.push("Great engine output");
+  if (strengthScore >= 700) highlights.push("High strength contribution");
+  if (enduranceScore >= 700) highlights.push("Strong endurance performance");
+  if (engineScore >= 700) highlights.push("Great engine output");
   if (prBonus > 0) highlights.push(`PR bonus applied (+${prBonus})`);
-  if (volumeBonus >= 10) highlights.push("High volume session");
+  if (volumeBonus >= 25) highlights.push("High volume session");
   if (totalScore === 0) highlights.push("No scored exercises recorded");
 
   return {
-    version: SCORE_VERSION,
+    version: WORKOUT_SCORE_VERSION,
     totalScore,
     breakdown: {
       strength: strengthScore,
@@ -183,20 +206,25 @@ export function calculateWorkoutScore(
 
 // ─── Private Helpers ────────────────────────────────────────────────────────
 
-function isStrengthExercise(ex: ExerciseResultInput): boolean {
-  return ex.hasWeight && CATEGORY_PILLAR[ex.category] === "strength";
+/**
+ * Does this exercise have strength-relevant data (weight)?
+ * Metric-driven — no category mapping.
+ */
+function hasStrengthData(ex: ExerciseResultInput): boolean {
+  return ex.hasWeight;
 }
 
-function isEnduranceExercise(ex: ExerciseResultInput): boolean {
-  return (
-    ex.hasDistance ||
-    ex.hasCalories ||
-    (ex.hasTime && CATEGORY_PILLAR[ex.category] === "endurance")
-  );
+/**
+ * Does this exercise have endurance-relevant data (distance or calories)?
+ * Metric-driven — no category mapping.
+ */
+function hasEnduranceData(ex: ExerciseResultInput): boolean {
+  return ex.hasDistance || ex.hasCalories;
 }
 
 /**
  * Best e1RM from either individual sets or the summary result.
+ * Capped at MAX_E1RM_KG_CAP to protect against data-entry errors.
  */
 function bestE1rmFromResult(ex: ExerciseResultInput): number {
   let best = 0;
@@ -217,7 +245,7 @@ function bestE1rmFromResult(ex: ExerciseResultInput): number {
     best = calculateE1rm(ex.actualWeightKg, ex.actualReps);
   }
 
-  return best;
+  return Math.min(best, MAX_E1RM_KG_CAP);
 }
 
 /**

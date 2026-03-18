@@ -3,7 +3,7 @@ import type {
   PerformanceHistoryEntry,
   WorkoutScoreHistoryEntry,
 } from "@/lib/scoring/types";
-import { SCORE_VERSION } from "@/lib/scoring/types";
+import { HYBRID_SCORE_VERSION } from "@/lib/scoring/constants";
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -17,11 +17,11 @@ function makeWorkoutScore(
   overrides: Partial<WorkoutScoreHistoryEntry> = {}
 ): WorkoutScoreHistoryEntry {
   return {
-    totalScore: 50,
+    totalScore: 500,
     breakdown: {
-      strength: 50,
-      endurance: 50,
-      engine: 50,
+      strength: 500,
+      endurance: 500,
+      engine: 500,
       volumeBonus: 0,
       prBonus: 0,
     },
@@ -47,7 +47,7 @@ function makePerformanceEntry(
 describe("calculateHybridScore — output shape", () => {
   it("returns correct version", () => {
     const result = calculateHybridScore([], [], NOW);
-    expect(result.version).toBe(SCORE_VERSION);
+    expect(result.version).toBe(HYBRID_SCORE_VERSION);
   });
 
   it("returns all breakdown fields", () => {
@@ -102,7 +102,7 @@ describe("calculateHybridScore — edge cases", () => {
           breakdown: {
             strength: 0,
             endurance: 0,
-            engine: 80,
+            engine: 800,
             volumeBonus: 0,
             prBonus: 0,
           },
@@ -306,10 +306,10 @@ describe("calculateHybridScore — engine pillar", () => {
       [
         makeWorkoutScore({
           breakdown: {
-            strength: 50,
-            endurance: 30,
-            engine: 75,
-            volumeBonus: 5,
+            strength: 500,
+            endurance: 300,
+            engine: 750,
+            volumeBonus: 25,
             prBonus: 0,
           },
           performedAt: daysAgo(2),
@@ -326,11 +326,11 @@ describe("calculateHybridScore — engine pillar", () => {
       [
         makeWorkoutScore({
           breakdown: {
-            strength: 80,
+            strength: 800,
             endurance: 0,
             engine: 0,
-            volumeBonus: 10,
-            prBonus: 5,
+            volumeBonus: 25,
+            prBonus: 15,
           },
           performedAt: daysAgo(2),
         }),
@@ -394,17 +394,17 @@ describe("calculateHybridScore — confidence", () => {
 // ============================================================================
 
 describe("calculateHybridScore — total", () => {
-  it("stays within 0-100", () => {
+  it("stays within 0-1000", () => {
     const result = calculateHybridScore(
       Array.from({ length: 20 }, (_, i) =>
         makeWorkoutScore({
-          totalScore: 100,
+          totalScore: 1000,
           breakdown: {
-            strength: 100,
-            endurance: 100,
-            engine: 100,
-            volumeBonus: 20,
-            prBonus: 10,
+            strength: 1000,
+            endurance: 1000,
+            engine: 1000,
+            volumeBonus: 50,
+            prBonus: 30,
           },
           performedAt: daysAgo(i + 1),
         })
@@ -419,7 +419,7 @@ describe("calculateHybridScore — total", () => {
       ),
       NOW
     );
-    expect(result.totalScore).toBeLessThanOrEqual(100);
+    expect(result.totalScore).toBeLessThanOrEqual(1000);
     expect(result.totalScore).toBeGreaterThanOrEqual(0);
   });
 
@@ -430,7 +430,7 @@ describe("calculateHybridScore — total", () => {
           breakdown: {
             strength: 0,
             endurance: 0,
-            engine: 80,
+            engine: 800,
             volumeBonus: 0,
             prBonus: 0,
           },

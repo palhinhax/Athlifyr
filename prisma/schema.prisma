@@ -121,6 +121,10 @@ model User {
   creditWallet          CreditWallet?
   creditTransactions    CreditTransaction[]
 
+  // Scoring
+  workoutScores    WorkoutScore[]    @relation("UserWorkoutScores")
+  hybridScore      UserHybridScore?
+
   @@index([email])
   @@index([name])
 }
@@ -690,6 +694,11 @@ model Post {
   workoutId  String? // Reference to workout for WOD posts
   sessionId  String? // Reference to venue session (optional context)
   postType   PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
+  // Score snapshot — frozen at post-creation time so it is stable even
+  // if the scoring algorithm changes later.
+  workoutLogId      String? // Link to the workout log (for WOD / ACHIEVEMENT posts)
+  scoreSnapshot     Int?    // Frozen total workout score at time of post
+  scoreBreakdown    Json?   @db.JsonB // Frozen WorkoutScoreBreakdown
   event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
@@ -2152,6 +2161,7 @@ model WorkoutLog {
   workout      Workout              @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   session      VenueSession?        @relation(fields: [sessionId], references: [id])
   blockResults WorkoutBlockResult[]
+  score        WorkoutScore?
 
   @@index([userId, performedAt])
   @@index([workoutId])
@@ -2226,6 +2236,70 @@ model WorkoutExerciseSet {
   performanceEntry UserPerformanceEntry? @relation("SetPerformance")
 
   @@index([exerciseResultId])
+}
+
+// ============================================================================
+// WORKOUT SCORE (Product-facing score per workout log)
+// ============================================================================
+
+model WorkoutScore {
+  id           String @id @default(cuid())
+  workoutLogId String @unique
+  userId       String
+
+  // Composite score (0-100)
+  totalScore Int // Stored as integer (0-100)
+
+  // Breakdown by pillar (0-100 each)
+  strengthScore  Int @default(0)
+  enduranceScore Int @default(0)
+  engineScore    Int @default(0)
+  volumeBonus    Int @default(0)
+  prBonus        Int @default(0)
+
+  // Metadata
+  scoreVersion Int      @default(1)
+  highlights   String[] @default([])
+  calculatedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workoutLog WorkoutLog @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  user       User       @relation("UserWorkoutScores", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, calculatedAt])
+  @@index([workoutLogId])
+}
+
+// ============================================================================
+// USER HYBRID SCORE (Aggregated user-level athletic score)
+// ============================================================================
+
+model UserHybridScore {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Composite score (0-100)
+  totalScore Int // Stored as integer (0-100)
+
+  // Breakdown by pillar (0-100 each)
+  strengthScore  Int @default(0)
+  enduranceScore Int @default(0)
+  engineScore    Int @default(0)
+
+  // Metadata
+  confidence   String @default("LOW") // LOW, MEDIUM, HIGH
+  scoreVersion Int    @default(1)
+  calculatedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([totalScore])
 }
 
 // ============================================================================

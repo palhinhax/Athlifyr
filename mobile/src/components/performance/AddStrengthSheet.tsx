@@ -29,6 +29,8 @@ interface Exercise {
   isGlobal: boolean;
 }
 
+const noop = () => {};
+
 interface AddStrengthSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -186,7 +188,7 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <Pressable style={styles.backdropPressable} onPress={onClose}>
-          <Pressable style={styles.card} onPress={() => {}}>
+          <Pressable style={styles.card} onPress={noop}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>

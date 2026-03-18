@@ -23,6 +23,8 @@ import {
   type CreateRunEntry,
 } from "@/src/hooks/usePerformance";
 
+const noop = () => {};
+
 interface AddRunSheetProps {
   visible: boolean;
   onClose: () => void;
@@ -100,7 +102,7 @@ export function AddRunSheet({
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
         <Pressable style={styles.backdropPressable} onPress={onClose}>
-          <Pressable style={styles.card} onPress={() => {}}>
+          <Pressable style={styles.card} onPress={noop}>
             {/* Header */}
             <View style={styles.header}>
               <Text style={styles.title}>

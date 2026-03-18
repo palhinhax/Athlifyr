@@ -740,12 +740,13 @@ The `lib/athli-ai.ts` AI assistant can create performance entries with default s
 |----------|-------|
 | **Type** | RUN |
 | **Input** | distanceKm = 10, timeSeconds = 1500 (2:30/km pace) |
-| **qualityScore** | `computeRunQualityScore(10, 1500) = 0.2` (pace 150 sec/km < 120 threshold → actually returns 1.0 for pace between 180-480 — wait, 150 < 180, but ≥ 120, so neither impossibly fast nor in normal range) |
+| **Pace** | `1500 / 10 = 150 sec/km` |
+| **qualityScore** | `computeRunQualityScore(10, 1500) = 0.5` — pace 150 sec/km is above the 120 "impossibly fast" threshold but below the 180–480 "normal" range, so it falls through all conditions to the default `return 0.5` |
 | **Median pace** | Assume median from history = 300 sec/km (5:00/km) |
 | **Current pace** | 150 sec/km |
 | **Deviation** | `|150 - 300| / 300 = 50%` → multiplier = 0.3 (severe outlier) |
-| **predictionWeight** | `quality × recency × 0.3 ≈ very low` |
-| **Source code** | `lib/performance/scoring.ts:134–146` (outlier detection) |
+| **predictionWeight** | `0.5 × 1.0 (today) × 0.3 (outlier) = 0.15` |
+| **Source code** | `lib/performance/scoring.ts:53–88` (quality), `lib/performance/scoring.ts:134–146` (outlier detection) |
 
 ### Example 6: HYROX Entry — OPEN_MEN 1:15:00
 

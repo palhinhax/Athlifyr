@@ -706,8 +706,8 @@
       "totalSets": "Total Sets",
       "exercisesTracked": "Exercises Tracked"
     },
-    "Hybrid": {
-      "addTitle": "Add Hybrid Race",
+    "hyrox": {
+      "addTitle": "Add HYROX Race",
       "category": "Category",
       "selectCategory": "Select category",
       "time": "Finish Time",

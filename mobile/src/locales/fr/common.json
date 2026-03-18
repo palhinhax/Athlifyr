@@ -706,7 +706,7 @@
       "totalSets": "Total de Séries",
       "exercisesTracked": "Exercices Suivis"
     },
-    "Hybrid": {
+    "hyrox": {
       "addTitle": "Ajouter une Course HYROX",
       "category": "Catégorie",
       "selectCategory": "Sélectionnez la catégorie",

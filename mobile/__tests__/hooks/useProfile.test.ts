@@ -1,7 +1,8 @@
 import type { ProfileParticipation } from "@/src/hooks/useProfile";
 
-// Test the data filtering logic that useProfile applies to participations.
-// We test the filter functions directly since mocking react-query is complex.
+// These filter functions replicate the logic in useProfile to test the
+// business rules in isolation, without needing to mock react-query.
+// If useProfile's filtering logic changes, these tests should be updated.
 
 function filterUpcomingEvents(
   participations: ProfileParticipation[],
@@ -24,7 +25,7 @@ function filterPastEvents(
 const makeParticipation = (
   id: string,
   startDate: string,
-  status: string = "going"
+  status: "going" | "cancelled" | "interested" = "going"
 ): ProfileParticipation => ({
   id,
   status,

@@ -70,7 +70,7 @@ describe("ProfileHeader", () => {
   it("handles null user name gracefully", () => {
     const userWithoutName = {
       ...mockUser,
-      name: null,
+      name: null as string | null,
     };
 
     render(<ProfileHeader user={userWithoutName} />);

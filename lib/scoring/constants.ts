@@ -139,6 +139,20 @@ export const ENGINE_DENSITY_REF_MINUTES = 15;
 /** Maximum density multiplier to prevent extremely fast completions from exploding. */
 export const ENGINE_MAX_DENSITY_FACTOR = 2.0;
 
+/**
+ * Minimum block duration (seconds) required for the density factor to apply.
+ * Blocks shorter than this threshold use a density of 1.0 to avoid
+ * over-rewarding very short efforts (e.g. 10 burpees in 30 seconds).
+ */
+export const ENGINE_MIN_DENSITY_DURATION_SEC = 120;
+
+/**
+ * Maximum engine work-units a single block can contribute.
+ * Prevents one large conditioning block from dominating the engine pillar.
+ * Roughly calibrated at ~2× the reference work-units.
+ */
+export const MAX_ENGINE_WORK_UNITS_PER_BLOCK = 300;
+
 // ─── Effort Modifier ───────────────────────────────────────────────────────
 
 /**

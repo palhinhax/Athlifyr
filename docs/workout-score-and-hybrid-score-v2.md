@@ -146,22 +146,28 @@ contributes without being a primary scoring driver:
 Engine scoring uses **work-units** instead of raw reps:
 
 ```
-work_units = Σ(min(reps, 500) × effortMultiplier) × densityFactor
+block_work_units = min(Σ(min(reps, 500) × effortMultiplier) × densityFactor, 300)
+total_work_units = Σ block_work_units across engine blocks
 ```
 
 - **Per-exercise rep cap** (500): prevents a single exercise from dominating
-- **Density factor**: if the block has a `completedTime` or `timeCap`,
+- **Density factor**: if the block has a `completedTime` or `timeCap` **≥ 2 minutes**,
   work-units are scaled by `(refMinutes / actualMinutes)`, capped at 2.0.
-  This rewards faster completion of conditioning blocks.
+  Blocks shorter than 2 minutes do not receive a density bonus to avoid
+  over-rewarding very short efforts (e.g. 10 burpees in 30 seconds).
+- **Per-block cap** (300 work-units): prevents a single large conditioning block
+  from dominating the engine pillar. Rewards variety across multiple blocks.
 
 ### 3.7 Anti-outlier protections
 
-| Protection                   | Value  | Purpose                             |
-| ---------------------------- | ------ | ----------------------------------- |
-| e1RM cap (`MAX_E1RM_KG_CAP`) | 500 kg | Protects against data-entry errors  |
-| Per-exercise engine rep cap  | 500    | Prevents single exercise domination |
-| Density factor cap           | 2.0    | Prevents fast-time explosion        |
-| Diminishing returns curve    | —      | Naturally caps extreme raw values   |
+| Protection                      | Value   | Purpose                              |
+| ------------------------------- | ------- | ------------------------------------ |
+| e1RM cap (`MAX_E1RM_KG_CAP`)    | 500 kg  | Protects against data-entry errors   |
+| Per-exercise engine rep cap     | 500     | Prevents single exercise domination  |
+| Density factor cap              | 2.0     | Prevents fast-time explosion         |
+| Density minimum duration        | 120 sec | Prevents over-rewarding short blocks |
+| Per-block engine work-units cap | 300     | Prevents single block domination     |
+| Diminishing returns curve       | —       | Naturally caps extreme raw values    |
 
 ### 3.8 Highlights
 
@@ -423,7 +429,7 @@ POST /api/posts
 - ✅ Metric-driven pillar determination (no category rigidity)
 - ✅ Light effort multiplier (0.8-1.2)
 - ✅ Engine work-units with density and per-exercise caps
-- ✅ Anti-outlier protections (e1RM cap, rep cap, density cap)
+- ✅ Anti-outlier protections (e1RM cap, rep cap, density cap, minimum duration, per-block cap)
 - ✅ Per-exercise overridable strength reference
 - ✅ Separate version constants for workout and hybrid scores
 - ✅ Normalization with reference-based curves
@@ -431,7 +437,10 @@ POST /api/posts
 - ✅ Hybrid Score calculation (pure functions)
 - ✅ Prisma models for persistence
 - ✅ Post model extended for score snapshots
-- ✅ 90 unit tests
+- ✅ Per-block engine cap (MAX_ENGINE_WORK_UNITS_PER_BLOCK = 300)
+- ✅ Minimum duration guard for density (ENGINE_MIN_DENSITY_DURATION_SEC = 120)
+- ✅ Realistic workout validation tests (mediocre/solid/elite bonus proportions)
+- ✅ 98 unit tests
 - ✅ Design documentation
 
 ### Phase 2 (future)
@@ -456,6 +465,7 @@ POST /api/posts
 ### Known limitations
 
 - Strength reference is a global default (100 kg); per-exercise refs are supported in the API but need reference tables
+- Endurance normalization is run-centric (pace + cal/min); future versions should add rowing, ski erg, bike-specific normalizers
 - Imperial unit conversion should happen before calling the calculators (the API layer is responsible)
 - Engine density uses reference time of 15 minutes; may need sport-specific tuning
 

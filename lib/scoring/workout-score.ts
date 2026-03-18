@@ -21,8 +21,10 @@ import {
   BLOCK_TYPE_PILLAR,
   ENGINE_DENSITY_REF_MINUTES,
   ENGINE_MAX_DENSITY_FACTOR,
+  ENGINE_MIN_DENSITY_DURATION_SEC,
   MAX_E1RM_KG_CAP,
   MAX_ENGINE_REPS_PER_EXERCISE,
+  MAX_ENGINE_WORK_UNITS_PER_BLOCK,
   MAX_PR_BONUS,
   MAX_VOLUME_BONUS,
   PR_BONUS_PER_PR,
@@ -129,16 +131,24 @@ export function calculateWorkoutScore(
       prCount += countPRs(ex);
     }
 
-    // ── Engine density: apply per-block, then add to cumulative total ──
+    // ── Engine density: apply per-block, then cap and add to cumulative total ──
     if (isEngineBlock && blockEngineWorkUnits > 0) {
       const blockTime = block.completedTime ?? block.timeCap ?? null;
-      if (blockTime != null && blockTime > 0) {
+      if (
+        blockTime != null &&
+        blockTime > 0 &&
+        blockTime >= ENGINE_MIN_DENSITY_DURATION_SEC
+      ) {
         const minutes = blockTime / 60;
         const density = ENGINE_DENSITY_REF_MINUTES / Math.max(minutes, 1);
         const cappedDensity = Math.min(density, ENGINE_MAX_DENSITY_FACTOR);
         blockEngineWorkUnits *= cappedDensity;
       }
-      engineWorkUnits += blockEngineWorkUnits;
+      // Cap per-block contribution to prevent a single block from dominating
+      engineWorkUnits += Math.min(
+        blockEngineWorkUnits,
+        MAX_ENGINE_WORK_UNITS_PER_BLOCK
+      );
       hasEngineData = true;
     }
   }

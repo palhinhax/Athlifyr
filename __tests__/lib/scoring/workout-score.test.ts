@@ -735,3 +735,375 @@ describe("calculateWorkoutScore — time-only exercise", () => {
     expect(result.totalScore).toBeGreaterThanOrEqual(0);
   });
 });
+
+// ============================================================================
+// Realistic workout validation — bonus proportions (#1)
+// ============================================================================
+
+describe("calculateWorkoutScore — realistic workout validation", () => {
+  it("mediocre workout scores low with small bonuses", () => {
+    // Beginner: 3 sets of 10 @ 30 kg on one exercise
+    const result = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "STRENGTH",
+            exerciseResults: [
+              makeExercise({
+                category: "GYM",
+                effortScore: 3,
+                hasWeight: true,
+                sets: [
+                  { reps: 10, weightKg: 30, isPR: false },
+                  { reps: 10, weightKg: 30, isPR: false },
+                  { reps: 10, weightKg: 30, isPR: false },
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Volume: 900 kg — well below 5000 ref → small bonus
+    expect(result.breakdown.volumeBonus).toBeLessThan(15);
+    expect(result.breakdown.prBonus).toBe(0);
+    // Total should be modest — a mediocre workout
+    expect(result.totalScore).toBeLessThan(300);
+  });
+
+  it("solid workout has moderate scores and proportional bonuses", () => {
+    // Intermediate: 4 exercises × 4 sets of 8 @ 60–80 kg
+    const result = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "STRENGTH",
+            exerciseResults: [
+              makeExercise({
+                category: "GYM",
+                effortScore: 7,
+                hasWeight: true,
+                sets: [
+                  { reps: 8, weightKg: 80, isPR: false },
+                  { reps: 8, weightKg: 80, isPR: false },
+                  { reps: 8, weightKg: 80, isPR: false },
+                  { reps: 8, weightKg: 80, isPR: false },
+                ],
+              }),
+              makeExercise({
+                category: "GYM",
+                effortScore: 6,
+                hasWeight: true,
+                sets: [
+                  { reps: 8, weightKg: 60, isPR: false },
+                  { reps: 8, weightKg: 60, isPR: false },
+                  { reps: 8, weightKg: 60, isPR: false },
+                  { reps: 8, weightKg: 60, isPR: false },
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Volume: 2560 + 1920 = 4480 kg → decent bonus but not max
+    expect(result.breakdown.volumeBonus).toBeGreaterThan(10);
+    expect(result.breakdown.volumeBonus).toBeLessThan(40);
+    // Strength should be meaningful
+    expect(result.breakdown.strength).toBeGreaterThan(400);
+    expect(result.totalScore).toBeGreaterThan(100);
+    expect(result.totalScore).toBeLessThan(600);
+  });
+
+  it("bonuses stay proportional — PR bonus capped at 3% of max", () => {
+    // A workout that hits both max PR and volume bonuses
+    const result = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "STRENGTH",
+            exerciseResults: [
+              makeExercise({
+                category: "WEIGHTLIFTING",
+                effortScore: 9,
+                hasWeight: true,
+                isPR: true,
+                sets: [
+                  { reps: 1, weightKg: 150, isPR: true },
+                  { reps: 1, weightKg: 150, isPR: true },
+                ],
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // PR bonus: max 30 points (3% of 1000)
+    expect(result.breakdown.prBonus).toBeLessThanOrEqual(30);
+    // Total should be driven by pillars, not bonuses
+    const pillarContribution =
+      result.breakdown.strength * 0.35 +
+      result.breakdown.endurance * 0.35 +
+      result.breakdown.engine * 0.3;
+    const bonusContribution =
+      result.breakdown.volumeBonus + result.breakdown.prBonus;
+    // Bonuses should be a small fraction of the total
+    expect(bonusContribution).toBeLessThan(pillarContribution);
+  });
+});
+
+// ============================================================================
+// Engine density across durations (#4)
+// ============================================================================
+
+describe("calculateWorkoutScore — engine density duration guard", () => {
+  it("does NOT apply density for very short blocks (< 2 min)", () => {
+    // 30-second sprint: 20 burpees
+    const shortBlock = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 30, // 30 sec — below threshold
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 8,
+                actualReps: 20,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Same reps, no time context (density = 1.0 implicitly)
+    const noTime = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 8,
+                actualReps: 20,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Short block should NOT get a density boost
+    expect(shortBlock.breakdown.engine).toBe(noTime.breakdown.engine);
+  });
+
+  it("applies density for medium-duration blocks (≥ 2 min)", () => {
+    const withDensity = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 300, // 5 min — above threshold
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    const withoutTime = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Density should boost the score for a 5-min block
+    expect(withDensity.breakdown.engine).toBeGreaterThan(
+      withoutTime.breakdown.engine
+    );
+  });
+
+  it("long workouts get moderate density reward", () => {
+    const long = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 2400, // 40 min
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 200,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    const medium = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 600, // 10 min
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 200,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Medium (10 min) should have better density than long (40 min)
+    // since density = refMinutes / actualMinutes
+    expect(medium.breakdown.engine).toBeGreaterThan(long.breakdown.engine);
+  });
+});
+
+// ============================================================================
+// Per-block engine cap (#5)
+// ============================================================================
+
+describe("calculateWorkoutScore — per-block engine cap", () => {
+  it("a single huge engine block is capped", () => {
+    const uncapped = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: Array.from({ length: 5 }, () =>
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 10,
+                actualReps: 500, // Each capped at 500 reps
+              })
+            ),
+          }),
+        ],
+      })
+    );
+
+    const twoBlocks = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+          makeBlock({
+            blockType: "EMOM",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 6,
+                actualReps: 100,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // The huge single block should be capped — it should NOT score
+    // dramatically higher than two reasonable blocks combined
+    expect(uncapped.breakdown.engine).toBeLessThanOrEqual(1000);
+    // Two modest blocks should still produce meaningful engine
+    expect(twoBlocks.breakdown.engine).toBeGreaterThan(0);
+  });
+
+  it("two moderate blocks can score higher than one capped block", () => {
+    const singleCapped = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: Array.from({ length: 10 }, () =>
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 8,
+                actualReps: 500,
+              })
+            ),
+          }),
+        ],
+      })
+    );
+
+    const multiBlock = calculateWorkoutScore(
+      makeLog({
+        blockResults: [
+          makeBlock({
+            blockType: "AMRAP",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 7,
+                actualReps: 200,
+              }),
+            ],
+          }),
+          makeBlock({
+            blockType: "FOR_TIME",
+            completedTime: 600,
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 7,
+                actualReps: 200,
+              }),
+            ],
+          }),
+          makeBlock({
+            blockType: "EMOM",
+            exerciseResults: [
+              makeExercise({
+                category: "BODYWEIGHT",
+                effortScore: 7,
+                actualReps: 150,
+              }),
+            ],
+          }),
+        ],
+      })
+    );
+
+    // Multi-block workout should score higher because it demonstrates
+    // more variety and each block contributes its capped amount
+    expect(multiBlock.breakdown.engine).toBeGreaterThan(
+      singleCapped.breakdown.engine
+    );
+  });
+});

@@ -15,7 +15,7 @@ jest.mock("expo-router", () => ({
 
 // Mock react-native-safe-area-context
 jest.mock("react-native-safe-area-context", () => {
-  const { View } = require("react-native");
+  const { View } = jest.requireActual("react-native");
   return {
     SafeAreaView: View,
     SafeAreaProvider: View,
@@ -24,12 +24,12 @@ jest.mock("react-native-safe-area-context", () => {
 });
 
 // Mock CachedImage
-jest.mock("@/src/components/CachedImage", () => ({
-  CachedAvatar: ({ alt }: { alt: string }) => {
-    const { Text } = require("react-native");
-    return <Text>{alt}</Text>;
-  },
-}));
+jest.mock("@/src/components/CachedImage", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    CachedAvatar: ({ alt }: { alt: string }) => <Text>{alt}</Text>,
+  };
+});
 
 // Mock auth store
 const mockAuthStore = {
@@ -91,28 +91,30 @@ jest.mock("@/src/hooks/useProfile", () => ({
 }));
 
 // Mock PerformanceSection (complex component with modals)
-jest.mock("@/src/components/profile/PerformanceSection", () => ({
-  PerformanceSection: () => {
-    const { Text } = require("react-native");
-    return <Text>PerformanceSection</Text>;
-  },
-}));
+jest.mock("@/src/components/profile/PerformanceSection", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    PerformanceSection: () => <Text>PerformanceSection</Text>,
+  };
+});
 
 // Mock AnalysesSection (complex component with video)
-jest.mock("@/src/components/profile/AnalysesSection", () => ({
-  AnalysesSection: () => {
-    const { Text } = require("react-native");
-    return <Text>AnalysesSection</Text>;
-  },
-}));
+jest.mock("@/src/components/profile/AnalysesSection", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    AnalysesSection: () => <Text>AnalysesSection</Text>,
+  };
+});
 
 // Mock OtherSections (includes gallery and friends)
-jest.mock("@/src/components/profile/OtherSections", () => ({
-  OtherSections: ({ friendsCount }: { friendsCount: number }) => {
-    const { Text } = require("react-native");
-    return <Text>OtherSections-{friendsCount}</Text>;
-  },
-}));
+jest.mock("@/src/components/profile/OtherSections", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    OtherSections: ({ friendsCount }: { friendsCount: number }) => (
+      <Text>OtherSections-{friendsCount}</Text>
+    ),
+  };
+});
 
 // ── Tests ─────────────────────────────────────────────────────────────────────
 
@@ -201,9 +203,9 @@ describe("ProfileScreen", () => {
       render(<ProfileScreen />);
 
       // Name appears in both CachedAvatar alt and header display
-      expect(
-        screen.getAllByText("João Silva").length
-      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText("João Silva").length).toBeGreaterThanOrEqual(
+        1
+      );
       expect(screen.getByText("joao@example.com")).toBeTruthy();
     });
 

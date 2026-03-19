@@ -31,33 +31,33 @@ jest.mock("@/src/hooks/usePerformance", () => ({
 }));
 
 // Mock tab content components (complex, with charts)
-jest.mock("@/src/components/performance/RunTabContent", () => ({
-  RunTabContent: () => {
-    const { Text } = require("react-native");
-    return <Text>RunTabContent</Text>;
-  },
-}));
+jest.mock("@/src/components/performance/RunTabContent", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    RunTabContent: () => <Text>RunTabContent</Text>,
+  };
+});
 
-jest.mock("@/src/components/performance/TrailTabContent", () => ({
-  TrailTabContent: () => {
-    const { Text } = require("react-native");
-    return <Text>TrailTabContent</Text>;
-  },
-}));
+jest.mock("@/src/components/performance/TrailTabContent", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    TrailTabContent: () => <Text>TrailTabContent</Text>,
+  };
+});
 
-jest.mock("@/src/components/performance/StrengthTabContent", () => ({
-  StrengthTabContent: () => {
-    const { Text } = require("react-native");
-    return <Text>StrengthTabContent</Text>;
-  },
-}));
+jest.mock("@/src/components/performance/StrengthTabContent", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    StrengthTabContent: () => <Text>StrengthTabContent</Text>,
+  };
+});
 
-jest.mock("@/src/components/performance/HyroxTabContent", () => ({
-  HyroxTabContent: () => {
-    const { Text } = require("react-native");
-    return <Text>HyroxTabContent</Text>;
-  },
-}));
+jest.mock("@/src/components/performance/HyroxTabContent", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    HyroxTabContent: () => <Text>HyroxTabContent</Text>,
+  };
+});
 
 // Mock add sheets (modals)
 jest.mock("@/src/components/performance/AddRunSheet", () => ({

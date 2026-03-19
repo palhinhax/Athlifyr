@@ -12,12 +12,12 @@ jest.mock("expo-router", () => ({
 }));
 
 // Mock CachedImage
-jest.mock("@/src/components/CachedImage", () => ({
-  CachedAvatar: ({ alt }: { alt: string }) => {
-    const { Text } = require("react-native");
-    return <Text>{alt}</Text>;
-  },
-}));
+jest.mock("@/src/components/CachedImage", () => {
+  const { Text } = jest.requireActual("react-native");
+  return {
+    CachedAvatar: ({ alt }: { alt: string }) => <Text>{alt}</Text>,
+  };
+});
 
 describe("ProfileHeader", () => {
   const mockUser = {

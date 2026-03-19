@@ -120,7 +120,7 @@ function validateVideoFile(
 
   const seedX = formData.get("seed_x");
   const seedY = formData.get("seed_y");
-  if (!seedX || !seedY) {
+  if (typeof seedX !== "string" || typeof seedY !== "string") {
     return NextResponse.json(
       { error: "seed_x and seed_y are required" },
       { status: 400 }
@@ -136,7 +136,7 @@ function validateVideoFile(
     );
   }
 
-  return { videoFile, seedX: seedX.toString(), seedY: seedY.toString() };
+  return { videoFile, seedX, seedY };
 }
 
 async function trimAndTranscodeVideo(
@@ -212,7 +212,7 @@ async function resolveAiPermission(
   externalFormData: FormData
 ): Promise<boolean> {
   const enableAi = formData.get("enable_ai");
-  if (enableAi?.toString() !== "true") return false;
+  if (typeof enableAi !== "string" || enableAi !== "true") return false;
 
   const session = await auth();
   if (!session?.user?.id) {

@@ -392,12 +392,10 @@ export async function GET(
         venue,
         currentUserId
       );
-      if (!userSubscriptionStatus) {
-        userSubscriptionStatus = await hasActiveSubscription(
-          currentUserId,
-          venue.id
-        );
-      }
+      userSubscriptionStatus ??= await hasActiveSubscription(
+        currentUserId,
+        venue.id
+      );
     }
 
     // Build final response

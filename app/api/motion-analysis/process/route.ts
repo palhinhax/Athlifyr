@@ -171,7 +171,7 @@ async function resolveAiPermission(
   externalFormData: FormData
 ): Promise<boolean> {
   const enableAi = formData.get("enable_ai");
-  if (enableAi?.toString() !== "true") return false;
+  if (typeof enableAi !== "string" || enableAi !== "true") return false;
 
   const session = await auth();
   if (!session?.user?.id) {

@@ -143,11 +143,7 @@ describe("useProfile filtering logic", () => {
         makeParticipation("past-2", "2026-05-31T00:00:00.000Z", "going"),
         makeParticipation("future-1", "2026-07-01T00:00:00.000Z", "going"),
         makeParticipation("future-2", "2027-01-01T00:00:00.000Z", "going"),
-        makeParticipation(
-          "cancelled",
-          "2026-08-01T00:00:00.000Z",
-          "cancelled"
-        ),
+        makeParticipation("cancelled", "2026-08-01T00:00:00.000Z", "cancelled"),
       ];
 
       const upcoming = filterUpcomingEvents(participations, referenceDate);

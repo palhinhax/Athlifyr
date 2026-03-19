@@ -189,8 +189,6 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
                   <Text style={styles.markerIcon}>{sportIcon}</Text>
                 </View>
               </View>
-              {/* Empty callout to prevent default behavior */}
-              <Mapbox.Callout title="" />
             </Mapbox.PointAnnotation>
           );
         })}

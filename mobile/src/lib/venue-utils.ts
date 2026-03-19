@@ -30,36 +30,36 @@ const SERVICE_PRIORITY: Record<string, number> = {
 };
 
 /**
- * Emoji icons for each venue service — aligned with web SVG categories
+ * Emoji icons for each venue service — aligned with web: lib/venue-icons.ts SERVICE_EMOJIS
  */
 export const serviceIcons: Record<string, string> = {
   // Combat Sports
   MMA: "🥊",
   BJJ: "🥋",
   BOXING: "🥊",
-  KICKBOXING: "🥊",
+  KICKBOXING: "🦵",
   // CrossFit/HYROX
   CROSSFIT: "🏋️",
   HYROX: "💪",
   // Strength
-  WEIGHTLIFTING: "🏋️",
-  POWERLIFTING: "🏋️",
-  OLYMPIC_LIFTING: "🏋️",
+  WEIGHTLIFTING: "🏋️‍♂️",
+  POWERLIFTING: "🏋️‍♀️",
+  OLYMPIC_LIFTING: "🏅",
   // Functional & Training
   FUNCTIONAL_FITNESS: "⚡",
   PERSONAL_TRAINING: "👤",
   GROUP_CLASSES: "👥",
-  OPEN_GYM: "🏠",
+  OPEN_GYM: "🏢",
   // Mind & Body
   YOGA: "🧘",
-  PILATES: "🧘",
+  PILATES: "🧘‍♀️",
   // Recovery & Wellness
-  PHYSIOTHERAPY: "💚",
-  MASSAGE: "✋",
+  PHYSIOTHERAPY: "🩺",
+  MASSAGE: "💆",
   NUTRITION: "🥗",
-  RECOVERY: "❤️",
-  SAUNA: "🔥",
-  COLD_PLUNGE: "❄️",
+  RECOVERY: "❤️‍🩹",
+  SAUNA: "🧖",
+  COLD_PLUNGE: "🧊",
   // Default
   OTHER: "📍",
   DEFAULT: "📍",

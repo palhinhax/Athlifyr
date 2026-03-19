@@ -89,44 +89,44 @@ export const SERVICE_COLORS: Record<
   DEFAULT: { bg: "#6b7280", border: "#4b5563", text: "#ffffff" },
 };
 
-// SVG icons for each service category
-export const SERVICE_ICONS: Record<string, string> = {
-  // Combat Sports - Fist/Glove icon
-  MMA: `<path d="M18 11V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v5m12 0v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7m12 0H6"/>`,
-  BJJ: `<path d="M18 11V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v5m12 0v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7m12 0H6"/>`,
-  BOXING: `<path d="M18 11V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v5m12 0v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7m12 0H6"/>`,
-  KICKBOXING: `<path d="M18 11V6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v5m12 0v7a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-7m12 0H6"/>`,
+// Emoji icons for each service category (single source of truth)
+export const SERVICE_EMOJIS: Record<string, string> = {
+  // Combat Sports
+  MMA: "🥊",
+  BJJ: "🥋",
+  BOXING: "🥊",
+  KICKBOXING: "🦵",
 
-  // CrossFit/HYROX - Dumbbell icon
-  CROSSFIT: `<path d="M6.5 6.5h11M6.5 17.5h11M3 9h3v6H3zM18 9h3v6h-3zM6 11h2v2H6zM16 11h2v2h-2z"/>`,
-  HYROX: `<path d="M6.5 6.5h11M6.5 17.5h11M3 9h3v6H3zM18 9h3v6h-3zM6 11h2v2H6zM16 11h2v2h-2z"/>`,
+  // CrossFit/HYROX
+  CROSSFIT: "🏋️",
+  HYROX: "💪",
 
-  // Strength Sports - Barbell icon
-  WEIGHTLIFTING: `<path d="M6.5 6.5h11M6.5 17.5h11M3 8h3v8H3zM18 8h3v8h-3z"/>`,
-  POWERLIFTING: `<path d="M6.5 6.5h11M6.5 17.5h11M3 8h3v8H3zM18 8h3v8h-3z"/>`,
-  OLYMPIC_LIFTING: `<path d="M6.5 6.5h11M6.5 17.5h11M3 8h3v8H3zM18 8h3v8h-3z"/>`,
+  // Strength Sports
+  WEIGHTLIFTING: "🏋️‍♂️",
+  POWERLIFTING: "🏋️‍♀️",
+  OLYMPIC_LIFTING: "🏅",
 
-  // Functional & Training - Activity icon
-  FUNCTIONAL_FITNESS: `<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>`,
-  PERSONAL_TRAINING: `<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
-  GROUP_CLASSES: `<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>`,
-  OPEN_GYM: `<rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/>`,
+  // Functional & Training
+  FUNCTIONAL_FITNESS: "⚡",
+  PERSONAL_TRAINING: "👤",
+  GROUP_CLASSES: "👥",
+  OPEN_GYM: "🏢",
 
-  // Mind & Body - Lotus/Meditation icon
-  YOGA: `<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/>`,
-  PILATES: `<circle cx="12" cy="12" r="10"/><path d="M12 8v8"/><path d="m8 12 4 4 4-4"/>`,
+  // Mind & Body
+  YOGA: "🧘",
+  PILATES: "🧘‍♀️",
 
-  // Recovery & Wellness - Heart/Health icons
-  PHYSIOTHERAPY: `<path d="M22 12h-4l-3 9L9 3l-3 9H2"/>`,
-  MASSAGE: `<path d="M18 11V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v1"/><path d="M14 10V4a2 2 0 0 0-2-2 2 2 0 0 0-2 2v6"/><path d="M10 10.5V6a2 2 0 0 0-2-2 2 2 0 0 0-2 2v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/>`,
-  NUTRITION: `<path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/>`,
-  RECOVERY: `<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>`,
-  SAUNA: `<path d="M9 6 6.5 3.5a1.5 1.5 0 0 0-1-.5C4.683 3 4 3.683 4 4.5V17a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><circle cx="12" cy="10" r="3"/>`,
-  COLD_PLUNGE: `<path d="M12 2v10"/><path d="m4.93 10.93 7.07 7.07"/><path d="M2 12h10"/><path d="M12 22a10 10 0 0 0 0-20"/>`,
+  // Recovery & Wellness
+  PHYSIOTHERAPY: "🩺",
+  MASSAGE: "💆",
+  NUTRITION: "🥗",
+  RECOVERY: "❤️‍🩹",
+  SAUNA: "🧖",
+  COLD_PLUNGE: "🧊",
 
-  // Default - Location pin
-  OTHER: `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
-  DEFAULT: `<path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>`,
+  // Default/Other
+  OTHER: "📍",
+  DEFAULT: "📍",
 };
 
 /**
@@ -159,11 +159,11 @@ export function getVenueColor(
 }
 
 /**
- * Get the SVG icon path for a venue based on its services
+ * Get the emoji icon for a venue based on its services
  */
-export function getVenueIconPath(services?: string[] | null): string {
+export function getVenueEmoji(services?: string[] | null): string {
   const primaryService = getPrimaryService(services);
-  return SERVICE_ICONS[primaryService] || SERVICE_ICONS.DEFAULT;
+  return SERVICE_EMOJIS[primaryService] || SERVICE_EMOJIS.DEFAULT;
 }
 
 /**
@@ -176,8 +176,8 @@ export function createVenueMarkerHtml(
   size: number = 40
 ): string {
   const color = getVenueColor(services);
-  const iconPath = getVenueIconPath(services);
-  const iconSize = Math.round(size * 0.45); // Icon is ~45% of marker size
+  const emoji = getVenueEmoji(services);
+  const fontSize = Math.round(size * 0.45);
   const borderWidth = size >= 36 ? 3 : 2;
 
   return `
@@ -193,20 +193,11 @@ export function createVenueMarkerHtml(
       box-shadow: 0 ${Math.round(size * 0.1)}px ${Math.round(size * 0.3)}px rgba(0, 0, 0, 0.3);
       border: ${borderWidth}px solid ${color.border};
     ">
-      <svg 
-        xmlns="http://www.w3.org/2000/svg" 
-        width="${iconSize}" 
-        height="${iconSize}" 
-        viewBox="0 0 24 24" 
-        fill="none" 
-        stroke="${color.text}" 
-        stroke-width="2" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        style="transform: rotate(45deg);"
-      >
-        ${iconPath}
-      </svg>
+      <span style="
+        transform: rotate(45deg);
+        font-size: ${fontSize}px;
+        line-height: 1;
+      ">${emoji}</span>
     </div>
   `;
 }
@@ -231,43 +222,5 @@ export function getVenueBadgeStyle(services?: string[] | null): {
  * Get emoji icon for a service type
  */
 export function getServiceIcon(service: string): string {
-  const icons: Record<string, string> = {
-    // Combat Sports
-    MMA: "🥊",
-    BJJ: "🥋",
-    BOXING: "🥊",
-    KICKBOXING: "🦵",
-
-    // CrossFit/HYROX
-    CROSSFIT: "🏋️",
-    HYROX: "💪",
-
-    // Strength Sports
-    WEIGHTLIFTING: "🏋️‍♂️",
-    POWERLIFTING: "🏋️‍♀️",
-    OLYMPIC_LIFTING: "🏅",
-
-    // Functional & Training
-    FUNCTIONAL_FITNESS: "⚡",
-    PERSONAL_TRAINING: "👤",
-    GROUP_CLASSES: "👥",
-    OPEN_GYM: "🏢",
-
-    // Mind & Body
-    YOGA: "🧘",
-    PILATES: "🧘‍♀️",
-
-    // Recovery & Wellness
-    PHYSIOTHERAPY: "🩺",
-    MASSAGE: "💆",
-    NUTRITION: "🥗",
-    RECOVERY: "❤️‍🩹",
-    SAUNA: "🧖",
-    COLD_PLUNGE: "🧊",
-
-    // Default
-    OTHER: "📍",
-  };
-
-  return icons[service] || "📍";
+  return SERVICE_EMOJIS[service] || SERVICE_EMOJIS.DEFAULT;
 }

@@ -130,17 +130,18 @@ describe("TopUpDialog", () => {
     expect(screen.getByText("50.00€")).toBeInTheDocument();
   });
 
-  it("shows net credits for each option", () => {
+  it("shows credits amount for each option", () => {
     render(<TopUpDialog {...defaultProps} />);
-    expect(screen.getByText("4.75")).toBeInTheDocument();
-    expect(screen.getByText("9.50")).toBeInTheDocument();
-    expect(screen.getByText("19.00")).toBeInTheDocument();
-    expect(screen.getByText("47.50")).toBeInTheDocument();
+    // Component now shows amountCents as credits (1:1 ratio)
+    expect(screen.getByText("5.00€")).toBeInTheDocument();
+    expect(screen.getByText("10.00€")).toBeInTheDocument();
+    expect(screen.getByText("20.00€")).toBeInTheDocument();
+    expect(screen.getByText("50.00€")).toBeInTheDocument();
   });
 
-  it("shows fee percentage note", () => {
+  it("shows select amount prompt", () => {
     render(<TopUpDialog {...defaultProps} />);
-    expect(screen.getByText(/processingFeeNote/)).toBeInTheDocument();
+    expect(screen.getByText(/selectAmount/)).toBeInTheDocument();
   });
 
   it("transitions to payment step on amount selection", async () => {
@@ -223,9 +224,8 @@ describe("TopUpDialog", () => {
       expect(screen.getByTestId("payment-element")).toBeInTheDocument();
     });
 
-    // Should show "you pay" and "you receive" info
+    // Should show "you pay" and "you receive" info (same amount, 1:1 ratio)
     expect(screen.getByText(/10.00€/)).toBeInTheDocument();
-    expect(screen.getByText(/9\.50/)).toBeInTheDocument();
   });
 
   it("resets state when dialog is closed and reopened", async () => {

@@ -16,6 +16,7 @@ const customJestConfig = {
     "<rootDir>/.next/",
     "<rootDir>/tests/e2e/",
     "<rootDir>/live/",
+    "<rootDir>/mobile/",
     "integration\\.test\\.",
     "/helpers/",
   ],

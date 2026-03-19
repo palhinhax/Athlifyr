@@ -10,12 +10,26 @@ import {
   callRailwayWithRetry,
   getVideoExtension,
   buildTranscodeErrorResponse,
+  trimAndTranscodeVideo,
+  resolveAiPermission,
   ALLOWED_VIDEO_TYPES,
   MAX_VIDEO_BYTES,
   type ExternalSkeletonFrame,
   type ExternalAIAnalysis,
   type PoseAngles,
 } from "@/lib/analysis-transforms";
+
+// Mock dependencies for trimAndTranscodeVideo & resolveAiPermission
+jest.mock("@/lib/ffmpeg-utils", () => ({
+  transcodeToH264: jest.fn(),
+  trimVideoStreamCopy: jest.fn(),
+}));
+jest.mock("@/lib/auth", () => ({
+  auth: jest.fn(),
+}));
+jest.mock("@/lib/ai-rate-limit", () => ({
+  checkAiRateLimit: jest.fn(),
+}));
 
 // ── transformSkeletonFrames ──────────────────────────────────────────────────
 
@@ -593,5 +607,235 @@ describe("constants", () => {
 
   it("exports MAX_VIDEO_BYTES as 500MB", () => {
     expect(MAX_VIDEO_BYTES).toBe(500 * 1024 * 1024);
+  });
+});
+
+// ── trimAndTranscodeVideo ────────────────────────────────────────────────────
+
+describe("trimAndTranscodeVideo", () => {
+  const { trimVideoStreamCopy, transcodeToH264 } = jest.requireMock<{
+    trimVideoStreamCopy: jest.Mock;
+    transcodeToH264: jest.Mock;
+  }>("@/lib/ffmpeg-utils");
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => {});
+    jest.spyOn(console, "error").mockImplementation(() => {});
+  });
+
+  function makeFile(name: string, type: string, size = 100): File {
+    return new File([new ArrayBuffer(size)], name, { type });
+  }
+
+  function makeFormData(fields?: Record<string, string>): FormData {
+    const fd = new FormData();
+    if (fields) {
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+    }
+    return fd;
+  }
+
+  it("returns original file when no trim and not webm", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const result = await trimAndTranscodeVideo(file, makeFormData(), "Test");
+    expect(result).toBe(file);
+    expect(trimVideoStreamCopy).not.toHaveBeenCalled();
+    expect(transcodeToH264).not.toHaveBeenCalled();
+  });
+
+  it("trims video when trim_start_sec and trim_end_sec are valid", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const fd = makeFormData({
+      trim_start_sec: "1",
+      trim_end_sec: "5",
+    });
+
+    trimVideoStreamCopy.mockResolvedValue(Buffer.from("trimmed"));
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    expect(result).toBeInstanceOf(File);
+    expect(result).not.toBe(file);
+    expect((result as File).type).toBe("video/mp4");
+    expect(trimVideoStreamCopy).toHaveBeenCalledWith(
+      expect.any(Buffer),
+      1,
+      5,
+      expect.any(String)
+    );
+  });
+
+  it("skips trim when trim_end_sec <= trim_start_sec", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const fd = makeFormData({
+      trim_start_sec: "5",
+      trim_end_sec: "3",
+    });
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    expect(result).toBe(file);
+    expect(trimVideoStreamCopy).not.toHaveBeenCalled();
+  });
+
+  it("skips trim when only trim_start_sec is provided", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const fd = makeFormData({ trim_start_sec: "1" });
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    expect(result).toBe(file);
+    expect(trimVideoStreamCopy).not.toHaveBeenCalled();
+  });
+
+  it("transcodes webm to mp4 when no trim", async () => {
+    const file = makeFile("video.webm", "video/webm");
+    transcodeToH264.mockResolvedValue(Buffer.from("mp4data"));
+
+    const result = await trimAndTranscodeVideo(file, makeFormData(), "Test");
+    expect(result).toBeInstanceOf(File);
+    expect((result as File).type).toBe("video/mp4");
+    expect((result as File).name).toBe("video.mp4");
+    expect(transcodeToH264).toHaveBeenCalled();
+  });
+
+  it("does not transcode webm if trim already succeeded", async () => {
+    const file = makeFile("video.webm", "video/webm");
+    const fd = makeFormData({
+      trim_start_sec: "0",
+      trim_end_sec: "5",
+    });
+    trimVideoStreamCopy.mockResolvedValue(Buffer.from("trimmed"));
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    expect(result).toBeInstanceOf(File);
+    expect(transcodeToH264).not.toHaveBeenCalled();
+  });
+
+  it("returns error response when webm transcode fails", async () => {
+    const file = makeFile("video.webm", "video/webm");
+    transcodeToH264.mockRejectedValue(new Error("codec error"));
+
+    const result = await trimAndTranscodeVideo(file, makeFormData(), "Test");
+    expect(result).toBeInstanceOf(Response);
+    expect((result as Response).status).toBe(400);
+  });
+
+  it("continues without trim when trimVideoStreamCopy throws", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const fd = makeFormData({
+      trim_start_sec: "1",
+      trim_end_sec: "5",
+    });
+    trimVideoStreamCopy.mockRejectedValue(new Error("ffmpeg failed"));
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    // Returns original file since trim failed and it's not webm
+    expect(result).toBe(file);
+  });
+
+  it("skips trim when values are not finite (NaN)", async () => {
+    const file = makeFile("video.mp4", "video/mp4");
+    const fd = makeFormData({
+      trim_start_sec: "abc",
+      trim_end_sec: "5",
+    });
+
+    const result = await trimAndTranscodeVideo(file, fd, "Test");
+    expect(result).toBe(file);
+    expect(trimVideoStreamCopy).not.toHaveBeenCalled();
+  });
+});
+
+// ── resolveAiPermission ──────────────────────────────────────────────────────
+
+describe("resolveAiPermission", () => {
+  const { auth } = jest.requireMock<{ auth: jest.Mock }>("@/lib/auth");
+  const { checkAiRateLimit } = jest.requireMock<{
+    checkAiRateLimit: jest.Mock;
+  }>("@/lib/ai-rate-limit");
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    jest.spyOn(console, "log").mockImplementation(() => {});
+  });
+
+  function makeFormData(fields?: Record<string, string>): FormData {
+    const fd = new FormData();
+    if (fields) {
+      for (const [k, v] of Object.entries(fields)) fd.set(k, v);
+    }
+    return fd;
+  }
+
+  it("returns false when enable_ai is not in formData", async () => {
+    const result = await resolveAiPermission(
+      makeFormData(),
+      makeFormData(),
+      "Test"
+    );
+    expect(result).toBe(false);
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it("returns false when enable_ai is not 'true'", async () => {
+    const result = await resolveAiPermission(
+      makeFormData({ enable_ai: "false" }),
+      makeFormData(),
+      "Test"
+    );
+    expect(result).toBe(false);
+    expect(auth).not.toHaveBeenCalled();
+  });
+
+  it("returns false when user is not authenticated", async () => {
+    auth.mockResolvedValue(null);
+
+    const result = await resolveAiPermission(
+      makeFormData({ enable_ai: "true" }),
+      makeFormData(),
+      "Test"
+    );
+    expect(result).toBe(false);
+    expect(auth).toHaveBeenCalled();
+  });
+
+  it("returns false when session has no user id", async () => {
+    auth.mockResolvedValue({ user: {} });
+
+    const result = await resolveAiPermission(
+      makeFormData({ enable_ai: "true" }),
+      makeFormData(),
+      "Test"
+    );
+    expect(result).toBe(false);
+  });
+
+  it("returns false when rate limit is exceeded", async () => {
+    auth.mockResolvedValue({ user: { id: "user_1" } });
+    checkAiRateLimit.mockResolvedValue({
+      allowed: false,
+      nextAvailableAt: new Date(),
+    });
+
+    const result = await resolveAiPermission(
+      makeFormData({ enable_ai: "true" }),
+      makeFormData(),
+      "Test"
+    );
+    expect(result).toBe(false);
+    expect(checkAiRateLimit).toHaveBeenCalledWith("user_1");
+  });
+
+  it("returns true and appends enable_ai when allowed", async () => {
+    auth.mockResolvedValue({ user: { id: "user_1" } });
+    checkAiRateLimit.mockResolvedValue({ allowed: true });
+
+    const externalFd = makeFormData();
+    const result = await resolveAiPermission(
+      makeFormData({ enable_ai: "true" }),
+      externalFd,
+      "Test"
+    );
+    expect(result).toBe(true);
+    expect(externalFd.get("enable_ai")).toBe("true");
   });
 });

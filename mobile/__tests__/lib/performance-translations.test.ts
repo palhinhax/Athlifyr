@@ -14,12 +14,13 @@ function loadLocale(lang: string): Record<string, unknown> {
   return JSON.parse(content) as Record<string, unknown>;
 }
 
-function getNestedKey(
-  obj: Record<string, unknown>,
-  keyPath: string
-): unknown {
+function getNestedKey(obj: Record<string, unknown>, keyPath: string): unknown {
   return keyPath.split(".").reduce<unknown>((current, key) => {
-    if (current && typeof current === "object" && key in (current as Record<string, unknown>)) {
+    if (
+      current &&
+      typeof current === "object" &&
+      key in (current as Record<string, unknown>)
+    ) {
       return (current as Record<string, unknown>)[key];
     }
     return undefined;
@@ -43,17 +44,14 @@ describe("Translation completeness", () => {
       "sports.HYROX",
     ];
 
-    it.each(tabLabelKeys)(
-      "has '%s' in all locales",
-      (key) => {
-        for (const lang of LOCALES) {
-          const value = getNestedKey(locales[lang], key);
-          expect(value).toBeDefined();
-          expect(typeof value).toBe("string");
-          expect((value as string).length).toBeGreaterThan(0);
-        }
+    it.each(tabLabelKeys)("has '%s' in all locales", (key) => {
+      for (const lang of LOCALES) {
+        const value = getNestedKey(locales[lang], key);
+        expect(value).toBeDefined();
+        expect(typeof value).toBe("string");
+        expect((value as string).length).toBeGreaterThan(0);
       }
-    );
+    });
   });
 
   describe("performance empty state messages", () => {
@@ -68,17 +66,14 @@ describe("Translation completeness", () => {
       "performance.hyrox.noDataDesc",
     ];
 
-    it.each(emptyStateKeys)(
-      "has '%s' in all locales",
-      (key) => {
-        for (const lang of LOCALES) {
-          const value = getNestedKey(locales[lang], key);
-          expect(value).toBeDefined();
-          expect(typeof value).toBe("string");
-          expect((value as string).length).toBeGreaterThan(0);
-        }
+    it.each(emptyStateKeys)("has '%s' in all locales", (key) => {
+      for (const lang of LOCALES) {
+        const value = getNestedKey(locales[lang], key);
+        expect(value).toBeDefined();
+        expect(typeof value).toBe("string");
+        expect((value as string).length).toBeGreaterThan(0);
       }
-    );
+    });
   });
 
   describe("performance general keys", () => {
@@ -88,17 +83,14 @@ describe("Translation completeness", () => {
       "performance.loading",
     ];
 
-    it.each(generalKeys)(
-      "has '%s' in all locales",
-      (key) => {
-        for (const lang of LOCALES) {
-          const value = getNestedKey(locales[lang], key);
-          expect(value).toBeDefined();
-          expect(typeof value).toBe("string");
-          expect((value as string).length).toBeGreaterThan(0);
-        }
+    it.each(generalKeys)("has '%s' in all locales", (key) => {
+      for (const lang of LOCALES) {
+        const value = getNestedKey(locales[lang], key);
+        expect(value).toBeDefined();
+        expect(typeof value).toBe("string");
+        expect((value as string).length).toBeGreaterThan(0);
       }
-    );
+    });
   });
 
   describe("performance hyrox form keys", () => {
@@ -112,16 +104,13 @@ describe("Translation completeness", () => {
       "performance.hyrox.totalRaces",
     ];
 
-    it.each(hyroxFormKeys)(
-      "has '%s' in all locales",
-      (key) => {
-        for (const lang of LOCALES) {
-          const value = getNestedKey(locales[lang], key);
-          expect(value).toBeDefined();
-          expect(typeof value).toBe("string");
-          expect((value as string).length).toBeGreaterThan(0);
-        }
+    it.each(hyroxFormKeys)("has '%s' in all locales", (key) => {
+      for (const lang of LOCALES) {
+        const value = getNestedKey(locales[lang], key);
+        expect(value).toBeDefined();
+        expect(typeof value).toBe("string");
+        expect((value as string).length).toBeGreaterThan(0);
       }
-    );
+    });
   });
 });

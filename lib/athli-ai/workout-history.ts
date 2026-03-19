@@ -130,9 +130,6 @@ export function formatExerciseDetail(er: ExerciseResultSummary): string {
   return detail;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
-type WorkoutLogWithDetails = any;
-
 function safeAverage(values: number[]): number | null {
   if (values.length === 0) return null;
   return (
@@ -140,35 +137,45 @@ function safeAverage(values: number[]): number | null {
   );
 }
 
-function computeAverages(logs: WorkoutLogWithDetails[]): {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
+function computeAverages(logs: any[]): {
   avgFeeling: number | null;
   avgEffort: number | null;
 } {
   const feelings = logs
-    .filter((l: WorkoutLogWithDetails) => l.feeling !== null)
-    .map((l: WorkoutLogWithDetails) => l.feeling as number);
+    .filter((l) => l.feeling !== null)
+    .map((l) => l.feeling as number);
   const efforts = logs
-    .filter((l: WorkoutLogWithDetails) => l.perceivedEffort !== null)
-    .map((l: WorkoutLogWithDetails) => l.perceivedEffort as number);
+    .filter((l) => l.perceivedEffort !== null)
+    .map((l) => l.perceivedEffort as number);
   return { avgFeeling: safeAverage(feelings), avgEffort: safeAverage(efforts) };
 }
 
-function countPRs(logs: WorkoutLogWithDetails[]): number {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
+function countPRsInExerciseResults(exerciseResults: any[]): number {
   let count = 0;
-  for (const log of logs) {
-    for (const br of log.blockResults) {
-      for (const er of br.exerciseResults) {
-        if (er.isPR) count++;
-        for (const s of er.sets) {
-          if (s.isPR) count++;
-        }
-      }
+  for (const er of exerciseResults) {
+    if (er.isPR) count++;
+    for (const s of er.sets) {
+      if (s.isPR) count++;
     }
   }
   return count;
 }
 
-function collectUniqueExercises(logs: WorkoutLogWithDetails[]): Set<string> {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
+function countPRs(logs: any[]): number {
+  let count = 0;
+  for (const log of logs) {
+    for (const br of log.blockResults) {
+      count += countPRsInExerciseResults(br.exerciseResults);
+    }
+  }
+  return count;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
+function collectUniqueExercises(logs: any[]): Set<string> {
   const exerciseSet = new Set<string>();
   for (const log of logs) {
     for (const br of log.blockResults) {
@@ -180,8 +187,9 @@ function collectUniqueExercises(logs: WorkoutLogWithDetails[]): Set<string> {
   return exerciseSet;
 }
 
-function buildLogSummaries(logs: WorkoutLogWithDetails[]) {
-  return logs.map((log: WorkoutLogWithDetails) => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- Prisma query result type is dynamic
+function buildLogSummaries(logs: any[]) {
+  return logs.map((log) => {
     const exercisesList: string[] = [];
     for (const br of log.blockResults) {
       for (const er of br.exerciseResults) {
@@ -205,6 +213,24 @@ function buildLogSummaries(logs: WorkoutLogWithDetails[]) {
   });
 }
 
+function buildDateFilter(
+  fromDate: Date | undefined,
+  toDate: Date | undefined
+): Record<string, unknown> {
+  if (!fromDate && !toDate) return {};
+  const performedAt: Record<string, Date> = {};
+  if (fromDate) performedAt.gte = fromDate;
+  if (toDate) performedAt.lt = toDate;
+  return { performedAt };
+}
+
+function buildNoLogsMessage(period: string | undefined): string {
+  const periodLabel = PERIOD_LABELS[period ?? ""] ?? "";
+  const suffix = periodLabel || "yet";
+  const prefix = periodLabel ? ` for ${periodLabel}` : "";
+  return `No workout logs found${prefix}. The user hasn't logged any workouts ${suffix}.`;
+}
+
 export async function getUserWorkoutHistory(
   userId: string,
   params: WorkoutHistoryParams
@@ -212,26 +238,13 @@ export async function getUserWorkoutHistory(
   const period = params.period;
   const limit = params.limit || 20;
 
-  // Calculate date range based on period
   const { fromDate, toDate } = calculateDateRange(period);
+  const dateFilter = buildDateFilter(fromDate, toDate);
 
-  const dateFilter: Record<string, unknown> = {};
-  if (fromDate || toDate) {
-    const performedAt: Record<string, Date> = {};
-    if (fromDate) performedAt.gte = fromDate;
-    if (toDate) performedAt.lt = toDate;
-    dateFilter.performedAt = performedAt;
-  }
-
-  // Get total count for the period (always)
   const totalCount = await prisma.workoutLog.count({
-    where: {
-      userId,
-      ...dateFilter,
-    },
+    where: { userId, ...dateFilter },
   });
 
-  // For "all" or "year", we only want stats + a few recent logs (not all data)
   const effectiveLimit =
     period === "all" || period === "year" ? Math.min(limit, 10) : limit;
 
@@ -301,10 +314,7 @@ export async function getUserWorkoutHistory(
   });
 
   if (totalCount === 0) {
-    const periodLabel = PERIOD_LABELS[period ?? ""] ?? "";
-    const suffix = periodLabel || "yet";
-    const prefix = periodLabel ? ` for ${periodLabel}` : "";
-    return `No workout logs found${prefix}. The user hasn't logged any workouts ${suffix}.`;
+    return buildNoLogsMessage(period);
   }
 
   const { avgFeeling, avgEffort } = computeAverages(logs);

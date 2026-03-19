@@ -137,7 +137,7 @@ export const MAX_ENGINE_REPS_PER_EXERCISE = 500;
 export const ENGINE_DENSITY_REF_MINUTES = 15;
 
 /** Maximum density multiplier to prevent extremely fast completions from exploding. */
-export const ENGINE_MAX_DENSITY_FACTOR = 2.0;
+export const ENGINE_MAX_DENSITY_FACTOR = 2;
 
 /**
  * Minimum block duration (seconds) required for the density factor to apply.

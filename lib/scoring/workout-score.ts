@@ -67,6 +67,87 @@ function pillarAverage(acc: PillarAccumulator): number {
   return acc.weightedSum / acc.totalWeight;
 }
 
+// ─── Block-level helpers ────────────────────────────────────────────────────
+
+interface BlockAccumulationResult {
+  blockEngineWorkUnits: number;
+  volumeLoad: number;
+  prCount: number;
+}
+
+function accumulateExercise(
+  ex: ExerciseResultInput,
+  isEngineBlock: boolean,
+  strengthAcc: PillarAccumulator,
+  enduranceAcc: PillarAccumulator
+): BlockAccumulationResult {
+  const effort = effortMultiplier(ex.effortScore);
+
+  if (hasStrengthData(ex)) {
+    const e1rm = bestE1rmFromResult(ex);
+    if (e1rm > 0) {
+      const norm = normalizeStrength(e1rm);
+      strengthAcc.weightedSum += norm * effort;
+      strengthAcc.totalWeight += effort;
+    }
+  }
+
+  if (hasEnduranceData(ex)) {
+    const endScore = scoreEnduranceExercise(ex);
+    if (endScore > 0) {
+      enduranceAcc.weightedSum += endScore * effort;
+      enduranceAcc.totalWeight += effort;
+    }
+  }
+
+  let blockEngineWorkUnits = 0;
+  if (isEngineBlock) {
+    const reps = effectiveReps(ex);
+    blockEngineWorkUnits =
+      Math.min(reps, MAX_ENGINE_REPS_PER_EXERCISE) * effort;
+  }
+
+  return {
+    blockEngineWorkUnits,
+    volumeLoad: volumeLoad(ex),
+    prCount: countPRs(ex),
+  };
+}
+
+function applyEngineDensity(
+  workUnits: number,
+  blockTime: number | null
+): number {
+  if (
+    blockTime != null &&
+    blockTime > 0 &&
+    blockTime >= ENGINE_MIN_DENSITY_DURATION_SEC
+  ) {
+    const minutes = blockTime / 60;
+    const density = ENGINE_DENSITY_REF_MINUTES / Math.max(minutes, 1);
+    return workUnits * Math.min(density, ENGINE_MAX_DENSITY_FACTOR);
+  }
+  return workUnits;
+}
+
+function buildHighlights(
+  strengthScore: number,
+  enduranceScore: number,
+  engineScore: number,
+  volumeBonus: number,
+  prBonus: number,
+  totalScore: number
+): string[] {
+  const highlights: string[] = [];
+  if (strengthScore >= 700) highlights.push("High strength contribution");
+  if (enduranceScore >= 700) highlights.push("Strong endurance performance");
+  if (engineScore >= 700) highlights.push("Great engine output");
+  if (prBonus > 0) highlights.push(`PR bonus applied (+${prBonus})`);
+  if (volumeBonus >= 25) highlights.push("High volume session");
+  if (totalScore === 0) highlights.push("No scored exercises recorded");
+  return highlights;
+}
+
 // ─── Public API ─────────────────────────────────────────────────────────────
 
 /**
@@ -78,7 +159,6 @@ function pillarAverage(acc: PillarAccumulator): number {
 export function calculateWorkoutScore(
   input: WorkoutLogInput
 ): WorkoutScoreResult {
-  const highlights: string[] = [];
   const strengthAcc = emptyAccumulator();
   const enduranceAcc = emptyAccumulator();
   let engineWorkUnits = 0;
@@ -88,75 +168,36 @@ export function calculateWorkoutScore(
 
   for (const block of input.blockResults) {
     const blockHint = BLOCK_TYPE_PILLAR[block.blockType] ?? null;
-
-    // Skip non-scoring blocks
     if (blockHint === null) continue;
 
     const isEngineBlock = blockHint === "engine";
     let blockEngineWorkUnits = 0;
 
     for (const ex of block.exerciseResults) {
-      const effort = effortMultiplier(ex.effortScore);
-
-      // ── Strength: any exercise with weight data ──────────────────
-      if (hasStrengthData(ex)) {
-        const e1rm = bestE1rmFromResult(ex);
-        if (e1rm > 0) {
-          const norm = normalizeStrength(e1rm);
-          strengthAcc.weightedSum += norm * effort;
-          strengthAcc.totalWeight += effort;
-        }
-      }
-
-      // ── Endurance: any exercise with distance/calorie data ───────
-      if (hasEnduranceData(ex)) {
-        const endScore = scoreEnduranceExercise(ex);
-        if (endScore > 0) {
-          enduranceAcc.weightedSum += endScore * effort;
-          enduranceAcc.totalWeight += effort;
-        }
-      }
-
-      // ── Engine: reps from exercises in engine blocks ─────────────
-      if (isEngineBlock) {
-        const reps = effectiveReps(ex);
-        const cappedReps = Math.min(reps, MAX_ENGINE_REPS_PER_EXERCISE);
-        blockEngineWorkUnits += cappedReps * effort;
-      }
-
-      // ── Volume load (from any scored block) ──────────────────────
-      totalVolumeLoad += volumeLoad(ex);
-
-      // ── PR counting ──────────────────────────────────────────────
-      prCount += countPRs(ex);
+      const result = accumulateExercise(
+        ex,
+        isEngineBlock,
+        strengthAcc,
+        enduranceAcc
+      );
+      blockEngineWorkUnits += result.blockEngineWorkUnits;
+      totalVolumeLoad += result.volumeLoad;
+      prCount += result.prCount;
     }
 
-    // ── Engine density: apply per-block, then cap and add to cumulative total ──
     if (isEngineBlock && blockEngineWorkUnits > 0) {
       const blockTime = block.completedTime ?? block.timeCap ?? null;
-      if (
-        blockTime != null &&
-        blockTime > 0 &&
-        blockTime >= ENGINE_MIN_DENSITY_DURATION_SEC
-      ) {
-        const minutes = blockTime / 60;
-        const density = ENGINE_DENSITY_REF_MINUTES / Math.max(minutes, 1);
-        const cappedDensity = Math.min(density, ENGINE_MAX_DENSITY_FACTOR);
-        blockEngineWorkUnits *= cappedDensity;
-      }
-      // Cap per-block contribution to prevent a single block from dominating
+      const adjustedUnits = applyEngineDensity(blockEngineWorkUnits, blockTime);
       engineWorkUnits += Math.min(
-        blockEngineWorkUnits,
+        adjustedUnits,
         MAX_ENGINE_WORK_UNITS_PER_BLOCK
       );
       hasEngineData = true;
     }
   }
 
-  // ── Normalise engine pillar ────────────────────────────────────────────
   const engineRawScore = hasEngineData ? normalizeEngine(engineWorkUnits) : 0;
 
-  // ── Pillar averages (0-1000) ───────────────────────────────────────────
   const strengthScore = clamp(
     Math.round(pillarAverage(strengthAcc) * 10) / 10,
     SCORE_MIN,
@@ -173,32 +214,28 @@ export function calculateWorkoutScore(
     SCORE_MAX
   );
 
-  // ── Bonuses ────────────────────────────────────────────────────────────
   const volumeBonus = normalizeVolumeBonus(totalVolumeLoad, MAX_VOLUME_BONUS);
   const prBonus = clamp(prCount * PR_BONUS_PER_PR, 0, MAX_PR_BONUS);
 
-  // ── Total score ────────────────────────────────────────────────────────
   const pillarTotal =
     strengthScore * WORKOUT_PILLAR_WEIGHTS.strength +
     enduranceScore * WORKOUT_PILLAR_WEIGHTS.endurance +
     engineScore * WORKOUT_PILLAR_WEIGHTS.engine;
 
-  // Pillar total is 0-1000 (since each pillar is 0-1000 and weights sum to 1).
-  // Add bonuses on top, then cap at 1000.
-  const rawTotal = pillarTotal + volumeBonus + prBonus;
   const totalScore = clamp(
-    Math.round(rawTotal * 10) / 10,
+    Math.round((pillarTotal + volumeBonus + prBonus) * 10) / 10,
     SCORE_MIN,
     SCORE_MAX
   );
 
-  // ── Highlights ─────────────────────────────────────────────────────────
-  if (strengthScore >= 700) highlights.push("High strength contribution");
-  if (enduranceScore >= 700) highlights.push("Strong endurance performance");
-  if (engineScore >= 700) highlights.push("Great engine output");
-  if (prBonus > 0) highlights.push(`PR bonus applied (+${prBonus})`);
-  if (volumeBonus >= 25) highlights.push("High volume session");
-  if (totalScore === 0) highlights.push("No scored exercises recorded");
+  const highlights = buildHighlights(
+    strengthScore,
+    enduranceScore,
+    engineScore,
+    volumeBonus,
+    prBonus,
+    totalScore
+  );
 
   return {
     version: WORKOUT_SCORE_VERSION,

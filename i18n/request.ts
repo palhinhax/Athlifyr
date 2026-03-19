@@ -47,6 +47,7 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       await import(`@/messages/${locale}/live-race-presentation.json`)
     ).default;
     const credits = (await import(`@/messages/${locale}/credits.json`)).default;
+    const scoring = (await import(`@/messages/${locale}/scoring.json`)).default;
 
     // Merge all messages
     Object.assign(
@@ -73,7 +74,8 @@ async function loadMessages(locale: string): Promise<Record<string, unknown>> {
       manage,
       liveRace,
       liveRacePresentation,
-      credits
+      credits,
+      scoring
     );
   } catch (error) {
     console.error(`Failed to load messages for locale "${locale}":`, error);

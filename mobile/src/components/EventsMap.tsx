@@ -99,13 +99,10 @@ export function EventsMap({ searchQuery }: EventsMapProps) {
     fetchMapEvents();
   }, [fetchMapEvents]);
 
-  const handleSportsChange = useCallback(
-    (sports: string[]) => {
-      setSelectedSports(sports);
-      setSelectedEvent(null);
-    },
-    []
-  );
+  const handleSportsChange = useCallback((sports: string[]) => {
+    setSelectedSports(sports);
+    setSelectedEvent(null);
+  }, []);
 
   const handleMarkerPress = useCallback(
     (event: MapEvent) => {

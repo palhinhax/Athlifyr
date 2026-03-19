@@ -51,7 +51,7 @@ export function ProductCheckoutDialog({
   quantity,
   onSuccess,
   onCancel,
-}: ProductCheckoutDialogProps) {
+}: Readonly<ProductCheckoutDialogProps>) {
   const t = useTranslations("venues.shop.checkout");
   const tc = useTranslations("credits.purchase");
   const tcBase = useTranslations("credits");

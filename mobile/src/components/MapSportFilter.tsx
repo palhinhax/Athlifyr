@@ -121,9 +121,7 @@ export function MapSportFilter({
                     onPress={() => toggleSport(sport)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.sportIcon}>
-                      {getSportIcon(sport)}
-                    </Text>
+                    <Text style={styles.sportIcon}>{getSportIcon(sport)}</Text>
                     <Text
                       style={[
                         styles.sportName,

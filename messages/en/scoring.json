@@ -1,0 +1,21 @@
+{
+  "scoring": {
+    "workoutScore": "Workout Score",
+    "hybridScore": "Hybrid Score",
+    "noDataYet": "Log workouts to start building your score",
+    "pillars": {
+      "strength": "Strength",
+      "endurance": "Endurance",
+      "engine": "Engine"
+    },
+    "bonuses": {
+      "volume": "Volume",
+      "pr": "PR"
+    },
+    "confidence": {
+      "LOW": "Low confidence",
+      "MEDIUM": "Medium confidence",
+      "HIGH": "High confidence"
+    }
+  }
+}

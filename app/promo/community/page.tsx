@@ -10,6 +10,10 @@ export default function CommunityPromoPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
 
+  const safePlayVideo = (video: HTMLVideoElement | null) => {
+    video?.play().catch((err: unknown) => console.warn("Play failed:", err));
+  };
+
   useEffect(() => {
     // Auto-start first video
     const firstVideo = videoRefs.current[0];
@@ -29,8 +33,7 @@ export default function CommunityPromoPage() {
       return setTimeout(() => {
         if (index < COMMUNITY_PROMO_CONFIG.videos.length - 1) {
           setCurrentVideoIndex(index + 1);
-          const nextVideo = videoRefs.current[index + 1];
-          nextVideo?.play().catch((err) => console.warn("Play failed:", err));
+          safePlayVideo(videoRefs.current[index + 1]);
         }
       }, startTime);
     });

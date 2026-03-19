@@ -21,6 +21,15 @@ import { useTranslations } from "next-intl";
 import { formatTimeDisplay } from "@/lib/time-utils";
 import { TimeInput } from "@/components/time-input";
 
+function formatSecondsToTimeString(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return hours > 0
+    ? `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
+    : `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+}
+
 interface EventVariant {
   id: string;
   name: string;
@@ -198,13 +207,7 @@ export function EventPastParticipation({
       // 2. If user provided a time and selected a variant, also create a Result
       // This will link to UserPerformanceEntry and appear in the Performance section
       if (completionTimeSeconds && selectedVariantId) {
-        const hours = Math.floor(completionTimeSeconds / 3600);
-        const minutes = Math.floor((completionTimeSeconds % 3600) / 60);
-        const secs = completionTimeSeconds % 60;
-        const timeString =
-          hours > 0
-            ? `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-            : `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        const timeString = formatSecondsToTimeString(completionTimeSeconds);
 
         try {
           const resultResponse = await fetch(`/api/events/${eventId}/results`, {
@@ -290,13 +293,7 @@ export function EventPastParticipation({
 
       // 2. Update or create Result if time is provided
       if (completionTimeSeconds && userParticipation.variantId) {
-        const hours = Math.floor(completionTimeSeconds / 3600);
-        const minutes = Math.floor((completionTimeSeconds % 3600) / 60);
-        const secs = completionTimeSeconds % 60;
-        const timeString =
-          hours > 0
-            ? `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-            : `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+        const timeString = formatSecondsToTimeString(completionTimeSeconds);
 
         // Check if result already exists for this variant
         const existingResult = userResults.find(

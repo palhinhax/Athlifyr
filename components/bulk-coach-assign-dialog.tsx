@@ -153,11 +153,9 @@ export function BulkCoachAssignDialog({
 
       const data = await response.json();
       // Filter to only show staff (OWNER, ADMIN, COACH) - exclude CLIENT role
-      const staffMembers = (data.members || []).filter(
-        (member: StaffMember) =>
-          member.role === "OWNER" ||
-          member.role === "ADMIN" ||
-          member.role === "COACH"
+      const STAFF_ROLES = new Set(["OWNER", "ADMIN", "COACH"]);
+      const staffMembers = (data.members || []).filter((member: StaffMember) =>
+        STAFF_ROLES.has(member.role)
       );
       setStaff(staffMembers);
     } catch (error) {
@@ -231,14 +229,15 @@ export function BulkCoachAssignDialog({
   };
 
   // Filter staff by search
-  const filteredStaff = staff.filter((member) => {
-    if (!debouncedSearch) return true;
-    const search = debouncedSearch.toLowerCase();
-    return (
-      member.user.name?.toLowerCase().includes(search) ||
-      member.user.email?.toLowerCase().includes(search)
-    );
-  });
+  const filteredStaff = debouncedSearch
+    ? staff.filter((member) => {
+        const search = debouncedSearch.toLowerCase();
+        return (
+          member.user.name?.toLowerCase().includes(search) ||
+          member.user.email?.toLowerCase().includes(search)
+        );
+      })
+    : staff;
 
   // Submit bulk assignment
   const handleSubmit = async () => {

@@ -52,7 +52,7 @@ const DEMO_USERS = {
   },
 };
 
-const DEMO_PASSWORD = "Test123!";
+const DEMO_PASSWORD = process.env.NEXT_PUBLIC_DEMO_PASSWORD ?? "";
 
 interface SignInFormProps {
   showDemoUsers?: boolean;
@@ -215,7 +215,7 @@ export function SignInForm({
               </div>
               <p className="mt-2 text-center text-xs text-muted-foreground">
                 Password:{" "}
-                <code className="rounded bg-muted px-1">Test123!</code>
+                <code className="rounded bg-muted px-1">{DEMO_PASSWORD}</code>
               </p>
             </div>
 
@@ -326,7 +326,7 @@ export function SignInForm({
         <p className="text-center text-sm text-muted-foreground">
           {t("noAccount")}{" "}
           <Link
-            href={`/auth/signup${callbackUrl !== "/" ? `?callbackUrl=${encodeURIComponent(callbackUrl)}` : ""}`}
+            href={`/auth/signup${callbackUrl === "/" ? "" : `?callbackUrl=${encodeURIComponent(callbackUrl)}`}`}
             className="text-primary hover:underline"
           >
             {t("createAccount")}

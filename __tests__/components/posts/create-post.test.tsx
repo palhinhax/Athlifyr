@@ -20,7 +20,6 @@ jest.mock("@/components/ui/checkbox", () => ({
   Checkbox: (props: { id?: string; checked?: boolean }) => (
     <input
       type="checkbox"
-      role="checkbox"
       id={props.id}
       defaultChecked={props.checked}
       data-testid="public-toggle"

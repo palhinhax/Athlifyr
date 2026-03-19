@@ -31,6 +31,7 @@ model User {
   nationality              String?
   emergencyContactName     String?
   emergencyContactPhone    String?
+  stripeCustomerId         String?                   @unique
   accounts                 Account[]
   comments                 Comment[]
   eventsPreferences        EventsPreferences?
@@ -110,8 +111,19 @@ model User {
   // Custom field responses (event registration extras)
   customFieldResponses    CustomFieldResponse[]
 
+  // Venue product purchases
+  venueProductPurchases  VenueProductPurchase[]
+
   // GPS-tracked run activities (Free Run, etc.)
   runActivities RunActivity[]
+
+  // Athlifyr Credits (wallet)
+  creditWallet          CreditWallet?
+  creditTransactions    CreditTransaction[]
+
+  // Scoring
+  workoutScores    WorkoutScore[]    @relation("UserWorkoutScores")
+  hybridScore      UserHybridScore?
 
   @@index([email])
   @@index([name])
@@ -682,6 +694,11 @@ model Post {
   workoutId  String? // Reference to workout for WOD posts
   sessionId  String? // Reference to venue session (optional context)
   postType   PostType      @default(STANDARD) // Type of post (STANDARD, WOD, etc.)
+  // Score snapshot — frozen at post-creation time so it is stable even
+  // if the scoring algorithm changes later.
+  workoutLogId      String? // Link to the workout log (for WOD / ACHIEVEMENT posts)
+  scoreSnapshot     Int?    // Frozen total workout score at time of post
+  scoreBreakdown    Json?   @db.JsonB // Frozen WorkoutScoreBreakdown
   event      Event?        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   venue      Venue?        @relation(fields: [venueId], references: [id], onDelete: Cascade)
@@ -949,6 +966,14 @@ model Venue {
   trainingPlans TrainingPlan[]
   sessionPlans  VenueSessionPlan[]
 
+  // Products & purchases
+  products         VenueProduct[]
+  productPurchases VenueProductPurchase[]
+
+  // Athlifyr Credits (venue ledger)
+  venueLedgerEntries   VenueLedgerEntry[]
+  venueSettlementBatches VenueSettlementBatch[]
+
   @@index([slug])
   @@index([type])
   @@index([city])
@@ -1083,32 +1108,37 @@ model VenuePlanVenue {
 }
 
 model VenueSubscription {
-  id                 String         @id @default(cuid())
-  venueId            String
-  userId             String
-  planId             String
-  status             String         @default("PENDING")
-  paymentStatus      PaymentStatus  @default(PENDING_PAYMENT)
-  activatedByUserId  String?
-  activatedAt        DateTime?
-  paymentMethod      String?
-  paymentAmount      Float?
-  paymentNote        String?
-  paymentConfirmedAt DateTime?
-  startsAt           DateTime       @default(now())
-  endsAt             DateTime?
-  createdAt          DateTime       @default(now())
-  updatedAt          DateTime       @updatedAt
-  plan               VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
-  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  venue              Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
-  bookings           VenueBooking[]
+  id                       String         @id @default(cuid())
+  venueId                  String
+  userId                   String
+  planId                   String
+  status                   String         @default("PENDING")
+  paymentStatus            PaymentStatus  @default(PENDING_PAYMENT)
+  activatedByUserId        String?
+  activatedAt              DateTime?
+  paymentMethod            String?
+  paymentAmount            Float?
+  paymentNote              String?
+  paymentConfirmedAt       DateTime?
+  startsAt                 DateTime       @default(now())
+  endsAt                   DateTime?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
+  // Stripe Billing (recurring subscriptions)
+  stripeSubscriptionId     String?        @unique
+  stripePriceId            String?
+  stripeCurrentPeriodEnd   DateTime?
+  plan                     VenuePlan      @relation(fields: [planId], references: [id], onDelete: Cascade)
+  user                     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venue                    Venue          @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  bookings                 VenueBooking[]
 
   @@index([venueId])
   @@index([userId])
   @@index([planId])
   @@index([status])
   @@index([paymentStatus])
+  @@index([stripeSubscriptionId])
 }
 
 model VenueRecurringSession {
@@ -1228,6 +1258,53 @@ model PaymentIntent {
   @@index([planId])
   @@index([status])
   @@index([createdAt])
+  @@index([stripePaymentIntentId])
+}
+
+// ============================================================================
+// VENUE PRODUCTS (simple items like water, snacks, merchandise)
+// ============================================================================
+
+model VenueProduct {
+  id          String                 @id @default(cuid())
+  venueId     String
+  name        String
+  description String?
+  price       Float
+  currency    Currency               @default(EUR)
+  stock       Int?                   // null = unlimited
+  isActive    Boolean                @default(true)
+  createdAt   DateTime               @default(now())
+  updatedAt   DateTime               @updatedAt
+  venue       Venue                  @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  purchases   VenueProductPurchase[]
+
+  @@index([venueId])
+  @@index([isActive])
+}
+
+model VenueProductPurchase {
+  id                    String              @id @default(cuid())
+  venueId               String
+  productId             String
+  userId                String
+  quantity              Int                 @default(1)
+  unitPrice             Float
+  totalAmount           Float
+  currency              Currency            @default(EUR)
+  status                PaymentIntentStatus @default(CREATED)
+  stripePaymentIntentId String?             @unique
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  confirmedAt           DateTime?
+  venue                 Venue               @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  product               VenueProduct        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user                  User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([venueId])
+  @@index([productId])
+  @@index([userId])
+  @@index([status])
   @@index([stripePaymentIntentId])
 }
 
@@ -1608,6 +1685,7 @@ enum PaymentIntentStatus {
   CONFIRMED
   FAILED
   CANCELLED
+  REFUNDED
 }
 
 enum PaymentsProvider {
@@ -2083,6 +2161,7 @@ model WorkoutLog {
   workout      Workout              @relation(fields: [workoutId], references: [id], onDelete: Cascade)
   session      VenueSession?        @relation(fields: [sessionId], references: [id])
   blockResults WorkoutBlockResult[]
+  score        WorkoutScore?
 
   @@index([userId, performedAt])
   @@index([workoutId])
@@ -2157,6 +2236,70 @@ model WorkoutExerciseSet {
   performanceEntry UserPerformanceEntry? @relation("SetPerformance")
 
   @@index([exerciseResultId])
+}
+
+// ============================================================================
+// WORKOUT SCORE (Product-facing score per workout log)
+// ============================================================================
+
+model WorkoutScore {
+  id           String @id @default(cuid())
+  workoutLogId String @unique
+  userId       String
+
+  // Composite score (0-1000)
+  totalScore Int // Stored as integer (0-1000)
+
+  // Breakdown by pillar (0-1000 each)
+  strengthScore  Int @default(0)
+  enduranceScore Int @default(0)
+  engineScore    Int @default(0)
+  volumeBonus    Int @default(0)
+  prBonus        Int @default(0)
+
+  // Metadata
+  scoreVersion Int      @default(1)
+  highlights   String[] @default([])
+  calculatedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workoutLog WorkoutLog @relation(fields: [workoutLogId], references: [id], onDelete: Cascade)
+  user       User       @relation("UserWorkoutScores", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, calculatedAt])
+  @@index([workoutLogId])
+}
+
+// ============================================================================
+// USER HYBRID SCORE (Aggregated user-level athletic score)
+// ============================================================================
+
+model UserHybridScore {
+  id     String @id @default(cuid())
+  userId String @unique
+
+  // Composite score (0-1000)
+  totalScore Int // Stored as integer (0-1000)
+
+  // Breakdown by pillar (0-1000 each)
+  strengthScore  Int @default(0)
+  enduranceScore Int @default(0)
+  engineScore    Int @default(0)
+
+  // Metadata
+  confidence   String @default("LOW") // LOW, MEDIUM, HIGH
+  scoreVersion Int    @default(1)
+  calculatedAt DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([totalScore])
 }
 
 // ============================================================================
@@ -2624,4 +2767,201 @@ model PlatformKnowledge {
   @@index([category])
   @@index([language])
   @@index([isActive])
+}
+
+// ============================================================================
+// ATHLIFYR CREDITS (WALLET) SYSTEM
+// ============================================================================
+
+enum CreditTransactionType {
+  TOP_UP
+  PURCHASE
+  REFUND
+  REWARD
+  MANUAL_ADJUSTMENT
+  SETTLEMENT
+  SETTLEMENT_REVERSAL
+}
+
+enum CreditTransactionSource {
+  STRIPE_TOP_UP
+  CHALLENGE_REWARD
+  GIVEAWAY_REWARD
+  ADMIN_BONUS
+  REFERRAL_BONUS
+  PURCHASE_CONSUMPTION
+  REFUND_RETURN
+  MANUAL
+}
+
+enum CreditTopUpStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum VenueLedgerEntryStatus {
+  PENDING
+  PROCESSING
+  SETTLED
+  REVERSED
+  FAILED
+}
+
+enum VenueSettlementStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  PARTIALLY_FAILED
+}
+
+// User's credit wallet (1 per user)
+model CreditWallet {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  balanceCents  Int      @default(0) // Current balance in cents (960 = 9.60 credits)
+  totalTopUpCents    Int  @default(0) // Lifetime top-up amount (gross)
+  totalSpentCents    Int  @default(0) // Lifetime spent
+  totalRewardedCents Int  @default(0) // Lifetime rewards received
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// Individual credit transaction (ledger entry for user wallet)
+model CreditTransaction {
+  id                     String                  @id @default(cuid())
+  userId                 String
+  type                   CreditTransactionType
+  source                 CreditTransactionSource
+  amountCents            Int                     // Positive for credits in, negative for credits out
+  balanceAfterCents      Int                     // Running balance after this transaction
+  description            String?
+  // Top-up specific fields
+  grossAmountCents       Int?                    // Amount user paid (before fee)
+  platformFeeCents       Int?                    // Platform fee deducted
+  netCreditedCents       Int?                    // Amount actually credited
+  stripePaymentIntentId  String?
+  stripeCheckoutSessionId String?
+  // Purchase specific fields
+  venueId                String?
+  venueProductId         String?
+  venueProductPurchaseId String?
+  // Reward/gamification fields
+  rewardCampaignId       String?
+  challengeId            String?
+  giveawayId             String?
+  referralId             String?
+  // Refund fields
+  refundedTransactionId  String?
+  // Settlement reference
+  settlementBatchId      String?
+  // Admin fields
+  adminUserId            String?
+  adminNote              String?
+  // Expiration (future)
+  expiresAt              DateTime?
+  // Audit
+  idempotencyKey         String?                @unique
+  createdAt              DateTime               @default(now())
+  updatedAt              DateTime               @updatedAt
+
+  user                   User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  venueLedgerEntry       VenueLedgerEntry?
+
+  @@index([userId])
+  @@index([type])
+  @@index([source])
+  @@index([venueId])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+  @@index([expiresAt])
+}
+
+// Credit top-up record (tracks the full Stripe top-up lifecycle)
+model CreditTopUp {
+  id                      String            @id @default(cuid())
+  userId                  String
+  grossAmountCents        Int               // What the user paid (e.g. 1000 = 10€)
+  platformFeeCents        Int               // Platform fee (e.g. 40 = 0.40€)
+  netCreditedCents        Int               // What was credited (e.g. 960 = 9.60 credits)
+  feePercentage           Int               @default(4) // Fee percent applied (4 = 4%)
+  currency                Currency          @default(EUR)
+  status                  CreditTopUpStatus @default(PENDING)
+  stripePaymentIntentId   String?           @unique
+  stripeCheckoutSessionId String?           @unique
+  stripeCustomerId        String?
+  completedAt             DateTime?
+  failedAt                DateTime?
+  failureReason           String?
+  idempotencyKey          String?           @unique
+  createdAt               DateTime          @default(now())
+  updatedAt               DateTime          @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([stripePaymentIntentId])
+  @@index([stripeCheckoutSessionId])
+  @@index([idempotencyKey])
+  @@index([createdAt])
+}
+
+// Venue ledger entry (tracks money owed to a venue from credit purchases)
+model VenueLedgerEntry {
+  id                   String                  @id @default(cuid())
+  venueId              String
+  creditTransactionId  String                  @unique
+  amountCents          Int                     // Amount owed to venue (positive)
+  currency             Currency                @default(EUR)
+  status               VenueLedgerEntryStatus  @default(PENDING)
+  settlementBatchId    String?
+  description          String?
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  creditTransaction    CreditTransaction       @relation(fields: [creditTransactionId], references: [id], onDelete: Cascade)
+  settlementBatch      VenueSettlementBatch?   @relation(fields: [settlementBatchId], references: [id])
+
+  @@index([venueId])
+  @@index([status])
+  @@index([settlementBatchId])
+  @@index([createdAt])
+}
+
+// Settlement batch (groups payouts to a venue)
+model VenueSettlementBatch {
+  id                   String                  @id @default(cuid())
+  venueId              String
+  totalAmountCents     Int                     // Total payout amount
+  currency             Currency                @default(EUR)
+  status               VenueSettlementStatus   @default(PENDING)
+  entriesCount         Int                     @default(0)
+  stripeTransferId     String?                 @unique
+  stripePayoutId       String?
+  periodStart          DateTime                // Start of settlement period
+  periodEnd            DateTime                // End of settlement period
+  processedAt          DateTime?
+  failedAt             DateTime?
+  failureReason        String?
+  retryCount           Int                     @default(0)
+  idempotencyKey       String                  @unique
+  createdAt            DateTime                @default(now())
+  updatedAt            DateTime                @updatedAt
+
+  venue                Venue                   @relation(fields: [venueId], references: [id], onDelete: Cascade)
+  entries              VenueLedgerEntry[]
+
+  @@index([venueId])
+  @@index([status])
+  @@index([stripeTransferId])
+  @@index([periodStart, periodEnd])
+  @@index([idempotencyKey])
+  @@index([createdAt])
 }

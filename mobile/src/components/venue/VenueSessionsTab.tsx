@@ -23,10 +23,10 @@ import type { VenueSession } from "@/src/hooks/useVenueSessions";
 import { SessionCard } from "@/src/components/venue/SessionCard";
 import { SessionDetailSheet } from "@/src/components/venue/SessionDetailSheet";
 import { SessionFormModal } from "@/src/components/venue/SessionFormModal";
-import { Toast } from "@/src/components/ui/Toast";
 import { ConfirmModal } from "@/src/components/ui/ConfirmModal";
-import { useToast } from "@/src/hooks/useToast";
 import { api } from "@/src/lib/api";
+import axios from "axios";
+import type { ToastType } from "@/src/hooks/useToast";
 import {
   eachDayOfInterval,
   format,
@@ -59,6 +59,7 @@ interface VenueSessionsTabProps {
   isOwnerOrAdmin: boolean;
   canEditSessions: boolean;
   hasActiveSubscription: boolean;
+  showToast: (message: string, type?: ToastType) => void;
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────
@@ -79,10 +80,10 @@ export function VenueSessionsTab({
   isOwnerOrAdmin,
   canEditSessions,
   hasActiveSubscription,
+  showToast,
 }: VenueSessionsTabProps) {
   const { t, i18n } = useTranslation();
   const dateLocale = dateFnsLocaleMap[i18n.language] || enUS;
-  const { toast, showToast, hideToast } = useToast();
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
 
@@ -179,8 +180,26 @@ export function VenueSessionsTab({
         showToast(t("sessions.bookingSuccess"), "success");
         // Refetch in background to sync with server
         refetch();
-      } catch {
-        showToast(t("sessions.bookingError"), "error");
+      } catch (error) {
+        let message = t("sessions.bookingError");
+        if (axios.isAxiosError(error) && error.response?.data) {
+          const reason = error.response.data.reason as string | undefined;
+          const reasonMap: Record<string, string> = {
+            ALREADY_BOOKED: t("sessions.alreadyBooked"),
+            SESSION_FULL: t("sessions.sessionFull"),
+            NO_ACTIVE_SUBSCRIPTION: t("sessions.noSubscription"),
+            MAX_TOTAL_BOOKINGS_REACHED: t("sessions.maxTotalBookingsReached"),
+            MAX_BOOKINGS_PER_DAY_REACHED: t("sessions.limitReached"),
+            MAX_BOOKINGS_PER_WEEK_REACHED: t("sessions.limitReached"),
+            MAX_BOOKINGS_PER_MONTH_REACHED: t("sessions.limitReached"),
+            BOOKING_DEADLINE_PASSED: t("sessions.bookingDeadlinePassed"),
+            SESSION_ALREADY_STARTED: t("sessions.sessionAlreadyStarted"),
+          };
+          if (reason && reasonMap[reason]) {
+            message = reasonMap[reason];
+          }
+        }
+        showToast(message, "error");
       } finally {
         setBookingInProgress(null);
       }
@@ -594,14 +613,6 @@ export function VenueSessionsTab({
                   },
                 ]
         }
-      />
-
-      {/* Toast notifications */}
-      <Toast
-        visible={toast.visible}
-        message={toast.message}
-        type={toast.type}
-        onDismiss={hideToast}
       />
     </ScrollView>
   );

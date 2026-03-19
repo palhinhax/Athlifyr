@@ -20,6 +20,8 @@ import { useTranslation } from "react-i18next";
 import { useQueryClient } from "@tanstack/react-query";
 import { theme } from "@/src/constants/theme";
 import { CachedImage } from "@/src/components/CachedImage";
+import { Toast } from "@/src/components/ui/Toast";
+import { useToast } from "@/src/hooks/useToast";
 import { useVenueDetail } from "@/src/hooks/useVenueDetail";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { VenueAboutTab } from "@/src/components/venue/VenueAboutTab";
@@ -38,6 +40,7 @@ export default function VenueDetailScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { venue, isLoading, error, refetch } = useVenueDetail(slug ?? "");
+  const { toast, showToast, hideToast } = useToast();
 
   // ── Auth & role computation ──
   const userId = useAuthStore((s) => s.user?.id) ?? null;
@@ -174,7 +177,16 @@ export default function VenueDetailScreen() {
       case "about":
         return <VenueAboutTab venue={venue} />;
       case "plans":
-        return <VenuePlansTab plans={venue.plans} />;
+        return (
+          <VenuePlansTab
+            plans={venue.plans}
+            venueId={venue.id}
+            userId={userId}
+            paymentMode={venue.paymentMode}
+            onSubscriptionChange={refetch}
+            showToast={showToast}
+          />
+        );
       case "sessions":
         return (
           <VenueSessionsTab
@@ -183,6 +195,7 @@ export default function VenueDetailScreen() {
             isOwnerOrAdmin={isOwnerOrAdmin}
             canEditSessions={canEditSessions}
             hasActiveSubscription={hasActiveSubscription}
+            showToast={showToast}
           />
         );
       case "team":
@@ -303,6 +316,14 @@ export default function VenueDetailScreen() {
         {/* Tab Content */}
         <View style={styles.tabContent}>{renderTabContent()}</View>
       </ScrollView>
+
+      {/* Toast rendered outside ScrollView so it's always visible */}
+      <Toast
+        visible={toast.visible}
+        message={toast.message}
+        type={toast.type}
+        onDismiss={hideToast}
+      />
     </>
   );
 }
@@ -447,6 +468,8 @@ const styles = StyleSheet.create({
   tabBarContent: {
     paddingHorizontal: theme.spacing.md,
     gap: 4,
+    justifyContent: "center" as const,
+    flexGrow: 1,
   },
   tabItem: {
     paddingHorizontal: 16,

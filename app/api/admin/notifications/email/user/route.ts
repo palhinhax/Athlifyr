@@ -15,6 +15,16 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
+function validateEmailFields(title: unknown, message: unknown): string | null {
+  if (!title || typeof title !== "string" || title.trim().length === 0) {
+    return "title is required";
+  }
+  if (!message || typeof message !== "string" || message.trim().length === 0) {
+    return "message is required";
+  }
+  return null;
+}
+
 /**
  * POST /api/admin/notifications/email/user
  * Send email notification to a specific user or broadcast to all eligible users (admin only)
@@ -31,19 +41,9 @@ export async function POST(request: Request) {
     const { userId, broadcast, title, message } = body;
 
     // Validate required fields
-    if (!title || typeof title !== "string" || title.trim().length === 0) {
-      return NextResponse.json({ error: "title is required" }, { status: 400 });
-    }
-
-    if (
-      !message ||
-      typeof message !== "string" ||
-      message.trim().length === 0
-    ) {
-      return NextResponse.json(
-        { error: "message is required" },
-        { status: 400 }
-      );
+    const validationError = validateEmailFields(title, message);
+    if (validationError) {
+      return NextResponse.json({ error: validationError }, { status: 400 });
     }
 
     const resend = getResendClient();

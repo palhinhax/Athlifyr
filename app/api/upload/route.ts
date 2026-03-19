@@ -35,6 +35,12 @@ function optimizeByFolder(
   }
 }
 
+/** Max upload size (MB) — admins get higher limits, videos larger than images */
+function getMaxUploadSizeMB(role: string, isVideo: boolean): number {
+  if (role === "ADMIN") return isVideo ? 100 : 20;
+  return isVideo ? 50 : 5;
+}
+
 export async function POST(request: Request) {
   try {
     const user = await getAuthUser(request);
@@ -72,8 +78,7 @@ export async function POST(request: Request) {
     // Images: Admins up to 20MB, regular users up to 5MB
     const isVideo = file.type.startsWith("video/");
     const isImage = file.type.startsWith("image/");
-    const maxSizeMB =
-      user.role === "ADMIN" ? (isVideo ? 100 : 20) : isVideo ? 50 : 5;
+    const maxSizeMB = getMaxUploadSizeMB(user.role ?? "", isVideo);
 
     // Validate file (image or video)
     const validation = validateFile(buffer, file.type, maxSizeMB);

@@ -535,6 +535,123 @@ function SavedContentTab({
       ? savedWorkouts.length > 0
       : savedPlans.length > 0;
 
+  function renderContent() {
+    if (isLoading) {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
+      );
+    }
+
+    if (!hasContent) {
+      return (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-lg font-medium">
+            {contentType === "workouts"
+              ? t("noSavedWorkouts")
+              : tPlans("noSavedPlans")}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {contentType === "workouts"
+              ? t("noSavedWorkoutsDescription")
+              : tPlans("noSavedPlansDescription")}
+          </p>
+        </div>
+      );
+    }
+
+    if (contentType === "workouts") {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {savedWorkouts.map((workout) => (
+            <WorkoutCard
+              key={workout.id}
+              workout={workout}
+              canEdit={false}
+              canSave={true}
+              onSaveToggle={onSaveToggle}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {savedPlans.map((plan) => (
+          <div
+            key={plan.id}
+            className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+          >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleUnsavePlan(e, plan.id);
+              }}
+              disabled={savingPlanId === plan.id}
+              className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
+              aria-label={tPlans("unsave")}
+            >
+              <BookmarkIcon
+                className={`h-5 w-5 fill-current text-accent transition-colors hover:text-muted-foreground ${
+                  savingPlanId === plan.id ? "animate-pulse" : ""
+                }`}
+              />
+            </button>
+            <Link
+              href={`/workouts/plans/${plan.id}`}
+              className="flex flex-1 cursor-pointer flex-col"
+            >
+              <div className="flex-1 pr-8">
+                <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
+                  {plan.name}
+                </h3>
+                {plan.description && (
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    {plan.description}
+                  </p>
+                )}
+              </div>
+              <div className="mt-auto pt-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDaysIcon className="h-4 w-4 text-p-info" />
+                  <span>
+                    {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
+                  </span>
+                </div>
+                {plan.createdBy?.name && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={plan.createdBy.image || undefined} />
+                      <AvatarFallback className="text-[10px]">
+                        {plan.createdBy.name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2) || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">
+                      {tPlans("createdByLabel")}{" "}
+                      <span className="font-medium text-foreground">
+                        {plan.createdBy.name}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Content Type Toggle */}
@@ -564,108 +681,7 @@ function SavedContentTab({
       </div>
 
       {/* Content Display */}
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
-          ))}
-        </div>
-      ) : !hasContent ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">
-            {contentType === "workouts"
-              ? t("noSavedWorkouts")
-              : tPlans("noSavedPlans")}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {contentType === "workouts"
-              ? t("noSavedWorkoutsDescription")
-              : tPlans("noSavedPlansDescription")}
-          </p>
-        </div>
-      ) : contentType === "workouts" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {savedWorkouts.map((workout) => (
-            <WorkoutCard
-              key={workout.id}
-              workout={workout}
-              canEdit={false}
-              canSave={true}
-              onSaveToggle={onSaveToggle}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {savedPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
-            >
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleUnsavePlan(e, plan.id);
-                }}
-                disabled={savingPlanId === plan.id}
-                className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
-                aria-label={tPlans("unsave")}
-              >
-                <BookmarkIcon
-                  className={`h-5 w-5 fill-current text-accent transition-colors hover:text-muted-foreground ${
-                    savingPlanId === plan.id ? "animate-pulse" : ""
-                  }`}
-                />
-              </button>
-              <Link
-                href={`/workouts/plans/${plan.id}`}
-                className="flex flex-1 cursor-pointer flex-col"
-              >
-                <div className="flex-1 pr-8">
-                  <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
-                    {plan.name}
-                  </h3>
-                  {plan.description && (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  )}
-                </div>
-                <div className="mt-auto pt-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDaysIcon className="h-4 w-4 text-p-info" />
-                    <span>
-                      {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
-                    </span>
-                  </div>
-                  {plan.createdBy?.name && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={plan.createdBy.image || undefined} />
-                        <AvatarFallback className="text-[10px]">
-                          {plan.createdBy.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2) || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-muted-foreground">
-                        {tPlans("createdByLabel")}{" "}
-                        <span className="font-medium text-foreground">
-                          {plan.createdBy.name}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 }
@@ -795,6 +811,132 @@ function PublicContentTab({
       ? filteredWorkouts.length > 0
       : filteredPlans.length > 0;
 
+  function renderContent() {
+    if (isLoading) {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
+          ))}
+        </div>
+      );
+    }
+
+    if (!hasContent) {
+      return (
+        <div className="rounded-lg border border-dashed p-12 text-center">
+          <p className="text-lg font-medium">
+            {searchQuery ? t("noSearchResults") : t("noPublicContent")}
+          </p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {searchQuery
+              ? t("noSearchResultsDescription")
+              : t("noPublicContentDescription")}
+          </p>
+          {searchQuery && (
+            <Button
+              variant="outline"
+              onClick={() => setSearchQuery("")}
+              className="mt-4"
+            >
+              {t("clearSearch")}
+            </Button>
+          )}
+        </div>
+      );
+    }
+
+    if (contentType === "workouts") {
+      return (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {filteredWorkouts.map((workout) => (
+            <WorkoutCard
+              key={workout.id}
+              workout={workout}
+              canEdit={false}
+              canSave={true}
+              onSaveToggle={onSaveToggle}
+            />
+          ))}
+        </div>
+      );
+    }
+
+    return (
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredPlans.map((plan) => (
+          <div
+            key={plan.id}
+            className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
+          >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleSavePlan(e, plan.id, !!plan.isSaved);
+              }}
+              disabled={savingPlanId === plan.id}
+              className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
+              aria-label={plan.isSaved ? tPlans("unsave") : tPlans("save")}
+            >
+              <BookmarkIcon
+                className={`h-5 w-5 transition-colors ${
+                  plan.isSaved
+                    ? "fill-current text-accent"
+                    : "text-muted-foreground hover:text-accent"
+                } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
+              />
+            </button>
+            <Link
+              href={`/workouts/plans/${plan.id}`}
+              className="flex flex-1 cursor-pointer flex-col"
+            >
+              <div className="flex-1 pr-8">
+                <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
+                  {plan.name}
+                </h3>
+                {plan.description && (
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
+                    {plan.description}
+                  </p>
+                )}
+              </div>
+              <div className="mt-auto pt-4">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarDaysIcon className="h-4 w-4 text-p-info" />
+                  <span>
+                    {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
+                  </span>
+                </div>
+                {plan.createdBy?.name && (
+                  <div className="mt-2 flex items-center gap-2">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={plan.createdBy.image || undefined} />
+                      <AvatarFallback className="text-[10px]">
+                        {plan.createdBy.name
+                          ?.split(" ")
+                          .map((n: string) => n[0])
+                          .join("")
+                          .toUpperCase()
+                          .slice(0, 2) || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-xs text-muted-foreground">
+                      {tPlans("createdByLabel")}{" "}
+                      <span className="font-medium text-foreground">
+                        {plan.createdBy.name}
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Content Type Toggle and Search */}
@@ -831,117 +973,7 @@ function PublicContentTab({
       </div>
 
       {/* Content Display */}
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-48 animate-pulse rounded-lg bg-muted" />
-          ))}
-        </div>
-      ) : !hasContent ? (
-        <div className="rounded-lg border border-dashed p-12 text-center">
-          <p className="text-lg font-medium">
-            {searchQuery ? t("noSearchResults") : t("noPublicContent")}
-          </p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {searchQuery
-              ? t("noSearchResultsDescription")
-              : t("noPublicContentDescription")}
-          </p>
-          {searchQuery && (
-            <Button
-              variant="outline"
-              onClick={() => setSearchQuery("")}
-              className="mt-4"
-            >
-              {t("clearSearch")}
-            </Button>
-          )}
-        </div>
-      ) : contentType === "workouts" ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredWorkouts.map((workout) => (
-            <WorkoutCard
-              key={workout.id}
-              workout={workout}
-              canEdit={false}
-              canSave={true}
-              onSaveToggle={onSaveToggle}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredPlans.map((plan) => (
-            <div
-              key={plan.id}
-              className="group relative flex h-full flex-col rounded-lg border p-4 transition-colors hover:border-accent/30 hover:bg-muted/50 hover:shadow-md"
-            >
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleSavePlan(e, plan.id, !!plan.isSaved);
-                }}
-                disabled={savingPlanId === plan.id}
-                className="absolute right-3 top-3 z-10 rounded-full p-1.5 transition-colors hover:bg-muted"
-                aria-label={plan.isSaved ? tPlans("unsave") : tPlans("save")}
-              >
-                <BookmarkIcon
-                  className={`h-5 w-5 transition-colors ${
-                    plan.isSaved
-                      ? "fill-current text-accent"
-                      : "text-muted-foreground hover:text-accent"
-                  } ${savingPlanId === plan.id ? "animate-pulse" : ""}`}
-                />
-              </button>
-              <Link
-                href={`/workouts/plans/${plan.id}`}
-                className="flex flex-1 cursor-pointer flex-col"
-              >
-                <div className="flex-1 pr-8">
-                  <h3 className="line-clamp-1 font-semibold group-hover:text-accent">
-                    {plan.name}
-                  </h3>
-                  {plan.description && (
-                    <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
-                      {plan.description}
-                    </p>
-                  )}
-                </div>
-                <div className="mt-auto pt-4">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <CalendarDaysIcon className="h-4 w-4 text-p-info" />
-                    <span>
-                      {plan.weeks?.length ?? 0} {tPlans("weeksCount")}
-                    </span>
-                  </div>
-                  {plan.createdBy?.name && (
-                    <div className="mt-2 flex items-center gap-2">
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={plan.createdBy.image || undefined} />
-                        <AvatarFallback className="text-[10px]">
-                          {plan.createdBy.name
-                            ?.split(" ")
-                            .map((n: string) => n[0])
-                            .join("")
-                            .toUpperCase()
-                            .slice(0, 2) || "?"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-xs text-muted-foreground">
-                        {tPlans("createdByLabel")}{" "}
-                        <span className="font-medium text-foreground">
-                          {plan.createdBy.name}
-                        </span>
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 }

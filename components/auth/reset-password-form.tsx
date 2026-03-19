@@ -33,15 +33,15 @@ export function ResetPasswordForm() {
 
   useEffect(() => {
     const tokenParam = searchParams.get("token");
-    if (!tokenParam) {
+    if (tokenParam) {
+      setToken(tokenParam);
+    } else {
       toast({
         title: "Token inválido",
         description: "Link de recuperação inválido ou expirado",
         variant: "destructive",
       });
       router.push(`/${locale}/auth/forgot-password`);
-    } else {
-      setToken(tokenParam);
     }
   }, [searchParams, router, toast, locale]);
 

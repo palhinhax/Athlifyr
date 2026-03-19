@@ -33,6 +33,57 @@ interface UseTimerOptions {
 // Preparation countdown duration in seconds
 const PREP_COUNTDOWN_SECONDS = 10;
 
+// ─── Pure timer computation helpers ─────────────────────────────────────────
+
+function computeTabataState(
+  elapsed: number,
+  work: number,
+  rest: number
+): { round: number; phase: TimerPhase } {
+  const cycleTime = work + rest;
+  const positionInCycle = elapsed % cycleTime;
+  return {
+    round: Math.floor(elapsed / cycleTime) + 1,
+    phase: positionInCycle < work ? "WORK" : "REST",
+  };
+}
+
+function computeEmomState(
+  elapsed: number,
+  intervalSeconds: number,
+  totalMinutes: number
+): { round: number; intervalRemaining: number; minuteTransition: boolean } {
+  const currentMinute = Math.floor(elapsed / intervalSeconds) + 1;
+  const positionInInterval = elapsed % intervalSeconds;
+  const prevMinute = Math.floor((elapsed - 1) / intervalSeconds) + 1;
+  return {
+    round: Math.min(currentMinute, totalMinutes),
+    intervalRemaining: intervalSeconds - positionInInterval,
+    minuteTransition:
+      currentMinute > prevMinute && currentMinute <= totalMinutes,
+  };
+}
+
+function computeIntervalsState(
+  elapsed: number,
+  work: number,
+  rest: number,
+  totalRounds: number
+): { round: number; phase: TimerPhase; intervalRemaining: number } {
+  const cycleTime = work + rest;
+  const completedCycles = Math.floor(elapsed / cycleTime);
+  const positionInCycle = elapsed % cycleTime;
+  const isWorkPhase = positionInCycle < work;
+  return {
+    round: Math.min(completedCycles + 1, totalRounds),
+    phase: isWorkPhase ? "WORK" : "REST",
+    intervalRemaining: Math.max(
+      0,
+      isWorkPhase ? work - positionInCycle : rest - (positionInCycle - work)
+    ),
+  };
+}
+
 interface UseTimerReturn extends TimerState, TimerActions {
   getTotalDuration: () => number;
   getDisplayTime: () => number;
@@ -269,87 +320,55 @@ export function useTimer({
 
         // Handle TABATA phase changes
         if (config.mode === "TABATA") {
-          const work = config.tabataWork || 20;
-          const rest = config.tabataRest || 10;
-          const cycleTime = work + rest;
-          const positionInCycle = elapsed % cycleTime;
-          const round = Math.floor(elapsed / cycleTime) + 1;
-          const newPhase: TimerPhase = positionInCycle < work ? "WORK" : "REST";
-
-          setCurrentRound(round);
-
-          // Detect phase change
+          const tabata = computeTabataState(
+            elapsed,
+            config.tabataWork || 20,
+            config.tabataRest || 10
+          );
+          setCurrentRound(tabata.round);
           if (
-            newPhase !== prevPhaseRef.current &&
+            tabata.phase !== prevPhaseRef.current &&
             prevPhaseRef.current !== "IDLE"
           ) {
-            onPhaseChange?.(newPhase);
+            onPhaseChange?.(tabata.phase);
           }
-          prevPhaseRef.current = newPhase;
-          setCurrentPhase(newPhase);
+          prevPhaseRef.current = tabata.phase;
+          setCurrentPhase(tabata.phase);
         }
 
         // Handle EMOM - countdown per interval, no WORK/REST phases
         if (config.mode === "EMOM") {
-          const intervalSeconds = config.emomIntervalSeconds || 60;
-          const totalMinutes = config.emomMinutes || 10;
-
-          // Calculate current minute (1-based)
-          const currentMinute = Math.floor(elapsed / intervalSeconds) + 1;
-
-          // Calculate remaining seconds in current interval (countdown from intervalSeconds to 0)
-          const positionInInterval = elapsed % intervalSeconds;
-          const secondsRemaining = intervalSeconds - positionInInterval;
-
-          // Detect minute transition (beep at start of each new minute)
-          const prevMinute = Math.floor((elapsed - 1) / intervalSeconds) + 1;
-          if (currentMinute > prevMinute && currentMinute <= totalMinutes) {
-            onPhaseChange?.("WORK"); // Use WORK as signal for EMOM minute transition
+          const emom = computeEmomState(
+            elapsed,
+            config.emomIntervalSeconds || 60,
+            config.emomMinutes || 10
+          );
+          if (emom.minuteTransition) {
+            onPhaseChange?.("WORK");
           }
-
-          setCurrentRound(Math.min(currentMinute, totalMinutes));
-          setIntervalRemaining(secondsRemaining);
-
-          // EMOM has no WORK/REST phases - always WORK (athlete manages their own rest)
+          setCurrentRound(emom.round);
+          setIntervalRemaining(emom.intervalRemaining);
           setCurrentPhase("WORK");
         }
 
         // Handle INTERVALS - work/rest cycles with countdown per phase
         if (config.mode === "INTERVALS") {
-          const work = config.intervalsWork || 120;
-          const rest = config.intervalsRest || 60;
-          const totalRounds = config.intervalsRounds || 10;
-          const cycleTime = work + rest;
-
-          // Calculate current round (1-based) - round increments after REST is complete
-          const completedCycles = Math.floor(elapsed / cycleTime);
-          const positionInCycle = elapsed % cycleTime;
-          const isWorkPhase = positionInCycle < work;
-          const newPhase: TimerPhase = isWorkPhase ? "WORK" : "REST";
-
-          // Round is 1-based, increments after REST is complete
-          const round = Math.min(completedCycles + 1, totalRounds);
-
-          // Detect phase change
+          const intervals = computeIntervalsState(
+            elapsed,
+            config.intervalsWork || 120,
+            config.intervalsRest || 60,
+            config.intervalsRounds || 10
+          );
           if (
-            newPhase !== prevPhaseRef.current &&
+            intervals.phase !== prevPhaseRef.current &&
             prevPhaseRef.current !== "IDLE"
           ) {
-            onPhaseChange?.(newPhase);
+            onPhaseChange?.(intervals.phase);
           }
-          prevPhaseRef.current = newPhase;
-
-          // Calculate remaining seconds in current phase (countdown)
-          let phaseRemaining: number;
-          if (isWorkPhase) {
-            phaseRemaining = work - positionInCycle;
-          } else {
-            phaseRemaining = rest - (positionInCycle - work);
-          }
-
-          setCurrentRound(round);
-          setIntervalRemaining(Math.max(0, phaseRemaining));
-          setCurrentPhase(isWorkPhase ? "WORK" : "REST");
+          prevPhaseRef.current = intervals.phase;
+          setCurrentRound(intervals.round);
+          setIntervalRemaining(intervals.intervalRemaining);
+          setCurrentPhase(intervals.phase);
         }
 
         animationFrameId = requestAnimationFrame(updateTimer);

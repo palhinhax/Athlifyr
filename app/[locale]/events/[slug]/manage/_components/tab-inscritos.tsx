@@ -510,77 +510,94 @@ export function TabInscritos({ event, isAdmin = false }: TabInscritosProps) {
     }
 
     // Build headers + getters from visible columns
+    const columnDefs: {
+      key: string;
+      header: string;
+      getter: (e: RegistrationEntry) => string;
+      requiresRegistrations?: boolean;
+    }[] = [
+      { key: "name", header: t("csvName"), getter: (e) => e.userName ?? "" },
+      {
+        key: "bibNumber",
+        header: t("csvBib"),
+        getter: (e) => e.bibNumber ?? "",
+        requiresRegistrations: true,
+      },
+      { key: "email", header: t("csvEmail"), getter: (e) => e.userEmail },
+      {
+        key: "variant",
+        header: t("csvVariant"),
+        getter: (e) => e.variantName ?? "",
+      },
+      { key: "status", header: t("csvStatus"), getter: (e) => e.status },
+      {
+        key: "checkIn",
+        header: t("columnCheckIn"),
+        getter: (e) =>
+          e.checkedInAt
+            ? new Date(e.checkedInAt).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "",
+        requiresRegistrations: true,
+      },
+      {
+        key: "amount",
+        header: t("csvAmount"),
+        getter: (e) =>
+          e.amountCents && e.currency
+            ? formatAmount(e.amountCents, e.currency)
+            : "",
+        requiresRegistrations: true,
+      },
+      {
+        key: "date",
+        header: t("csvDate"),
+        getter: (e) => new Date(e.createdAt).toLocaleDateString(),
+      },
+      {
+        key: "phone",
+        header: t("columnPhone"),
+        getter: (e) => e.phone ?? "",
+      },
+      {
+        key: "citizenId",
+        header: t("columnCitizenId"),
+        getter: (e) => e.citizenId ?? "",
+      },
+      {
+        key: "dateOfBirth",
+        header: t("columnDateOfBirth"),
+        getter: (e) =>
+          e.dateOfBirth ? new Date(e.dateOfBirth).toLocaleDateString() : "",
+      },
+      {
+        key: "nationality",
+        header: t("columnNationality"),
+        getter: (e) => e.nationality ?? "",
+      },
+      {
+        key: "emergencyContactName",
+        header: t("columnEmergencyName"),
+        getter: (e) => e.emergencyContactName ?? "",
+      },
+      {
+        key: "emergencyContactPhone",
+        header: t("columnEmergencyPhone"),
+        getter: (e) => e.emergencyContactPhone ?? "",
+      },
+    ];
+
     const headers: string[] = [];
     const columnGetters: ((entry: RegistrationEntry) => string)[] = [];
 
-    if (visibleColumns.name) {
-      headers.push(t("csvName"));
-      columnGetters.push((e) => e.userName ?? "");
-    }
-    if (event.hasRegistrations && visibleColumns.bibNumber) {
-      headers.push(t("csvBib"));
-      columnGetters.push((e) => e.bibNumber ?? "");
-    }
-    if (visibleColumns.email) {
-      headers.push(t("csvEmail"));
-      columnGetters.push((e) => e.userEmail);
-    }
-    if (visibleColumns.variant) {
-      headers.push(t("csvVariant"));
-      columnGetters.push((e) => e.variantName ?? "");
-    }
-    if (visibleColumns.status) {
-      headers.push(t("csvStatus"));
-      columnGetters.push((e) => e.status);
-    }
-    if (event.hasRegistrations && visibleColumns.checkIn) {
-      headers.push(t("columnCheckIn"));
-      columnGetters.push((e) =>
-        e.checkedInAt
-          ? new Date(e.checkedInAt).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : ""
-      );
-    }
-    if (event.hasRegistrations && visibleColumns.amount) {
-      headers.push(t("csvAmount"));
-      columnGetters.push((e) =>
-        e.amountCents && e.currency
-          ? formatAmount(e.amountCents, e.currency)
-          : ""
-      );
-    }
-    if (visibleColumns.date) {
-      headers.push(t("csvDate"));
-      columnGetters.push((e) => new Date(e.createdAt).toLocaleDateString());
-    }
-    if (visibleColumns.phone) {
-      headers.push(t("columnPhone"));
-      columnGetters.push((e) => e.phone ?? "");
-    }
-    if (visibleColumns.citizenId) {
-      headers.push(t("columnCitizenId"));
-      columnGetters.push((e) => e.citizenId ?? "");
-    }
-    if (visibleColumns.dateOfBirth) {
-      headers.push(t("columnDateOfBirth"));
-      columnGetters.push((e) =>
-        e.dateOfBirth ? new Date(e.dateOfBirth).toLocaleDateString() : ""
-      );
-    }
-    if (visibleColumns.nationality) {
-      headers.push(t("columnNationality"));
-      columnGetters.push((e) => e.nationality ?? "");
-    }
-    if (visibleColumns.emergencyContactName) {
-      headers.push(t("columnEmergencyName"));
-      columnGetters.push((e) => e.emergencyContactName ?? "");
-    }
-    if (visibleColumns.emergencyContactPhone) {
-      headers.push(t("columnEmergencyPhone"));
-      columnGetters.push((e) => e.emergencyContactPhone ?? "");
+    for (const col of columnDefs) {
+      if (col.requiresRegistrations && !event.hasRegistrations) continue;
+      if (visibleColumns[col.key]) {
+        headers.push(col.header);
+        columnGetters.push(col.getter);
+      }
     }
 
     // Custom field columns

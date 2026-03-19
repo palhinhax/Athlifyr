@@ -71,10 +71,10 @@ jest.mock("@/components/ui/card", () => ({
     children,
     onClick,
     ...rest
-  }: React.HTMLAttributes<HTMLDivElement>) => (
-    <div data-testid="card" onClick={onClick} {...rest}>
+  }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
+    <button type="button" data-testid="card" onClick={onClick} {...rest}>
       {children}
-    </div>
+    </button>
   ),
   CardContent: ({
     children,
@@ -116,20 +116,11 @@ jest.mock("@/components/ui/label", () => ({
 }));
 
 jest.mock("@/components/ui/dialog", () => ({
-  Dialog: ({
-    children,
-    open,
-  }: {
-    children: React.ReactNode;
-    open: boolean;
-    onOpenChange?: (open: boolean) => void;
-  }) => (open ? <div data-testid="dialog">{children}</div> : null),
-  DialogContent: ({
-    children,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div data-testid="dialog-content">{children}</div>,
+  Dialog: ({ children, open }: { children: React.ReactNode; open: boolean }) =>
+    open ? <div data-testid="dialog">{children}</div> : null,
+  DialogContent: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="dialog-content">{children}</div>
+  ),
   DialogHeader: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
   ),
@@ -139,12 +130,9 @@ jest.mock("@/components/ui/dialog", () => ({
   DialogDescription: ({ children }: { children: React.ReactNode }) => (
     <p>{children}</p>
   ),
-  DialogFooter: ({
-    children,
-  }: {
-    children: React.ReactNode;
-    className?: string;
-  }) => <div data-testid="dialog-footer">{children}</div>,
+  DialogFooter: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="dialog-footer">{children}</div>
+  ),
 }));
 
 jest.mock("@/components/ui/alert-dialog", () => ({
@@ -154,7 +142,6 @@ jest.mock("@/components/ui/alert-dialog", () => ({
   }: {
     children: React.ReactNode;
     open: boolean;
-    onOpenChange?: (open: boolean) => void;
   }) => (open ? <div data-testid="alert-dialog">{children}</div> : null),
   AlertDialogContent: ({ children }: { children: React.ReactNode }) => (
     <div>{children}</div>
@@ -201,7 +188,6 @@ jest.mock("@/components/ui/select", () => {
       children: React.ReactNode;
       onValueChange?: (v: string) => void;
       value?: string;
-      disabled?: boolean;
     }) => (
       <SelectContext.Provider value={onValueChange}>
         <div data-testid="select" data-value={value}>
@@ -227,9 +213,13 @@ jest.mock("@/components/ui/select", () => {
     }) => {
       const onChange = React.useContext(SelectContext);
       return (
-        <div data-value={value} onClick={() => onChange?.(value)}>
+        <button
+          type="button"
+          data-value={value}
+          onClick={() => onChange?.(value)}
+        >
           {children}
-        </div>
+        </button>
       );
     },
   };

@@ -11,6 +11,7 @@ import {
   ScrollView,
   ActivityIndicator,
   FlatList,
+  Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X, Search, Plus } from "lucide-react-native";
@@ -27,6 +28,8 @@ interface Exercise {
   category: string;
   isGlobal: boolean;
 }
+
+const noop = () => {};
 
 interface AddStrengthSheetProps {
   visible: boolean;
@@ -175,154 +178,176 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
+      transparent
+      animationType="fade"
+      statusBarTranslucent
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
+        style={styles.backdrop}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("performance.strength.addTitle")}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X size={24} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Exercise Search */}
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {t("performance.strength.exercise")} *
-            </Text>
-            <View style={styles.searchContainer}>
-              <Search
-                size={18}
-                color={theme.colors.textTertiary}
-                style={styles.searchIcon}
-              />
-              <TextInput
-                style={styles.searchInput}
-                placeholder={t("performance.strength.searchExercise")}
-                placeholderTextColor={theme.colors.textTertiary}
-                value={exerciseQuery}
-                onChangeText={(text) => {
-                  setExerciseQuery(text);
-                  if (selectedExercise) setSelectedExercise(null);
-                }}
-                onFocus={() => {
-                  if (exercises.length > 0) setShowDropdown(true);
-                }}
-              />
-              {isSearching && (
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.primary}
-                  style={styles.searchSpinner}
-                />
-              )}
+        <Pressable style={styles.backdropPressable} onPress={onClose}>
+          <Pressable style={styles.card} onPress={noop}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {t("performance.strength.addTitle")}
+              </Text>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.closeButton}
+                hitSlop={12}
+                activeOpacity={0.7}
+              >
+                <X size={20} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
             </View>
 
-            {/* Dropdown */}
-            {showDropdown && !selectedExercise && (
-              <View style={styles.dropdown}>
-                {exercises.length > 0 ? (
-                  <FlatList
-                    data={exercises}
-                    keyExtractor={(item) => item.id}
-                    scrollEnabled={false}
-                    renderItem={({ item }) => (
-                      <TouchableOpacity
-                        style={styles.dropdownItem}
-                        onPress={() => {
-                          setSelectedExercise(item);
-                          setExerciseQuery(item.name);
-                          setShowDropdown(false);
-                        }}
-                      >
-                        <Text style={styles.dropdownItemText}>{item.name}</Text>
-                      </TouchableOpacity>
-                    )}
+            <ScrollView
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Exercise Search */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.strength.exercise")} *
+                </Text>
+                <View style={styles.searchContainer}>
+                  <Search
+                    size={18}
+                    color={theme.colors.textTertiary}
+                    style={styles.searchIcon}
                   />
-                ) : (
-                  exerciseQuery.length > 0 &&
-                  !isSearching && (
-                    <TouchableOpacity
-                      style={styles.dropdownItem}
-                      onPress={handleCreateExercise}
-                    >
-                      <Plus size={16} color={theme.colors.primary} />
-                      <Text style={styles.createText}>
-                        {t("performance.strength.createExercise", {
-                          name: exerciseQuery,
-                        })}
-                      </Text>
-                    </TouchableOpacity>
-                  )
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder={t("performance.strength.searchExercise")}
+                    placeholderTextColor={theme.colors.textTertiary}
+                    value={exerciseQuery}
+                    onChangeText={(text) => {
+                      setExerciseQuery(text);
+                      if (selectedExercise) setSelectedExercise(null);
+                    }}
+                    onFocus={() => {
+                      if (exercises.length > 0) setShowDropdown(true);
+                    }}
+                  />
+                  {isSearching && (
+                    <ActivityIndicator
+                      size="small"
+                      color={theme.colors.primary}
+                      style={styles.searchSpinner}
+                    />
+                  )}
+                </View>
+
+                {/* Dropdown */}
+                {showDropdown && !selectedExercise && (
+                  <View style={styles.dropdown}>
+                    {exercises.length > 0 ? (
+                      <FlatList
+                        data={exercises}
+                        keyExtractor={(item) => item.id}
+                        scrollEnabled={false}
+                        renderItem={({ item }) => (
+                          <TouchableOpacity
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                              setSelectedExercise(item);
+                              setExerciseQuery(item.name);
+                              setShowDropdown(false);
+                            }}
+                          >
+                            <Text style={styles.dropdownItemText}>
+                              {item.name}
+                            </Text>
+                          </TouchableOpacity>
+                        )}
+                      />
+                    ) : (
+                      exerciseQuery.length > 0 &&
+                      !isSearching && (
+                        <TouchableOpacity
+                          style={styles.dropdownItem}
+                          onPress={handleCreateExercise}
+                        >
+                          <Plus size={16} color={theme.colors.primary} />
+                          <Text style={styles.createText}>
+                            {t("performance.strength.createExercise", {
+                              name: exerciseQuery,
+                            })}
+                          </Text>
+                        </TouchableOpacity>
+                      )
+                    )}
+                  </View>
                 )}
               </View>
-            )}
-          </View>
 
-          {/* Reps */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.strength.reps")} *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="10"
-              placeholderTextColor={theme.colors.textTertiary}
-              keyboardType="number-pad"
-              value={reps}
-              onChangeText={setReps}
-            />
-          </View>
+              {/* Reps */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.strength.reps")} *
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="10"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="number-pad"
+                  value={reps}
+                  onChangeText={setReps}
+                />
+              </View>
 
-          {/* Weight */}
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {t("performance.strength.weight")} *
-            </Text>
-            <TextInput
-              style={styles.input}
-              placeholder="80"
-              placeholderTextColor={theme.colors.textTertiary}
-              keyboardType="decimal-pad"
-              value={weight}
-              onChangeText={setWeight}
-            />
-            <Text style={styles.hint}>
-              {t("performance.strength.weightHint")}
-            </Text>
-          </View>
-        </ScrollView>
+              {/* Weight */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.strength.weight")} *
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="80"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="decimal-pad"
+                  value={weight}
+                  onChangeText={setWeight}
+                />
+                <Text style={styles.hint}>
+                  {t("performance.strength.weightHint")}
+                </Text>
+              </View>
+            </ScrollView>
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={onClose}
-            disabled={isCreating}
-          >
-            <Text style={styles.cancelBtnText}>{t("performance.cancel")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
-            onPress={handleSave}
-            disabled={isCreating}
-          >
-            {isCreating ? (
-              <ActivityIndicator size="small" color={theme.colors.white} />
-            ) : (
-              <Text style={styles.saveBtnText}>{t("performance.save")}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+            {/* Actions */}
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={onClose}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelBtnText}>
+                  {t("performance.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
+                onPress={handleSave}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                {isCreating ? (
+                  <ActivityIndicator size="small" color={theme.colors.white} />
+                ) : (
+                  <Text style={styles.saveBtnText}>
+                    {t("performance.save")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
       </KeyboardAvoidingView>
 
       {/* Toast notifications */}
@@ -337,33 +362,45 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  backdrop: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  backdropPressable: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: "100%",
+    maxHeight: "85%",
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.xl,
+    paddingTop: 24,
+    paddingBottom: 20,
+    ...theme.shadows.xl,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingHorizontal: 24,
+    marginBottom: theme.spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
   },
   closeButton: {
-    padding: theme.spacing.xs,
+    padding: 4,
   },
   content: {
-    flex: 1,
+    flexGrow: 0,
   },
   contentContainer: {
-    padding: theme.spacing.lg,
+    paddingHorizontal: 24,
     gap: theme.spacing.lg,
   },
   field: {
@@ -382,7 +419,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: theme.colors.text,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
   },
   hint: {
     fontSize: 12,
@@ -394,7 +431,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
   },
   searchIcon: {
     marginLeft: theme.spacing.md,
@@ -413,7 +450,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
     maxHeight: 200,
     overflow: "hidden",
   },
@@ -438,18 +475,18 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    paddingHorizontal: 24,
+    paddingTop: theme.spacing.lg,
   },
   cancelBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   cancelBtnText: {
     fontSize: 16,
@@ -459,9 +496,11 @@ const styles = StyleSheet.create({
   saveBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.primary,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   saveBtnDisabled: {
     opacity: 0.6,

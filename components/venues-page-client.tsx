@@ -59,6 +59,33 @@ interface PaginationInfo {
   hasMore: boolean;
 }
 
+function buildVenueSearchParams(
+  filters: VenuesFiltersType,
+  page: number
+): URLSearchParams {
+  const params = new URLSearchParams();
+  params.append("page", page.toString());
+  params.append("pageSize", "12");
+
+  if (filters.services && filters.services.length > 0) {
+    filters.services.forEach((service) => params.append("services", service));
+  }
+  if (filters.searchQuery) {
+    params.append("search", filters.searchQuery);
+  }
+  if (
+    filters.locationEnabled &&
+    filters.userLat &&
+    filters.userLng &&
+    filters.distanceRadius
+  ) {
+    params.append("lat", filters.userLat.toString());
+    params.append("lng", filters.userLng.toString());
+    params.append("radius", filters.distanceRadius.toString());
+  }
+  return params;
+}
+
 export function VenuesPageClient() {
   const t = useTranslations("venues");
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -110,31 +137,7 @@ export function VenuesPageClient() {
         }
         setError(null);
 
-        const params = new URLSearchParams();
-        params.append("page", page.toString());
-        params.append("pageSize", "12");
-
-        if (filters.services && filters.services.length > 0) {
-          filters.services.forEach((service) =>
-            params.append("services", service)
-          );
-        }
-
-        if (filters.searchQuery) {
-          params.append("search", filters.searchQuery);
-        }
-
-        // Add location-based filtering params
-        if (
-          filters.locationEnabled &&
-          filters.userLat &&
-          filters.userLng &&
-          filters.distanceRadius
-        ) {
-          params.append("lat", filters.userLat.toString());
-          params.append("lng", filters.userLng.toString());
-          params.append("radius", filters.distanceRadius.toString());
-        }
+        const params = buildVenueSearchParams(filters, page);
 
         const response = await fetch(`/api/venues?${params}`);
         if (!response.ok) {

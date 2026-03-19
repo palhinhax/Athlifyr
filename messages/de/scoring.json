@@ -1,0 +1,21 @@
+{
+  "scoring": {
+    "workoutScore": "Trainingswertung",
+    "hybridScore": "Hybridwertung",
+    "noDataYet": "Trainiere, um deine Wertung aufzubauen",
+    "pillars": {
+      "strength": "Kraft",
+      "endurance": "Ausdauer",
+      "engine": "Motor"
+    },
+    "bonuses": {
+      "volume": "Volumen",
+      "pr": "PB"
+    },
+    "confidence": {
+      "LOW": "Geringe Zuverlässigkeit",
+      "MEDIUM": "Mittlere Zuverlässigkeit",
+      "HIGH": "Hohe Zuverlässigkeit"
+    }
+  }
+}

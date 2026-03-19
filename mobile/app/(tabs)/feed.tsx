@@ -8,7 +8,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
+import { useTranslation } from "react-i18next";
 import { MessageSquare } from "lucide-react-native";
 import { useFeedPosts, type FeedPost } from "@/src/hooks/useFeedPosts";
 import { PostCard } from "@/src/components/PostCard";

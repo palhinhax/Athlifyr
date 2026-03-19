@@ -7,6 +7,47 @@ import {
   DEFAULT_PLAN_POLICY,
 } from "@/types/venue-plan";
 
+function buildActivationData(
+  existingSubscription: {
+    startsAt: Date;
+    endsAt: Date | null;
+    userId: string;
+    planId: string;
+    plan: { policy: unknown };
+  },
+  activatingUserId: string,
+  explicitStartsAt: string | undefined,
+  explicitEndsAt: string | null | undefined
+): Record<string, unknown> {
+  const data: Record<string, unknown> = {
+    activatedByUserId: activatingUserId,
+    activatedAt: new Date(),
+  };
+
+  // Set startsAt to now if not explicitly provided and subscription hasn't started yet
+  if (!explicitStartsAt && existingSubscription.startsAt > new Date()) {
+    data.startsAt = new Date();
+  }
+
+  // Compute endsAt from plan policy if not explicitly provided
+  if (explicitEndsAt === undefined && !existingSubscription.endsAt) {
+    const planPolicy = existingSubscription.plan
+      .policy as unknown as VenuePlanPolicy | null;
+    const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
+    const durationValue =
+      planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
+    const effectiveStartsAt =
+      (data.startsAt as Date) || existingSubscription.startsAt;
+    data.endsAt = calculatePlanEndDate(
+      effectiveStartsAt,
+      duration,
+      durationValue
+    );
+  }
+
+  return data;
+}
+
 // PATCH - Update subscription (owner/admin only)
 export async function PATCH(
   request: Request,
@@ -76,33 +117,15 @@ export async function PATCH(
     // When activating a subscription (status changing to ACTIVE),
     // auto-set activation fields and compute endsAt from plan policy
     if (status === "ACTIVE" && existingSubscription.status !== "ACTIVE") {
-      updateData.activatedByUserId = session.user.id;
-      updateData.activatedAt = new Date();
-
-      // Set startsAt to now if not explicitly provided and subscription hasn't started yet
-      if (!startsAt && existingSubscription.startsAt > new Date()) {
-        updateData.startsAt = new Date();
-      }
-
-      // Compute endsAt from plan policy if not explicitly provided
-      if (endsAt === undefined && !existingSubscription.endsAt) {
-        const planPolicy = existingSubscription.plan
-          .policy as unknown as VenuePlanPolicy | null;
-        const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
-        const durationValue =
-          planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
-        const effectiveStartsAt =
-          (updateData.startsAt as Date) || existingSubscription.startsAt;
-        const computedEndsAt = calculatePlanEndDate(
-          effectiveStartsAt,
-          duration,
-          durationValue
-        );
-        updateData.endsAt = computedEndsAt;
-      }
+      const activationData = buildActivationData(
+        existingSubscription,
+        session.user.id,
+        startsAt,
+        endsAt
+      );
+      Object.assign(updateData, activationData);
 
       // Mark any other ACTIVE subscriptions for the same plan+user as COMPLETED
-      // This handles the case where an exhausted pack wasn't properly completed
       await prisma.venueSubscription.updateMany({
         where: {
           userId: existingSubscription.userId,

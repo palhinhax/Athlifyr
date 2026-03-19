@@ -81,6 +81,110 @@ interface BlockResultData {
   exerciseResults: ExerciseResultData[];
 }
 
+/** Single set input row — extracted to keep nesting ≤ 4 */
+function SetInputRow({
+  set,
+  setIndex,
+  blockIndex,
+  exerciseIndex,
+  onUpdate,
+  onRemove,
+  setLabel,
+}: {
+  set: ExerciseSetData;
+  setIndex: number;
+  blockIndex: number;
+  exerciseIndex: number;
+  onUpdate: (
+    blockIndex: number,
+    exerciseIndex: number,
+    setIndex: number,
+    field: keyof ExerciseSetData,
+    value: unknown
+  ) => void;
+  onRemove: (
+    blockIndex: number,
+    exerciseIndex: number,
+    setIndex: number
+  ) => void;
+  setLabel: string;
+}) {
+  return (
+    <div className="rounded-md bg-muted/30 p-2">
+      {/* Set label + trash */}
+      <div className="mb-1 flex items-center justify-between">
+        <span className="text-sm font-medium">
+          {setLabel} {setIndex + 1}
+        </span>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-7 w-7"
+          onClick={() => onRemove(blockIndex, exerciseIndex, setIndex)}
+        >
+          <TrashIcon className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      {/* Inputs row — fluid widths */}
+      <div className="flex items-center gap-2">
+        <Input
+          type="number"
+          min={0}
+          className="h-8 min-w-0 flex-1"
+          placeholder="Reps"
+          value={set.reps || ""}
+          onChange={(e) =>
+            onUpdate(
+              blockIndex,
+              exerciseIndex,
+              setIndex,
+              "reps",
+              e.target.value ? parseInt(e.target.value) : 0
+            )
+          }
+        />
+        <span className="shrink-0 text-muted-foreground">×</span>
+        <Input
+          type="number"
+          min={0}
+          className="h-8 min-w-0 flex-1"
+          placeholder="Weight"
+          value={set.weight || ""}
+          onChange={(e) =>
+            onUpdate(
+              blockIndex,
+              exerciseIndex,
+              setIndex,
+              "weight",
+              e.target.value ? parseFloat(e.target.value) : 0
+            )
+          }
+        />
+        <Select
+          value={set.weightUnit || "KG"}
+          onValueChange={(v) =>
+            onUpdate(
+              blockIndex,
+              exerciseIndex,
+              setIndex,
+              "weightUnit",
+              v as WeightUnit
+            )
+          }
+        >
+          <SelectTrigger className="h-8 w-14 shrink-0">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="KG">kg</SelectItem>
+            <SelectItem value="LB">lb</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+    </div>
+  );
+}
+
 export function WorkoutLogger({
   workout,
   sessionId,
@@ -624,87 +728,16 @@ export function WorkoutLogger({
                       {blockResults[blockIndex].exerciseResults[
                         exerciseIndex
                       ].sets.map((set, setIndex) => (
-                        <div
+                        <SetInputRow
                           key={setIndex}
-                          className="rounded-md bg-muted/30 p-2"
-                        >
-                          {/* Set label + trash */}
-                          <div className="mb-1 flex items-center justify-between">
-                            <span className="text-sm font-medium">
-                              {t("log.set")} {setIndex + 1}
-                            </span>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-7 w-7"
-                              onClick={() =>
-                                removeSet(blockIndex, exerciseIndex, setIndex)
-                              }
-                            >
-                              <TrashIcon className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                          {/* Inputs row — fluid widths */}
-                          <div className="flex items-center gap-2">
-                            <Input
-                              type="number"
-                              min={0}
-                              className="h-8 min-w-0 flex-1"
-                              placeholder="Reps"
-                              value={set.reps || ""}
-                              onChange={(e) =>
-                                updateSet(
-                                  blockIndex,
-                                  exerciseIndex,
-                                  setIndex,
-                                  "reps",
-                                  e.target.value ? parseInt(e.target.value) : 0
-                                )
-                              }
-                            />
-                            <span className="shrink-0 text-muted-foreground">
-                              ×
-                            </span>
-                            <Input
-                              type="number"
-                              min={0}
-                              className="h-8 min-w-0 flex-1"
-                              placeholder="Weight"
-                              value={set.weight || ""}
-                              onChange={(e) =>
-                                updateSet(
-                                  blockIndex,
-                                  exerciseIndex,
-                                  setIndex,
-                                  "weight",
-                                  e.target.value
-                                    ? parseFloat(e.target.value)
-                                    : 0
-                                )
-                              }
-                            />
-                            <Select
-                              value={set.weightUnit || "KG"}
-                              onValueChange={(v) =>
-                                updateSet(
-                                  blockIndex,
-                                  exerciseIndex,
-                                  setIndex,
-                                  "weightUnit",
-                                  v as WeightUnit
-                                )
-                              }
-                            >
-                              <SelectTrigger className="h-8 w-14 shrink-0">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="KG">kg</SelectItem>
-                                <SelectItem value="LB">lb</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
+                          set={set}
+                          setIndex={setIndex}
+                          blockIndex={blockIndex}
+                          exerciseIndex={exerciseIndex}
+                          onUpdate={updateSet}
+                          onRemove={removeSet}
+                          setLabel={t("log.set")}
+                        />
                       ))}
                       <Button
                         variant="outline"

@@ -69,6 +69,7 @@
       "sessions": "Sessions & Services",
       "staff": "Staff",
       "payments": "Payments",
+      "products": "Products",
       "advanced": "Advanced",
       "seo": "SEO"
     },
@@ -359,6 +360,7 @@
       "title": "Plans",
       "subscribe": "Subscribe",
       "subscribed": "Subscribed",
+      "subscriptionEnding": "Subscription ending",
       "scheduled": "Scheduled",
       "startsOn": "Starts on",
       "validUntil": "Valid until",
@@ -416,7 +418,27 @@
       "sessionsUsed": "{used} of {total} sessions used",
       "resubscribe": "Subscribe again",
       "crossVenueTitle": "Subscriptions from other venues",
-      "fromVenue": "Plan from {venue}"
+      "fromVenue": "Plan from {venue}",
+      "perDay": "per day",
+      "perWeek": "per week",
+      "perQuarter": "per quarter",
+      "perYear": "per year",
+      "cancelSubscription": "Cancel Subscription",
+      "subscriptionCancelled": "Subscription Cancelled",
+      "subscriptionCancelledDescription": "Your subscription will not renew at the end of the current billing period.",
+      "checkout": {
+        "completePayment": "Complete Payment",
+        "paymentError": "Payment Error",
+        "goBack": "Go back",
+        "initializingPayment": "Initializing payment...",
+        "failedInitPayment": "Failed to initialize payment",
+        "failedCreateSubscription": "Failed to create subscription",
+        "failedCreatePayment": "Failed to create payment intent"
+      },
+      "errors": {
+        "subscribeFailed": "Subscription Failed",
+        "cancelFailed": "Cancellation Failed"
+      }
     },
     "sessions": {
       "title": "Sessions",
@@ -679,7 +701,10 @@
       "confirmBooking": "Confirm Booking",
       "submitRequest": "Submit Request",
       "requestSubmitted": "Request Submitted",
-      "requestSubmittedDescription": "Your subscription request has been submitted. You will be contacted by the venue staff to confirm payment."
+      "requestSubmittedDescription": "Your subscription request has been submitted. You will be contacted by the venue staff to confirm payment.",
+      "paymentFailed": "Payment failed",
+      "activationFailed": "Payment successful but subscription activation failed. Please contact support.",
+      "unexpectedError": "An unexpected error occurred"
     },
     "recommendations": {
       "recommendations": "Recommendations",
@@ -699,6 +724,7 @@
       "plans": "Plans",
       "sessions": "Sessions",
       "team": "Team",
+      "shop": "Shop",
       "clients": "Clients",
       "subscriptions": "Subscriptions",
       "reviews": "Reviews"
@@ -967,6 +993,7 @@
         "plansDescription": "Show available membership plans and pricing",
         "sessionsDescription": "Show the sessions calendar and booking",
         "teamDescription": "Show the venue staff (owners, coaches, admins)",
+        "shopDescription": "Show the venue shop with products for sale",
         "clientsDescription": "Show the list of venue members and clients",
         "subscriptionsDescription": "Show and manage active subscriptions"
       }
@@ -1161,6 +1188,189 @@
       "errorTitle": "Error sharing",
       "errorDescription": "Could not share the event. Please try again.",
       "buttonLabel": "Share Event"
+    },
+    "shop": {
+      "title": "Shop",
+      "empty": "No products available",
+      "emptyDescription": "This venue hasn't added any products yet.",
+      "buy": "Buy",
+      "outOfStock": "Out of Stock",
+      "inStock": "{count, plural, =1 {1 in stock} other {# in stock}}",
+      "loginToBuy": "Log in to purchase",
+      "purchaseSuccess": "Purchase successful!",
+      "purchaseSuccessDescription": "Your purchase has been confirmed.",
+      "checkout": {
+        "title": "Complete Purchase",
+        "completePayment": "Complete Payment",
+        "paymentError": "Payment Error",
+        "goBack": "Go back",
+        "failedCreatePayment": "Failed to initiate payment",
+        "pay": "Pay",
+        "cancel": "Cancel",
+        "processing": "Processing...",
+        "paymentFailed": "Payment failed",
+        "unexpectedError": "An unexpected error occurred"
+      },
+      "success": {
+        "title": "Purchase Confirmed!",
+        "description": "Show this screen at the venue to collect your product.",
+        "elapsed": "Confirmed",
+        "close": "Close"
+      },
+      "purchases": {
+        "title": "Recent Sales",
+        "empty": "No sales yet",
+        "refund": "Refund",
+        "refundConfirmTitle": "Confirm Refund",
+        "refundConfirmDescription": "Are you sure you want to refund this purchase? The full amount will be returned to the customer.",
+        "confirmRefund": "Yes, Refund",
+        "cancel": "Cancel",
+        "refundSuccess": "Refund processed successfully",
+        "refundFailed": "Failed to process refund",
+        "statusConfirmed": "Confirmed",
+        "statusPending": "Pending",
+        "statusRefunded": "Refunded",
+        "statusFailed": "Failed",
+        "statusCancelled": "Cancelled"
+      }
+    },
+    "products": {
+      "title": "Products",
+      "description": "Manage your venue's products for sale (water, protein bars, merchandise, etc.)",
+      "addProduct": "Add Product",
+      "editProduct": "Edit Product",
+      "name": "Name",
+      "namePlaceholder": "e.g. Water Bottle, Protein Bar",
+      "price": "Price",
+      "currency": "Currency",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Brief product description (optional)",
+      "stock": "Stock",
+      "stockPlaceholder": "Leave empty for unlimited stock",
+      "stockHelp": "Leave empty for unlimited stock. Set a number to track inventory.",
+      "stockCount": "{count, plural, =0 {0 units} =1 {1 unit} other {# units}}",
+      "save": "Save",
+      "cancel": "Cancel",
+      "empty": "No products yet",
+      "emptyDescription": "Click 'Add Product' to create your first product.",
+      "inactive": "Inactive",
+      "validationError": "Validation Error",
+      "nameAndPriceRequired": "Name and a valid price are required.",
+      "invalidStock": "Stock must be a non-negative number.",
+      "saveFailed": "Failed to save product",
+      "productCreated": "Product created successfully",
+      "productUpdated": "Product updated successfully",
+      "productDeactivated": "Product deactivated",
+      "productReactivated": "Product reactivated"
+    },
+    "analytics": {
+      "button": "Analytics",
+      "title": "Business Intelligence",
+      "loading": "Loading analytics...",
+      "fetchError": "Failed to load analytics data",
+      "retry": "Try again",
+      "periods": {
+        "7days": "Last 7 days",
+        "30days": "Last 30 days",
+        "90days": "Last 90 days",
+        "180days": "Last 6 months",
+        "365days": "Last year"
+      },
+      "tabs": {
+        "overview": "Overview",
+        "members": "Members",
+        "bookings": "Bookings",
+        "revenue": "Revenue",
+        "sessions": "Sessions"
+      },
+      "kpi": {
+        "activeMembers": "Active Members",
+        "activeSubscriptions": "Active Plans",
+        "totalBookings": "Bookings",
+        "attendanceRate": "Attendance",
+        "productSales": "Sales",
+        "totalRevenue": "Total Revenue",
+        "attended": "Attended",
+        "noShow": "No-Show",
+        "trials": "Trial Bookings",
+        "subscriptionRevenue": "Plan Revenue",
+        "productRevenue": "Product Revenue",
+        "totalSessions": "Sessions",
+        "avgCapacity": "Avg. Capacity"
+      },
+      "charts": {
+        "revenueOverTime": "Revenue Over Time",
+        "revenueOverTimeDesc": "Monthly subscription and product revenue (last 12 months)",
+        "bookingsTrend": "Bookings Trend",
+        "memberGrowth": "New Members",
+        "membersByRole": "Members by Role",
+        "membersByRoleDesc": "Distribution of active members by role",
+        "membersByStatus": "Members by Status",
+        "memberGrowthDetailed": "Member Growth",
+        "memberGrowthDetailedDesc": "New members joined per month (last 12 months)",
+        "bookingsByStatus": "Bookings by Status",
+        "bookingsByDay": "Bookings by Day",
+        "bookingsByDayDesc": "Which days have the most bookings",
+        "weeklyBookingsTrend": "Weekly Bookings Trend",
+        "weeklyBookingsTrendDesc": "Number of bookings per week (last 12 weeks)",
+        "monthlyRevenue": "Monthly Revenue",
+        "monthlyRevenueDesc": "Revenue breakdown by source (last 12 months)",
+        "topProducts": "Top Products",
+        "popularSessions": "Most Popular Sessions",
+        "popularSessionsDesc": "Sessions with the most bookings in this period",
+        "subscriptions": "Subscriptions",
+        "products": "Products",
+        "weekOf": "Week of",
+        "bookingsLabel": "bookings",
+        "newMembers": "new members",
+        "members": "members",
+        "unitsSold": "units sold",
+        "sessionsLabel": "sessions",
+        "avgCapacityLabel": "Avg. capacity"
+      },
+      "roles": {
+        "OWNER": "Owner",
+        "ADMIN": "Admin",
+        "COACH": "Coach",
+        "CLIENT": "Client"
+      },
+      "memberStatuses": {
+        "ACTIVE": "Active",
+        "PENDING": "Pending",
+        "SUSPENDED": "Suspended",
+        "LEFT": "Left"
+      },
+      "bookingStatuses": {
+        "BOOKED": "Booked",
+        "ATTENDED": "Attended",
+        "CANCELLED": "Cancelled",
+        "NO_SHOW": "No-Show",
+        "PENDING": "Pending",
+        "REJECTED": "Rejected"
+      },
+      "days": {
+        "sunday": "Sun",
+        "monday": "Mon",
+        "tuesday": "Tue",
+        "wednesday": "Wed",
+        "thursday": "Thu",
+        "friday": "Fri",
+        "saturday": "Sat"
+      },
+      "months": {
+        "m1": "Jan",
+        "m2": "Feb",
+        "m3": "Mar",
+        "m4": "Apr",
+        "m5": "May",
+        "m6": "Jun",
+        "m7": "Jul",
+        "m8": "Aug",
+        "m9": "Sep",
+        "m10": "Oct",
+        "m11": "Nov",
+        "m12": "Dec"
+      }
     }
   }
 }

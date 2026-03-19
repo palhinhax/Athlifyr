@@ -329,4 +329,274 @@ describe("TabPagamentos", () => {
       );
     });
   });
+
+  it("handles sync stripe status error gracefully", async () => {
+    const user = userEvent.setup();
+    mockFetch.mockResolvedValueOnce({ ok: false });
+
+    render(
+      <TabPagamentos
+        event={makeEvent({ stripeAccountId: "acct_123" }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("verifyStatus"));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("skips event refresh when sync status fetch returns non-ok", async () => {
+    const user = userEvent.setup();
+    // First fetch (status) OK, second (event refresh) not-ok
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: false });
+
+    render(
+      <TabPagamentos
+        event={makeEvent({ stripeAccountId: "acct_123" }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("verifyStatus"));
+
+    await waitFor(() => {
+      // populateEvent should not have been called since refresh failed
+      expect(mockPopulateEvent).not.toHaveBeenCalled();
+      // toast should still be called with success
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ title: "statusUpdated" })
+      );
+    });
+  });
+
+  it("shows openDashboard button when stripe is COMPLETE", () => {
+    render(
+      <TabPagamentos
+        event={
+          makeEvent({
+            stripeAccountId: "acct_123",
+            stripeOnboardingStatus: "COMPLETE",
+          }) as never
+        }
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.getByText("openDashboard")).toBeInTheDocument();
+    expect(screen.queryByText("continueOnboarding")).not.toBeInTheDocument();
+  });
+
+  it("opens Stripe dashboard in new tab", async () => {
+    const user = userEvent.setup();
+    const mockOpen = jest.fn();
+    jest.spyOn(globalThis, "open").mockImplementation(mockOpen);
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ url: "https://dashboard.stripe.com/test" }),
+    });
+
+    render(
+      <TabPagamentos
+        event={
+          makeEvent({
+            stripeAccountId: "acct_123",
+            stripeOnboardingStatus: "COMPLETE",
+          }) as never
+        }
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("openDashboard"));
+
+    await waitFor(() => {
+      expect(mockOpen).toHaveBeenCalledWith(
+        "https://dashboard.stripe.com/test",
+        "_blank"
+      );
+    });
+
+    (globalThis.open as jest.Mock).mockRestore();
+  });
+
+  it("handles open dashboard error gracefully", async () => {
+    const user = userEvent.setup();
+    mockFetch.mockResolvedValueOnce({ ok: false });
+
+    render(
+      <TabPagamentos
+        event={
+          makeEvent({
+            stripeAccountId: "acct_123",
+            stripeOnboardingStatus: "COMPLETE",
+          }) as never
+        }
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("openDashboard"));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("skips account creation when stripeAccountId already exists during connect", async () => {
+    const user = userEvent.setup();
+    // Only one fetch needed (onboarding link) since account already exists
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ url: "https://connect.stripe.com/reonboard" }),
+    });
+
+    render(
+      <TabPagamentos
+        event={makeEvent({ stripeAccountId: "acct_existing" }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("continueOnboarding"));
+
+    await waitFor(() => {
+      // Should NOT have called /stripe/connect (account already exists)
+      expect(mockFetch).not.toHaveBeenCalledWith(
+        expect.stringContaining("/stripe/connect"),
+        expect.anything()
+      );
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining("/stripe/onboarding-link"),
+        expect.objectContaining({ method: "POST" })
+      );
+    });
+  });
+
+  it("handles onboarding link fetch failure", async () => {
+    const user = userEvent.setup();
+    // connect call succeeds, onboarding link fails
+    mockFetch
+      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
+      .mockResolvedValueOnce({ ok: false });
+
+    render(
+      <TabPagamentos
+        event={makeEvent() as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByText("setupStripe"));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("handles registration toggle onSave failure gracefully", async () => {
+    const user = userEvent.setup();
+    const failingSave = jest.fn().mockRejectedValue(new Error("Save failed"));
+
+    render(
+      <TabPagamentos
+        event={
+          makeEvent({
+            stripeOnboardingStatus: "COMPLETE",
+            hasRegistrations: false,
+          }) as never
+        }
+        onSave={failingSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    await user.click(screen.getByTestId("switch"));
+
+    await waitFor(() => {
+      expect(mockToast).toHaveBeenCalledWith(
+        expect.objectContaining({ variant: "destructive" })
+      );
+    });
+  });
+
+  it("shows verifyStatus button only when stripeAccountId is present", () => {
+    const { rerender } = render(
+      <TabPagamentos
+        event={makeEvent() as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.queryByText("verifyStatus")).not.toBeInTheDocument();
+
+    rerender(
+      <TabPagamentos
+        event={makeEvent({ stripeAccountId: "acct_123" }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.getByText("verifyStatus")).toBeInTheDocument();
+  });
+
+  it("shows amber warning when stripe is not complete", () => {
+    render(
+      <TabPagamentos
+        event={makeEvent({ stripeOnboardingStatus: "PENDING" }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.getByText("stripeRequired")).toBeInTheDocument();
+  });
+
+  it("does not show amber warning when stripe is complete", () => {
+    render(
+      <TabPagamentos
+        event={
+          makeEvent({
+            stripeOnboardingStatus: "COMPLETE",
+            stripeAccountId: "acct_123",
+          }) as never
+        }
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.queryByText("stripeRequired")).not.toBeInTheDocument();
+  });
+
+  it("does not show commission info when commissionPercent is 0", () => {
+    render(
+      <TabPagamentos
+        event={makeEvent({ commissionPercent: 0 }) as never}
+        onSave={mockOnSave}
+        populateEvent={mockPopulateEvent}
+      />
+    );
+
+    expect(screen.queryByText(/commission/)).not.toBeInTheDocument();
+  });
 });

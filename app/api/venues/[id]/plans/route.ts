@@ -98,14 +98,12 @@ export async function POST(
     }
 
     // Validate paymentProvider if provided
-    if (paymentProvider) {
-      const validProviders = ["IN_APP", "EXTERNAL", "BOTH"];
-      if (!validProviders.includes(paymentProvider)) {
-        return NextResponse.json(
-          { error: "Invalid payment provider" },
-          { status: 400 }
-        );
-      }
+    const validProviders = ["IN_APP", "EXTERNAL", "BOTH"];
+    if (paymentProvider && !validProviders.includes(paymentProvider)) {
+      return NextResponse.json(
+        { error: "Invalid payment provider" },
+        { status: 400 }
+      );
     }
 
     // Get venue to check paymentMode

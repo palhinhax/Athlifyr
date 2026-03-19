@@ -24,10 +24,21 @@ import { VenueOwnershipClaimButton } from "@/components/venue-ownership-claim-bu
 import { VenueAboutTab } from "@/components/venue-about-tab";
 import { VenuePlansTab } from "@/components/venue-plans-tab";
 import { VenueTeamTab } from "@/components/venue-team-tab";
+import { VenueShopTab } from "@/components/venue-shop-tab";
+import { VenueShopPurchases } from "@/components/venue-shop-purchases";
 import { VenueCheckoutDialog } from "@/components/venue-checkout-dialog";
+import { ProductCheckoutDialog } from "@/components/product-checkout-dialog";
+import { PurchaseSuccessDialog } from "@/components/purchase-success-dialog";
 import { TrialBookingButton } from "@/components/trial-booking-button";
-import { Calendar, Home, Info, CreditCard, Users } from "lucide-react";
-import type { VenuePlanPolicy } from "@/types/venue-plan";
+import {
+  Calendar,
+  Home,
+  Info,
+  CreditCard,
+  Users,
+  ShoppingBag,
+} from "lucide-react";
+import type { VenuePlanPolicy, PlanDuration } from "@/types/venue-plan";
 
 interface Venue {
   id: string;
@@ -57,6 +68,12 @@ interface Venue {
   externalPaymentInstructions: string | null;
   enableTrialBooking: boolean;
   visibleTabs?: string[];
+  isCurrentUserMember?: boolean;
+  userSubscriptionStatus?: {
+    hasSubscription: boolean;
+    reason: string;
+    subscriptionCount: number;
+  } | null;
   members: Array<{
     id: string;
     role: string;
@@ -164,7 +181,7 @@ export function VenueDetailClient({
     name: string;
     price: number;
     currency: string;
-    // paymentProvider removed - will use venue.paymentMode instead
+    duration?: PlanDuration;
   } | null>(null);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
@@ -193,6 +210,22 @@ export function VenueDetailClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [errorDialogOpen, setErrorDialogOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [productCheckoutOpen, setProductCheckoutOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<{
+    id: string;
+    name: string;
+    price: number;
+    currency: string;
+  } | null>(null);
+  const [selectedQuantity, setSelectedQuantity] = useState(1);
+  const [purchaseSuccessOpen, setPurchaseSuccessOpen] = useState(false);
+  const [purchasedProduct, setPurchasedProduct] = useState<{
+    name: string;
+    quantity: number;
+    totalAmount: number;
+    currency: string;
+  } | null>(null);
+  const [purchasedAt, setPurchasedAt] = useState<Date | null>(null);
 
   // Check if user is owner or admin
   const isOwnerOrAdmin = Boolean(
@@ -215,9 +248,12 @@ export function VenueDetailClient({
       ))
   );
 
-  // Check if user is a member (any role)
+  // Check if user is a member or has an active subscription
   const isMember = Boolean(
-    userId && venue?.members.some((m) => m.user.id === userId)
+    userId &&
+    (venue?.isCurrentUserMember ||
+      venue?.userSubscriptionStatus?.hasSubscription ||
+      venue?.members.some((m) => m.user.id === userId))
   );
 
   const handleSubscribeClick = (plan: {
@@ -225,7 +261,7 @@ export function VenueDetailClient({
     name: string;
     price: number | null;
     currency: string;
-    // paymentProvider removed - will use venue.paymentMode instead
+    duration?: PlanDuration;
   }) => {
     if (!plan.price) return;
     setSelectedPlan({
@@ -233,7 +269,7 @@ export function VenueDetailClient({
       name: plan.name,
       price: plan.price,
       currency: plan.currency,
-      // paymentProvider removed - checkout will use venue.paymentMode
+      duration: plan.duration,
     });
     setCheckoutOpen(true);
   };
@@ -301,6 +337,66 @@ export function VenueDetailClient({
     setCheckoutOpen(false);
     setSelectedPlan(null);
     setSelectedPaymentMethod(null); // Reset payment method selection for MIXED mode
+  };
+
+  const handleCancelSubscription = async (subscriptionId: string) => {
+    if (!venue) return;
+    try {
+      const response = await fetch(
+        `/api/venues/${venue.id}/stripe-subscriptions/${subscriptionId}/cancel`,
+        { method: "POST" }
+      );
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.error || "Failed to cancel subscription");
+      }
+
+      toast({
+        title: tPlans("subscriptionCancelled"),
+        description: tPlans("subscriptionCancelledDescription"),
+        variant: "default",
+      });
+
+      fetchVenue();
+    } catch (error) {
+      console.error("Error cancelling subscription:", error);
+      toast({
+        title: tPlans("errors.cancelFailed"),
+        description:
+          error instanceof Error ? error.message : "An error occurred",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handlePurchaseClick = (
+    product: { id: string; name: string; price: number; currency: string },
+    quantity: number
+  ) => {
+    setSelectedProduct(product);
+    setSelectedQuantity(quantity);
+    setProductCheckoutOpen(true);
+  };
+
+  const handleProductCheckoutSuccess = () => {
+    setProductCheckoutOpen(false);
+    if (selectedProduct) {
+      setPurchasedProduct({
+        name: selectedProduct.name,
+        quantity: selectedQuantity,
+        totalAmount: selectedProduct.price * selectedQuantity,
+        currency: selectedProduct.currency,
+      });
+      setPurchasedAt(new Date());
+      setPurchaseSuccessOpen(true);
+    }
+    setSelectedProduct(null);
+  };
+
+  const handleProductCheckoutCancel = () => {
+    setProductCheckoutOpen(false);
+    setSelectedProduct(null);
   };
 
   const handleTogglePlanActiveClick = (planId: string) => {
@@ -431,7 +527,14 @@ export function VenueDetailClient({
       }
 
       // For public tabs, check the visibleTabs configuration
-      const defaultTabs = ["feed", "about", "plans", "sessions", "team"];
+      const defaultTabs = [
+        "feed",
+        "about",
+        "plans",
+        "sessions",
+        "team",
+        "shop",
+      ];
       const visibleTabs = venue?.visibleTabs ?? [
         ...defaultTabs,
         ...ADMIN_ONLY_TABS,
@@ -443,7 +546,7 @@ export function VenueDetailClient({
 
   // Count visible tabs to hide TabsList when only 1 tab is visible
   const visibleTabsCount = useMemo(() => {
-    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const publicTabs = ["feed", "about", "plans", "sessions", "team", "shop"];
 
     let count = publicTabs.filter((tab) => isTabVisible(tab)).length;
 
@@ -457,7 +560,7 @@ export function VenueDetailClient({
 
   // Get the first visible tab as default
   const getDefaultTab = useCallback(() => {
-    const publicTabs = ["feed", "about", "plans", "sessions", "team"];
+    const publicTabs = ["feed", "about", "plans", "sessions", "team", "shop"];
 
     // Check public tabs first
     for (const tab of publicTabs) {
@@ -564,6 +667,15 @@ export function VenueDetailClient({
                     <span className="hidden sm:inline">{t("tabs.team")}</span>
                   </TabsTrigger>
                 )}
+                {isTabVisible("shop") && (
+                  <TabsTrigger
+                    value="shop"
+                    className="flex-1 gap-2 md:flex-initial"
+                  >
+                    <ShoppingBag className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t("tabs.shop")}</span>
+                  </TabsTrigger>
+                )}
                 {/* Admin tabs - ALWAYS visible for owners/admins */}
                 {isOwnerOrAdmin && (
                   <TabsTrigger
@@ -623,10 +735,12 @@ export function VenueDetailClient({
               <VenuePlansTab
                 plans={venue.plans}
                 crossVenueSubscriptions={venue.crossVenueSubscriptions}
+                venueId={venue.id}
                 locale={locale}
                 userId={userId}
                 isOwnerOrAdmin={isOwnerOrAdmin}
                 onSubscribeClick={handleSubscribeClick}
+                onCancelSubscription={handleCancelSubscription}
                 onCreatePlan={() => {
                   setEditingPlan(null);
                   setPlanModalOpen(true);
@@ -678,6 +792,19 @@ export function VenueDetailClient({
             </TabsContent>
           )}
 
+          {/* Shop Tab (Public - venue products for sale) */}
+          {isTabVisible("shop") && (
+            <TabsContent value="shop" className="space-y-6">
+              <VenueShopTab
+                venueId={venue.id}
+                userId={userId}
+                paymentMode={venue.paymentMode}
+                onPurchaseClick={handlePurchaseClick}
+              />
+              {isOwnerOrAdmin && <VenueShopPurchases venueId={venue.id} />}
+            </TabsContent>
+          )}
+
           {/* Clients Tab (Only for Owners/Admins - ALWAYS available) */}
           {isOwnerOrAdmin && (
             <TabsContent value="clients" className="space-y-4">
@@ -724,6 +851,31 @@ export function VenueDetailClient({
         onSuccess={handleCheckoutSuccess}
         onCancel={handleCheckoutCancel}
         onOnSiteRequest={handleOnSiteSubscriptionRequest}
+      />
+
+      {/* Product Checkout Dialog */}
+      <ProductCheckoutDialog
+        open={productCheckoutOpen}
+        onOpenChange={setProductCheckoutOpen}
+        venueId={venue.id}
+        venueName={venue.name}
+        product={selectedProduct}
+        quantity={selectedQuantity}
+        onSuccess={handleProductCheckoutSuccess}
+        onCancel={handleProductCheckoutCancel}
+      />
+
+      {/* Purchase Success Dialog */}
+      <PurchaseSuccessDialog
+        open={purchaseSuccessOpen}
+        onOpenChange={setPurchaseSuccessOpen}
+        venueName={venue.name}
+        venueLogo={venue.logo}
+        productName={purchasedProduct?.name ?? ""}
+        quantity={purchasedProduct?.quantity ?? 1}
+        totalAmount={purchasedProduct?.totalAmount ?? 0}
+        currency={purchasedProduct?.currency ?? "EUR"}
+        purchasedAt={purchasedAt}
       />
 
       {/* Plan Management Modal */}

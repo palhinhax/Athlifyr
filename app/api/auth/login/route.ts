@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
 import { requireIntegrity } from "@/lib/verify-integrity";
+import { loginLimiter } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,26 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { code: "MISSING_CREDENTIALS" },
         { status: 400 }
+      );
+    }
+
+    // Rate limit by IP + normalized email
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+      "unknown";
+    const rateLimitKey = `${ip}:${email.toLowerCase().trim()}`;
+    const rateLimit = loginLimiter.check(rateLimitKey);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+            ),
+          },
+        }
       );
     }
 

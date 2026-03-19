@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { OAuth2Client } from "google-auth-library";
+import { OAuth2Client, type Credentials } from "google-auth-library";
 import { prisma } from "@/lib/prisma";
 import { generateAccessToken, generateRefreshToken } from "@/lib/jwt";
 
@@ -8,6 +8,82 @@ const googleClient = new OAuth2Client(
   process.env.GOOGLE_CLIENT_SECRET,
   process.env.NEXTAUTH_URL + "/api/auth/google-web/callback"
 );
+
+function buildAccountData(
+  userId: string,
+  googleId: string,
+  tokens: Credentials
+) {
+  return {
+    userId,
+    type: "oauth" as const,
+    provider: "google" as const,
+    providerAccountId: googleId,
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expires_at: tokens.expiry_date
+      ? Math.floor(tokens.expiry_date / 1000)
+      : undefined,
+    token_type: tokens.token_type,
+    scope: tokens.scope,
+    id_token: tokens.id_token,
+  };
+}
+
+async function findOrCreateUser(
+  email: string,
+  googleId: string,
+  name: string | null,
+  picture: string | null,
+  tokens: Credentials
+) {
+  const existingUser = await prisma.user.findFirst({
+    where: { email: { equals: email, mode: "insensitive" } },
+  });
+
+  if (!existingUser) {
+    const newUser = await prisma.user.create({
+      data: { email, name, image: picture, emailVerified: new Date() },
+    });
+    await prisma.account.create({
+      data: buildAccountData(newUser.id, googleId, tokens),
+    });
+    return newUser;
+  }
+
+  // Update image if changed
+  if (picture && existingUser.image !== picture) {
+    await prisma.user.update({
+      where: { id: existingUser.id },
+      data: { image: picture },
+    });
+  }
+
+  // Update or create account link
+  const existingAccount = await prisma.account.findFirst({
+    where: { userId: existingUser.id, provider: "google" },
+  });
+
+  if (existingAccount) {
+    await prisma.account.update({
+      where: { id: existingAccount.id },
+      data: {
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expires_at: tokens.expiry_date
+          ? Math.floor(tokens.expiry_date / 1000)
+          : undefined,
+        id_token: tokens.id_token,
+      },
+    });
+  } else {
+    await prisma.account.create({
+      data: buildAccountData(existingUser.id, googleId, tokens),
+    });
+  }
+
+  return existingUser;
+}
 
 /**
  * POST /api/auth/google-web
@@ -85,92 +161,13 @@ export async function GET(request: NextRequest) {
     const name = payload.name || null;
     const picture = payload.picture || null;
 
-    // Check if user exists
-    let user = await prisma.user.findFirst({
-      where: {
-        email: {
-          equals: normalizedEmail,
-          mode: "insensitive",
-        },
-      },
-    });
-
-    if (!user) {
-      // Create new user
-      user = await prisma.user.create({
-        data: {
-          email: normalizedEmail,
-          name,
-          image: picture,
-          emailVerified: new Date(),
-        },
-      });
-
-      // Create account link
-      await prisma.account.create({
-        data: {
-          userId: user.id,
-          type: "oauth",
-          provider: "google",
-          providerAccountId: googleId,
-          access_token: tokens.access_token,
-          refresh_token: tokens.refresh_token,
-          expires_at: tokens.expiry_date
-            ? Math.floor(tokens.expiry_date / 1000)
-            : undefined,
-          token_type: tokens.token_type,
-          scope: tokens.scope,
-          id_token: tokens.id_token,
-        },
-      });
-    } else {
-      // Update existing user image if changed
-      if (picture && user.image !== picture) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { image: picture },
-        });
-      }
-
-      // Update or create account link
-      const existingAccount = await prisma.account.findFirst({
-        where: {
-          userId: user.id,
-          provider: "google",
-        },
-      });
-
-      if (existingAccount) {
-        await prisma.account.update({
-          where: { id: existingAccount.id },
-          data: {
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
-            expires_at: tokens.expiry_date
-              ? Math.floor(tokens.expiry_date / 1000)
-              : undefined,
-            id_token: tokens.id_token,
-          },
-        });
-      } else {
-        await prisma.account.create({
-          data: {
-            userId: user.id,
-            type: "oauth",
-            provider: "google",
-            providerAccountId: googleId,
-            access_token: tokens.access_token,
-            refresh_token: tokens.refresh_token,
-            expires_at: tokens.expiry_date
-              ? Math.floor(tokens.expiry_date / 1000)
-              : undefined,
-            token_type: tokens.token_type,
-            scope: tokens.scope,
-            id_token: tokens.id_token,
-          },
-        });
-      }
-    }
+    const user = await findOrCreateUser(
+      normalizedEmail,
+      googleId,
+      name,
+      picture,
+      tokens
+    );
 
     // Generate JWT tokens for the session
     const accessToken = generateAccessToken({

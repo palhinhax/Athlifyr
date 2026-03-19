@@ -23,6 +23,10 @@ import {
   RulerIcon,
 } from "lucide-react";
 import type { WorkoutLogWithDetails } from "@/types/workout";
+import type {
+  WorkoutBlockResultWithExercises,
+  WorkoutExerciseResultWithSets,
+} from "@/types/workout";
 import { BLOCK_TYPE_INFO, formatTime } from "@/types/workout";
 import type { WorkoutBlockType } from "@prisma/client";
 
@@ -77,6 +81,128 @@ const LOCALE_MAP: Record<string, string> = {
 
 interface WorkoutHistoryProps {
   userId: string;
+}
+
+/** Check if any exercise result or set in the log has a PR */
+function logHasPRs(blockResults: WorkoutBlockResultWithExercises[]): boolean {
+  return blockResults.some((br) =>
+    br.exerciseResults.some((er) => er.isPR || er.sets.some((s) => s.isPR))
+  );
+}
+
+/** Single exercise-result row — extracted to keep nesting ≤ 4 */
+function ExerciseResultItem({
+  exResult,
+}: {
+  exResult: WorkoutExerciseResultWithSets;
+}) {
+  const hasData =
+    exResult.actualReps ||
+    exResult.actualWeight ||
+    exResult.actualTime ||
+    exResult.actualDistance ||
+    exResult.actualCalories ||
+    exResult.sets.length > 0;
+  const exercisePR = exResult.isPR || exResult.sets.some((s) => s.isPR);
+
+  return (
+    <div
+      className={`px-3 py-2 ${exercisePR ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}`}
+    >
+      {/* Exercise name + inline metrics */}
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div className="flex items-center gap-1.5">
+          <DumbbellIcon className="h-3 w-3 text-muted-foreground" />
+          <span className="text-sm font-medium">{exResult.exercise.name}</span>
+          {exercisePR && (
+            <Badge className="h-4 border-0 bg-gradient-to-r from-yellow-400 to-amber-500 px-1 text-[10px] text-white">
+              <TrophyIcon className="mr-0.5 h-2.5 w-2.5" />
+              PR
+            </Badge>
+          )}
+        </div>
+
+        {/* Inline simple metrics (non-strength) */}
+        {exResult.sets.length === 0 && hasData && (
+          <div className="flex flex-wrap items-center gap-2.5">
+            {exResult.actualReps && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <RepeatIcon className="h-2.5 w-2.5" />
+                <span className="font-medium text-foreground">
+                  {exResult.actualReps}
+                </span>
+                reps
+              </span>
+            )}
+            {exResult.actualWeight && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <DumbbellIcon className="h-2.5 w-2.5" />
+                <span className="font-medium text-foreground">
+                  {exResult.actualWeight}
+                </span>
+                {exResult.actualWeightUnit?.toLowerCase() || "kg"}
+              </span>
+            )}
+            {exResult.actualTime && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <TimerIcon className="h-2.5 w-2.5" />
+                <span className="font-medium text-foreground">
+                  {formatTime(exResult.actualTime)}
+                </span>
+              </span>
+            )}
+            {exResult.actualDistance && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <RulerIcon className="h-2.5 w-2.5" />
+                <span className="font-medium text-foreground">
+                  {exResult.actualDistance}
+                </span>
+                {exResult.actualDistanceUnit?.toLowerCase() || "m"}
+              </span>
+            )}
+            {exResult.actualCalories && (
+              <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                <FlameIcon className="h-2.5 w-2.5" />
+                <span className="font-medium text-foreground">
+                  {exResult.actualCalories}
+                </span>
+                cal
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Sets display (for strength) */}
+      {exResult.sets.length > 0 && (
+        <div className="mt-1.5 flex flex-wrap gap-1 pl-4">
+          {exResult.sets.map((set, idx) => (
+            <Badge
+              key={set.id}
+              variant="outline"
+              className={`font-mono text-xs ${
+                set.isPR
+                  ? "border-yellow-400 bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
+                  : ""
+              }`}
+            >
+              <span className="mr-1 text-muted-foreground">S{idx + 1}</span>
+              {set.reps && <span>{set.reps}×</span>}
+              {set.weight && (
+                <span>
+                  {set.weight}
+                  {set.weightUnit?.toLowerCase() || "kg"}
+                </span>
+              )}
+              {set.isPR && (
+                <TrophyIcon className="ml-1 h-2.5 w-2.5 text-yellow-500" />
+              )}
+            </Badge>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
 
 export function WorkoutHistory({ userId: _userId }: WorkoutHistoryProps) {
@@ -141,11 +267,7 @@ export function WorkoutHistory({ userId: _userId }: WorkoutHistoryProps) {
     <div className="space-y-4">
       {logs.map((log) => {
         const feelingConfig = log.feeling ? FEELING_CONFIG[log.feeling] : null;
-        const hasPRs = log.blockResults.some((br) =>
-          br.exerciseResults.some(
-            (er) => er.isPR || er.sets.some((s) => s.isPR)
-          )
-        );
+        const hasPRs = logHasPRs(log.blockResults);
 
         return (
           <Card key={log.id} className="overflow-hidden">
@@ -287,134 +409,12 @@ export function WorkoutHistory({ userId: _userId }: WorkoutHistoryProps) {
                               {blockResult.exerciseResults.length > 0 && (
                                 <div className="divide-y">
                                   {blockResult.exerciseResults.map(
-                                    (exResult) => {
-                                      const hasData =
-                                        exResult.actualReps ||
-                                        exResult.actualWeight ||
-                                        exResult.actualTime ||
-                                        exResult.actualDistance ||
-                                        exResult.actualCalories ||
-                                        exResult.sets.length > 0;
-                                      const exercisePR =
-                                        exResult.isPR ||
-                                        exResult.sets.some((s) => s.isPR);
-
-                                      return (
-                                        <div
-                                          key={exResult.id}
-                                          className={`px-3 py-2 ${exercisePR ? "bg-yellow-50/50 dark:bg-yellow-900/10" : ""}`}
-                                        >
-                                          {/* Exercise name + inline metrics */}
-                                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                                            <div className="flex items-center gap-1.5">
-                                              <DumbbellIcon className="h-3 w-3 text-muted-foreground" />
-                                              <span className="text-sm font-medium">
-                                                {exResult.exercise.name}
-                                              </span>
-                                              {exercisePR && (
-                                                <Badge className="h-4 border-0 bg-gradient-to-r from-yellow-400 to-amber-500 px-1 text-[10px] text-white">
-                                                  <TrophyIcon className="mr-0.5 h-2.5 w-2.5" />
-                                                  PR
-                                                </Badge>
-                                              )}
-                                            </div>
-
-                                            {/* Inline simple metrics (non-strength) */}
-                                            {exResult.sets.length === 0 &&
-                                              hasData && (
-                                                <div className="flex flex-wrap items-center gap-2.5">
-                                                  {exResult.actualReps && (
-                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                      <RepeatIcon className="h-2.5 w-2.5" />
-                                                      <span className="font-medium text-foreground">
-                                                        {exResult.actualReps}
-                                                      </span>
-                                                      reps
-                                                    </span>
-                                                  )}
-                                                  {exResult.actualWeight && (
-                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                      <DumbbellIcon className="h-2.5 w-2.5" />
-                                                      <span className="font-medium text-foreground">
-                                                        {exResult.actualWeight}
-                                                      </span>
-                                                      {exResult.actualWeightUnit?.toLowerCase() ||
-                                                        "kg"}
-                                                    </span>
-                                                  )}
-                                                  {exResult.actualTime && (
-                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                      <TimerIcon className="h-2.5 w-2.5" />
-                                                      <span className="font-medium text-foreground">
-                                                        {formatTime(
-                                                          exResult.actualTime
-                                                        )}
-                                                      </span>
-                                                    </span>
-                                                  )}
-                                                  {exResult.actualDistance && (
-                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                      <RulerIcon className="h-2.5 w-2.5" />
-                                                      <span className="font-medium text-foreground">
-                                                        {
-                                                          exResult.actualDistance
-                                                        }
-                                                      </span>
-                                                      {exResult.actualDistanceUnit?.toLowerCase() ||
-                                                        "m"}
-                                                    </span>
-                                                  )}
-                                                  {exResult.actualCalories && (
-                                                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                                                      <FlameIcon className="h-2.5 w-2.5" />
-                                                      <span className="font-medium text-foreground">
-                                                        {
-                                                          exResult.actualCalories
-                                                        }
-                                                      </span>
-                                                      cal
-                                                    </span>
-                                                  )}
-                                                </div>
-                                              )}
-                                          </div>
-
-                                          {/* Sets display (for strength) */}
-                                          {exResult.sets.length > 0 && (
-                                            <div className="mt-1.5 flex flex-wrap gap-1 pl-4">
-                                              {exResult.sets.map((set, idx) => (
-                                                <Badge
-                                                  key={set.id}
-                                                  variant="outline"
-                                                  className={`font-mono text-xs ${
-                                                    set.isPR
-                                                      ? "border-yellow-400 bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400"
-                                                      : ""
-                                                  }`}
-                                                >
-                                                  <span className="mr-1 text-muted-foreground">
-                                                    S{idx + 1}
-                                                  </span>
-                                                  {set.reps && (
-                                                    <span>{set.reps}×</span>
-                                                  )}
-                                                  {set.weight && (
-                                                    <span>
-                                                      {set.weight}
-                                                      {set.weightUnit?.toLowerCase() ||
-                                                        "kg"}
-                                                    </span>
-                                                  )}
-                                                  {set.isPR && (
-                                                    <TrophyIcon className="ml-1 h-2.5 w-2.5 text-yellow-500" />
-                                                  )}
-                                                </Badge>
-                                              ))}
-                                            </div>
-                                          )}
-                                        </div>
-                                      );
-                                    }
+                                    (exResult) => (
+                                      <ExerciseResultItem
+                                        key={exResult.id}
+                                        exResult={exResult}
+                                      />
+                                    )
                                   )}
                                 </div>
                               )}

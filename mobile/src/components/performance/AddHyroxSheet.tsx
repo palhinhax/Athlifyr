@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X, ChevronDown } from "lucide-react-native";
@@ -33,6 +34,8 @@ const HYROX_CATEGORIES = [
   { value: "RELAY_MIXED", key: "relayMixed" },
   { value: "ADAPTIVE", key: "adaptive" },
 ] as const;
+
+const noop = () => {};
 
 interface AddHyroxSheetProps {
   visible: boolean;
@@ -91,132 +94,161 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
+      transparent
+      animationType="fade"
+      statusBarTranslucent
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
+        style={styles.backdrop}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("performance.hyrox.addTitle")}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X size={24} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
-
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Category Picker */}
-          <View style={styles.field}>
-            <Text style={styles.label}>
-              {t("performance.hyrox.category")} *
-            </Text>
-            <TouchableOpacity
-              style={styles.pickerButton}
-              onPress={() => setShowCategoryPicker(!showCategoryPicker)}
-            >
-              <Text style={styles.pickerButtonText}>
-                {getCategoryLabel(category)}
+        <Pressable style={styles.backdropPressable} onPress={onClose}>
+          <Pressable style={styles.card} onPress={noop}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {t("performance.hyrox.addTitle")}
               </Text>
-              <ChevronDown size={20} color={theme.colors.textSecondary} />
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.closeButton}
+                hitSlop={12}
+                activeOpacity={0.7}
+              >
+                <X size={20} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            </View>
 
-            {showCategoryPicker && (
-              <View style={styles.categoryList}>
-                <ScrollView nestedScrollEnabled style={styles.categoryScroll}>
-                  {HYROX_CATEGORIES.map((cat) => (
-                    <TouchableOpacity
-                      key={cat.value}
-                      style={[
-                        styles.categoryItem,
-                        category === cat.value && styles.categoryItemActive,
-                      ]}
-                      onPress={() => {
-                        setCategory(cat.value);
-                        setShowCategoryPicker(false);
-                      }}
+            <ScrollView
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Category Picker */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.hyrox.category")} *
+                </Text>
+                <TouchableOpacity
+                  style={styles.pickerButton}
+                  onPress={() => setShowCategoryPicker(!showCategoryPicker)}
+                >
+                  <Text style={styles.pickerButtonText}>
+                    {getCategoryLabel(category)}
+                  </Text>
+                  <ChevronDown size={20} color={theme.colors.textSecondary} />
+                </TouchableOpacity>
+
+                {showCategoryPicker && (
+                  <View style={styles.categoryList}>
+                    <ScrollView
+                      nestedScrollEnabled
+                      style={styles.categoryScroll}
                     >
-                      <Text
-                        style={[
-                          styles.categoryItemText,
-                          category === cat.value &&
-                            styles.categoryItemTextActive,
-                        ]}
-                      >
-                        {t(`performance.hyrox.categories.${cat.key}`)}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
+                      {HYROX_CATEGORIES.map((cat) => (
+                        <TouchableOpacity
+                          key={cat.value}
+                          style={[
+                            styles.categoryItem,
+                            category === cat.value && styles.categoryItemActive,
+                          ]}
+                          onPress={() => {
+                            setCategory(cat.value);
+                            setShowCategoryPicker(false);
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.categoryItemText,
+                              category === cat.value &&
+                                styles.categoryItemTextActive,
+                            ]}
+                          >
+                            {t(`performance.hyrox.categories.${cat.key}`)}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
               </View>
-            )}
-          </View>
 
-          {/* Time */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.hyrox.time")} *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="1:15:30"
-              placeholderTextColor={theme.colors.textTertiary}
-              value={time}
-              onChangeText={setTime}
-            />
-            <Text style={styles.hint}>{t("performance.hyrox.timeFormat")}</Text>
-          </View>
+              {/* Time */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.hyrox.time")} *
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="1:15:30"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  value={time}
+                  onChangeText={setTime}
+                />
+                <Text style={styles.hint}>
+                  {t("performance.hyrox.timeFormat")}
+                </Text>
+              </View>
 
-          {/* Event Name */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.hyrox.eventName")}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t("performance.hyrox.eventNamePlaceholder")}
-              placeholderTextColor={theme.colors.textTertiary}
-              value={eventName}
-              onChangeText={setEventName}
-            />
-          </View>
+              {/* Event Name */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.hyrox.eventName")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("performance.hyrox.eventNamePlaceholder")}
+                  placeholderTextColor={theme.colors.textTertiary}
+                  value={eventName}
+                  onChangeText={setEventName}
+                />
+              </View>
 
-          {/* Location */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.hyrox.location")}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder={t("performance.hyrox.locationPlaceholder")}
-              placeholderTextColor={theme.colors.textTertiary}
-              value={location}
-              onChangeText={setLocation}
-            />
-          </View>
-        </ScrollView>
+              {/* Location */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.hyrox.location")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={t("performance.hyrox.locationPlaceholder")}
+                  placeholderTextColor={theme.colors.textTertiary}
+                  value={location}
+                  onChangeText={setLocation}
+                />
+              </View>
+            </ScrollView>
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={onClose}
-            disabled={isCreating}
-          >
-            <Text style={styles.cancelBtnText}>{t("performance.cancel")}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
-            onPress={handleSave}
-            disabled={isCreating}
-          >
-            {isCreating ? (
-              <ActivityIndicator size="small" color={theme.colors.white} />
-            ) : (
-              <Text style={styles.saveBtnText}>{t("performance.save")}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+            {/* Actions */}
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={onClose}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelBtnText}>
+                  {t("performance.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
+                onPress={handleSave}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                {isCreating ? (
+                  <ActivityIndicator size="small" color={theme.colors.white} />
+                ) : (
+                  <Text style={styles.saveBtnText}>
+                    {t("performance.save")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
       </KeyboardAvoidingView>
 
       {/* Toast notifications */}
@@ -231,33 +263,45 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
 }
 
 const styles = StyleSheet.create({
-  container: {
+  backdrop: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  backdropPressable: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: "100%",
+    maxHeight: "85%",
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.xl,
+    paddingTop: 24,
+    paddingBottom: 20,
+    ...theme.shadows.xl,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingHorizontal: 24,
+    marginBottom: theme.spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
   },
   closeButton: {
-    padding: theme.spacing.xs,
+    padding: 4,
   },
   content: {
-    flex: 1,
+    flexGrow: 0,
   },
   contentContainer: {
-    padding: theme.spacing.lg,
+    paddingHorizontal: 24,
     gap: theme.spacing.lg,
   },
   field: {
@@ -276,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: theme.colors.text,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
   },
   hint: {
     fontSize: 12,
@@ -291,7 +335,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
     paddingHorizontal: theme.spacing.md,
     paddingVertical: 12,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
   },
   pickerButtonText: {
     fontSize: 16,
@@ -301,7 +345,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border,
     borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
     overflow: "hidden",
   },
   categoryScroll: {
@@ -327,18 +371,18 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    paddingHorizontal: 24,
+    paddingTop: theme.spacing.lg,
   },
   cancelBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   cancelBtnText: {
     fontSize: 16,
@@ -348,9 +392,11 @@ const styles = StyleSheet.create({
   saveBtn: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.primary,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   saveBtnDisabled: {
     opacity: 0.6,

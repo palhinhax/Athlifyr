@@ -707,7 +707,7 @@ export default function AdminGiveawaysPage() {
                   onChange={(e) =>
                     setFormData((p) => ({
                       ...p,
-                      prizeCount: parseInt(e.target.value) || 1,
+                      prizeCount: Number.parseInt(e.target.value) || 1,
                     }))
                   }
                   disabled={
@@ -869,42 +869,46 @@ export default function AdminGiveawaysPage() {
                 {/* Winners */}
                 <div>
                   <h3 className="mb-2 font-medium">{t("detail.winners")}</h3>
-                  {selectedGiveaway._count.winners === 0 ? (
+                  {selectedGiveaway._count.winners === 0 && (
                     <p className="text-sm text-muted-foreground">
                       {t("detail.noWinners")}
                     </p>
-                  ) : winners.length === 0 ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <div className="max-h-48 overflow-y-auto rounded-md border">
-                      {winners.map((w) => (
-                        <div
-                          key={w.id}
-                          className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="shrink-0">
-                              #{w.rank}
-                            </Badge>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {w.user.name || "—"}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {w.user.email}
-                              </p>
-                            </div>
-                          </div>
-                          {winningTicketNumbers[w.rank - 1] !== undefined && (
-                            <Badge variant="secondary" className="shrink-0">
-                              {t("detail.ticket")} #
-                              {winningTicketNumbers[w.rank - 1]}
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
                   )}
+                  {selectedGiveaway._count.winners > 0 &&
+                    winners.length === 0 && (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    )}
+                  {selectedGiveaway._count.winners > 0 &&
+                    winners.length > 0 && (
+                      <div className="max-h-48 overflow-y-auto rounded-md border">
+                        {winners.map((w) => (
+                          <div
+                            key={w.id}
+                            className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="shrink-0">
+                                #{w.rank}
+                              </Badge>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {w.user.name || "—"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {w.user.email}
+                                </p>
+                              </div>
+                            </div>
+                            {winningTicketNumbers[w.rank - 1] !== undefined && (
+                              <Badge variant="secondary" className="shrink-0">
+                                {t("detail.ticket")} #
+                                {winningTicketNumbers[w.rank - 1]}
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Participants */}

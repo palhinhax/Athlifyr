@@ -3,6 +3,12 @@ import { getAuthUser } from "@/lib/auth-utils";
 import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WorkoutBlockType, WeightUnit, DistanceUnit } from "@prisma/client";
+import {
+  validateExercisesExist,
+  deleteExistingBlocksAndResults,
+  createWorkoutBlocks,
+  workoutFullInclude,
+} from "@/lib/workout-helpers";
 
 // ============================================================================
 // Validation Schema for Update
@@ -311,65 +317,16 @@ export async function PATCH(
 
     // If blocks are being updated, handle complex update
     if (data.blocks) {
-      // Verify all exercises exist
-      const exerciseIds = data.blocks.flatMap((b) =>
-        b.exercises.map((e) => e.exerciseId)
-      );
-      const uniqueExerciseIds = [...new Set(exerciseIds)];
-
-      if (uniqueExerciseIds.length > 0) {
-        const exercises = await prisma.exercise.findMany({
-          where: { id: { in: uniqueExerciseIds } },
-          select: { id: true },
-        });
-
-        const foundIds = new Set(exercises.map((e) => e.id));
-        const missingIds = uniqueExerciseIds.filter((id) => !foundIds.has(id));
-
-        if (missingIds.length > 0) {
-          return NextResponse.json(
-            { error: "Some exercises not found", missingIds },
-            { status: 400 }
-          );
-        }
+      const missingIds = await validateExercisesExist(data.blocks);
+      if (missingIds.length > 0) {
+        return NextResponse.json(
+          { error: "Some exercises not found", missingIds },
+          { status: 400 }
+        );
       }
 
-      // Find all blocks and block exercises for this workout
-      const blocks = await prisma.workoutBlock.findMany({
-        where: { workoutId: id },
-        select: {
-          id: true,
-          exercises: {
-            select: { id: true },
-          },
-        },
-      });
-      const blockIds = blocks.map((b) => b.id);
-      const blockExerciseIds = blocks.flatMap((b) =>
-        b.exercises.map((e) => e.id)
-      );
+      await deleteExistingBlocksAndResults(id);
 
-      // Delete related results to avoid FK violations
-      if (blockExerciseIds.length > 0) {
-        // Delete WorkoutExerciseResult (references blockExerciseId without cascade)
-        await prisma.workoutExerciseResult.deleteMany({
-          where: { blockExerciseId: { in: blockExerciseIds } },
-        });
-      }
-
-      if (blockIds.length > 0) {
-        // Delete WorkoutBlockResult (references blockId without cascade)
-        await prisma.workoutBlockResult.deleteMany({
-          where: { blockId: { in: blockIds } },
-        });
-      }
-
-      // Delete existing blocks (cascade deletes exercises)
-      await prisma.workoutBlock.deleteMany({
-        where: { workoutId: id },
-      });
-
-      // Update workout metadata first
       await prisma.workout.update({
         where: { id },
         data: {
@@ -383,191 +340,11 @@ export async function PATCH(
         },
       });
 
-      // Create blocks with exercises and groups
-      for (const blockData of data.blocks) {
-        // Create the block
-        const createdBlock = await prisma.workoutBlock.create({
-          data: {
-            workoutId: id,
-            type: blockData.type,
-            name: blockData.name,
-            orderIndex: blockData.orderIndex,
-            timeCap: blockData.timeCap,
-            workTime: blockData.workTime,
-            rounds: blockData.rounds,
-            notes: blockData.notes,
-          },
-        });
+      await createWorkoutBlocks(id, data.blocks);
 
-        // Create standalone exercises (not in a group)
-        for (const exercise of blockData.exercises) {
-          await prisma.workoutBlockExercise.create({
-            data: {
-              blockId: createdBlock.id,
-              exerciseId: exercise.exerciseId,
-              orderIndex: exercise.orderIndex,
-              // Male/Rx
-              prescribedReps: exercise.prescribedReps,
-              prescribedWeight: exercise.prescribedWeight,
-              prescribedWeightUnit: exercise.prescribedWeightUnit,
-              prescribedWeightPercent: exercise.prescribedWeightPercent,
-              prescribedDistance: exercise.prescribedDistance,
-              prescribedDistanceUnit: exercise.prescribedDistanceUnit,
-              prescribedTime: exercise.prescribedTime,
-              prescribedCalories: exercise.prescribedCalories,
-              prescribedSets: exercise.prescribedSets,
-              // Female (optional)
-              prescribedRepsFemale: exercise.prescribedRepsFemale,
-              prescribedWeightFemale: exercise.prescribedWeightFemale,
-              prescribedWeightUnitFemale: exercise.prescribedWeightUnitFemale,
-              prescribedWeightPercentFemale:
-                exercise.prescribedWeightPercentFemale,
-              prescribedDistanceFemale: exercise.prescribedDistanceFemale,
-              prescribedDistanceUnitFemale:
-                exercise.prescribedDistanceUnitFemale,
-              prescribedTimeFemale: exercise.prescribedTimeFemale,
-              prescribedCaloriesFemale: exercise.prescribedCaloriesFemale,
-              prescribedSetsFemale: exercise.prescribedSetsFemale,
-              notes: exercise.notes,
-              // Set prescriptions
-              ...(exercise.setPrescriptions &&
-              exercise.setPrescriptions.length > 0
-                ? {
-                    setPrescriptions: {
-                      create: exercise.setPrescriptions.map((sp) => ({
-                        setNumber: sp.setNumber,
-                        reps: sp.reps,
-                        weight: sp.weight,
-                        weightUnit: sp.weightUnit,
-                        weightPercent: sp.weightPercent,
-                        time: sp.time,
-                        distance: sp.distance,
-                        distanceUnit: sp.distanceUnit,
-                        calories: sp.calories,
-                        repsFemale: sp.repsFemale,
-                        weightFemale: sp.weightFemale,
-                        weightUnitFemale: sp.weightUnitFemale,
-                        weightPercentFemale: sp.weightPercentFemale,
-                        timeFemale: sp.timeFemale,
-                        distanceFemale: sp.distanceFemale,
-                        distanceUnitFemale: sp.distanceUnitFemale,
-                        caloriesFemale: sp.caloriesFemale,
-                        notes: sp.notes,
-                      })),
-                    },
-                  }
-                : {}),
-            },
-          });
-        }
-
-        // Create exercise groups (if any)
-        if (blockData.exerciseGroups && blockData.exerciseGroups.length > 0) {
-          for (const groupData of blockData.exerciseGroups) {
-            // Create the group
-            const createdGroup = await prisma.exerciseGroup.create({
-              data: {
-                blockId: createdBlock.id,
-                name: groupData.name,
-                orderIndex: groupData.orderIndex,
-                rounds: groupData.rounds,
-                restBetweenRounds: groupData.restBetweenRounds,
-                notes: groupData.notes,
-              },
-            });
-
-            // Create exercises within the group
-            for (let idx = 0; idx < groupData.exercises.length; idx++) {
-              const ex = groupData.exercises[idx];
-              await prisma.workoutBlockExercise.create({
-                data: {
-                  blockId: createdBlock.id,
-                  groupId: createdGroup.id,
-                  exerciseId: ex.exerciseId,
-                  orderIndex: ex.orderIndex ?? idx,
-                  prescribedReps: ex.prescribedReps,
-                  prescribedWeight: ex.prescribedWeight,
-                  prescribedWeightUnit: ex.prescribedWeightUnit,
-                  prescribedWeightPercent: ex.prescribedWeightPercent,
-                  prescribedDistance: ex.prescribedDistance,
-                  prescribedDistanceUnit: ex.prescribedDistanceUnit,
-                  prescribedTime: ex.prescribedTime,
-                  prescribedCalories: ex.prescribedCalories,
-                  prescribedSets: ex.prescribedSets,
-                  prescribedRepsFemale: ex.prescribedRepsFemale,
-                  prescribedWeightFemale: ex.prescribedWeightFemale,
-                  prescribedWeightUnitFemale: ex.prescribedWeightUnitFemale,
-                  prescribedWeightPercentFemale:
-                    ex.prescribedWeightPercentFemale,
-                  prescribedDistanceFemale: ex.prescribedDistanceFemale,
-                  prescribedDistanceUnitFemale: ex.prescribedDistanceUnitFemale,
-                  prescribedTimeFemale: ex.prescribedTimeFemale,
-                  prescribedCaloriesFemale: ex.prescribedCaloriesFemale,
-                  prescribedSetsFemale: ex.prescribedSetsFemale,
-                  notes: ex.notes,
-                },
-              });
-            }
-          }
-        }
-      }
-
-      // Fetch the complete updated workout
       const workout = await prisma.workout.findUnique({
         where: { id },
-        include: {
-          createdBy: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-            },
-          },
-          venue: {
-            select: {
-              id: true,
-              name: true,
-              slug: true,
-            },
-          },
-          blocks: {
-            orderBy: { orderIndex: "asc" },
-            include: {
-              exerciseGroups: {
-                orderBy: { orderIndex: "asc" },
-                include: {
-                  exercises: {
-                    orderBy: { orderIndex: "asc" },
-                    include: {
-                      exercise: {
-                        select: {
-                          id: true,
-                          name: true,
-                          category: true,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              exercises: {
-                orderBy: { orderIndex: "asc" },
-                include: {
-                  exercise: {
-                    select: {
-                      id: true,
-                      name: true,
-                      category: true,
-                    },
-                  },
-                  setPrescriptions: {
-                    orderBy: { setNumber: "asc" },
-                  },
-                },
-              },
-            },
-          },
-        },
+        include: workoutFullInclude,
       });
 
       return NextResponse.json(workout);

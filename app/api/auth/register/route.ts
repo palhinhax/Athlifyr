@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { trackServerEvent, ANALYTICS_EVENTS } from "@/lib/analytics";
 import { requireIntegrity } from "@/lib/verify-integrity";
+import { registerLimiter } from "@/lib/rate-limit";
 
 const registerSchema = z.object({
   name: z.string().min(2),
@@ -11,10 +12,40 @@ const registerSchema = z.object({
   password: z.string().min(6),
 });
 
+function mapZodErrorCode(issue: z.core.$ZodIssue): string {
+  const field = issue.path[0];
+  if (issue.code === "too_small") {
+    if (field === "name") return "NAME_TOO_SHORT";
+    if (field === "password") return "PASSWORD_TOO_SHORT";
+  }
+  if (issue.code === "invalid_format" && field === "email") {
+    return "EMAIL_INVALID";
+  }
+  return "VALIDATION_ERROR";
+}
+
 export async function POST(req: NextRequest) {
   try {
     const integrityError = await requireIntegrity(req);
     if (integrityError) return integrityError;
+
+    // Rate limit by IP
+    const ip =
+      req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const rateLimit = registerLimiter.check(ip);
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { code: "RATE_LIMITED" },
+        {
+          status: 429,
+          headers: {
+            "Retry-After": String(
+              Math.ceil((rateLimit.resetAt - Date.now()) / 1000)
+            ),
+          },
+        }
+      );
+    }
 
     const body = await req.json();
     const { name, email: rawEmail, password } = registerSchema.parse(body);
@@ -73,19 +104,8 @@ export async function POST(req: NextRequest) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
-      const issue = error.issues[0];
-      const codeMap: Record<string, string> = {
-        too_small:
-          issue.path[0] === "name"
-            ? "NAME_TOO_SHORT"
-            : issue.path[0] === "password"
-              ? "PASSWORD_TOO_SHORT"
-              : "VALIDATION_ERROR",
-        invalid_string:
-          issue.path[0] === "email" ? "EMAIL_INVALID" : "VALIDATION_ERROR",
-      };
       return NextResponse.json(
-        { code: codeMap[issue.code] ?? "VALIDATION_ERROR" },
+        { code: mapZodErrorCode(error.issues[0]) },
         { status: 400 }
       );
     }

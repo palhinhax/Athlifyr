@@ -6,6 +6,7 @@ import {
   type VenuePlanPolicy,
   DEFAULT_PLAN_POLICY,
 } from "@/types/venue-plan";
+import { PaymentStatus } from "@prisma/client";
 // PaymentProvider removed - now using PaymentsProvider at venue level
 
 // GET - Fetch all subscriptions for a venue (owner/admin only)
@@ -84,6 +85,157 @@ export async function GET(
   }
 }
 
+// ── Helpers ───────────────────────────────────────────────────────────────────
+
+async function createManualSubscription(
+  authUserId: string,
+  venueId: string,
+  planId: string | undefined,
+  targetUserId: string | undefined,
+  startsAt: string | undefined,
+  endsAt: string | undefined,
+  manualPaymentStatus: string | undefined
+): Promise<NextResponse> {
+  const member = await prisma.venueMember.findUnique({
+    where: { venueId_userId: { venueId, userId: authUserId } },
+  });
+  const user = await prisma.user.findUnique({
+    where: { id: authUserId },
+    select: { role: true },
+  });
+
+  const isOwnerOrAdmin =
+    member && (member.role === "OWNER" || member.role === "ADMIN");
+  const isAppAdmin = user?.role === "ADMIN";
+
+  if (!isOwnerOrAdmin && !isAppAdmin) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (!planId || !targetUserId) {
+    return NextResponse.json(
+      { error: "Plan ID and User ID are required" },
+      { status: 400 }
+    );
+  }
+
+  const plan = await prisma.venuePlan.findUnique({ where: { id: planId } });
+  if (!plan || plan.venueId !== venueId) {
+    return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
+  }
+
+  let targetMember = await prisma.venueMember.findUnique({
+    where: { venueId_userId: { venueId, userId: targetUserId } },
+  });
+  if (!targetMember) {
+    targetMember = await prisma.venueMember.create({
+      data: {
+        venueId,
+        userId: targetUserId,
+        role: "CLIENT",
+        status: "ACTIVE",
+        joinedAt: new Date(),
+      },
+    });
+  }
+
+  const subscriptionStartsAt = startsAt ? new Date(startsAt) : new Date();
+  let subscriptionEndsAt: Date | null = null;
+
+  if (endsAt) {
+    subscriptionEndsAt = new Date(endsAt);
+  } else {
+    const planPolicy = plan.policy as VenuePlanPolicy | null;
+    const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
+    const durationValue =
+      planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
+    subscriptionEndsAt = calculatePlanEndDate(
+      subscriptionStartsAt,
+      duration,
+      durationValue
+    );
+  }
+
+  const subscription = await prisma.venueSubscription.create({
+    data: {
+      venueId,
+      userId: targetUserId,
+      planId,
+      status: "ACTIVE",
+      paymentStatus: (manualPaymentStatus as PaymentStatus) || "PAID",
+      paymentMethod: "Manual",
+      activatedByUserId: authUserId,
+      activatedAt: new Date(),
+      startsAt: subscriptionStartsAt,
+      endsAt: subscriptionEndsAt,
+    },
+    include: {
+      user: {
+        select: { id: true, name: true, email: true, image: true },
+      },
+      plan: {
+        select: { id: true, name: true, price: true, currency: true },
+      },
+    },
+  });
+
+  return NextResponse.json(subscription, { status: 201 });
+}
+
+async function handleExistingSubscription(
+  existingSubscription: {
+    id: string;
+    status: string;
+    createdAt: Date;
+    endsAt: Date | null;
+  },
+  planId: string,
+  userId: string,
+  venueId: string
+): Promise<NextResponse | null> {
+  const existingPlan = await prisma.venuePlan.findUnique({
+    where: { id: planId },
+  });
+  const existingPolicy =
+    (existingPlan?.policy as unknown as VenuePlanPolicy) || {};
+
+  if (
+    existingPolicy.maxTotalBookings &&
+    existingSubscription.status === "ACTIVE"
+  ) {
+    const includedVenueIds = await prisma.venuePlanVenue
+      .findMany({ where: { planId }, select: { venueId: true } })
+      .then((pv) => pv.map((p) => p.venueId));
+
+    const totalBookingsUsed = await prisma.venueBooking.count({
+      where: {
+        userId,
+        status: { in: ["BOOKED", "ATTENDED"] },
+        createdAt: {
+          gte: existingSubscription.createdAt,
+          ...(existingSubscription.endsAt
+            ? { lte: existingSubscription.endsAt }
+            : {}),
+        },
+        OR: [{ venueId }, { venueId: { in: includedVenueIds } }],
+      },
+    });
+
+    if (totalBookingsUsed >= existingPolicy.maxTotalBookings) {
+      await prisma.venueSubscription.update({
+        where: { id: existingSubscription.id },
+        data: { status: "COMPLETED" },
+      });
+      return null; // Pack exhausted — allow re-subscription
+    }
+  }
+
+  return NextResponse.json(
+    { error: "Already have an active or pending subscription to this plan" },
+    { status: 400 }
+  );
+}
+
 // POST - Subscribe to a plan
 export async function POST(
   request: Request,
@@ -109,124 +261,18 @@ export async function POST(
 
     // Manual subscription creation (for venue owners/admins)
     if (manual) {
-      // Check if user is owner or admin
-      const member = await prisma.venueMember.findUnique({
-        where: {
-          venueId_userId: {
-            venueId,
-            userId: authUser.id,
-          },
-        },
-      });
-
-      const user = await prisma.user.findUnique({
-        where: { id: authUser.id },
-        select: { role: true },
-      });
-
-      const isOwnerOrAdmin =
-        member && (member.role === "OWNER" || member.role === "ADMIN");
-      const isAppAdmin = user?.role === "ADMIN";
-
-      if (!isOwnerOrAdmin && !isAppAdmin) {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-      }
-
-      if (!planId || !targetUserId) {
-        return NextResponse.json(
-          { error: "Plan ID and User ID are required" },
-          { status: 400 }
-        );
-      }
-
-      // Check if plan exists
-      const plan = await prisma.venuePlan.findUnique({
-        where: { id: planId },
-      });
-
-      if (!plan || plan.venueId !== venueId) {
-        return NextResponse.json({ error: "Invalid plan" }, { status: 400 });
-      }
-
-      // Ensure target user is a member (create if not)
-      let targetMember = await prisma.venueMember.findUnique({
-        where: {
-          venueId_userId: {
-            venueId,
-            userId: targetUserId,
-          },
-        },
-      });
-
-      if (!targetMember) {
-        targetMember = await prisma.venueMember.create({
-          data: {
-            venueId,
-            userId: targetUserId,
-            role: "CLIENT",
-            status: "ACTIVE",
-            joinedAt: new Date(),
-          },
-        });
-      }
-
-      // Calculate start and end dates
-      const subscriptionStartsAt = startsAt ? new Date(startsAt) : new Date();
-      let subscriptionEndsAt: Date | null = null;
-
-      if (endsAt) {
-        subscriptionEndsAt = new Date(endsAt);
-      } else {
-        // Auto-calculate end date based on plan policy
-        const planPolicy = plan.policy as VenuePlanPolicy | null;
-        const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
-        const durationValue =
-          planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;
-        subscriptionEndsAt = calculatePlanEndDate(
-          subscriptionStartsAt,
-          duration,
-          durationValue
-        );
-      }
-
-      // Create manual subscription
-      const subscription = await prisma.venueSubscription.create({
-        data: {
-          venueId,
-          userId: targetUserId,
-          planId,
-          status: "ACTIVE",
-          paymentStatus: manualPaymentStatus || "PAID",
-          paymentMethod: "Manual", // Use paymentMethod instead of paymentProvider
-          activatedByUserId: authUser.id, // Track who activated it
-          activatedAt: new Date(),
-          startsAt: subscriptionStartsAt,
-          endsAt: subscriptionEndsAt,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              image: true,
-            },
-          },
-          plan: {
-            select: {
-              id: true,
-              name: true,
-              price: true,
-              currency: true,
-            },
-          },
-        },
-      });
-
-      return NextResponse.json(subscription, { status: 201 });
+      return createManualSubscription(
+        authUser.id,
+        venueId,
+        planId,
+        targetUserId,
+        startsAt,
+        endsAt,
+        manualPaymentStatus
+      );
     }
 
-    // Regular subscription flow (existing code)
+    // Regular subscription flow
     if (!planId) {
       return NextResponse.json(
         { error: "Plan ID is required" },
@@ -296,70 +342,13 @@ export async function POST(
     });
 
     if (existingSubscription) {
-      // Check if this is a pack/drop-in plan with maxTotalBookings
-      // If the pack is exhausted, mark the old subscription as COMPLETED and allow re-subscription
-      const existingPlan = await prisma.venuePlan.findUnique({
-        where: { id: planId },
-      });
-      const existingPolicy =
-        (existingPlan?.policy as unknown as VenuePlanPolicy) || {};
-
-      if (
-        existingPolicy.maxTotalBookings &&
-        existingSubscription.status === "ACTIVE"
-      ) {
-        const totalBookingsUsed = await prisma.venueBooking.count({
-          where: {
-            userId: authUser.id,
-            status: { in: ["BOOKED", "ATTENDED"] },
-            createdAt: {
-              gte: existingSubscription.createdAt,
-              ...(existingSubscription.endsAt
-                ? { lte: existingSubscription.endsAt }
-                : {}),
-            },
-            // Count bookings at the subscription's venue AND any included venues
-            OR: [
-              { venueId },
-              {
-                venueId: {
-                  in: await prisma.venuePlanVenue
-                    .findMany({
-                      where: { planId },
-                      select: { venueId: true },
-                    })
-                    .then((pv) => pv.map((p) => p.venueId)),
-                },
-              },
-            ],
-          },
-        });
-
-        if (totalBookingsUsed >= existingPolicy.maxTotalBookings) {
-          // Pack is exhausted — mark old subscription as COMPLETED
-          await prisma.venueSubscription.update({
-            where: { id: existingSubscription.id },
-            data: { status: "COMPLETED" },
-          });
-          // Allow re-subscription to continue
-        } else {
-          return NextResponse.json(
-            {
-              error:
-                "Already have an active or pending subscription to this plan",
-            },
-            { status: 400 }
-          );
-        }
-      } else {
-        return NextResponse.json(
-          {
-            error:
-              "Already have an active or pending subscription to this plan",
-          },
-          { status: 400 }
-        );
-      }
+      const resubError = await handleExistingSubscription(
+        existingSubscription,
+        planId,
+        authUser.id,
+        venueId
+      );
+      if (resubError) return resubError;
     }
 
     // Determine payment status and subscription status based on venue's payment mode

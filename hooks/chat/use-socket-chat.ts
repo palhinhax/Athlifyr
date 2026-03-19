@@ -84,21 +84,53 @@ export function useSocketChat({
     };
   }, [socket, isConnected, conversationId]);
 
+  // ── Message & typing helpers ───────────────────────────────────────────
+
+  const mergeMessage = useCallback(
+    (existing: Message[] | undefined, incoming: Message): Message[] => {
+      if (!existing) return [incoming];
+
+      const isMatch = (m: Message) =>
+        m.id === incoming.id ||
+        (m.id.startsWith("temp-") &&
+          m.content === incoming.content &&
+          m.senderId === incoming.senderId);
+
+      if (existing.some(isMatch)) {
+        return existing.map((m) => (isMatch(m) ? incoming : m));
+      }
+
+      return [...existing, incoming];
+    },
+    []
+  );
+
+  const removeTypingUser = useCallback((userId: string) => {
+    setTypingUsers((prev) => prev.filter((u) => u.userId !== userId));
+  }, []);
+
+  const addTypingUser = useCallback(
+    (userId: string, userName: string | null) => {
+      setTypingUsers((prev) => {
+        if (prev.some((u) => u.userId === userId)) return prev;
+        return [...prev, { userId, userName }];
+      });
+    },
+    []
+  );
+
   // ── Listen for incoming messages ───────────────────────────────────────
 
   useEffect(() => {
     if (!socket || !isConnected) return;
 
     const handleMessage = (data: ChatMessageEvent) => {
-      // Only process messages for the current conversation
       if (data.conversationId !== conversationId) {
-        // Message for another conversation — invalidate conversations list
         queryClient.invalidateQueries({ queryKey: ["conversations"] });
         queryClient.invalidateQueries({ queryKey: ["chat-notifications"] });
         return;
       }
 
-      // Convert socket event to Message format and add to cache
       const newMessage: Message = {
         id: data.id,
         conversationId: data.conversationId,
@@ -112,40 +144,12 @@ export function useSocketChat({
         },
       };
 
-      queryClient.setQueryData<Message[]>(
-        ["messages", conversationId],
-        (old) => {
-          if (!old) return [newMessage];
-
-          // Avoid duplicates (message may already exist from optimistic update)
-          const exists = old.some(
-            (m) =>
-              m.id === newMessage.id ||
-              (m.id.startsWith("temp-") &&
-                m.content === newMessage.content &&
-                m.senderId === newMessage.senderId)
-          );
-
-          if (exists) {
-            // Replace temp message with real one
-            return old.map((m) =>
-              m.id.startsWith("temp-") &&
-              m.content === newMessage.content &&
-              m.senderId === newMessage.senderId
-                ? newMessage
-                : m
-            );
-          }
-
-          return [...old, newMessage];
-        }
+      queryClient.setQueryData<Message[]>(["messages", conversationId], (old) =>
+        mergeMessage(old, newMessage)
       );
 
-      // Update conversations list (last message preview)
       queryClient.invalidateQueries({ queryKey: ["conversations"] });
-
-      // Remove sender from typing users
-      setTypingUsers((prev) => prev.filter((u) => u.userId !== data.senderId));
+      removeTypingUser(data.senderId);
     };
 
     socket.on("chat:message", handleMessage);
@@ -153,7 +157,14 @@ export function useSocketChat({
     return () => {
       socket.off("chat:message", handleMessage);
     };
-  }, [socket, isConnected, conversationId, queryClient]);
+  }, [
+    socket,
+    isConnected,
+    conversationId,
+    queryClient,
+    mergeMessage,
+    removeTypingUser,
+  ]);
 
   // ── Listen for typing indicators ──────────────────────────────────────
 
@@ -162,28 +173,22 @@ export function useSocketChat({
 
     const handleTyping = (data: ChatTypingEvent) => {
       if (data.conversationId !== conversationId) return;
-      if (data.userId === currentUserId) return; // Ignore own typing
+      if (data.userId === currentUserId) return;
 
       if (data.isTyping) {
-        setTypingUsers((prev) => {
-          if (prev.some((u) => u.userId === data.userId)) return prev;
-          return [...prev, { userId: data.userId, userName: data.userName }];
-        });
+        addTypingUser(data.userId, data.userName);
 
-        // Auto-clear after 5 seconds (safety net)
         const existing = typingTimeoutsRef.current.get(data.userId);
         if (existing) clearTimeout(existing);
 
         const timeout = setTimeout(() => {
-          setTypingUsers((prev) =>
-            prev.filter((u) => u.userId !== data.userId)
-          );
+          removeTypingUser(data.userId);
           typingTimeoutsRef.current.delete(data.userId);
         }, 5000);
 
         typingTimeoutsRef.current.set(data.userId, timeout);
       } else {
-        setTypingUsers((prev) => prev.filter((u) => u.userId !== data.userId));
+        removeTypingUser(data.userId);
         const existing = typingTimeoutsRef.current.get(data.userId);
         if (existing) {
           clearTimeout(existing);
@@ -197,7 +202,14 @@ export function useSocketChat({
     return () => {
       socket.off("chat:typing", handleTyping);
     };
-  }, [socket, isConnected, conversationId, currentUserId]);
+  }, [
+    socket,
+    isConnected,
+    conversationId,
+    currentUserId,
+    addTypingUser,
+    removeTypingUser,
+  ]);
 
   // ── Listen for seen events ────────────────────────────────────────────
 

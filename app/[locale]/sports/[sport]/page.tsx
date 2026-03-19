@@ -86,9 +86,10 @@ export async function generateMetadata({
   params,
 }: PageProps): Promise<Metadata> {
   const { locale: localeParam, sport } = await Promise.resolve(params);
-  // Validate locale for type safety
-  const _locale = (localeParam in Language ? localeParam : "pt") as Language;
-  void _locale; // Used for validation
+  // Validate locale for type safety — used by getTranslations context
+  if (!(localeParam in Language)) {
+    // fallback handled by next-intl
+  }
   const t = await getTranslations("sports");
 
   const sportType = sportSlugToType[sport];

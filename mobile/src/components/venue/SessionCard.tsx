@@ -129,17 +129,11 @@ export function SessionCard({
       <View style={[styles.accent, { backgroundColor: typeColor }]} />
 
       <View style={styles.content}>
-        {/* Row 1: Type badge + booked badge */}
+        {/* Row 1: Title + booked badge */}
         <View style={styles.topRow}>
-          <View
-            style={[styles.typeBadge, { backgroundColor: typeColor + "20" }]}
-          >
-            <Text style={[styles.typeBadgeText, { color: typeColor }]}>
-              {session.type === "CLASS"
-                ? t("sessions.class")
-                : t("sessions.appointment")}
-            </Text>
-          </View>
+          <Text style={styles.title} numberOfLines={1}>
+            {session.title}
+          </Text>
 
           <View style={styles.badgesRight}>
             {session.isBooked && (
@@ -150,11 +144,6 @@ export function SessionCard({
             )}
           </View>
         </View>
-
-        {/* Row 2: Title */}
-        <Text style={styles.title} numberOfLines={1}>
-          {session.title}
-        </Text>
 
         {/* Row 3: Time + Duration */}
         <View style={styles.metaRow}>

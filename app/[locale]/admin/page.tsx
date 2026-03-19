@@ -21,6 +21,7 @@ import {
   MessageCircle,
   StickyNote,
   Apple,
+  Coins,
 } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { AdminPushDebug } from "@/components/admin/admin-push-debug";
@@ -42,6 +43,7 @@ const AdminPostsContent = lazy(() => import("./posts/page"));
 const AdminNotesContent = lazy(() => import("./notes/page"));
 const AdminConversationsContent = lazy(() => import("./conversations/page"));
 const AdminAppleSettingsContent = lazy(() => import("./apple-settings/page"));
+const AdminCreditsContent = lazy(() => import("./credits/page"));
 
 function AdminContent() {
   const { data: session, status } = useSession();
@@ -206,6 +208,13 @@ function AdminContent() {
               <span className="hidden sm:inline">
                 {t("tabs.appleSettings")}
               </span>
+            </TabsTrigger>
+            <TabsTrigger
+              value="credits"
+              className="flex-1 gap-1.5 px-2.5 py-1.5 sm:px-3"
+            >
+              <Coins className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">{t("tabs.credits")}</span>
             </TabsTrigger>
           </TabsList>
         </div>
@@ -381,6 +390,18 @@ function AdminContent() {
             }
           >
             <AdminAppleSettingsContent />
+          </Suspense>
+        </TabsContent>
+
+        <TabsContent value="credits">
+          <Suspense
+            fallback={
+              <div className="flex min-h-[400px] items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            }
+          >
+            <AdminCreditsContent />
           </Suspense>
         </TabsContent>
       </Tabs>

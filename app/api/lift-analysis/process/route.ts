@@ -44,10 +44,9 @@
  */
 
 import { NextResponse } from "next/server";
-import { transcodeToH264, trimVideoStreamCopy } from "@/lib/ffmpeg-utils";
 import { MAX_DURATION_LIFT_SEC } from "@/lib/video-limits";
 import { auth } from "@/lib/auth";
-import { checkAiRateLimit, recordAiUsage } from "@/lib/ai-rate-limit";
+import { recordAiUsage } from "@/lib/ai-rate-limit";
 import {
   type PoseAngles,
   type ExternalSkeletonFrame,
@@ -57,10 +56,10 @@ import {
   transformAverageAngles,
   parseRailwayErrorResponse,
   callRailwayWithRetry,
+  trimAndTranscodeVideo,
+  resolveAiPermission,
   ALLOWED_VIDEO_TYPES,
   MAX_VIDEO_BYTES,
-  getVideoExtension,
-  buildTranscodeErrorResponse,
 } from "@/lib/analysis-transforms";
 
 export const dynamic = "force-dynamic";
@@ -139,100 +138,6 @@ function validateVideoFile(
   return { videoFile, seedX, seedY };
 }
 
-async function trimAndTranscodeVideo(
-  videoFile: File,
-  formData: FormData
-): Promise<NextResponse | File> {
-  let finalVideoFile: File = videoFile;
-  const baseType = videoFile.type.split(";")[0].trim();
-
-  const trimStartRaw = formData.get("trim_start_sec");
-  const trimEndRaw = formData.get("trim_end_sec");
-  const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
-  const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
-
-  let didTrim = false;
-
-  if (
-    trimStartSec !== null &&
-    trimEndSec !== null &&
-    Number.isFinite(trimStartSec) &&
-    Number.isFinite(trimEndSec) &&
-    trimEndSec > trimStartSec
-  ) {
-    try {
-      const ext = getVideoExtension(baseType);
-      console.log(
-        `[LiftAnalysis] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
-      );
-      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
-      const trimmedBuffer = await trimVideoStreamCopy(
-        inputBuffer,
-        trimStartSec,
-        trimEndSec,
-        ext
-      );
-      finalVideoFile = new File(
-        [new Uint8Array(trimmedBuffer)],
-        finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
-        { type: "video/mp4" }
-      );
-      didTrim = true;
-      console.log(
-        `[LiftAnalysis] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes (H.264 MP4)`
-      );
-    } catch (err) {
-      console.error("[LiftAnalysis] Trim failed:", err);
-    }
-  }
-
-  if (!didTrim && baseType === "video/webm") {
-    try {
-      console.log("[LiftAnalysis] WebM detected — transcoding to H.264 MP4...");
-      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
-      const mp4Buffer = await transcodeToH264(inputBuffer);
-      finalVideoFile = new File(
-        [new Uint8Array(mp4Buffer)],
-        videoFile.name.replace(/\.[^.]+$/, ".mp4"),
-        { type: "video/mp4" }
-      );
-      console.log(
-        `[LiftAnalysis] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
-      );
-    } catch (err) {
-      return buildTranscodeErrorResponse(err, "LiftAnalysis");
-    }
-  }
-
-  return finalVideoFile;
-}
-
-async function resolveAiPermission(
-  formData: FormData,
-  externalFormData: FormData
-): Promise<boolean> {
-  const enableAi = formData.get("enable_ai");
-  if (typeof enableAi !== "string" || enableAi !== "true") return false;
-
-  const session = await auth();
-  if (!session?.user?.id) {
-    console.log("[LiftAnalysis] AI requested but user not authenticated");
-    return false;
-  }
-
-  const rateCheck = await checkAiRateLimit(session.user.id);
-  if (!rateCheck.allowed) {
-    console.log(
-      `[LiftAnalysis] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`
-    );
-    return false;
-  }
-
-  externalFormData.append("enable_ai", "true");
-  console.log(`[LiftAnalysis] AI enabled for user ${session.user.id}`);
-  return true;
-}
-
 export async function POST(request: Request) {
   try {
     // ── Debug: Log incoming request details ─────────────────────────────────
@@ -276,7 +181,11 @@ export async function POST(request: Request) {
     });
 
     // ── Trim and/or transcode video ───────────────────────────────────────
-    const videoResult = await trimAndTranscodeVideo(videoFile, formData);
+    const videoResult = await trimAndTranscodeVideo(
+      videoFile,
+      formData,
+      "LiftAnalysis"
+    );
     if (videoResult instanceof NextResponse) return videoResult;
     const finalVideoFile = videoResult;
 
@@ -301,7 +210,11 @@ export async function POST(request: Request) {
     externalFormData.append("auto_detect", autoDetect.toString());
 
     // ── AI rate limiting ──────────────────────────────────────────────────
-    const aiAllowed = await resolveAiPermission(formData, externalFormData);
+    const aiAllowed = await resolveAiPermission(
+      formData,
+      externalFormData,
+      "LiftAnalysis"
+    );
     const language = formData.get("language");
     if (language) {
       externalFormData.append("language", language.toString());

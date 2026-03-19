@@ -3,13 +3,22 @@
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { StripeCheckout } from "@/components/stripe-checkout";
+import type { PlanDuration } from "@/types/venue-plan";
+
+const BILLING_PERIOD_KEYS: Record<string, string> = {
+  DAILY: "perDay",
+  WEEKLY: "perWeek",
+  MONTHLY: "perMonth",
+  QUARTERLY: "perQuarter",
+  YEARLY: "perYear",
+};
 
 interface VenueCheckoutDialogProps {
   open: boolean;
@@ -22,6 +31,7 @@ interface VenueCheckoutDialogProps {
     name: string;
     price: number;
     currency: string;
+    duration?: PlanDuration;
   } | null;
   selectedPaymentMethod: "IN_APP" | "EXTERNAL" | null;
   onPaymentMethodSelect: (method: "IN_APP" | "EXTERNAL" | null) => void;
@@ -47,20 +57,29 @@ export function VenueCheckoutDialog({
   const tPlans = useTranslations("venues.plans");
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{tPlans("subscribe")}</DialogTitle>
-          <DialogDescription>
+    <AlertDialog open={open} onOpenChange={onOpenChange}>
+      <AlertDialogContent className="max-w-2xl">
+        <AlertDialogHeader>
+          <AlertDialogTitle>{tPlans("subscribe")}</AlertDialogTitle>
+          <AlertDialogDescription>
             {selectedPlan && (
               <>
                 {tPlans("subscribeTo")} {selectedPlan.name} -{" "}
-                {selectedPlan.price} {selectedPlan.currency} /{" "}
-                {tPlans("perMonth")}
+                {selectedPlan.price} {selectedPlan.currency}
+                {selectedPlan.duration &&
+                  selectedPlan.duration !== "ONE_TIME" && (
+                    <>
+                      {" "}
+                      /{" "}
+                      {tPlans(
+                        BILLING_PERIOD_KEYS[selectedPlan.duration] ?? "perMonth"
+                      )}
+                    </>
+                  )}
               </>
             )}
-          </DialogDescription>
-        </DialogHeader>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
         {selectedPlan && (
           <>
             {/* EXTERNAL: On-site payment only */}
@@ -107,6 +126,7 @@ export function VenueCheckoutDialog({
                 planName={selectedPlan.name}
                 price={selectedPlan.price}
                 currency={selectedPlan.currency}
+                duration={selectedPlan.duration}
                 onSuccess={onSuccess}
                 onCancel={onCancel}
               />
@@ -121,13 +141,13 @@ export function VenueCheckoutDialog({
                       {t("payment.chooseMethod")}
                     </p>
                     <div className="grid gap-4 md:grid-cols-2">
-                      {/* In-App Payment Option - Coming Soon */}
-                      <div className="relative flex cursor-not-allowed flex-col items-center justify-center rounded-lg border-2 border-muted bg-muted/30 p-6 opacity-60">
-                        <span className="absolute right-2 top-2 rounded-full bg-p-golden/10 px-2 py-0.5 text-xs font-medium text-p-golden">
-                          {t("payment.comingSoon")}
-                        </span>
+                      {/* In-App Payment Option */}
+                      <button
+                        onClick={() => onPaymentMethodSelect("IN_APP")}
+                        className="flex flex-col items-center justify-center rounded-lg border-2 border-muted p-6 transition-colors hover:border-primary hover:bg-muted/50"
+                      >
                         <svg
-                          className="mb-3 h-12 w-12 text-muted-foreground"
+                          className="mb-3 h-12 w-12 text-primary"
                           fill="none"
                           stroke="currentColor"
                           viewBox="0 0 24 24"
@@ -139,13 +159,13 @@ export function VenueCheckoutDialog({
                             d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
                           />
                         </svg>
-                        <h3 className="mb-2 font-semibold text-muted-foreground">
+                        <h3 className="mb-2 font-semibold">
                           {t("payment.inApp")}
                         </h3>
                         <p className="text-center text-xs text-muted-foreground">
                           {t("payment.inAppDescription")}
                         </p>
-                      </div>
+                      </button>
 
                       {/* On-Site Payment Option */}
                       <button
@@ -187,6 +207,7 @@ export function VenueCheckoutDialog({
                     planName={selectedPlan.name}
                     price={selectedPlan.price}
                     currency={selectedPlan.currency}
+                    duration={selectedPlan.duration}
                     onSuccess={onSuccess}
                     onCancel={() => {
                       onPaymentMethodSelect(null);
@@ -230,7 +251,7 @@ export function VenueCheckoutDialog({
             )}
           </>
         )}
-      </DialogContent>
-    </Dialog>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

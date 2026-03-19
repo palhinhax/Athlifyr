@@ -66,7 +66,11 @@ export async function POST(request: Request) {
   try {
     // Verify secret token
     const authHeader = request.headers.get("authorization");
-    if (!authHeader || authHeader !== `Bearer ${GIVEAWAY_DRAW_SECRET}`) {
+    if (
+      !GIVEAWAY_DRAW_SECRET ||
+      !authHeader ||
+      authHeader !== `Bearer ${GIVEAWAY_DRAW_SECRET}`
+    ) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

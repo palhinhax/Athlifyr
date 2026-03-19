@@ -10,6 +10,7 @@ import { PhotoGallery } from "@/components/photo-gallery";
 import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
 import { ProfilePastSessions } from "@/components/profile-past-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
+import { HybridScoreCard } from "@/components/scoring/hybrid-score-card";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { AnalysesSection } from "@/components/analyses-section";
 import { ProfileUpcomingEvents } from "@/components/profile-upcoming-events";
@@ -22,7 +23,7 @@ interface PageProps {
   params: { locale: string };
 }
 
-export default async function ProfilePage({ params }: PageProps) {
+export default async function ProfilePage({ params }: Readonly<PageProps>) {
   const { locale } = await Promise.resolve(params);
   const session = await auth();
   const t = await getTranslations({ locale, namespace: "profile" });
@@ -285,6 +286,12 @@ export default async function ProfilePage({ params }: PageProps) {
     : [];
   const confirmedTicketEventIds = confirmedRegistrations.map((r) => r.eventId);
 
+  // Fetch wallet balance
+  const wallet = await prisma.creditWallet.findUnique({
+    where: { userId: session.user.id },
+    select: { balanceCents: true },
+  });
+
   return (
     <PageContainer size="lg" maxWidth="max-w-6xl">
       {/* Profile Header */}
@@ -298,6 +305,7 @@ export default async function ProfilePage({ params }: PageProps) {
           upcomingEvents: allUpcomingEvents.length,
           pastEvents: allPastEvents.length,
           friendsCount,
+          creditBalanceCents: wallet?.balanceCents ?? 0,
         }}
         participations={user.participations.map((p) => ({
           id: p.id,
@@ -447,6 +455,11 @@ export default async function ProfilePage({ params }: PageProps) {
           </Link>
         </div>
       )}
+
+      {/* Hybrid Score */}
+      <div className="mt-12">
+        <HybridScoreCard />
+      </div>
 
       {/* Performance Section */}
       <PerformanceSection />

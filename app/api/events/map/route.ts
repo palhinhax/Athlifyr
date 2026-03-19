@@ -22,6 +22,41 @@ const mapEventsSchema = z.object({
   dateRange: z.string().optional(), // "7d", "30d", "3m", "6m"
 });
 
+const DATE_RANGE_DAYS: Record<string, number> = {
+  "7d": 7,
+  "30d": 30,
+  "3m": 90,
+  "6m": 180,
+};
+
+function resolveDateRange(
+  startDate?: string,
+  endDate?: string,
+  dateRange?: string
+): { minDate: Date; maxDate: Date | undefined } {
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  if (startDate && endDate) {
+    return { minDate: new Date(startDate), maxDate: new Date(endDate) };
+  }
+  if (startDate) {
+    return { minDate: new Date(startDate), maxDate: undefined };
+  }
+  if (dateRange && dateRange in DATE_RANGE_DAYS) {
+    const days = DATE_RANGE_DAYS[dateRange];
+    return {
+      minDate: now,
+      maxDate: new Date(now.getTime() + days * 24 * 60 * 60 * 1000),
+    };
+  }
+  // Default: today to 2 months from now
+  return {
+    minDate: now,
+    maxDate: new Date(now.getTime() + 60 * 24 * 60 * 60 * 1000),
+  };
+}
+
 /**
  * GET /api/events/map
  * Retorna eventos com coordenadas para mostrar no mapa
@@ -45,44 +80,11 @@ export async function GET(request: NextRequest) {
     });
 
     // Calculate date range
-    // Default: today to 2 months from now
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    let minDate = now;
-    let maxDate: Date | undefined = new Date(
-      now.getTime() + 60 * 24 * 60 * 60 * 1000
+    const { minDate, maxDate } = resolveDateRange(
+      params.startDate,
+      params.endDate,
+      params.dateRange
     );
-
-    // Priority: explicit startDate/endDate > dateRange preset
-    if (params.startDate && params.endDate) {
-      minDate = new Date(params.startDate);
-      maxDate = new Date(params.endDate);
-    } else if (params.startDate) {
-      minDate = new Date(params.startDate);
-      maxDate = undefined;
-    } else if (params.dateRange) {
-      switch (params.dateRange) {
-        case "7d":
-          minDate = now;
-          maxDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-          break;
-        case "30d":
-          minDate = now;
-          maxDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-          break;
-        case "3m":
-          minDate = now;
-          maxDate = new Date(now.getTime() + 90 * 24 * 60 * 60 * 1000);
-          break;
-        case "6m":
-          minDate = now;
-          maxDate = new Date(now.getTime() + 180 * 24 * 60 * 60 * 1000);
-          break;
-        default:
-          // Keep the default: today to 2 months
-          break;
-      }
-    }
 
     // Construir where clause
     const where: Prisma.EventWhereInput = {

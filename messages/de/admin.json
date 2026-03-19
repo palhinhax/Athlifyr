@@ -17,7 +17,8 @@
         "posts": "Beiträge",
         "notes": "Anfragen",
         "conversations": "KI-Gespräche",
-        "appleSettings": "Apple"
+        "appleSettings": "Apple",
+        "credits": "Guthaben"
       }
     },
     "contacts": {
@@ -390,7 +391,8 @@
         "variant": "Variante (optional)",
         "variantPlaceholder": "Variante auswählen",
         "variantAll": "Alle Varianten",
-        "variantHelp": "Beschränkt die Teilnahme am Gewinnspiel auf Teilnehmer dieser spezifischen Variante."
+        "variantHelp": "Beschränkt die Teilnahme am Gewinnspiel auf Teilnehmer dieser spezifischen Variante.",
+        "platform": "Plattform"
       },
       "form": {
         "title": "Titel",

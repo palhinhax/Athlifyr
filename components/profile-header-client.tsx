@@ -2,6 +2,8 @@
 
 import { ProfileImageUpload } from "@/components/profile-image-upload";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
+import { Calendar, Trophy, Users, Coins } from "lucide-react";
 
 interface EventParticipation {
   id: string;
@@ -47,6 +49,7 @@ interface ProfileHeaderClientProps {
     upcomingEvents: number;
     pastEvents: number;
     friendsCount: number;
+    creditBalanceCents?: number;
   };
   participations: EventParticipation[];
   sessionBookings?: VenueSessionBooking[];
@@ -54,6 +57,9 @@ interface ProfileHeaderClientProps {
 
 export function ProfileHeaderClient({ user, stats }: ProfileHeaderClientProps) {
   const t = useTranslations("profile");
+
+  const showCredits =
+    stats.creditBalanceCents !== undefined && stats.creditBalanceCents > 0;
 
   return (
     <div className="mb-12 flex flex-col items-center gap-6 md:flex-row md:items-start">
@@ -66,33 +72,72 @@ export function ProfileHeaderClient({ user, stats }: ProfileHeaderClientProps) {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-3 gap-3 sm:flex sm:gap-6">
-          <div className="rounded-lg bg-accent/10 px-4 py-3 text-center">
-            <div className="text-2xl font-bold text-accent">
-              {stats.upcomingEvents}
-            </div>
-            <div className="text-xs text-muted-foreground sm:text-sm">
-              {t("upcomingEvents")}
-            </div>
-          </div>
-          <div className="rounded-lg bg-p-info/10 px-4 py-3 text-center">
-            <div className="text-2xl font-bold text-p-info">
-              {stats.pastEvents}
-            </div>
-            <div className="text-xs text-muted-foreground sm:text-sm">
-              {t("pastEvents")}
-            </div>
-          </div>
-          <div className="rounded-lg bg-p-golden/10 px-4 py-3 text-center">
-            <div className="text-2xl font-bold text-p-golden">
-              {stats.friendsCount}
-            </div>
-            <div className="text-xs text-muted-foreground sm:text-sm">
-              {t("friends")}
-            </div>
-          </div>
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+          <StatItem
+            icon={<Calendar className="h-4 w-4" />}
+            value={stats.upcomingEvents}
+            label={t("upcomingEvents")}
+            colorClass="text-accent"
+          />
+          <Separator />
+          <StatItem
+            icon={<Trophy className="h-4 w-4" />}
+            value={stats.pastEvents}
+            label={t("pastEvents")}
+            colorClass="text-p-info"
+          />
+          <Separator />
+          <StatItem
+            icon={<Users className="h-4 w-4" />}
+            value={stats.friendsCount}
+            label={t("friends")}
+            colorClass="text-p-golden"
+          />
+          {showCredits && (
+            <>
+              <Separator />
+              <Link
+                href="/credits"
+                className="group flex items-center gap-2 transition-opacity hover:opacity-80"
+              >
+                <Coins className="h-4 w-4 text-emerald-600" />
+                <span className="text-lg font-bold tabular-nums text-emerald-600">
+                  {(stats.creditBalanceCents! / 100).toFixed(2)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {t("credits")}
+                </span>
+              </Link>
+            </>
+          )}
         </div>
       </div>
     </div>
   );
+}
+
+function StatItem({
+  icon,
+  value,
+  label,
+  colorClass,
+}: Readonly<{
+  icon: React.ReactNode;
+  value: number;
+  label: string;
+  colorClass: string;
+}>) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className={colorClass}>{icon}</span>
+      <span className={`text-lg font-bold tabular-nums ${colorClass}`}>
+        {value}
+      </span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
+function Separator() {
+  return <div className="hidden h-4 w-px bg-border sm:block" />;
 }

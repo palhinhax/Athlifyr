@@ -32,9 +32,76 @@ import type {
   WorkoutWithBlocks,
   CreateWorkoutInput,
   CreateWorkoutBlockInput,
+  CreateExerciseGroupInput,
+  CreateSetPrescriptionInput,
   WorkoutBlockWithExercises,
+  WorkoutBlockExerciseWithDetails,
+  ExerciseGroupWithExercises,
 } from "@/types/workout";
 import { BLOCK_TYPE_INFO } from "@/types/workout";
+
+function mapSetPrescriptions(
+  setPrescriptions: WorkoutBlockExerciseWithDetails["setPrescriptions"]
+): CreateSetPrescriptionInput[] | undefined {
+  if (!setPrescriptions?.length) return undefined;
+  return setPrescriptions.map((sp, spIndex) => ({
+    setNumber: sp.setNumber ?? spIndex + 1,
+    reps: sp.reps || undefined,
+    weight: sp.weight || undefined,
+    weightUnit: sp.weightUnit || undefined,
+    weightPercent: sp.weightPercent || undefined,
+    time: sp.time || undefined,
+    distance: sp.distance || undefined,
+    distanceUnit: sp.distanceUnit || undefined,
+    calories: sp.calories || undefined,
+    repsFemale: sp.repsFemale || undefined,
+    weightFemale: sp.weightFemale || undefined,
+    weightUnitFemale: sp.weightUnitFemale || undefined,
+    weightPercentFemale: sp.weightPercentFemale || undefined,
+    timeFemale: sp.timeFemale || undefined,
+    distanceFemale: sp.distanceFemale || undefined,
+    distanceUnitFemale: sp.distanceUnitFemale || undefined,
+    caloriesFemale: sp.caloriesFemale || undefined,
+    notes: sp.notes || undefined,
+  }));
+}
+
+function mapExerciseGroupToInput(
+  group: ExerciseGroupWithExercises
+): CreateExerciseGroupInput {
+  return {
+    name: group.name || undefined,
+    orderIndex: group.orderIndex,
+    rounds: group.rounds,
+    restBetweenRounds: group.restBetweenRounds || undefined,
+    notes: group.notes || undefined,
+    exercises: group.exercises.map((ex, exIndex) => ({
+      exerciseId: ex.exerciseId,
+      orderIndex: exIndex,
+      prescribedReps: ex.prescribedReps || undefined,
+      prescribedWeight: ex.prescribedWeight || undefined,
+      prescribedWeightUnit: ex.prescribedWeightUnit || undefined,
+      prescribedWeightPercent: ex.prescribedWeightPercent || undefined,
+      prescribedDistance: ex.prescribedDistance || undefined,
+      prescribedDistanceUnit: ex.prescribedDistanceUnit || undefined,
+      prescribedTime: ex.prescribedTime || undefined,
+      prescribedCalories: ex.prescribedCalories || undefined,
+      prescribedSets: ex.prescribedSets || undefined,
+      prescribedRepsFemale: ex.prescribedRepsFemale || undefined,
+      prescribedWeightFemale: ex.prescribedWeightFemale || undefined,
+      prescribedWeightUnitFemale: ex.prescribedWeightUnitFemale || undefined,
+      prescribedWeightPercentFemale:
+        ex.prescribedWeightPercentFemale || undefined,
+      prescribedDistanceFemale: ex.prescribedDistanceFemale || undefined,
+      prescribedDistanceUnitFemale:
+        ex.prescribedDistanceUnitFemale || undefined,
+      prescribedTimeFemale: ex.prescribedTimeFemale || undefined,
+      prescribedCaloriesFemale: ex.prescribedCaloriesFemale || undefined,
+      prescribedSetsFemale: ex.prescribedSetsFemale || undefined,
+      notes: ex.notes || undefined,
+    })),
+  };
+}
 
 interface WorkoutBuilderProps {
   workout?: WorkoutWithBlocks | null;
@@ -240,72 +307,11 @@ export function WorkoutBuilder({
                   ex.prescribedCaloriesFemale || undefined,
                 prescribedSetsFemale: ex.prescribedSetsFemale || undefined,
                 notes: ex.notes || undefined,
-                // Include set prescriptions if available
-                setPrescriptions: ex.setPrescriptions?.length
-                  ? ex.setPrescriptions.map((sp, spIndex) => ({
-                      setNumber: sp.setNumber ?? spIndex + 1,
-                      // Male/Rx
-                      reps: sp.reps || undefined,
-                      weight: sp.weight || undefined,
-                      weightUnit: sp.weightUnit || undefined,
-                      weightPercent: sp.weightPercent || undefined,
-                      time: sp.time || undefined,
-                      distance: sp.distance || undefined,
-                      distanceUnit: sp.distanceUnit || undefined,
-                      calories: sp.calories || undefined,
-                      // Female (optional)
-                      repsFemale: sp.repsFemale || undefined,
-                      weightFemale: sp.weightFemale || undefined,
-                      weightUnitFemale: sp.weightUnitFemale || undefined,
-                      weightPercentFemale: sp.weightPercentFemale || undefined,
-                      timeFemale: sp.timeFemale || undefined,
-                      distanceFemale: sp.distanceFemale || undefined,
-                      distanceUnitFemale: sp.distanceUnitFemale || undefined,
-                      caloriesFemale: sp.caloriesFemale || undefined,
-                      notes: sp.notes || undefined,
-                    }))
-                  : undefined,
+                setPrescriptions: mapSetPrescriptions(ex.setPrescriptions),
               })),
             // Include exercise groups
             exerciseGroups: block.exerciseGroups?.length
-              ? block.exerciseGroups.map((group) => ({
-                  name: group.name || undefined,
-                  orderIndex: group.orderIndex,
-                  rounds: group.rounds,
-                  restBetweenRounds: group.restBetweenRounds || undefined,
-                  notes: group.notes || undefined,
-                  exercises: group.exercises.map((ex, exIndex) => ({
-                    exerciseId: ex.exerciseId,
-                    orderIndex: exIndex,
-                    prescribedReps: ex.prescribedReps || undefined,
-                    prescribedWeight: ex.prescribedWeight || undefined,
-                    prescribedWeightUnit: ex.prescribedWeightUnit || undefined,
-                    prescribedWeightPercent:
-                      ex.prescribedWeightPercent || undefined,
-                    prescribedDistance: ex.prescribedDistance || undefined,
-                    prescribedDistanceUnit:
-                      ex.prescribedDistanceUnit || undefined,
-                    prescribedTime: ex.prescribedTime || undefined,
-                    prescribedCalories: ex.prescribedCalories || undefined,
-                    prescribedSets: ex.prescribedSets || undefined,
-                    prescribedRepsFemale: ex.prescribedRepsFemale || undefined,
-                    prescribedWeightFemale:
-                      ex.prescribedWeightFemale || undefined,
-                    prescribedWeightUnitFemale:
-                      ex.prescribedWeightUnitFemale || undefined,
-                    prescribedWeightPercentFemale:
-                      ex.prescribedWeightPercentFemale || undefined,
-                    prescribedDistanceFemale:
-                      ex.prescribedDistanceFemale || undefined,
-                    prescribedDistanceUnitFemale:
-                      ex.prescribedDistanceUnitFemale || undefined,
-                    prescribedTimeFemale: ex.prescribedTimeFemale || undefined,
-                    prescribedCaloriesFemale:
-                      ex.prescribedCaloriesFemale || undefined,
-                    prescribedSetsFemale: ex.prescribedSetsFemale || undefined,
-                    notes: ex.notes || undefined,
-                  })),
-                }))
+              ? block.exerciseGroups.map(mapExerciseGroupToInput)
               : undefined,
           })
         ),

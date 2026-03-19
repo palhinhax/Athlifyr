@@ -4,6 +4,7 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  ScrollView,
   Dimensions,
   ActivityIndicator,
   GestureResponderEvent,
@@ -676,9 +677,13 @@ export default function LiftAnalysisScreen() {
             <View style={{ width: 40 }} />
           </SafeAreaView>
 
-          {/* Main content — flex layout, no scroll for seed/tracking */}
+          {/* Main content — scrollable to ensure buttons are reachable */}
           {phase === "playback" ? (
-            <View style={styles.mainContent}>
+            <ScrollView
+              style={styles.mainContent}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+            >
               {/* Video + Overlay Container */}
               <View
                 style={[
@@ -744,9 +749,14 @@ export default function LiftAnalysisScreen() {
                   </View>
                 </SafeAreaView>
               )}
-            </View>
+            </ScrollView>
           ) : (
-            <View style={styles.mainContent}>
+            <ScrollView
+              style={styles.mainContent}
+              contentContainerStyle={styles.scrollContent}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
               {/* Video + Overlay Container */}
               <View
                 style={[
@@ -1073,7 +1083,7 @@ export default function LiftAnalysisScreen() {
                   </View>
                 </View>
               )}
-            </View>
+            </ScrollView>
           )}
 
           {/* Feedback Modal */}
@@ -1162,8 +1172,9 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
   },
 
-  // Main content (all phases — no scroll)
+  // Main content
   mainContent: { flex: 1 },
+  scrollContent: { paddingBottom: theme.spacing["2xl"] },
 
   // Video
   videoContainer: {

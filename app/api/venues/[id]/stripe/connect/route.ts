@@ -1,63 +1,60 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { stripe } from "@/lib/stripe";
+import { authenticateVenueManager } from "@/lib/venues/stripe-route-helpers";
 
 // POST - Create or get Stripe Connect account for venue
 export async function POST(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth();
-
-    if (!session?.user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { id: venueId } = await params;
 
-    // Check if user is owner of the venue
-    const member = await prisma.venueMember.findUnique({
-      where: {
-        venueId_userId: {
-          venueId,
-          userId: session.user.id,
-        },
-      },
-      include: {
-        venue: true,
-      },
-    });
+    const ctx = await authenticateVenueManager(venueId);
+    if ("error" in ctx) return ctx.error;
 
-    if (!member || member.role !== "OWNER") {
-      return NextResponse.json(
-        { error: "Only venue owner can manage Stripe Connect" },
-        { status: 403 }
-      );
-    }
+    const { venue, session } = ctx;
 
-    // If venue already has a Stripe account, return it
-    if (member.venue.stripeAccountId) {
-      return NextResponse.json({
-        accountId: member.venue.stripeAccountId,
-        message: "Stripe account already exists",
-      });
+    // If venue already has a Stripe account, validate it still exists in Stripe
+    if (venue.stripeAccountId) {
+      try {
+        await stripe.accounts.retrieve(venue.stripeAccountId);
+        return NextResponse.json({
+          accountId: venue.stripeAccountId,
+          message: "Stripe account already exists",
+        });
+      } catch {
+        // Account is invalid/revoked — clear it so a new one is created below
+        console.warn(
+          `Stale Stripe account ${venue.stripeAccountId} for venue ${venueId}, creating new one`
+        );
+        await prisma.venue.update({
+          where: { id: venueId },
+          data: {
+            stripeAccountId: null,
+            stripeOnboardingStatus: "NOT_STARTED",
+            stripeChargesEnabled: false,
+            stripePayoutsEnabled: false,
+            stripeDetailsSubmitted: false,
+          },
+        });
+      }
     }
 
     // Create new Stripe Connect Express account
     const account = await stripe.accounts.create({
       type: "express",
-      country: "PT", // Portugal
-      email: member.venue.email || session.user.email || undefined,
+      country: "PT",
+      email: venue.email || session.user.email || undefined,
       capabilities: {
         card_payments: { requested: true },
         transfers: { requested: true },
       },
-      business_type: "individual", // or 'company' based on venue type
+      business_type: "individual",
       metadata: {
-        venueId: member.venue.id,
-        venueName: member.venue.name,
+        venueId: venue.id,
+        venueName: venue.name,
       },
     });
 

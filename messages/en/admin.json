@@ -17,7 +17,8 @@
         "posts": "Posts",
         "notes": "Requests",
         "conversations": "AI Conversations",
-        "appleSettings": "Apple"
+        "appleSettings": "Apple",
+        "credits": "Credits"
       }
     },
     "contacts": {
@@ -390,7 +391,8 @@
         "variant": "Variant (optional)",
         "variantPlaceholder": "Select a variant",
         "variantAll": "All variants",
-        "variantHelp": "Restricts giveaway participation to registrants of this specific variant."
+        "variantHelp": "Restricts giveaway participation to registrants of this specific variant.",
+        "platform": "Platform"
       },
       "form": {
         "title": "Title",

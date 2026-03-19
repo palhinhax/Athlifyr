@@ -268,9 +268,7 @@ export function VenueSessionCard({
                     ? t("sessionPast")
                     : bookingTimeStatus.isNotYetBookable
                       ? t("bookingAvailableIn", { time: timeUntilBookableText })
-                      : bookingTimeStatus.isTooLateToBook
-                        ? t("bookingClosed")
-                        : null}
+                      : t("bookingClosed")}
                 </span>
               </div>
             )}

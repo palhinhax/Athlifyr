@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { NextRequest } from "next/server";
 import { POST } from "@/app/api/auth/forgot-password/route";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
@@ -29,10 +30,22 @@ jest.mock("@/lib/email-templates", () => ({
   getPasswordResetEmailText: jest.fn().mockReturnValue("reset link"),
 }));
 
+const mockRateLimitCheck = jest.fn().mockReturnValue({
+  allowed: true,
+  remaining: 2,
+  resetAt: Date.now() + 900000,
+});
+
+jest.mock("@/lib/rate-limit", () => ({
+  forgotPasswordLimiter: {
+    check: (...args: unknown[]) => mockRateLimitCheck(...args),
+  },
+}));
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function makeRequest(body: Record<string, unknown>) {
-  return new Request("http://localhost/api/auth/forgot-password", {
+  return new NextRequest("http://localhost/api/auth/forgot-password", {
     method: "POST",
     body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
@@ -43,11 +56,31 @@ function makeRequest(body: Record<string, unknown>) {
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockRateLimitCheck.mockReturnValue({
+    allowed: true,
+    remaining: 2,
+    resetAt: Date.now() + 900000,
+  });
   process.env.RESEND_API_KEY = "re_test_key";
   process.env.NEXTAUTH_URL = "http://localhost:3000";
 });
 
 describe("POST /api/auth/forgot-password", () => {
+  it("returns 429 when rate limited", async () => {
+    mockRateLimitCheck.mockReturnValue({
+      allowed: false,
+      remaining: 0,
+      resetAt: Date.now() + 600000,
+    });
+
+    const res = await POST(makeRequest({ email: "test@test.com" }));
+
+    expect(res.status).toBe(429);
+    const body = await res.json();
+    expect(body.code).toBe("RATE_LIMITED");
+    expect(res.headers.get("Retry-After")).toBeDefined();
+  });
+
   it("returns 400 when email is missing", async () => {
     const res = await POST(makeRequest({}));
 

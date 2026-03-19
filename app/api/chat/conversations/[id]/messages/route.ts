@@ -127,37 +127,26 @@ export async function POST(
       );
     }
 
-    // Create the message
-    const message = await prisma.message.create({
-      data: {
-        conversationId,
-        senderId: user.id,
-        content: content.trim(),
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            image: true,
+    // Create the message and fetch participants in parallel
+    const [message, allParticipants] = await Promise.all([
+      prisma.message.create({
+        data: {
+          conversationId,
+          senderId: user.id,
+          content: content.trim(),
+        },
+        include: {
+          sender: {
+            select: {
+              id: true,
+              name: true,
+              image: true,
+            },
           },
         },
-      },
-    });
-
-    // Update conversation's updatedAt
-    await prisma.conversation.update({
-      where: { id: conversationId },
-      data: { updatedAt: new Date() },
-    });
-
-    // Send push notifications to other participants (async, don't await)
-    prisma.conversationParticipant
-      .findMany({
-        where: {
-          conversationId,
-          userId: { not: user.id }, // Exclude sender
-        },
+      }),
+      prisma.conversationParticipant.findMany({
+        where: { conversationId },
         include: {
           user: {
             select: {
@@ -166,34 +155,40 @@ export async function POST(
             },
           },
         },
-      })
-      .then((participants) => {
-        // Send notification to each participant
-        participants.forEach((p) => {
-          if (p.user.pushNotificationsEnabled) {
-            sendChatMessageNotification({
-              recipientUserId: p.userId,
-              senderName: user.name || "Someone",
-              messageContent: content.trim(),
-              conversationId,
-              messageId: message.id,
-            }).catch((error) => {
-              console.error(
-                `Failed to send push notification to user ${p.userId}:`,
-                error
-              );
-            });
-          }
-        });
-      })
-      .catch((error) => {
-        console.error(
-          "Failed to fetch participants for push notification:",
-          error
-        );
-      });
+      }),
+    ]);
 
-    return NextResponse.json({ message });
+    // Update conversation's updatedAt
+    await prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() },
+    });
+
+    // All participant user IDs (for Socket.io room targeting)
+    const participantUserIds = allParticipants.map((p) => p.userId);
+
+    // Send push notifications to other participants (async, don't await)
+    const otherParticipants = allParticipants.filter(
+      (p) => p.userId !== user.id
+    );
+    for (const p of otherParticipants) {
+      if (p.user.pushNotificationsEnabled) {
+        sendChatMessageNotification({
+          recipientUserId: p.userId,
+          senderName: user.name || "Someone",
+          messageContent: content.trim(),
+          conversationId,
+          messageId: message.id,
+        }).catch((error) => {
+          console.error(
+            `Failed to send push notification to user ${p.userId}:`,
+            error
+          );
+        });
+      }
+    }
+
+    return NextResponse.json({ message, participantUserIds });
   } catch (error) {
     console.error("Error sending message:", error);
     return NextResponse.json(

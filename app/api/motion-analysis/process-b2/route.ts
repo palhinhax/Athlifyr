@@ -141,6 +141,123 @@ interface ProcessB2Body {
   trim_end_sec?: number | null;
 }
 
+function parseRailwayError(errorText: string, status: number): NextResponse {
+  try {
+    const errorJson = JSON.parse(errorText);
+    let errorMessage: string;
+    if (Array.isArray(errorJson.detail)) {
+      errorMessage = errorJson.detail
+        .map((e: { msg?: string; loc?: string[] }) =>
+          e.loc
+            ? `${e.loc.join(".")} — ${e.msg}`
+            : (e.msg ?? "Validation error")
+        )
+        .join("; ");
+    } else {
+      errorMessage =
+        typeof errorJson.detail === "string"
+          ? errorJson.detail
+          : errorJson.error || "Processing failed";
+    }
+    return NextResponse.json({ error: errorMessage }, { status });
+  } catch {
+    return NextResponse.json(
+      { error: `Processing failed: ${errorText}` },
+      { status }
+    );
+  }
+}
+
+function transformApiResponse(result: ExternalApiResponse, resultKey: string) {
+  const videoUrl = result.video_uploaded_to_b2
+    ? getB2PublicUrl(resultKey)
+    : result.video_url
+      ? `${BARBELL_API_URL}${result.video_url}`
+      : null;
+
+  const skeletonFrames = (result.skeleton_frames ?? []).map((frame) => ({
+    frameWidth: frame.frame_width,
+    frameHeight: frame.frame_height,
+    landmarks: frame.landmarks.map((lm) => ({
+      name: lm.name,
+      index: lm.index,
+      x: lm.x,
+      y: lm.y,
+      z: lm.z,
+      visibility: lm.visibility,
+      pixelX: lm.pixel_x,
+      pixelY: lm.pixel_y,
+      worldX: lm.world_x,
+      worldY: lm.world_y,
+      worldZ: lm.world_z,
+    })),
+    bones: frame.bones.map((bone) => ({
+      startIndex: bone.start_index,
+      endIndex: bone.end_index,
+      startName: bone.start_name,
+      endName: bone.end_name,
+    })),
+  }));
+
+  const aiAnalysis = result.ai_analysis
+    ? {
+        exercise: result.ai_analysis.exercise ?? null,
+        exerciseEn: result.ai_analysis.exercise_en ?? null,
+        confidence: result.ai_analysis.confidence ?? null,
+        totalReps: result.ai_analysis.total_reps ?? null,
+        durationSec: result.ai_analysis.duration_sec ?? null,
+        tempoAvgSec: result.ai_analysis.tempo_avg_sec ?? null,
+        overallScore: result.ai_analysis.overall_score ?? null,
+        overallNotes: result.ai_analysis.overall_notes ?? null,
+        reps: (result.ai_analysis.reps ?? []).map((rep) => ({
+          repNumber: rep.rep_number,
+          startFrame: rep.start_frame ?? null,
+          endFrame: rep.end_frame ?? null,
+          phaseEccentricFrames: rep.phase_eccentric_frames ?? null,
+          phaseConcentricFrames: rep.phase_concentric_frames ?? null,
+          minKneeAngle: rep.min_knee_angle ?? null,
+          minHipAngle: rep.min_hip_angle ?? null,
+          romDegrees: rep.rom_degrees ?? null,
+          formScore: rep.form_score ?? null,
+          notes: rep.notes ?? [],
+        })),
+        strengths: result.ai_analysis.strengths ?? [],
+        improvements: result.ai_analysis.improvements ?? [],
+        safetyFlags: result.ai_analysis.safety_flags ?? [],
+      }
+    : null;
+
+  return {
+    videoUrl,
+    skeletonFrames,
+    aiAnalysis,
+    pose: {
+      framesProcessed: result.frames_processed,
+      framesWithPose: result.frames_with_pose,
+      detectionRate: result.pose_detection_rate,
+      durationSec: result.duration_sec,
+      averageAngles: result.average_angles
+        ? {
+            leftKnee: result.average_angles.left_knee ?? null,
+            rightKnee: result.average_angles.right_knee ?? null,
+            leftHip: result.average_angles.left_hip ?? null,
+            rightHip: result.average_angles.right_hip ?? null,
+            leftElbow: result.average_angles.left_elbow ?? null,
+            rightElbow: result.average_angles.right_elbow ?? null,
+            leftShoulder: result.average_angles.left_shoulder ?? null,
+            rightShoulder: result.average_angles.right_shoulder ?? null,
+            leftAnkle: result.average_angles.left_ankle ?? null,
+            rightAnkle: result.average_angles.right_ankle ?? null,
+            torsoInclination:
+              result.average_angles.torso_inclination ??
+              result.average_angles.back_angle ??
+              null,
+          }
+        : null,
+    },
+  };
+}
+
 export async function POST(request: Request) {
   try {
     // ── Auth (supports both web session and mobile Bearer token) ──────────
@@ -254,34 +371,7 @@ export async function POST(request: Request) {
         response.status,
         errorText.substring(0, 500)
       );
-
-      try {
-        const errorJson = JSON.parse(errorText);
-        let errorMessage: string;
-        if (Array.isArray(errorJson.detail)) {
-          errorMessage = errorJson.detail
-            .map((e: { msg?: string; loc?: string[] }) =>
-              e.loc
-                ? `${e.loc.join(".")} — ${e.msg}`
-                : (e.msg ?? "Validation error")
-            )
-            .join("; ");
-        } else {
-          errorMessage =
-            typeof errorJson.detail === "string"
-              ? errorJson.detail
-              : errorJson.error || "Processing failed";
-        }
-        return NextResponse.json(
-          { error: errorMessage },
-          { status: response.status }
-        );
-      } catch {
-        return NextResponse.json(
-          { error: `Processing failed: ${errorText}` },
-          { status: response.status }
-        );
-      }
+      return parseRailwayError(errorText, response.status);
     }
 
     const result: ExternalApiResponse = await response.json();
@@ -294,67 +384,9 @@ export async function POST(request: Request) {
     }
 
     // ── Transform & return ─────────────────────────────────────────────────
-    // Railway uploaded the processed video directly to B2 — use the B2 URL
-    // instead of a Railway download URL.
-    const videoUrl = result.video_uploaded_to_b2
-      ? getB2PublicUrl(resultKey)
-      : result.video_url
-        ? `${BARBELL_API_URL}${result.video_url}`
-        : null;
+    const transformed = transformApiResponse(result, resultKey);
 
-    const skeletonFrames = (result.skeleton_frames ?? []).map((frame) => ({
-      frameWidth: frame.frame_width,
-      frameHeight: frame.frame_height,
-      landmarks: frame.landmarks.map((lm) => ({
-        name: lm.name,
-        index: lm.index,
-        x: lm.x,
-        y: lm.y,
-        z: lm.z,
-        visibility: lm.visibility,
-        pixelX: lm.pixel_x,
-        pixelY: lm.pixel_y,
-        worldX: lm.world_x,
-        worldY: lm.world_y,
-        worldZ: lm.world_z,
-      })),
-      bones: frame.bones.map((bone) => ({
-        startIndex: bone.start_index,
-        endIndex: bone.end_index,
-        startName: bone.start_name,
-        endName: bone.end_name,
-      })),
-    }));
-
-    const aiAnalysis = result.ai_analysis
-      ? {
-          exercise: result.ai_analysis.exercise ?? null,
-          exerciseEn: result.ai_analysis.exercise_en ?? null,
-          confidence: result.ai_analysis.confidence ?? null,
-          totalReps: result.ai_analysis.total_reps ?? null,
-          durationSec: result.ai_analysis.duration_sec ?? null,
-          tempoAvgSec: result.ai_analysis.tempo_avg_sec ?? null,
-          overallScore: result.ai_analysis.overall_score ?? null,
-          overallNotes: result.ai_analysis.overall_notes ?? null,
-          reps: (result.ai_analysis.reps ?? []).map((rep) => ({
-            repNumber: rep.rep_number,
-            startFrame: rep.start_frame ?? null,
-            endFrame: rep.end_frame ?? null,
-            phaseEccentricFrames: rep.phase_eccentric_frames ?? null,
-            phaseConcentricFrames: rep.phase_concentric_frames ?? null,
-            minKneeAngle: rep.min_knee_angle ?? null,
-            minHipAngle: rep.min_hip_angle ?? null,
-            romDegrees: rep.rom_degrees ?? null,
-            formScore: rep.form_score ?? null,
-            notes: rep.notes ?? [],
-          })),
-          strengths: result.ai_analysis.strengths ?? [],
-          improvements: result.ai_analysis.improvements ?? [],
-          safetyFlags: result.ai_analysis.safety_flags ?? [],
-        }
-      : null;
-
-    if (aiAnalysis && aiAllowed) {
+    if (transformed.aiAnalysis && aiAllowed) {
       await recordAiUsage(user.id, "motion");
     }
 
@@ -362,33 +394,7 @@ export async function POST(request: Request) {
       {
         success: true,
         message: result.message,
-        videoUrl,
-        pose: {
-          framesProcessed: result.frames_processed,
-          framesWithPose: result.frames_with_pose,
-          detectionRate: result.pose_detection_rate,
-          durationSec: result.duration_sec,
-          averageAngles: result.average_angles
-            ? {
-                leftKnee: result.average_angles.left_knee ?? null,
-                rightKnee: result.average_angles.right_knee ?? null,
-                leftHip: result.average_angles.left_hip ?? null,
-                rightHip: result.average_angles.right_hip ?? null,
-                leftElbow: result.average_angles.left_elbow ?? null,
-                rightElbow: result.average_angles.right_elbow ?? null,
-                leftShoulder: result.average_angles.left_shoulder ?? null,
-                rightShoulder: result.average_angles.right_shoulder ?? null,
-                leftAnkle: result.average_angles.left_ankle ?? null,
-                rightAnkle: result.average_angles.right_ankle ?? null,
-                torsoInclination:
-                  result.average_angles.torso_inclination ??
-                  result.average_angles.back_angle ??
-                  null,
-              }
-            : null,
-        },
-        skeletonFrames,
-        aiAnalysis,
+        ...transformed,
       },
       { status: 200 }
     );

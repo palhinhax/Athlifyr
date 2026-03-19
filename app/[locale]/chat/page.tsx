@@ -11,6 +11,7 @@ import {
   useCreateConversation,
   Message,
 } from "@/hooks/chat/use-chat";
+import { useSocketChat } from "@/hooks/chat/use-socket-chat";
 import { useQueryClient } from "@tanstack/react-query";
 import { Loader2Icon } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -43,6 +44,12 @@ export default function ChatPage() {
   });
 
   const createConversation = useCreateConversation();
+
+  // Socket.io real-time: join conversation room & listen for incoming messages
+  useSocketChat({
+    conversationId: selectedConversationId,
+    currentUserId: session?.user?.id,
+  });
 
   // Get conversation from URL if present
   useEffect(() => {

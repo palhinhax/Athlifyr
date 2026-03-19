@@ -136,7 +136,71 @@ export default async function TermsPage({ params }: TermsPageProps) {
           Qualquer disputa será resolvida nos tribunais portugueses.
         </p>
 
-        <h2>12. Contacto</h2>
+        <h2 id="credits">12. Créditos Athlifyr</h2>
+        <p>
+          Os Créditos Athlifyr são créditos da plataforma para utilização dentro
+          do ecossistema Athlifyr. <strong>Não são dinheiro eletrónico</strong>,
+          conta bancária ou produto financeiro. Os créditos não podem ser
+          transferidos, levantados ou usados fora da plataforma.
+        </p>
+
+        <h3>12.1. Natureza dos Créditos</h3>
+        <ul>
+          <li>
+            Os créditos são uma unidade de valor interna da plataforma, sem
+            valor monetário fora do Athlifyr
+          </li>
+          <li>1 crédito equivale a 1€ de valor dentro da plataforma</li>
+          <li>
+            Os créditos são adquiridos através de carregamentos (top-ups) via
+            métodos de pagamento aceites
+          </li>
+        </ul>
+
+        <h3>12.2. Utilização</h3>
+        <ul>
+          <li>
+            Os créditos podem ser usados para compras de produtos e serviços
+            dentro da plataforma Athlifyr
+          </li>
+          <li>
+            Compras de valor inferior a 5€ devem ser pagas exclusivamente com
+            créditos
+          </li>
+          <li>O saldo de créditos é pessoal e intransmissível</li>
+        </ul>
+
+        <h3>12.3. Restrições</h3>
+        <ul>
+          <li>
+            Os créditos <strong>não são reembolsáveis</strong> nem transferíveis
+          </li>
+          <li>
+            Os créditos <strong>não podem ser convertidos</strong> em dinheiro
+            nem levantados
+          </li>
+          <li>Os créditos só podem ser usados dentro da plataforma Athlifyr</li>
+          <li>
+            O Athlifyr reserva-se o direito de ajustar ou revogar créditos em
+            caso de fraude ou violação dos termos
+          </li>
+        </ul>
+
+        <h3>12.4. Taxa de Processamento</h3>
+        <p>
+          Sobre cada carregamento de créditos é aplicada uma taxa de
+          processamento de <strong>4%</strong>. Por exemplo, ao carregar 10€,
+          recebes 9.60 créditos.
+        </p>
+
+        <h3>12.5. Liquidação a Espaços Parceiros</h3>
+        <p>
+          Os valores de compras efetuadas com créditos são liquidados
+          semanalmente aos espaços parceiros (venues), após dedução da comissão
+          da plataforma.
+        </p>
+
+        <h2>13. Contacto</h2>
         <p>
           Para questões sobre estes termos, contacta-nos através da{" "}
           <Link href="/contact">página de contacto</Link>.
@@ -150,6 +214,7 @@ export default async function TermsPage({ params }: TermsPageProps) {
             <li>✅ Não somos responsáveis pelos eventos listados</li>
             <li>✅ Respeita os outros utilizadores</li>
             <li>✅ Podemos suspender contas que violem os termos</li>
+            <li>✅ Créditos não são reembolsáveis nem transferíveis</li>
           </ul>
         </div>
       </article>

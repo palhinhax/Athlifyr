@@ -15,6 +15,7 @@ import { buildServer } from "./server.js";
 import { createSocketServer } from "./plugins/socket.js";
 import { getRedis, disconnectRedis } from "./plugins/redis.js";
 import { setLiveRaceIO } from "./modules/liverace/liverace.routes.js";
+import { setChatIO } from "./modules/chat/chat.routes.js";
 import { config } from "./config.js";
 
 async function main() {
@@ -47,8 +48,9 @@ async function main() {
   const httpServer = app.server;
   const io = createSocketServer(httpServer);
 
-  // Wire up LiveRace REST routes with the IO instance
+  // Wire up REST routes with the IO instance for real-time broadcasting
   setLiveRaceIO(io);
+  setChatIO(io);
 
   console.log(`[Boot] Fastify listening on ${config.host}:${config.port} ✓`);
   console.log(`[Boot] Socket.io attached ✓`);

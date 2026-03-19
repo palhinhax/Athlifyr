@@ -93,44 +93,38 @@ function rdpSimplify(
 // ─── Raw track point extraction ──────────────────────────────────────────────
 // We use a regex-based approach to avoid requiring xmldom in the server bundle.
 // GPX trkpt elements look like: <trkpt lat="..." lon="..."><ele>...</ele></trkpt>
-function extractTrackPoints(
-  gpx: string
+
+function matchGpxPoints(
+  gpx: string,
+  regex: RegExp
 ): { lat: number; lng: number; ele: number }[] {
   const points: { lat: number; lng: number; ele: number }[] = [];
-
-  // Match <trkpt ...> ... </trkpt> blocks (single-line and multi-line)
-  const trkptRegex =
-    /<trkpt\s+lat="([\d.\-]+)"\s+lon="([\d.\-]+)"[^>]*>([\s\S]*?)<\/trkpt>/g;
   const eleRegex = /<ele>([\d.\-]+)<\/ele>/;
-
   let match: RegExpExecArray | null;
-  while ((match = trkptRegex.exec(gpx)) !== null) {
+  while ((match = regex.exec(gpx)) !== null) {
     const lat = parseFloat(match[1]);
     const lng = parseFloat(match[2]);
     const eleMatch = eleRegex.exec(match[3]);
     const ele = eleMatch ? parseFloat(eleMatch[1]) : 0;
-
     if (!isNaN(lat) && !isNaN(lng)) {
       points.push({ lat, lng, ele });
     }
   }
+  return points;
+}
+
+function extractTrackPoints(
+  gpx: string
+): { lat: number; lng: number; ele: number }[] {
+  const trkptRegex =
+    /<trkpt\s+lat="([\d.\-]+)"\s+lon="([\d.\-]+)"[^>]*>([\s\S]*?)<\/trkpt>/g;
+  const points = matchGpxPoints(gpx, trkptRegex);
+  if (points.length > 0) return points;
 
   // Also try <rtept> (route points) if no trkpt found
-  if (points.length === 0) {
-    const rteptRegex =
-      /<rtept\s+lat="([\d.\-]+)"\s+lon="([\d.\-]+)"[^>]*>([\s\S]*?)<\/rtept>/g;
-    while ((match = rteptRegex.exec(gpx)) !== null) {
-      const lat = parseFloat(match[1]);
-      const lng = parseFloat(match[2]);
-      const eleMatch = eleRegex.exec(match[3]);
-      const ele = eleMatch ? parseFloat(eleMatch[1]) : 0;
-      if (!isNaN(lat) && !isNaN(lng)) {
-        points.push({ lat, lng, ele });
-      }
-    }
-  }
-
-  return points;
+  const rteptRegex =
+    /<rtept\s+lat="([\d.\-]+)"\s+lon="([\d.\-]+)"[^>]*>([\s\S]*?)<\/rtept>/g;
+  return matchGpxPoints(gpx, rteptRegex);
 }
 
 // ─── Main export ─────────────────────────────────────────────────────────────

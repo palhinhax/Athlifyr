@@ -40,9 +40,9 @@ async function getUpcomingEvents(country: string) {
 
 export default async function Home({
   params,
-}: {
+}: Readonly<{
   params: Promise<{ locale: string }>;
-}) {
+}>) {
   const { locale } = await params;
 
   // Check if user is authenticated - redirect to feed

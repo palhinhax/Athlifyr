@@ -50,7 +50,7 @@ import {
 } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useTranslations, useLocale } from "next-intl";
-import { GiveawayStatus, Language } from "@prisma/client";
+import { GiveawayStatus, GiveawayPlatform, Language } from "@prisma/client";
 import { formatDate } from "@/lib/event-utils";
 
 const LANGUAGES: Language[] = ["pt", "en", "es", "fr", "de", "it"];
@@ -73,6 +73,7 @@ interface Giveaway {
   id: string;
   eventId: string;
   status: GiveawayStatus;
+  platform: GiveawayPlatform;
   drawAt: string | null;
   prizeCount: number;
   secretHash: string | null;
@@ -165,6 +166,7 @@ export default function AdminGiveawaysPage() {
     eventId: "",
     drawAt: "",
     prizeCount: 1,
+    platform: "ALL" as GiveawayPlatform,
     translations: LANGUAGES.map((lang) => ({ lang, title: "", details: "" })),
   });
 
@@ -252,6 +254,7 @@ export default function AdminGiveawaysPage() {
         eventId: "",
         drawAt: "",
         prizeCount: 1,
+        platform: "ALL" as GiveawayPlatform,
         translations: LANGUAGES.map((lang) => ({
           lang,
           title: "",
@@ -473,6 +476,7 @@ export default function AdminGiveawaysPage() {
         ? new Date(giveaway.drawAt).toISOString().slice(0, 10)
         : "",
       prizeCount: giveaway.prizeCount,
+      platform: giveaway.platform,
       translations: LANGUAGES.map((lang) => {
         const existing = giveaway.translations.find((t) => t.lang === lang);
         return {
@@ -580,17 +584,24 @@ export default function AdminGiveawaysPage() {
                     <p className="text-sm text-muted-foreground">
                       {giveaway.event.title}
                     </p>
-                    <Badge
-                      variant={
-                        STATUS_COLORS[giveaway.status] as
-                          | "default"
-                          | "secondary"
-                          | "destructive"
-                          | "outline"
-                      }
-                    >
-                      {t(`status.${giveaway.status}`)}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      {giveaway.platform !== "ALL" && (
+                        <Badge variant="outline">
+                          {t(`platform.${giveaway.platform}`)}
+                        </Badge>
+                      )}
+                      <Badge
+                        variant={
+                          STATUS_COLORS[giveaway.status] as
+                            | "default"
+                            | "secondary"
+                            | "destructive"
+                            | "outline"
+                        }
+                      >
+                        {t(`status.${giveaway.status}`)}
+                      </Badge>
+                    </div>
                   </div>
                   <p className="mb-3 font-medium">
                     {translation?.title || "—"}
@@ -630,6 +641,7 @@ export default function AdminGiveawaysPage() {
               eventId: "",
               drawAt: "",
               prizeCount: 1,
+              platform: "ALL" as GiveawayPlatform,
               translations: LANGUAGES.map((lang) => ({
                 lang,
                 title: "",
@@ -695,7 +707,7 @@ export default function AdminGiveawaysPage() {
                   onChange={(e) =>
                     setFormData((p) => ({
                       ...p,
-                      prizeCount: parseInt(e.target.value) || 1,
+                      prizeCount: Number.parseInt(e.target.value) || 1,
                     }))
                   }
                   disabled={
@@ -704,6 +716,33 @@ export default function AdminGiveawaysPage() {
                   }
                 />
               </div>
+            </div>
+            <div>
+              <Label>{t("fields.platform")}</Label>
+              <Select
+                value={formData.platform}
+                onValueChange={(v) =>
+                  setFormData((p) => ({
+                    ...p,
+                    platform: v as GiveawayPlatform,
+                  }))
+                }
+                disabled={
+                  editingOriginalStatus !== null &&
+                  editingOriginalStatus !== GiveawayStatus.DRAFT
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {(["ALL", "MOBILE", "ANDROID", "IOS"] as const).map((p) => (
+                    <SelectItem key={p} value={p}>
+                      {t(`platform.${p}`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
             {/* Secret and hash are now auto-generated on creation */}
             <div>
@@ -799,6 +838,16 @@ export default function AdminGiveawaysPage() {
                       {t(`status.${selectedGiveaway.status}`)}
                     </Badge>
                   </div>
+                  {selectedGiveaway.platform !== "ALL" && (
+                    <div>
+                      <span className="text-muted-foreground">
+                        {t("fields.platform")}:{" "}
+                      </span>
+                      <Badge variant="outline">
+                        {t(`platform.${selectedGiveaway.platform}`)}
+                      </Badge>
+                    </div>
+                  )}
                   <div>
                     <span className="text-muted-foreground">
                       {t("fields.prizeCount")}:{" "}
@@ -820,42 +869,46 @@ export default function AdminGiveawaysPage() {
                 {/* Winners */}
                 <div>
                   <h3 className="mb-2 font-medium">{t("detail.winners")}</h3>
-                  {selectedGiveaway._count.winners === 0 ? (
+                  {selectedGiveaway._count.winners === 0 && (
                     <p className="text-sm text-muted-foreground">
                       {t("detail.noWinners")}
                     </p>
-                  ) : winners.length === 0 ? (
-                    <Loader2 className="h-5 w-5 animate-spin" />
-                  ) : (
-                    <div className="max-h-48 overflow-y-auto rounded-md border">
-                      {winners.map((w) => (
-                        <div
-                          key={w.id}
-                          className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
-                        >
-                          <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="shrink-0">
-                              #{w.rank}
-                            </Badge>
-                            <div>
-                              <p className="text-sm font-medium">
-                                {w.user.name || "—"}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {w.user.email}
-                              </p>
-                            </div>
-                          </div>
-                          {winningTicketNumbers[w.rank - 1] !== undefined && (
-                            <Badge variant="secondary" className="shrink-0">
-                              {t("detail.ticket")} #
-                              {winningTicketNumbers[w.rank - 1]}
-                            </Badge>
-                          )}
-                        </div>
-                      ))}
-                    </div>
                   )}
+                  {selectedGiveaway._count.winners > 0 &&
+                    winners.length === 0 && (
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                    )}
+                  {selectedGiveaway._count.winners > 0 &&
+                    winners.length > 0 && (
+                      <div className="max-h-48 overflow-y-auto rounded-md border">
+                        {winners.map((w) => (
+                          <div
+                            key={w.id}
+                            className="flex items-center justify-between border-b px-3 py-2 last:border-b-0"
+                          >
+                            <div className="flex items-center gap-3">
+                              <Badge variant="outline" className="shrink-0">
+                                #{w.rank}
+                              </Badge>
+                              <div>
+                                <p className="text-sm font-medium">
+                                  {w.user.name || "—"}
+                                </p>
+                                <p className="text-xs text-muted-foreground">
+                                  {w.user.email}
+                                </p>
+                              </div>
+                            </div>
+                            {winningTicketNumbers[w.rank - 1] !== undefined && (
+                              <Badge variant="secondary" className="shrink-0">
+                                {t("detail.ticket")} #
+                                {winningTicketNumbers[w.rank - 1]}
+                              </Badge>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                 </div>
 
                 {/* Participants */}

@@ -521,21 +521,6 @@ export default async function EventPage({ params }: PageProps) {
               </div>
             )}
 
-            {/* FAQ Section */}
-            {event.faqs.length > 0 && (
-              <EventFAQ
-                items={event.faqs.map((f) => ({
-                  question: f.question,
-                  answer: f.answer,
-                }))}
-                translations={{
-                  title: t("faqTitle"),
-                  showAll: t("faqShowAll", { count: event.faqs.length }),
-                  showLess: t("faqShowLess"),
-                }}
-              />
-            )}
-
             {/* About the Event — Description, Pricing & CTA */}
             <EventMainContent
               description={event.description}
@@ -555,6 +540,21 @@ export default async function EventPage({ params }: PageProps) {
                 goToWebsite: t("goToWebsite"),
               }}
             />
+
+            {/* FAQ Section */}
+            {event.faqs.length > 0 && (
+              <EventFAQ
+                items={event.faqs.map((f) => ({
+                  question: f.question,
+                  answer: f.answer,
+                }))}
+                translations={{
+                  title: t("faqTitle"),
+                  showAll: t("faqShowAll", { count: event.faqs.length }),
+                  showLess: t("faqShowLess"),
+                }}
+              />
+            )}
 
             {/* Community Section */}
             <EventCommunity

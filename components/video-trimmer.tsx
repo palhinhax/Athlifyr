@@ -20,6 +20,19 @@ const THUMBNAIL_COUNT = 8;
 const MIN_TRIM_DURATION_SEC = 1;
 const MAX_TRIM_DURATION_SEC = MAX_DURATION_LIFT_SEC; // 30s
 
+function waitForVideoLoad(video: HTMLVideoElement): Promise<void> {
+  return new Promise<void>((resolve, reject) => {
+    video.onloadeddata = () => resolve();
+    video.onerror = () => reject(new Error("Failed to load video"));
+  });
+}
+
+function waitForVideoSeek(video: HTMLVideoElement): Promise<void> {
+  return new Promise<void>((resolve) => {
+    video.onseeked = () => resolve();
+  });
+}
+
 export interface TrimRange {
   startSec: number;
   endSec: number;
@@ -87,10 +100,7 @@ export function VideoTrimmer({
       video.preload = "auto";
       video.muted = true;
 
-      await new Promise<void>((resolve, reject) => {
-        video.onloadeddata = () => resolve();
-        video.onerror = () => reject(new Error("Failed to load video"));
-      });
+      await waitForVideoLoad(video);
 
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
@@ -109,9 +119,7 @@ export function VideoTrimmer({
         const clampedTime = Math.min(time, durationSec - 0.1);
 
         video.currentTime = clampedTime;
-        await new Promise<void>((resolve) => {
-          video.onseeked = () => resolve();
-        });
+        await waitForVideoSeek(video);
 
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         thumbs.push(canvas.toDataURL("image/jpeg", 0.5));

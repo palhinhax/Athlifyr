@@ -15,6 +15,176 @@ interface RouteParams {
 /** Allowed organizer roles for export. */
 const EXPORT_ALLOWED_ROLES = new Set(["OWNER", "ADMIN", "FINANCE"]);
 
+// ── Types & helpers ──────────────────────────────────────────────────────────
+
+interface UnifiedRow {
+  registrationId: string;
+  type: string;
+  createdAt: Date;
+  status: string;
+  variantName: string;
+  bibNumber: string;
+  athleteFullName: string;
+  athleteEmail: string;
+  dateOfBirth: string;
+  citizenId: string;
+  nationality: string;
+  emergencyContactName: string;
+  emergencyContactPhone: string;
+  checkedInAt: Date | null;
+  amountCents: number | null;
+  feeCents: number | null;
+  netCents: number | null;
+  currency: string;
+  paymentProvider: string;
+  stripePaymentIntentId: string;
+  teamGroupId: string;
+  teamRole: string;
+  teamMemberIndex: number;
+  customFieldValues: Map<string, string>;
+}
+
+interface ExportUserFields {
+  name: string | null;
+  email: string;
+  dateOfBirth: Date | null;
+  citizenId: string | null;
+  nationality: string | null;
+  emergencyContactName: string | null;
+  emergencyContactPhone: string | null;
+}
+
+interface ExportCfResponse {
+  customFieldId: string;
+  value: string;
+}
+
+interface ExportRegistration {
+  id: string;
+  createdAt: Date;
+  status: string;
+  bibNumber: string | null;
+  guestName: string | null;
+  guestEmail: string | null;
+  guestDateOfBirth: Date | null;
+  guestCitizenId: string | null;
+  guestEmergencyContactName: string | null;
+  guestEmergencyContactPhone: string | null;
+  teamRole: string | null;
+  teamGroupId: string | null;
+  teamMemberIndex: number;
+  checkedInAt: Date | null;
+  amountCents: number | null;
+  feeCents: number | null;
+  netCents: number | null;
+  currency: string;
+  paymentProvider: string;
+  stripePaymentIntentId: string | null;
+  user: ExportUserFields;
+  variant: { name: string };
+  customFieldResponses: ExportCfResponse[];
+}
+
+interface ExportParticipation {
+  id: string;
+  createdAt: Date;
+  status: string;
+  user: ExportUserFields;
+  variant: { name: string } | null;
+  customFieldResponses: ExportCfResponse[];
+}
+
+function buildRegistrationRow(r: ExportRegistration): UnifiedRow {
+  const cfMap = new Map<string, string>();
+  for (const resp of r.customFieldResponses) {
+    cfMap.set(resp.customFieldId, resp.value);
+  }
+
+  const isMember = r.teamRole === "MEMBER";
+  const fullName = isMember ? (r.guestName ?? "") : (r.user.name ?? "");
+  const email = isMember ? (r.guestEmail ?? "") : r.user.email;
+
+  const dateOfBirth = isMember
+    ? r.guestDateOfBirth
+      ? formatDateISO(r.guestDateOfBirth).slice(0, 10)
+      : ""
+    : r.user.dateOfBirth
+      ? formatDateISO(r.user.dateOfBirth).slice(0, 10)
+      : "";
+  const citizenId = isMember
+    ? (r.guestCitizenId ?? "")
+    : (r.user.citizenId ?? "");
+  const nationality = r.user.nationality ?? "";
+  const emergencyContactName = isMember
+    ? (r.guestEmergencyContactName ?? "")
+    : (r.user.emergencyContactName ?? "");
+  const emergencyContactPhone = isMember
+    ? (r.guestEmergencyContactPhone ?? "")
+    : (r.user.emergencyContactPhone ?? "");
+
+  return {
+    registrationId: r.id,
+    type: "paid",
+    createdAt: r.createdAt,
+    status: r.status,
+    variantName: r.variant.name,
+    bibNumber: r.bibNumber ?? "",
+    athleteFullName: fullName,
+    athleteEmail: email,
+    dateOfBirth,
+    citizenId,
+    nationality,
+    emergencyContactName,
+    emergencyContactPhone,
+    checkedInAt: r.checkedInAt,
+    amountCents: r.amountCents,
+    feeCents: r.feeCents,
+    netCents: r.netCents,
+    currency: r.currency,
+    paymentProvider: r.paymentProvider,
+    stripePaymentIntentId: r.stripePaymentIntentId ?? "",
+    teamGroupId: r.teamGroupId ?? "",
+    teamRole: r.teamRole ?? "",
+    teamMemberIndex: r.teamMemberIndex,
+    customFieldValues: cfMap,
+  };
+}
+
+function buildParticipationRow(p: ExportParticipation): UnifiedRow {
+  const cfMap = new Map<string, string>();
+  for (const resp of p.customFieldResponses) {
+    cfMap.set(resp.customFieldId, resp.value);
+  }
+  return {
+    registrationId: p.id,
+    type: "free",
+    createdAt: p.createdAt,
+    status: p.status,
+    variantName: p.variant?.name ?? "",
+    bibNumber: "",
+    athleteFullName: p.user.name ?? "",
+    athleteEmail: p.user.email,
+    dateOfBirth: p.user.dateOfBirth
+      ? formatDateISO(p.user.dateOfBirth).slice(0, 10)
+      : "",
+    citizenId: p.user.citizenId ?? "",
+    nationality: p.user.nationality ?? "",
+    emergencyContactName: p.user.emergencyContactName ?? "",
+    emergencyContactPhone: p.user.emergencyContactPhone ?? "",
+    checkedInAt: null,
+    amountCents: null,
+    feeCents: null,
+    netCents: null,
+    currency: "",
+    paymentProvider: "",
+    stripePaymentIntentId: "",
+    teamGroupId: "",
+    teamRole: "",
+    teamMemberIndex: 0,
+    customFieldValues: cfMap,
+  };
+}
+
 // GET /api/events/[id]/registrations/export — stream CSV of registrations
 export async function GET(req: NextRequest, { params }: RouteParams) {
   const { id: eventId } = await params;
@@ -130,128 +300,10 @@ export async function GET(req: NextRequest, { params }: RouteParams) {
   });
 
   // ── Build unified rows ─────────────────────────────────────────────────────
-
-  interface UnifiedRow {
-    registrationId: string;
-    type: string;
-    createdAt: Date;
-    status: string;
-    variantName: string;
-    bibNumber: string;
-    athleteFullName: string;
-    athleteEmail: string;
-    dateOfBirth: string;
-    citizenId: string;
-    nationality: string;
-    emergencyContactName: string;
-    emergencyContactPhone: string;
-    checkedInAt: Date | null;
-    amountCents: number | null;
-    feeCents: number | null;
-    netCents: number | null;
-    currency: string;
-    paymentProvider: string;
-    stripePaymentIntentId: string;
-    teamGroupId: string;
-    teamRole: string;
-    teamMemberIndex: number;
-    customFieldValues: Map<string, string>;
-  }
-
-  const rows: UnifiedRow[] = [];
-
-  for (const r of registrations) {
-    const cfMap = new Map<string, string>();
-    for (const resp of r.customFieldResponses) {
-      cfMap.set(resp.customFieldId, resp.value);
-    }
-
-    // For MEMBER team registrations, use guest data
-    const isMember = r.teamRole === "MEMBER";
-    const fullName = isMember ? (r.guestName ?? "") : (r.user.name ?? "");
-    const email = isMember ? (r.guestEmail ?? "") : r.user.email;
-
-    // Profile fields: for team members use guest* fields, for leader/solo use user profile
-    const dateOfBirth = isMember
-      ? r.guestDateOfBirth
-        ? formatDateISO(r.guestDateOfBirth).slice(0, 10)
-        : ""
-      : r.user.dateOfBirth
-        ? formatDateISO(r.user.dateOfBirth).slice(0, 10)
-        : "";
-    const citizenId = isMember
-      ? (r.guestCitizenId ?? "")
-      : (r.user.citizenId ?? "");
-    const nationality = r.user.nationality ?? "";
-    const emergencyContactName = isMember
-      ? (r.guestEmergencyContactName ?? "")
-      : (r.user.emergencyContactName ?? "");
-    const emergencyContactPhone = isMember
-      ? (r.guestEmergencyContactPhone ?? "")
-      : (r.user.emergencyContactPhone ?? "");
-
-    rows.push({
-      registrationId: r.id,
-      type: "paid",
-      createdAt: r.createdAt,
-      status: r.status,
-      variantName: r.variant.name,
-      bibNumber: r.bibNumber ?? "",
-      athleteFullName: fullName,
-      athleteEmail: email,
-      dateOfBirth,
-      citizenId,
-      nationality,
-      emergencyContactName,
-      emergencyContactPhone,
-      checkedInAt: r.checkedInAt,
-      amountCents: r.amountCents,
-      feeCents: r.feeCents,
-      netCents: r.netCents,
-      currency: r.currency,
-      paymentProvider: r.paymentProvider,
-      stripePaymentIntentId: r.stripePaymentIntentId ?? "",
-      teamGroupId: r.teamGroupId ?? "",
-      teamRole: r.teamRole ?? "",
-      teamMemberIndex: r.teamMemberIndex,
-      customFieldValues: cfMap,
-    });
-  }
-
-  for (const p of participations) {
-    const cfMap = new Map<string, string>();
-    for (const resp of p.customFieldResponses) {
-      cfMap.set(resp.customFieldId, resp.value);
-    }
-    rows.push({
-      registrationId: p.id,
-      type: "free",
-      createdAt: p.createdAt,
-      status: p.status,
-      variantName: p.variant?.name ?? "",
-      bibNumber: "",
-      athleteFullName: p.user.name ?? "",
-      athleteEmail: p.user.email,
-      dateOfBirth: p.user.dateOfBirth
-        ? formatDateISO(p.user.dateOfBirth).slice(0, 10)
-        : "",
-      citizenId: p.user.citizenId ?? "",
-      nationality: p.user.nationality ?? "",
-      emergencyContactName: p.user.emergencyContactName ?? "",
-      emergencyContactPhone: p.user.emergencyContactPhone ?? "",
-      checkedInAt: null,
-      amountCents: null,
-      feeCents: null,
-      netCents: null,
-      currency: "",
-      paymentProvider: "",
-      stripePaymentIntentId: "",
-      teamGroupId: "",
-      teamRole: "",
-      teamMemberIndex: 0,
-      customFieldValues: cfMap,
-    });
-  }
+  const rows: UnifiedRow[] = [
+    ...registrations.map(buildRegistrationRow),
+    ...participations.map(buildParticipationRow),
+  ];
 
   // ── Apply search filter (server-side) ──────────────────────────────────────
   const filtered = searchQuery

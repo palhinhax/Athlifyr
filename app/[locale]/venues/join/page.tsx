@@ -166,6 +166,15 @@ function generateFAQSchema(
 ) {
   if (!faqs || faqs.length === 0) return null;
 
+  const LOCALE_LANG_MAP: Record<string, string> = {
+    pt: "pt-PT",
+    en: "en-US",
+    es: "es-ES",
+    fr: "fr-FR",
+    de: "de-DE",
+    it: "it-IT",
+  };
+
   return {
     "@context": "https://schema.org",
     "@type": "FAQPage",
@@ -177,20 +186,7 @@ function generateFAQSchema(
         text: faq.answer,
       },
     })),
-    inLanguage:
-      locale === "pt"
-        ? "pt-PT"
-        : locale === "en"
-          ? "en-US"
-          : locale === "es"
-            ? "es-ES"
-            : locale === "fr"
-              ? "fr-FR"
-              : locale === "de"
-                ? "de-DE"
-                : locale === "it"
-                  ? "it-IT"
-                  : "pt-PT",
+    inLanguage: LOCALE_LANG_MAP[locale] || "pt-PT",
   };
 }
 
@@ -275,6 +271,14 @@ export default async function VenueJoinPage({ params }: PageProps) {
   const baseUrl =
     process.env.NEXT_PUBLIC_BASE_URL || "https://www.athlifyr.com";
 
+  const BREADCRUMB_JOIN_LABEL: Record<string, string> = {
+    pt: "Junta-te",
+    es: "Únete",
+    fr: "Rejoignez",
+    de: "Beitreten",
+    it: "Unisciti",
+  };
+
   // Generate structured data schemas
   const organizationSchema = generateOrganizationSchema();
   const breadcrumbSchema = generateBreadcrumbSchema([
@@ -284,18 +288,7 @@ export default async function VenueJoinPage({ params }: PageProps) {
       url: `${baseUrl}/${locale}/venues`,
     },
     {
-      name:
-        locale === "pt"
-          ? "Junta-te"
-          : locale === "es"
-            ? "Únete"
-            : locale === "fr"
-              ? "Rejoignez"
-              : locale === "de"
-                ? "Beitreten"
-                : locale === "it"
-                  ? "Unisciti"
-                  : "Join",
+      name: BREADCRUMB_JOIN_LABEL[locale] || "Join",
       url: `${baseUrl}/${locale}/venues/join`,
     },
   ]);

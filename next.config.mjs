@@ -13,22 +13,22 @@ const railwayLive = "https://*.up.railway.app wss://*.up.railway.app";
 // Content Security Policy - carefully configured for Next.js compatibility
 const ContentSecurityPolicy = `
   default-src 'self';
-  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com;
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com https://www.googletagmanager.com https://www.google-analytics.com https://vercel.live https://*.vercel-scripts.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
   img-src 'self' blob: data: https: http:;
   font-src 'self' data: https://fonts.gstatic.com;
-  connect-src 'self' ${liveServerUrl} ${liveServerWs} ${railwayLive} https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com;
+  connect-src 'self' ${liveServerUrl} ${liveServerWs} ${railwayLive} https://api.stripe.com https://hooks.stripe.com https://www.google-analytics.com https://analytics.google.com https://region1.google-analytics.com https://www.googletagmanager.com https://vercel.live https://*.vercel-scripts.com https://f003.backblazeb2.com https://*.backblazeb2.com wss://*.vercel.live https://*.sentry.io https://*.ingest.de.sentry.io https://api.mapbox.com https://events.mapbox.com;
   media-src 'self' blob: https://f003.backblazeb2.com https://*.backblazeb2.com;
   object-src 'none';
   base-uri 'self';
   form-action 'self';
   frame-ancestors 'none';
-  frame-src 'self' https://vercel.live;
+  frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://vercel.live;
   worker-src 'self' blob:;
   manifest-src 'self';
   ${process.env.NODE_ENV === "production" ? "upgrade-insecure-requests;" : ""}
 `
-  .replace(/\s{2,}/g, " ")
+  .replaceAll(/\s{2,}/g, " ")
   .trim();
 
 // Security headers for all routes
@@ -44,14 +44,16 @@ const securityHeaders = [
     value: "max-age=63072000; includeSubDomains; preload",
   },
   // Cross-Origin-Opener-Policy - isolates window from other documents
+  // Use same-origin-allow-popups to allow Stripe 3D Secure popups
   {
     key: "Cross-Origin-Opener-Policy",
-    value: "same-origin",
+    value: "same-origin-allow-popups",
   },
   // Cross-Origin-Embedder-Policy - controls cross-origin requests
+  // Set to unsafe-none because Stripe Elements iframes require cross-origin credentialed requests
   {
     key: "Cross-Origin-Embedder-Policy",
-    value: "credentialless",
+    value: "unsafe-none",
   },
   // X-Frame-Options - prevents clickjacking (legacy, CSP frame-ancestors is preferred)
   {
@@ -152,6 +154,14 @@ const nextConfig = {
   },
   // Security headers for all routes
   async headers() {
+    // CORS origin: use an explicit allowlist in production, fall back to * for development.
+    // ALLOWED_ORIGINS accepts a comma-separated list of origins.
+    const allowedOrigins =
+      process.env.ALLOWED_ORIGINS ||
+      (process.env.NEXT_PUBLIC_BASE_URL
+        ? process.env.NEXT_PUBLIC_BASE_URL
+        : "*");
+
     return [
       {
         // CORS headers for API routes — allows mobile app (Expo) to call Next.js APIs
@@ -159,7 +169,7 @@ const nextConfig = {
         headers: [
           {
             key: "Access-Control-Allow-Origin",
-            value: "*",
+            value: allowedOrigins,
           },
           {
             key: "Access-Control-Allow-Methods",

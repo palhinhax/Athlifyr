@@ -7,22 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-/**
- * Validate that request comes from the Live Service.
- * In production, use a shared secret; here we check the X-Live-Server header.
- */
-function isLiveServer(request: NextRequest): boolean {
-  const liveHeader = request.headers.get("x-live-server");
-  if (liveHeader !== "true") return false;
-
-  // Optional: verify a shared secret for production
-  const secret = request.headers.get("x-live-secret");
-  const expectedSecret = process.env.LIVE_INTERNAL_SECRET;
-  if (expectedSecret && secret !== expectedSecret) return false;
-
-  return true;
-}
+import { isLiveServer } from "@/lib/internal-auth";
 
 export async function GET(request: NextRequest) {
   // Validate caller

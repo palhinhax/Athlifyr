@@ -134,309 +134,134 @@ export async function validateBasicBooking(
   };
 }
 
-/**
- * Validates if a user can book a session based on their subscription plan policy
- */
-export async function validateBooking(
+// ─── Booking validation helpers ─────────────────────────────────────────────
+
+type SubscriptionWithPlan = Awaited<
+  ReturnType<
+    typeof prisma.venueSubscription.findMany<{ include: { plan: true } }>
+  >
+>[number];
+
+/** Find a usable subscription from a list, preferring non-exhausted ones. */
+async function findUsableSubscription(
+  subscriptions: SubscriptionWithPlan[],
+  userId: string
+): Promise<SubscriptionWithPlan | null> {
+  let exhaustedFallback: SubscriptionWithPlan | null = null;
+
+  for (const sub of subscriptions) {
+    if (!sub) continue;
+    const subPolicy = (sub.plan.policy as PlanPolicy) || {};
+    if (subPolicy.maxTotalBookings) {
+      const includedVenues = await prisma.venuePlanVenue.findMany({
+        where: { planId: sub.plan.id },
+        select: { venueId: true },
+      });
+      const allVenueIds = [
+        sub.plan.venueId,
+        ...includedVenues.map((pv) => pv.venueId),
+      ];
+
+      const [linkedBookings, legacyBookings] = await Promise.all([
+        prisma.venueBooking.count({
+          where: {
+            subscriptionId: sub.id,
+            status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
+          },
+        }),
+        prisma.venueBooking.count({
+          where: {
+            userId,
+            subscriptionId: null,
+            venueId: { in: allVenueIds },
+            status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
+            createdAt: {
+              gte: sub.createdAt,
+              ...(sub.endsAt ? { lte: sub.endsAt } : {}),
+            },
+          },
+        }),
+      ]);
+
+      if (linkedBookings + legacyBookings >= subPolicy.maxTotalBookings) {
+        exhaustedFallback ??= sub;
+        continue;
+      }
+    }
+    return sub;
+  }
+  return exhaustedFallback;
+}
+
+/** Try direct subscriptions first, then cross-venue (indirect) subscriptions. */
+async function findActiveSubscription(
+  directSubscriptions: SubscriptionWithPlan[],
   userId: string,
   venueId: string,
-  sessionId: string
-): Promise<BookingValidationResult> {
-  // First, check if venue requires plan to book
-  const venue = await prisma.venue.findUnique({
-    where: { id: venueId },
-    select: { requiresPlanToBook: true },
+  now: Date
+): Promise<SubscriptionWithPlan | null> {
+  const subscription = await findUsableSubscription(
+    directSubscriptions,
+    userId
+  );
+  if (subscription) return subscription;
+
+  const plansIncludingVenue = await prisma.venuePlanVenue.findMany({
+    where: { venueId },
+    select: { planId: true },
+  });
+  if (plansIncludingVenue.length === 0) return null;
+
+  const indirectSubscriptions = await prisma.venueSubscription.findMany({
+    where: {
+      userId,
+      status: "ACTIVE",
+      planId: { in: plansIncludingVenue.map((p) => p.planId) },
+      startsAt: { lte: now },
+      OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+    },
+    include: { plan: true },
+    orderBy: { createdAt: "desc" },
   });
 
-  // If venue doesn't require plan, just do basic validation
-  if (venue && !venue.requiresPlanToBook) {
-    return validateBasicBooking(userId, venueId, sessionId);
-  }
+  return findUsableSubscription(indirectSubscriptions, userId);
+}
 
-  // 1. Check if user has an active subscription (direct or cross-venue)
-  // The subscription must have already started (startsAt <= now) and not expired (endsAt is null or > now)
-  const now = new Date();
-
-  // Helper: find a usable subscription from a list
-  // Prefers non-exhausted subscriptions, but returns an exhausted one as fallback
-  // so that the specific MAX_TOTAL_BOOKINGS_REACHED error can be returned
-  type SubscriptionWithPlan = Awaited<
-    ReturnType<
-      typeof prisma.venueSubscription.findMany<{ include: { plan: true } }>
-    >
-  >[number];
-
-  const findUsableSubscription = async (
-    subscriptions: SubscriptionWithPlan[]
-  ) => {
-    let exhaustedFallback: SubscriptionWithPlan | null = null;
-
-    for (const sub of subscriptions) {
-      if (!sub) continue;
-      const subPolicy = (sub.plan.policy as PlanPolicy) || {};
-      if (subPolicy.maxTotalBookings) {
-        // Count linked and legacy bookings in parallel
-        const includedVenues = await prisma.venuePlanVenue.findMany({
-          where: { planId: sub.plan.id },
-          select: { venueId: true },
-        });
-        const allVenueIds = [
-          sub.plan.venueId,
-          ...includedVenues.map((pv) => pv.venueId),
-        ];
-
-        const [linkedBookings, legacyBookings] = await Promise.all([
-          prisma.venueBooking.count({
-            where: {
-              subscriptionId: sub.id,
-              status: {
-                in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-              },
-            },
-          }),
-          prisma.venueBooking.count({
-            where: {
-              userId,
-              subscriptionId: null,
-              venueId: { in: allVenueIds },
-              status: {
-                in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-              },
-              createdAt: {
-                gte: sub.createdAt,
-                ...(sub.endsAt ? { lte: sub.endsAt } : {}),
-              },
-            },
-          }),
-        ]);
-
-        const totalBookings = linkedBookings + legacyBookings;
-
-        if (totalBookings >= subPolicy.maxTotalBookings) {
-          // This pack is exhausted, keep as fallback but try the next one
-          if (!exhaustedFallback) {
-            exhaustedFallback = sub;
-          }
-          continue;
-        }
-      }
-      return sub;
-    }
-    // Return exhausted subscription as fallback so MAX_TOTAL_BOOKINGS_REACHED can be reported
-    return exhaustedFallback;
-  };
-
-  // Fetch direct subscriptions, session data, existing booking, and member status in parallel
-  // These queries are independent and can run concurrently
-  const [directSubscriptions, venueSession, existingBooking, venueMember] =
-    await Promise.all([
-      prisma.venueSubscription.findMany({
-        where: {
-          venueId,
-          userId,
-          status: "ACTIVE",
-          startsAt: {
-            lte: now, // Subscription must have already started
-          },
-          OR: [
-            { endsAt: null }, // No end date
-            { endsAt: { gt: now } }, // Or end date is in the future
-          ],
-        },
-        include: {
-          plan: true,
-        },
-        orderBy: { createdAt: "desc" }, // Newest first (most recent purchase)
-      }),
-      prisma.venueSession.findUnique({
-        where: { id: sessionId },
-        include: {
-          bookings: {
-            where: {
-              status: {
-                in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-              },
-            },
-          },
-        },
-      }),
-      prisma.venueBooking.findFirst({
-        where: {
-          sessionId,
-          userId,
-        },
-      }),
-      prisma.venueMember.findUnique({
-        where: {
-          venueId_userId: {
-            venueId,
-            userId,
-          },
-        },
-      }),
-    ]);
-
-  // Early validation: check session exists and basic conditions
-  if (!venueSession) {
-    return {
-      allowed: false,
-      reason: "SESSION_NOT_FOUND",
-    };
-  }
-
-  if (venueSession.startsAt <= now) {
-    return {
-      allowed: false,
-      reason: "SESSION_ALREADY_STARTED",
-    };
-  }
-
-  // Check if booking deadline has passed
-  if (venueSession.bookingDeadlineMinutes > 0) {
-    const minutesUntilSession = differenceInMinutes(venueSession.startsAt, now);
-    if (minutesUntilSession <= venueSession.bookingDeadlineMinutes) {
-      return {
-        allowed: false,
-        reason: "BOOKING_DEADLINE_PASSED",
-      };
-    }
-  }
-
-  if (existingBooking && existingBooking.status === BookingStatus.BOOKED) {
-    return {
-      allowed: false,
-      reason: "ALREADY_BOOKED",
-    };
-  }
-
-  if (venueSession.capacity !== null) {
-    const currentBookings = venueSession.bookings.length;
-    if (currentBookings >= venueSession.capacity) {
-      return {
-        allowed: false,
-        reason: "SESSION_FULL",
-      };
-    }
-  }
-
-  // Find a usable subscription
-  let subscription: SubscriptionWithPlan | null = null;
-
-  subscription = await findUsableSubscription(directSubscriptions);
-
-  // If no usable direct subscription, check if user has a subscription to a plan that includes this venue
-  if (!subscription) {
-    // Find plans that include this venue
-    const plansIncludingVenue = await prisma.venuePlanVenue.findMany({
-      where: {
-        venueId,
-      },
-      select: {
-        planId: true,
-      },
-    });
-
-    if (plansIncludingVenue.length > 0) {
-      const indirectSubscriptions = await prisma.venueSubscription.findMany({
-        where: {
-          userId,
-          status: "ACTIVE",
-          planId: {
-            in: plansIncludingVenue.map((p) => p.planId),
-          },
-          startsAt: {
-            lte: now, // Subscription must have already started
-          },
-          OR: [
-            { endsAt: null }, // No end date
-            { endsAt: { gt: now } }, // Or end date is in the future
-          ],
-        },
-        include: {
-          plan: true,
-        },
-        orderBy: { createdAt: "desc" },
-      });
-
-      subscription = await findUsableSubscription(indirectSubscriptions);
-    }
-  }
-
-  if (!subscription) {
-    return {
-      allowed: false,
-      reason: "NO_ACTIVE_SUBSCRIPTION",
-    };
-  }
-
-  // 2. For direct subscriptions (same venue), verify membership
-  // Cross-venue subscriptions (plan from another venue that includes this one) skip membership check
-  // Member was already fetched in parallel above
-  const isDirectSubscription = subscription.venueId === venueId;
-  if (isDirectSubscription) {
-    if (!venueMember) {
-      return {
-        allowed: false,
-        reason: "NOT_A_MEMBER",
-      };
-    }
-
-    if (venueMember.status !== MemberStatus.ACTIVE) {
-      return {
-        allowed: false,
-        reason: "MEMBER_NOT_ACTIVE",
-      };
-    }
-  }
-
-  // 3. Apply plan policy (session and booking checks were already done above)
-  const policy = (subscription.plan.policy as PlanPolicy) || {};
-
-  // Check allowed service types
+/** Validate plan policy constraints (service type, time window, weekdays). */
+function validatePolicyConstraints(
+  policy: PlanPolicy,
+  venueSession: { startsAt: Date; type: string }
+): BookingValidationResult | null {
   if (
     policy.allowedServiceTypes &&
     policy.allowedServiceTypes.length > 0 &&
     !policy.allowedServiceTypes.includes(venueSession.type)
   ) {
-    return {
-      allowed: false,
-      reason: "SERVICE_TYPE_NOT_ALLOWED",
-    };
+    return { allowed: false, reason: "SERVICE_TYPE_NOT_ALLOWED" };
   }
 
-  // Check allowed time window
-  if (policy.allowedStartTimeFrom) {
-    const sessionTime = format(venueSession.startsAt, "HH:mm");
-    if (sessionTime < policy.allowedStartTimeFrom) {
-      return {
-        allowed: false,
-        reason: "OUTSIDE_TIME_WINDOW",
-      };
-    }
+  const sessionTime = format(venueSession.startsAt, "HH:mm");
+
+  if (
+    policy.allowedStartTimeFrom &&
+    sessionTime < policy.allowedStartTimeFrom
+  ) {
+    return { allowed: false, reason: "OUTSIDE_TIME_WINDOW" };
+  }
+  if (policy.allowedStartTimeTo && sessionTime > policy.allowedStartTimeTo) {
+    return { allowed: false, reason: "OUTSIDE_TIME_WINDOW" };
   }
 
-  if (policy.allowedStartTimeTo) {
-    const sessionTime = format(venueSession.startsAt, "HH:mm");
-    if (sessionTime > policy.allowedStartTimeTo) {
-      return {
-        allowed: false,
-        reason: "OUTSIDE_TIME_WINDOW",
-      };
-    }
+  const sessionWeekday = venueSession.startsAt.getDay();
+
+  if (
+    policy.allowedWeekdays &&
+    policy.allowedWeekdays.length > 0 &&
+    !policy.allowedWeekdays.includes(sessionWeekday)
+  ) {
+    return { allowed: false, reason: "WEEKDAY_NOT_ALLOWED" };
   }
 
-  // Check allowed weekdays (number format: 0-6, Sunday=0)
-  if (policy.allowedWeekdays && policy.allowedWeekdays.length > 0) {
-    const sessionWeekday = venueSession.startsAt.getDay();
-    if (!policy.allowedWeekdays.includes(sessionWeekday)) {
-      return {
-        allowed: false,
-        reason: "WEEKDAY_NOT_ALLOWED",
-      };
-    }
-  }
-
-  // Check allowed days (string format: ["MONDAY", "TUESDAY", ...])
   if (policy.allowedDays && policy.allowedDays.length > 0) {
     const dayNames = [
       "SUNDAY",
@@ -447,27 +272,47 @@ export async function validateBooking(
       "FRIDAY",
       "SATURDAY",
     ];
-    const sessionDayName = dayNames[venueSession.startsAt.getDay()];
-    if (!policy.allowedDays.includes(sessionDayName)) {
-      return {
-        allowed: false,
-        reason: "WEEKDAY_NOT_ALLOWED",
-      };
+    if (!policy.allowedDays.includes(dayNames[sessionWeekday])) {
+      return { allowed: false, reason: "WEEKDAY_NOT_ALLOWED" };
     }
   }
 
-  // Run all booking count checks in parallel for better performance
+  return null;
+}
+
+async function executeCountChecks(
+  countChecks: Array<{
+    type: string;
+    promise: Promise<number>;
+    limit: number;
+  }>
+): Promise<BookingValidationResult | null> {
+  if (countChecks.length === 0) return null;
+  const results = await Promise.all(countChecks.map((check) => check.promise));
+  for (let i = 0; i < countChecks.length; i++) {
+    if (results[i] >= countChecks[i].limit) {
+      return { allowed: false, reason: countChecks[i].type };
+    }
+  }
+  return null;
+}
+
+/** Validate all booking count limits + total bookings + advance booking. */
+async function validateBookingLimits(
+  policy: PlanPolicy,
+  userId: string,
+  venueId: string,
+  venueSession: { startsAt: Date },
+  subscription: SubscriptionWithPlan,
+  now: Date
+): Promise<BookingValidationResult | null> {
   const countChecks: Array<{
     type: string;
     promise: Promise<number>;
     limit: number;
   }> = [];
 
-  // Check max bookings per day
   if (policy.maxBookingsPerDay) {
-    const dayStart = startOfDay(venueSession.startsAt);
-    const dayEnd = endOfDay(venueSession.startsAt);
-
     countChecks.push({
       type: "MAX_BOOKINGS_PER_DAY_REACHED",
       limit: policy.maxBookingsPerDay,
@@ -475,13 +320,11 @@ export async function validateBooking(
         where: {
           userId,
           venueId,
-          status: {
-            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-          },
+          status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
           session: {
             startsAt: {
-              gte: dayStart,
-              lte: dayEnd,
+              gte: startOfDay(venueSession.startsAt),
+              lte: endOfDay(venueSession.startsAt),
             },
           },
         },
@@ -489,11 +332,7 @@ export async function validateBooking(
     });
   }
 
-  // Check max bookings per week
   if (policy.maxBookingsPerWeek) {
-    const weekStart = startOfWeek(venueSession.startsAt, { weekStartsOn: 1 }); // Monday
-    const weekEnd = endOfWeek(venueSession.startsAt, { weekStartsOn: 1 });
-
     countChecks.push({
       type: "MAX_BOOKINGS_PER_WEEK_REACHED",
       limit: policy.maxBookingsPerWeek,
@@ -501,13 +340,11 @@ export async function validateBooking(
         where: {
           userId,
           venueId,
-          status: {
-            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-          },
+          status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
           session: {
             startsAt: {
-              gte: weekStart,
-              lte: weekEnd,
+              gte: startOfWeek(venueSession.startsAt, { weekStartsOn: 1 }),
+              lte: endOfWeek(venueSession.startsAt, { weekStartsOn: 1 }),
             },
           },
         },
@@ -515,7 +352,6 @@ export async function validateBooking(
     });
   }
 
-  // Check max active bookings
   if (policy.maxActiveBookings) {
     countChecks.push({
       type: "MAX_ACTIVE_BOOKINGS_REACHED",
@@ -525,21 +361,13 @@ export async function validateBooking(
           userId,
           venueId,
           status: BookingStatus.BOOKED,
-          session: {
-            startsAt: {
-              gte: new Date(),
-            },
-          },
+          session: { startsAt: { gte: new Date() } },
         },
       }),
     });
   }
 
-  // Check max bookings per month
   if (policy.maxBookingsPerMonth) {
-    const policyMonthStart = startOfMonth(venueSession.startsAt);
-    const policyMonthEnd = endOfMonth(venueSession.startsAt);
-
     countChecks.push({
       type: "MAX_BOOKINGS_PER_MONTH_REACHED",
       limit: policy.maxBookingsPerMonth,
@@ -547,13 +375,11 @@ export async function validateBooking(
         where: {
           userId,
           venueId,
-          status: {
-            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-          },
+          status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
           session: {
             startsAt: {
-              gte: policyMonthStart,
-              lte: policyMonthEnd,
+              gte: startOfMonth(venueSession.startsAt),
+              lte: endOfMonth(venueSession.startsAt),
             },
           },
         },
@@ -561,24 +387,10 @@ export async function validateBooking(
     });
   }
 
-  // Run all count checks in parallel
-  if (countChecks.length > 0) {
-    const results = await Promise.all(
-      countChecks.map((check) => check.promise)
-    );
-    for (let i = 0; i < countChecks.length; i++) {
-      if (results[i] >= countChecks[i].limit) {
-        return {
-          allowed: false,
-          reason: countChecks[i].type,
-        };
-      }
-    }
-  }
+  const countResult = await executeCountChecks(countChecks);
+  if (countResult) return countResult;
 
-  // Check max total bookings for entire subscription (drop-in, packs)
   if (policy.maxTotalBookings) {
-    // Count linked and legacy bookings in parallel
     const includedVenues = await prisma.venuePlanVenue.findMany({
       where: { planId: subscription.plan.id },
       select: { venueId: true },
@@ -592,9 +404,7 @@ export async function validateBooking(
       prisma.venueBooking.count({
         where: {
           subscriptionId: subscription.id,
-          status: {
-            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-          },
+          status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
         },
       }),
       prisma.venueBooking.count({
@@ -602,9 +412,7 @@ export async function validateBooking(
           userId,
           subscriptionId: null,
           venueId: { in: allVenueIds },
-          status: {
-            in: [BookingStatus.BOOKED, BookingStatus.ATTENDED],
-          },
+          status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
           createdAt: {
             gte: subscription.createdAt,
             ...(subscription.endsAt ? { lte: subscription.endsAt } : {}),
@@ -613,34 +421,137 @@ export async function validateBooking(
       }),
     ]);
 
-    const totalBookings = linkedBookings + legacyBookings;
-
-    if (totalBookings >= policy.maxTotalBookings) {
-      return {
-        allowed: false,
-        reason: "MAX_TOTAL_BOOKINGS_REACHED",
-      };
+    if (linkedBookings + legacyBookings >= policy.maxTotalBookings) {
+      return { allowed: false, reason: "MAX_TOTAL_BOOKINGS_REACHED" };
     }
   }
 
-  // Check advance booking requirement
   if (policy.requiresAdvanceBooking && policy.advanceBookingHours) {
     const hoursUntilSession = differenceInHours(venueSession.startsAt, now);
-
     if (hoursUntilSession < policy.advanceBookingHours) {
       return {
         allowed: false,
         reason: "ADVANCE_BOOKING_REQUIRED",
         minimumHours: policy.advanceBookingHours,
-      } as BookingValidationResult;
+      };
     }
   }
 
-  // All validations passed
-  return {
-    allowed: true,
-    subscriptionId: subscription.id,
-  };
+  return null;
+}
+
+/**
+ * Validates if a user can book a session based on their subscription plan policy
+ */
+export async function validateBooking(
+  userId: string,
+  venueId: string,
+  sessionId: string
+): Promise<BookingValidationResult> {
+  const venue = await prisma.venue.findUnique({
+    where: { id: venueId },
+    select: { requiresPlanToBook: true },
+  });
+
+  if (venue && !venue.requiresPlanToBook) {
+    return validateBasicBooking(userId, venueId, sessionId);
+  }
+
+  const now = new Date();
+
+  // Fetch direct subscriptions, session data, existing booking, and member status in parallel
+  const [directSubscriptions, venueSession, existingBooking, venueMember] =
+    await Promise.all([
+      prisma.venueSubscription.findMany({
+        where: {
+          venueId,
+          userId,
+          status: "ACTIVE",
+          startsAt: { lte: now },
+          OR: [{ endsAt: null }, { endsAt: { gt: now } }],
+        },
+        include: { plan: true },
+        orderBy: { createdAt: "desc" },
+      }),
+      prisma.venueSession.findUnique({
+        where: { id: sessionId },
+        include: {
+          bookings: {
+            where: {
+              status: { in: [BookingStatus.BOOKED, BookingStatus.ATTENDED] },
+            },
+          },
+        },
+      }),
+      prisma.venueBooking.findFirst({
+        where: { sessionId, userId },
+      }),
+      prisma.venueMember.findUnique({
+        where: { venueId_userId: { venueId, userId } },
+      }),
+    ]);
+
+  // Session pre-conditions
+  if (!venueSession) {
+    return { allowed: false, reason: "SESSION_NOT_FOUND" };
+  }
+  if (venueSession.startsAt <= now) {
+    return { allowed: false, reason: "SESSION_ALREADY_STARTED" };
+  }
+  if (venueSession.bookingDeadlineMinutes > 0) {
+    const minutesUntilSession = differenceInMinutes(venueSession.startsAt, now);
+    if (minutesUntilSession <= venueSession.bookingDeadlineMinutes) {
+      return { allowed: false, reason: "BOOKING_DEADLINE_PASSED" };
+    }
+  }
+  if (existingBooking && existingBooking.status === BookingStatus.BOOKED) {
+    return { allowed: false, reason: "ALREADY_BOOKED" };
+  }
+  if (
+    venueSession.capacity !== null &&
+    venueSession.bookings.length >= venueSession.capacity
+  ) {
+    return { allowed: false, reason: "SESSION_FULL" };
+  }
+
+  // Find a usable subscription (direct or cross-venue)
+  const subscription = await findActiveSubscription(
+    directSubscriptions,
+    userId,
+    venueId,
+    now
+  );
+  if (!subscription) {
+    return { allowed: false, reason: "NO_ACTIVE_SUBSCRIPTION" };
+  }
+
+  // For direct subscriptions, verify membership
+  if (subscription.venueId === venueId) {
+    if (!venueMember) {
+      return { allowed: false, reason: "NOT_A_MEMBER" };
+    }
+    if (venueMember.status !== MemberStatus.ACTIVE) {
+      return { allowed: false, reason: "MEMBER_NOT_ACTIVE" };
+    }
+  }
+
+  // Apply plan policy constraints
+  const policy = (subscription.plan.policy as PlanPolicy) || {};
+
+  const policyCheck = validatePolicyConstraints(policy, venueSession);
+  if (policyCheck) return policyCheck;
+
+  const limitCheck = await validateBookingLimits(
+    policy,
+    userId,
+    venueId,
+    venueSession,
+    subscription,
+    now
+  );
+  if (limitCheck) return limitCheck;
+
+  return { allowed: true, subscriptionId: subscription.id };
 }
 
 /**

@@ -8,6 +8,26 @@ const GENERATION_WEEKS = 12; // 3 months ahead
 const REGENERATION_THRESHOLD_WEEKS = 4; // 1 month
 
 /**
+ * Calculate the first future occurrence of a given day-of-week,
+ * starting from either the week after generatedUntil or now.
+ */
+function getSessionGenerationStart(
+  generatedUntil: Date | null,
+  dayOfWeek: number,
+  now: Date
+): Date {
+  const startFrom = generatedUntil ? addWeeks(generatedUntil, 1) : now;
+  const currentDate = new Date(startFrom);
+  while (currentDate.getDay() !== dayOfWeek) {
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+  if (isBefore(currentDate, now)) {
+    return addWeeks(currentDate, 1);
+  }
+  return currentDate;
+}
+
+/**
  * Cron endpoint to automatically extend recurring sessions.
  * This should be called periodically (e.g., daily or weekly) by a cron service.
  *
@@ -21,11 +41,18 @@ const REGENERATION_THRESHOLD_WEEKS = 4; // 1 month
  */
 export async function GET(request: Request) {
   try {
-    // Verify cron secret for security (optional but recommended)
+    // Verify cron secret for security
     const authHeader = request.headers.get("authorization");
     const cronSecret = process.env.CRON_SECRET;
 
-    if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    if (!cronSecret) {
+      console.error(
+        "[Security] CRON_SECRET is not configured. Rejecting cron request."
+      );
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (authHeader !== `Bearer ${cronSecret}`) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -76,26 +103,11 @@ export async function GET(request: Request) {
     }[] = [];
 
     for (const recurring of activeRecurringSessions) {
-      // Calculate the start date for new sessions
-      let startFrom: Date;
-      if (recurring.generatedUntil) {
-        // Start from the week after the last generated session
-        startFrom = addWeeks(recurring.generatedUntil, 1);
-      } else {
-        // Start from now
-        startFrom = now;
-      }
-
-      // Find the first occurrence of the day of week from startFrom
-      let currentDate = new Date(startFrom);
-      while (currentDate.getDay() !== recurring.dayOfWeek) {
-        currentDate.setDate(currentDate.getDate() + 1);
-      }
-
-      // Skip if the first occurrence is in the past
-      if (isBefore(currentDate, now)) {
-        currentDate = addWeeks(currentDate, 1);
-      }
+      let currentDate = getSessionGenerationStart(
+        recurring.generatedUntil,
+        recurring.dayOfWeek,
+        now
+      );
 
       const generationLimit = addWeeks(now, GENERATION_WEEKS);
       const sessionsToCreate = [];

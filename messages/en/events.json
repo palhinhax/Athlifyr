@@ -393,7 +393,13 @@
         "verifyFormula": "SHA-256(\"{secret}|{rank}|{attempt}\") % {total} + 1 = #{winning}"
       },
       "winner": "Winner",
-      "youWon": "🎉 Congratulations, you won the giveaway!"
+      "youWon": "🎉 Congratulations, you won the giveaway!",
+      "platform": {
+        "ALL": "All Platforms",
+        "MOBILE": "Mobile Only",
+        "ANDROID": "Android Only",
+        "IOS": "iOS Only"
+      }
     }
   },
   "eventsPage": {

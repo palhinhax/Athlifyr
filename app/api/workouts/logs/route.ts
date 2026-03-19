@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WeightUnit, DistanceUnit } from "@prisma/client";
 import { computeStrengthScores } from "@/lib/performance/scoring";
+import { computeAndPersistWorkoutScore } from "@/lib/scoring/score-service";
 
 // ============================================================================
 // Validation Schemas
@@ -153,6 +154,200 @@ export async function GET(request: Request) {
 }
 
 // ============================================================================
+// Helpers: Existing-log cleanup & performance tracking
+// ============================================================================
+
+async function deleteExistingLog(userId: string, logId: string): Promise<void> {
+  const existingLog = await prisma.workoutLog.findFirst({
+    where: { id: logId, userId },
+  });
+  if (!existingLog) return;
+
+  await prisma.userPerformanceEntry.deleteMany({
+    where: {
+      userId,
+      OR: [
+        {
+          workoutExerciseSet: {
+            exerciseResult: { blockResult: { logId: existingLog.id } },
+          },
+        },
+        {
+          workoutExerciseResult: {
+            blockResult: { logId: existingLog.id },
+          },
+        },
+      ],
+    },
+  });
+
+  await prisma.workoutLog.delete({ where: { id: existingLog.id } });
+}
+
+interface StrengthEntryResult {
+  entryId: string;
+  isPR: boolean;
+}
+
+async function processStrengthEntry(
+  userId: string,
+  exerciseId: string,
+  weightKg: number,
+  reps: number,
+  performedAt: Date,
+  setId?: string,
+  exerciseResultId?: string
+): Promise<StrengthEntryResult> {
+  const history = await prisma.userPerformanceEntry.findMany({
+    where: {
+      userId,
+      type: "STRENGTH",
+      exerciseId,
+      performedAt: {
+        gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
+      },
+    },
+    select: { weightKg: true, reps: true, performedAt: true },
+  });
+
+  const scores = computeStrengthScores(
+    { weightKg, reps, performedAt },
+    history.map((h) => ({
+      weightKg: h.weightKg ?? 0,
+      reps: h.reps ?? 0,
+      performedAt: h.performedAt,
+    }))
+  );
+
+  const currentE1rm = weightKg * (1 + reps / 30);
+  const bestHistoricalE1rm = history.reduce((best, h) => {
+    if (!h.weightKg || !h.reps) return best;
+    const e1rm = h.weightKg * (1 + h.reps / 30);
+    return Math.max(best, e1rm);
+  }, 0);
+
+  const isPR = history.length > 0 && currentE1rm > bestHistoricalE1rm;
+
+  const entry = await prisma.userPerformanceEntry.create({
+    data: {
+      userId,
+      type: "STRENGTH",
+      exerciseId,
+      weightKg,
+      reps,
+      performedAt,
+      qualityScore: scores.qualityScore,
+      predictionWeight: scores.predictionWeight,
+      ...(setId && { workoutExerciseSetId: setId }),
+      ...(exerciseResultId && { workoutExerciseResultId: exerciseResultId }),
+    },
+  });
+
+  return { entryId: entry.id, isPR };
+}
+
+interface PerformanceExercise {
+  id: string;
+  exerciseId: string;
+  exercise: { name: string; hasWeight: boolean };
+  actualWeight: number | null;
+  actualWeightUnit: WeightUnit | null;
+  actualReps: number | null;
+  sets: Array<{
+    id: string;
+    weight: number;
+    weightUnit: WeightUnit;
+    reps: number;
+  }>;
+}
+
+interface PerformanceTrackingResult {
+  entries: string[];
+  prs: Array<{ exerciseName: string; weight: number; reps: number }>;
+}
+
+async function processExercisePerformance(
+  userId: string,
+  er: PerformanceExercise,
+  performedAt: Date
+): Promise<PerformanceTrackingResult> {
+  const entries: string[] = [];
+  const prs: PerformanceTrackingResult["prs"] = [];
+
+  if (!er.exercise.hasWeight) return { entries, prs };
+
+  if (er.sets.length > 0) {
+    for (const set of er.sets) {
+      const weightKg = convertToKg(set.weight, set.weightUnit);
+      const result = await processStrengthEntry(
+        userId,
+        er.exerciseId,
+        weightKg,
+        set.reps,
+        performedAt,
+        set.id
+      );
+      entries.push(result.entryId);
+      if (result.isPR) {
+        prs.push({
+          exerciseName: er.exercise.name,
+          weight: set.weight,
+          reps: set.reps,
+        });
+        await prisma.workoutExerciseSet.update({
+          where: { id: set.id },
+          data: { isPR: true },
+        });
+      }
+    }
+  } else if (er.actualWeight && er.actualReps) {
+    const weightKg = convertToKg(er.actualWeight, er.actualWeightUnit || "KG");
+    const result = await processStrengthEntry(
+      userId,
+      er.exerciseId,
+      weightKg,
+      er.actualReps,
+      performedAt,
+      undefined,
+      er.id
+    );
+    entries.push(result.entryId);
+    if (result.isPR) {
+      prs.push({
+        exerciseName: er.exercise.name,
+        weight: er.actualWeight,
+        reps: er.actualReps,
+      });
+      await prisma.workoutExerciseResult.update({
+        where: { id: er.id },
+        data: { isPR: true },
+      });
+    }
+  }
+
+  return { entries, prs };
+}
+
+async function trackStrengthPerformance(
+  userId: string,
+  blockResults: Array<{ exerciseResults: PerformanceExercise[] }>,
+  performedAt: Date
+): Promise<PerformanceTrackingResult> {
+  const entries: string[] = [];
+  const prs: PerformanceTrackingResult["prs"] = [];
+
+  for (const blockResult of blockResults) {
+    for (const er of blockResult.exerciseResults) {
+      const result = await processExercisePerformance(userId, er, performedAt);
+      entries.push(...result.entries);
+      prs.push(...result.prs);
+    }
+  }
+
+  return { entries, prs };
+}
+
+// ============================================================================
 // POST /api/workouts/logs - Create workout log with performance integration
 // ============================================================================
 
@@ -207,40 +402,7 @@ export async function POST(request: Request) {
 
     // If updating an existing log, delete the old one first (cascade deletes related data)
     if (data.existingLogId) {
-      const existingLog = await prisma.workoutLog.findFirst({
-        where: {
-          id: data.existingLogId,
-          userId: user.id, // Ensure user owns the log
-        },
-      });
-
-      if (existingLog) {
-        // Delete associated performance entries first
-        await prisma.userPerformanceEntry.deleteMany({
-          where: {
-            userId: user.id,
-            OR: [
-              {
-                workoutExerciseSet: {
-                  exerciseResult: {
-                    blockResult: { logId: existingLog.id },
-                  },
-                },
-              },
-              {
-                workoutExerciseResult: {
-                  blockResult: { logId: existingLog.id },
-                },
-              },
-            ],
-          },
-        });
-
-        // Delete the old log (cascades to block results, exercise results, sets)
-        await prisma.workoutLog.delete({
-          where: { id: existingLog.id },
-        });
-      }
+      await deleteExistingLog(user.id, data.existingLogId);
     }
 
     // Create workout log with all nested data
@@ -324,177 +486,19 @@ export async function POST(request: Request) {
       },
     });
 
-    // ========================================================================
-    // PERFORMANCE INTEGRATION: Create performance entries for strength exercises
-    // Only exercises with hasWeight:true go to performance tracking
-    // PRs are only set when beating historical bests (not lowering)
-    // ========================================================================
+    // Performance tracking for strength exercises
+    const { entries: performanceEntries, prs: prsDetected } =
+      await trackStrengthPerformance(user.id, log.blockResults, performedAt);
 
-    const performanceEntries: string[] = [];
-    const prsDetected: Array<{
-      exerciseName: string;
-      weight: number;
-      reps: number;
-    }> = [];
-
-    for (const blockResult of log.blockResults) {
-      for (const exerciseResult of blockResult.exerciseResults) {
-        // Skip exercises that don't track weight - they don't go to performance
-        if (!exerciseResult.exercise.hasWeight) {
-          continue;
-        }
-
-        // For exercises with individual sets
-        if (exerciseResult.sets.length > 0) {
-          for (const set of exerciseResult.sets) {
-            const weightKg = convertToKg(set.weight, set.weightUnit);
-
-            // Get historical data for scoring
-            const history = await prisma.userPerformanceEntry.findMany({
-              where: {
-                userId: user.id,
-                type: "STRENGTH",
-                exerciseId: exerciseResult.exerciseId,
-                performedAt: {
-                  gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-                },
-              },
-              select: {
-                weightKg: true,
-                reps: true,
-                performedAt: true,
-              },
-            });
-
-            const scores = computeStrengthScores(
-              { weightKg, reps: set.reps, performedAt },
-              history.map((h) => ({
-                weightKg: h.weightKg ?? 0,
-                reps: h.reps ?? 0,
-                performedAt: h.performedAt,
-              }))
-            );
-
-            // Check if this is a PR (best e1RM)
-            // PRs are only set when the current performance BEATS the historical best
-            // Lower performances don't affect PR status (not every workout is max effort)
-            const currentE1rm = weightKg * (1 + set.reps / 30);
-            const bestHistoricalE1rm = history.reduce((best, h) => {
-              if (!h.weightKg || !h.reps) return best;
-              const e1rm = h.weightKg * (1 + h.reps / 30);
-              return Math.max(best, e1rm);
-            }, 0);
-
-            // Only mark as PR if we beat the previous best (must have history to compare)
-            const isPR = history.length > 0 && currentE1rm > bestHistoricalE1rm;
-
-            if (isPR) {
-              prsDetected.push({
-                exerciseName: exerciseResult.exercise.name,
-                weight: set.weight,
-                reps: set.reps,
-              });
-
-              // Update set as PR
-              await prisma.workoutExerciseSet.update({
-                where: { id: set.id },
-                data: { isPR: true },
-              });
-            }
-
-            // Create performance entry
-            const entry = await prisma.userPerformanceEntry.create({
-              data: {
-                userId: user.id,
-                type: "STRENGTH",
-                exerciseId: exerciseResult.exerciseId,
-                weightKg,
-                reps: set.reps,
-                performedAt,
-                workoutExerciseSetId: set.id,
-                qualityScore: scores.qualityScore,
-                predictionWeight: scores.predictionWeight,
-              },
-            });
-
-            performanceEntries.push(entry.id);
-          }
-        }
-        // For exercises without individual sets but with weight/reps
-        // hasWeight is already checked above, so we know this exercise tracks weight
-        else if (exerciseResult.actualWeight && exerciseResult.actualReps) {
-          const weightKg = convertToKg(
-            exerciseResult.actualWeight,
-            exerciseResult.actualWeightUnit || "KG"
-          );
-
-          const history = await prisma.userPerformanceEntry.findMany({
-            where: {
-              userId: user.id,
-              type: "STRENGTH",
-              exerciseId: exerciseResult.exerciseId,
-              performedAt: {
-                gte: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-              },
-            },
-            select: {
-              weightKg: true,
-              reps: true,
-              performedAt: true,
-            },
-          });
-
-          const scores = computeStrengthScores(
-            { weightKg, reps: exerciseResult.actualReps, performedAt },
-            history.map((h) => ({
-              weightKg: h.weightKg ?? 0,
-              reps: h.reps ?? 0,
-              performedAt: h.performedAt,
-            }))
-          );
-
-          // Check PR - only mark when beating the best, not when lower
-          // (not every workout is max effort)
-          const currentE1rm = weightKg * (1 + exerciseResult.actualReps / 30);
-          const bestHistoricalE1rm = history.reduce((best, h) => {
-            if (!h.weightKg || !h.reps) return best;
-            const e1rm = h.weightKg * (1 + h.reps / 30);
-            return Math.max(best, e1rm);
-          }, 0);
-
-          // Only mark as PR if we beat the previous best (must have history to compare)
-          const isPR = history.length > 0 && currentE1rm > bestHistoricalE1rm;
-
-          if (isPR) {
-            prsDetected.push({
-              exerciseName: exerciseResult.exercise.name,
-              weight: exerciseResult.actualWeight,
-              reps: exerciseResult.actualReps,
-            });
-
-            await prisma.workoutExerciseResult.update({
-              where: { id: exerciseResult.id },
-              data: { isPR: true },
-            });
-          }
-
-          const entry = await prisma.userPerformanceEntry.create({
-            data: {
-              userId: user.id,
-              type: "STRENGTH",
-              exerciseId: exerciseResult.exerciseId,
-              weightKg,
-              reps: exerciseResult.actualReps,
-              performedAt,
-              workoutExerciseResultId: exerciseResult.id,
-              qualityScore: scores.qualityScore,
-              predictionWeight: scores.predictionWeight,
-            },
-          });
-
-          performanceEntries.push(entry.id);
-        }
+    // Calculate and persist Workout Score (fire-and-forget; don't block response)
+    let workoutScore: { totalScore: number } | null = null;
+    try {
+      const scoreResult = await computeAndPersistWorkoutScore(log.id, user.id);
+      if (scoreResult) {
+        workoutScore = { totalScore: Math.round(scoreResult.totalScore) };
       }
+    } catch (scoreError) {
+      console.error("Error computing workout score:", scoreError);
     }
 
     return NextResponse.json(
@@ -502,6 +506,7 @@ export async function POST(request: Request) {
         log,
         performanceEntriesCreated: performanceEntries.length,
         prsDetected,
+        workoutScore,
       },
       { status: 201 }
     );

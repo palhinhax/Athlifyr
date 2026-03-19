@@ -17,7 +17,8 @@
         "posts": "Publications",
         "notes": "Demandes",
         "conversations": "Conversations IA",
-        "appleSettings": "Apple"
+        "appleSettings": "Apple",
+        "credits": "Crédits"
       }
     },
     "contacts": {
@@ -390,7 +391,8 @@
         "variant": "Variante (optionnel)",
         "variantPlaceholder": "Sélectionner une variante",
         "variantAll": "Toutes les variantes",
-        "variantHelp": "Limite la participation au tirage aux inscrits de cette variante spécifique."
+        "variantHelp": "Limite la participation au tirage aux inscrits de cette variante spécifique.",
+        "platform": "Plateforme"
       },
       "form": {
         "title": "Titre",

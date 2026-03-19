@@ -211,7 +211,7 @@ describe("PostCard", () => {
     // Submit via form
     // Try to find the send button
     const sendButtons = screen.getAllByRole("button");
-    const sendBtn = sendButtons[sendButtons.length - 1];
+    const sendBtn = sendButtons[sendButtons.length - 1]!;
     await user.click(sendBtn);
 
     await waitFor(() => {

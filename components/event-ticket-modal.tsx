@@ -136,41 +136,42 @@ export function EventTicketModal({
       // ── Athlifyr logo — full-card watermark (cover, centred) ───────────
       // Fetch as text → Blob URL so canvas can draw it without cross-origin issues.
       // The SVG already has the brand orange/gold colours — no tinting needed.
-      await new Promise<void>((resolve) => {
-        fetch("/logo.svg")
-          .then((r) => r.text())
-          .then((svgText) => {
-            // Remove the first path that has fill="none" and acts as an invisible
-            // background mask, hiding the actual logo shapes beneath it
-            const cleaned = svgText.replace(/<path fill="none"[^/]*\/>/i, "");
-            const blob = new Blob([cleaned], { type: "image/svg+xml" });
-            const url = URL.createObjectURL(blob);
-            const logoImg = new Image();
-            logoImg.onload = () => {
-              const naturalW = 766;
-              const naturalH = 754;
-              const scale = Math.max(width / naturalW, height / naturalH);
-              const drawW = naturalW * scale;
-              const drawH = naturalH * scale;
-              const drawX = (width - drawW) / 2;
-              const drawY = (height - drawH) / 2;
-              ctx.save();
-              ctx.roundRect(0, 0, width, height, 16);
-              ctx.clip();
-              ctx.globalAlpha = 0.85;
-              ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
-              ctx.restore();
-              URL.revokeObjectURL(url);
-              resolve();
-            };
-            logoImg.onerror = () => {
-              URL.revokeObjectURL(url);
-              resolve();
-            };
-            logoImg.src = url;
-          })
-          .catch(() => resolve());
-      });
+      try {
+        const logoResponse = await fetch("/logo.svg");
+        const svgText = await logoResponse.text();
+        // Remove the first path that has fill="none" and acts as an invisible
+        // background mask, hiding the actual logo shapes beneath it
+        const cleaned = svgText.replace(/<path fill="none"[^/]*\/>/i, "");
+        const blob = new Blob([cleaned], { type: "image/svg+xml" });
+        const url = URL.createObjectURL(blob);
+        await new Promise<void>((resolve) => {
+          const logoImg = new Image();
+          logoImg.onload = () => {
+            const naturalW = 766;
+            const naturalH = 754;
+            const scale = Math.max(width / naturalW, height / naturalH);
+            const drawW = naturalW * scale;
+            const drawH = naturalH * scale;
+            const drawX = (width - drawW) / 2;
+            const drawY = (height - drawH) / 2;
+            ctx.save();
+            ctx.roundRect(0, 0, width, height, 16);
+            ctx.clip();
+            ctx.globalAlpha = 0.85;
+            ctx.drawImage(logoImg, drawX, drawY, drawW, drawH);
+            ctx.restore();
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          logoImg.onerror = () => {
+            URL.revokeObjectURL(url);
+            resolve();
+          };
+          logoImg.src = url;
+        });
+      } catch {
+        // Logo is optional decoration — silently skip
+      }
 
       // ── Golden header block (mirrors the modal header) ──────────────────
       const headerH = hasBib ? 130 : 110;

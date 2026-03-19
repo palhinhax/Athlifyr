@@ -7,15 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-
-function isLiveServer(request: NextRequest): boolean {
-  const liveHeader = request.headers.get("x-live-server");
-  if (liveHeader !== "true") return false;
-  const secret = request.headers.get("x-live-secret");
-  const expectedSecret = process.env.LIVE_INTERNAL_SECRET;
-  if (expectedSecret && secret !== expectedSecret) return false;
-  return true;
-}
+import { isLiveServer } from "@/lib/internal-auth";
 
 interface VerifyBody {
   userId: string;

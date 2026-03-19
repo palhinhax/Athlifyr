@@ -18,5 +18,15 @@
     "app/api/analyses/lift/route.ts": {
       "maxDuration": 120
     }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/cron/credit-settlement",
+      "schedule": "0 4 * * 1"
+    },
+    {
+      "path": "/api/cron/recalculate-hybrid-scores",
+      "schedule": "0 5 * * *"
+    }
+  ]
 }

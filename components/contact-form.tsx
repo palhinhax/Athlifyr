@@ -74,16 +74,13 @@ export function ContactForm({
   }, [isLoggedIn, userName, userEmail]);
 
   // Get type-specific placeholder for message
-  const getMessagePlaceholder = () => {
-    switch (formData.type) {
-      case "addEvent":
-        return t("form.placeholders.addEvent");
-      case "addVenue":
-        return t("form.placeholders.addVenue");
-      default:
-        return t("form.messagePlaceholder");
-    }
+  const MESSAGE_PLACEHOLDER_KEYS: Record<string, string> = {
+    addEvent: "form.placeholders.addEvent",
+    addVenue: "form.placeholders.addVenue",
   };
+  const messagePlaceholder = t(
+    MESSAGE_PLACEHOLDER_KEYS[formData.type] ?? "form.messagePlaceholder"
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -91,17 +88,12 @@ export function ContactForm({
     const name = isLoggedIn ? userName : formData.name;
     const email = isLoggedIn ? userEmail : formData.email;
 
-    if (!name || !email || !formData.message) {
-      toast({
-        variant: "destructive",
-        title: t("toast.requiredFields"),
-        description: t("toast.requiredFieldsDesc"),
-      });
-      return;
-    }
-
-    // For full page, also check subject
-    if (showSubject && !formData.subject) {
+    const missingRequired =
+      !name ||
+      !email ||
+      !formData.message ||
+      (showSubject && !formData.subject);
+    if (missingRequired) {
       toast({
         variant: "destructive",
         title: t("toast.requiredFields"),
@@ -294,7 +286,7 @@ export function ContactForm({
           onChange={(e) =>
             setFormData({ ...formData, message: e.target.value })
           }
-          placeholder={getMessagePlaceholder()}
+          placeholder={messagePlaceholder}
           required
           className={compact ? "min-h-[80px] resize-none" : "min-h-[150px]"}
         />

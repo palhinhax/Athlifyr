@@ -59,6 +59,101 @@ interface AdminPushNotificationDialogProps {
   } | null;
 }
 
+// ─── Helper functions ───────────────────────────────────────────────────────
+
+async function sendPushNotification(
+  audience: Audience,
+  targetUser: AdminPushNotificationDialogProps["targetUser"],
+  title: string,
+  body: string,
+  dataPayload: Record<string, string>
+): Promise<PushResult> {
+  const isSingle = audience === "single" && targetUser;
+  const endpoint = isSingle
+    ? "/api/admin/notifications/push/user"
+    : "/api/admin/notifications/push/broadcast";
+
+  const data = Object.keys(dataPayload).length > 0 ? dataPayload : undefined;
+  const payload = isSingle
+    ? { userId: targetUser.id, title, message: body, data }
+    : { title, message: body, data, confirmBroadcast: true };
+
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const err = await response.json();
+    throw new Error(err.error || "Failed to send push notification");
+  }
+
+  const json = await response.json();
+  return json.data;
+}
+
+async function sendEmailNotification(
+  audience: Audience,
+  targetUser: AdminPushNotificationDialogProps["targetUser"],
+  title: string,
+  body: string
+): Promise<EmailResult> {
+  const emailResponse = await fetch("/api/admin/notifications/email/user", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      userId: audience === "single" && targetUser ? targetUser.id : undefined,
+      broadcast: audience === "broadcast",
+      title,
+      message: body,
+    }),
+  });
+
+  if (emailResponse.ok) {
+    const emailJson = await emailResponse.json();
+    return { sent: true, ...emailJson.data };
+  }
+
+  const err = await emailResponse.json();
+  return { sent: false, error: err.error };
+}
+
+export function formatPushPart(
+  pushResult: PushResult,
+  audience: Audience
+): string {
+  if (audience === "single") {
+    return `Push: ${pushResult.sent} dispositivo${pushResult.sent === 1 ? "" : "s"}`;
+  }
+  return `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted === 1 ? "" : "es"}`;
+}
+
+export function formatEmailPart(
+  emailSendResult: EmailResult,
+  audience: Audience
+): string {
+  if (audience === "single") return "Email enviado";
+  const emailsSent =
+    (emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0;
+  return `Emails: ${emailsSent} enviado${emailsSent === 1 ? "" : "s"}`;
+}
+
+export function buildToastParts(
+  pushResult: PushResult | null,
+  emailSendResult: EmailResult | null,
+  audience: Audience
+): string[] {
+  const parts: string[] = [];
+  if (pushResult && pushResult.sent > 0) {
+    parts.push(formatPushPart(pushResult, audience));
+  }
+  if (emailSendResult?.sent) {
+    parts.push(formatEmailPart(emailSendResult, audience));
+  }
+  return parts;
+}
+
 const TITLE_MAX = 60;
 const BODY_MAX = 240;
 
@@ -159,98 +254,29 @@ export function AdminPushNotificationDialog({
         dataPayload.route = deepLink.trim();
       }
 
-      let pushResult: PushResult | null = null;
-      let emailSendResult: EmailResult | null = null;
+      const pushResult = sendPush
+        ? await sendPushNotification(
+            audience,
+            targetUser,
+            title.trim(),
+            body.trim(),
+            dataPayload
+          )
+        : null;
 
-      // Send Push notification
-      if (sendPush) {
-        let response: Response;
-
-        if (audience === "single" && targetUser) {
-          response = await fetch("/api/admin/notifications/push/user", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId: targetUser.id,
-              title: title.trim(),
-              message: body.trim(),
-              data:
-                Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
-            }),
-          });
-        } else {
-          response = await fetch("/api/admin/notifications/push/broadcast", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              title: title.trim(),
-              message: body.trim(),
-              data:
-                Object.keys(dataPayload).length > 0 ? dataPayload : undefined,
-              confirmBroadcast: true,
-            }),
-          });
-        }
-
-        if (!response.ok) {
-          const err = await response.json();
-          throw new Error(err.error || "Failed to send push notification");
-        }
-
-        const json = await response.json();
-        pushResult = json.data;
-      }
-
-      // Send Email notification
-      if (sendEmail) {
-        const emailResponse = await fetch(
-          "/api/admin/notifications/email/user",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              userId:
-                audience === "single" && targetUser ? targetUser.id : undefined,
-              broadcast: audience === "broadcast",
-              title: title.trim(),
-              message: body.trim(),
-            }),
-          }
-        );
-
-        if (emailResponse.ok) {
-          const emailJson = await emailResponse.json();
-          emailSendResult = {
-            sent: true,
-            ...emailJson.data,
-          };
-        } else {
-          const err = await emailResponse.json();
-          emailSendResult = { sent: false, error: err.error };
-        }
-      }
+      const emailSendResult = sendEmail
+        ? await sendEmailNotification(
+            audience,
+            targetUser,
+            title.trim(),
+            body.trim()
+          )
+        : null;
 
       setResult(pushResult);
       setEmailResult(emailSendResult);
 
-      // Build toast message
-      const parts: string[] = [];
-
-      if (pushResult && pushResult.sent > 0) {
-        parts.push(
-          audience === "single"
-            ? `Push: ${pushResult.sent} dispositivo${pushResult.sent !== 1 ? "s" : ""}`
-            : `Push: ${pushResult.usersTargeted} utilizador${pushResult.usersTargeted !== 1 ? "es" : ""}`
-        );
-      }
-
-      if (emailSendResult?.sent) {
-        parts.push(
-          audience === "single"
-            ? "Email enviado"
-            : `Emails: ${(emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0} enviado${((emailSendResult as EmailResult & { emailsSent?: number }).emailsSent || 0) !== 1 ? "s" : ""}`
-        );
-      }
+      const parts = buildToastParts(pushResult, emailSendResult, audience);
 
       if (parts.length > 0) {
         toast({

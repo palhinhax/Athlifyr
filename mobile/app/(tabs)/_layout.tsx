@@ -26,6 +26,7 @@ import { VenuePickerModal } from "@/src/components/VenuePickerModal";
 import { useActiveVenues, type ActiveVenue } from "@/src/hooks/useActiveVenues";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { api } from "@/src/lib/api";
+import { useChatNotifications } from "@/src/hooks/useChatNotifications";
 
 // ── Extracted components (avoids nested component definitions) ──────────────
 
@@ -129,6 +130,7 @@ export default function TabLayout() {
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const { data: activeVenues = [] } = useActiveVenues();
   const [showVenuePicker, setShowVenuePicker] = useState(false);
+  const { unreadCount } = useChatNotifications(isAuthenticated);
 
   // Only show my-venues tab when logged in AND has venues
   const showMyVenuesTab = isAuthenticated && activeVenues.length > 0;
@@ -274,6 +276,15 @@ export default function TabLayout() {
           options={{
             title: t("navigation.messages"),
             tabBarIcon: MessagesTabIcon,
+            tabBarBadge: unreadCount > 0 ? unreadCount : undefined,
+            tabBarBadgeStyle: {
+              backgroundColor: theme.colors.primary,
+              fontSize: 11,
+              fontWeight: "600",
+              minWidth: 18,
+              height: 18,
+              borderRadius: 9,
+            },
           }}
         />
         <Tabs.Screen

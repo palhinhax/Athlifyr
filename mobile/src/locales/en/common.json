@@ -481,6 +481,13 @@
     "myVenues": "My Venues",
     "noVenuesTitle": "No Venues Yet",
     "noVenuesDescription2": "You don't have any active venues. Explore the venues tab to discover training centers.",
+    "mapFilters": {
+      "title": "Filters",
+      "services": "Services",
+      "applyFilters": "Apply Filters",
+      "clearFilters": "Clear Filters",
+      "venuesCount": "{{count}} venues"
+    },
     "roles": {
       "owner": "Owner",
       "admin": "Admin",
@@ -557,6 +564,14 @@
       "RECOVERY": "Recovery",
       "SAUNA": "Sauna",
       "COLD_PLUNGE": "Cold Plunge",
+      "HYROX": "HYROX",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Olympic Lifting",
+      "FUNCTIONAL_FITNESS": "Functional Fitness",
+      "OPEN_GYM": "Open Gym",
+      "MASSAGE": "Massage",
+      "KICKBOXING": "Kickboxing",
+      "BJJ": "BJJ",
       "OTHER": "Other"
     }
   },

@@ -105,9 +105,7 @@ export function AddRunSheet({
           <Pressable style={styles.card} onPress={noop}>
             {/* Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>
-                {t("performance.run.addTitle")}
-              </Text>
+              <Text style={styles.title}>{t("performance.run.addTitle")}</Text>
               <TouchableOpacity
                 onPress={onClose}
                 style={styles.closeButton}
@@ -140,9 +138,7 @@ export function AddRunSheet({
 
               {/* Time */}
               <View style={styles.field}>
-                <Text style={styles.label}>
-                  {t("performance.run.time")} *
-                </Text>
+                <Text style={styles.label}>{t("performance.run.time")} *</Text>
                 <TextInput
                   style={styles.input}
                   placeholder="45:30"
@@ -193,10 +189,7 @@ export function AddRunSheet({
                 activeOpacity={0.7}
               >
                 {isCreating ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.white}
-                  />
+                  <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
                   <Text style={styles.saveButtonText}>
                     {t("performance.save")}

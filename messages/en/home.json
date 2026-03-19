@@ -17,8 +17,6 @@
     "analysisMotionDescription": "Automatic pose analysis with 3D skeleton visualization and joint angles.",
     "analysisLiftTitle": "Lift Analysis",
     "analysisLiftDescription": "Barbell tracking with trajectory analysis, speed and rep detection.",
-    "appDownloadTitle": "Download the Athlifyr App",
-    "appDownloadDescription": "Discover events, venues, workouts and sports experiences near you. Get the full Athlifyr experience on mobile.",
     "appStoreAlt": "Download on the App Store",
     "googlePlayAlt": "Get it on Google Play"
   },

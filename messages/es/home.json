@@ -17,8 +17,6 @@
     "analysisMotionDescription": "Análisis automático de pose con visualización 3D del esqueleto y ángulos articulares.",
     "analysisLiftTitle": "Análisis de Levantamiento",
     "analysisLiftDescription": "Seguimiento de barra con análisis de trayectoria, velocidad y detección de repeticiones.",
-    "appDownloadTitle": "Descarga la App de Athlifyr",
-    "appDownloadDescription": "Descubre eventos, espacios, entrenamientos y experiencias deportivas cerca de ti. Vive la experiencia completa de Athlifyr en el móvil.",
     "appStoreAlt": "Descargar en el App Store",
     "googlePlayAlt": "Disponible en Google Play"
   },

@@ -23,7 +23,7 @@ interface PageProps {
   params: { locale: string };
 }
 
-export default async function ProfilePage({ params }: PageProps) {
+export default async function ProfilePage({ params }: Readonly<PageProps>) {
   const { locale } = await Promise.resolve(params);
   const session = await auth();
   const t = await getTranslations({ locale, namespace: "profile" });

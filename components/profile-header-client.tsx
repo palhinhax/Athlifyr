@@ -121,12 +121,12 @@ function StatItem({
   value,
   label,
   colorClass,
-}: {
+}: Readonly<{
   icon: React.ReactNode;
   value: number;
   label: string;
   colorClass: string;
-}) {
+}>) {
   return (
     <div className="flex items-center gap-2">
       <span className={colorClass}>{icon}</span>

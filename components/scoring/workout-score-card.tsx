@@ -18,7 +18,7 @@ export function ScorePillarBar({
   value,
   maxValue = 1000,
   colorClass = "bg-primary",
-}: ScorePillarBarProps) {
+}: Readonly<ScorePillarBarProps>) {
   const percentage = Math.min((value / maxValue) * 100, 100);
 
   return (
@@ -65,7 +65,7 @@ export function WorkoutScoreCard({
   breakdown,
   highlights,
   className,
-}: WorkoutScoreCardProps) {
+}: Readonly<WorkoutScoreCardProps>) {
   const t = useTranslations("scoring");
 
   return (

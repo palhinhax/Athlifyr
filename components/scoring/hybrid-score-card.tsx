@@ -18,7 +18,7 @@ interface HybridScoreData {
 }
 
 interface HybridScoreCardProps {
-  className?: string;
+  readonly className?: string;
 }
 
 /**

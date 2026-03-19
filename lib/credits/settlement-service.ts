@@ -227,7 +227,7 @@ async function settleVenue(params: {
       {
         amount: totalAmountCents,
         currency: "eur",
-        destination: venue.stripeAccountId!,
+        destination: venue.stripeAccountId,
         description: `Athlifyr Credits settlement: ${venue.name} (${periodStart.toISOString().split("T")[0]} → ${periodEnd.toISOString().split("T")[0]})`,
         metadata: {
           type: "credit_settlement",

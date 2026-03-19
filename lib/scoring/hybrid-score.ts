@@ -19,6 +19,7 @@ import {
   HYBRID_MIN_WORKOUTS_MEDIUM,
   HYBRID_PILLAR_WEIGHTS,
   HYBRID_RECENCY_HALF_LIFE_DAYS,
+  HYBRID_SCORE_VERSION,
   SCORE_MAX,
   SCORE_MIN,
 } from "./constants";
@@ -35,7 +36,6 @@ import type {
   ScoreConfidence,
   WorkoutScoreHistoryEntry,
 } from "./types";
-import { HYBRID_SCORE_VERSION } from "./constants";
 
 // ─── Public API ─────────────────────────────────────────────────────────────
 
@@ -126,7 +126,9 @@ function computeStrengthPillar(
   let totalWeight = 0;
 
   for (const entry of strengthEntries) {
-    const e1rm = calculateE1rm(entry.weightKg!, entry.reps!);
+    const wKg = entry.weightKg ?? 0;
+    const reps = entry.reps ?? 0;
+    const e1rm = calculateE1rm(wKg, reps);
     const norm = normalizeStrength(e1rm);
     const w = recencyWeight(
       entry.performedAt,
@@ -166,7 +168,9 @@ function computeEndurancePillar(
   let totalWeight = 0;
 
   for (const entry of runEntries) {
-    const paceSecPerKm = entry.timeSeconds! / entry.distanceKm!;
+    const timeSec = entry.timeSeconds ?? 0;
+    const distKm = entry.distanceKm ?? 0;
+    const paceSecPerKm = timeSec / distKm;
     const norm = normalizeEndurance(paceSecPerKm);
     const w = recencyWeight(
       entry.performedAt,

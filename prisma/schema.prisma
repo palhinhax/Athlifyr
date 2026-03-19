@@ -2247,10 +2247,10 @@ model WorkoutScore {
   workoutLogId String @unique
   userId       String
 
-  // Composite score (0-100)
-  totalScore Int // Stored as integer (0-100)
+  // Composite score (0-1000)
+  totalScore Int // Stored as integer (0-1000)
 
-  // Breakdown by pillar (0-100 each)
+  // Breakdown by pillar (0-1000 each)
   strengthScore  Int @default(0)
   enduranceScore Int @default(0)
   engineScore    Int @default(0)
@@ -2280,10 +2280,10 @@ model UserHybridScore {
   id     String @id @default(cuid())
   userId String @unique
 
-  // Composite score (0-100)
-  totalScore Int // Stored as integer (0-100)
+  // Composite score (0-1000)
+  totalScore Int // Stored as integer (0-1000)
 
-  // Breakdown by pillar (0-100 each)
+  // Breakdown by pillar (0-1000 each)
   strengthScore  Int @default(0)
   enduranceScore Int @default(0)
   engineScore    Int @default(0)

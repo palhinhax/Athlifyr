@@ -61,3 +61,9 @@ export {
 // Score calculators
 export { calculateWorkoutScore } from "./workout-score";
 export { calculateHybridScore } from "./hybrid-score";
+
+// Service layer (DB-connected)
+export {
+  computeAndPersistWorkoutScore,
+  computeAndPersistHybridScore,
+} from "./score-service";

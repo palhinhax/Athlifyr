@@ -10,6 +10,7 @@ import { PhotoGallery } from "@/components/photo-gallery";
 import { ProfileUpcomingSessions } from "@/components/profile-upcoming-sessions";
 import { ProfilePastSessions } from "@/components/profile-past-sessions";
 import { PerformanceSection } from "@/components/performance/performance-section";
+import { HybridScoreCard } from "@/components/scoring/hybrid-score-card";
 import { ProfileProfessionalSection } from "@/components/profile-professional-section";
 import { AnalysesSection } from "@/components/analyses-section";
 import { ProfileUpcomingEvents } from "@/components/profile-upcoming-events";
@@ -454,6 +455,11 @@ export default async function ProfilePage({ params }: PageProps) {
           </Link>
         </div>
       )}
+
+      {/* Hybrid Score */}
+      <div className="mt-12">
+        <HybridScoreCard />
+      </div>
 
       {/* Performance Section */}
       <PerformanceSection />

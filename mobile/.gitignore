@@ -43,3 +43,6 @@ google-services.json
 # generated native folders
 /ios
 /android
+
+# test coverage
+coverage/

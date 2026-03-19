@@ -10,6 +10,7 @@ import {
   Platform,
   ScrollView,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react-native";
@@ -21,6 +22,8 @@ import {
   parseTimeToSeconds,
   type CreateRunEntry,
 } from "@/src/hooks/usePerformance";
+
+const noop = () => {};
 
 interface AddRunSheetProps {
   visible: boolean;
@@ -89,90 +92,120 @@ export function AddRunSheet({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
+      transparent
+      animationType="fade"
+      statusBarTranslucent
       onRequestClose={onClose}
     >
       <KeyboardAvoidingView
-        style={styles.container}
+        style={styles.backdrop}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
       >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.title}>{t("performance.run.addTitle")}</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X size={24} color={theme.colors.text} />
-          </TouchableOpacity>
-        </View>
+        <Pressable style={styles.backdropPressable} onPress={onClose}>
+          <Pressable style={styles.card} onPress={noop}>
+            {/* Header */}
+            <View style={styles.header}>
+              <Text style={styles.title}>
+                {t("performance.run.addTitle")}
+              </Text>
+              <TouchableOpacity
+                onPress={onClose}
+                style={styles.closeButton}
+                hitSlop={12}
+                activeOpacity={0.7}
+              >
+                <X size={20} color={theme.colors.textTertiary} />
+              </TouchableOpacity>
+            </View>
 
-        <ScrollView
-          style={styles.content}
-          contentContainerStyle={styles.contentContainer}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Distance */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.run.distance")} *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="10.0"
-              placeholderTextColor={theme.colors.textTertiary}
-              keyboardType="decimal-pad"
-              value={distance}
-              onChangeText={setDistance}
-            />
-          </View>
+            <ScrollView
+              style={styles.content}
+              contentContainerStyle={styles.contentContainer}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Distance */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.run.distance")} *
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="10.0"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="decimal-pad"
+                  value={distance}
+                  onChangeText={setDistance}
+                />
+              </View>
 
-          {/* Time */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.run.time")} *</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="45:30"
-              placeholderTextColor={theme.colors.textTertiary}
-              value={time}
-              onChangeText={setTime}
-            />
-            <Text style={styles.hint}>{t("performance.run.timeFormat")}</Text>
-          </View>
+              {/* Time */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.run.time")} *
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="45:30"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  value={time}
+                  onChangeText={setTime}
+                />
+                <Text style={styles.hint}>
+                  {t("performance.run.timeFormat")}
+                </Text>
+              </View>
 
-          {/* Elevation */}
-          <View style={styles.field}>
-            <Text style={styles.label}>{t("performance.run.elevation")}</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="500"
-              placeholderTextColor={theme.colors.textTertiary}
-              keyboardType="number-pad"
-              value={elevation}
-              onChangeText={setElevation}
-            />
-          </View>
-        </ScrollView>
+              {/* Elevation */}
+              <View style={styles.field}>
+                <Text style={styles.label}>
+                  {t("performance.run.elevation")}
+                </Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="500"
+                  placeholderTextColor={theme.colors.textTertiary}
+                  keyboardType="number-pad"
+                  value={elevation}
+                  onChangeText={setElevation}
+                />
+              </View>
+            </ScrollView>
 
-        {/* Actions */}
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.cancelButton}
-            onPress={onClose}
-            disabled={isCreating}
-          >
-            <Text style={styles.cancelButtonText}>
-              {t("performance.cancel")}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.saveButton, isCreating && styles.saveButtonDisabled]}
-            onPress={handleSave}
-            disabled={isCreating}
-          >
-            {isCreating ? (
-              <ActivityIndicator size="small" color={theme.colors.white} />
-            ) : (
-              <Text style={styles.saveButtonText}>{t("performance.save")}</Text>
-            )}
-          </TouchableOpacity>
-        </View>
+            {/* Actions */}
+            <View style={styles.actions}>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={onClose}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                <Text style={styles.cancelButtonText}>
+                  {t("performance.cancel")}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[
+                  styles.saveButton,
+                  isCreating && styles.saveButtonDisabled,
+                ]}
+                onPress={handleSave}
+                disabled={isCreating}
+                activeOpacity={0.7}
+              >
+                {isCreating ? (
+                  <ActivityIndicator
+                    size="small"
+                    color={theme.colors.white}
+                  />
+                ) : (
+                  <Text style={styles.saveButtonText}>
+                    {t("performance.save")}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+          </Pressable>
+        </Pressable>
       </KeyboardAvoidingView>
 
       {/* Toast notifications */}
@@ -187,33 +220,45 @@ export function AddRunSheet({
 }
 
 const styles = StyleSheet.create({
-  container: {
+  backdrop: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+  },
+  backdropPressable: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 24,
+  },
+  card: {
+    width: "100%",
+    maxHeight: "85%",
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.borderRadius.xl,
+    paddingTop: 24,
+    paddingBottom: 20,
+    ...theme.shadows.xl,
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.md,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingHorizontal: 24,
+    marginBottom: theme.spacing.md,
   },
   title: {
-    fontSize: 20,
-    fontWeight: "700",
+    fontSize: theme.typography.fontSize.lg,
+    fontWeight: theme.typography.fontWeight.bold,
     color: theme.colors.text,
   },
   closeButton: {
-    padding: theme.spacing.xs,
+    padding: 4,
   },
   content: {
-    flex: 1,
+    flexGrow: 0,
   },
   contentContainer: {
-    padding: theme.spacing.lg,
+    paddingHorizontal: 24,
     gap: theme.spacing.lg,
   },
   field: {
@@ -232,7 +277,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 16,
     color: theme.colors.text,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.background,
   },
   hint: {
     fontSize: 12,
@@ -241,18 +286,18 @@ const styles = StyleSheet.create({
   actions: {
     flexDirection: "row",
     gap: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
-    paddingVertical: theme.spacing.lg,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+    paddingHorizontal: 24,
+    paddingTop: theme.spacing.lg,
   },
   cancelButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 1,
     borderColor: theme.colors.border,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   cancelButtonText: {
     fontSize: 16,
@@ -262,9 +307,11 @@ const styles = StyleSheet.create({
   saveButton: {
     flex: 1,
     paddingVertical: 14,
-    borderRadius: theme.borderRadius.md,
+    borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.primary,
     alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
   },
   saveButtonDisabled: {
     opacity: 0.6,

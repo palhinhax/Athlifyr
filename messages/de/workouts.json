@@ -256,7 +256,11 @@
       "capTime": "Zeitlimit",
       "optional": "optional",
       "capTimeHint": "Leer lassen für kein Zeitlimit",
-      "continueAfterCap": "Nach Erreichen des Limits weiterzählen"
+      "continueAfterCap": "Nach Erreichen des Limits weiterzählen",
+      "settings": "Timer-Einstellungen",
+      "enterFullscreen": "Vollbild aktivieren",
+      "exitFullscreen": "Vollbild beenden",
+      "backToWorkouts": "Zurück zu den Trainings"
     },
 
     "assign": {

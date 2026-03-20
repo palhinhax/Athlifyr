@@ -68,7 +68,8 @@ export function HeroBackground({
           >
             <Image
               src={image}
-              alt={title || "Hero background"}
+              alt=""
+              role="presentation"
               fill
               className={`object-cover object-center ${imageTransitionClass}`}
               priority={isLCP}

@@ -62,8 +62,8 @@ export function MobileNav() {
   if (status === "loading") {
     return (
       <div className="flex items-center gap-2 md:hidden">
-        <Button variant="ghost" size="icon">
-          <Menu className="h-6 w-6" />
+        <Button variant="ghost" size="icon" aria-label={t("openMenu")}>
+          <Menu className="h-6 w-6" aria-hidden="true" />
         </Button>
       </div>
     );
@@ -81,7 +81,10 @@ export function MobileNav() {
       >
         {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
         {!isOpen && totalBadgeCount > 0 && (
-          <span className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">
+          <span
+            className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground"
+            aria-hidden="true"
+          >
             {totalBadgeCount > 9 ? "9+" : totalBadgeCount}
           </span>
         )}
@@ -93,10 +96,15 @@ export function MobileNav() {
           <div
             className="fixed inset-0 top-16 z-40 bg-black/50"
             onClick={closeMenu}
+            aria-hidden="true"
           />
 
           {/* Menu */}
-          <div className="fixed inset-x-0 top-16 z-50 border-b border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur-md">
+          <div
+            className="fixed inset-x-0 top-16 z-50 border-b border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur-md"
+            role="dialog"
+            aria-label={t("openMenu")}
+          >
             <nav className="flex flex-col gap-1">
               {/* Main Navigation - All with icons */}
               {session ? (
@@ -268,14 +276,14 @@ export function MobileNav() {
                 </>
               ) : (
                 <div className="px-3">
-                  <Link
-                    href="/auth/signin"
-                    onClick={() => handleNavClick("/auth/signin")}
-                  >
-                    <Button variant="default" className="w-full">
+                  <Button variant="default" className="w-full" asChild>
+                    <Link
+                      href="/auth/signin"
+                      onClick={() => handleNavClick("/auth/signin")}
+                    >
                       {t("signIn")}
-                    </Button>
-                  </Link>
+                    </Link>
+                  </Button>
                 </div>
               )}
             </nav>

@@ -29,19 +29,27 @@
     "closeMenu": "Cerrar menú",
     "collapseSidebar": "Contraer barra lateral",
     "expandSidebar": "Expandir barra lateral",
+    "userMenu": "Menú de usuario",
     "all": "Todos",
     "videoAnalysis": "Análisis de Vídeo",
     "videoAnalysisDescription": "Elige el tipo de análisis que quieres realizar en tu vídeo.",
     "motionAnalysis": "Análisis de Movimiento",
     "motionAnalysisDescription": "Análisis automático de pose con visualización 3D del esqueleto y ángulos articulares.",
     "liftAnalysis": "Análisis de Levantamiento",
-    "liftAnalysisDescription": "Seguimiento de barra con análisis de trayectoria, velocidad y detección de repeticiones."
+    "liftAnalysisDescription": "Seguimiento de barra con análisis de trayectoria, velocidad y detección de repeticiones.",
+    "mainNavigation": "Navegación principal",
+    "unreadMessages": "{count, plural, =1 {1 mensaje no leído} other {# mensajes no leídos}}"
   },
   "footer": {
     "privacy": "Privacidad",
     "terms": "Términos",
     "cookies": "Cookies",
     "contact": "Contacto",
+    "gymManagement": "Gestión de Gimnasio",
+    "liveRace": "Live Race",
+    "followOnInstagram": "Síguenos en Instagram",
+    "downloadIos": "Descargar en la App Store",
+    "downloadAndroid": "Consíguelo en Google Play",
     "allRightsReserved": "© {year} Athlifyr. Todos los derechos reservados."
   },
   "search": {

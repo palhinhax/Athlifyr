@@ -58,11 +58,11 @@ export function HomeCtaSection({
         <p className="mx-auto mb-8 max-w-2xl text-lg text-white">
           {ctaDescription}
         </p>
-        <Link href="/events" onClick={handleExploreClick}>
-          <Button size="lg" className="px-8 shadow-lg">
+        <Button size="lg" className="px-8 shadow-lg" asChild>
+          <Link href="/events" onClick={handleExploreClick}>
             {exploreAllEvents}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </div>
     </HeroBackground>
   );
@@ -80,9 +80,11 @@ export function HomeSeeAllButton({ seeAll }: HomeSeeAllButtonProps) {
   };
 
   return (
-    <Link href="/events" onClick={handleClick}>
-      <Button variant="ghost">{seeAll}</Button>
-    </Link>
+    <Button variant="ghost" asChild>
+      <Link href="/events" onClick={handleClick}>
+        {seeAll}
+      </Link>
+    </Button>
   );
 }
 
@@ -102,8 +104,10 @@ export function HomeNoEventsCta({
   };
 
   return (
-    <Link href="/events" onClick={handleClick}>
-      <Button>{exploreAllEvents}</Button>
-    </Link>
+    <Button asChild>
+      <Link href="/events" onClick={handleClick}>
+        {exploreAllEvents}
+      </Link>
+    </Button>
   );
 }

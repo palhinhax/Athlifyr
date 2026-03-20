@@ -5,6 +5,8 @@
     "subtitle": "O teu assistente IA",
     "open": "Falar com o Athli",
     "close": "Fechar o Athli",
+    "send": "Enviar mensagem",
+    "backToChat": "Voltar ao chat",
     "history": "Histórico de conversas",
     "conversations": "Histórico",
     "newConversation": "Nova conversa",

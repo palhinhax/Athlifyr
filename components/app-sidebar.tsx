@@ -195,7 +195,12 @@ export function AppSidebar() {
                         >
                           <Icon className="h-5 w-5" aria-hidden="true" />
                           {item.badge !== undefined && item.badge > 0 && (
-                            <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-destructive-foreground">
+                            <span
+                              className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1 text-xs font-bold text-destructive-foreground"
+                              aria-label={t("unreadMessages", {
+                                count: item.badge,
+                              })}
+                            >
                               {item.badge > 9 ? "9+" : item.badge}
                             </span>
                           )}
@@ -219,7 +224,12 @@ export function AppSidebar() {
                       <Icon className="h-5 w-5 shrink-0" />
                       <span className="flex-1">{item.label}</span>
                       {item.badge !== undefined && item.badge > 0 && (
-                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
+                        <span
+                          className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground"
+                          aria-label={t("unreadMessages", {
+                            count: item.badge,
+                          })}
+                        >
                           {item.badge > 9 ? "9+" : item.badge}
                         </span>
                       )}
@@ -238,6 +248,7 @@ export function AppSidebar() {
     <>
       {/* Desktop Sidebar */}
       <aside
+        aria-label={t("mainNavigation")}
         className={cn(
           "fixed inset-y-0 left-0 z-30 hidden border-r border-border/60 bg-background/95 backdrop-blur-md transition-all duration-300 ease-in-out md:block",
           isCollapsed ? "w-[72px]" : "w-64"

@@ -261,6 +261,7 @@ export function VenuesPageClient() {
         </div>
 
         <div className="mt-8">
+          <h2 className="sr-only">{t("venuesListHeading")}</h2>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />

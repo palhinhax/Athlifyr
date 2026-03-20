@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
-import { setRequestLocale } from "next-intl/server";
-import { getTranslations } from "next-intl/server";
+import { setRequestLocale, getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { ChevronLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageContainer } from "@/components/page-container";
 
 interface AccessibilityPageProps {
-  params: Promise<{ locale: string }>;
+  readonly params: Promise<{ readonly locale: string }>;
 }
 
 export async function generateMetadata({

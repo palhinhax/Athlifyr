@@ -60,8 +60,33 @@ export const colors = {
   // Text colors
   text: "#131820",
   textSecondary: "#4b5563",
-  textTertiary: "#8d95a1",
+  textTertiary: "#6b7280",
   textInverse: "#ffffff",
+};
+
+// Dark mode color overrides
+export const darkColors: typeof colors = {
+  ...colors,
+  background: "#0f1419",
+  backgroundSecondary: "#1a2029",
+  foreground: "#f0f2f5",
+  surface: "#1a2029",
+  muted: "#242d38",
+  mutedForeground: "#9ca3af",
+  border: "#2d3748",
+  card: "#1a2029",
+  cardForeground: "#f0f2f5",
+  white: "#ffffff",
+
+  primaryLight: "#5e2c10",
+  secondaryLight: "#242d38",
+  secondaryDark: "#c8cdd4",
+  accentForeground: "#f0f2f5",
+
+  text: "#f0f2f5",
+  textSecondary: "#c8cdd4",
+  textTertiary: "#9ca3af",
+  textInverse: "#131820",
 };
 
 // Typography
@@ -165,3 +190,4 @@ export const theme = {
 };
 
 export type Theme = typeof theme;
+export type ThemeColors = typeof colors;

@@ -235,6 +235,85 @@
           "noSell": "Nous ne vendons pas les données de cookies"
         }
       }
+    },
+    "accessibility": {
+      "title": "Accessibilit\u00e9",
+      "metaTitle": "Accessibilit\u00e9 | Athlifyr",
+      "metaDescription": "D\u00e9couvrez l'engagement d'Athlifyr en mati\u00e8re d'accessibilit\u00e9, le support actuel, les limitations connues et comment signaler des probl\u00e8mes d'accessibilit\u00e9.",
+      "lastUpdated": "Derni\u00e8re mise \u00e0 jour : {date}",
+      "intro": {
+        "title": "Notre Engagement",
+        "content": "Chez Athlifyr, nous croyons que le sport est pour tous. Nous nous engageons \u00e0 am\u00e9liorer continuellement l'accessibilit\u00e9 de nos plateformes afin que tous les utilisateurs, quelles que soient leurs capacit\u00e9s, puissent d\u00e9couvrir, participer et profiter d'\u00e9v\u00e9nements sportifs et d'entra\u00eenements."
+      },
+      "currentSupport": {
+        "title": "Support d'Accessibilit\u00e9 Actuel",
+        "web": {
+          "title": "Web",
+          "items": {
+            "language": "Langue de la page correctement d\u00e9clar\u00e9e pour les 6 langues support\u00e9es",
+            "skipLink": "Lien pour acc\u00e9der directement au contenu principal pour les utilisateurs de clavier",
+            "semanticHtml": "Structure HTML s\u00e9mantique avec des rep\u00e8res ad\u00e9quats (en-t\u00eate, contenu principal, pied de page, navigation)",
+            "headingHierarchy": "Hi\u00e9rarchie logique des titres sur toutes les pages",
+            "imageAlt": "Texte alternatif significatif sur les images de contenu",
+            "screenReader": "Support des lecteurs d'\u00e9cran avec des \u00e9tiquettes masqu\u00e9es et des attributs ARIA descriptifs",
+            "modals": "Bo\u00eetes de dialogue accessibles avec gestion du focus et support clavier",
+            "tabs": "Composants d'onglets avec r\u00f4les ARIA ad\u00e9quats et navigation clavier",
+            "cookieConsent": "Banni\u00e8re de consentement aux cookies accessible avec des boutons \u00e9tiquet\u00e9s",
+            "notifications": "Notifications toast annonc\u00e9es aux lecteurs d'\u00e9cran",
+            "ariaLabels": "\u00c9tiquettes accessibles sur les boutons ic\u00f4ne uniquement",
+            "darkMode": "Mode sombre disponible pour r\u00e9duire la fatigue visuelle"
+          }
+        },
+        "mobile": {
+          "title": "Mobile (iOS et Android)",
+          "items": {
+            "eventCards": "Cartes d'\u00e9v\u00e9nements avec des \u00e9tiquettes d'accessibilit\u00e9 descriptives incluant titre, date et lieu",
+            "searchInput": "Champ de recherche accessible avec r\u00f4le et \u00e9tiquette ad\u00e9quats",
+            "viewToggle": "Basculement liste/carte avec \u00e9tat s\u00e9lectionn\u00e9 annonc\u00e9 aux lecteurs d'\u00e9cran",
+            "loadingIndicators": "Indicateurs de chargement avec des \u00e9tiquettes descriptives",
+            "translations": "\u00c9tiquettes d'accessibilit\u00e9 traduites dans toutes les langues support\u00e9es",
+            "touchTargets": "Extension de la zone tactile sur les \u00e9l\u00e9ments interactifs"
+          }
+        }
+      },
+      "testing": {
+        "title": "Comment Nous Testons l'Accessibilit\u00e9",
+        "content": "Nous utilisons une combinaison de m\u00e9thodes pour \u00e9valuer et am\u00e9liorer l'accessibilit\u00e9 :",
+        "items": {
+          "automated": "Outils automatis\u00e9s comme AccessMonitor et SonarQube pour d\u00e9tecter les violations WCAG",
+          "keyboard": "Tests manuels de navigation au clavier sur tous les flux principaux",
+          "screenReaders": "Tests avec lecteurs d'\u00e9cran en utilisant VoiceOver (macOS/iOS)",
+          "codeReview": "R\u00e9vision au niveau du code des attributs ARIA, du HTML s\u00e9mantique et de la structure des titres",
+          "wcag": "\u00c9valuation selon les directives WCAG 2.1 Niveau AA"
+        }
+      },
+      "limitations": {
+        "title": "Limitations Connues",
+        "content": "Nous sommes transparents sur les domaines o\u00f9 l'accessibilit\u00e9 peut encore \u00eatre limit\u00e9e :",
+        "items": {
+          "maps": "Les cartes interactives (Mapbox) ont un support limit\u00e9 pour les lecteurs d'\u00e9cran et le clavier. Nous explorons des alternatives textuelles.",
+          "colorContrast": "Le contraste des couleurs n'a pas encore \u00e9t\u00e9 enti\u00e8rement v\u00e9rifi\u00e9 sur tous les composants. Nous auditons et corrigeons progressivement.",
+          "formErrors": "Certains messages d'erreur de formulaires ne sont pas encore programmatiquement li\u00e9s \u00e0 leurs champs.",
+          "loadingStates": "Certains \u00e9tats de chargement ne sont pas annonc\u00e9s aux lecteurs d'\u00e9cran.",
+          "mobileLabels": "Certains \u00e9crans et \u00e9l\u00e9ments interactifs de l'application mobile n'ont pas encore d'\u00e9tiquettes d'accessibilit\u00e9.",
+          "textScaling": "Le redimensionnement dynamique du texte sur mobile n'est pas encore totalement support\u00e9.",
+          "thirdParty": "Le contenu int\u00e9gr\u00e9 de tiers (cartes, analytique) peut ne pas r\u00e9pondre enti\u00e8rement aux normes d'accessibilit\u00e9."
+        }
+      },
+      "contact": {
+        "title": "Signaler un Probl\u00e8me d'Accessibilit\u00e9",
+        "content": "Si vous rencontrez un obstacle d'accessibilit\u00e9 ou avez des suggestions d'am\u00e9lioration, contactez-nous :",
+        "email": "hello@athlifyr.com",
+        "subject": "Probl\u00e8me d'accessibilit\u00e9",
+        "emailLabel": "Envoyez-nous un e-mail \u00e0 {email}",
+        "subjectHint": "Objet sugg\u00e9r\u00e9 : \"{subject}\"",
+        "responseTime": "Nous nous effor\u00e7ons de r\u00e9pondre dans un d\u00e9lai de 5 jours ouvrables."
+      },
+      "standards": {
+        "title": "Normes que Nous Suivons",
+        "content": "Nous cherchons \u00e0 suivre les R\u00e8gles pour l'accessibilit\u00e9 des contenus Web (WCAG) 2.1 Niveau AA lorsque c'est applicable. Nous travaillons continuellement \u00e0 am\u00e9liorer la conformit\u00e9 sur toutes les plateformes.",
+        "note": "Athlifyr ne revendique pas la conformit\u00e9 totale aux WCAG 2.1. Nous travaillons activement \u00e0 identifier et r\u00e9soudre les lacunes d'accessibilit\u00e9."
+      }
     }
   }
 }

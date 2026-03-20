@@ -1084,5 +1084,23 @@
     "tapToReturn": "Tap to return",
     "backgroundNotificationTitle": "Athlifyr — Run in progress",
     "backgroundNotificationBody": "Tracking your GPS route"
+  },
+  "a11y": {
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "loading": "Loading",
+    "feedList": "Social feed",
+    "createPostInput": "Write a post",
+    "removeMedia": "Remove media",
+    "addMedia": "Add photo or video",
+    "publish": "Publish post",
+    "unmuteVideo": "Unmute video",
+    "muteVideo": "Mute video",
+    "liked": "Liked, {{count}} likes",
+    "like": "Like, {{count}} likes",
+    "comments": "Comments, {{count}} comments",
+    "commentInput": "Write a comment",
+    "sendComment": "Send comment",
+    "deleteComment": "Delete comment"
   }
 }

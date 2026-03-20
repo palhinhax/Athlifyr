@@ -194,6 +194,8 @@ export default function RegisterScreen() {
               }
             }}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
@@ -213,6 +215,8 @@ export default function RegisterScreen() {
             onPress={handleGoogleSignIn}
             disabled={anyLoading}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t("register.continueWithGoogle")}
           >
             {isGoogleLoading ? (
               <ActivityIndicator color={colors.text} size="small" />
@@ -273,6 +277,7 @@ export default function RegisterScreen() {
                 autoCapitalize="words"
                 autoCorrect={false}
                 editable={!anyLoading}
+                accessibilityLabel={t("register.name")}
               />
             </View>
             {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
@@ -302,6 +307,7 @@ export default function RegisterScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!anyLoading}
+                accessibilityLabel={t("register.email")}
               />
             </View>
             {errors.email && (
@@ -332,10 +338,15 @@ export default function RegisterScreen() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 editable={!anyLoading}
+                accessibilityLabel={t("register.password")}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showPassword ? t("a11y.hidePassword") : t("a11y.showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff size={20} color={colors.mutedForeground} />
@@ -387,6 +398,8 @@ export default function RegisterScreen() {
             onPress={handleRegister}
             disabled={anyLoading}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: anyLoading, busy: isLoading }}
           >
             {isLoading ? (
               <ActivityIndicator color={colors.white} />

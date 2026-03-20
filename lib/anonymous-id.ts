@@ -19,7 +19,7 @@ function generateId(): string {
  * Returns existing ID from localStorage or creates a new one
  */
 export function getAnonymousId(): string {
-  if (typeof globalThis.window === "undefined") {
+  if (globalThis.window === undefined) {
     return "";
   }
 
@@ -42,7 +42,7 @@ export function getAnonymousId(): string {
  * Clear anonymous ID (e.g., when user logs in)
  */
 export function clearAnonymousId(): void {
-  if (typeof globalThis.window === "undefined") {
+  if (globalThis.window === undefined) {
     return;
   }
 

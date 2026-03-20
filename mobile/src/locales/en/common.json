@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Total participants at draw: {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participating",
+      "listView": "List view",
+      "mapView": "Map view",
+      "suggestEvent": "Suggest an event",
+      "searchEvents": "Search events",
+      "eventsList": "Events list",
+      "participating": "Going",
+      "featured": "Featured event",
+      "hasGiveaway": "Has giveaway",
+      "commentsCount": "{{count}} comments",
+      "variants": "Distances: {{variants}}",
+      "loadingEvents": "Loading events"
     }
   },
   "common": {

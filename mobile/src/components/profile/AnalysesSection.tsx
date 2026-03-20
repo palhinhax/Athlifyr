@@ -23,7 +23,7 @@ import {
 } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import { useAuthStore } from "@/src/lib/auth-store";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as LegacyFS from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { Paths, File as FSFile } from "expo-file-system";
@@ -575,8 +575,8 @@ export function AnalysesSection() {
     try {
       const headers = { Authorization: `Bearer ${token}` };
       const [motionRes, liftRes] = await Promise.all([
-        fetch(`${API_URL}/api/analyses/motion`, { headers }),
-        fetch(`${API_URL}/api/analyses/lift`, { headers }),
+        fetch(`${BASE_URL}/analyses/motion`, { headers }),
+        fetch(`${BASE_URL}/analyses/lift`, { headers }),
       ]);
       if (motionRes.ok) {
         const data = (await motionRes.json()) as { analyses: AnalysisRecord[] };

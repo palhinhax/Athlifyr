@@ -10,7 +10,7 @@
  * lightweight JSON — zero video bytes through Vercel.
  */
 
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
 
 // ── Types ────────────────────────────────────────────────────────────
@@ -99,7 +99,7 @@ export async function checkMotionApiHealth(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5_000);
 
-    const res = await fetch(`${API_URL}/api/motion-analysis/process-b2`, {
+    const res = await fetch(`${BASE_URL}/motion-analysis/process-b2`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
@@ -132,7 +132,7 @@ async function uploadVideoToB2(
   // Step 1: Get presigned URL
   onProgress?.({ progress: 5, step: "uploading" });
 
-  const presignRes = await fetch(`${API_URL}/api/uploads/presign`, {
+  const presignRes = await fetch(`${BASE_URL}/uploads/presign`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -229,7 +229,7 @@ export async function analyzeMotion(
   try {
     const authToken = await SecureStore.getItemAsync("auth-token");
 
-    response = await fetch(`${API_URL}/api/motion-analysis/process-b2`, {
+    response = await fetch(`${BASE_URL}/motion-analysis/process-b2`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

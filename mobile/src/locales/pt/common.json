@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Total de participantes no sorteio: {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, a participar",
+      "listView": "Vista de lista",
+      "mapView": "Vista de mapa",
+      "suggestEvent": "Sugerir um evento",
+      "searchEvents": "Pesquisar eventos",
+      "eventsList": "Lista de eventos",
+      "participating": "Vou",
+      "featured": "Evento em destaque",
+      "hasGiveaway": "Tem sorteio",
+      "commentsCount": "{{count}} comentários",
+      "variants": "Distâncias: {{variants}}",
+      "loadingEvents": "A carregar eventos"
     }
   },
   "common": {

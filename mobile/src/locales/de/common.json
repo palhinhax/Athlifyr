@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Gesamte Teilnehmer bei der Ziehung: {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, teilnehmend",
+      "listView": "Listenansicht",
+      "mapView": "Kartenansicht",
+      "suggestEvent": "Event vorschlagen",
+      "searchEvents": "Events suchen",
+      "eventsList": "Eventliste",
+      "participating": "Dabei",
+      "featured": "Hervorgehobenes Event",
+      "hasGiveaway": "Mit Verlosung",
+      "commentsCount": "{{count}} Kommentare",
+      "variants": "Distanzen: {{variants}}",
+      "loadingEvents": "Events werden geladen"
     }
   },
   "common": {

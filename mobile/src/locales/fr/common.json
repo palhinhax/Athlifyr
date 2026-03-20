@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Nombre total de participants au tirage : {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participe",
+      "listView": "Vue liste",
+      "mapView": "Vue carte",
+      "suggestEvent": "Suggérer un événement",
+      "searchEvents": "Rechercher des événements",
+      "eventsList": "Liste des événements",
+      "participating": "J'y vais",
+      "featured": "Événement en vedette",
+      "hasGiveaway": "Tirage au sort",
+      "commentsCount": "{{count}} commentaires",
+      "variants": "Distances : {{variants}}",
+      "loadingEvents": "Chargement des événements"
     }
   },
   "common": {

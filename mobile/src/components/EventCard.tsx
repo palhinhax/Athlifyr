@@ -29,20 +29,39 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
     router.push(`/events/${event.slug}` as const);
   };
 
+  const dateStr = formatDateRange(
+    event.startDate,
+    event.endDate,
+    i18n.language
+  );
+  const locationStr = [event.city, event.country].filter(Boolean).join(", ");
+  const cardLabel = t(
+    isParticipating
+      ? "events.a11y.eventCardParticipating"
+      : "events.a11y.eventCard",
+    { title: event.title, date: dateStr, location: locationStr }
+  );
+
   return (
     <TouchableOpacity
       style={[styles.card, isParticipating && styles.cardParticipating]}
       onPress={handlePress}
       activeOpacity={0.7}
+      accessible={true}
+      accessibilityRole="button"
+      accessibilityLabel={cardLabel}
     >
       {/* Event Image */}
-      <View style={styles.imageContainer}>
+      <View
+        style={styles.imageContainer}
+        importantForAccessibility="no-hide-descendants"
+      >
         {event.imageUrl ? (
           <CachedImage
             uri={event.imageUrl}
             style={styles.image}
             contentFit="cover"
-            alt="Event image"
+            alt={event.title}
           />
         ) : (
           <View style={[styles.image, styles.placeholderImage]}>
@@ -62,7 +81,9 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
         {isParticipating && (
           <View style={styles.participatingBadge}>
             <CheckCircle size={16} color={theme.colors.white} />
-            <Text style={styles.participatingText}>Vou</Text>
+            <Text style={styles.participatingText}>
+              {t("events.a11y.participating")}
+            </Text>
           </View>
         )}
 
@@ -86,7 +107,10 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
       </View>
 
       {/* Event Details */}
-      <View style={styles.content}>
+      <View
+        style={styles.content}
+        importantForAccessibility="no-hide-descendants"
+      >
         {/* Title */}
         <Text style={styles.title} numberOfLines={2}>
           {event.title}
@@ -96,16 +120,14 @@ export function EventCard({ event, isParticipating = false }: EventCardProps) {
           {/* Date */}
           <View style={styles.infoRow}>
             <Calendar size={16} color={theme.colors.mutedForeground} />
-            <Text style={styles.infoText}>
-              {formatDateRange(event.startDate, event.endDate, i18n.language)}
-            </Text>
+            <Text style={styles.infoText}>{dateStr}</Text>
           </View>
 
           {/* Location */}
           <View style={styles.infoRow}>
             <MapPin size={16} color={theme.colors.mutedForeground} />
             <Text style={styles.infoText} numberOfLines={1}>
-              {event.city}, {event.country}
+              {locationStr}
             </Text>
           </View>
 

@@ -9,7 +9,11 @@ export default function WorkoutsScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.iconContainer}>
-        <Dumbbell size={48} color={theme.colors.textTertiary} />
+        <Dumbbell
+          size={48}
+          color={theme.colors.textTertiary}
+          accessible={false}
+        />
       </View>
       <Text style={styles.title}>{t("navigation.workouts")}</Text>
       <Text style={styles.subtitle}>Coming Soon</Text>

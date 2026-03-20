@@ -1081,5 +1081,23 @@
     "tapToReturn": "Tippe, um zurückzukehren",
     "backgroundNotificationTitle": "Athlifyr — Lauf läuft",
     "backgroundNotificationBody": "Deine GPS-Route wird aufgezeichnet"
+  },
+  "a11y": {
+    "showPassword": "Passwort anzeigen",
+    "hidePassword": "Passwort ausblenden",
+    "loading": "Wird geladen",
+    "feedList": "Sozialer Feed",
+    "createPostInput": "Einen Beitrag schreiben",
+    "removeMedia": "Medium entfernen",
+    "addMedia": "Foto oder Video hinzufügen",
+    "publish": "Veröffentlichen",
+    "unmuteVideo": "Video-Ton einschalten",
+    "muteVideo": "Video stummschalten",
+    "liked": "Gefällt mir, {{count}} Gefällt mir",
+    "like": "Gefällt mir, {{count}} Gefällt mir",
+    "comments": "Kommentare, {{count}} Kommentare",
+    "commentInput": "Einen Kommentar schreiben",
+    "sendComment": "Kommentar senden",
+    "deleteComment": "Kommentar löschen"
   }
 }

@@ -278,6 +278,12 @@ export default async function RootLayout({
                           >
                             {tFooter("cookies")}
                           </Link>
+                          <Link
+                            href="/accessibility"
+                            className="transition-colors hover:text-foreground"
+                          >
+                            {tFooter("accessibility")}
+                          </Link>
                           <a
                             href="https://www.instagram.com/athlifyr/"
                             target="_blank"

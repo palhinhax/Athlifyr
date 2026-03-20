@@ -235,6 +235,85 @@
           "noSell": "We do not sell cookie data"
         }
       }
+    },
+    "accessibility": {
+      "title": "Accessibility",
+      "metaTitle": "Accessibility | Athlifyr",
+      "metaDescription": "Learn about accessibility at Athlifyr, our current support, known limitations, and how to report accessibility issues.",
+      "lastUpdated": "Last updated: {date}",
+      "intro": {
+        "title": "Our Commitment",
+        "content": "At Athlifyr, we believe sport is for everyone. We are committed to continuously improving the accessibility of our platforms so that all users, regardless of their abilities, can discover, participate in, and enjoy sports events and training."
+      },
+      "currentSupport": {
+        "title": "Current Accessibility Support",
+        "web": {
+          "title": "Web",
+          "items": {
+            "language": "Page language is correctly declared for all 6 supported languages",
+            "skipLink": "Skip-to-content link for keyboard users",
+            "semanticHtml": "Semantic HTML structure with proper landmarks (header, main, footer, navigation)",
+            "headingHierarchy": "Logical heading hierarchy across pages",
+            "imageAlt": "Meaningful alt text on content images",
+            "screenReader": "Screen reader support with hidden labels and descriptive ARIA attributes",
+            "modals": "Accessible dialogs with focus management and keyboard support",
+            "tabs": "Tab components with proper ARIA roles and keyboard navigation",
+            "cookieConsent": "Accessible cookie consent banner with labeled buttons",
+            "notifications": "Toast notifications announced to screen readers",
+            "ariaLabels": "Accessible labels on icon-only buttons",
+            "darkMode": "Dark mode support for reduced eye strain"
+          }
+        },
+        "mobile": {
+          "title": "Mobile (iOS & Android)",
+          "items": {
+            "eventCards": "Event cards with descriptive accessibility labels including title, date, and location",
+            "searchInput": "Accessible search input with proper role and label",
+            "viewToggle": "List/map view toggle with selected state announced to screen readers",
+            "loadingIndicators": "Loading indicators with descriptive labels",
+            "translations": "Accessibility labels translated across all supported languages",
+            "touchTargets": "Touch target expansion on interactive elements"
+          }
+        }
+      },
+      "testing": {
+        "title": "How We Test Accessibility",
+        "content": "We use a combination of methods to evaluate and improve accessibility:",
+        "items": {
+          "automated": "Automated tools such as AccessMonitor and SonarQube for detecting WCAG violations",
+          "keyboard": "Manual keyboard navigation testing across all main flows",
+          "screenReaders": "Screen reader testing with VoiceOver (macOS/iOS)",
+          "codeReview": "Code-level review of ARIA attributes, semantic HTML, and heading structure",
+          "wcag": "Evaluation against WCAG 2.1 Level AA guidelines"
+        }
+      },
+      "limitations": {
+        "title": "Known Limitations",
+        "content": "We are transparent about areas where accessibility may still be limited:",
+        "items": {
+          "maps": "Interactive maps (Mapbox) have limited screen reader and keyboard support. We are exploring text-based alternatives.",
+          "colorContrast": "Color contrast has not been fully verified across all components. We are progressively auditing and correcting.",
+          "formErrors": "Some form error messages are not yet programmatically linked to their input fields.",
+          "loadingStates": "Some loading states are not announced to screen readers.",
+          "mobileLabels": "Some mobile screens and interactive elements are still missing accessibility labels.",
+          "textScaling": "Dynamic text scaling on mobile is not yet fully supported.",
+          "thirdParty": "Third-party embedded content (maps, analytics) may not fully meet accessibility standards."
+        }
+      },
+      "contact": {
+        "title": "Report an Accessibility Issue",
+        "content": "If you encounter an accessibility barrier or have suggestions for improvement, please contact us:",
+        "email": "hello@athlifyr.com",
+        "subject": "Accessibility Issue",
+        "emailLabel": "Send us an email at {email}",
+        "subjectHint": "Suggested subject: \"{subject}\"",
+        "responseTime": "We aim to respond within 5 business days."
+      },
+      "standards": {
+        "title": "Standards We Follow",
+        "content": "We aim to follow the Web Content Accessibility Guidelines (WCAG) 2.1 Level AA where applicable. We are continuously working to improve compliance across all platforms.",
+        "note": "Athlifyr does not claim full WCAG 2.1 compliance. We are actively working to identify and address accessibility gaps."
+      }
     }
   }
 }

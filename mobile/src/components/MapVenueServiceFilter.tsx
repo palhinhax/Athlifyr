@@ -13,48 +13,51 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Filter, X, Check } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import {
-  getSportIcon,
-  getSportColor,
-  SPORT_TYPES,
-} from "@/src/lib/event-utils";
+  getServiceIcon,
+  getServiceColor,
+  VENUE_SERVICES,
+} from "@/src/lib/venue-utils";
 
-interface MapSportFilterProps {
-  selectedSports: string[];
-  onSportsChange: (sports: string[]) => void;
+interface MapVenueServiceFilterProps {
+  selectedServices: string[];
+  onServicesChange: (services: string[]) => void;
 }
 
-export function MapSportFilter({
-  selectedSports,
-  onSportsChange,
-}: MapSportFilterProps) {
+export function MapVenueServiceFilter({
+  selectedServices,
+  onServicesChange,
+}: MapVenueServiceFilterProps) {
   const { t } = useTranslation();
   const { bottom } = useSafeAreaInsets();
   const [isOpen, setIsOpen] = useState(false);
-  const [localSports, setLocalSports] = useState<string[]>(selectedSports);
+  const [localServices, setLocalServices] =
+    useState<string[]>(selectedServices);
 
   const handleOpen = () => {
-    setLocalSports(selectedSports);
+    setLocalServices(selectedServices);
     setIsOpen(true);
   };
 
-  const toggleSport = (sport: string) => {
-    setLocalSports((prev) =>
-      prev.includes(sport) ? prev.filter((s) => s !== sport) : [...prev, sport]
+  const toggleService = (service: string) => {
+    setLocalServices((prev) =>
+      prev.includes(service)
+        ? prev.filter((s) => s !== service)
+        : [...prev, service]
     );
   };
 
   const handleApply = () => {
-    onSportsChange(localSports);
+    onServicesChange(localServices);
     setIsOpen(false);
   };
 
   const handleClear = () => {
-    setLocalSports([]);
-    onSportsChange([]);
+    setLocalServices([]);
+    onServicesChange([]);
     setIsOpen(false);
   };
 
-  const activeCount = selectedSports.length;
+  const activeCount = selectedServices.length;
 
   return (
     <>
@@ -66,7 +69,7 @@ export function MapSportFilter({
       >
         <Filter size={16} color={theme.colors.text} />
         <Text style={styles.filterButtonText}>
-          {t("events.mapFilters.title")}
+          {t("venues.mapFilters.title")}
         </Text>
         {activeCount > 0 && (
           <View style={styles.badge}>
@@ -90,7 +93,7 @@ export function MapSportFilter({
             {/* Header */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
-                {t("events.mapFilters.title")}
+                {t("venues.mapFilters.title")}
               </Text>
               <TouchableOpacity
                 onPress={() => setIsOpen(false)}
@@ -100,46 +103,53 @@ export function MapSportFilter({
               </TouchableOpacity>
             </View>
 
-            {/* Sport types */}
+            {/* Service types */}
             <Text style={styles.sectionTitle}>
-              {t("events.mapFilters.sports")}
+              {t("venues.mapFilters.services")}
             </Text>
 
             <ScrollView
-              style={styles.sportsList}
+              style={styles.servicesList}
               showsVerticalScrollIndicator={false}
             >
-              {SPORT_TYPES.map((sport) => {
-                const isSelected = localSports.includes(sport);
-                const sportColor = getSportColor(sport);
+              {VENUE_SERVICES.map((service) => {
+                const isSelected = localServices.includes(service);
+                const serviceColor = getServiceColor(service);
 
                 return (
                   <TouchableOpacity
-                    key={sport}
+                    key={service}
                     style={[
-                      styles.sportItem,
+                      styles.serviceItem,
                       isSelected && {
-                        backgroundColor: `${sportColor}15`,
-                        borderColor: sportColor,
+                        backgroundColor: `${serviceColor}15`,
+                        borderColor: serviceColor,
                       },
                     ]}
-                    onPress={() => toggleSport(sport)}
+                    onPress={() => toggleService(service)}
                     activeOpacity={0.7}
                   >
-                    <Text style={styles.sportIcon}>{getSportIcon(sport)}</Text>
+                    <Text style={styles.serviceIcon}>
+                      {getServiceIcon(service)}
+                    </Text>
                     <Text
                       style={[
-                        styles.sportName,
-                        isSelected && { color: sportColor, fontWeight: "600" },
+                        styles.serviceName,
+                        isSelected && {
+                          color: serviceColor,
+                          fontWeight: "600",
+                        },
                       ]}
                     >
-                      {t(`sports.${sport}`, { defaultValue: sport })}
+                      {t(`venueDetail.serviceTypes.${service}`, {
+                        defaultValue: service,
+                      })}
                     </Text>
                     {isSelected && (
                       <View
                         style={[
                           styles.checkCircle,
-                          { backgroundColor: sportColor },
+                          { backgroundColor: serviceColor },
                         ]}
                       >
                         <Check size={12} color={theme.colors.white} />
@@ -158,7 +168,7 @@ export function MapSportFilter({
                 activeOpacity={0.7}
               >
                 <Text style={styles.clearButtonText}>
-                  {t("events.mapFilters.clearFilters")}
+                  {t("venues.mapFilters.clearFilters")}
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
@@ -167,7 +177,7 @@ export function MapSportFilter({
                 activeOpacity={0.8}
               >
                 <Text style={styles.applyButtonText}>
-                  {t("events.mapFilters.applyFilters")}
+                  {t("venues.mapFilters.applyFilters")}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -243,10 +253,10 @@ const styles = StyleSheet.create({
     paddingTop: theme.spacing.md,
     paddingBottom: theme.spacing.sm,
   },
-  sportsList: {
+  servicesList: {
     paddingHorizontal: theme.spacing.md,
   },
-  sportItem: {
+  serviceItem: {
     flexDirection: "row",
     alignItems: "center",
     paddingVertical: 10,
@@ -257,11 +267,11 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     gap: 10,
   },
-  sportIcon: {
+  serviceIcon: {
     fontSize: 18,
     lineHeight: 22,
   },
-  sportName: {
+  serviceName: {
     flex: 1,
     fontSize: 15,
     color: theme.colors.text,
@@ -301,7 +311,7 @@ const styles = StyleSheet.create({
   },
   applyButtonText: {
     fontSize: 14,
-    fontWeight: "700",
+    fontWeight: "600",
     color: theme.colors.white,
   },
 });

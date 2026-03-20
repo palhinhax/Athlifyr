@@ -212,6 +212,7 @@ export default function TabLayout() {
             backgroundColor: theme.colors.background,
           },
           headerTintColor: theme.colors.text,
+          headerTitleAlign: "left",
           tabBarStyle: {
             backgroundColor: theme.colors.background,
             borderTopColor: theme.colors.border,

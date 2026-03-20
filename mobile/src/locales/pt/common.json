@@ -481,6 +481,13 @@
     "myVenues": "Os Meus Espaços",
     "noVenuesTitle": "Ainda Sem Espaços",
     "noVenuesDescription2": "Ainda não tens espaços ativos. Explora o separador de locais para descobrires centros de treino.",
+    "mapFilters": {
+      "title": "Filtros",
+      "services": "Serviços",
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpar Filtros",
+      "venuesCount": "{{count}} locais"
+    },
     "roles": {
       "owner": "Proprietário",
       "admin": "Administrador",
@@ -557,6 +564,14 @@
       "RECOVERY": "Recuperação",
       "SAUNA": "Sauna",
       "COLD_PLUNGE": "Banho Frio",
+      "HYROX": "HYROX",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Levantamento Olímpico",
+      "FUNCTIONAL_FITNESS": "Treino Funcional",
+      "OPEN_GYM": "Open Gym",
+      "MASSAGE": "Massagem",
+      "KICKBOXING": "Kickboxing",
+      "BJJ": "BJJ",
       "OTHER": "Outro"
     }
   },

@@ -1,4 +1,5 @@
 import { SportType } from "@prisma/client";
+import { sportIcons } from "@/lib/sport-config";
 
 /**
  * ⚠️ DEPRECATED: Do not use sportTypeLabels directly
@@ -33,24 +34,10 @@ export const sportTypeLabels: Record<SportType, string> = {
 };
 
 /**
- * Sport type icons (emoji) - safe to use directly
- * Icons are universal and don't require translation
+ * Sport type icons (emoji) - single source of truth in sport-config.ts
+ * Re-exported here for backward compatibility
  */
-
-export const sportTypeIcons: Record<SportType, string> = {
-  RUNNING: "🏃",
-  TRAIL: "⛰️",
-  WALKING: "🚶",
-  HYROX: "💪",
-  CROSSFIT: "🏋️",
-  OCR: "🧗",
-  BTT: "🚵",
-  CYCLING: "🚴",
-  SURF: "🏄",
-  TRIATHLON: "🏊",
-  SWIMMING: "🏊",
-  OTHER: "🎯",
-};
+export const sportTypeIcons = sportIcons as Record<SportType, string>;
 
 export function formatDate(date: Date, locale: string = "pt-PT"): string {
   return new Intl.DateTimeFormat(locale, {

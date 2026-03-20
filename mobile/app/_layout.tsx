@@ -49,7 +49,7 @@ function RootLayout() {
             <ActiveRunBanner />
             <Stack
               screenOptions={{
-                headerShown: true,
+                headerShown: false,
                 animation: "slide_from_right",
               }}
             >

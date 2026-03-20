@@ -86,7 +86,7 @@ describe("AppDownloadSection", () => {
 
     expect(links[0]).toHaveAttribute(
       "href",
-      "https://apps.apple.com/app/athlifyr/id6738646498"
+      "https://apps.apple.com/pt/app/athlifyr/id6759297452?l=en-GB"
     );
     expect(links[1]).toHaveAttribute(
       "href",

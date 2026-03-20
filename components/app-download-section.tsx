@@ -3,7 +3,11 @@
 import { useLocale, useTranslations } from "next-intl";
 import Image from "next/image";
 import { motion } from "framer-motion";
-import { APP_STORE_URL, GOOGLE_PLAY_URL } from "@/lib/constants";
+import {
+  APP_STORE_URL,
+  GOOGLE_PLAY_URL,
+  GOOGLE_PLAY_ENABLED,
+} from "@/lib/constants";
 import { analyticsEvent } from "@/lib/analytics";
 
 const SUPPORTED_BADGE_LOCALES = ["pt", "en", "es", "fr", "de", "it"] as const;
@@ -26,14 +30,16 @@ const STORE_BADGES = [
     folder: "app-store",
     url: APP_STORE_URL,
     altKey: "appStoreAlt" as const,
+    enabled: true,
   },
   {
     key: "googlePlay" as const,
     folder: "google-play",
     url: GOOGLE_PLAY_URL,
     altKey: "googlePlayAlt" as const,
+    enabled: GOOGLE_PLAY_ENABLED,
   },
-] as const;
+];
 
 export function AppDownloadSection() {
   const locale = useLocale();
@@ -50,7 +56,7 @@ export function AppDownloadSection() {
         className="mx-auto max-w-3xl"
       >
         <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
-          {STORE_BADGES.map((badge) => (
+          {STORE_BADGES.filter((badge) => badge.enabled).map((badge) => (
             <motion.a
               key={badge.key}
               href={badge.url}

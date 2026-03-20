@@ -189,6 +189,13 @@ export default async function RootLayout({
           data-account="4LNSLNsFfe"
           strategy="afterInteractive"
         />
+        <Script
+          id="userway-tabindex-fix"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var o=new MutationObserver(function(){var e=document.getElementById("userwayAccessibilityIcon");if(e){e.setAttribute("tabindex","-1");o.disconnect()}});o.observe(document.body,{childList:true,subtree:true})})();`,
+          }}
+        />
         <StructuredData data={organizationSchema} />
         <StructuredData data={websiteSchema} />
       </head>

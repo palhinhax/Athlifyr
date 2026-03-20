@@ -5,6 +5,8 @@
     "subtitle": "Your AI assistant",
     "open": "Chat with Athli",
     "close": "Close Athli",
+    "send": "Send message",
+    "backToChat": "Back to chat",
     "history": "Conversation history",
     "conversations": "History",
     "newConversation": "New conversation",

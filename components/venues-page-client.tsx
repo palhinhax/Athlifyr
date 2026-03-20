@@ -111,11 +111,13 @@ export function VenuesPageClient() {
   });
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Random hero image (stable per session)
+  // Deterministic hero image based on day-of-year (avoids SSR/client hydration mismatch)
   const heroImage = useMemo(() => {
-    return VENUE_HERO_IMAGES[
-      Math.floor(Math.random() * VENUE_HERO_IMAGES.length)
-    ];
+    const now = new Date();
+    const dayOfYear = Math.floor(
+      (now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000
+    );
+    return VENUE_HERO_IMAGES[dayOfYear % VENUE_HERO_IMAGES.length];
   }, []);
 
   // Debounce search query
@@ -259,6 +261,7 @@ export function VenuesPageClient() {
         </div>
 
         <div className="mt-8">
+          <h2 className="sr-only">{t("venuesListHeading")}</h2>
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />

@@ -138,6 +138,7 @@ export default function EventsScreen() {
               size={20}
               color={theme.colors.textSecondary}
               style={styles.searchIcon}
+              accessible={false}
             />
             <TextInput
               style={styles.searchInput}
@@ -145,11 +146,13 @@ export default function EventsScreen() {
               placeholderTextColor={theme.colors.textSecondary}
               value={searchQuery}
               onChangeText={setSearchQuery}
+              accessibilityLabel={t("events.a11y.searchEvents")}
+              accessibilityRole="search"
             />
           </View>
 
           {/* View Mode Toggle */}
-          <View style={styles.viewToggle}>
+          <View style={styles.viewToggle} accessibilityRole="tabbar">
             <TouchableOpacity
               style={[
                 styles.viewToggleButton,
@@ -157,6 +160,9 @@ export default function EventsScreen() {
               ]}
               onPress={() => setViewMode("list")}
               activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("events.a11y.listView")}
+              accessibilityState={{ selected: viewMode === "list" }}
             >
               <LayoutGrid
                 size={18}
@@ -174,6 +180,9 @@ export default function EventsScreen() {
               ]}
               onPress={() => setViewMode("map")}
               activeOpacity={0.7}
+              accessibilityRole="tab"
+              accessibilityLabel={t("events.a11y.mapView")}
+              accessibilityState={{ selected: viewMode === "map" }}
             >
               <Map
                 size={18}
@@ -192,8 +201,12 @@ export default function EventsScreen() {
       {viewMode === "map" ? (
         <EventsMap searchQuery={debouncedSearch} />
       ) : loading && events.length === 0 ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+        <View style={styles.loadingContainer} accessibilityRole="none">
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            accessibilityLabel={t("events.a11y.loadingEvents")}
+          />
         </View>
       ) : (
         <FlatList
@@ -205,6 +218,8 @@ export default function EventsScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmpty}
+          accessibilityRole="list"
+          accessibilityLabel={t("events.a11y.eventsList")}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -221,6 +236,8 @@ export default function EventsScreen() {
           style={styles.fab}
           onPress={() => setSuggestModalVisible(true)}
           activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t("events.a11y.suggestEvent")}
         >
           <Plus size={24} color={theme.colors.white} strokeWidth={2.5} />
         </TouchableOpacity>

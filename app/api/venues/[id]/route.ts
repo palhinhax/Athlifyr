@@ -175,8 +175,7 @@ async function fetchCrossVenueSubscriptions(
         }),
       ]);
 
-      (sub as typeof sub & { totalBookingsUsed?: number }).totalBookingsUsed =
-        linked + legacy;
+      Object.assign(sub, { totalBookingsUsed: linked + legacy });
     })
   );
 
@@ -392,12 +391,10 @@ export async function GET(
         venue,
         currentUserId
       );
-      if (!userSubscriptionStatus) {
-        userSubscriptionStatus = await hasActiveSubscription(
-          currentUserId,
-          venue.id
-        );
-      }
+      userSubscriptionStatus ??= await hasActiveSubscription(
+        currentUserId,
+        venue.id
+      );
     }
 
     // Build final response

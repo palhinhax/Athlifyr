@@ -16,7 +16,9 @@
     "analysisMotionTitle": "Bewegungsanalyse",
     "analysisMotionDescription": "Automatische Pose-Analyse mit 3D-Skelettvisualisierung und Gelenkwinkeln.",
     "analysisLiftTitle": "Hebeanalyse",
-    "analysisLiftDescription": "Hantel-Tracking mit Trajektorienanalyse, Geschwindigkeit und Wiederholungserkennung."
+    "analysisLiftDescription": "Hantel-Tracking mit Trajektorienanalyse, Geschwindigkeit und Wiederholungserkennung.",
+    "appStoreAlt": "Laden im App Store",
+    "googlePlayAlt": "Jetzt bei Google Play"
   },
   "promo": {
     "intro": "Athlifyr",

@@ -3,6 +3,7 @@
 const path = require("path");
 const fs = require("fs");
 const http = require("http");
+const https = require("https");
 const url = require("url");
 const { getSentryExpoConfig } = require("@sentry/react-native/metro");
 
@@ -54,7 +55,8 @@ config.server = {
       // Proxy anything starting with /api to the backend
       if (req.url?.startsWith("/api")) {
         const targetUrl = new url.URL(req.url, API_TARGET);
-        const proxyReq = http.request(
+        const requestModule = targetUrl.protocol === "https:" ? https : http;
+        const proxyReq = requestModule.request(
           targetUrl,
           {
             method: req.method,

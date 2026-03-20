@@ -22,8 +22,8 @@ import {
   ClockIcon,
   RulerIcon,
 } from "lucide-react";
-import type { WorkoutLogWithDetails } from "@/types/workout";
 import type {
+  WorkoutLogWithDetails,
   WorkoutBlockResultWithExercises,
   WorkoutExerciseResultWithSets,
 } from "@/types/workout";
@@ -93,9 +93,9 @@ function logHasPRs(blockResults: WorkoutBlockResultWithExercises[]): boolean {
 /** Single exercise-result row — extracted to keep nesting ≤ 4 */
 function ExerciseResultItem({
   exResult,
-}: {
+}: Readonly<{
   exResult: WorkoutExerciseResultWithSets;
-}) {
+}>) {
   const hasData =
     exResult.actualReps ||
     exResult.actualWeight ||

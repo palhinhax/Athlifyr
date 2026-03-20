@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { NextResponse } from "next/server";
 import { GET } from "@/app/api/venues/[id]/purchases/route";
 import { prisma } from "@/lib/prisma";
 
@@ -26,6 +27,13 @@ jest.mock("@/lib/venues/authorization", () => ({
   canManageVenue: (...args: unknown[]) => mockCanManageVenue(...args),
 }));
 
+// Mock stripe-route-helpers (authenticateVenueManager used by GET)
+const mockAuthenticateVenueManager = jest.fn();
+jest.mock("@/lib/venues/stripe-route-helpers", () => ({
+  authenticateVenueManager: (...args: unknown[]) =>
+    mockAuthenticateVenueManager(...args),
+}));
+
 const venueId = "venue-1";
 const userId = "user-1";
 
@@ -40,7 +48,9 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    mockAuth.mockResolvedValue(null);
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
     const res = (await GET(req, makeParams()))!;
@@ -52,8 +62,9 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("returns 403 when not authorized to manage venue", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: false });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    });
 
     const req = new Request(`http://localhost/api/venues/${venueId}/purchases`);
     const res = (await GET(req, makeParams()))!;
@@ -65,8 +76,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("returns all purchases when authorized with no filters", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
 
     const purchases = [
       {
@@ -96,8 +109,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("filters purchases by status", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProductPurchase.findMany as jest.Mock).mockResolvedValue([]);
 
     const req = new Request(
@@ -114,8 +129,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("returns 400 for invalid status parameter", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
 
     const req = new Request(
       `http://localhost/api/venues/${venueId}/purchases?status=INVALID`
@@ -129,8 +146,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("respects limit parameter (capped at 200)", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProductPurchase.findMany as jest.Mock).mockResolvedValue([]);
 
     const req = new Request(
@@ -144,8 +163,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("caps limit at 200", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProductPurchase.findMany as jest.Mock).mockResolvedValue([]);
 
     const req = new Request(
@@ -159,8 +180,10 @@ describe("GET /api/venues/[id]/purchases", () => {
   });
 
   it("returns 500 on database error", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProductPurchase.findMany as jest.Mock).mockRejectedValue(
       new Error("DB error")
     );

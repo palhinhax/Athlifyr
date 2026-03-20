@@ -3,6 +3,7 @@ import * as Crypto from "expo-crypto";
 
 // Read API_URL directly from env to avoid circular dependency with api.ts
 const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:3000";
+const BASE_URL = Platform.OS === "web" ? "/api" : `${API_URL}/api`;
 
 /**
  * Google Cloud project number for Play Integrity.
@@ -74,7 +75,7 @@ async function requestChallenge(): Promise<{
   nonce: string;
   timestamp: number;
 }> {
-  const response = await fetch(`${API_URL}/api/integrity/challenge`, {
+  const response = await fetch(`${BASE_URL}/integrity/challenge`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
   });

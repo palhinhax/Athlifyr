@@ -9,6 +9,7 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Filter, X, Check } from "lucide-react-native";
 import { theme } from "@/src/constants/theme";
 import {
@@ -27,6 +28,7 @@ export function MapSportFilter({
   onSportsChange,
 }: MapSportFilterProps) {
   const { t } = useTranslation();
+  const { bottom } = useSafeAreaInsets();
   const [isOpen, setIsOpen] = useState(false);
   const [localSports, setLocalSports] = useState<string[]>(selectedSports);
 
@@ -81,7 +83,10 @@ export function MapSportFilter({
         onRequestClose={() => setIsOpen(false)}
       >
         <Pressable style={styles.overlay} onPress={() => setIsOpen(false)}>
-          <Pressable style={styles.modal} onPress={() => {}}>
+          <Pressable
+            style={[styles.modal, { paddingBottom: Math.max(bottom, 16) + 16 }]}
+            onPress={() => {}}
+          >
             {/* Header */}
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>
@@ -177,7 +182,7 @@ const styles = StyleSheet.create({
   filterButton: {
     position: "absolute",
     top: 12,
-    right: 12,
+    left: 12,
     zIndex: 1000,
     flexDirection: "row",
     alignItems: "center",
@@ -216,7 +221,6 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: "70%",
-    paddingBottom: 34,
   },
   modalHeader: {
     flexDirection: "row",

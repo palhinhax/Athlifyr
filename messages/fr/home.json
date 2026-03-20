@@ -16,7 +16,9 @@
     "analysisMotionTitle": "Analyse de Mouvement",
     "analysisMotionDescription": "Analyse automatique de pose avec visualisation 3D du squelette et angles articulaires.",
     "analysisLiftTitle": "Analyse de Soulevé",
-    "analysisLiftDescription": "Suivi de barre avec analyse de trajectoire, vitesse et détection de répétitions."
+    "analysisLiftDescription": "Suivi de barre avec analyse de trajectoire, vitesse et détection de répétitions.",
+    "appStoreAlt": "Télécharger dans l'App Store",
+    "googlePlayAlt": "Disponible sur Google Play"
   },
   "promo": {
     "intro": "Athlifyr",

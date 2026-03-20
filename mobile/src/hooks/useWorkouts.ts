@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
 
 // ============================================================================
@@ -128,7 +128,7 @@ async function fetchWorkouts(): Promise<WorkoutItem[]> {
     const params = new URLSearchParams({ limit: "50" });
     if (cursor) params.set("cursor", cursor);
 
-    const response = await fetch(`${API_URL}/api/workouts?${params}`, {
+    const response = await fetch(`${BASE_URL}/workouts?${params}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -151,15 +151,12 @@ async function fetchAssignedPlans(): Promise<AssignedPlan[]> {
   const token = await SecureStore.getItemAsync("auth-token");
   if (!token) return [];
 
-  const response = await fetch(
-    `${API_URL}/api/training-plans?assignedToMe=true`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const response = await fetch(`${BASE_URL}/training-plans?assignedToMe=true`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
   if (!response.ok) return [];
 
@@ -171,7 +168,7 @@ async function fetchWorkoutHistory(): Promise<WorkoutLog[]> {
   const token = await SecureStore.getItemAsync("auth-token");
   if (!token) return [];
 
-  const response = await fetch(`${API_URL}/api/workouts/logs?limit=20`, {
+  const response = await fetch(`${BASE_URL}/workouts/logs?limit=20`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -189,7 +186,7 @@ async function toggleSaveWorkout(workoutId: string): Promise<boolean> {
   if (!token) throw new Error("Not authenticated");
 
   // First check if it's saved by checking current state
-  const response = await fetch(`${API_URL}/api/workouts/${workoutId}/save`, {
+  const response = await fetch(`${BASE_URL}/workouts/${workoutId}/save`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -200,7 +197,7 @@ async function toggleSaveWorkout(workoutId: string): Promise<boolean> {
   if (!response.ok) {
     // If POST fails (already saved), try DELETE
     const deleteResponse = await fetch(
-      `${API_URL}/api/workouts/${workoutId}/save`,
+      `${BASE_URL}/workouts/${workoutId}/save`,
       {
         method: "DELETE",
         headers: {

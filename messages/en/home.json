@@ -16,7 +16,9 @@
     "analysisMotionTitle": "Motion Analysis",
     "analysisMotionDescription": "Automatic pose analysis with 3D skeleton visualization and joint angles.",
     "analysisLiftTitle": "Lift Analysis",
-    "analysisLiftDescription": "Barbell tracking with trajectory analysis, speed and rep detection."
+    "analysisLiftDescription": "Barbell tracking with trajectory analysis, speed and rep detection.",
+    "appStoreAlt": "Download on the App Store",
+    "googlePlayAlt": "Get it on Google Play"
   },
   "promo": {
     "intro": "Athlifyr",

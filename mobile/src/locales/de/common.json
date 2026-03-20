@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Gesamte Teilnehmer bei der Ziehung: {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, teilnehmend",
+      "listView": "Listenansicht",
+      "mapView": "Kartenansicht",
+      "suggestEvent": "Event vorschlagen",
+      "searchEvents": "Events suchen",
+      "eventsList": "Eventliste",
+      "participating": "Dabei",
+      "featured": "Hervorgehobenes Event",
+      "hasGiveaway": "Mit Verlosung",
+      "commentsCount": "{{count}} Kommentare",
+      "variants": "Distanzen: {{variants}}",
+      "loadingEvents": "Events werden geladen"
     }
   },
   "common": {
@@ -481,6 +496,13 @@
     "myVenues": "Meine Center",
     "noVenuesTitle": "Noch Keine Center",
     "noVenuesDescription2": "Du hast noch keine aktiven Center. Erkunde den Orte-Tab, um Trainingscenter zu entdecken.",
+    "mapFilters": {
+      "title": "Filter",
+      "services": "Dienstleistungen",
+      "applyFilters": "Filter anwenden",
+      "clearFilters": "Filter löschen",
+      "venuesCount": "{{count}} Orte"
+    },
     "roles": {
       "owner": "Inhaber",
       "admin": "Administrator",
@@ -557,6 +579,14 @@
       "RECOVERY": "Regeneration",
       "SAUNA": "Sauna",
       "COLD_PLUNGE": "Eisbad",
+      "HYROX": "HYROX",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Olympisches Gewichtheben",
+      "FUNCTIONAL_FITNESS": "Functional Fitness",
+      "OPEN_GYM": "Open Gym",
+      "MASSAGE": "Massage",
+      "KICKBOXING": "Kickboxen",
+      "BJJ": "BJJ",
       "OTHER": "Sonstiges"
     }
   },

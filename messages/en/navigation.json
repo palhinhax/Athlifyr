@@ -29,19 +29,27 @@
     "closeMenu": "Close menu",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
+    "userMenu": "User menu",
     "all": "All",
     "videoAnalysis": "Video Analysis",
     "videoAnalysisDescription": "Choose the type of analysis you want to perform on your video.",
     "motionAnalysis": "Motion Analysis",
     "motionAnalysisDescription": "Automatic pose analysis with 3D skeleton visualization and joint angles.",
     "liftAnalysis": "Lift Analysis",
-    "liftAnalysisDescription": "Barbell tracking with trajectory analysis, speed and rep detection."
+    "liftAnalysisDescription": "Barbell tracking with trajectory analysis, speed and rep detection.",
+    "mainNavigation": "Main navigation",
+    "unreadMessages": "{count, plural, =1 {1 unread message} other {# unread messages}}"
   },
   "footer": {
     "privacy": "Privacy",
     "terms": "Terms",
     "cookies": "Cookies",
     "contact": "Contact",
+    "gymManagement": "Gym Management",
+    "liveRace": "Live Race",
+    "followOnInstagram": "Follow us on Instagram",
+    "downloadIos": "Download on the App Store",
+    "downloadAndroid": "Get it on Google Play",
     "allRightsReserved": "© {year} Athlifyr. All rights reserved."
   },
   "search": {

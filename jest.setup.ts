@@ -1,5 +1,8 @@
 import "@testing-library/jest-dom";
 
+// Set demo user password for tests
+process.env.NEXT_PUBLIC_DEMO_PASSWORD = "Test123!";
+
 // Mock next/navigation
 jest.mock("next/navigation", () => ({
   useRouter() {

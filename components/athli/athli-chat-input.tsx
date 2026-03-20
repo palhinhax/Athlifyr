@@ -70,6 +70,7 @@ export function AthliChatInput({
           disabled={!input.trim() || isLoading}
           size="icon"
           className="h-9 w-9 shrink-0 rounded-xl bg-gradient-to-r from-violet-500 to-purple-600 hover:from-violet-600 hover:to-purple-700"
+          aria-label={t("send")}
         >
           <Send className="h-4 w-4" />
         </Button>

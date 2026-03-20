@@ -16,7 +16,9 @@
     "analysisMotionTitle": "Analisi del Movimento",
     "analysisMotionDescription": "Analisi automatica della posa con visualizzazione 3D dello scheletro e angoli articolari.",
     "analysisLiftTitle": "Analisi di Sollevamento",
-    "analysisLiftDescription": "Tracciamento del bilanciere con analisi della traiettoria, velocità e rilevamento delle ripetizioni."
+    "analysisLiftDescription": "Tracciamento del bilanciere con analisi della traiettoria, velocità e rilevamento delle ripetizioni.",
+    "appStoreAlt": "Scarica su App Store",
+    "googlePlayAlt": "Scarica su Google Play"
   },
   "promo": {
     "intro": "Athlifyr",

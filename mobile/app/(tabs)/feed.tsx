@@ -86,7 +86,6 @@ export default function FeedScreen() {
             colors={[theme.colors.primary]}
           />
         }
-        accessibilityRole="list"
         accessibilityLabel={t("a11y.feedList")}
       />
     </SafeAreaView>

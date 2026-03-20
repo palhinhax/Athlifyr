@@ -532,7 +532,7 @@ export default function SettingsScreen() {
       </View>
 
       {/* Tab Selector */}
-      <View style={styles.tabBar} accessibilityRole="tabbar">
+      <View style={styles.tabBar} accessibilityRole="tablist">
         <TabButton
           tab="profile"
           activeTab={activeTab}

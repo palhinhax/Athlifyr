@@ -42,6 +42,56 @@ export default async function AccessibilityPage({
     day: "numeric",
   });
 
+  const webItems = [
+    "language",
+    "skipLink",
+    "semanticHtml",
+    "headingHierarchy",
+    "imageAlt",
+    "screenReader",
+    "modals",
+    "tabs",
+    "cookieConsent",
+    "notifications",
+    "ariaLabels",
+    "darkMode",
+  ] as const;
+
+  const mobileItems = [
+    "eventCards",
+    "searchInput",
+    "viewToggle",
+    "loadingIndicators",
+    "translations",
+    "touchTargets",
+  ] as const;
+
+  const testingItems = [
+    "automated",
+    "keyboard",
+    "screenReaders",
+    "codeReview",
+    "wcag",
+  ] as const;
+
+  const limitationItems = [
+    "maps",
+    "colorContrast",
+    "formErrors",
+    "loadingStates",
+    "mobileLabels",
+    "textScaling",
+    "thirdParty",
+  ] as const;
+
+  const renderItems = (prefix: string, keys: readonly string[]) => (
+    <ul>
+      {keys.map((key) => (
+        <li key={key}>{t(`${prefix}.${key}`)}</li>
+      ))}
+    </ul>
+  );
+
   return (
     <PageContainer size="lg" maxWidth="max-w-4xl">
       <Button asChild variant="ghost" className="mb-6">
@@ -65,54 +115,20 @@ export default async function AccessibilityPage({
         <h2>{t("currentSupport.title")}</h2>
 
         <h3>{t("currentSupport.web.title")}</h3>
-        <ul>
-          <li>{t("currentSupport.web.items.language")}</li>
-          <li>{t("currentSupport.web.items.skipLink")}</li>
-          <li>{t("currentSupport.web.items.semanticHtml")}</li>
-          <li>{t("currentSupport.web.items.headingHierarchy")}</li>
-          <li>{t("currentSupport.web.items.imageAlt")}</li>
-          <li>{t("currentSupport.web.items.screenReader")}</li>
-          <li>{t("currentSupport.web.items.modals")}</li>
-          <li>{t("currentSupport.web.items.tabs")}</li>
-          <li>{t("currentSupport.web.items.cookieConsent")}</li>
-          <li>{t("currentSupport.web.items.notifications")}</li>
-          <li>{t("currentSupport.web.items.ariaLabels")}</li>
-          <li>{t("currentSupport.web.items.darkMode")}</li>
-        </ul>
+        {renderItems("currentSupport.web.items", webItems)}
 
         <h3>{t("currentSupport.mobile.title")}</h3>
-        <ul>
-          <li>{t("currentSupport.mobile.items.eventCards")}</li>
-          <li>{t("currentSupport.mobile.items.searchInput")}</li>
-          <li>{t("currentSupport.mobile.items.viewToggle")}</li>
-          <li>{t("currentSupport.mobile.items.loadingIndicators")}</li>
-          <li>{t("currentSupport.mobile.items.translations")}</li>
-          <li>{t("currentSupport.mobile.items.touchTargets")}</li>
-        </ul>
+        {renderItems("currentSupport.mobile.items", mobileItems)}
 
         {/* Testing Methods */}
         <h2>{t("testing.title")}</h2>
         <p>{t("testing.content")}</p>
-        <ul>
-          <li>{t("testing.items.automated")}</li>
-          <li>{t("testing.items.keyboard")}</li>
-          <li>{t("testing.items.screenReaders")}</li>
-          <li>{t("testing.items.codeReview")}</li>
-          <li>{t("testing.items.wcag")}</li>
-        </ul>
+        {renderItems("testing.items", testingItems)}
 
         {/* Known Limitations */}
         <h2>{t("limitations.title")}</h2>
         <p>{t("limitations.content")}</p>
-        <ul>
-          <li>{t("limitations.items.maps")}</li>
-          <li>{t("limitations.items.colorContrast")}</li>
-          <li>{t("limitations.items.formErrors")}</li>
-          <li>{t("limitations.items.loadingStates")}</li>
-          <li>{t("limitations.items.mobileLabels")}</li>
-          <li>{t("limitations.items.textScaling")}</li>
-          <li>{t("limitations.items.thirdParty")}</li>
-        </ul>
+        {renderItems("limitations.items", limitationItems)}
 
         {/* Contact */}
         <h2>{t("contact.title")}</h2>

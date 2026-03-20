@@ -90,6 +90,7 @@ export function AthliFloatingChat() {
                     size="icon"
                     className="h-8 w-8 text-white hover:bg-white/20"
                     onClick={() => setShowHistory(false)}
+                    aria-label={t("backToChat")}
                   >
                     <ChevronLeft className="h-4 w-4" />
                   </Button>
@@ -99,7 +100,7 @@ export function AthliFloatingChat() {
                   </div>
                 )}
                 <div>
-                  <h3 className="font-semibold">Athli</h3>
+                  <p className="font-semibold">Athli</p>
                   <p className="text-xs text-white/80">{t("subtitle")}</p>
                 </div>
               </div>
@@ -120,6 +121,7 @@ export function AthliFloatingChat() {
                   size="icon"
                   className="h-8 w-8 text-white hover:bg-white/20"
                   onClick={handleClose}
+                  aria-label={t("close")}
                 >
                   <X className="h-4 w-4" />
                 </Button>

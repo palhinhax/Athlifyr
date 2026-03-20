@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
 
 // ============================================================================
@@ -64,7 +64,7 @@ async function fetchProfile(userId: string): Promise<ProfileData> {
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_URL}/api/users/${userId}`, { headers });
+  const response = await fetch(`${BASE_URL}/users/${userId}`, { headers });
 
   if (!response.ok) {
     throw new Error("Failed to fetch profile");

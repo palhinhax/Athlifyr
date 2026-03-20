@@ -26,19 +26,24 @@ export function UserNav() {
 
   if (!session) {
     return (
-      <Link href="/auth/signin">
-        <Button variant="ghost" size="sm" className="gap-2">
+      <Button variant="ghost" size="sm" className="gap-2" asChild>
+        <Link href="/auth/signin">
           <LogIn className="h-4 w-4" />
           {t("signIn")}
-        </Button>
-      </Link>
+        </Link>
+      </Button>
     );
   }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label={t("userMenu")}
+        >
           {session.user.image ? (
             <Image
               src={session.user.image}

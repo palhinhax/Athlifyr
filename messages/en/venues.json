@@ -3,6 +3,7 @@
     "title": "Venues",
     "description": "Find gyms, boxes, and training centers",
     "list": "All Venues",
+    "venuesListHeading": "Venues listing",
     "myVenues": "My Venues",
     "viewAll": "View All",
     "viewVenue": "View Venue",

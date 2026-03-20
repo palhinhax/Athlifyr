@@ -29,19 +29,27 @@
     "closeMenu": "Menü schließen",
     "collapseSidebar": "Seitenleiste einklappen",
     "expandSidebar": "Seitenleiste ausklappen",
+    "userMenu": "Benutzermenü",
     "all": "Alle",
     "videoAnalysis": "Videoanalyse",
     "videoAnalysisDescription": "Wählen Sie die Art der Analyse, die Sie an Ihrem Video durchführen möchten.",
     "motionAnalysis": "Bewegungsanalyse",
     "motionAnalysisDescription": "Automatische Pose-Analyse mit 3D-Skelettvisualisierung und Gelenkwinkeln.",
     "liftAnalysis": "Hebeanalyse",
-    "liftAnalysisDescription": "Hantel-Tracking mit Trajektorienanalyse, Geschwindigkeit und Wiederholungserkennung."
+    "liftAnalysisDescription": "Hantel-Tracking mit Trajektorienanalyse, Geschwindigkeit und Wiederholungserkennung.",
+    "mainNavigation": "Hauptnavigation",
+    "unreadMessages": "{count, plural, =1 {1 ungelesene Nachricht} other {# ungelesene Nachrichten}}"
   },
   "footer": {
     "privacy": "Datenschutz",
     "terms": "Bedingungen",
     "cookies": "Cookies",
     "contact": "Kontakt",
+    "gymManagement": "Fitnessstudio-Verwaltung",
+    "liveRace": "Live Race",
+    "followOnInstagram": "Folge uns auf Instagram",
+    "downloadIos": "Im App Store herunterladen",
+    "downloadAndroid": "Bei Google Play herunterladen",
     "allRightsReserved": "© {year} Athlifyr. Alle Rechte vorbehalten."
   },
   "search": {

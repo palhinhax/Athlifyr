@@ -86,7 +86,12 @@ export function TimerHeader({
               <EyeOffIcon className="h-5 w-5" />
             )}
           </Button>
-          <Button variant="ghost" size="icon" onClick={onToggleFullscreen}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onToggleFullscreen}
+            aria-label={t("runner.exitFullscreen")}
+          >
             <ShrinkIcon className="h-5 w-5" />
           </Button>
         </div>
@@ -100,7 +105,10 @@ export function TimerHeader({
       {/* Row 1 (mobile) / Left side (desktop): back + title */}
       <div className="flex min-w-0 items-center gap-3">
         <Button variant="ghost" size="icon" className="shrink-0" asChild>
-          <Link href={returnTo || "/workouts"}>
+          <Link
+            href={returnTo || "/workouts"}
+            aria-label={t("runner.backToWorkouts")}
+          >
             <ArrowLeftIcon className="h-5 w-5" />
           </Link>
         </Button>
@@ -142,10 +150,20 @@ export function TimerHeader({
           size="icon"
           onClick={onToggleSettings}
           disabled={hasStarted}
+          aria-label={t("runner.settings")}
         >
           <SettingsIcon className="h-5 w-5" />
         </Button>
-        <Button variant="ghost" size="icon" onClick={onToggleFullscreen}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onToggleFullscreen}
+          aria-label={
+            isFullscreen
+              ? t("runner.exitFullscreen")
+              : t("runner.enterFullscreen")
+          }
+        >
           {isFullscreen ? (
             <ShrinkIcon className="h-5 w-5" />
           ) : (

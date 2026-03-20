@@ -11,7 +11,7 @@
  */
 
 import type { BarPathPoint } from "@/src/types/lift-analysis";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
 import * as VideoThumbnails from "expo-video-thumbnails";
 
@@ -113,7 +113,7 @@ export async function checkApiHealth(): Promise<boolean> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 5_000);
 
-    const res = await fetch(`${API_URL}/api/lift-analysis/process-b2`, {
+    const res = await fetch(`${BASE_URL}/lift-analysis/process-b2`, {
       method: "OPTIONS",
       signal: controller.signal,
     });
@@ -188,7 +188,7 @@ export async function detectDisc(
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 10_000);
 
-    const res = await fetch(`${API_URL}/api/lift-analysis/debug-detect`, {
+    const res = await fetch(`${BASE_URL}/lift-analysis/debug-detect`, {
       method: "POST",
       headers: {
         ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
@@ -236,7 +236,7 @@ async function uploadVideoToB2(
   // Step 1: Get presigned URL
   onProgress?.({ current: 5, total: 100, step: "uploading" });
 
-  const presignRes = await fetch(`${API_URL}/api/uploads/presign`, {
+  const presignRes = await fetch(`${BASE_URL}/uploads/presign`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -394,7 +394,7 @@ export async function trackBarbell(
   try {
     const authToken = await SecureStore.getItemAsync("auth-token");
 
-    response = await fetch(`${API_URL}/api/lift-analysis/process-b2`, {
+    response = await fetch(`${BASE_URL}/lift-analysis/process-b2`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

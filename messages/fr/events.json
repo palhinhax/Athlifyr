@@ -38,6 +38,7 @@
     "allEvents": "Tous les Événements",
     "noEvents": "Aucun événement trouvé",
     "noEventsDescription": "Essayez d'ajuster les filtres ou revenez plus tard.",
+    "eventsListHeading": "Liste des événements",
     "loadingMore": "Chargement de plus d'événements...",
     "allEventsLoaded": "Tous les événements chargés",
     "details": "Détails de l'Événement",

@@ -448,7 +448,10 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
           </div>
         </div>
 
-        <div className="mt-8">{renderMainContent()}</div>
+        <div className="mt-8">
+          <h2 className="sr-only">{t("eventsListHeading")}</h2>
+          {renderMainContent()}
+        </div>
       </section>
 
       <SuggestEventDialog

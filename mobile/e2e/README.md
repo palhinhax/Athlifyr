@@ -7,6 +7,7 @@ This directory is reserved for future End-to-End tests using [Detox](https://wix
 When ready to implement E2E tests:
 
 1. Install Detox:
+
    ```bash
    npm install -D detox @types/detox
    ```

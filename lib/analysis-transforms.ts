@@ -1,4 +1,7 @@
 import { NextResponse } from "next/server";
+import { transcodeToH264, trimVideoStreamCopy } from "@/lib/ffmpeg-utils";
+import { auth } from "@/lib/auth";
+import { checkAiRateLimit } from "@/lib/ai-rate-limit";
 
 // ── External API types (Railway barbell-path-tracker) ─────────────────────
 
@@ -281,4 +284,114 @@ export function buildTranscodeErrorResponse(
     },
     { status: 400 }
   );
+}
+
+// ── Shared video processing helpers ──────────────────────────────────────
+
+/**
+ * Trim and/or transcode a video file. Returns the processed File or a
+ * NextResponse error.
+ *
+ * @param tag - Log prefix, e.g. "LiftAnalysis" or "MotionAnalysis"
+ */
+export async function trimAndTranscodeVideo(
+  videoFile: File,
+  formData: FormData,
+  tag: string
+): Promise<NextResponse | File> {
+  let finalVideoFile: File = videoFile;
+  const baseType = videoFile.type.split(";")[0].trim();
+
+  const trimStartRaw = formData.get("trim_start_sec");
+  const trimEndRaw = formData.get("trim_end_sec");
+  const trimStartSec = trimStartRaw ? Number(trimStartRaw) : null;
+  const trimEndSec = trimEndRaw ? Number(trimEndRaw) : null;
+
+  let didTrim = false;
+
+  if (
+    trimStartSec !== null &&
+    trimEndSec !== null &&
+    Number.isFinite(trimStartSec) &&
+    Number.isFinite(trimEndSec) &&
+    trimEndSec > trimStartSec
+  ) {
+    try {
+      const ext = getVideoExtension(baseType);
+      console.log(
+        `[${tag}] Trimming video: ${trimStartSec.toFixed(2)}s–${trimEndSec.toFixed(2)}s`
+      );
+      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+      const trimmedBuffer = await trimVideoStreamCopy(
+        inputBuffer,
+        trimStartSec,
+        trimEndSec,
+        ext
+      );
+      finalVideoFile = new File(
+        [new Uint8Array(trimmedBuffer)],
+        finalVideoFile.name.replace(/\.[^.]+$/, ".mp4"),
+        { type: "video/mp4" }
+      );
+      didTrim = true;
+      console.log(
+        `[${tag}] Trimmed ${inputBuffer.length} → ${trimmedBuffer.length} bytes (H.264 MP4)`
+      );
+    } catch (err) {
+      console.error(`[${tag}] Trim failed:`, err);
+    }
+  }
+
+  if (!didTrim && baseType === "video/webm") {
+    try {
+      console.log(`[${tag}] WebM detected — transcoding to H.264 MP4...`);
+      const inputBuffer = Buffer.from(await finalVideoFile.arrayBuffer());
+      const mp4Buffer = await transcodeToH264(inputBuffer);
+      finalVideoFile = new File(
+        [new Uint8Array(mp4Buffer)],
+        videoFile.name.replace(/\.[^.]+$/, ".mp4"),
+        { type: "video/mp4" }
+      );
+      console.log(
+        `[${tag}] Transcoded ${inputBuffer.length} → ${mp4Buffer.length} bytes`
+      );
+    } catch (err) {
+      return buildTranscodeErrorResponse(err, tag);
+    }
+  }
+
+  return finalVideoFile;
+}
+
+/**
+ * Check AI rate limiting and append enable_ai to the external form data if
+ * allowed.
+ *
+ * @param tag - Log prefix, e.g. "LiftAnalysis" or "MotionAnalysis"
+ */
+export async function resolveAiPermission(
+  formData: FormData,
+  externalFormData: FormData,
+  tag: string
+): Promise<boolean> {
+  const enableAi = formData.get("enable_ai");
+  if (typeof enableAi !== "string" || enableAi !== "true") return false;
+
+  const session = await auth();
+  if (!session?.user?.id) {
+    console.log(`[${tag}] AI requested but user not authenticated`);
+    return false;
+  }
+
+  const rateCheck = await checkAiRateLimit(session.user.id);
+  if (!rateCheck.allowed) {
+    console.log(
+      `[${tag}] AI rate-limited for user ${session.user.id} — next available at ${rateCheck.nextAvailableAt?.toISOString()}`
+    );
+    return false;
+  }
+
+  externalFormData.append("enable_ai", "true");
+  console.log(`[${tag}] AI enabled for user ${session.user.id}`);
+  return true;
 }

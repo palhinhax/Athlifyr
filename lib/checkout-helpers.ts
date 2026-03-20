@@ -7,6 +7,8 @@ import type { AuthenticatedUser } from "@/lib/auth-helpers";
 
 // ── Types ───────────────────────────────────────────────────────────────────
 
+type SupportedCurrency = "EUR" | "USD" | "GBP";
+
 interface PricingPhase {
   id: string;
   startDate: Date | null;
@@ -219,7 +221,7 @@ export async function handleFreeRegistration(
 ): Promise<NextResponse> {
   const isTeam = teamMembers && teamMembers.length > 0;
   const teamGroupId = isTeam ? crypto.randomUUID() : undefined;
-  const currency = activePhase.currency as "EUR" | "USD" | "GBP";
+  const currency = activePhase.currency as SupportedCurrency;
 
   const freeReg = await prisma.registration.upsert({
     where: {
@@ -250,18 +252,19 @@ export async function handleFreeRegistration(
     },
   });
 
-  const memberIds = isTeam
-    ? await createTeamMemberRegistrations(
-        user.id,
-        event.id,
-        variant.id,
-        teamGroupId!,
-        currency,
-        "CONFIRMED",
-        null,
-        teamMembers!
-      )
-    : [];
+  const memberIds =
+    isTeam && teamMembers
+      ? await createTeamMemberRegistrations({
+          userId: user.id,
+          eventId: event.id,
+          variantId: variant.id,
+          teamGroupId: teamGroupId!,
+          currency,
+          status: "CONFIRMED",
+          stripeCheckoutSessionId: null,
+          teamMembers,
+        })
+      : [];
 
   await assignBibNumbers(event.id, [freeReg.id, ...memberIds]);
 
@@ -397,7 +400,7 @@ export async function createStripeCheckoutAndRegistration(
   if (variant) {
     const isTeam = teamMembers && teamMembers.length > 0;
     const teamGroupId = isTeam ? crypto.randomUUID() : undefined;
-    const currency = activePhase.currency as "EUR" | "USD" | "GBP";
+    const currency = activePhase.currency as SupportedCurrency;
 
     const reg = await prisma.registration.upsert({
       where: {
@@ -441,16 +444,16 @@ export async function createStripeCheckoutAndRegistration(
         },
       });
 
-      await createTeamMemberRegistrations(
-        user.id,
-        event.id,
-        variant.id,
-        teamGroupId!,
+      await createTeamMemberRegistrations({
+        userId: user.id,
+        eventId: event.id,
+        variantId: variant.id,
+        teamGroupId: teamGroupId!,
         currency,
-        "PENDING",
-        session.id,
-        teamMembers
-      );
+        status: "PENDING",
+        stripeCheckoutSessionId: session.id,
+        teamMembers,
+      });
     }
   }
 
@@ -463,16 +466,30 @@ export async function createStripeCheckoutAndRegistration(
 
 // ── Team member helper ──────────────────────────────────────────────────────
 
+interface TeamRegistrationParams {
+  userId: string;
+  eventId: string;
+  variantId: string;
+  teamGroupId: string;
+  currency: SupportedCurrency;
+  status: "CONFIRMED" | "PENDING";
+  stripeCheckoutSessionId: string | null;
+  teamMembers: TeamMember[];
+}
+
 async function createTeamMemberRegistrations(
-  userId: string,
-  eventId: string,
-  variantId: string,
-  teamGroupId: string,
-  currency: "EUR" | "USD" | "GBP",
-  status: "CONFIRMED" | "PENDING",
-  stripeCheckoutSessionId: string | null,
-  teamMembers: TeamMember[]
+  params: TeamRegistrationParams
 ): Promise<string[]> {
+  const {
+    userId,
+    eventId,
+    variantId,
+    teamGroupId,
+    currency,
+    status,
+    stripeCheckoutSessionId,
+    teamMembers,
+  } = params;
   const memberIds: string[] = [];
 
   for (let i = 0; i < teamMembers.length; i++) {

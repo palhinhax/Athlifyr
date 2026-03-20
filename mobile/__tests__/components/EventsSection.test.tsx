@@ -29,9 +29,7 @@ describe("EventsSection", () => {
   it("renders upcoming events section header", () => {
     render(<EventsSection upcomingEvents={[]} pastEvents={[]} />);
 
-    expect(
-      screen.getByText("profile.upcomingEventsCount")
-    ).toBeTruthy();
+    expect(screen.getByText("profile.upcomingEventsCount")).toBeTruthy();
   });
 
   it("renders past events section header", () => {
@@ -53,9 +51,7 @@ describe("EventsSection", () => {
     render(<EventsSection upcomingEvents={[]} pastEvents={[]} />);
 
     expect(screen.getByText("profile.noPastEvents")).toBeTruthy();
-    expect(
-      screen.getByText("profile.noPastEventsDescription")
-    ).toBeTruthy();
+    expect(screen.getByText("profile.noPastEventsDescription")).toBeTruthy();
   });
 
   it("renders upcoming event cards", () => {
@@ -90,7 +86,13 @@ describe("EventsSection", () => {
 
   it("renders event variant when provided", () => {
     const upcoming = [
-      makeParticipation("1", "Trail Event", "2027-02-01", "Pombal", "Trail 32km"),
+      makeParticipation(
+        "1",
+        "Trail Event",
+        "2027-02-01",
+        "Pombal",
+        "Trail 32km"
+      ),
     ];
 
     render(<EventsSection upcomingEvents={upcoming} pastEvents={[]} />);

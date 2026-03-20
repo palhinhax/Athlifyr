@@ -137,10 +137,7 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
                   <Text style={styles.pickerButtonText}>
                     {getCategoryLabel(category)}
                   </Text>
-                  <ChevronDown
-                    size={20}
-                    color={theme.colors.textSecondary}
-                  />
+                  <ChevronDown size={20} color={theme.colors.textSecondary} />
                 </TouchableOpacity>
 
                 {showCategoryPicker && (
@@ -154,8 +151,7 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
                           key={cat.value}
                           style={[
                             styles.categoryItem,
-                            category === cat.value &&
-                              styles.categoryItemActive,
+                            category === cat.value && styles.categoryItemActive,
                           ]}
                           onPress={() => {
                             setCategory(cat.value);
@@ -237,19 +233,13 @@ export function AddHyroxSheet({ visible, onClose }: AddHyroxSheetProps) {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.saveBtn,
-                  isCreating && styles.saveBtnDisabled,
-                ]}
+                style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
                 onPress={handleSave}
                 disabled={isCreating}
                 activeOpacity={0.7}
               >
                 {isCreating ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.white}
-                  />
+                  <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
                   <Text style={styles.saveBtnText}>
                     {t("performance.save")}

@@ -27,6 +27,9 @@ jest.mock("@/i18n/routing", () => ({
 }));
 
 jest.mock("lucide-react", () => ({
+  Calendar: () => <span data-testid="calendar-icon" />,
+  Trophy: () => <span data-testid="trophy-icon" />,
+  Users: () => <span data-testid="users-icon" />,
   Coins: () => <span data-testid="coins-icon" />,
 }));
 

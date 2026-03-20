@@ -196,13 +196,13 @@ export default function AdminVenuesPage() {
   };
 
   const generateSlug = (name: string) => {
-    return name
+    const normalized = name
       .toLowerCase()
       .normalize("NFD")
       .replaceAll(/[\u0300-\u036f]/g, "")
-      .replaceAll(/[^a-z0-9]+/g, "-")
-      .replace(/^-+/, "")
-      .replace(/-+$/, "");
+      .replaceAll(/[^a-z0-9]/g, "-");
+    // Collapse consecutive dashes and trim edges without regex quantifiers
+    return normalized.split("-").filter(Boolean).join("-");
   };
 
   const handleNameChange = (value: string) => {

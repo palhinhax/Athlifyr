@@ -235,6 +235,85 @@
           "noSell": "No vendemos datos de cookies"
         }
       }
+    },
+    "accessibility": {
+      "title": "Accesibilidad",
+      "metaTitle": "Accesibilidad | Athlifyr",
+      "metaDescription": "Conoce el compromiso de accesibilidad de Athlifyr, el soporte actual, limitaciones conocidas y cómo reportar problemas de accesibilidad.",
+      "lastUpdated": "Última actualización: {date}",
+      "intro": {
+        "title": "Nuestro Compromiso",
+        "content": "En Athlifyr, creemos que el deporte es para todos. Estamos comprometidos a mejorar continuamente la accesibilidad de nuestras plataformas para que todos los usuarios, independientemente de sus capacidades, puedan descubrir, participar y disfrutar de eventos deportivos y entrenamientos."
+      },
+      "currentSupport": {
+        "title": "Soporte de Accesibilidad Actual",
+        "web": {
+          "title": "Web",
+          "items": {
+            "language": "Idioma de la página correctamente declarado para los 6 idiomas soportados",
+            "skipLink": "Enlace para saltar al contenido principal para usuarios de teclado",
+            "semanticHtml": "Estructura HTML semántica con marcadores adecuados (encabezado, contenido principal, pie de página, navegación)",
+            "headingHierarchy": "Jerarquía lógica de encabezados en todas las páginas",
+            "imageAlt": "Texto alternativo significativo en imágenes de contenido",
+            "screenReader": "Soporte para lectores de pantalla con etiquetas ocultas y atributos ARIA descriptivos",
+            "modals": "Diálogos accesibles con gestión de foco y soporte de teclado",
+            "tabs": "Componentes de pestañas con roles ARIA adecuados y navegación por teclado",
+            "cookieConsent": "Banner de consentimiento de cookies accesible con botones etiquetados",
+            "notifications": "Notificaciones toast anunciadas a lectores de pantalla",
+            "ariaLabels": "Etiquetas accesibles en botones de solo icono",
+            "darkMode": "Modo oscuro disponible para reducir la fatiga visual"
+          }
+        },
+        "mobile": {
+          "title": "Móvil (iOS y Android)",
+          "items": {
+            "eventCards": "Tarjetas de eventos con etiquetas de accesibilidad descriptivas incluyendo título, fecha y ubicación",
+            "searchInput": "Campo de búsqueda accesible con rol y etiqueta adecuados",
+            "viewToggle": "Alternancia entre lista/mapa con estado seleccionado anunciado a lectores de pantalla",
+            "loadingIndicators": "Indicadores de carga con etiquetas descriptivas",
+            "translations": "Etiquetas de accesibilidad traducidas en todos los idiomas soportados",
+            "touchTargets": "Expansión del área de toque en elementos interactivos"
+          }
+        }
+      },
+      "testing": {
+        "title": "Cómo Probamos la Accesibilidad",
+        "content": "Utilizamos una combinación de métodos para evaluar y mejorar la accesibilidad:",
+        "items": {
+          "automated": "Herramientas automatizadas como AccessMonitor y SonarQube para detectar violaciones WCAG",
+          "keyboard": "Pruebas manuales de navegación por teclado en todos los flujos principales",
+          "screenReaders": "Pruebas con lectores de pantalla usando VoiceOver (macOS/iOS)",
+          "codeReview": "Revisión a nivel de código de atributos ARIA, HTML semántico y estructura de encabezados",
+          "wcag": "Evaluación según las directrices WCAG 2.1 Nivel AA"
+        }
+      },
+      "limitations": {
+        "title": "Limitaciones Conocidas",
+        "content": "Somos transparentes sobre las áreas donde la accesibilidad puede ser aún limitada:",
+        "items": {
+          "maps": "Los mapas interactivos (Mapbox) tienen soporte limitado para lectores de pantalla y teclado. Estamos explorando alternativas basadas en texto.",
+          "colorContrast": "El contraste de colores aún no se ha verificado completamente en todos los componentes. Estamos auditando y corrigiendo progresivamente.",
+          "formErrors": "Algunos mensajes de error de formularios aún no están programáticamente vinculados a sus campos.",
+          "loadingStates": "Algunos estados de carga no son anunciados a lectores de pantalla.",
+          "mobileLabels": "Algunas pantallas y elementos interactivos en la aplicación móvil aún no tienen etiquetas de accesibilidad.",
+          "textScaling": "El escalado dinámico de texto en la aplicación móvil aún no es totalmente compatible.",
+          "thirdParty": "El contenido incrustado de terceros (mapas, analítica) puede no cumplir totalmente los estándares de accesibilidad."
+        }
+      },
+      "contact": {
+        "title": "Reportar un Problema de Accesibilidad",
+        "content": "Si encuentras una barrera de accesibilidad o tienes sugerencias de mejora, contáctanos:",
+        "email": "hello@athlifyr.com",
+        "subject": "Problema de Accesibilidad",
+        "emailLabel": "Envíanos un correo a {email}",
+        "subjectHint": "Asunto sugerido: \"{subject}\"",
+        "responseTime": "Procuramos responder en un plazo de 5 días laborables."
+      },
+      "standards": {
+        "title": "Normas que Seguimos",
+        "content": "Procuramos seguir las Directrices de Accesibilidad para el Contenido Web (WCAG) 2.1 Nivel AA cuando sea aplicable. Estamos trabajando continuamente para mejorar el cumplimiento en todas las plataformas.",
+        "note": "Athlifyr no reclama conformidad total con las WCAG 2.1. Estamos trabajando activamente para identificar y resolver las brechas de accesibilidad."
+      }
     }
   }
 }

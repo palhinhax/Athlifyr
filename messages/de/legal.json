@@ -235,6 +235,85 @@
           "noSell": "Wir verkaufen keine Cookie-Daten"
         }
       }
+    },
+    "accessibility": {
+      "title": "Barrierefreiheit",
+      "metaTitle": "Barrierefreiheit | Athlifyr",
+      "metaDescription": "Erfahren Sie mehr \u00fcber das Engagement von Athlifyr f\u00fcr Barrierefreiheit, aktuelle Unterst\u00fctzung, bekannte Einschr\u00e4nkungen und wie Sie Probleme melden k\u00f6nnen.",
+      "lastUpdated": "Letzte Aktualisierung: {date}",
+      "intro": {
+        "title": "Unser Engagement",
+        "content": "Bei Athlifyr glauben wir, dass Sport f\u00fcr alle ist. Wir sind bestrebt, die Barrierefreiheit unserer Plattformen kontinuierlich zu verbessern, damit alle Nutzer, unabh\u00e4ngig von ihren F\u00e4higkeiten, Sportveranstaltungen und Training entdecken, daran teilnehmen und genie\u00dfen k\u00f6nnen."
+      },
+      "currentSupport": {
+        "title": "Aktuelle Barrierefreiheit",
+        "web": {
+          "title": "Web",
+          "items": {
+            "language": "Seitensprache korrekt deklariert f\u00fcr alle 6 unterst\u00fctzten Sprachen",
+            "skipLink": "Link zum Hauptinhalt f\u00fcr Tastaturnutzer",
+            "semanticHtml": "Semantische HTML-Struktur mit geeigneten Landmarken (Kopfzeile, Hauptinhalt, Fu\u00dfzeile, Navigation)",
+            "headingHierarchy": "Logische \u00dcberschriftenhierarchie auf allen Seiten",
+            "imageAlt": "Aussagekr\u00e4ftiger Alternativtext bei Inhaltsbildern",
+            "screenReader": "Screenreader-Unterst\u00fctzung mit versteckten Labels und beschreibenden ARIA-Attributen",
+            "modals": "Barrierefreie Dialoge mit Fokus-Verwaltung und Tastaturunterst\u00fctzung",
+            "tabs": "Tab-Komponenten mit korrekten ARIA-Rollen und Tastaturnavigation",
+            "cookieConsent": "Barrierefreies Cookie-Zustimmungsbanner mit beschrifteten Schaltfl\u00e4chen",
+            "notifications": "Toast-Benachrichtigungen werden an Screenreader angek\u00fcndigt",
+            "ariaLabels": "Barrierefreie Labels an Nur-Icon-Schaltfl\u00e4chen",
+            "darkMode": "Dunkelmodus verf\u00fcgbar zur Reduzierung der Augenbelastung"
+          }
+        },
+        "mobile": {
+          "title": "Mobil (iOS und Android)",
+          "items": {
+            "eventCards": "Veranstaltungskarten mit beschreibenden Barrierefreiheits-Labels einschlie\u00dflich Titel, Datum und Ort",
+            "searchInput": "Barrierefreies Suchfeld mit korrekter Rolle und Label",
+            "viewToggle": "Listen-/Kartenansicht-Umschalter mit Auswahlstatus wird an Screenreader angek\u00fcndigt",
+            "loadingIndicators": "Ladeanzeigen mit beschreibenden Labels",
+            "translations": "Barrierefreiheits-Labels in allen unterst\u00fctzten Sprachen \u00fcbersetzt",
+            "touchTargets": "Erweiterung des Ber\u00fchrungsbereichs bei interaktiven Elementen"
+          }
+        }
+      },
+      "testing": {
+        "title": "Wie Wir Barrierefreiheit Testen",
+        "content": "Wir verwenden eine Kombination von Methoden zur Bewertung und Verbesserung der Barrierefreiheit:",
+        "items": {
+          "automated": "Automatisierte Tools wie AccessMonitor und SonarQube zur Erkennung von WCAG-Verst\u00f6\u00dfen",
+          "keyboard": "Manuelle Tastaturnavigationstests in allen Hauptabl\u00e4ufen",
+          "screenReaders": "Screenreader-Tests mit VoiceOver (macOS/iOS)",
+          "codeReview": "Code-\u00dcberpr\u00fcfung von ARIA-Attributen, semantischem HTML und \u00dcberschriftenstruktur",
+          "wcag": "Bewertung gem\u00e4\u00df WCAG 2.1 Level AA Richtlinien"
+        }
+      },
+      "limitations": {
+        "title": "Bekannte Einschr\u00e4nkungen",
+        "content": "Wir sind transparent \u00fcber Bereiche, in denen die Barrierefreiheit noch eingeschr\u00e4nkt sein kann:",
+        "items": {
+          "maps": "Interaktive Karten (Mapbox) haben eingeschr\u00e4nkte Screenreader- und Tastaturunterst\u00fctzung. Wir pr\u00fcfen textbasierte Alternativen.",
+          "colorContrast": "Der Farbkontrast wurde noch nicht vollst\u00e4ndig \u00fcber alle Komponenten verifiziert. Wir \u00fcberpr\u00fcfen und korrigieren schrittweise.",
+          "formErrors": "Einige Formular-Fehlermeldungen sind noch nicht programmatisch mit ihren Eingabefeldern verkn\u00fcpft.",
+          "loadingStates": "Einige Ladezust\u00e4nde werden nicht an Screenreader angek\u00fcndigt.",
+          "mobileLabels": "Einige Bildschirme und interaktive Elemente in der mobilen App haben noch keine Barrierefreiheits-Labels.",
+          "textScaling": "Dynamische Textskalierung auf Mobilger\u00e4ten wird noch nicht vollst\u00e4ndig unterst\u00fctzt.",
+          "thirdParty": "Eingebettete Drittanbieterinhalte (Karten, Analysen) entsprechen m\u00f6glicherweise nicht vollst\u00e4ndig den Barrierefreiheitsstandards."
+        }
+      },
+      "contact": {
+        "title": "Ein Barrierefreiheitsproblem Melden",
+        "content": "Wenn Sie auf eine Barriere sto\u00dfen oder Verbesserungsvorschl\u00e4ge haben, kontaktieren Sie uns:",
+        "email": "hello@athlifyr.com",
+        "subject": "Barrierefreiheitsproblem",
+        "emailLabel": "Senden Sie uns eine E-Mail an {email}",
+        "subjectHint": "Vorgeschlagener Betreff: \"{subject}\"",
+        "responseTime": "Wir bem\u00fchen uns, innerhalb von 5 Werktagen zu antworten."
+      },
+      "standards": {
+        "title": "Standards, die Wir Befolgen",
+        "content": "Wir streben an, die Web Content Accessibility Guidelines (WCAG) 2.1 Level AA zu befolgen, wo anwendbar. Wir arbeiten kontinuierlich daran, die Konformit\u00e4t auf allen Plattformen zu verbessern.",
+        "note": "Athlifyr beansprucht keine vollst\u00e4ndige WCAG 2.1-Konformit\u00e4t. Wir arbeiten aktiv daran, L\u00fccken in der Barrierefreiheit zu identifizieren und zu beheben."
+      }
     }
   }
 }

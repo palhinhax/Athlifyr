@@ -75,9 +75,7 @@ export function TransactionHistory({
                   {getTransactionIcon(tx.type)}
                   <div>
                     <p className="text-sm font-medium">
-                      {t(
-                        `transactionTypes.${tx.type}` as Parameters<typeof t>[0]
-                      )}
+                      {t(`transactionTypes.${tx.type}`)}
                     </p>
                     {tx.description && (
                       <p className="text-xs text-muted-foreground">

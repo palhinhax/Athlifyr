@@ -1,3 +1,4 @@
+import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
@@ -61,6 +62,32 @@ jest.mock("next/navigation", () => ({
     refresh: mockRouterRefresh,
   }),
   useSearchParams: () => new URLSearchParams(),
+}));
+
+jest.mock("@/components/auth/social-auth-buttons", () => ({
+  SocialAuthButtons: ({
+    onGoogleClick,
+    onAppleClick,
+    googleLabel,
+    appleLabel,
+  }: {
+    onGoogleClick: () => void;
+    onAppleClick: () => void;
+    disabled?: boolean;
+    isGoogleLoading?: boolean;
+    isAppleLoading?: boolean;
+    googleLabel?: string;
+    appleLabel?: string;
+  }) => (
+    <div data-testid="social-auth-buttons">
+      <button type="button" onClick={onGoogleClick}>
+        {googleLabel}
+      </button>
+      <button type="button" onClick={onAppleClick}>
+        {appleLabel}
+      </button>
+    </div>
+  ),
 }));
 
 import { SignInForm } from "@/components/auth/signin-form";

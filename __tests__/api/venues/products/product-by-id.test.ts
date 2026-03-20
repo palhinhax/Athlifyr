@@ -2,6 +2,7 @@
  * @jest-environment node
  */
 
+import { NextResponse } from "next/server";
 import {
   PATCH,
   DELETE,
@@ -28,6 +29,13 @@ jest.mock("@/lib/prisma", () => ({
 const mockCanManageVenue = jest.fn();
 jest.mock("@/lib/venues/authorization", () => ({
   canManageVenue: (...args: unknown[]) => mockCanManageVenue(...args),
+}));
+
+// Mock stripe-route-helpers (authenticateVenueManager used by getAuthorizedProduct)
+const mockAuthenticateVenueManager = jest.fn();
+jest.mock("@/lib/venues/stripe-route-helpers", () => ({
+  authenticateVenueManager: (...args: unknown[]) =>
+    mockAuthenticateVenueManager(...args),
 }));
 
 const venueId = "venue-1";
@@ -57,7 +65,9 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    mockAuth.mockResolvedValue(null);
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
 
     const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
     const body = await res.json();
@@ -67,8 +77,9 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 403 when not authorized to manage venue", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: false });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    });
 
     const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
     const body = await res.json();
@@ -79,8 +90,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 404 when product does not exist", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue(null);
 
     const res = (await PATCH(makeRequest({ name: "Updated" }), makeParams()))!;
@@ -92,8 +105,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("updates product name successfully", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -114,8 +129,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("updates product price, stock and isActive successfully", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -138,8 +155,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 400 when price is not a valid positive number", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -152,8 +171,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 400 when price is zero", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -164,8 +185,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 400 when currency is invalid", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -181,8 +204,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 400 when stock is negative", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -195,8 +220,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 400 when stock is not an integer", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -207,8 +234,10 @@ describe("PATCH /api/venues/[id]/products/[productId]", () => {
   });
 
   it("does not include undefined fields in update data", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -252,7 +281,9 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 401 when unauthenticated", async () => {
-    mockAuth.mockResolvedValue(null);
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Unauthorized" }, { status: 401 }),
+    });
 
     const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
@@ -262,8 +293,9 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 403 when not authorized to manage venue", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: false });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      error: NextResponse.json({ error: "Forbidden" }, { status: 403 }),
+    });
 
     const res = (await DELETE(makeRequest(), makeParams()))!;
     const body = await res.json();
@@ -274,8 +306,10 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 404 when product does not exist", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue(null);
 
     const res = (await DELETE(makeRequest(), makeParams()))!;
@@ -287,8 +321,10 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   });
 
   it("soft-deletes product by marking as inactive", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockResolvedValue({
       id: productId,
       venueId,
@@ -312,8 +348,10 @@ describe("DELETE /api/venues/[id]/products/[productId]", () => {
   });
 
   it("returns 500 on database error", async () => {
-    mockAuth.mockResolvedValue({ user: { id: userId } });
-    mockCanManageVenue.mockResolvedValue({ authorized: true });
+    mockAuthenticateVenueManager.mockResolvedValue({
+      session: { user: { id: userId } },
+      venue: { id: venueId },
+    });
     (prisma.venueProduct.findFirst as jest.Mock).mockRejectedValue(
       new Error("DB error")
     );

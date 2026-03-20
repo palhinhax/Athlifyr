@@ -21,7 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { ProductCheckoutForm } from "@/components/product-checkout-form";
-import { requiresCreditsOnly } from "@/lib/credits/purchase-service";
+import { CREDITS_ONLY_THRESHOLD_CENTS } from "@/lib/credits/constants";
 import { Coins, CreditCard, AlertCircle } from "lucide-react";
 
 interface ProductCheckoutDialogProps {
@@ -51,7 +51,7 @@ export function ProductCheckoutDialog({
   quantity,
   onSuccess,
   onCancel,
-}: ProductCheckoutDialogProps) {
+}: Readonly<ProductCheckoutDialogProps>) {
   const t = useTranslations("venues.shop.checkout");
   const tc = useTranslations("credits.purchase");
   const tcBase = useTranslations("credits");
@@ -72,7 +72,7 @@ export function ProductCheckoutDialog({
 
   const totalAmount = product ? product.price * quantity : 0;
   const totalAmountCents = Math.round(totalAmount * 100);
-  const isCreditsOnly = requiresCreditsOnly(totalAmountCents);
+  const isCreditsOnly = totalAmountCents <= CREDITS_ONLY_THRESHOLD_CENTS;
   const hasEnoughCredits =
     walletBalance !== null && walletBalance >= totalAmountCents;
 

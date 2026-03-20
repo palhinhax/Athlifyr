@@ -90,7 +90,7 @@ function SetInputRow({
   onUpdate,
   onRemove,
   setLabel,
-}: {
+}: Readonly<{
   set: ExerciseSetData;
   setIndex: number;
   blockIndex: number;
@@ -108,7 +108,7 @@ function SetInputRow({
     setIndex: number
   ) => void;
   setLabel: string;
-}) {
+}>) {
   return (
     <div className="rounded-md bg-muted/30 p-2">
       {/* Set label + trash */}
@@ -156,7 +156,7 @@ function SetInputRow({
               exerciseIndex,
               setIndex,
               "weight",
-              e.target.value ? parseFloat(e.target.value) : 0
+              e.target.value ? Number.parseFloat(e.target.value) : 0
             )
           }
         />

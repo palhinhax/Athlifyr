@@ -184,7 +184,7 @@ async function findUsableSubscription(
       ]);
 
       if (linkedBookings + legacyBookings >= subPolicy.maxTotalBookings) {
-        if (!exhaustedFallback) exhaustedFallback = sub;
+        exhaustedFallback ??= sub;
         continue;
       }
     }

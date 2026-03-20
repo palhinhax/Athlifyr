@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { z } from "zod";
 import { WeightUnit, DistanceUnit } from "@prisma/client";
 import { computeStrengthScores } from "@/lib/performance/scoring";
+import { computeAndPersistWorkoutScore } from "@/lib/scoring/score-service";
 
 // ============================================================================
 // Validation Schemas
@@ -489,11 +490,23 @@ export async function POST(request: Request) {
     const { entries: performanceEntries, prs: prsDetected } =
       await trackStrengthPerformance(user.id, log.blockResults, performedAt);
 
+    // Calculate and persist Workout Score (fire-and-forget; don't block response)
+    let workoutScore: { totalScore: number } | null = null;
+    try {
+      const scoreResult = await computeAndPersistWorkoutScore(log.id, user.id);
+      if (scoreResult) {
+        workoutScore = { totalScore: Math.round(scoreResult.totalScore) };
+      }
+    } catch (scoreError) {
+      console.error("Error computing workout score:", scoreError);
+    }
+
     return NextResponse.json(
       {
         log,
         performanceEntriesCreated: performanceEntries.length,
         prsDetected,
+        workoutScore,
       },
       { status: 201 }
     );

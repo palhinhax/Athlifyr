@@ -1,0 +1,21 @@
+{
+  "scoring": {
+    "workoutScore": "Score d'entraînement",
+    "hybridScore": "Score Hybride",
+    "noDataYet": "Enregistre des entraînements pour commencer à construire ton score",
+    "pillars": {
+      "strength": "Force",
+      "endurance": "Endurance",
+      "engine": "Moteur"
+    },
+    "bonuses": {
+      "volume": "Volume",
+      "pr": "RP"
+    },
+    "confidence": {
+      "LOW": "Confiance faible",
+      "MEDIUM": "Confiance moyenne",
+      "HIGH": "Confiance élevée"
+    }
+  }
+}

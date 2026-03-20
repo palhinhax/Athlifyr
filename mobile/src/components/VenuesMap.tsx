@@ -1,10 +1,16 @@
 import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 import { MapPin } from "lucide-react-native";
-import { useQueryClient } from "@tanstack/react-query";
 import { api } from "@/src/lib/api";
 import { theme } from "@/src/constants/theme";
+import {
+  getServiceIcon,
+  getServiceColor,
+  getPrimaryService,
+} from "@/src/lib/venue-utils";
+import { MapVenuePreview } from "@/src/components/MapVenuePreview";
+import { MapVenueServiceFilter } from "@/src/components/MapVenueServiceFilter";
 
 // Try to import Mapbox
 let Mapbox: typeof import("@rnmapbox/maps").default | null = null;
@@ -43,10 +49,11 @@ interface VenuesMapProps {
 }
 
 export function VenuesMap({ searchQuery }: VenuesMapProps) {
-  const router = useRouter();
-  const queryClient = useQueryClient();
+  const { t } = useTranslation();
   const [venues, setVenues] = useState<MapVenue[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedVenue, setSelectedVenue] = useState<MapVenue | null>(null);
+  const [selectedServices, setSelectedServices] = useState<string[]>([]);
 
   const fetchMapVenues = useCallback(async () => {
     try {
@@ -58,6 +65,13 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
       params.append("south", "35");
       params.append("east", "45");
       params.append("west", "-12");
+
+      // Apply service filters
+      if (selectedServices.length > 0) {
+        for (const service of selectedServices) {
+          params.append("services", service);
+        }
+      }
 
       const response = await api.get<{ venues: MapVenue[]; count: number }>(
         `/venues/map?${params.toString()}`
@@ -81,21 +95,31 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery]);
+  }, [searchQuery, selectedServices]);
 
   useEffect(() => {
     fetchMapVenues();
   }, [fetchMapVenues]);
 
-  const handleVenuePress = (slug: string) => {
-    // Pre-fetch venue detail for instant navigation
-    queryClient.prefetchQuery({
-      queryKey: ["venue", slug],
-      queryFn: () => api.get(`/venues/${slug}`).then((r) => r.data),
-      staleTime: 2 * 60 * 1000,
-    });
-    router.push(`/venues/${slug}`);
-  };
+  const handleServicesChange = useCallback((services: string[]) => {
+    setSelectedServices(services);
+    setSelectedVenue(null);
+  }, []);
+
+  const handleMarkerPress = useCallback(
+    (venue: MapVenue) => {
+      if (selectedVenue?.id === venue.id) {
+        setSelectedVenue(null);
+      } else {
+        setSelectedVenue(venue);
+      }
+    },
+    [selectedVenue]
+  );
+
+  const handleClosePreview = useCallback(() => {
+    setSelectedVenue(null);
+  }, []);
 
   const canShowMap = mapboxAvailable && Mapbox && MAPBOX_ACCESS_TOKEN;
 
@@ -130,6 +154,7 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
         scaleBarEnabled={false}
         attributionEnabled={false}
         logoEnabled={false}
+        onPress={handleClosePreview}
       >
         <Mapbox.Camera
           centerCoordinate={[-8.0, 39.5]}
@@ -140,22 +165,57 @@ export function VenuesMap({ searchQuery }: VenuesMapProps) {
           .filter(
             (venue) => venue.latitude !== null && venue.longitude !== null
           )
-          .map((venue) => (
-            <Mapbox.PointAnnotation
-              key={venue.id}
-              id={`venue-${venue.id}`}
-              coordinate={[venue.longitude!, venue.latitude!]}
-              onSelected={() => handleVenuePress(venue.slug)}
-            >
-              <View style={styles.markerContainer}>
-                <View style={styles.marker}>
-                  <MapPin size={16} color={theme.colors.white} />
+          .map((venue) => {
+            const primaryService = getPrimaryService(venue.services);
+            const serviceColor = getServiceColor(primaryService);
+            const serviceIcon = getServiceIcon(primaryService);
+            const isSelected = selectedVenue?.id === venue.id;
+
+            return (
+              <Mapbox.PointAnnotation
+                key={venue.id}
+                id={`venue-${venue.id}`}
+                coordinate={[venue.longitude!, venue.latitude!]}
+                onSelected={() => handleMarkerPress(venue)}
+              >
+                <View style={styles.markerContainer}>
+                  <View
+                    style={[
+                      styles.markerTeardrop,
+                      {
+                        backgroundColor: serviceColor,
+                        borderColor: isSelected
+                          ? theme.colors.text
+                          : theme.colors.white,
+                        borderWidth: isSelected ? 3 : 2,
+                      },
+                    ]}
+                  >
+                    <Text style={styles.markerIcon}>{serviceIcon}</Text>
+                  </View>
                 </View>
-              </View>
-              <Mapbox.Callout title={venue.name} />
-            </Mapbox.PointAnnotation>
-          ))}
+              </Mapbox.PointAnnotation>
+            );
+          })}
       </Mapbox.MapView>
+
+      {/* Service filters */}
+      <MapVenueServiceFilter
+        selectedServices={selectedServices}
+        onServicesChange={handleServicesChange}
+      />
+
+      {/* Venue count badge */}
+      <View style={styles.venueCountBadge}>
+        <Text style={styles.venueCountText}>
+          {t("venues.mapFilters.venuesCount", { count: venues.length })}
+        </Text>
+      </View>
+
+      {/* Venue preview card */}
+      {selectedVenue && (
+        <MapVenuePreview venue={selectedVenue} onClose={handleClosePreview} />
+      )}
     </View>
   );
 }
@@ -195,15 +255,37 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  marker: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
+  markerTeardrop: {
+    width: 36,
+    height: 36,
+    borderTopLeftRadius: 18,
+    borderTopRightRadius: 18,
+    borderBottomLeftRadius: 18,
+    borderBottomRightRadius: 4,
+    transform: [{ rotate: "-45deg" }],
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 2,
-    borderColor: theme.colors.white,
     ...theme.shadows.md,
+  },
+  markerIcon: {
+    fontSize: 16,
+    lineHeight: 20,
+    transform: [{ rotate: "45deg" }],
+  },
+  venueCountBadge: {
+    position: "absolute",
+    bottom: 16,
+    left: 12,
+    zIndex: 999,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: theme.borderRadius.lg,
+    ...theme.shadows.md,
+  },
+  venueCountText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: theme.colors.text,
   },
 });

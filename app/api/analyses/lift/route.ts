@@ -53,7 +53,7 @@ async function resolveVideoFromUrl(
   const isAlreadyOnB2 = videoUrl.includes("backblazeb2.com/file/");
 
   if (isAlreadyOnB2) {
-    const fileMatch = videoUrl.match(/\/file\/[^/]+\/(.+)$/);
+    const fileMatch = /\/file\/[^/]+\/(.+)$/.exec(videoUrl);
     console.log(
       `[LiftAnalysis] Video already on B2, skipping download: ${videoUrl}`
     );

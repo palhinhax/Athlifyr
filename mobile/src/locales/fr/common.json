@@ -1081,5 +1081,23 @@
     "tapToReturn": "Appuyez pour revenir",
     "backgroundNotificationTitle": "Athlifyr — Course en cours",
     "backgroundNotificationBody": "Suivi de votre parcours GPS"
+  },
+  "a11y": {
+    "showPassword": "Afficher le mot de passe",
+    "hidePassword": "Masquer le mot de passe",
+    "loading": "Chargement",
+    "feedList": "Fil d'actualité",
+    "createPostInput": "Écrire une publication",
+    "removeMedia": "Supprimer le média",
+    "addMedia": "Ajouter une photo ou vidéo",
+    "publish": "Publier",
+    "unmuteVideo": "Activer le son de la vidéo",
+    "muteVideo": "Couper le son de la vidéo",
+    "liked": "Aimé, {{count}} j'aime",
+    "like": "Aimer, {{count}} j'aime",
+    "comments": "Commentaires, {{count}} commentaires",
+    "commentInput": "Écrire un commentaire",
+    "sendComment": "Envoyer le commentaire",
+    "deleteComment": "Supprimer le commentaire"
   }
 }

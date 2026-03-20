@@ -14,6 +14,8 @@ import { initIntegrity } from "@/src/lib/integrity";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { SocketProvider } from "@/src/hooks/useSocket";
 import { ActiveRunBanner } from "@/src/components/ActiveRunBanner";
+import { ThemeProvider, useThemeColors } from "@/src/lib/theme-context";
+import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 
 // ── React Query + React Native AppState integration ────────────────────
 // By default, refetchOnWindowFocus only works in browsers.
@@ -28,6 +30,8 @@ const queryClient = new QueryClient();
 
 function RootLayout() {
   const loadStoredAuth = useAuthStore((s) => s.loadStoredAuth);
+  const { colors } = useThemeColors();
+  const reduceMotion = useReducedMotion();
 
   // Restore auth session + initialize Play Integrity on app launch
   useEffect(() => {
@@ -45,12 +49,12 @@ function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <I18nextProvider i18n={i18n}>
         <SocketProvider>
-          <View style={{ flex: 1 }}>
+          <View style={{ flex: 1, backgroundColor: colors.background }}>
             <ActiveRunBanner />
             <Stack
               screenOptions={{
                 headerShown: false,
-                animation: "slide_from_right",
+                animation: reduceMotion ? "none" : "slide_from_right",
               }}
             >
               <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
@@ -123,4 +127,12 @@ function RootLayout() {
   );
 }
 
-export default Sentry.wrap(RootLayout);
+function RootLayoutWithProviders() {
+  return (
+    <ThemeProvider>
+      <RootLayout />
+    </ThemeProvider>
+  );
+}
+
+export default Sentry.wrap(RootLayoutWithProviders);

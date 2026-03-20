@@ -14,6 +14,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useTranslation } from "react-i18next";
 import { useFreeRunSession } from "@/src/lib/free-run-session-store";
 import { theme } from "@/src/constants/theme";
+import { useReducedMotion } from "@/src/hooks/useReducedMotion";
 
 function formatElapsed(ms: number): string {
   if (ms <= 0) return "00:00";
@@ -39,14 +40,15 @@ export function ActiveRunBanner() {
   const { t } = useTranslation();
   const isActive = useFreeRunSession((s) => s.isActive);
   const stats = useFreeRunSession((s) => s.stats);
+  const reduceMotion = useReducedMotion();
 
-  // Blinking dot animation
+  // Blinking dot animation (disabled when reduce motion is on)
   const [dotVisible, setDotVisible] = useState(true);
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive || reduceMotion) return;
     const interval = setInterval(() => setDotVisible((v) => !v), 500);
     return () => clearInterval(interval);
-  }, [isActive]);
+  }, [isActive, reduceMotion]);
 
   // Don't show on the free-run screen itself
   if (!isActive || pathname === "/free-run") return null;
@@ -56,6 +58,8 @@ export function ActiveRunBanner() {
       style={[styles.container, { top: insets.top }]}
       onPress={() => router.push("/free-run")}
       activeOpacity={0.8}
+      accessibilityRole="button"
+      accessibilityLabel={`${t("freeRun.tapToReturn")}. ${formatElapsed(stats.elapsedTimeMs)}, ${formatDistance(stats.distanceM)}`}
     >
       <View style={styles.dot}>
         {dotVisible && <View style={styles.dotInner} />}

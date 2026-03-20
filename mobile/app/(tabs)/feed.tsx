@@ -35,6 +35,7 @@ function EmptyFeed() {
 // ─── Main Feed Screen ──────────────────────────────────────────
 
 export default function FeedScreen() {
+  const { t } = useTranslation();
   const { posts, isLoading, refetch } = useFeedPosts();
   const user = useAuthStore((s) => s.user);
   const [refreshing, setRefreshing] = useState(false);
@@ -50,7 +51,11 @@ export default function FeedScreen() {
     return (
       <SafeAreaView style={styles.safeArea} edges={["top"]}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            accessibilityLabel={t("a11y.loading")}
+          />
         </View>
       </SafeAreaView>
     );
@@ -81,6 +86,7 @@ export default function FeedScreen() {
             colors={[theme.colors.primary]}
           />
         }
+        accessibilityLabel={t("a11y.feedList")}
       />
     </SafeAreaView>
   );

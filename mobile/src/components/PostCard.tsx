@@ -352,6 +352,10 @@ export function PostCard({ post }: PostCardProps) {
             style={styles.muteButton}
             onPress={handleMuteToggle}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={
+              isMuted ? t("a11y.unmuteVideo") : t("a11y.muteVideo")
+            }
           >
             {isMuted ? (
               <VolumeOff size={16} color={colors.white} />
@@ -368,6 +372,13 @@ export function PostCard({ post }: PostCardProps) {
           style={styles.actionButton}
           onPress={handleLike}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={
+            optimisticLiked
+              ? t("a11y.liked", { count: optimisticCount })
+              : t("a11y.like", { count: optimisticCount })
+          }
+          accessibilityState={{ selected: optimisticLiked }}
         >
           <Heart
             size={20}
@@ -390,6 +401,9 @@ export function PostCard({ post }: PostCardProps) {
           style={styles.actionButton}
           onPress={handleToggleComments}
           activeOpacity={0.6}
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.comments", { count: commentsCount })}
+          accessibilityState={{ expanded: showComments }}
         >
           <MessageCircle
             size={20}
@@ -425,6 +439,7 @@ export function PostCard({ post }: PostCardProps) {
                 editable={!isSubmitting}
                 returnKeyType="send"
                 onSubmitEditing={handleSubmitComment}
+                accessibilityLabel={t("a11y.commentInput")}
               />
               <TouchableOpacity
                 onPress={handleSubmitComment}
@@ -435,6 +450,11 @@ export function PostCard({ post }: PostCardProps) {
                     styles.sendButtonDisabled,
                 ]}
                 activeOpacity={0.6}
+                accessibilityRole="button"
+                accessibilityLabel={t("a11y.sendComment")}
+                accessibilityState={{
+                  disabled: !newComment.trim() || isSubmitting,
+                }}
               >
                 {isSubmitting ? (
                   <ActivityIndicator size="small" color={colors.white} />
@@ -481,6 +501,8 @@ export function PostCard({ post }: PostCardProps) {
                         onPress={() => handleDeleteComment(comment.id)}
                         activeOpacity={0.6}
                         hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                        accessibilityRole="button"
+                        accessibilityLabel={t("a11y.deleteComment")}
                       >
                         <Trash2 size={12} color={colors.error} />
                       </TouchableOpacity>

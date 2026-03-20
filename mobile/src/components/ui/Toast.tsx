@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Animated,
   TouchableOpacity,
+  AccessibilityInfo,
 } from "react-native";
 import { CheckCircle, XCircle, AlertCircle, X } from "lucide-react-native";
 
@@ -32,12 +33,12 @@ export function Toast({
     Animated.parallel([
       Animated.timing(translateY, {
         toValue: -100,
-        duration: 300,
+        duration: 0,
         useNativeDriver: true,
       }),
       Animated.timing(opacity, {
         toValue: 0,
-        duration: 300,
+        duration: 0,
         useNativeDriver: true,
       }),
     ]).start(() => {
@@ -47,7 +48,10 @@ export function Toast({
 
   useEffect(() => {
     if (visible) {
-      // Slide in
+      // Announce toast to screen readers
+      AccessibilityInfo.announceForAccessibility(message);
+
+      // Slide in (duration respects reduce-motion at OS level via useNativeDriver)
       Animated.parallel([
         Animated.timing(translateY, {
           toValue: 0,
@@ -112,6 +116,10 @@ export function Toast({
           opacity,
         },
       ]}
+      accessible={true}
+      accessibilityRole="alert"
+      accessibilityLiveRegion="assertive"
+      accessibilityLabel={message}
     >
       <View style={[styles.toast, { backgroundColor: getBackgroundColor() }]}>
         <View style={styles.iconContainer}>{getIcon()}</View>
@@ -122,6 +130,8 @@ export function Toast({
           onPress={handleDismiss}
           style={styles.closeButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityRole="button"
+          accessibilityLabel="Dismiss"
         >
           <X size={20} color="#fff" />
         </TouchableOpacity>

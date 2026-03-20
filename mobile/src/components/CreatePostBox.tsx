@@ -145,6 +145,7 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           onChangeText={setContent}
           multiline
           editable={!isSubmitting}
+          accessibilityLabel={t("a11y.createPostInput")}
         />
       </View>
 
@@ -162,6 +163,8 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           <TouchableOpacity
             style={styles.removeMedia}
             onPress={() => setMediaUri(null)}
+            accessibilityRole="button"
+            accessibilityLabel={t("a11y.removeMedia")}
           >
             <X size={14} color={colors.white} />
           </TouchableOpacity>
@@ -174,6 +177,8 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           style={styles.mediaBtn}
           onPress={handlePickMedia}
           disabled={isSubmitting || isUploading}
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.addMedia")}
         >
           <ImagePlus size={18} color={colors.textSecondary} />
           <Text style={styles.mediaBtnText}>
@@ -185,6 +190,12 @@ export function CreatePostBox({ onPostCreated }: CreatePostBoxProps) {
           style={[styles.submitBtn, !canSubmit && styles.submitBtnDisabled]}
           onPress={handleSubmit}
           disabled={!canSubmit}
+          accessibilityRole="button"
+          accessibilityLabel={t("a11y.publish")}
+          accessibilityState={{
+            disabled: !canSubmit,
+            busy: isSubmitting || isUploading,
+          }}
         >
           {isSubmitting || isUploading ? (
             <ActivityIndicator size="small" color={colors.white} />

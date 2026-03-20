@@ -61,6 +61,9 @@ function TabButton({ tab, activeTab, icon, label, onPress }: TabButtonProps) {
       style={[styles.tabButton, isActive && styles.tabButtonActive]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="tab"
+      accessibilityLabel={label}
+      accessibilityState={{ selected: isActive }}
     >
       {icon}
       <Text
@@ -88,6 +91,9 @@ function LanguageOption({ name, isSelected, onPress }: LanguageOptionProps) {
       style={[styles.languageOption, isSelected && styles.languageOptionActive]}
       onPress={onPress}
       activeOpacity={0.7}
+      accessibilityRole="radio"
+      accessibilityState={{ selected: isSelected }}
+      accessibilityLabel={name}
     >
       <Text
         style={[
@@ -380,6 +386,8 @@ export default function SettingsScreen() {
                 ? theme.colors.primary
                 : theme.colors.textSecondary
             }
+            accessibilityLabel={t("settings.pushNotifications")}
+            accessibilityRole="switch"
           />
         </View>
 
@@ -407,6 +415,8 @@ export default function SettingsScreen() {
                 ? theme.colors.primary
                 : theme.colors.textSecondary
             }
+            accessibilityLabel={t("settings.emailNotifications")}
+            accessibilityRole="switch"
           />
         </View>
       </View>
@@ -452,6 +462,7 @@ export default function SettingsScreen() {
           onPress={handleLogout}
           disabled={isLoggingOut}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
           {isLoggingOut ? (
             <ActivityIndicator size="small" color={theme.colors.error} />
@@ -479,6 +490,7 @@ export default function SettingsScreen() {
           style={styles.dangerButton}
           onPress={handleDeleteAccount}
           activeOpacity={0.7}
+          accessibilityRole="button"
         >
           <Trash2 size={16} color={theme.colors.white} />
           <Text style={styles.dangerButtonText}>
@@ -510,6 +522,8 @@ export default function SettingsScreen() {
           onPress={() => router.back()}
           style={styles.backButton}
           activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t("common.close")}
         >
           <ArrowLeft size={24} color={theme.colors.text} />
         </TouchableOpacity>
@@ -518,7 +532,7 @@ export default function SettingsScreen() {
       </View>
 
       {/* Tab Selector */}
-      <View style={styles.tabBar}>
+      <View style={styles.tabBar} accessibilityRole="tablist">
         <TabButton
           tab="profile"
           activeTab={activeTab}

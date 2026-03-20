@@ -152,7 +152,7 @@ export default function EventsScreen() {
           </View>
 
           {/* View Mode Toggle */}
-          <View style={styles.viewToggle} accessibilityRole="tabbar">
+          <View style={styles.viewToggle} accessibilityRole="tablist">
             <TouchableOpacity
               style={[
                 styles.viewToggleButton,
@@ -218,7 +218,6 @@ export default function EventsScreen() {
           onEndReachedThreshold={0.5}
           ListFooterComponent={renderFooter}
           ListEmptyComponent={renderEmpty}
-          accessibilityRole="list"
           accessibilityLabel={t("events.a11y.eventsList")}
           refreshControl={
             <RefreshControl

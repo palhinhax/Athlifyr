@@ -345,7 +345,12 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
         <div className="mb-4 text-sm text-muted-foreground">
           {t("filters.resultsCount", { count: pagination.totalCount })}
         </div>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <nav
+          aria-label={t("filters.resultsCount", {
+            count: pagination.totalCount,
+          })}
+          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+        >
           {events.map((event) => (
             <EventCard
               key={event.id}
@@ -353,7 +358,7 @@ export function EventsPageClient({ userId }: EventsPageClientProps) {
               isParticipating={participatingEventIds.has(event.id)}
             />
           ))}
-        </div>
+        </nav>
 
         {pagination.hasMore && (
           <div

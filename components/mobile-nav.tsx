@@ -102,7 +102,6 @@ export function MobileNav() {
           {/* Menu */}
           <div
             className="fixed inset-x-0 top-16 z-50 border-b border-border/60 bg-background/95 p-4 shadow-lg backdrop-blur-md"
-            role="dialog"
             aria-label={t("openMenu")}
           >
             <nav className="flex flex-col gap-1">

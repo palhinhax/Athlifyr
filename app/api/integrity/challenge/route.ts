@@ -17,11 +17,7 @@ export async function POST() {
   try {
     // Generate 32 bytes of cryptographically secure random data
     const nonceBuffer = crypto.randomBytes(32);
-    const nonce = nonceBuffer
-      .toString("base64")
-      .replace(/\+/g, "-")
-      .replace(/\//g, "_")
-      .replace(/=+$/, "");
+    const nonce = nonceBuffer.toString("base64url");
 
     const timestamp = Date.now();
 

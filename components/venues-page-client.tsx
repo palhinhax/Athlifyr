@@ -294,11 +294,13 @@ export function VenuesPageClient() {
               <div className="mb-4 text-sm text-muted-foreground">
                 {t("resultsCount", { count: pagination.totalCount })}
               </div>
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {venues.map((venue) => (
-                  <VenueCard key={venue.id} venue={venue} />
-                ))}
-              </div>
+              <nav aria-label={t("venuesListHeading")}>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  {venues.map((venue) => (
+                    <VenueCard key={venue.id} venue={venue} />
+                  ))}
+                </div>
+              </nav>
 
               {/* Infinite scroll trigger */}
               {pagination.hasMore && (

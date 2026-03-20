@@ -88,7 +88,10 @@ export function EasyBookFormDialog({
 
     if (!formData.email.trim()) {
       newErrors.email = t("required");
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+    } else if (
+      !/^[^\s@]+@[^\s@]+$/.test(formData.email) ||
+      !formData.email.includes(".")
+    ) {
       newErrors.email = t("invalidEmail");
     }
 

@@ -8,14 +8,10 @@
 const ANONYMOUS_ID_KEY = "athlifyr_anonymous_id";
 
 /**
- * Generate a simple unique ID (UUID v4 format)
+ * Generate a unique ID (UUID v4)
  */
 function generateId(): string {
-  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
-    const r = Math.trunc(Math.random() * 16);
-    const v = c === "x" ? r : (r & 0x3) | 0x8;
-    return v.toString(16);
-  });
+  return crypto.randomUUID();
 }
 
 /**
@@ -23,7 +19,7 @@ function generateId(): string {
  * Returns existing ID from localStorage or creates a new one
  */
 export function getAnonymousId(): string {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return "";
   }
 
@@ -46,7 +42,7 @@ export function getAnonymousId(): string {
  * Clear anonymous ID (e.g., when user logs in)
  */
 export function clearAnonymousId(): void {
-  if (typeof window === "undefined") {
+  if (typeof globalThis.window === "undefined") {
     return;
   }
 

@@ -98,6 +98,108 @@ interface ProcessB2Body {
 
 // ─── Helper functions ───────────────────────────────────────────────────────
 
+function validateProcessB2Request(
+  body: ProcessB2Body,
+  userId: string
+): NextResponse | null {
+  if (!body.key || !body.contentType) {
+    return NextResponse.json(
+      { error: "key and contentType are required" },
+      { status: 400 }
+    );
+  }
+  if (!body.key.startsWith(`uploads/${userId}/`)) {
+    return NextResponse.json(
+      { error: "Unauthorized: key does not belong to you" },
+      { status: 403 }
+    );
+  }
+  if (body.seed_x === undefined || body.seed_y === undefined) {
+    return NextResponse.json(
+      { error: "seed_x and seed_y are required" },
+      { status: 400 }
+    );
+  }
+  if (!Number.isFinite(body.seed_x) || !Number.isFinite(body.seed_y)) {
+    return NextResponse.json(
+      { error: "seed_x and seed_y must be valid numbers" },
+      { status: 400 }
+    );
+  }
+  return null;
+}
+
+async function resolveAiPermission(
+  enableAi: boolean | undefined,
+  userId: string
+): Promise<boolean> {
+  if (!enableAi) return false;
+  const rateCheck = await checkAiRateLimit(userId);
+  if (rateCheck.allowed) {
+    console.log(`[LiftB2] AI enabled for user ${userId}`);
+    return true;
+  }
+  console.log(
+    `[LiftB2] AI rate-limited — next at ${rateCheck.nextAvailableAt?.toISOString()}`
+  );
+  return false;
+}
+
+function resolveVideoUrl(
+  result: ExternalApiResponse,
+  resultKey: string
+): string | null {
+  if (result.video_uploaded_to_b2) return getB2PublicUrl(resultKey);
+  if (result.video_url) return `${BARBELL_API_URL}${result.video_url}`;
+  return null;
+}
+
+function buildSuccessResponse(
+  result: ExternalApiResponse,
+  videoUrl: string | null,
+  skeletonFrames: ReturnType<typeof transformSkeletonFrames>,
+  aiAnalysis: ReturnType<typeof transformAiAnalysis>
+): NextResponse {
+  return NextResponse.json(
+    {
+      success: true,
+      message: result.message,
+      videoUrl,
+      tracking: {
+        success: result.tracking_success,
+        autoDetected: result.auto_detected ?? false,
+        detectedCenter: {
+          x: result.detected_center_x ?? null,
+          y: result.detected_center_y ?? null,
+        },
+        detectedRadius: result.detected_radius ?? null,
+        totalTravelPx: result.total_travel_px ?? null,
+        maxVerticalDisplacementPx: result.max_vertical_displacement_px ?? null,
+        maxHorizontalDisplacementPx:
+          result.max_horizontal_displacement_px ?? null,
+      },
+      pose: {
+        framesProcessed: result.frames_processed,
+        framesWithPose: result.frames_with_pose,
+        detectionRate: result.pose_detection_rate,
+        durationSec: result.duration_sec,
+        averageAngles: transformAverageAngles(result.average_angles),
+      },
+      skeletonFrames,
+      aiAnalysis,
+    },
+    { status: 200 }
+  );
+}
+
+function logUnexpectedError(error: unknown): void {
+  console.error("[LiftB2] Unexpected error:", {
+    name: error instanceof Error ? error.name : "unknown",
+    message: error instanceof Error ? error.message : String(error),
+    stack: error instanceof Error ? error.stack?.substring(0, 500) : undefined,
+  });
+}
+
 export async function POST(request: Request) {
   try {
     // ── Auth (supports both web session and mobile Bearer token) ──────────
@@ -106,50 +208,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // ── Parse JSON body (tiny — no video) ──────────────────────────────────
+    // ── Parse & validate JSON body ─────────────────────────────────────────
     const body = (await request.json()) as ProcessB2Body;
+    const validationError = validateProcessB2Request(body, user.id);
+    if (validationError) return validationError;
 
-    const { key, contentType } = body;
-    if (!key || !contentType) {
-      return NextResponse.json(
-        { error: "key and contentType are required" },
-        { status: 400 }
-      );
-    }
+    const { key, contentType, seed_x: seedX, seed_y: seedY } = body;
 
-    // Validate the key belongs to this user
-    if (!key.startsWith(`uploads/${user.id}/`)) {
-      return NextResponse.json(
-        { error: "Unauthorized: key does not belong to you" },
-        { status: 403 }
-      );
-    }
-
-    const seedX = body.seed_x;
-    const seedY = body.seed_y;
-    if (seedX === undefined || seedY === undefined) {
-      return NextResponse.json(
-        { error: "seed_x and seed_y are required" },
-        { status: 400 }
-      );
-    }
-    if (!Number.isFinite(seedX) || !Number.isFinite(seedY)) {
-      return NextResponse.json(
-        { error: "seed_x and seed_y must be valid numbers" },
-        { status: 400 }
-      );
-    }
-
-    // ── Generate presigned download URL for Railway ────────────────────────
-    // Railway will download the video directly from B2 — Vercel never
-    // touches the raw bytes.
-    const videoDownloadUrl = await createPresignedDownloadUrl(key, 900); // 15 min
-
-    // ── Generate presigned upload URL for the processed result video ──────
-    // Railway will upload the output video directly to B2, so the result
-    // video also never flows through Vercel.
+    // ── Generate presigned URLs for Railway ────────────────────────────────
+    const videoDownloadUrl = await createPresignedDownloadUrl(key, 900);
     const { uploadUrl: resultUploadUrl, key: resultKey } =
-      await createPresignedResultUploadUrl(user.id, 900); // 15 min
+      await createPresignedResultUploadUrl(user.id, 900);
 
     console.log("[LiftB2] Delegating to Railway with video_url:", {
       key,
@@ -160,18 +229,7 @@ export async function POST(request: Request) {
     });
 
     // ── AI rate limiting ───────────────────────────────────────────────────
-    let aiAllowed = false;
-    if (body.enable_ai) {
-      const rateCheck = await checkAiRateLimit(user.id);
-      if (rateCheck.allowed) {
-        aiAllowed = true;
-        console.log(`[LiftB2] AI enabled for user ${user.id}`);
-      } else {
-        console.log(
-          `[LiftB2] AI rate-limited — next at ${rateCheck.nextAvailableAt?.toISOString()}`
-        );
-      }
-    }
+    const aiAllowed = await resolveAiPermission(body.enable_ai, user.id);
 
     // ── Build JSON payload for Railway /analyze/full/url ───────────────────
     const railwayPayload = {
@@ -188,7 +246,6 @@ export async function POST(request: Request) {
       language: body.language ?? "en",
       trim_start_sec: body.trim_start_sec ?? null,
       trim_end_sec: body.trim_end_sec ?? null,
-      // Railway uploads the processed video directly to B2 via this URL
       result_upload_url: resultUploadUrl,
     };
 
@@ -228,12 +285,8 @@ export async function POST(request: Request) {
       );
     }
 
-    const videoUrl = result.video_uploaded_to_b2
-      ? getB2PublicUrl(resultKey)
-      : result.video_url
-        ? `${BARBELL_API_URL}${result.video_url}`
-        : null;
-
+    // ── Build & return success response ────────────────────────────────────
+    const videoUrl = resolveVideoUrl(result, resultKey);
     const skeletonFrames = transformSkeletonFrames(
       result.skeleton_frames ?? []
     );
@@ -243,44 +296,9 @@ export async function POST(request: Request) {
       await recordAiUsage(user.id, "lift");
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        message: result.message,
-        videoUrl,
-        tracking: {
-          success: result.tracking_success,
-          autoDetected: result.auto_detected ?? false,
-          detectedCenter: {
-            x: result.detected_center_x ?? null,
-            y: result.detected_center_y ?? null,
-          },
-          detectedRadius: result.detected_radius ?? null,
-          totalTravelPx: result.total_travel_px ?? null,
-          maxVerticalDisplacementPx:
-            result.max_vertical_displacement_px ?? null,
-          maxHorizontalDisplacementPx:
-            result.max_horizontal_displacement_px ?? null,
-        },
-        pose: {
-          framesProcessed: result.frames_processed,
-          framesWithPose: result.frames_with_pose,
-          detectionRate: result.pose_detection_rate,
-          durationSec: result.duration_sec,
-          averageAngles: transformAverageAngles(result.average_angles),
-        },
-        skeletonFrames,
-        aiAnalysis,
-      },
-      { status: 200 }
-    );
+    return buildSuccessResponse(result, videoUrl, skeletonFrames, aiAnalysis);
   } catch (error) {
-    console.error("[LiftB2] Unexpected error:", {
-      name: error instanceof Error ? error.name : "unknown",
-      message: error instanceof Error ? error.message : String(error),
-      stack:
-        error instanceof Error ? error.stack?.substring(0, 500) : undefined,
-    });
+    logUnexpectedError(error);
     return NextResponse.json(
       { error: "Video processing failed" },
       { status: 500 }

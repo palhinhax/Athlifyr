@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import Script from "next/script";
 import "../globals.css";
 import { Link } from "@/i18n/routing";
 import { Toaster } from "@/components/ui/toaster";
@@ -183,6 +184,11 @@ export default async function RootLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        <Script
+          src="https://cdn.userway.org/widget.js"
+          data-account="4LNSLNsFfe"
+          strategy="afterInteractive"
+        />
         <StructuredData data={organizationSchema} />
         <StructuredData data={websiteSchema} />
       </head>

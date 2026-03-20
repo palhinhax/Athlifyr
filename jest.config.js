@@ -21,6 +21,7 @@ const customJestConfig = {
     "/helpers/",
   ],
   collectCoverageFrom: [
+    "middleware.ts",
     "app/api/**/*.{js,jsx,ts,tsx}",
     "app/[locale]/**/*.{js,jsx,ts,tsx}",
     "components/**/*.{js,jsx,ts,tsx}",

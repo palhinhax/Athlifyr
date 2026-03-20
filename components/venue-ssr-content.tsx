@@ -16,6 +16,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// Extracted CSS class constants to avoid duplicated literals (S1192)
+const CONTACT_LINK_CLASS = "flex items-center gap-2 text-sm hover:text-primary";
+const SECTION_HEADING_CLASS = "mb-3 text-xl font-semibold";
+const CTA_ICON_CLASS = "mr-2 h-4 w-4";
+const ICON_SM_CLASS = "h-4 w-4";
+
 /**
  * Simple markdown to HTML converter for server-side rendering
  * Supports: headings, bold, italic, lists, links, line breaks
@@ -26,51 +32,59 @@ function markdownToHtml(markdown: string): string {
 
   let html = markdown
     // Escape HTML entities first
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
     // Headers (must be at start of line)
-    .replace(
+    .replaceAll(
       /^### (.+)$/gm,
       '<h4 class="text-base font-semibold mt-4 mb-2">$1</h4>'
     )
-    .replace(
+    .replaceAll(
       /^## (.+)$/gm,
       '<h3 class="text-lg font-semibold mt-5 mb-2">$1</h3>'
     )
-    .replace(/^# (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
+    .replaceAll(/^# (.+)$/gm, '<h2 class="text-xl font-bold mt-6 mb-3">$1</h2>')
     // Bold and italic
-    .replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
-    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
-    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replaceAll(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>")
+    .replaceAll(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replaceAll(/\*(.+?)\*/g, "<em>$1</em>")
     // Unordered lists (- item)
-    .replace(/^- (.+)$/gm, '<li class="ml-4">$1</li>')
-    // Links [text](url)
-    .replace(
+    .replaceAll(/^- (.+)$/gm, '<li class="ml-4">$1</li>')
+    // Links [text](url) — uses callback to avoid Sonar ReDoS false positive
+    .replaceAll(
       /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">$1</a>'
+      (_match: string, text: string, url: string) => {
+        const safeUrl = url.replaceAll('"', "&quot;");
+        if (!/^https?:\/\//i.test(url)) return text;
+        return `<a href="${safeUrl}" class="text-primary hover:underline" target="_blank" rel="noopener noreferrer">${text}</a>`;
+      }
     )
     // Line breaks
-    .replace(/\n\n/g, '</p><p class="mt-3">')
-    .replace(/\n/g, "<br />");
+    .replaceAll("\n\n", '</p><p class="mt-3">')
+    .replaceAll("\n", "<br />");
 
-  // Wrap list items in ul
+  // Wrap list items in ul (using indexOf to avoid ReDoS-prone regex)
   if (html.includes("<li")) {
-    html = html.replace(
-      /(<li[^>]*>.*?<\/li>)+/g,
-      '<ul class="list-disc space-y-1 my-3">$&</ul>'
-    );
+    const firstLi = html.indexOf("<li");
+    const lastLiEnd = html.lastIndexOf("</li>") + 5;
+    html =
+      html.slice(0, firstLi) +
+      '<ul class="list-disc space-y-1 my-3">' +
+      html.slice(firstLi, lastLiEnd) +
+      "</ul>" +
+      html.slice(lastLiEnd);
   }
 
   // Wrap in paragraph
   html = `<p>${html}</p>`;
 
   // Clean up empty paragraphs
-  html = html.replace(/<p>\s*<\/p>/g, "");
-  html = html.replace(/<p>\s*<(h[2-4])/g, "<$1");
-  html = html.replace(/<\/(h[2-4])>\s*<\/p>/g, "</$1>");
-  html = html.replace(/<p>\s*<ul/g, "<ul");
-  html = html.replace(/<\/ul>\s*<\/p>/g, "</ul>");
+  html = html.replaceAll(/<p>\s*<\/p>/g, "");
+  html = html.replaceAll(/<p>\s*<(h[2-4])/g, "<$1");
+  html = html.replaceAll(/<\/(h[2-4])>\s*<\/p>/g, "</$1>");
+  html = html.replaceAll(/<p>\s*<ul/g, "<ul");
+  html = html.replaceAll(/<\/ul>\s*<\/p>/g, "</ul>");
 
   return html;
 }
@@ -465,6 +479,201 @@ function getServiceLabel(service: string, locale: string): string {
   );
 }
 
+interface VenueSectionProps {
+  readonly venue: VenueSSRData;
+  readonly locale: string;
+}
+
+function VenueSSRMeta({ venue }: Pick<VenueSectionProps, "venue">) {
+  return (
+    <>
+      <meta itemProp="name" content={venue.name} />
+      {venue.city && <meta itemProp="addressLocality" content={venue.city} />}
+      <meta itemProp="addressCountry" content={venue.country} />
+      {venue.phone && <meta itemProp="telephone" content={venue.phone} />}
+      {venue.email && <meta itemProp="email" content={venue.email} />}
+      {venue.website && <meta itemProp="url" content={venue.website} />}
+    </>
+  );
+}
+
+function VenueSSRLocation({ venue, locale }: VenueSectionProps) {
+  if (!venue.address && !venue.city) return null;
+  return (
+    <section className="mb-6" aria-labelledby="venue-location">
+      <h2 id="venue-location" className={SECTION_HEADING_CLASS}>
+        {getLabel("location", locale)}
+      </h2>
+      <address
+        className="flex items-start gap-2 not-italic text-muted-foreground"
+        itemProp="address"
+        itemScope
+        itemType="https://schema.org/PostalAddress"
+      >
+        <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0" />
+        <div>
+          {venue.address && (
+            <span itemProp="streetAddress" className="block">
+              {venue.address}
+            </span>
+          )}
+          {venue.city && <span itemProp="addressLocality">{venue.city}</span>}
+          {venue.city && venue.country && ", "}
+          <span itemProp="addressCountry">{venue.country}</span>
+        </div>
+      </address>
+    </section>
+  );
+}
+
+function VenueSSRAbout({
+  venue,
+  description,
+  locale,
+}: VenueSectionProps & { readonly description: string | null }) {
+  if (!description?.trim()) return null;
+  return (
+    <section className="mb-6" aria-labelledby="venue-about">
+      <h2 id="venue-about" className="mb-3">
+        {getLabel("about", locale)} {venue.name}
+      </h2>
+      <div
+        className="prose prose-sm dark:prose-invert max-w-none"
+        itemProp="description"
+      >
+        <div
+          dangerouslySetInnerHTML={{
+            __html: markdownToHtml(description),
+          }}
+        />
+      </div>
+    </section>
+  );
+}
+
+function VenueSSRServices({ venue, locale }: VenueSectionProps) {
+  if (!venue.services?.length) return null;
+  return (
+    <section className="mb-6" aria-labelledby="venue-services">
+      <h2 id="venue-services" className={SECTION_HEADING_CLASS}>
+        {getLabel("services", locale)}
+      </h2>
+      <ul className="flex flex-wrap gap-2">
+        {venue.services.map((service) => (
+          <li key={service}>
+            <Badge variant="outline">{getServiceLabel(service, locale)}</Badge>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+function VenueSSRContactInfo({ venue, locale }: VenueSectionProps) {
+  if (
+    !venue.phone &&
+    !venue.email &&
+    !venue.website &&
+    !venue.instagram &&
+    !venue.whatsapp
+  ) {
+    return null;
+  }
+  return (
+    <section className="mb-6" aria-labelledby="venue-contact">
+      <h2 id="venue-contact" className={SECTION_HEADING_CLASS}>
+        {getLabel("contact", locale)}
+      </h2>
+      <div className="flex flex-wrap gap-4">
+        {venue.phone && (
+          <Link
+            href={`tel:${venue.phone}`}
+            className={CONTACT_LINK_CLASS}
+            itemProp="telephone"
+          >
+            <Phone className={ICON_SM_CLASS} />
+            {venue.phone}
+          </Link>
+        )}
+        {venue.email && (
+          <Link
+            href={`mailto:${venue.email}`}
+            className={CONTACT_LINK_CLASS}
+            itemProp="email"
+          >
+            <Mail className={ICON_SM_CLASS} />
+            {venue.email}
+          </Link>
+        )}
+        {venue.website && (
+          <Link
+            href={venue.website}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={CONTACT_LINK_CLASS}
+          >
+            <Globe className={ICON_SM_CLASS} />
+            {getLabel("viewWebsite", locale)}
+          </Link>
+        )}
+        {venue.instagram && (
+          <Link
+            href={`https://instagram.com/${venue.instagram.replaceAll("@", "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={CONTACT_LINK_CLASS}
+          >
+            <Instagram className={ICON_SM_CLASS} />@
+            {venue.instagram.replaceAll("@", "")}
+          </Link>
+        )}
+        {venue.whatsapp && (
+          <Link
+            href={`https://wa.me/${venue.whatsapp.replaceAll(/\D/g, "")}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={CONTACT_LINK_CLASS}
+          >
+            <WhatsAppIcon className={ICON_SM_CLASS} />
+            {venue.whatsapp}
+          </Link>
+        )}
+      </div>
+    </section>
+  );
+}
+
+function VenueSSRCTAButtons({ venue, locale }: VenueSectionProps) {
+  return (
+    <div className="flex flex-wrap gap-3">
+      {venue.phone && (
+        <Button asChild variant="default">
+          <Link href={`tel:${venue.phone}`}>
+            <Phone className={CTA_ICON_CLASS} />
+            {getLabel("callNow", locale)}
+          </Link>
+        </Button>
+      )}
+      {venue.email && (
+        <Button asChild variant="outline">
+          <Link href={`mailto:${venue.email}`}>
+            <Mail className={CTA_ICON_CLASS} />
+            {getLabel("sendEmail", locale)}
+          </Link>
+        </Button>
+      )}
+      {venue.website && (
+        <Button asChild variant="outline">
+          <Link href={venue.website} target="_blank" rel="noopener noreferrer">
+            <Globe className={CTA_ICON_CLASS} />
+            {getLabel("viewWebsite", locale)}
+          </Link>
+        </Button>
+      )}
+    </div>
+  );
+}
+
 /**
  * Server-rendered content component for venue pages
  * This content is visible to search engine crawlers without JavaScript
@@ -474,17 +683,7 @@ export function VenueSSRContent({
   translation,
   locale,
 }: VenueSSRContentProps) {
-  // Use translated description if available, otherwise fallback to original
   const description = translation?.description || venue.description;
-  const hasDescription = description && description.trim().length > 0;
-  const hasContact =
-    venue.phone ||
-    venue.email ||
-    venue.website ||
-    venue.instagram ||
-    venue.whatsapp;
-  const hasLocation = venue.address || venue.city;
-  const hasServices = venue.services && venue.services.length > 0;
 
   return (
     <article
@@ -492,13 +691,7 @@ export function VenueSSRContent({
       itemScope
       itemType="https://schema.org/LocalBusiness"
     >
-      {/* Hidden meta for additional SEO context */}
-      <meta itemProp="name" content={venue.name} />
-      {venue.city && <meta itemProp="addressLocality" content={venue.city} />}
-      <meta itemProp="addressCountry" content={venue.country} />
-      {venue.phone && <meta itemProp="telephone" content={venue.phone} />}
-      {venue.email && <meta itemProp="email" content={venue.email} />}
-      {venue.website && <meta itemProp="url" content={venue.website} />}
+      <VenueSSRMeta venue={venue} />
 
       {/* Main Heading - Essential for SEO */}
       <header className="mb-6">
@@ -518,168 +711,11 @@ export function VenueSSRContent({
         </div>
       </header>
 
-      {/* Location Info - Critical for Local SEO */}
-      {hasLocation && (
-        <section className="mb-6" aria-labelledby="venue-location">
-          <h2 id="venue-location" className="mb-3 text-xl font-semibold">
-            {getLabel("location", locale)}
-          </h2>
-          <address
-            className="flex items-start gap-2 not-italic text-muted-foreground"
-            itemProp="address"
-            itemScope
-            itemType="https://schema.org/PostalAddress"
-          >
-            <MapPin className="mt-0.5 h-5 w-5 flex-shrink-0" />
-            <div>
-              {venue.address && (
-                <span itemProp="streetAddress" className="block">
-                  {venue.address}
-                </span>
-              )}
-              {venue.city && (
-                <span itemProp="addressLocality">{venue.city}</span>
-              )}
-              {venue.city && venue.country && ", "}
-              <span itemProp="addressCountry">{venue.country}</span>
-            </div>
-          </address>
-        </section>
-      )}
-
-      {/* Description - Essential for content indexing - Only show if venue has description */}
-      {hasDescription && (
-        <section className="mb-6" aria-labelledby="venue-about">
-          <h2 id="venue-about" className="mb-3">
-            {getLabel("about", locale)} {venue.name}
-          </h2>
-          <div
-            className="prose prose-sm dark:prose-invert max-w-none"
-            itemProp="description"
-          >
-            {/* Render markdown as HTML for crawlers and initial page load */}
-            <div
-              dangerouslySetInnerHTML={{
-                __html: markdownToHtml(description),
-              }}
-            />
-          </div>
-        </section>
-      )}
-
-      {/* Services - Important for search queries */}
-      {hasServices && (
-        <section className="mb-6" aria-labelledby="venue-services">
-          <h2 id="venue-services" className="mb-3 text-xl font-semibold">
-            {getLabel("services", locale)}
-          </h2>
-          <ul className="flex flex-wrap gap-2">
-            {venue.services.map((service) => (
-              <li key={service}>
-                <Badge variant="outline">
-                  {getServiceLabel(service, locale)}
-                </Badge>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Contact Information - Essential for Local SEO */}
-      {hasContact && (
-        <section className="mb-6" aria-labelledby="venue-contact">
-          <h2 id="venue-contact" className="mb-3 text-xl font-semibold">
-            {getLabel("contact", locale)}
-          </h2>
-          <div className="flex flex-wrap gap-4">
-            {venue.phone && (
-              <Link
-                href={`tel:${venue.phone}`}
-                className="flex items-center gap-2 text-sm hover:text-primary"
-                itemProp="telephone"
-              >
-                <Phone className="h-4 w-4" />
-                {venue.phone}
-              </Link>
-            )}
-            {venue.email && (
-              <Link
-                href={`mailto:${venue.email}`}
-                className="flex items-center gap-2 text-sm hover:text-primary"
-                itemProp="email"
-              >
-                <Mail className="h-4 w-4" />
-                {venue.email}
-              </Link>
-            )}
-            {venue.website && (
-              <Link
-                href={venue.website}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm hover:text-primary"
-              >
-                <Globe className="h-4 w-4" />
-                {getLabel("viewWebsite", locale)}
-              </Link>
-            )}
-            {venue.instagram && (
-              <Link
-                href={`https://instagram.com/${venue.instagram.replace("@", "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm hover:text-primary"
-              >
-                <Instagram className="h-4 w-4" />@
-                {venue.instagram.replace("@", "")}
-              </Link>
-            )}
-            {venue.whatsapp && (
-              <Link
-                href={`https://wa.me/${venue.whatsapp.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2 text-sm hover:text-primary"
-              >
-                <WhatsAppIcon className="h-4 w-4" />
-                {venue.whatsapp}
-              </Link>
-            )}
-          </div>
-        </section>
-      )}
-
-      {/* CTA Buttons - Signals relevance to crawlers */}
-      <div className="flex flex-wrap gap-3">
-        {venue.phone && (
-          <Button asChild variant="default">
-            <Link href={`tel:${venue.phone}`}>
-              <Phone className="mr-2 h-4 w-4" />
-              {getLabel("callNow", locale)}
-            </Link>
-          </Button>
-        )}
-        {venue.email && (
-          <Button asChild variant="outline">
-            <Link href={`mailto:${venue.email}`}>
-              <Mail className="mr-2 h-4 w-4" />
-              {getLabel("sendEmail", locale)}
-            </Link>
-          </Button>
-        )}
-        {venue.website && (
-          <Button asChild variant="outline">
-            <Link
-              href={venue.website}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Globe className="mr-2 h-4 w-4" />
-              {getLabel("viewWebsite", locale)}
-            </Link>
-          </Button>
-        )}
-      </div>
+      <VenueSSRLocation venue={venue} locale={locale} />
+      <VenueSSRAbout venue={venue} description={description} locale={locale} />
+      <VenueSSRServices venue={venue} locale={locale} />
+      <VenueSSRContactInfo venue={venue} locale={locale} />
+      <VenueSSRCTAButtons venue={venue} locale={locale} />
     </article>
   );
 }

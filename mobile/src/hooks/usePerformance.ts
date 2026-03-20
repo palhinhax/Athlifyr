@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import * as SecureStore from "expo-secure-store";
 
 // ============================================================================
@@ -155,7 +155,7 @@ export function parseTimeToSeconds(timeStr: string): number | null {
 
 async function fetchPerformanceSummary(): Promise<PerformanceSummary> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/api/profile/performance/summary`, {
+  const response = await fetch(`${BASE_URL}/profile/performance/summary`, {
     headers,
   });
 
@@ -199,7 +199,7 @@ type CreateEntryData = CreateRunEntry | CreateStrengthEntry | CreateHyroxEntry;
 
 async function createEntry(data: CreateEntryData): Promise<PerformanceEntry> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/api/profile/performance`, {
+  const response = await fetch(`${BASE_URL}/profile/performance`, {
     method: "POST",
     headers,
     body: JSON.stringify(data),
@@ -214,7 +214,7 @@ async function createEntry(data: CreateEntryData): Promise<PerformanceEntry> {
 
 async function deleteEntry(id: string): Promise<void> {
   const headers = await getAuthHeaders();
-  const response = await fetch(`${API_URL}/api/profile/performance?id=${id}`, {
+  const response = await fetch(`${BASE_URL}/profile/performance?id=${id}`, {
     method: "DELETE",
     headers,
   });

@@ -16,10 +16,12 @@ const customJestConfig = {
     "<rootDir>/.next/",
     "<rootDir>/tests/e2e/",
     "<rootDir>/live/",
+    "<rootDir>/mobile/",
     "integration\\.test\\.",
     "/helpers/",
   ],
   collectCoverageFrom: [
+    "middleware.ts",
     "app/api/**/*.{js,jsx,ts,tsx}",
     "app/[locale]/**/*.{js,jsx,ts,tsx}",
     "components/**/*.{js,jsx,ts,tsx}",

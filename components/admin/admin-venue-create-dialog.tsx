@@ -71,12 +71,13 @@ export function AdminVenueCreateDialog({
   const [formData, setFormData] = useState<VenueFormData>(INITIAL_FORM_DATA);
 
   const generateSlug = (name: string) => {
-    return name
+    const normalized = name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .replaceAll(/[\u0300-\u036f]/g, "")
+      .replaceAll(/[^a-z0-9]/g, "-");
+    // Collapse consecutive dashes and trim edges without regex quantifiers
+    return normalized.split("-").filter(Boolean).join("-");
   };
 
   const handleNameChange = (value: string) => {

@@ -102,6 +102,12 @@ const venueTypeLabels: Record<string, string> = {
   OTHER: "Outro",
 };
 
+// Extracted constants to avoid duplicated literals (S1192)
+const TOAST_SUCCESS = "Sucesso";
+const TOAST_ERROR = "Erro";
+const JSON_HEADERS = { "Content-Type": "application/json" } as const;
+const NO_NAME = "Sem nome";
+
 export default function AdminVenuesPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -180,7 +186,7 @@ export default function AdminVenuesPage() {
     } catch (error) {
       console.error("Error fetching venues:", error);
       toast({
-        title: "Erro",
+        title: TOAST_ERROR,
         description: "Erro ao carregar venues",
         variant: "destructive",
       });
@@ -190,12 +196,13 @@ export default function AdminVenuesPage() {
   };
 
   const generateSlug = (name: string) => {
-    return name
+    const normalized = name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "");
+      .replaceAll(/[\u0300-\u036f]/g, "")
+      .replaceAll(/[^a-z0-9]/g, "-");
+    // Collapse consecutive dashes and trim edges without regex quantifiers
+    return normalized.split("-").filter(Boolean).join("-");
   };
 
   const handleNameChange = (value: string) => {
@@ -213,13 +220,17 @@ export default function AdminVenuesPage() {
     try {
       const payload = {
         ...formData,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude: formData.latitude
+          ? Number.parseFloat(formData.latitude)
+          : null,
+        longitude: formData.longitude
+          ? Number.parseFloat(formData.longitude)
+          : null,
       };
 
       const response = await fetch("/api/admin/venues", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: JSON_HEADERS,
         body: JSON.stringify(payload),
       });
 
@@ -229,7 +240,7 @@ export default function AdminVenuesPage() {
       }
 
       toast({
-        title: "Sucesso",
+        title: TOAST_SUCCESS,
         description: "Venue criado com sucesso",
       });
 
@@ -239,7 +250,7 @@ export default function AdminVenuesPage() {
     } catch (error) {
       console.error("Error creating venue:", error);
       toast({
-        title: "Erro",
+        title: TOAST_ERROR,
         description:
           error instanceof Error ? error.message : "Erro ao criar venue",
         variant: "destructive",
@@ -265,7 +276,7 @@ export default function AdminVenuesPage() {
           if (!response.ok) throw new Error("Failed to delete venue");
 
           toast({
-            title: "Sucesso",
+            title: TOAST_SUCCESS,
             description: "Venue eliminado com sucesso",
           });
 
@@ -273,7 +284,7 @@ export default function AdminVenuesPage() {
         } catch (error) {
           console.error("Error deleting venue:", error);
           toast({
-            title: "Erro",
+            title: TOAST_ERROR,
             description: "Erro ao eliminar venue",
             variant: "destructive",
           });
@@ -295,14 +306,14 @@ export default function AdminVenuesPage() {
         try {
           const response = await fetch(`/api/admin/venues/${venue.id}/status`, {
             method: "PATCH",
-            headers: { "Content-Type": "application/json" },
+            headers: JSON_HEADERS,
             body: JSON.stringify({ isActive: newStatus }),
           });
 
           if (!response.ok) throw new Error(`Failed to ${action} venue`);
 
           toast({
-            title: "Sucesso",
+            title: TOAST_SUCCESS,
             description: `Venue ${newStatus ? "ativado" : "desativado"} com sucesso`,
           });
 
@@ -310,7 +321,7 @@ export default function AdminVenuesPage() {
         } catch (error) {
           console.error("Error toggling venue status:", error);
           toast({
-            title: "Erro",
+            title: TOAST_ERROR,
             description: `Erro ao ${action} venue`,
             variant: "destructive",
           });
@@ -350,7 +361,7 @@ export default function AdminVenuesPage() {
     } catch (error) {
       console.error("Error searching users:", error);
       toast({
-        title: "Erro",
+        title: TOAST_ERROR,
         description: "Erro ao procurar utilizadores",
         variant: "destructive",
       });
@@ -368,7 +379,7 @@ export default function AdminVenuesPage() {
         `/api/admin/venues/${selectedVenue.id}/set-owner`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: JSON_HEADERS,
           body: JSON.stringify({ userId }),
         }
       );
@@ -376,7 +387,7 @@ export default function AdminVenuesPage() {
       if (!response.ok) throw new Error("Failed to set owner");
 
       toast({
-        title: "Sucesso",
+        title: TOAST_SUCCESS,
         description: "Owner definido com sucesso",
       });
 
@@ -387,7 +398,7 @@ export default function AdminVenuesPage() {
     } catch (error) {
       console.error("Error setting owner:", error);
       toast({
-        title: "Erro",
+        title: TOAST_ERROR,
         description: "Erro ao definir owner",
         variant: "destructive",
       });
@@ -417,7 +428,7 @@ export default function AdminVenuesPage() {
           if (!response.ok) throw new Error("Failed to remove owner");
 
           toast({
-            title: "Sucesso",
+            title: TOAST_SUCCESS,
             description: "Owner removido com sucesso",
           });
 
@@ -426,7 +437,7 @@ export default function AdminVenuesPage() {
         } catch (error) {
           console.error("Error removing owner:", error);
           toast({
-            title: "Erro",
+            title: TOAST_ERROR,
             description: "Erro ao remover owner",
             variant: "destructive",
           });
@@ -463,10 +474,10 @@ export default function AdminVenuesPage() {
         `/api/admin/venues/${selectedVenue.id}/fees`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: JSON_HEADERS,
           body: JSON.stringify({
             commissionType: feeFormData.commissionType,
-            commissionValue: parseInt(feeFormData.commissionValue),
+            commissionValue: Number.parseInt(feeFormData.commissionValue),
           }),
         }
       );
@@ -474,7 +485,7 @@ export default function AdminVenuesPage() {
       if (!response.ok) throw new Error("Failed to update fees");
 
       toast({
-        title: "Sucesso",
+        title: TOAST_SUCCESS,
         description: "Comissões atualizadas com sucesso",
       });
 
@@ -483,7 +494,7 @@ export default function AdminVenuesPage() {
     } catch (error) {
       console.error("Error updating fees:", error);
       toast({
-        title: "Erro",
+        title: TOAST_ERROR,
         description: "Erro ao atualizar comissões",
         variant: "destructive",
       });
@@ -737,7 +748,7 @@ export default function AdminVenuesPage() {
                       )}
                       <div>
                         <p className="font-medium">
-                          {selectedVenue.owner.name || "Sem nome"}
+                          {selectedVenue.owner.name || NO_NAME}
                         </p>
                         <p className="text-sm text-muted-foreground">
                           {selectedVenue.owner.email}
@@ -807,7 +818,7 @@ export default function AdminVenuesPage() {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">
-                          {user.name || "Sem nome"}
+                          {user.name || NO_NAME}
                         </p>
                         <p className="truncate text-sm text-muted-foreground">
                           {user.email}
@@ -1072,7 +1083,7 @@ export default function AdminVenuesPage() {
                       {venue.owner ? (
                         <>
                           <p className="font-medium">
-                            Owner: {venue.owner.name || "Sem nome"}
+                            Owner: {venue.owner.name || NO_NAME}
                           </p>
                           <p className="text-muted-foreground">
                             {venue.owner.email}

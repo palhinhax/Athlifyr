@@ -101,6 +101,259 @@ function getNotificationTitle(user: User): string {
   return `${emailStatus} | ${pushStatus}`;
 }
 
+interface UserActionHandlers {
+  onSendPush: (user: User) => void;
+  onChangeRole: (user: User) => void;
+  onBan: (user: User) => void;
+  onDelete: (user: User) => void;
+}
+
+interface UserDeviceBadgesProps {
+  readonly devices: User["devices"];
+}
+
+function UserDeviceBadges({ devices }: UserDeviceBadgesProps) {
+  if (!devices || devices.total === 0) {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 dark:bg-gray-900/30 dark:text-gray-500">
+        <Smartphone className="h-3 w-3" />0
+      </span>
+    );
+  }
+  return (
+    <div className="inline-flex items-center gap-1">
+      {devices.web > 0 && (
+        <span
+          className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
+          title={`${devices.web} Web device${devices.web > 1 ? "s" : ""}`}
+        >
+          \uD83C\uDF10 {devices.web}
+        </span>
+      )}
+      {devices.mobile > 0 && (
+        <span
+          className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
+          title={`${devices.mobile} Mobile device${devices.mobile > 1 ? "s" : ""}`}
+        >
+          <Smartphone className="h-3 w-3" />
+          {devices.mobile}
+        </span>
+      )}
+    </div>
+  );
+}
+
+interface UserNotificationBadgesProps {
+  readonly user: User;
+  readonly showLabels?: boolean;
+}
+
+function UserNotificationBadges({
+  user,
+  showLabels,
+}: UserNotificationBadgesProps) {
+  const emailActive = !!(user.emailNotifications && user.emailVerified);
+  const pushActive = !!(
+    user.pushNotificationsEnabled &&
+    user.devices &&
+    user.devices.total > 0
+  );
+
+  const emailClass = emailActive
+    ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
+    : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600";
+
+  const pushClass = pushActive
+    ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
+    : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600";
+
+  const notifTitle = getNotificationTitle(user);
+  const [emailTitle, pushTitle] = notifTitle.split(" | ");
+
+  return (
+    <div className="inline-flex items-center gap-1">
+      <span
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${emailClass}`}
+        title={emailTitle}
+      >
+        <Mail className="h-3 w-3" />
+        {showLabels && "Email"}
+      </span>
+      <span
+        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${pushClass}`}
+        title={pushTitle}
+      >
+        <BellRing className="h-3 w-3" />
+        {showLabels && "Push"}
+      </span>
+    </div>
+  );
+}
+
+function UserActionsMenu({
+  user,
+  compact,
+  ...handlers
+}: { user: User; compact?: boolean } & UserActionHandlers) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={compact ? "h-8 w-8 p-0" : undefined}
+        >
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => handlers.onSendPush(user)}>
+          <Bell className="mr-2 h-4 w-4" />
+          Enviar Notificação
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => handlers.onChangeRole(user)}>
+          <Shield className="mr-2 h-4 w-4" />
+          Alterar Role
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => handlers.onBan(user)}>
+          <Ban className="mr-2 h-4 w-4" />
+          {user.isBanned ? "Desbloquear" : "Bloquear"}
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          onClick={() => handlers.onDelete(user)}
+          className="text-destructive"
+        >
+          <Trash2 className="mr-2 h-4 w-4" />
+          Eliminar
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function UserMobileCard({
+  user,
+  ...handlers
+}: { user: User } & UserActionHandlers) {
+  return (
+    <div className="rounded-lg border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex items-center gap-3">
+          {user.image && (
+            <Image
+              src={user.image}
+              alt={user.name || "User"}
+              width={40}
+              height={40}
+              className="h-10 w-10 rounded-full"
+            />
+          )}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span className="truncate font-medium">
+                {user.name || "Sem nome"}
+              </span>
+              {user.isBanned && (
+                <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                  Bloqueado
+                </span>
+              )}
+            </div>
+            <p className="truncate text-sm text-muted-foreground">
+              {user.email}
+            </p>
+          </div>
+        </div>
+        <UserActionsMenu user={user} compact {...handlers} />
+      </div>
+      <div className="mt-3 flex items-center justify-between text-sm">
+        <div className="flex items-center gap-2">
+          <span
+            className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASS[user.role] || DEFAULT_ROLE_BADGE_CLASS}`}
+          >
+            {user.role}
+          </span>
+          <UserDeviceBadges devices={user.devices} />
+          {user.locale && LOCALE_FLAGS[user.locale] && (
+            <span
+              className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
+              title={user.locale.toUpperCase()}
+            >
+              {LOCALE_FLAGS[user.locale].flag} {LOCALE_FLAGS[user.locale].label}
+            </span>
+          )}
+        </div>
+        <UserNotificationBadges user={user} showLabels />
+        <span className="text-muted-foreground">
+          {new Date(user.createdAt).toLocaleDateString("pt-PT")}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function UserDesktopRow({
+  user,
+  ...handlers
+}: { user: User } & UserActionHandlers) {
+  return (
+    <tr className="border-b last:border-0 hover:bg-muted/50">
+      <td className="px-4 py-3">
+        <div className="flex items-center gap-3">
+          {user.image && (
+            <Image
+              src={user.image}
+              alt={user.name || "User"}
+              width={32}
+              height={32}
+              className="h-8 w-8 rounded-full"
+            />
+          )}
+          <div>
+            <span className="font-medium">{user.name || "Sem nome"}</span>
+            {user.isBanned && (
+              <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+                Bloqueado
+              </span>
+            )}
+          </div>
+        </div>
+      </td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">{user.email}</td>
+      <td className="px-4 py-3">
+        <span
+          className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASS[user.role] || DEFAULT_ROLE_BADGE_CLASS}`}
+        >
+          {user.role}
+        </span>
+      </td>
+      <td className="px-4 py-3 text-center">
+        <UserDeviceBadges devices={user.devices} />
+      </td>
+      <td className="px-4 py-3 text-center">
+        <UserNotificationBadges user={user} />
+      </td>
+      <td className="px-4 py-3 text-center">
+        {user.locale && LOCALE_FLAGS[user.locale] ? (
+          <span className="text-sm" title={user.locale.toUpperCase()}>
+            {LOCALE_FLAGS[user.locale].flag} {LOCALE_FLAGS[user.locale].label}
+          </span>
+        ) : (
+          <span className="text-xs text-muted-foreground">\u2014</span>
+        )}
+      </td>
+      <td className="px-4 py-3 text-sm text-muted-foreground">
+        {new Date(user.createdAt).toLocaleDateString("pt-PT")}
+      </td>
+      <td className="px-4 py-3 text-right">
+        <UserActionsMenu user={user} {...handlers} />
+      </td>
+    </tr>
+  );
+}
+
 export default function AdminUsersContent() {
   const [users, setUsers] = useState<User[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -348,161 +601,14 @@ export default function AdminUsersContent() {
           </div>
         ) : (
           users.map((user) => (
-            <div
+            <UserMobileCard
               key={user.id}
-              className="rounded-lg border bg-card p-4 shadow-sm"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  {user.image && (
-                    <Image
-                      src={user.image}
-                      alt={user.name || "User"}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-full"
-                    />
-                  )}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="truncate font-medium">
-                        {user.name || "Sem nome"}
-                      </span>
-                      {user.isBanned && (
-                        <span className="inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                          Bloqueado
-                        </span>
-                      )}
-                    </div>
-                    <p className="truncate text-sm text-muted-foreground">
-                      {user.email}
-                    </p>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => handleSendPush(user)}>
-                      <Bell className="mr-2 h-4 w-4" />
-                      Enviar Notificação
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => handleChangeRole(user)}>
-                      <Shield className="mr-2 h-4 w-4" />
-                      Alterar Role
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleBanUser(user)}>
-                      <Ban className="mr-2 h-4 w-4" />
-                      {user.isBanned ? "Desbloquear" : "Bloquear"}
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => handleDeleteUser(user)}
-                      className="text-destructive"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Eliminar
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-              <div className="mt-3 flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${
-                      user.role === "ADMIN"
-                        ? "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400"
-                        : user.role === "MOD"
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          : "bg-gray-100 text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-                    }`}
-                  >
-                    {user.role}
-                  </span>
-                  {user.devices && user.devices.total > 0 ? (
-                    <div className="inline-flex items-center gap-1">
-                      {user.devices.web > 0 && (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          title={`${user.devices.web} Web device${user.devices.web > 1 ? "s" : ""}`}
-                        >
-                          🌐 {user.devices.web}
-                        </span>
-                      )}
-                      {user.devices.mobile > 0 && (
-                        <span
-                          className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                          title={`${user.devices.mobile} Mobile device${user.devices.mobile > 1 ? "s" : ""}`}
-                        >
-                          <Smartphone className="h-3 w-3" />
-                          {user.devices.mobile}
-                        </span>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 dark:bg-gray-900/30 dark:text-gray-500">
-                      <Smartphone className="h-3 w-3" />0
-                    </span>
-                  )}
-                  {user.locale && LOCALE_FLAGS[user.locale] && (
-                    <span
-                      className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-900/30 dark:text-gray-400"
-                      title={user.locale.toUpperCase()}
-                    >
-                      {LOCALE_FLAGS[user.locale].flag}{" "}
-                      {LOCALE_FLAGS[user.locale].label}
-                    </span>
-                  )}
-                </div>
-                <div className="mt-2 flex items-center gap-1">
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                      user.emailNotifications && user.emailVerified
-                        ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                        : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
-                    }`}
-                    title={
-                      user.emailNotifications && user.emailVerified
-                        ? "Email ativo"
-                        : !user.emailVerified
-                          ? "Email não verificado"
-                          : "Email desativado"
-                    }
-                  >
-                    <Mail className="h-3 w-3" />
-                    Email
-                  </span>
-                  <span
-                    className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                      user.pushNotificationsEnabled &&
-                      user.devices &&
-                      user.devices.total > 0
-                        ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                        : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
-                    }`}
-                    title={
-                      user.pushNotificationsEnabled &&
-                      user.devices &&
-                      user.devices.total > 0
-                        ? `Push ativo (${user.devices.total} dispositivo${user.devices.total !== 1 ? "s" : ""})`
-                        : !user.pushNotificationsEnabled
-                          ? "Push desativado"
-                          : "Sem dispositivos registados"
-                    }
-                  >
-                    <BellRing className="h-3 w-3" />
-                    Push
-                  </span>
-                </div>
-                <span className="text-muted-foreground">
-                  {new Date(user.createdAt).toLocaleDateString("pt-PT")}
-                </span>
-              </div>
-            </div>
+              user={user}
+              onSendPush={handleSendPush}
+              onChangeRole={handleChangeRole}
+              onBan={handleBanUser}
+              onDelete={handleDeleteUser}
+            />
           ))
         )}
       </div>
@@ -554,147 +660,14 @@ export default function AdminUsersContent() {
               </tr>
             ) : (
               users.map((user) => (
-                <tr
+                <UserDesktopRow
                   key={user.id}
-                  className="border-b last:border-0 hover:bg-muted/50"
-                >
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {user.image && (
-                        <Image
-                          src={user.image}
-                          alt={user.name || "User"}
-                          width={32}
-                          height={32}
-                          className="h-8 w-8 rounded-full"
-                        />
-                      )}
-                      <div>
-                        <span className="font-medium">
-                          {user.name || "Sem nome"}
-                        </span>
-                        {user.isBanned && (
-                          <span className="ml-2 inline-flex items-center rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
-                            Bloqueado
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {user.email}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2 py-1 text-xs font-medium ${ROLE_BADGE_CLASS[user.role] || DEFAULT_ROLE_BADGE_CLASS}`}
-                    >
-                      {user.role}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {user.devices && user.devices.total > 0 ? (
-                      <div className="inline-flex items-center gap-1">
-                        {user.devices.web > 0 && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2 py-1 text-xs font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                            title={`${user.devices.web} Web device${user.devices.web > 1 ? "s" : ""}`}
-                          >
-                            🌐 {user.devices.web}
-                          </span>
-                        )}
-                        {user.devices.mobile > 0 && (
-                          <span
-                            className="inline-flex items-center gap-1 rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400"
-                            title={`${user.devices.mobile} Mobile device${user.devices.mobile > 1 ? "s" : ""}`}
-                          >
-                            <Smartphone className="h-3 w-3" />
-                            {user.devices.mobile}
-                          </span>
-                        )}
-                      </div>
-                    ) : (
-                      <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-500 dark:bg-gray-900/30 dark:text-gray-500">
-                        <Smartphone className="h-3 w-3" />0
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    <div className="inline-flex items-center gap-1">
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                          user.emailNotifications && user.emailVerified
-                            ? "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400"
-                            : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
-                        }`}
-                        title={getNotificationTitle(user).split(" | ")[0]}
-                      >
-                        <Mail className="h-3 w-3" />
-                      </span>
-                      <span
-                        className={`inline-flex items-center gap-1 rounded-full px-2 py-1 text-xs font-medium ${
-                          user.pushNotificationsEnabled &&
-                          user.devices &&
-                          user.devices.total > 0
-                            ? "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400"
-                            : "bg-gray-100 text-gray-400 dark:bg-gray-900/30 dark:text-gray-600"
-                        }`}
-                        title={getNotificationTitle(user).split(" | ")[1]}
-                      >
-                        <BellRing className="h-3 w-3" />
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3 text-center">
-                    {user.locale && LOCALE_FLAGS[user.locale] ? (
-                      <span
-                        className="text-sm"
-                        title={user.locale.toUpperCase()}
-                      >
-                        {LOCALE_FLAGS[user.locale].flag}{" "}
-                        {LOCALE_FLAGS[user.locale].label}
-                      </span>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-sm text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString("pt-PT")}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="sm">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => handleSendPush(user)}>
-                          <Bell className="mr-2 h-4 w-4" />
-                          Enviar Notificação
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleChangeRole(user)}
-                        >
-                          <Shield className="mr-2 h-4 w-4" />
-                          Alterar Role
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleBanUser(user)}>
-                          <Ban className="mr-2 h-4 w-4" />
-                          {user.isBanned ? "Desbloquear" : "Bloquear"}
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteUser(user)}
-                          className="text-destructive"
-                        >
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Eliminar
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </td>
-                </tr>
+                  user={user}
+                  onSendPush={handleSendPush}
+                  onChangeRole={handleChangeRole}
+                  onBan={handleBanUser}
+                  onDelete={handleDeleteUser}
+                />
               ))
             )}
           </tbody>

@@ -32,7 +32,7 @@ function buildActivationData(
   // Compute endsAt from plan policy if not explicitly provided
   if (explicitEndsAt === undefined && !existingSubscription.endsAt) {
     const planPolicy = existingSubscription.plan
-      .policy as unknown as VenuePlanPolicy | null;
+      .policy as VenuePlanPolicy | null;
     const duration = planPolicy?.duration || DEFAULT_PLAN_POLICY.duration;
     const durationValue =
       planPolicy?.durationValue || DEFAULT_PLAN_POLICY.durationValue;

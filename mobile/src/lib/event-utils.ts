@@ -1,6 +1,5 @@
 /**
- * Sport type icons (emoji) - universal, don't require translation
- * Aligned with web: lib/sport-config.ts
+ * Sport type icons (emoji) - aligned with web: lib/sport-config.ts sportIcons
  */
 export const sportTypeIcons: Record<string, string> = {
   RUNNING: "🏃",

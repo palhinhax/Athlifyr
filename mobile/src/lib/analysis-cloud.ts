@@ -18,7 +18,7 @@
 
 import * as FileSystem from "expo-file-system";
 import { Paths, File as FSFile } from "expo-file-system";
-import { API_URL } from "@/src/lib/api";
+import { BASE_URL } from "@/src/lib/api";
 import type {
   PoseFrame,
   PoseMetrics,
@@ -101,7 +101,7 @@ async function uploadVideoToB2ForSave(
   const fileExt = "mp4";
 
   // Step 1: Get presigned URL
-  const presignRes = await fetch(`${API_URL}/api/uploads/presign`, {
+  const presignRes = await fetch(`${BASE_URL}/uploads/presign`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -179,7 +179,7 @@ export async function saveMotionAnalysisToCloud(
   form.append("poseFrames", JSON.stringify(payload.poseFrames));
   form.append("metrics", JSON.stringify(payload.metrics));
 
-  const res = await fetch(`${API_URL}/api/analyses/motion`, {
+  const res = await fetch(`${BASE_URL}/analyses/motion`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${authToken}`,
@@ -247,7 +247,7 @@ export async function saveLiftAnalysisToCloud(
   form.append("barPath", JSON.stringify(payload.barPath));
   form.append("metrics", JSON.stringify(payload.metrics));
 
-  const res = await fetch(`${API_URL}/api/analyses/lift`, {
+  const res = await fetch(`${BASE_URL}/analyses/lift`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${authToken}`,

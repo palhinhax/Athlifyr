@@ -90,7 +90,7 @@ function SetInputRow({
   onUpdate,
   onRemove,
   setLabel,
-}: {
+}: Readonly<{
   set: ExerciseSetData;
   setIndex: number;
   blockIndex: number;
@@ -108,7 +108,7 @@ function SetInputRow({
     setIndex: number
   ) => void;
   setLabel: string;
-}) {
+}>) {
   return (
     <div className="rounded-md bg-muted/30 p-2">
       {/* Set label + trash */}
@@ -139,7 +139,7 @@ function SetInputRow({
               exerciseIndex,
               setIndex,
               "reps",
-              e.target.value ? parseInt(e.target.value) : 0
+              e.target.value ? Number.parseInt(e.target.value) : 0
             )
           }
         />
@@ -156,7 +156,7 @@ function SetInputRow({
               exerciseIndex,
               setIndex,
               "weight",
-              e.target.value ? parseFloat(e.target.value) : 0
+              e.target.value ? Number.parseFloat(e.target.value) : 0
             )
           }
         />
@@ -291,7 +291,7 @@ export function WorkoutLogger({
   const addSet = (blockIndex: number, exerciseIndex: number) => {
     const newResults = [...blockResults];
     const exercise = newResults[blockIndex].exerciseResults[exerciseIndex];
-    const lastSet = exercise.sets[exercise.sets.length - 1];
+    const lastSet = exercise.sets.at(-1);
     const newSetNumber = exercise.sets.length + 1;
     exercise.sets.push({
       setNumber: newSetNumber,
@@ -465,7 +465,9 @@ export function WorkoutLogger({
                         updateBlockResult(
                           blockIndex,
                           "completedRounds",
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value
+                            ? Number.parseInt(e.target.value)
+                            : undefined
                         )
                       }
                     />
@@ -480,7 +482,9 @@ export function WorkoutLogger({
                         updateBlockResult(
                           blockIndex,
                           "extraReps",
-                          e.target.value ? parseInt(e.target.value) : undefined
+                          e.target.value
+                            ? Number.parseInt(e.target.value)
+                            : undefined
                         )
                       }
                     />
@@ -551,7 +555,7 @@ export function WorkoutLogger({
                                 exerciseIndex,
                                 "actualReps",
                                 e.target.value
-                                  ? parseInt(e.target.value)
+                                  ? Number.parseInt(e.target.value)
                                   : undefined
                               )
                             }
@@ -580,7 +584,7 @@ export function WorkoutLogger({
                                   exerciseIndex,
                                   "actualWeight",
                                   e.target.value
-                                    ? parseFloat(e.target.value)
+                                    ? Number.parseFloat(e.target.value)
                                     : undefined
                                 )
                               }
@@ -634,7 +638,7 @@ export function WorkoutLogger({
                                   exerciseIndex,
                                   "actualDistance",
                                   e.target.value
-                                    ? parseFloat(e.target.value)
+                                    ? Number.parseFloat(e.target.value)
                                     : undefined
                                 )
                               }
@@ -712,7 +716,7 @@ export function WorkoutLogger({
                                 exerciseIndex,
                                 "actualCalories",
                                 e.target.value
-                                  ? parseInt(e.target.value)
+                                  ? Number.parseInt(e.target.value)
                                   : undefined
                               )
                             }
@@ -729,7 +733,7 @@ export function WorkoutLogger({
                         exerciseIndex
                       ].sets.map((set, setIndex) => (
                         <SetInputRow
-                          key={setIndex}
+                          key={set.setNumber}
                           set={set}
                           setIndex={setIndex}
                           blockIndex={blockIndex}
@@ -767,7 +771,9 @@ export function WorkoutLogger({
               <Label>{t("log.feeling")}</Label>
               <Select
                 value={feeling?.toString() || ""}
-                onValueChange={(v) => setFeeling(v ? parseInt(v) : undefined)}
+                onValueChange={(v) =>
+                  setFeeling(v ? Number.parseInt(v) : undefined)
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder={t("log.feeling")} />
@@ -787,7 +793,7 @@ export function WorkoutLogger({
               <Select
                 value={perceivedEffort?.toString() || ""}
                 onValueChange={(v) =>
-                  setPerceivedEffort(v ? parseInt(v) : undefined)
+                  setPerceivedEffort(v ? Number.parseInt(v) : undefined)
                 }
               >
                 <SelectTrigger>

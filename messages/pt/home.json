@@ -16,7 +16,9 @@
     "analysisMotionTitle": "Análise de Movimento",
     "analysisMotionDescription": "Análise automática de pose com visualização 3D do esqueleto e ângulos articulares.",
     "analysisLiftTitle": "Análise de Levantamento",
-    "analysisLiftDescription": "Rastreio de barra com análise de trajetória, velocidade e deteção de repetições."
+    "analysisLiftDescription": "Rastreio de barra com análise de trajetória, velocidade e deteção de repetições.",
+    "appStoreAlt": "Descarregar na App Store",
+    "googlePlayAlt": "Disponível no Google Play"
   },
   "promo": {
     "intro": "Athlifyr",

@@ -256,7 +256,11 @@
       "capTime": "Cap Time",
       "optional": "optional",
       "capTimeHint": "Leave empty for no time limit",
-      "continueAfterCap": "Continue counting after cap is reached"
+      "continueAfterCap": "Continue counting after cap is reached",
+      "settings": "Timer settings",
+      "enterFullscreen": "Enter fullscreen",
+      "exitFullscreen": "Exit fullscreen",
+      "backToWorkouts": "Back to workouts"
     },
 
     "assign": {

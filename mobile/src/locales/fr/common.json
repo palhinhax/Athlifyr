@@ -149,6 +149,21 @@
         "finalParticipantsCount": "Nombre total de participants au tirage : {{count}}",
         "verifyFormula": "SHA-256(\"{{secret}}|{{rank}}|{{attempt}}\") % {{total}} + 1 = #{{winning}}"
       }
+    },
+    "a11y": {
+      "eventCard": "{{title}}, {{date}}, {{location}}",
+      "eventCardParticipating": "{{title}}, {{date}}, {{location}}, participe",
+      "listView": "Vue liste",
+      "mapView": "Vue carte",
+      "suggestEvent": "Suggérer un événement",
+      "searchEvents": "Rechercher des événements",
+      "eventsList": "Liste des événements",
+      "participating": "J'y vais",
+      "featured": "Événement en vedette",
+      "hasGiveaway": "Tirage au sort",
+      "commentsCount": "{{count}} commentaires",
+      "variants": "Distances : {{variants}}",
+      "loadingEvents": "Chargement des événements"
     }
   },
   "common": {
@@ -481,6 +496,13 @@
     "myVenues": "Mes Centres",
     "noVenuesTitle": "Pas Encore de Centres",
     "noVenuesDescription2": "Tu n'as pas encore de centres actifs. Explore l'onglet lieux pour découvrir des centres d'entraînement.",
+    "mapFilters": {
+      "title": "Filtres",
+      "services": "Services",
+      "applyFilters": "Appliquer les filtres",
+      "clearFilters": "Effacer les filtres",
+      "venuesCount": "{{count}} lieux"
+    },
     "roles": {
       "owner": "Propriétaire",
       "admin": "Administrateur",
@@ -557,6 +579,14 @@
       "RECOVERY": "Récupération",
       "SAUNA": "Sauna",
       "COLD_PLUNGE": "Bain Froid",
+      "HYROX": "HYROX",
+      "POWERLIFTING": "Powerlifting",
+      "OLYMPIC_LIFTING": "Haltérophilie Olympique",
+      "FUNCTIONAL_FITNESS": "Fitness Fonctionnel",
+      "OPEN_GYM": "Open Gym",
+      "MASSAGE": "Massage",
+      "KICKBOXING": "Kickboxing",
+      "BJJ": "BJJ",
       "OTHER": "Autre"
     }
   },

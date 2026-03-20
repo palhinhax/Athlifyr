@@ -1,6 +1,6 @@
 import React from "react";
 import { Image, ImageStyle } from "expo-image";
-import { StyleProp } from "react-native";
+import { Platform, StyleProp } from "react-native";
 
 interface CachedImageProps {
   /** Image URL */
@@ -56,6 +56,9 @@ export function CachedImage({
       cachePolicy={cachePolicy}
       priority={priority}
       recyclingKey={uri}
+      {...(Platform.OS === "web"
+        ? { accessibilityLabel: alt || undefined }
+        : {})}
     />
   );
 }
@@ -94,6 +97,9 @@ export function CachedAvatar({
       priority="high"
       transition={100}
       recyclingKey={uri}
+      {...(Platform.OS === "web"
+        ? { accessibilityLabel: alt || undefined }
+        : {})}
     />
   );
 }

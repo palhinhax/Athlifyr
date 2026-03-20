@@ -83,6 +83,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
 
   it("returns 400 when quantity is zero", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
+    (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     const res = (await POST(makeRequest({ quantity: 0 }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
@@ -92,12 +93,14 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
 
   it("returns 400 when quantity is negative", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
+    (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     const res = (await POST(makeRequest({ quantity: -1 }), makeParams()))!;
     expect(res.status).toBe(400);
   });
 
   it("returns 400 when quantity is not an integer", async () => {
     mockAuth.mockResolvedValue({ user: { id: userId } });
+    (prisma.venue.findUnique as jest.Mock).mockResolvedValue(mockVenue);
     const res = (await POST(makeRequest({ quantity: 1.5 }), makeParams()))!;
     expect(res.status).toBe(400);
     expect(await res.json()).toEqual({
@@ -251,12 +254,13 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
     expect(body.clientSecret).toBe("pi_secret");
     expect(body.purchase.id).toBe("purchase-1");
 
-    // price=5, qty=3 → total=15 → 1500 cents; commission=10% → 150 cents
+    // price=5, qty=3 → total=15 → 1500 cents
+    // commission=10% → 150 cents + Stripe fee=ceil(1500*0.015+25)=48 → 198
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
       expect.objectContaining({
         amount: 1500,
         currency: "eur",
-        application_fee_amount: 150,
+        application_fee_amount: 198,
         transfer_data: { destination: "acct_123" },
       })
     );
@@ -306,7 +310,7 @@ describe("POST /api/venues/[id]/products/[productId]/purchase", () => {
 
     expect(stripe.paymentIntents.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        application_fee_amount: 100,
+        application_fee_amount: 133,
       })
     );
   });

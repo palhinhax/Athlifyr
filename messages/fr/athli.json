@@ -5,6 +5,8 @@
     "subtitle": "Ton assistant IA",
     "open": "Parler avec Athli",
     "close": "Fermer Athli",
+    "send": "Envoyer le message",
+    "backToChat": "Retour au chat",
     "history": "Historique des conversations",
     "conversations": "Historique",
     "newConversation": "Nouvelle conversation",

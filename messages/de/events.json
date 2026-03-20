@@ -38,6 +38,7 @@
     "allEvents": "Alle Veranstaltungen",
     "noEvents": "Keine Veranstaltungen gefunden",
     "noEventsDescription": "Versuchen Sie, die Filter anzupassen, oder schauen Sie später noch einmal vorbei.",
+    "eventsListHeading": "Veranstaltungsliste",
     "loadingMore": "Weitere Veranstaltungen werden geladen...",
     "allEventsLoaded": "Alle Veranstaltungen geladen",
     "details": "Veranstaltungsdetails",

@@ -332,19 +332,13 @@ export function AddStrengthSheet({ visible, onClose }: AddStrengthSheetProps) {
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[
-                  styles.saveBtn,
-                  isCreating && styles.saveBtnDisabled,
-                ]}
+                style={[styles.saveBtn, isCreating && styles.saveBtnDisabled]}
                 onPress={handleSave}
                 disabled={isCreating}
                 activeOpacity={0.7}
               >
                 {isCreating ? (
-                  <ActivityIndicator
-                    size="small"
-                    color={theme.colors.white}
-                  />
+                  <ActivityIndicator size="small" color={theme.colors.white} />
                 ) : (
                   <Text style={styles.saveBtnText}>
                     {t("performance.save")}

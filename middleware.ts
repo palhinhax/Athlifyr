@@ -88,7 +88,7 @@ function handleMaintenanceMode(request: NextRequest): NextResponse | null {
     pathname.startsWith("/_next") ||
     pathname.startsWith("/static") ||
     pathname.startsWith("/videos") ||
-    !!pathname.match(/\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|mp4|webm)$/i);
+    /\.(svg|png|jpg|jpeg|gif|ico|webp|woff|woff2|mp4|webm)$/i.test(pathname);
 
   if (
     isMaintenanceMode &&
@@ -125,7 +125,7 @@ function handleSeoRedirect(
     !hostname.startsWith("www.") &&
     !hostname.startsWith("localhost") &&
     !hostname.includes(":") &&
-    !hostname.match(/^\d+\.\d+\.\d+\.\d+/);
+    !/^\d+\.\d+\.\d+\.\d+/.test(hostname);
 
   const hasLocalePrefix = supportedLocales.some(
     (locale) => pathname === `/${locale}` || pathname.startsWith(`/${locale}/`)

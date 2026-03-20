@@ -9,7 +9,7 @@ export const API_URL =
 
 // On web, use a relative URL so requests go through the dev-server proxy (avoids CORS).
 // On native, use the full backend URL.
-const BASE_URL = Platform.OS === "web" ? "/api" : `${API_URL}/api`;
+export const BASE_URL = Platform.OS === "web" ? "/api" : `${API_URL}/api`;
 
 const TOKEN_KEY = "auth-token";
 const REFRESH_TOKEN_KEY = "refresh-token";

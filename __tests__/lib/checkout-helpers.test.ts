@@ -5,12 +5,25 @@ import {
   validateEventAcceptsRegistrations,
   resolveVariant,
   findActivePricingPhase,
+  handleFreeRegistration,
 } from "@/lib/checkout-helpers";
 
 // Mock dependencies to avoid importing prisma/stripe at module level
-jest.mock("@/lib/prisma", () => ({ prisma: {} }));
+const mockUpsert = jest.fn();
+const mockCreate = jest.fn();
+jest.mock("@/lib/prisma", () => ({
+  prisma: {
+    registration: {
+      upsert: (...args: unknown[]) => mockUpsert(...args),
+      create: (...args: unknown[]) => mockCreate(...args),
+    },
+  },
+}));
 jest.mock("@/lib/stripe", () => ({ stripe: {} }));
-jest.mock("@/lib/bib-number", () => ({ assignBibNumbers: jest.fn() }));
+const mockAssignBibNumbers = jest.fn();
+jest.mock("@/lib/bib-number", () => ({
+  assignBibNumbers: (...args: unknown[]) => mockAssignBibNumbers(...args),
+}));
 jest.mock("@/lib/auth-helpers", () => ({}));
 
 // ============================================================================
@@ -200,5 +213,147 @@ describe("findActivePricingPhase", () => {
     const variant = makeVariant({ pricingPhases: [variantPhase] });
     const result = findActivePricingPhase(variant, [eventPhase]);
     expect(result).toBe(variantPhase);
+  });
+});
+
+// ============================================================================
+// handleFreeRegistration
+// ============================================================================
+
+describe("handleFreeRegistration", () => {
+  const user = { id: "user_1", name: "Test User", email: "test@example.com" };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockUpsert.mockResolvedValue({ id: "reg_1" });
+    mockCreate.mockResolvedValue({ id: "reg_member_1" });
+    mockAssignBibNumbers.mockResolvedValue(undefined);
+  });
+
+  it("creates individual free registration with SupportedCurrency type", async () => {
+    const event = makeEvent();
+    const variant = makeVariant();
+    const phase = makePhase({ price: 0, currency: "EUR" });
+
+    const res = await handleFreeRegistration(
+      user as never,
+      event as never,
+      variant as never,
+      phase as never
+    );
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    expect(body.registrationId).toBe("reg_1");
+    expect(body.status).toBe("CONFIRMED");
+
+    // Verify prisma upsert was called with currency as SupportedCurrency
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          currency: "EUR",
+          paymentProvider: "NONE",
+          status: "CONFIRMED",
+        }),
+      })
+    );
+  });
+
+  it("creates team registration using TeamRegistrationParams object pattern", async () => {
+    const event = makeEvent();
+    const variant = makeVariant();
+    const phase = makePhase({ price: 0, currency: "USD" });
+    const teamMembers = [
+      { name: "Alice", email: "alice@test.com" },
+      { name: "Bob", email: "bob@test.com" },
+    ];
+
+    const res = await handleFreeRegistration(
+      user as never,
+      event as never,
+      variant as never,
+      phase as never,
+      teamMembers
+    );
+
+    expect(res.status).toBe(201);
+
+    // Leader registration
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({
+          teamRole: "LEADER",
+          currency: "USD",
+        }),
+      })
+    );
+
+    // Team member registrations (uses TeamRegistrationParams internally)
+    expect(mockCreate).toHaveBeenCalledTimes(2);
+    expect(mockCreate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: expect.objectContaining({
+          teamRole: "MEMBER",
+          currency: "USD",
+          guestName: "Alice",
+        }),
+      })
+    );
+  });
+
+  it("handles GBP currency via SupportedCurrency type", async () => {
+    const event = makeEvent();
+    const variant = makeVariant();
+    const phase = makePhase({ price: 0, currency: "GBP" });
+
+    await handleFreeRegistration(
+      user as never,
+      event as never,
+      variant as never,
+      phase as never
+    );
+
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        create: expect.objectContaining({ currency: "GBP" }),
+      })
+    );
+  });
+
+  it("assigns bib numbers after registration", async () => {
+    const event = makeEvent();
+    const variant = makeVariant();
+    const phase = makePhase({ price: 0 });
+
+    await handleFreeRegistration(
+      user as never,
+      event as never,
+      variant as never,
+      phase as never
+    );
+
+    expect(mockAssignBibNumbers).toHaveBeenCalledWith("evt_1", ["reg_1"]);
+  });
+
+  it("assigns bib numbers for team with leader + members", async () => {
+    const event = makeEvent();
+    const variant = makeVariant();
+    const phase = makePhase({ price: 0 });
+    const teamMembers = [{ name: "Alice" }];
+
+    mockCreate.mockResolvedValue({ id: "reg_member_1" });
+
+    await handleFreeRegistration(
+      user as never,
+      event as never,
+      variant as never,
+      phase as never,
+      teamMembers
+    );
+
+    expect(mockAssignBibNumbers).toHaveBeenCalledWith("evt_1", [
+      "reg_1",
+      "reg_member_1",
+    ]);
   });
 });

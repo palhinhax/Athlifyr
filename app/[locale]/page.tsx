@@ -10,7 +10,7 @@ import {
   HomeSeeAllButton,
   HomeNoEventsCta,
 } from "@/components/home-client-tracking";
-import { HomeAnalysisShortcut } from "@/components/home-analysis-shortcut";
+import { AppDownloadSection } from "@/components/app-download-section";
 
 async function getUpcomingEvents(country: string) {
   return await prisma.event.findMany({
@@ -82,18 +82,11 @@ export default async function Home({
             <br />
             {t("heroDescriptionCountry", { country: userCountry })}
           </p>
-          <div className="mt-6 flex justify-center md:mt-8">
-            <HomeAnalysisShortcut
-              title={t("analysisShortcut")}
-              description={t("analysisDescription")}
-              motionTitle={t("analysisMotionTitle")}
-              motionDescription={t("analysisMotionDescription")}
-              liftTitle={t("analysisLiftTitle")}
-              liftDescription={t("analysisLiftDescription")}
-            />
-          </div>
         </div>
       </section>
+
+      {/* App Download Section */}
+      <AppDownloadSection />
 
       {/* Upcoming Events */}
       <section className="container py-6 md:py-12">

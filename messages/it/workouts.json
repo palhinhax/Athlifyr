@@ -256,7 +256,11 @@
       "capTime": "Tempo Limite",
       "optional": "opzionale",
       "capTimeHint": "Lascia vuoto per nessun limite di tempo",
-      "continueAfterCap": "Continua a contare dopo aver raggiunto il limite"
+      "continueAfterCap": "Continua a contare dopo aver raggiunto il limite",
+      "settings": "Impostazioni timer",
+      "enterFullscreen": "Attiva schermo intero",
+      "exitFullscreen": "Esci dallo schermo intero",
+      "backToWorkouts": "Torna agli allenamenti"
     },
 
     "assign": {

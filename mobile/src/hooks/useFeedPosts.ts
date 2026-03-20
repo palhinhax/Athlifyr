@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { api, API_URL } from "@/src/lib/api";
-import * as SecureStore from "expo-secure-store";
+import { api } from "@/src/lib/api";
 
 export interface FeedPost {
   id: string;
@@ -43,27 +42,10 @@ interface PostsResponse {
 }
 
 async function fetchPosts(page: number): Promise<PostsResponse> {
-  const params = new URLSearchParams({
-    page: page.toString(),
-    pageSize: "15",
-    feed: "true",
+  const { data } = await api.get<PostsResponse>("/posts", {
+    params: { page, pageSize: 15, feed: true },
   });
-
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-
-  // Add auth token if available (for personalised feed)
-  const token = await SecureStore.getItemAsync("auth-token");
-  if (token) {
-    headers["Authorization"] = `Bearer ${token}`;
-  }
-
-  const response = await fetch(`${API_URL}/api/posts?${params}`, { headers });
-  if (!response.ok) {
-    throw new Error("Failed to fetch posts");
-  }
-  return response.json() as Promise<PostsResponse>;
+  return data;
 }
 
 export function useFeedPosts() {

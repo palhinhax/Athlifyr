@@ -34,6 +34,7 @@ export function AuthVideoBackground({ children }: AuthVideoBackgroundProps) {
           muted
           playsInline
           aria-hidden="true"
+          tabIndex={-1}
           className="absolute inset-0 h-full w-full object-cover"
           key={videoSrc}
         >

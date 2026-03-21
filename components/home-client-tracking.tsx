@@ -82,7 +82,7 @@ interface HomeSeeAllButtonProps {
 export function HomeSeeAllButton({
   seeAll,
   eventsLabel,
-}: HomeSeeAllButtonProps) {
+}: Readonly<HomeSeeAllButtonProps>) {
   const handleClick = () => {
     analyticsEvent("Homepage_SeeAll_Click", {
       location: "events_section",

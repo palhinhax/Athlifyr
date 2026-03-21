@@ -72,8 +72,7 @@ export function CookieConsent() {
   if (!showBanner) return null;
 
   return (
-    <div
-      role="region"
+    <section
       aria-label={t("title")}
       className={`fixed inset-x-0 bottom-0 z-50 p-4 transition-all duration-300 ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
@@ -119,6 +118,6 @@ export function CookieConsent() {
           </Button>
         </div>
       </Card>
-    </div>
+    </section>
   );
 }

@@ -539,7 +539,6 @@ export function PostCard({
                 loop
                 muted
                 playsInline
-                aria-hidden="true"
                 className="max-h-[850px] w-auto max-w-full cursor-pointer"
                 preload="auto"
                 onClick={(e) => {

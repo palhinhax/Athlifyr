@@ -66,8 +66,8 @@ export default async function AcessibilidadePage({
             rel="noopener noreferrer"
           >
             Gerador da Declaração de Acessibilidade e Usabilidade
-          </a>
-          , conforme o Decreto-Lei n.º 83/2018, de 19 de outubro.
+          </a>{" "}
+          conforme o Decreto-Lei n.º 83/2018, de 19 de outubro.
         </p>
 
         <p>

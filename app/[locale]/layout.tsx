@@ -313,6 +313,12 @@ export default async function RootLayout({
                         >
                           {tFooter("accessibility")}
                         </Link>
+                        <Link
+                          href="/acessibilidade"
+                          className="transition-colors hover:text-foreground"
+                        >
+                          {tFooter("declaration")}
+                        </Link>
                       </nav>
 
                       {/* Social + Apps + Copyright */}

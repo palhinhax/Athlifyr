@@ -22,6 +22,7 @@ interface HomeCtaSectionProps {
   ctaTitle: string;
   ctaDescription: string;
   exploreAllEvents: string;
+  eventsLabel: string;
 }
 
 export function HomeCtaSection({
@@ -29,6 +30,7 @@ export function HomeCtaSection({
   ctaTitle,
   ctaDescription,
   exploreAllEvents,
+  eventsLabel,
 }: HomeCtaSectionProps) {
   const handleExploreClick = () => {
     analyticsEvent("Homepage_CTA_Explore_Click", {
@@ -59,7 +61,11 @@ export function HomeCtaSection({
           {ctaDescription}
         </p>
         <Button size="lg" className="px-8 shadow-lg" asChild>
-          <Link href="/events" onClick={handleExploreClick}>
+          <Link
+            href="/events"
+            onClick={handleExploreClick}
+            aria-label={eventsLabel}
+          >
             {exploreAllEvents}
           </Link>
         </Button>
@@ -70,9 +76,13 @@ export function HomeCtaSection({
 
 interface HomeSeeAllButtonProps {
   seeAll: string;
+  eventsLabel: string;
 }
 
-export function HomeSeeAllButton({ seeAll }: HomeSeeAllButtonProps) {
+export function HomeSeeAllButton({
+  seeAll,
+  eventsLabel,
+}: HomeSeeAllButtonProps) {
   const handleClick = () => {
     analyticsEvent("Homepage_SeeAll_Click", {
       location: "events_section",
@@ -81,7 +91,7 @@ export function HomeSeeAllButton({ seeAll }: HomeSeeAllButtonProps) {
 
   return (
     <Button variant="ghost" asChild>
-      <Link href="/events" onClick={handleClick}>
+      <Link href="/events" onClick={handleClick} aria-label={eventsLabel}>
         {seeAll}
       </Link>
     </Button>
@@ -91,11 +101,13 @@ export function HomeSeeAllButton({ seeAll }: HomeSeeAllButtonProps) {
 interface HomeNoEventsCtaProps {
   locale: string;
   exploreAllEvents: string;
+  eventsLabel: string;
 }
 
 export function HomeNoEventsCta({
   locale: _locale,
   exploreAllEvents,
+  eventsLabel,
 }: HomeNoEventsCtaProps) {
   const handleClick = () => {
     analyticsEvent("Homepage_NoEvents_Explore_Click", {
@@ -105,7 +117,7 @@ export function HomeNoEventsCta({
 
   return (
     <Button asChild>
-      <Link href="/events" onClick={handleClick}>
+      <Link href="/events" onClick={handleClick} aria-label={eventsLabel}>
         {exploreAllEvents}
       </Link>
     </Button>

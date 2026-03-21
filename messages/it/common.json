@@ -2,6 +2,8 @@
   "common": {
     "appName": "Athlifyr",
     "skipToMainContent": "Vai al contenuto principale",
+    "showPassword": "Mostra password",
+    "hidePassword": "Nascondi password",
     "loading": "Caricamento...",
     "error": "Errore",
     "success": "Successo",

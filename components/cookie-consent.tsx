@@ -73,6 +73,8 @@ export function CookieConsent() {
 
   return (
     <div
+      role="region"
+      aria-label={t("title")}
       className={`fixed inset-x-0 bottom-0 z-50 p-4 transition-all duration-300 ${
         isVisible ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"
       }`}
@@ -100,7 +102,9 @@ export function CookieConsent() {
                 {t("acceptEssential")}
               </Button>
               <Button asChild variant="ghost" size="sm">
-                <Link href="/cookies">{t("learnMore")}</Link>
+                <Link href="/cookies" aria-label="Cookies">
+                  {t("learnMore")}
+                </Link>
               </Button>
             </div>
           </div>

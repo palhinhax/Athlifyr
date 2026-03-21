@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,6 +20,7 @@ import { Eye, EyeOff, CheckCircle2 } from "lucide-react";
 
 export function ResetPasswordForm() {
   const locale = useLocale();
+  const tCommon = useTranslations("common");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -153,6 +154,11 @@ export function ResetPasswordForm() {
                 className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
+                aria-label={
+                  showPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4" />
@@ -185,6 +191,11 @@ export function ResetPasswordForm() {
                 className="absolute right-0 top-0 h-full px-3 hover:bg-transparent"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 disabled={isLoading}
+                aria-label={
+                  showConfirmPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showConfirmPassword ? (
                   <EyeOff className="h-4 w-4" />

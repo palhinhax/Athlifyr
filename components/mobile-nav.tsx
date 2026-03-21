@@ -105,121 +105,145 @@ export function MobileNav() {
             aria-label={t("openMenu")}
           >
             <nav className="flex flex-col gap-1">
-              {/* Main Navigation - All with icons */}
-              {session ? (
-                <>
+              <ul className="list-none space-y-1 p-0">
+                {/* Main Navigation - All with icons */}
+                {session ? (
+                  <>
+                    <li>
+                      <Link
+                        href="/feed"
+                        onClick={() => handleNavClick("/feed")}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <NewspaperIcon className="h-4 w-4" />
+                        {t("feed")}
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        href="/chat"
+                        onClick={() => handleNavClick("/chat")}
+                        className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <div className="flex items-center gap-3">
+                          <MessageCircleIcon className="h-4 w-4" />
+                          {t("messages")}
+                        </div>
+                        {unreadCount > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
+                            {unreadCount > 9 ? "9+" : unreadCount}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        href="/notifications"
+                        onClick={() => handleNavClick("/notifications")}
+                        className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <div className="flex items-center gap-3">
+                          <Bell className="h-4 w-4" />
+                          {t("notifications")}
+                        </div>
+                        {notificationsPendingCount > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
+                            {notificationsPendingCount > 9
+                              ? "9+"
+                              : notificationsPendingCount}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        href="/workouts"
+                        onClick={() => handleNavClick("/workouts")}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <Dumbbell className="h-4 w-4" />
+                        {t("workouts")}
+                      </Link>
+                    </li>
+
+                    <li>
+                      <Link
+                        href="/my-schedule"
+                        onClick={() => handleNavClick("/my-schedule")}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <CalendarClockIcon className="h-4 w-4" />
+                        {t("mySchedule")}
+                      </Link>
+                    </li>
+                  </>
+                ) : (
+                  <>
+                    <li>
+                      <Link
+                        href="/"
+                        onClick={() => handleNavClick("/")}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <HomeIcon className="h-4 w-4" />
+                        {t("home")}
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        href="/feed"
+                        onClick={() => handleNavClick("/feed")}
+                        className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                      >
+                        <NewspaperIcon className="h-4 w-4" />
+                        {t("feed")}
+                      </Link>
+                    </li>
+                  </>
+                )}
+
+                <li>
                   <Link
-                    href="/feed"
-                    onClick={() => handleNavClick("/feed")}
+                    href="/events"
+                    onClick={() => handleNavClick("/events")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
-                    <NewspaperIcon className="h-4 w-4" />
-                    {t("feed")}
+                    <CalendarIcon className="h-4 w-4" />
+                    {t("events")}
                   </Link>
+                </li>
 
+                <li>
                   <Link
-                    href="/chat"
-                    onClick={() => handleNavClick("/chat")}
-                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    <div className="flex items-center gap-3">
-                      <MessageCircleIcon className="h-4 w-4" />
-                      {t("messages")}
-                    </div>
-                    {unreadCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-xs font-bold text-destructive-foreground">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href="/notifications"
-                    onClick={() => handleNavClick("/notifications")}
-                    className="flex items-center justify-between rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    <div className="flex items-center gap-3">
-                      <Bell className="h-4 w-4" />
-                      {t("notifications")}
-                    </div>
-                    {notificationsPendingCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-green-600 px-1.5 text-xs font-bold text-white">
-                        {notificationsPendingCount > 9
-                          ? "9+"
-                          : notificationsPendingCount}
-                      </span>
-                    )}
-                  </Link>
-
-                  <Link
-                    href="/workouts"
-                    onClick={() => handleNavClick("/workouts")}
+                    href="/venues"
+                    onClick={() => handleNavClick("/venues")}
                     className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
                   >
-                    <Dumbbell className="h-4 w-4" />
-                    {t("workouts")}
+                    <Building2Icon className="h-4 w-4" />
+                    {t("venues")}
                   </Link>
+                </li>
 
-                  <Link
-                    href="/my-schedule"
-                    onClick={() => handleNavClick("/my-schedule")}
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    <CalendarClockIcon className="h-4 w-4" />
-                    {t("mySchedule")}
-                  </Link>
-                </>
-              ) : (
-                <>
-                  <Link
-                    href="/"
-                    onClick={() => handleNavClick("/")}
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    <HomeIcon className="h-4 w-4" />
-                    {t("home")}
-                  </Link>
-                  <Link
-                    href="/feed"
-                    onClick={() => handleNavClick("/feed")}
-                    className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                  >
-                    <NewspaperIcon className="h-4 w-4" />
-                    {t("feed")}
-                  </Link>
-                </>
-              )}
+                <li>
+                  <AnalysisMobileMenuItem onClick={closeMenu} />
+                </li>
 
-              <Link
-                href="/events"
-                onClick={() => handleNavClick("/events")}
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-              >
-                <CalendarIcon className="h-4 w-4" />
-                {t("events")}
-              </Link>
-
-              <Link
-                href="/venues"
-                onClick={() => handleNavClick("/venues")}
-                className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-              >
-                <Building2Icon className="h-4 w-4" />
-                {t("venues")}
-              </Link>
-
-              <AnalysisMobileMenuItem onClick={closeMenu} />
-
-              {session?.user?.role === "ADMIN" && (
-                <Link
-                  href="/admin"
-                  onClick={() => handleNavClick("/admin")}
-                  className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
-                >
-                  <Shield className="h-4 w-4" />
-                  {t("admin")}
-                </Link>
-              )}
+                {session?.user?.role === "ADMIN" && (
+                  <li>
+                    <Link
+                      href="/admin"
+                      onClick={() => handleNavClick("/admin")}
+                      className="flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium hover:bg-accent"
+                    >
+                      <Shield className="h-4 w-4" />
+                      {t("admin")}
+                    </Link>
+                  </li>
+                )}
+              </ul>
 
               <div className="my-2 border-t" />
 

@@ -590,6 +590,7 @@ function VenueSSRContactInfo({ venue, locale }: VenueSectionProps) {
             href={`tel:${venue.phone}`}
             className={CONTACT_LINK_CLASS}
             itemProp="telephone"
+            aria-label={venue.phone}
           >
             <Phone className={ICON_SM_CLASS} />
             {venue.phone}
@@ -600,6 +601,7 @@ function VenueSSRContactInfo({ venue, locale }: VenueSectionProps) {
             href={`mailto:${venue.email}`}
             className={CONTACT_LINK_CLASS}
             itemProp="email"
+            aria-label={venue.email}
           >
             <Mail className={ICON_SM_CLASS} />
             {venue.email}
@@ -611,6 +613,7 @@ function VenueSSRContactInfo({ venue, locale }: VenueSectionProps) {
             target="_blank"
             rel="noopener noreferrer"
             className={CONTACT_LINK_CLASS}
+            aria-label={`${getLabel("viewWebsite", locale)} ${venue.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}`}
           >
             <Globe className={ICON_SM_CLASS} />
             {getLabel("viewWebsite", locale)}
@@ -622,6 +625,7 @@ function VenueSSRContactInfo({ venue, locale }: VenueSectionProps) {
             target="_blank"
             rel="noopener noreferrer"
             className={CONTACT_LINK_CLASS}
+            aria-label={`Instagram @${venue.instagram.replaceAll("@", "")}`}
           >
             <Instagram className={ICON_SM_CLASS} />@
             {venue.instagram.replaceAll("@", "")}
@@ -648,7 +652,7 @@ function VenueSSRCTAButtons({ venue, locale }: VenueSectionProps) {
     <div className="flex flex-wrap gap-3">
       {venue.phone && (
         <Button asChild variant="default">
-          <Link href={`tel:${venue.phone}`}>
+          <Link href={`tel:${venue.phone}`} aria-label={venue.phone}>
             <Phone className={CTA_ICON_CLASS} />
             {getLabel("callNow", locale)}
           </Link>
@@ -656,7 +660,7 @@ function VenueSSRCTAButtons({ venue, locale }: VenueSectionProps) {
       )}
       {venue.email && (
         <Button asChild variant="outline">
-          <Link href={`mailto:${venue.email}`}>
+          <Link href={`mailto:${venue.email}`} aria-label={venue.email}>
             <Mail className={CTA_ICON_CLASS} />
             {getLabel("sendEmail", locale)}
           </Link>

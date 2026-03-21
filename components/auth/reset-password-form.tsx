@@ -225,11 +225,9 @@ export function ResetPasswordForm() {
           >
             {isLoading ? "A alterar..." : "Alterar Password"}
           </Button>
-          <Link href="/auth/signin" className="w-full">
-            <Button variant="ghost" className="w-full">
-              Voltar ao login
-            </Button>
-          </Link>
+          <Button variant="ghost" className="w-full" asChild>
+            <Link href="/auth/signin">Voltar ao login</Link>
+          </Button>
         </CardFooter>
       </form>
     </Card>

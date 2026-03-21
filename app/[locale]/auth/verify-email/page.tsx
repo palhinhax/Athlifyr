@@ -42,16 +42,12 @@ export default async function VerifyEmailPage({
                 {t("success.description")}
               </p>
               <div className="space-y-3">
-                <Link href="/settings" className="block">
-                  <Button className="w-full">
-                    {t("success.goToSettings")}
-                  </Button>
-                </Link>
-                <Link href="/feed" className="block">
-                  <Button variant="outline" className="w-full">
-                    {t("success.goToFeed")}
-                  </Button>
-                </Link>
+                <Button className="w-full" asChild>
+                  <Link href="/settings">{t("success.goToSettings")}</Link>
+                </Button>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/feed">{t("success.goToFeed")}</Link>
+                </Button>
               </div>
             </>
           ) : errorType === "expired_token" ? (
@@ -65,9 +61,9 @@ export default async function VerifyEmailPage({
               <p className="mb-6 text-muted-foreground">
                 {t("expired.description")}
               </p>
-              <Link href="/settings" className="block">
-                <Button className="w-full">{t("expired.requestNew")}</Button>
-              </Link>
+              <Button className="w-full" asChild>
+                <Link href="/settings">{t("expired.requestNew")}</Link>
+              </Button>
             </>
           ) : (
             <>
@@ -85,14 +81,12 @@ export default async function VerifyEmailPage({
                     : t("error.serverError")}
               </p>
               <div className="space-y-3">
-                <Link href="/settings" className="block">
-                  <Button className="w-full">{t("error.tryAgain")}</Button>
-                </Link>
-                <Link href="/contact" className="block">
-                  <Button variant="outline" className="w-full">
-                    {t("error.contactSupport")}
-                  </Button>
-                </Link>
+                <Button className="w-full" asChild>
+                  <Link href="/settings">{t("error.tryAgain")}</Link>
+                </Button>
+                <Button variant="outline" className="w-full" asChild>
+                  <Link href="/contact">{t("error.contactSupport")}</Link>
+                </Button>
               </div>
             </>
           )}

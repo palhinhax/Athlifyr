@@ -102,6 +102,10 @@ export function CollapsibleDescription({
     description.length > 400 || description.split("\n\n").length > 3;
 
   const markdownComponents = {
+    // Remap h1 to h2 to avoid multiple h1 on the page (WCAG 1.3.1)
+    h1: ({ children, ...props }: React.ComponentPropsWithoutRef<"h2">) => (
+      <h2 {...props}>{children}</h2>
+    ),
     img: ({ src, alt }: { src?: string | Blob; alt?: string }) => (
       <MarkdownImage
         src={typeof src === "string" ? src : undefined}

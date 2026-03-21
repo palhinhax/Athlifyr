@@ -27,9 +27,9 @@ export default async function NotFound() {
       <p className="mb-8 max-w-md text-center text-muted-foreground">
         {t("notFound.description")}
       </p>
-      <Link href="/">
-        <Button>{t("notFound.backHome")}</Button>
-      </Link>
+      <Button asChild>
+        <Link href="/">{t("notFound.backHome")}</Link>
+      </Button>
     </div>
   );
 }

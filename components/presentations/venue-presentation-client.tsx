@@ -212,6 +212,7 @@ export function VenuePresentationClient() {
             loop
             playsInline
             preload="auto"
+            aria-hidden="true"
             className="hidden h-full w-full object-cover md:block"
           >
             <source src="/promo/crossfit-workout.mp4" type="video/mp4" />
@@ -223,6 +224,7 @@ export function VenuePresentationClient() {
             loop
             playsInline
             preload="auto"
+            aria-hidden="true"
             className="block h-full w-full object-cover md:hidden"
           >
             <source src="/promo/crossfit-workout.mp4" type="video/mp4" />

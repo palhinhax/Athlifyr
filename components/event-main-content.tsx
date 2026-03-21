@@ -58,17 +58,12 @@ export function EventMainContent({
         <div className="border-t pt-8">
           <h3 className="mb-4 text-xl font-bold">{t.readyToParticipate}</h3>
           <p className="mb-6 text-muted-foreground">{t.moreInfoDescription}</p>
-          <a
-            href={externalUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-block flex justify-center"
-          >
-            <Button size="lg" className="gap-2">
+          <Button size="lg" className="gap-2" asChild>
+            <a href={externalUrl} target="_blank" rel="noopener noreferrer">
               {t.goToWebsite}
               <ExternalLink className="h-4 w-4" />
-            </Button>
-          </a>
+            </a>
+          </Button>
         </div>
       )}
     </>

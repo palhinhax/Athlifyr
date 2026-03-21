@@ -114,7 +114,7 @@ function PostImage({
   return (
     <Image
       src={imageUrl}
-      alt="Post image"
+      alt=""
       width={800}
       height={800}
       className="h-auto max-h-[850px] w-full object-cover"
@@ -539,6 +539,7 @@ export function PostCard({
                 loop
                 muted
                 playsInline
+                aria-hidden="true"
                 className="max-h-[850px] w-auto max-w-full cursor-pointer"
                 preload="auto"
                 onClick={(e) => {

@@ -20,6 +20,7 @@ import {
 import {
   generateOrganizationSchema,
   generateWebSiteSchema,
+  generateSoftwareApplicationSchema,
 } from "@/lib/structured-data";
 import { StructuredData } from "@/components/structured-data";
 import packageJson from "@/package.json";
@@ -61,7 +62,7 @@ export const metadata: Metadata = {
     template: "%s | Athlifyr",
   },
   description:
-    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you. Find races, competitions and challenges near you.",
+    "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you. Free gym management software for CrossFit boxes, yoga studios and personal trainers.",
   keywords: [
     "sports events",
     "running",
@@ -77,6 +78,10 @@ export const metadata: Metadata = {
     "eventos desportivos",
     "corrida",
     "competição",
+    "free gym management software",
+    "software gestão ginásio gratuito",
+    "free crossfit box software",
+    "live race tracking",
   ],
   authors: [{ name: "Athlifyr" }],
   creator: "Athlifyr",
@@ -100,7 +105,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Athlifyr - one place. all sports.",
     description:
-      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you.",
+      "Discover sports events near you. Free gym management software for CrossFit boxes, yoga studios and personal trainers.",
     url: "https://www.athlifyr.com",
     siteName: "Athlifyr",
     images: [
@@ -118,7 +123,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Athlifyr - one place. all sports.",
     description:
-      "Discover running, trail, HYROX, CrossFit, OCR, BTT, cycling, surf, triathlon and swimming events near you.",
+      "Discover sports events near you. Free gym management software for CrossFit boxes, yoga studios and personal trainers.",
     images: ["/logo.png"],
     creator: "@athlifyr",
   },
@@ -180,6 +185,7 @@ export default async function RootLayout({
   // Generate structured data schemas for the site
   const organizationSchema = generateOrganizationSchema();
   const websiteSchema = generateWebSiteSchema();
+  const softwareAppSchema = generateSoftwareApplicationSchema();
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -198,6 +204,7 @@ export default async function RootLayout({
         />
         <StructuredData data={organizationSchema} />
         <StructuredData data={websiteSchema} />
+        <StructuredData data={softwareAppSchema} />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} flex min-h-screen flex-col antialiased`}

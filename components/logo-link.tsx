@@ -5,7 +5,7 @@ import { analyticsEvent } from "@/lib/analytics";
 import { useTranslations } from "next-intl";
 
 export function LogoLink() {
-  const tNav = useTranslations("navigation");
+  const tNav = useTranslations("nav");
 
   const handleLogoClick = () => {
     analyticsEvent("Logo_Click", {

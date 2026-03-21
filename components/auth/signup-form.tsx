@@ -184,7 +184,9 @@ export function SignUpForm() {
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor="name">{t("name")}</Label>
+            <Label htmlFor="name">
+              {t("name")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="name"
               name="name"
@@ -194,11 +196,14 @@ export function SignUpForm() {
               onChange={(e) => setName(e.target.value)}
               autoComplete="name"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="email">{t("email")}</Label>
+            <Label htmlFor="email">
+              {t("email")} <span className="text-destructive">*</span>
+            </Label>
             <Input
               id="email"
               name="email"
@@ -208,11 +213,14 @@ export function SignUpForm() {
               onChange={(e) => setEmail(e.target.value)}
               autoComplete="email"
               required
+              aria-required="true"
               disabled={isLoading}
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password">{t("password")}</Label>
+            <Label htmlFor="password">
+              {t("password")} <span className="text-destructive">*</span>
+            </Label>
             <div className="relative">
               <Input
                 id="password"
@@ -223,6 +231,7 @@ export function SignUpForm() {
                 onChange={(e) => setPassword(e.target.value)}
                 autoComplete="new-password"
                 required
+                aria-required="true"
                 minLength={6}
                 disabled={isLoading}
                 className="pr-10"

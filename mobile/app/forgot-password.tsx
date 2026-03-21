@@ -73,13 +73,15 @@ export default function ForgotPasswordScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         <View style={styles.successContainer}>
-          <View style={styles.successIconContainer}>
+          <View style={styles.successIconContainer} accessible={false}>
             <CheckCircle size={48} color={colors.success} />
           </View>
           <Text style={styles.successTitle}>
@@ -100,6 +102,7 @@ export default function ForgotPasswordScreen() {
               setTimeout(() => router.push("/login"), 100);
             }}
             activeOpacity={0.7}
+            accessibilityRole="link"
           >
             <ArrowLeft size={18} color={colors.primary} />
             <Text style={styles.backToSignInText}>
@@ -123,6 +126,8 @@ export default function ForgotPasswordScreen() {
           <TouchableOpacity
             onPress={() => router.back()}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
@@ -153,6 +158,7 @@ export default function ForgotPasswordScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!isLoading}
+                accessibilityLabel={t("login.email")}
               />
             </View>
             {error && <Text style={styles.errorText}>{error}</Text>}
@@ -164,6 +170,8 @@ export default function ForgotPasswordScreen() {
             onPress={handleSubmit}
             disabled={isLoading}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: isLoading, busy: isLoading }}
           >
             {isLoading ? (
               <ActivityIndicator color={colors.white} />

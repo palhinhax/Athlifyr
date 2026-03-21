@@ -165,6 +165,8 @@ export default function LoginScreen() {
               }
             }}
             style={styles.backButton}
+            accessibilityRole="button"
+            accessibilityLabel={t("common.close")}
           >
             <ArrowLeft size={24} color={colors.text} />
           </TouchableOpacity>
@@ -184,6 +186,8 @@ export default function LoginScreen() {
             onPress={handleGoogleSignIn}
             disabled={anyLoading}
             activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={t("login.continueWithGoogle")}
           >
             {isGoogleLoading ? (
               <ActivityIndicator color={colors.text} size="small" />
@@ -243,6 +247,7 @@ export default function LoginScreen() {
                 autoCapitalize="none"
                 autoCorrect={false}
                 editable={!anyLoading}
+                accessibilityLabel={t("login.email")}
               />
             </View>
             {errors.email && (
@@ -257,6 +262,7 @@ export default function LoginScreen() {
               <TouchableOpacity
                 onPress={() => router.push("/forgot-password")}
                 disabled={anyLoading}
+                accessibilityRole="link"
               >
                 <Text style={styles.forgotPasswordLink}>
                   {t("login.forgotPassword")}
@@ -283,10 +289,15 @@ export default function LoginScreen() {
                 secureTextEntry={!showPassword}
                 autoCapitalize="none"
                 editable={!anyLoading}
+                accessibilityLabel={t("login.password")}
               />
               <TouchableOpacity
                 onPress={() => setShowPassword(!showPassword)}
                 hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel={
+                  showPassword ? t("a11y.hidePassword") : t("a11y.showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff size={20} color={colors.mutedForeground} />
@@ -309,6 +320,8 @@ export default function LoginScreen() {
             onPress={handleLogin}
             disabled={anyLoading}
             activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityState={{ disabled: anyLoading, busy: isLoading }}
           >
             {isLoading ? (
               <ActivityIndicator color={colors.white} />

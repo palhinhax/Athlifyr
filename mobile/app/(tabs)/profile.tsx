@@ -7,6 +7,7 @@ import {
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useTranslation } from "react-i18next";
 import { User } from "lucide-react-native";
 import { useAuthStore } from "@/src/lib/auth-store";
 import { AuthRequiredView } from "@/src/components/AuthRequiredView";
@@ -20,6 +21,7 @@ import { AnalysesSection } from "@/src/components/profile/AnalysesSection";
 import { theme } from "@/src/constants/theme";
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const {
     user,
     isAuthenticated,
@@ -51,7 +53,11 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            accessibilityLabel={t("a11y.loading")}
+          />
         </View>
       </SafeAreaView>
     );
@@ -73,7 +79,11 @@ export default function ProfileScreen() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
+          <ActivityIndicator
+            size="large"
+            color={theme.colors.primary}
+            accessibilityLabel={t("a11y.loading")}
+          />
         </View>
       </SafeAreaView>
     );

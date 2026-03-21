@@ -44,6 +44,7 @@ const STORE_BADGES = [
 export function AppDownloadSection() {
   const locale = useLocale();
   const t = useTranslations("home");
+  const tFooter = useTranslations("footer");
   const badgeLocale = getBadgeLocale(locale);
 
   return (
@@ -65,6 +66,7 @@ export function AppDownloadSection() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.97 }}
               className="transition-opacity hover:opacity-90"
+              aria-label={`${t(badge.altKey)} ${tFooter("opensInNewTab")}`}
               onClick={() =>
                 analyticsEvent("Homepage_AppDownload_Click", {
                   store: badge.key,

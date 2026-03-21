@@ -83,6 +83,7 @@ export function VenueAboutTab({
               <a
                 href={`tel:${venue.phone}`}
                 className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
+                aria-label={venue.phone}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-brand/10 text-p-brand">
                   <Phone className="h-5 w-5" />
@@ -115,6 +116,7 @@ export function VenueAboutTab({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-golden hover:bg-p-golden/5"
+                aria-label={`${tInfo("website")} ${venue.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-p-golden/10 text-p-golden">
                   <Globe className="h-5 w-5" />
@@ -138,6 +140,7 @@ export function VenueAboutTab({
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-3 rounded-lg border bg-muted/30 p-3 transition-all hover:border-p-brand hover:bg-p-brand/5"
+                aria-label={`Instagram @${venue.instagram.replace("@", "")}`}
               >
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-p-brand/20 via-p-golden/20 to-p-info/20 text-p-brand">
                   <Instagram className="h-5 w-5" />

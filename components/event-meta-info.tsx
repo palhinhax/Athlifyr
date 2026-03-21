@@ -31,7 +31,9 @@ export function EventMetaInfo({
         <Calendar className="h-5 w-5 text-muted-foreground" />
         <span className="text-muted-foreground">
           {formatDate(startDate, locale)}
-          {endDate && ` - ${formatDate(endDate, locale)}`}
+          {endDate &&
+            formatDate(endDate, locale) !== formatDate(startDate, locale) &&
+            ` - ${formatDate(endDate, locale)}`}
         </span>
       </div>
       <div className="flex items-center gap-2.5">

@@ -153,16 +153,17 @@ export function VenueProfileHeader({
         <div className="container absolute left-0 right-0 top-0 px-4 py-4 sm:px-6">
           <div className="mx-auto flex items-center justify-end gap-2">
             {isOwnerOrAdmin && (
-              <Link href={`/venues/${slug}/analytics`}>
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"
-                >
+              <Button
+                variant="secondary"
+                size="sm"
+                className="bg-black/30 text-white backdrop-blur-sm hover:bg-black/50"
+                asChild
+              >
+                <Link href={`/venues/${slug}/analytics`}>
                   <BarChart3 className="mr-2 h-4 w-4" />
                   {t("analytics.button")}
-                </Button>
-              </Link>
+                </Link>
+              </Button>
             )}
             {isOwnerOrAdmin && (
               <Button

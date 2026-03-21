@@ -132,7 +132,7 @@ export function VariantCardWithMap({
         {/* Inline stats */}
         <div className="flex flex-wrap items-center gap-1.5">
           {variant.distanceKm && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-p-brand/10 px-2 py-0.5 text-[11px] font-medium text-p-brand">
+            <span className="inline-flex items-center gap-1 rounded-full bg-p-brand/5 px-2 py-0.5 text-[11px] font-medium text-p-brand">
               <Route className="h-3 w-3" />
               {variant.distanceKm} km
             </span>

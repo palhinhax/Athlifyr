@@ -106,6 +106,7 @@ export default async function CookiesPage({ params }: CookiesPageProps) {
         <h2>{t("sections.table.title")}</h2>
         <div className="overflow-x-auto">
           <table>
+            <caption className="sr-only">{t("sections.table.title")}</caption>
             <thead>
               <tr>
                 <th>{t("sections.table.headers.name")}</th>

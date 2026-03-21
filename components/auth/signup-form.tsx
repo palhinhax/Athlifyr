@@ -36,6 +36,7 @@ const calculatePasswordStrength = (password: string): number => {
 export function SignUpForm() {
   const locale = useLocale();
   const t = useTranslations("signUp");
+  const tCommon = useTranslations("common");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -233,6 +234,11 @@ export function SignUpForm() {
                 onClick={() => setShowPassword(!showPassword)}
                 disabled={isLoading}
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                aria-label={
+                  showPassword
+                    ? tCommon("hidePassword")
+                    : tCommon("showPassword")
+                }
               >
                 {showPassword ? (
                   <EyeOff className="h-4 w-4 text-muted-foreground" />

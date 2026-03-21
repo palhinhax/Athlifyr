@@ -76,12 +76,12 @@ export function ForgotPasswordForm() {
           </p>
         </CardContent>
         <CardFooter className="flex justify-center">
-          <Link href="/auth/signin">
-            <Button variant="ghost">
+          <Button asChild variant="ghost">
+            <Link href="/auth/signin">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar ao login
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </CardFooter>
       </Card>
     );
@@ -117,12 +117,12 @@ export function ForgotPasswordForm() {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? "A enviar..." : "Enviar instruções"}
           </Button>
-          <Link href="/auth/signin" className="w-full">
-            <Button variant="ghost" className="w-full">
+          <Button asChild variant="ghost" className="w-full">
+            <Link href="/auth/signin">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Voltar ao login
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         </CardFooter>
       </form>
     </Card>

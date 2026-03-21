@@ -48,7 +48,7 @@ export function TemplateSelector({
             <SelectItem value="T10">T10: Hook + CTA (Viral)</SelectItem>
             <SelectItem value="T11">T11: Venue Promo</SelectItem>
             <SelectItem value="T12">T12: Giveaway Promo (Sorteio)</SelectItem>
-            <SelectItem value="T13">T13: App Download (Google Play)</SelectItem>
+            <SelectItem value="T13">T13: App Download</SelectItem>
             <SelectItem value="T14">T14: Athli Chat Promo (IA)</SelectItem>
             <SelectItem value="T15">T15: Giveaway Winner (Vencedor)</SelectItem>
           </SelectContent>

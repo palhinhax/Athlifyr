@@ -146,16 +146,17 @@ export function ChatWidget({
           </span>
         </button>
         <div className="flex items-center gap-1">
-          <Link href={`/user/${recipientId}`}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
-              title="Ver perfil"
-            >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-primary-foreground hover:bg-primary-foreground/20"
+            title="Ver perfil"
+            asChild
+          >
+            <Link href={`/user/${recipientId}`}>
               <ExternalLinkIcon className="h-4 w-4" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <Button
             variant="ghost"
             size="icon"

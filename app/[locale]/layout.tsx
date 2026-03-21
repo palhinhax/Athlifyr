@@ -313,6 +313,12 @@ export default async function RootLayout({
                         >
                           {tFooter("accessibility")}
                         </Link>
+                        <Link
+                          href="/acessibilidade"
+                          className="transition-colors hover:text-foreground"
+                        >
+                          {tFooter("declaration")}
+                        </Link>
                       </nav>
 
                       {/* Social + Apps + Copyright */}
@@ -322,7 +328,7 @@ export default async function RootLayout({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                          aria-label={tFooter("followOnInstagram")}
+                          aria-label={`${tFooter("followOnInstagram")} ${tFooter("opensInNewTab")}`}
                         >
                           <svg
                             className="h-4 w-4"
@@ -353,7 +359,7 @@ export default async function RootLayout({
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                          aria-label={tFooter("downloadIos")}
+                          aria-label={`${tFooter("downloadIos")} ${tFooter("opensInNewTab")}`}
                         >
                           <svg
                             className="h-4 w-4"
@@ -373,7 +379,7 @@ export default async function RootLayout({
                               target="_blank"
                               rel="noopener noreferrer"
                               className="inline-flex items-center gap-1.5 transition-colors hover:text-foreground"
-                              aria-label={tFooter("downloadAndroid")}
+                              aria-label={`${tFooter("downloadAndroid")} ${tFooter("opensInNewTab")}`}
                             >
                               <Smartphone
                                 className="h-4 w-4"

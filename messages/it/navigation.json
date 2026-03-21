@@ -45,12 +45,14 @@
     "terms": "Termini",
     "cookies": "Cookie",
     "accessibility": "Accessibilit\u00e0",
+    "declaration": "Dichiarazione di Accessibilit\u00e0",
     "contact": "Contatto",
     "gymManagement": "Gestione Palestra",
     "liveRace": "Live Race",
     "followOnInstagram": "@athlifyr — Seguici su Instagram",
     "downloadIos": "iOS — Scarica sull'App Store",
     "downloadAndroid": "Android — Scarica su Google Play",
+    "opensInNewTab": "(si apre in una nuova scheda)",
     "allRightsReserved": "© {year} Athlifyr. Tutti i diritti riservati."
   },
   "search": {

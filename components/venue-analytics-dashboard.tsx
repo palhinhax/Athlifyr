@@ -226,11 +226,11 @@ export function VenueAnalyticsDashboard({
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
-          <Link href={`/venues/${venueSlug}`}>
-            <Button variant="ghost" size="icon">
+          <Button variant="ghost" size="icon" asChild>
+            <Link href={`/venues/${venueSlug}`}>
               <ArrowLeft className="h-5 w-5" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">{t("title")}</h1>
             <p className="text-muted-foreground">{venueName}</p>

@@ -58,30 +58,239 @@ export default async function AcessibilidadePage({
         <h1>Declaração de Acessibilidade e Usabilidade</h1>
 
         <p>
-          <strong>Estado:</strong> Esta página irá conter a Declaração de
-          Acessibilidade e Usabilidade oficial, gerada através do{" "}
-          <a
-            href="https://www.acessibilidade.gov.pt/gerador/"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Gerador da Declaração de Acessibilidade e Usabilidade
-          </a>{" "}
-          conforme o Decreto-Lei n.º 83/2018, de 19 de outubro.
+          O Athlifyr compromete-se a disponibilizar o sítio Web{" "}
+          <a href="https://www.athlifyr.com">Athlifyr</a>, em conformidade com o
+          Decreto-Lei n.º 83/2018, de 19 de outubro, que transpõe a Diretiva
+          (UE) 2016/2102 do Parlamento Europeu e do Conselho, relativa à
+          acessibilidade dos sítios Web e das aplicações móveis.
+        </p>
+
+        <h2 id="n1">I. Estado de conformidade</h2>
+
+        <p>
+          O sítio Web <a href="https://www.athlifyr.com">Athlifyr</a> do
+          Athlifyr está <strong>parcialmente conforme</strong> para com o
+          Decreto-Lei n.º 83/2018 de 19 de outubro.
+        </p>
+        <p>As não conformidades e/ou isenções são indicadas abaixo.</p>
+
+        <h3>Não conformidades e/ou alvo de isenções</h3>
+
+        <p>
+          A. Enumeração <strong>das secções / conteúdos / funções</strong> do
+          sítio Web que não estão conformes e/ou alvo de isenção:
+        </p>
+        <ul>
+          <li>
+            Alguns componentes interativos, nomeadamente o mapa de eventos e
+            certas funcionalidades dinâmicas, poderão não estar totalmente
+            acessíveis a utilizadores que navegam exclusivamente por teclado ou
+            utilizam leitores de ecrã.
+          </li>
+          <li>
+            Determinados formulários poderão apresentar limitações pontuais ao
+            nível da associação de mensagens de erro e identificação de campos
+            obrigatórios.
+          </li>
+          <li>
+            Alguns elementos modais e interações dinâmicas poderão não garantir
+            totalmente a gestão de foco conforme as melhores práticas de
+            acessibilidade.
+          </li>
+        </ul>
+
+        <p>
+          B. <strong>Razões</strong> que estão na base da não conformidade dos
+          conteúdos indicados acima:
+        </p>
+        <ul>
+          <li>
+            Alguns dos conteúdos e funcionalidades indicados apresentam não
+            conformidade parcial com os requisitos definidos no Decreto-Lei n.º
+            83/2018, estando atualmente em processo de melhoria contínua.
+          </li>
+          <li>
+            As limitações identificadas resultam de constrangimentos técnicos
+            associados à complexidade de componentes interativos e dinâmicos,
+            nomeadamente mapas e interfaces ricas em JavaScript.
+          </li>
+        </ul>
+
+        <p>
+          C. <strong>Alternativas acessíveis</strong> aos constrangimentos
+          mencionados na presente secção:
+        </p>
+        <ul>
+          <li>
+            Sempre que possível, são disponibilizadas alternativas acessíveis,
+            nomeadamente através de listagens de conteúdos (por exemplo, eventos
+            e venues) que não dependem exclusivamente de componentes visuais
+            como mapas.
+          </li>
+          <li>
+            Os utilizadores podem também recorrer aos contactos disponibilizados
+            para obter apoio ou solicitar informação em formatos alternativos.
+          </li>
+        </ul>
+
+        <h2 id="n2">
+          II. Elaboração da presente declaração de acessibilidade e usabilidade
+        </h2>
+
+        <p>Esta declaração foi atualizada a 2026-03-21.</p>
+        <p>
+          De acordo com o artigo 9º do Decreto-Lei n.º 83/2018, as entidades
+          devem adotar os procedimentos de monitorização a seguir apresentados.
+          Os procedimentos A) e B) são obrigatórios. O procedimento C) é
+          recomendado.
         </p>
 
         <p>
-          Para mais informações sobre as funcionalidades de acessibilidade
-          atuais do Athlifyr, consulte a nossa{" "}
-          <a href={`/${locale}/accessibility`}>página de acessibilidade</a>.
+          <strong>A. Avaliações automáticas levadas a efeito</strong>
+        </p>
+        <ol>
+          <li>
+            (2026-03-21). Avaliação automática de acessibilidade – Athlifyr
+            <ul>
+              <li>Ferramenta utilizada: AccessMonitor e Lighthouse</li>
+              <li>Amostra: 10 páginas.</li>
+              <li>
+                Principais resultados (sumário): Foram realizadas avaliações
+                automáticas de acessibilidade com recurso às ferramentas
+                AccessMonitor, Lighthouse e uma ferramenta de análise automática
+                baseada em varrimento de múltiplas páginas.
+                <br />
+                <br />
+                A amostra incluiu um conjunto de páginas representativas da
+                plataforma (10 páginas), nomeadamente: Página inicial, Listagem
+                de eventos, Listagem de venues, Páginas individuais de eventos,
+                Páginas individuais de venues, Fluxos de autenticação (login,
+                registo e recuperação de password), Página de contacto e páginas
+                institucionais.
+                <br />
+                <br />
+                Os resultados evidenciam um elevado nível de conformidade com as
+                diretrizes WCAG 2.1 nível AA na maioria das páginas analisadas,
+                não tendo sido identificadas barreiras críticas na generalidade
+                dos fluxos principais.
+                <br />
+                <br />
+                Foram identificadas algumas não conformidades pontuais,
+                sobretudo ao nível de componentes reutilizados e páginas
+                específicas, totalizando um número reduzido de ocorrências,
+                maioritariamente associadas a critérios de nível A.
+                <br />
+                <br />
+                Estas situações encontram-se identificadas e estão a ser
+                progressivamente corrigidas no âmbito da melhoria contínua da
+                acessibilidade da plataforma, com especial foco em componentes
+                interativos, formulários e conteúdos dinâmicos.
+              </li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>
+          <strong>B. Avaliações manuais levadas a efeito:</strong>
+        </p>
+        <ol>
+          <li>
+            (2026-03-21). Avaliação manual de acessibilidade – Athlifyr
+            <ul>
+              <li>Amostra: 10 páginas.</li>
+              <li>
+                Principais resultados (heurísticas satisfeitas/total heurísticas
+                aplicadas): 8/10
+              </li>
+            </ul>
+          </li>
+        </ol>
+
+        <p>
+          <strong>C. Testes de usabilidade com pessoas com deficiência:</strong>
+        </p>
+        <p>
+          O sítio Web ainda não foi alvo de testes com utilizadores com
+          deficiência.
         </p>
 
-        <div className="mt-8 rounded-lg border border-amber-500/30 bg-amber-500/10 p-6">
-          <p className="mb-0 text-sm text-amber-700 dark:text-amber-400">
-            A Declaração oficial está em preparação e será publicada nesta
-            página brevemente.
-          </p>
-        </div>
+        <h2 id="n3">
+          III. Contacto e solicitação de informação relativa ao sítio Web
+        </h2>
+
+        <p>
+          Para contactar, enviar sugestões, efetuar reclamações ou solicitar
+          informação adicional relativamente aos conteúdos e/ou funcionalidades
+          presentes no sítio Web do Athlifyr, utilize, por favor, os seguintes
+          meios:
+        </p>
+        <dl>
+          <dt>Correio eletrónico:</dt>
+          <dd>hello@athlifyr.com</dd>
+        </dl>
+
+        <h2 id="n4">IV. Outras evidências</h2>
+
+        <h3>Outras evidências</h3>
+        <p>
+          Foram realizadas avaliações adicionais de acessibilidade com recurso a
+          ferramentas automáticas e validações manuais, incluindo testes com
+          Lighthouse, axe DevTools e AccessMonitor.
+        </p>
+        <p>
+          Foram também efetuados testes de navegação por teclado, validação de
+          foco, análise de formulários e verificação de compatibilidade com
+          leitores de ecrã (VoiceOver).
+        </p>
+        <p>
+          Estas avaliações permitiram identificar e corrigir diversas melhorias,
+          nomeadamente ao nível de componentes interativos, estrutura semântica
+          e acessibilidade de fluxos críticos da aplicação.
+        </p>
+
+        <h2 id="n5">V. Denúncia de situações de discriminação</h2>
+
+        <p>
+          De acordo com o n.º 1 do artigo 13.º do Decreto-Lei n.º 83/2018, de 19
+          de outubro, sempre que uma pessoa com deficiência seja objeto de um
+          tratamento menos favorável do que aquele que é, tenha sido ou venha a
+          ser dado a outra pessoa em situação comparável, que consubstancie uma
+          prática discriminatória contra pessoas com deficiência, prevista e
+          punida nos termos do{" "}
+          <a href="http://data.dre.pt/eli/lei/46/2006/08/28/p/dre/pt/html">
+            artigo 4.º da Lei n.º 46/2006, de 28 de agosto
+          </a>
+          , pode, essa pessoa, apresentar queixa, de acordo com o disposto no{" "}
+          <a href="https://data.dre.pt/eli/dec-lei/34/2007/02/15/p/dre/pt/html">
+            Decreto-Lei n.º 34/2007, de 15 de fevereiro
+          </a>
+          .
+        </p>
+        <p>
+          O Instituto Nacional para a Reabilitação (INR, I.P.), disponibiliza um{" "}
+          <a href="http://www.inr.pt/resultados-de-pesquisa/-/journal_content/56/11309/45065?p_p_auth=wje2GjQi">
+            formulário para denunciar situações de discriminação
+          </a>
+          , encaminhando as queixas apresentadas às entidades competentes.
+          Anualmente, o INR, I.P. elabora um relatório anual sobre a aplicação
+          da lei que proíbe e pune a discriminação em razão da deficiência e da
+          existência de risco agravado de saúde (Lei n.º 46/2006, de 28 de
+          agosto).
+        </p>
+
+        <hr aria-hidden="true" />
+
+        <p>
+          A presente Declaração de Acessibilidade e Usabilidade foi criada com o
+          auxílio do{" "}
+          <a href="https://www.acessibilidade.gov.pt/gerador">
+            Gerador WAI-Tools PT v1.5
+          </a>
+          , desenvolvido no âmbito do projeto{" "}
+          <a href="https://w3.org/WAI/Tools">WAI-Tools</a>, de cujo consórcio a
+          AMA é parte integrante. A Declaração foi concebida em conformidade com
+          o Decreto-Lei n.º 83/2018, de 19 de outubro.
+        </p>
       </article>
     </PageContainer>
   );
